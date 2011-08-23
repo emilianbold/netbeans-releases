@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.server.ServerRegistry;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -61,14 +62,17 @@ class ServerWizardPanel implements WizardDescriptor.Panel, ChangeListener {
     private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private ServerWizardVisual component;
-
-    public ServerWizardPanel() {
+    private ServerRegistry registry;
+    
+    public ServerWizardPanel(ServerRegistry registry) {
         super();
+        assert registry != null;
+        this.registry = registry;
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new ServerWizardVisual();
+            component = new ServerWizardVisual(registry);
             component.addChangeListener(this);
         }
         return component;

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Cloud">
+        <file name="OracleServerInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.OracleServerInstanceProvider.getProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.OracleServerInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+        <file name="org-netbeans-modules-cloud-oracle-OracleServerWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.OracleServerWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </file>
+    </folder>
+
+    <folder name="Servers">
+        <file name="OracleJ2EEServerInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceProvider.getProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+<!--        <file name="org-netbeans-modules-cloud-oracle-serverplugin-OracleJ2EEServerWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </file> -->
+    </folder>
+    
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="Oracle Public Cloud">
+                
+                <!-- 
+                    An instance of the class implementing the DeploymentFactory 
+                    interface, it will be used as the main entry point for the
+                    plugin
+                -->
+                <file name="Factory.instance">
+                    <attr name="urlPattern" stringvalue="^oracle:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                
+                <!--
+                    An instance of the factory for creating the nodes that will 
+                    appear in the Server Registry, namely the Manager (Instance)
+                    node and the Target node
+                -->
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.RegistryNodeFactoryImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+                </file>
+                
+                <!--
+                    An instance of the class implementing the 
+                    J2eeDeploymentFactory interface, it will be used to create 
+                    objects that describe the environment that exists on a 
+                    particular instance of the server
+                -->
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2eePlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                
+                <!--
+                    A factory that creates objects that provide optional 
+                    functionality for the plugin, i.e. starting/stopping the
+                    server, getting a custom wizard for instance registration, 
+                    etc.
+                -->
+                <file name="ModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.ModuleConfigurationFactoryImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                
+                <file name="OptionalDeploymentManagerFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                
+                <file name="Descriptor" url="nbdep.xml"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="WhiteListAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction.actionFactory"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Actions">
+                <file name="WhiteListAction.shadow">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction.actionFactory"/>
+                    <attr name="originalFile" stringvalue="Actions/Project/WhiteListAction.instance"/>
+                    <attr name="position" intvalue="2889"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="SaaSServices">
+        <folder name="Oracle">
+            <!-- <file name="Opportunity.xml" url="/org/netbeans/modules/cloud/oracle/resources/Opportunity.xml"/> -->
+            <file name="CustomerAccount.xml" url="/org/netbeans/modules/cloud/oracle/resources/CustomerAccount.xml"/>
+        </folder>
+    </folder>
+    
+</filesystem>

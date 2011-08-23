@@ -66,9 +66,6 @@ import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -101,35 +98,68 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     private ServerWizardPanel chooser;
 
     private static final Logger LOGGER = Logger.getLogger(AddServerInstanceWizard.class.getName()); // NOI18N
+    
+    private ServerRegistry registry;
 
-    private AddServerInstanceWizard() {
-        this(new AddServerInstanceWizardIterator());
-
+    private AddServerInstanceWizard(ServerRegistry registry) {
+        this(new AddServerInstanceWizardIterator(registry));
+        this.registry = registry;
+        
         putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
         putProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);
         putProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);
 
-        setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Title"));
-        setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_TitleFormat")));
+        if (registry.isCloud()) {
+            setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_Title"));
+            setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_TitleFormat")));
+        } else {
+            setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Title"));
+            setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_TitleFormat")));
+        }
 
         initialize();
     }
 
+    // NEVER CALL this constructor directly!
     private AddServerInstanceWizard(AddServerInstanceWizardIterator iterator) {
         super(iterator);
         this.iterator = iterator;
     }
-
-
+    
     public static ServerInstance showAddServerInstanceWizard() {
+        return showAddServerInstanceWizard(ServerRegistry.getInstance());
+    }
+
+    public static ServerInstance showAddCloudInstanceWizard() {
+        return showAddServerInstanceWizard(ServerRegistry.getCloudInstance());
+    }
+
+    private static ServerInstance showAddServerInstanceWizard(ServerRegistry registry) {
         Collection<? extends ServerWizardProvider> providers = Lookups.forPath(
-                ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class);
+                registry.getPath()).lookupAll(ServerWizardProvider.class);
         // this will almost never happen if this module will be autoload
         if (providers.isEmpty()) {
             // except we run in ergonomics mode and providers are not yet on
             // inspite there some are ready
-            JRadioButton[] ready = listAvailableProviders();
-            if (ready.length == 0) {
+            JRadioButton[] ready = listAvailableProviders(registry.getPath());
+            
+            // TODO: update this for "Cloud" case:
+            if (registry.isCloud()) {
+                String close = NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoCloudPlugins_Close");
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoCloudPlugins_Text"),
+                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoCloudPlugins_Title"),
+                        true,
+                        new Object[] {close},
+                        close,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null);
+
+                // TODO invoke plugin manager once API to do that will be available
+                DialogDisplayer.getDefault().notify(descriptor);
+                return null;
+            } else if (ready.length == 0) {
                 // display the warning dialog - no server plugins
                 String close = NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Close");
                 DialogDescriptor descriptor = new DialogDescriptor(
@@ -174,7 +204,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             }
         }
 
-        AddServerInstanceWizard wizard = new AddServerInstanceWizard();
+        AddServerInstanceWizard wizard = new AddServerInstanceWizard(registry);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
         try {
@@ -216,10 +246,10 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
     }
 
-    static JRadioButton[] listAvailableProviders() {
+    static JRadioButton[] listAvailableProviders(String path) {
         List<JRadioButton> res = new ArrayList<JRadioButton>();
 
-        for (Action a : Utilities.actionsForPath("Servers/Actions")) { // NOI18N
+        for (Action a : Utilities.actionsForPath(path+"/Actions")) { // NOI18N
             if (a == null) {
                 continue;
             }
@@ -237,14 +267,13 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     private ServerWizardPanel getChooser() {
         if (chooser == null) {
-            chooser = new ServerWizardPanel();
+            chooser = new ServerWizardPanel(registry);
         }
         return chooser;
     }
 
     private String[] getContentData() {
-        JComponent first = (JComponent) getChooser().getComponent();
-        String[] firstContentData = (String[]) first.getClientProperty(PROP_CONTENT_DATA);
+        String[] firstContentData = getFirstPanelContentData(registry.isCloud());
 
         if (iterator.current().equals(getChooser())) {
             return firstContentData;
@@ -275,8 +304,22 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             }
         }
     }
+    
+    private static String[] getFirstPanelContentData(boolean cloud) {
+        if (cloud) {
+            return new String[] {
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_ChooseServer"),
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_Ellipsis")
+                };
+        } else {
+            return new String[] {
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_ChooseServer"),
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Ellipsis")
+                };
+        }
+    }
 
-    private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    private static class AddServerInstanceWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
         private final Map<ServerWizardProvider, InstantiatingIterator> iterators = new HashMap<ServerWizardProvider, InstantiatingIterator>();
 
@@ -285,9 +328,12 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         private AddServerInstanceWizard wd;
 
         public boolean showingChooser = true;
+        
+        private ServerRegistry registry;
 
-        public AddServerInstanceWizardIterator() {
+        public AddServerInstanceWizardIterator(ServerRegistry registry) {
             super();
+            this.registry = registry;
         }
 
         public String name() {
@@ -354,11 +400,10 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         public void initialize(WizardDescriptor wizard) {
             wd = (AddServerInstanceWizard) wizard;
 
-            JComponent chooser = (JComponent) wd.getChooser().getComponent();
-            chooser.putClientProperty(PROP_CONTENT_DATA, new String[] {
-                NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_ChooseServer"),
-                NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Ellipsis")
-            });
+            // FYI: using wd.getChooser().getComponent() here was wrong as it forces
+            // creation of panel too early: AddServerInstanceWizard constructor was not
+            // yet finished and wizards and their panels were being created.
+            wd.putProperty(PROP_CONTENT_DATA, getFirstPanelContentData(registry.isCloud()));
         }
 
         public Set instantiate() throws IOException {

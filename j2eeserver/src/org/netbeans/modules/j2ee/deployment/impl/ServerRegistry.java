@@ -301,7 +301,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public void checkInstanceExists(String url) {
         if (getServerInstance(url) == null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceNotExists", url);
-            throw new IllegalArgumentException(msg);
+            throw new IllegalStateException(msg);
         }
     }
 
@@ -327,7 +327,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         if (tmp != null) {
             fireInstanceListeners(url, false);
-            removeInstanceFromFile(url);
+            clearInstanceStorage(url);
         }
     }
 
@@ -368,7 +368,9 @@ public final class ServerRegistry implements java.io.Serializable {
      *         registered.
      */
     public void addInstance(String url, String username, String password,
-            String displayName, boolean withoutUI, Map<String, String> initialproperties) throws InstanceCreationException {
+            String displayName, boolean withoutUI, boolean nonPersistent,
+            Map<String, String> initialproperties) throws InstanceCreationException {
+
         // should never have empty url; UI should have prevented this
         // may happen when autoregistered instance is removed
         if (url == null || url.equals("")) { //NOI18N
@@ -378,7 +380,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
         checkInstanceAlreadyExists(url);
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties,true);
+            addInstanceImpl(url, username, password, displayName, withoutUI,
+                    initialproperties, true, nonPersistent);
         } catch (InstanceCreationException ice) {
             InstanceCreationException e = new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
             e.initCause(ice);
@@ -412,21 +415,21 @@ public final class ServerRegistry implements java.io.Serializable {
                 NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringDisplayName", serverName));
     }
 
-    private synchronized void removeInstanceFromFile(final String url) {
+    private synchronized void clearInstanceStorage(final String url) {
         FileObject instanceFO = getInstanceFileObject(url);
-        if (instanceFO == null)
-            return;
-        try {
-            instanceFO.delete();
-            KEYRING_ACCESS.post(new Runnable() {
-                @Override
-                public void run() {
-                    Keyring.delete(getPasswordKey(url));
-                }
-            });
-        } catch (IOException ioe) {
-            LOGGER.log(Level.INFO, null, ioe);
+        if (instanceFO != null) {
+            try {
+                instanceFO.delete();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, null, ioe);
+            }
         }
+        KEYRING_ACCESS.post(new Runnable() {
+            @Override
+            public void run() {
+                Keyring.delete(getPasswordKey(url));
+            }
+        });
     }
 
     /**
@@ -448,7 +451,7 @@ public final class ServerRegistry implements java.io.Serializable {
      */
     private void addInstanceImpl(String url, String username,
             String password, String displayName, boolean withoutUI,
-            Map<String, String> initialProperties, boolean loadPlugins) throws InstanceCreationException {
+            Map<String, String> initialProperties, boolean loadPlugins, boolean nonPersistent) throws InstanceCreationException {
 
         if (url == null) {
             // may happen when autoregistered instance is removed
@@ -469,12 +472,21 @@ public final class ServerRegistry implements java.io.Serializable {
                 Server server = (Server) i.next();
                 try {
                     if (server.handlesUri(url)) {
-                        ServerInstance tmp = new ServerInstance(server, url);
+                        ServerInstance tmp = new ServerInstance(server, url, nonPersistent);
                         // PENDING persist url/password in ServerString as well
                         instancesMap().put(url, tmp);
-                        // try to create a disconnected deployment manager to see
-                        // whether the instance is not corrupted - see #46929
-                        writeInstanceToFile(url, username, password, server.getDisplayName());
+
+                        if (!nonPersistent) {
+                            writeInstanceToFile(url, username, password, server.getDisplayName());
+                        } else {
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.URL_ATTR, url);
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.USERNAME_ATTR, username);
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.PASSWORD_ATTR, password);
+                        }
+
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                         if (displayName != null) {
@@ -486,19 +498,21 @@ public final class ServerRegistry implements java.io.Serializable {
                             tmp.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
                         }
 
+                        // try to create a disconnected deployment manager to see
+                        // whether the instance is not corrupted - see #46929
                         DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
                         // FIXME this shouldn't be called in synchronized block
                         if (manager != null) {
                             fireInstanceListeners(url, true);
                             return; //  true;
                         } else {
-                            removeInstanceFromFile(url);
+                            clearInstanceStorage(url);
                             instancesMap().remove(url);
                         }
                     }
                 } catch (Exception e) {
                     if (instancesMap().containsKey(url)) {
-                        removeInstanceFromFile(url);
+                        clearInstanceStorage(url);
                         instancesMap().remove(url);
                     }
                     LOGGER.log(Level.INFO, null, e);
@@ -516,7 +530,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
 
-            addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false);
+            addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false, nonPersistent);
             return;
         }
 
@@ -548,7 +562,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null, false);
+            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null, false, false);
         } catch (InstanceCreationException ice) {
             // yes... we are ignoring this.. because that
         }
@@ -665,31 +679,6 @@ public final class ServerRegistry implements java.io.Serializable {
                 char[] passwordChars = Keyring.read(getPasswordKey(url));
                 if (passwordChars != null) {
                     String password = String.valueOf(passwordChars);
-                    Arrays.fill(passwordChars, ' ');
-                    return password;
-                }
-                return null;
-            }
-        };
-        return readPassword(call);
-    }
-    
-    @CheckForNull
-    static String readPassword(@NonNull final FileObject fo) {
-        Callable<String> call = new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
-                if (password != null) {
-                    return password;
-                }
-                String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
-                if (url == null) {
-                    return null;
-                }
-                char[] passwordChars = Keyring.read(getPasswordKey(url));
-                if (passwordChars != null) {
-                    password = String.valueOf(passwordChars);
                     Arrays.fill(passwordChars, ' ');
                     return password;
                 }
