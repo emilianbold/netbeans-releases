@@ -64,13 +64,22 @@ import org.openide.util.lookup.ServiceProvider;
     path="org-netbeans-api-java/whitelists/")
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
+    private IClassConfiguration icc;
+
+    public WhiteListQueryImpl() {
+        icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();
+        assert icc != null;
+    }
+    
+    
+
 //    @Override
 //    public WhiteListImplementation getWhiteList(FileObject file) {
 //        return WhiteListConfigReader.getDefault();
 //    }
 
     public WhiteListImplementation getWhiteList(FileObject file) {
-        return new WhiteListImpl();
+        return new WhiteListImpl(icc);
     }
     
     @Override
@@ -85,10 +94,14 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
     
     private static class WhiteListImpl implements WhiteListImplementation {
 
+        private IClassConfiguration icc;
+
+        public WhiteListImpl(IClassConfiguration icc) {
+            this.icc = icc;
+        }
+        
         @Override
         public Result check(ElementHandle<?> element, Operation operation) {
-            IClassConfiguration icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();
-            assert icc != null;
             final String[] vmSignatures = SourceUtils.getJVMSignature(element);
             oracle.cloud.scanning.api.config.Result res;
             final ElementKind kind = element.getKind();
@@ -98,7 +111,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case ENUM:
                 case INTERFACE:
                 case ANNOTATION_TYPE:
-                    res = icc.checkClassAllowed(element.getBinaryName());
+                    res = icc.checkClassAllowed(vmSignatures[0]);
                     if (!res.isAllowed()) {
                         return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
                     }
@@ -107,16 +120,17 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case METHOD:
                     String methodName = vmSignatures[1];
                     List<String> params = paramsOnly(vmSignatures[2]);
-                    res = icc.checkMethodAllowed(element.getBinaryName(), methodName, params);
+                    
+                    // XXX: Whitelist API has to clarify in what format arguments are expected to be passed:
+                    
+                    res = icc.checkMethodAllowed(vmSignatures[0], methodName, params);
                     if (!res.isAllowed()) {
                         return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
                     }
                     break;
                 case FIELD:
-                case LOCAL_VARIABLE:
-                case ENUM_CONSTANT:
                     String fieldName = vmSignatures[1];
-                    res = icc.checkFieldAllowed(element.getBinaryName(), fieldName);
+                    res = icc.checkFieldAllowed(vmSignatures[0], fieldName);
                     if (!res.isAllowed()) {
                         return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
                     }
