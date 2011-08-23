@@ -834,6 +834,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myMixedFnc^", false);
     }
 
+    public void testIssue196714() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue196714.php", "$mm->^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

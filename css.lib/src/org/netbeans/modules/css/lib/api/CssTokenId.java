@@ -170,7 +170,25 @@ public enum CssTokenId implements TokenId {
     PIPE(Css3Lexer.PIPE, "operator"),  //NOI18N
     
     GEN(Css3Lexer.GEN, "others"),
-    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, "keyword");
+    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, "keyword"),
+    
+    TOPLEFTCORNER_SYM(Css3Lexer.TOPLEFTCORNER_SYM, "keyword"),
+    TOPLEFT_SYM(Css3Lexer.TOPLEFT_SYM, "keyword"),
+    TOPCENTER_SYM(Css3Lexer.TOPCENTER_SYM, "keyword"),
+    TOPRIGHT_SYM(Css3Lexer.TOPRIGHT_SYM, "keyword"),
+    TOPRIGHTCORNER_SYM(Css3Lexer.TOPRIGHTCORNER_SYM, "keyword"),
+    BOTTOMLEFTCORNER_SYM(Css3Lexer.BOTTOMLEFTCORNER_SYM, "keyword"),
+    BOTTOMLEFT_SYM(Css3Lexer.BOTTOMLEFT_SYM, "keyword"),
+    BOTTOMCENTER_SYM(Css3Lexer.BOTTOMCENTER_SYM, "keyword"),
+    BOTTOMRIGHT_SYM(Css3Lexer.BOTTOMRIGHT_SYM, "keyword"),
+    BOTTOMRIGHTCORNER_SYM(Css3Lexer.BOTTOMRIGHTCORNER_SYM, "keyword"),
+    LEFTTOP_SYM(Css3Lexer.LEFTTOP_SYM, "keyword"),
+    LEFTMIDDLE_SYM(Css3Lexer.LEFTMIDDLE_SYM, "keyword"),
+    LEFTBOTTOM_SYM(Css3Lexer.LEFTBOTTOM_SYM, "keyword"),
+    RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, "keyword"),
+    RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, "keyword"),
+    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, "keyword");
+    
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

@@ -47,6 +47,8 @@
  */
 package org.netbeans.modules.web.jsf.icefaces.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,11 +66,12 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.jsf.icefaces.Icefaces2Customizer;
 import org.netbeans.modules.web.jsf.icefaces.Icefaces2Implementation;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author marfous
+ * @author Martin Fousek <marfous@nebeans.org>
  */
 public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
 
@@ -85,8 +88,17 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
      */
     public Icefaces2CustomizerPanelVisual(ChangeListener listener) {
         initComponents();
-
         changeSupport.addChangeListener(listener);
+
+        initLibraries(true);
+
+        icefacesLibraryComboBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     /**
@@ -95,7 +107,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
      * @param setStoredValue {@code true} if should be selected stored value from preferences,
      * {@code false} otherwise
      */
-    public void initLibraries(final boolean setStoredValue) {
+    public final void initLibraries(final boolean setStoredValue) {
         long time = System.currentTimeMillis();
         final List<String> registeredRichfaces = new ArrayList<String>();
 
@@ -114,7 +126,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
                     public void run() {
                         setLibrariesComboBox(icefacesLibraryComboBox, registeredRichfaces);
 
-                        if (setStoredValue) {
+                        if (setStoredValue && !icefacesLibraries.isEmpty()) {
                             setDefaultComboBoxValues();
                         } else {
                             changeSupport.fireChange();
@@ -126,6 +138,39 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
 
         LOGGER.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms", //NOI18N
                 new Object[]{this.getClass().getName(), System.currentTimeMillis() - time});
+    }
+
+    /**
+     * Gets in combo box chosen ICEfaces2 library.
+     *
+     * @return name of selected library
+     */
+    public String getIcefacesLibrary() {
+        if (icefacesLibraryComboBox.getSelectedItem() != null) {
+            return (String) icefacesLibraryComboBox.getSelectedItem();
+        }
+        return null;
+    }
+
+    /**
+     * Gets the error message from panel.
+     *
+     * @return error {@code String} in cases of any error, {@code null} otherwise
+     */
+    public String getErrorMessage() {
+        if (icefacesLibraries == null || icefacesLibraries.isEmpty()) {
+            return NbBundle.getMessage(Icefaces2CustomizerPanelVisual.class, "LBL_MissingIcefacesLibraries"); //NOI18N
+        }
+        return null;
+    }
+
+   /**
+     * Gets the warning message from panel.
+     *
+     * @return warning {@code String} in cases of any warning, {@code null} otherwise
+     */
+    public String getWarningMessage() {
+        return null;
     }
 
     private void setDefaultComboBoxValues() {
@@ -206,6 +251,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
 
 private void createIcefacesLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createIcefacesLibraryButtonActionPerformed
     LibrariesCustomizer.showCreateNewLibraryCustomizer(LibraryManager.getDefault());
+    initLibraries(false);
 }//GEN-LAST:event_createIcefacesLibraryButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
