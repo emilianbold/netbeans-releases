@@ -40,9 +40,12 @@ package org.netbeans.modules.hudson.git;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,26 +57,32 @@ import org.ini4j.InvalidFileFormatException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.Utilities;
+import static org.netbeans.modules.hudson.git.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OutputListener;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 @ServiceProvider(service=HudsonSCM.class, position=300)
 public class HudsonGitSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonGitSCM.class.getName());
 
-    private static final String GITHUB_SSH_PREFIX = "ssh://git@github.com/"; // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
-    @Messages({"# {0} - original URL path", "ssh_url=The location " + GITHUB_SSH_PREFIX + "{0} might not work from Hudson; if not, try using git://github.com/{0} in project configuration."})
+    @Messages({"# {0} - original URL", "# {1} - replacement URL", "ro_replacement=Replacing {0} with {1} in Hudson configuration."})
     @Override public Configuration forFolder(File folder) {
         final URI origin = getRemoteOrigin(folder.toURI(), null);
         if (origin == null) {
             return null;
         }
+        final String replacement = roReplacement(origin.toString());
         return new Configuration() {
             @Override public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -81,12 +90,12 @@ public class HudsonGitSCM implements HudsonSCM {
                 configXmlSCM.setAttribute("class", "hudson.plugins.git.GitSCM");
                 // GitSCM config is horribly complex. Let readResolve do the hard work for now.
                 // Note that all this will be wrong if the local repo is using a nondefault remote, or a branch, etc. etc.
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(origin.toString()));
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(replacement != null ? replacement : origin.toString()));
                 Helper.addTrigger(doc);
             }
             @Override public ConfigurationStatus problems() {
-                if (origin.toString().startsWith(GITHUB_SSH_PREFIX)) {
-                    return ConfigurationStatus.withWarning(Bundle.ssh_url(origin.toString().substring(GITHUB_SSH_PREFIX.length())));
+                if (replacement != null) {
+                    return ConfigurationStatus.withWarning(ro_replacement(origin, replacement));
                 } else {
                     return null;
                 }
@@ -98,8 +107,63 @@ public class HudsonGitSCM implements HudsonSCM {
         return null; // XXX
     }
 
-    @Override public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
-        return Collections.emptyList();//XXX
+    @Override public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[items[id,author[fullName],msg,paths[file,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {build, x});
+            return Collections.emptyList();
+        }
+        class GitItem implements HudsonJobChangeItem {
+            final Element itemXML;
+            GitItem(Element itemXML) {
+                this.itemXML = itemXML;
+            }
+            @Override public String getUser() {
+                return Utilities.xpath("author/fullName", itemXML);
+            }
+            @Override public String getMessage() {
+                return Utilities.xpath("msg", itemXML);
+            }
+            @Override public Collection<? extends HudsonJobChangeFile> getFiles() {
+                class GitFile implements HudsonJobChangeFile {
+                    final Element fileXML;
+                    GitFile(Element fileXML) {
+                        this.fileXML = fileXML;
+                    }
+                    @Override public String getName() {
+                        return Utilities.xpath("file", fileXML);
+                    }
+                    @Override public EditType getEditType() {
+                        return EditType.valueOf(Utilities.xpath("editType", fileXML));
+                    }
+                    @Override public OutputListener hyperlink() {
+                        return null; // XXX no idea how to look up remote content from a Git URL generally
+                    }
+                }
+                List<GitFile> files = new ArrayList<GitFile>();
+                NodeList nl = itemXML.getElementsByTagName("path");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new GitFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<GitItem> items = new ArrayList<GitItem>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element itemXML = (Element) nl.item(i);
+            Element idE = XMLUtil.findElement(itemXML, "id", null);
+            if (idE == null || !XMLUtil.findText(idE).matches("[0-9a-f]{40}")) {
+                return null; // does not look like a Git changelog
+            }
+            items.add(new GitItem(itemXML));
+        }
+        if (items.isEmpty()) {
+            return null; // might not be a Git changelog
+        }
+        return items;
     }
 
     static @CheckForNull URI getRemoteOrigin(URI repository, HudsonJob job) {
@@ -151,6 +215,19 @@ public class HudsonGitSCM implements HudsonSCM {
             LOG.log(Level.FINE, "could not load origin from {0}: {1}", new Object[] {cfg, x});
             return null;
         }
+    }
+
+    // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
+    static @CheckForNull String roReplacement(String url) {
+        String prefix = "ssh://git@github.com/";
+        if (url.startsWith(prefix)) {
+            return "git://github.com/" + url.substring(prefix.length());
+        }
+        Matcher m = Pattern.compile("ssh://.+@git[.]((?:kenai[.]com|java[.]net).+)").matcher(url);
+        if (m.matches()) {
+            return "git://" + m.group(1);
+        }
+        return null;
     }
 
 }
