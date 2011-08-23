@@ -311,9 +311,22 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 }
                 
                 boolean isFile = true;
-                if(uri.getScheme() != null) {
+                boolean isSsh = false;
+                if (uri.getScheme() == null) {
+                    if (uri.getHost() != null
+                        && uri.getPath() != null
+                        && uri.getHost().length() != 0
+                        && uri.getPath().length() != 0) {
+                        isFile = false;
+                        isSsh = true;
+                        panel.tipLabel.setText(null);
+                    }
+                } else {
                     for (Scheme s : Scheme.values()) {
                         if(s == Scheme.FILE) continue;
+                        if(s == Scheme.SSH) {
+                            isSsh = true;
+                        }
                         if(uri.getScheme().startsWith(s.toString())) {
                             panel.tipLabel.setText(s.getTip());
                             isFile = false;
@@ -465,7 +478,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         File file = null;
         try {
             URI uri = new URI(comboEditor.getText());
-            if (uri.isAbsolute()) {
+            if (uri.isAbsolute() && "file".equalsIgnoreCase(uri.getScheme())) { //NOI18N
                 file = new File(uri);
             } else {
                 file = new File(comboEditor.getText());
