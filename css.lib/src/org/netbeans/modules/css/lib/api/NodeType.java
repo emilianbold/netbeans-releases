@@ -94,6 +94,10 @@ public enum NodeType {
         imports, 
         invalidRule, 
         hexColor, 
+        
+        margin,
+        margin_sym,
+        
         media, 
         media_expression,
         media_feature,
@@ -144,11 +148,15 @@ public enum NodeType {
         /**
          * error recovery rule
          */
+        syncToFollow,
+        /**
+         * error recovery rule
+         */
         syncTo_IDENT_RBRACE,
         /**
          * error recovery rule
          */
-//        syncTo_IDENT_RBRACKET_LBRACE,
+        syncTo_IDENT_RBRACKET_LBRACE,
         
         synpred2_Css3, 
         selectorsGroup, 
