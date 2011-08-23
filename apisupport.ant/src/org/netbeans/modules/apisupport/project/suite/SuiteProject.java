@@ -193,7 +193,7 @@ public final class SuiteProject implements Project {
         NbPlatform p;
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
         // XXX should really be nbplatform.active.dir, but would require changes in a bunch of places
-        String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        String destdir = getEvaluator().getProperty(ModuleList.NETBEANS_DEST_DIR);
         if (destdir != null) {
             String harnessDir = getEvaluator().getProperty("harness.dir");
             p = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(destdir), harnessDir != null ? getHelper().resolveFile(harnessDir) : null);
@@ -223,7 +223,7 @@ public final class SuiteProject implements Project {
                 String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
                 if (platformS != null) {
                     Map<String,String> m = new HashMap<String,String>();
-                    m.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}");
+                    m.put(ModuleList.NETBEANS_DEST_DIR, "${nbplatform." + platformS + ".netbeans.dest.dir}");
                     m.put("harness.dir", "${nbplatform." + platformS + ".harness.dir}");
                     return m;
                 } else {

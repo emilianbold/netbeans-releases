@@ -54,6 +54,7 @@ import org.netbeans.junit.MemoryFilter;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -94,14 +95,14 @@ public class NbModuleProjectTest extends TestBase {
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         PropertyEvaluator eval = actionProject.evaluator();
-        String nbdestdir = eval.getProperty("netbeans.dest.dir");
+        String nbdestdir = eval.getProperty(ModuleList.NETBEANS_DEST_DIR);
         assertNotNull("defined netbeans.dest.dir", nbdestdir);
         assertEquals("right netbeans.dest.dir", file("nbbuild/netbeans"), PropertyUtils.resolveFile(FileUtil.toFile(action), nbdestdir));
         FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
         eval = dummyProject.evaluator();
-        assertEquals("right netbeans.dest.dir", resolveEEPFile("suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty("netbeans.dest.dir")));
+        assertEquals("right netbeans.dest.dir", resolveEEPFile("suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty(ModuleList.NETBEANS_DEST_DIR)));
         // XXX more...
     }
 
