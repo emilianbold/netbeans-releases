@@ -51,6 +51,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -75,8 +76,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
                 Symfony2PhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
     }
 
-    // XXX change later to less than 100 (=Symfony1)
-    @PhpFrameworkProvider.Registration(position=777)
+    @PhpFrameworkProvider.Registration(position=99) // right before Symfony1
     public static Symfony2PhpFrameworkProvider getInstance() {
         return INSTANCE;
     }
@@ -88,42 +88,44 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        return false;
+        // XXX hard-coded name
+        FileObject console = phpModule.getSourceDirectory().getFileObject("app/console"); // NOI18N
+        return console != null && console.isData();
     }
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new File[0];
     }
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new PhpModuleProperties();
     }
 
     @Override
     public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public EditorExtender getEditorExtender(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
 }
