@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -471,7 +472,7 @@ public class PluginPropertyUtils {
     }
 
     private static NBPluginParameterExpressionEvaluator createEvaluator(MavenProject prj) {
-        Properties props = new Properties();
+        Map<? extends String,? extends String> props = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
         FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(basedir));

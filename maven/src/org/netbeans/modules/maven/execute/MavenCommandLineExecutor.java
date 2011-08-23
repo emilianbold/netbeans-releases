@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -267,12 +268,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         // the command line parameters with space in them need to be quoted and escaped to arrive
         // correctly to the java runtime on windows
         String escaped = "\\" + quote;
-        for (Object key : config.getProperties().keySet()) {
-            String val = config.getProperties().getProperty((String)key);
-            String keyStr = (String)key;
-            if (!keyStr.startsWith(ENV_PREFIX)) {
+        for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
+            if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
+                toRet.add("-D" + entry.getKey() + "=" + (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'")));
             }
         }
 
@@ -367,15 +366,13 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private ProcessBuilder constructBuilder(final RunConfig clonedConfig, InputOutput ioput) {
         File javaHome = null;
-        Map<String, String> envMap = new HashMap<String, String>();
-        for (Object key : clonedConfig.getProperties().keySet()) {
-            String keyStr = (String) key;
-            if (keyStr.startsWith(ENV_PREFIX)) {
-                String env = keyStr.substring(ENV_PREFIX.length());
-                String val = clonedConfig.getProperties().getProperty(keyStr);
-                envMap.put(env, val);
-                if (keyStr.equals(ENV_JAVAHOME)) {
-                    javaHome = new File(val);
+        Map<String, String> envMap = new LinkedHashMap<String, String>();
+        for (Map.Entry<? extends String,? extends String> entry : clonedConfig.getProperties().entrySet()) {
+            if (entry.getKey().startsWith(ENV_PREFIX)) {
+                String env = entry.getKey().substring(ENV_PREFIX.length());
+                envMap.put(env, entry.getValue());
+                if (entry.getKey().equals(ENV_JAVAHOME)) {
+                    javaHome = new File(entry.getValue());
                 }
             }
         }

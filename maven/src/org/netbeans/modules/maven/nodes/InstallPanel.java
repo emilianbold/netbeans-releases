@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.nodes;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -212,14 +211,12 @@ public class InstallPanel extends javax.swing.JPanel {
         brc.setProject(project);
         brc.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_INSTALL_FILE))); //NOI18N
         brc.setExecutionName("install-artifact"); //NOI18N
-        Properties props = new Properties();
-        props.put("artifactId", art.getArtifactId()); //NOI18N
-        props.put("groupId", art.getGroupId()); //NOI18N
-        props.put("version", art.getVersion()); //NOI18N
-        props.put("packaging", art.getType()); //NOI18N
-        props.put("file", fil.getAbsolutePath()); //NOI18N
-        props.put("generatePom", "false"); //NOI18N
-        brc.setProperties(props);
+        brc.setProperty("artifactId", art.getArtifactId()); //NOI18N
+        brc.setProperty("groupId", art.getGroupId()); //NOI18N
+        brc.setProperty("version", art.getVersion()); //NOI18N
+        brc.setProperty("packaging", art.getType()); //NOI18N
+        brc.setProperty("file", fil.getAbsolutePath()); //NOI18N
+        brc.setProperty("generatePom", "false"); //NOI18N
         brc.setActivatedProfiles(Collections.<String>emptyList());
         brc.setTaskDisplayName(NbBundle.getMessage(InstallPanel.class, "TXT_InstallTask"));
         RunUtils.executeMaven(brc); //NOI18N
