@@ -349,6 +349,10 @@ public final class SuiteProject implements Project {
                 SuiteProject.class.getResource("resources/" + buildImplPath),// NOI18N
                 checkForProjectXmlModified);
         genFilesHelper.refreshBuildScript(
+                "nbproject/platform.xml",
+                SuiteProject.class.getResource("resources/platform.xsl"),
+                checkForProjectXmlModified);
+        genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_XML_PATH,
                 SuiteProject.class.getResource("resources/build.xsl"),// NOI18N
                 checkForProjectXmlModified);
