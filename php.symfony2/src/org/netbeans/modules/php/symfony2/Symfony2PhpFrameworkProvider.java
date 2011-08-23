@@ -124,7 +124,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule) {
-        return null;
+        return new Symfony2PhpModuleIgnoredFilesExtender(phpModule);
     }
 
     @Override
