@@ -305,6 +305,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
+        
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
@@ -316,9 +317,13 @@ public class JFXProjectGenerator {
 //        ep.setProperty("endorsed.classpath", new String[]{ // NOI18N
 //                    "${libs.JavaFX2Runtime.classpath}", // NOI18N
 //                });
+        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
         ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
-        
+
+        ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
+        ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
+                
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
