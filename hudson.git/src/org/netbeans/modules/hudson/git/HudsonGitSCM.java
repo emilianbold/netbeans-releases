@@ -67,13 +67,17 @@ public class HudsonGitSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonGitSCM.class.getName());
 
-    private static final String GITHUB_SSH_PREFIX = "ssh://git@github.com/"; // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
-    @Messages({"# {0} - original URL path", "ssh_url=The location " + GITHUB_SSH_PREFIX + "{0} might not work from Hudson; if not, try using git://github.com/{0} in project configuration."})
+    // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
+    private static final String GITHUB_SSH_PREFIX = "ssh://git@github.com/";
+    private static final String GITHUB_GIT_PREFIX = "git://github.com/";
+    // XXX should https://user@github.com/user/repo.git also be replaced?
+    @Messages({"# {0} - original URL path", "ssh_url=Replacing " + GITHUB_SSH_PREFIX + "{0} with " + GITHUB_GIT_PREFIX + "{0} in Hudson configuration."})
     @Override public Configuration forFolder(File folder) {
         final URI origin = getRemoteOrigin(folder.toURI(), null);
         if (origin == null) {
             return null;
         }
+        final String githubSuffix = origin.toString().startsWith(GITHUB_SSH_PREFIX) ? origin.toString().substring(GITHUB_SSH_PREFIX.length()) : null;
         return new Configuration() {
             @Override public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -81,12 +85,12 @@ public class HudsonGitSCM implements HudsonSCM {
                 configXmlSCM.setAttribute("class", "hudson.plugins.git.GitSCM");
                 // GitSCM config is horribly complex. Let readResolve do the hard work for now.
                 // Note that all this will be wrong if the local repo is using a nondefault remote, or a branch, etc. etc.
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(origin.toString()));
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(githubSuffix != null ? GITHUB_GIT_PREFIX + githubSuffix : origin.toString()));
                 Helper.addTrigger(doc);
             }
             @Override public ConfigurationStatus problems() {
-                if (origin.toString().startsWith(GITHUB_SSH_PREFIX)) {
-                    return ConfigurationStatus.withWarning(Bundle.ssh_url(origin.toString().substring(GITHUB_SSH_PREFIX.length())));
+                if (githubSuffix != null) {
+                    return ConfigurationStatus.withWarning(Bundle.ssh_url(githubSuffix));
                 } else {
                     return null;
                 }
