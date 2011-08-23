@@ -693,14 +693,14 @@ public class JarClassLoader extends ProxyClassLoader {
                     return fjar.get();
                 } catch (InterruptedException ex) {
                     // ignore and retry
-                } catch (ThreadDeath td) {
-                    throw td; // #201098
                 } catch (ExecutionException ex) {
                     Throwable cause = ex.getCause();
                     if (cause instanceof IOException) {
                         // This is important for telling general IOException from ZipException
                         // down the stack.
                         throw (IOException)cause;
+                    } else if (cause instanceof ThreadDeath) {
+                        throw (ThreadDeath) cause; // #201098
                     } else {
                         throw new IOException(cause);
                     }
