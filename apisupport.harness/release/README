@@ -153,7 +153,7 @@ relative to its base directory, not as a bare relative path, e.g.
 
 2. Edit the suite's platform.properties to give a fallback value for 'suite.dir'
 (so the suite's own master build script can work), and define *both*
-netbeans.dest.dir and harness.dir in terms of the suite directory, e.g.:
+the platform and harness locations in terms of the suite directory, e.g.:
 
     suite.dir=${basedir}
 	
@@ -1031,7 +1031,13 @@ bootstrap.url - remote location of harness/tasks.jar to download. Then you also
 need to define autoupdate.catalog.url to be the location of an update site
 (usually called updates.xml) from which specified clusters and modules can be
 downloaded. With these two properties, you can create a reproducible build with
-no NetBeans binaries in VCS.
+no NetBeans binaries in VCS. For example:
+-nbplatform.active=default
++suite.dir=${basedir}
++nbplatform.active.dir=${suite.dir}/nb
++harness.dir=${nbplatform.active.dir}/harness
++bootstrap.url=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/netbeans/harness/tasks.jar
++autoupdate.catalog.url=http://updates.netbeans.org/netbeans/updates/7.0.1/uc/final/distribution/catalog.xml.gz
 
 cluster.path [since 6.7] - list of clusters to build your modules against and
 include in your application.
