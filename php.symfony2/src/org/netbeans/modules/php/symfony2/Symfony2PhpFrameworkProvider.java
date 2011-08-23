@@ -52,6 +52,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -62,6 +63,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     private static final Symfony2PhpFrameworkProvider INSTANCE = new Symfony2PhpFrameworkProvider();
     private static final String ICON_PATH = "org/netbeans/modules/php/symfony2/ui/resources/symfony_badge_8.png"; // NOI18N
+    private static final String CONFIG_DIRECTORY = "app/config"; // NOI18N
 
     private final BadgeIcon badgeIcon;
 
@@ -95,6 +97,13 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
+        FileObject configDir = phpModule.getSourceDirectory().getFileObject(CONFIG_DIRECTORY);
+        if (configDir != null && configDir.isFolder() && configDir.isValid()) {
+            File[] configFiles = FileUtil.toFile(configDir).listFiles();
+            if (configFiles != null) {
+                return configFiles;
+            }
+        }
         return new File[0];
     }
 
