@@ -659,7 +659,7 @@ public class Css3ParserTest extends CslTestBase {
     }
 
     public void testPagedMedia() throws ParseException, BadLocationException {
-        String content = "@page :first {"
+        String content = "@page test:first {"
                 + "color: green;"
                 + "@top-left {"
                 + "content: \"foo\";"

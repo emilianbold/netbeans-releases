@@ -172,8 +172,8 @@ imports
 media
     : MEDIA_SYM WS* media_query_list
         LBRACE WS*
-            ruleSet
-        WS* RBRACE
+            ( ( ruleSet | page ) WS*)*
+         RBRACE
     ;
 
 //mediaList
@@ -222,7 +222,7 @@ bodyset
     ;
     
 page
-    : PAGE_SYM WS? (pseudoPage WS*)?
+    : PAGE_SYM WS? IDENT? (pseudoPage WS*)?
         LBRACE WS*
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary

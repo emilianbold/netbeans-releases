@@ -89,6 +89,7 @@ import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenIdCategory;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -195,6 +196,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 tokenNode,
                 info.getWrappedCssParserResult(), 
                 ts, 
+                diff,
                 context.getQueryType(), 
                 caretOffset, 
                 offset, 
@@ -331,7 +333,7 @@ public class CssCompletion implements CodeCompletionHandler {
         } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
             Collection<PropertyDescriptor> possibleProps = filterProperties(CssModuleSupport.getPropertyDescriptors().values(), prefix);
-            completionProposals.addAll(wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
+            completionProposals.addAll(Utilities.wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
@@ -341,7 +343,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //h1 { color:red; | font: bold }
             //
             //should be no prefix 
-            completionProposals.addAll(wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), caretOffset));
+            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), caretOffset));
         } else if (node.type() == NodeType.declaration) {
             //value cc without prefix
             //find property node
@@ -676,19 +678,6 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, int anchor) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (PropertyDescriptor p : props) {
-            //filter out non-public properties
-            if (!p.getName().startsWith("-")) { //NOI18N
-                CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
-                proposals.add(proposal);
-            }
-        }
-        return proposals;
-    }
-
     private Collection<PropertyDescriptor> filterProperties(Collection<PropertyDescriptor> props, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
         List<PropertyDescriptor> filtered = new ArrayList<PropertyDescriptor>();
@@ -825,6 +814,16 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
         Token<CssTokenId> t = ts.token();
+        
+        
+        switch(t.id().getTokenCategory()) {
+            case KEYWORDS:
+            case OPERATORS:
+            case BRACES:
+                return EMPTY_STRING;
+        }
+        
+        
         int skipPrefixChars = 0;
         switch(t.id()) {
             case COLON:
