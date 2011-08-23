@@ -224,12 +224,16 @@ bodyset
 page
     : PAGE_SYM WS? (pseudoPage WS*)?
         LBRACE WS*
-            ( declaration | margin )? ( SEMI WS* (declaration | margin)? )*
+            //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
+            //but there's no such char in the examples => making it arbitrary
+            //the original rule:
+            //( declaration | margin WS*)? ( SEMI WS* (declaration | margin WS*)? )* 
+            (declaration|margin)? (SEMI WS* (declaration|margin)?)*
         RBRACE
     ;
     
 margin	
-	: margin_sym WS* LBRACE declaration ( SEMI WS* declaration? )* RBRACE
+	: margin_sym WS* LBRACE WS* syncTo_IDENT_RBRACE declarations RBRACE
        ;
        
 margin_sym 
