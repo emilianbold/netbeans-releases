@@ -40,9 +40,12 @@ package org.netbeans.modules.hudson.git;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,14 +57,19 @@ import org.ini4j.InvalidFileFormatException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.Utilities;
 import static org.netbeans.modules.hudson.git.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OutputListener;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 @ServiceProvider(service=HudsonSCM.class, position=300)
 public class HudsonGitSCM implements HudsonSCM {
@@ -99,8 +107,63 @@ public class HudsonGitSCM implements HudsonSCM {
         return null; // XXX
     }
 
-    @Override public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
-        return Collections.emptyList();//XXX
+    @Override public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[items[id,author[fullName],msg,paths[file,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {build, x});
+            return Collections.emptyList();
+        }
+        class GitItem implements HudsonJobChangeItem {
+            final Element itemXML;
+            GitItem(Element itemXML) {
+                this.itemXML = itemXML;
+            }
+            @Override public String getUser() {
+                return Utilities.xpath("author/fullName", itemXML);
+            }
+            @Override public String getMessage() {
+                return Utilities.xpath("msg", itemXML);
+            }
+            @Override public Collection<? extends HudsonJobChangeFile> getFiles() {
+                class GitFile implements HudsonJobChangeFile {
+                    final Element fileXML;
+                    GitFile(Element fileXML) {
+                        this.fileXML = fileXML;
+                    }
+                    @Override public String getName() {
+                        return Utilities.xpath("file", fileXML);
+                    }
+                    @Override public EditType getEditType() {
+                        return EditType.valueOf(Utilities.xpath("editType", fileXML));
+                    }
+                    @Override public OutputListener hyperlink() {
+                        return null; // XXX no idea how to look up remote content from a Git URL generally
+                    }
+                }
+                List<GitFile> files = new ArrayList<GitFile>();
+                NodeList nl = itemXML.getElementsByTagName("path");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new GitFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<GitItem> items = new ArrayList<GitItem>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element itemXML = (Element) nl.item(i);
+            Element idE = XMLUtil.findElement(itemXML, "id", null);
+            if (idE == null || !XMLUtil.findText(idE).matches("[0-9a-f]{40}")) {
+                return null; // does not look like a Git changelog
+            }
+            items.add(new GitItem(itemXML));
+        }
+        if (items.isEmpty()) {
+            return null; // might not be a Git changelog
+        }
+        return items;
     }
 
     static @CheckForNull URI getRemoteOrigin(URI repository, HudsonJob job) {
