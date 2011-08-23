@@ -58,6 +58,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -133,7 +134,7 @@ public class SuiteProjectTest extends NbTestCase {
         final SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
         PropertyEvaluator eval = suite.getEvaluator();
         assertEquals("custom", eval.getProperty("nbplatform.active"));
-        assertEquals(NbPlatform.getPlatformByID("custom").getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+        assertEquals(NbPlatform.getPlatformByID("custom").getDestDir(), suite.getHelper().resolveFile(eval.getProperty(ModuleList.NETBEANS_DEST_DIR)));
         
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception {
@@ -147,7 +148,7 @@ public class SuiteProjectTest extends NbTestCase {
         });
         
         assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
-        assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+        assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty(ModuleList.NETBEANS_DEST_DIR)));
     }
 
     public void testGetPlatformVersionedLocation() throws Exception {

@@ -248,7 +248,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
         Logger LOG = Logger.getLogger(SingleModuleProperties.class.getName());
 
-        String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        String nbDestDirS = getEvaluator().getProperty(ModuleList.NETBEANS_DEST_DIR);
         LOG.log(Level.FINE, "Setting NBPlatform for module. '" + getCodeNameBase() + "' in dir '" + nbDestDirS + "'");
         if (nbDestDirS != null) {
             String harnessDir = getEvaluator().getProperty("harness.dir");
