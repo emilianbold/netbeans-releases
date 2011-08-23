@@ -290,6 +290,7 @@ public class JavaKit extends NbEditorKit {
 
             new GoToMarkOccurrencesAction(false),
             new GoToMarkOccurrencesAction(true),
+            new ClipboardHandler.JavaCutAction(),
         };
 
         return TextAction.augmentList(superActions, actions);
