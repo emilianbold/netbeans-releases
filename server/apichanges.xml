@@ -111,7 +111,7 @@ is the proper place.
 
     <changes>
         <change id="cloud">
-            <api name="cloud_registration"/>
+            <api name="common_server_api"/>
             <summary>Establish layer to register cloud providers</summary>
             <version major="1" minor="15"/>
             <date day="24" month="8" year="2011"/>
