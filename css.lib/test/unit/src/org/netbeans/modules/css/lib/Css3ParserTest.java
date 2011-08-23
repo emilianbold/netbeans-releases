@@ -667,7 +667,7 @@ public class Css3ParserTest extends CslTestBase {
                 + "};"
                 + "@top-right {"
                 + "content: \"bar\";"
-                + "}"
+                + "} "
                 + "}";
 
         CssParserResult result = TestUtil.parse(content);

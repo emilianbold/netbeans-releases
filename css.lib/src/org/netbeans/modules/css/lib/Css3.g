@@ -228,7 +228,7 @@ page
             //but there's no such char in the examples => making it arbitrary
             //the original rule:
             //( declaration | margin WS*)? ( SEMI WS* (declaration | margin WS*)? )* 
-            (declaration|margin)? (SEMI WS* (declaration|margin)?)*
+            (declaration|margin WS*)? (SEMI WS* (declaration|margin WS*)?)*
         RBRACE
     ;
     
