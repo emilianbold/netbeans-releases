@@ -460,8 +460,8 @@ public class FormLAF {
         return layoutStyle;
     }
 
-    static LayoutStyle getDesignerLayoutStyle() {
-        return LayoutStyle.getSharedInstance();
+    static javax.swing.LayoutStyle getDesignerLayoutStyle() {
+        return javax.swing.LayoutStyle.getInstance();
     }
 
     /**

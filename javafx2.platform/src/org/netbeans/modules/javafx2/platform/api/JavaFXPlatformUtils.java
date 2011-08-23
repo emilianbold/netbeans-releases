@@ -66,6 +66,11 @@ public final class JavaFXPlatformUtils {
     public static final String PROPERTY_JAVAFX_RUNTIME = "javafx.runtime"; // NOI18N
 
     /**
+     * Property name for JavaFX SDK
+     */
+    public static final String PROPERTY_JAVAFX_SDK = "javafx.sdk"; // NOI18N
+
+    /**
      * Property name for JavaFX support
      */
     public static final String PROPERTY_JAVA_FX = "javafx"; // NOI18N
@@ -94,6 +99,16 @@ public final class JavaFXPlatformUtils {
      */
     public static String getJavaFXRuntimePath(String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
+    }
+    
+    /**
+     * Returns path to JavaFX SDK installation
+     * 
+     * @param IDE java platform name
+     * @return JavaFX SDK location
+     */
+    public static String getJavaFXSDKPath(String platformName) {
+        return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getSDKPropertyKey(platformName));
     }
     
     /**

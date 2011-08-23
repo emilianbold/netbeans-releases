@@ -82,6 +82,16 @@ public final class Utils {
     }
 
     /**
+     * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform name
+     * @return key for JavaFX SDK location
+     */
+    public static String getSDKPropertyKey(String platformName) {
+        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
+    }
+
+    /**
      * Returns key for <b>JavaFX Runtime location</b> IDE global property value for given java platform
      * 
      * @param IDE java platform name
