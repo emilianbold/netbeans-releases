@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2011-08-17 15:44:47
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2011-08-22 17:44:46
 
     package org.netbeans.modules.css.lib;
     
@@ -14,7 +14,7 @@ import org.antlr.runtime.debug.*;
 import java.io.IOException;
 public class Css3Parser extends DebugParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "NAMESPACE_SYM", "IDENT", "STRING", "URI", "CHARSET_SYM", "SEMI", "IMPORT_SYM", "MEDIA_SYM", "LBRACE", "RBRACE", "COMMA", "GEN", "PAGE_SYM", "COLON", "SOLIDUS", "PLUS", "GREATER", "TILDE", "MINUS", "STAR", "PIPE", "HASH", "DOT", "LBRACKET", "DCOLON", "OPEQ", "INCLUDES", "DASHMATCH", "RBRACKET", "LPAREN", "RPAREN", "IMPORTANT_SYM", "NUMBER", "PERCENTAGE", "LENGTH", "EMS", "EXS", "ANGLE", "TIME", "FREQ", "HEXCHAR", "NONASCII", "UNICODE", "ESCAPE", "NMSTART", "NMCHAR", "NAME", "URL", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "COMMENT", "CDO", "CDC", "INVALID", "DIMENSION", "NL"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "NAMESPACE_SYM", "IDENT", "STRING", "URI", "CHARSET_SYM", "SEMI", "IMPORT_SYM", "MEDIA_SYM", "LBRACE", "RBRACE", "COMMA", "ONLY", "NOT", "AND", "GEN", "PAGE_SYM", "TOPLEFTCORNER_SYM", "TOPLEFT_SYM", "TOPCENTER_SYM", "TOPRIGHT_SYM", "TOPRIGHTCORNER_SYM", "BOTTOMLEFTCORNER_SYM", "BOTTOMLEFT_SYM", "BOTTOMCENTER_SYM", "BOTTOMRIGHT_SYM", "BOTTOMRIGHTCORNER_SYM", "LEFTTOP_SYM", "LEFTMIDDLE_SYM", "LEFTBOTTOM_SYM", "RIGHTTOP_SYM", "RIGHTMIDDLE_SYM", "RIGHTBOTTOM_SYM", "COLON", "SOLIDUS", "PLUS", "GREATER", "TILDE", "MINUS", "STAR", "PIPE", "HASH", "DOT", "LBRACKET", "DCOLON", "OPEQ", "INCLUDES", "DASHMATCH", "RBRACKET", "LPAREN", "RPAREN", "IMPORTANT_SYM", "NUMBER", "PERCENTAGE", "LENGTH", "EMS", "EXS", "ANGLE", "TIME", "FREQ", "RESOLUTION", "HEXCHAR", "NONASCII", "UNICODE", "ESCAPE", "NMSTART", "NMCHAR", "NAME", "URL", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "COMMENT", "CDO", "CDC", "INVALID", "DIMENSION", "NL"
     };
     public static final int EOF=-1;
     public static final int WS=4;
@@ -29,91 +29,112 @@ public class Css3Parser extends DebugParser {
     public static final int LBRACE=13;
     public static final int RBRACE=14;
     public static final int COMMA=15;
-    public static final int GEN=16;
-    public static final int PAGE_SYM=17;
-    public static final int COLON=18;
-    public static final int SOLIDUS=19;
-    public static final int PLUS=20;
-    public static final int GREATER=21;
-    public static final int TILDE=22;
-    public static final int MINUS=23;
-    public static final int STAR=24;
-    public static final int PIPE=25;
-    public static final int HASH=26;
-    public static final int DOT=27;
-    public static final int LBRACKET=28;
-    public static final int DCOLON=29;
-    public static final int OPEQ=30;
-    public static final int INCLUDES=31;
-    public static final int DASHMATCH=32;
-    public static final int RBRACKET=33;
-    public static final int LPAREN=34;
-    public static final int RPAREN=35;
-    public static final int IMPORTANT_SYM=36;
-    public static final int NUMBER=37;
-    public static final int PERCENTAGE=38;
-    public static final int LENGTH=39;
-    public static final int EMS=40;
-    public static final int EXS=41;
-    public static final int ANGLE=42;
-    public static final int TIME=43;
-    public static final int FREQ=44;
-    public static final int HEXCHAR=45;
-    public static final int NONASCII=46;
-    public static final int UNICODE=47;
-    public static final int ESCAPE=48;
-    public static final int NMSTART=49;
-    public static final int NMCHAR=50;
-    public static final int NAME=51;
-    public static final int URL=52;
-    public static final int A=53;
-    public static final int B=54;
-    public static final int C=55;
-    public static final int D=56;
-    public static final int E=57;
-    public static final int F=58;
-    public static final int G=59;
-    public static final int H=60;
-    public static final int I=61;
-    public static final int J=62;
-    public static final int K=63;
-    public static final int L=64;
-    public static final int M=65;
-    public static final int N=66;
-    public static final int O=67;
-    public static final int P=68;
-    public static final int Q=69;
-    public static final int R=70;
-    public static final int S=71;
-    public static final int T=72;
-    public static final int U=73;
-    public static final int V=74;
-    public static final int W=75;
-    public static final int X=76;
-    public static final int Y=77;
-    public static final int Z=78;
-    public static final int COMMENT=79;
-    public static final int CDO=80;
-    public static final int CDC=81;
-    public static final int INVALID=82;
-    public static final int DIMENSION=83;
-    public static final int NL=84;
+    public static final int ONLY=16;
+    public static final int NOT=17;
+    public static final int AND=18;
+    public static final int GEN=19;
+    public static final int PAGE_SYM=20;
+    public static final int TOPLEFTCORNER_SYM=21;
+    public static final int TOPLEFT_SYM=22;
+    public static final int TOPCENTER_SYM=23;
+    public static final int TOPRIGHT_SYM=24;
+    public static final int TOPRIGHTCORNER_SYM=25;
+    public static final int BOTTOMLEFTCORNER_SYM=26;
+    public static final int BOTTOMLEFT_SYM=27;
+    public static final int BOTTOMCENTER_SYM=28;
+    public static final int BOTTOMRIGHT_SYM=29;
+    public static final int BOTTOMRIGHTCORNER_SYM=30;
+    public static final int LEFTTOP_SYM=31;
+    public static final int LEFTMIDDLE_SYM=32;
+    public static final int LEFTBOTTOM_SYM=33;
+    public static final int RIGHTTOP_SYM=34;
+    public static final int RIGHTMIDDLE_SYM=35;
+    public static final int RIGHTBOTTOM_SYM=36;
+    public static final int COLON=37;
+    public static final int SOLIDUS=38;
+    public static final int PLUS=39;
+    public static final int GREATER=40;
+    public static final int TILDE=41;
+    public static final int MINUS=42;
+    public static final int STAR=43;
+    public static final int PIPE=44;
+    public static final int HASH=45;
+    public static final int DOT=46;
+    public static final int LBRACKET=47;
+    public static final int DCOLON=48;
+    public static final int OPEQ=49;
+    public static final int INCLUDES=50;
+    public static final int DASHMATCH=51;
+    public static final int RBRACKET=52;
+    public static final int LPAREN=53;
+    public static final int RPAREN=54;
+    public static final int IMPORTANT_SYM=55;
+    public static final int NUMBER=56;
+    public static final int PERCENTAGE=57;
+    public static final int LENGTH=58;
+    public static final int EMS=59;
+    public static final int EXS=60;
+    public static final int ANGLE=61;
+    public static final int TIME=62;
+    public static final int FREQ=63;
+    public static final int RESOLUTION=64;
+    public static final int HEXCHAR=65;
+    public static final int NONASCII=66;
+    public static final int UNICODE=67;
+    public static final int ESCAPE=68;
+    public static final int NMSTART=69;
+    public static final int NMCHAR=70;
+    public static final int NAME=71;
+    public static final int URL=72;
+    public static final int A=73;
+    public static final int B=74;
+    public static final int C=75;
+    public static final int D=76;
+    public static final int E=77;
+    public static final int F=78;
+    public static final int G=79;
+    public static final int H=80;
+    public static final int I=81;
+    public static final int J=82;
+    public static final int K=83;
+    public static final int L=84;
+    public static final int M=85;
+    public static final int N=86;
+    public static final int O=87;
+    public static final int P=88;
+    public static final int Q=89;
+    public static final int R=90;
+    public static final int S=91;
+    public static final int T=92;
+    public static final int U=93;
+    public static final int V=94;
+    public static final int W=95;
+    public static final int X=96;
+    public static final int Y=97;
+    public static final int Z=98;
+    public static final int COMMENT=99;
+    public static final int CDO=100;
+    public static final int CDC=101;
+    public static final int INVALID=102;
+    public static final int DIMENSION=103;
+    public static final int NL=104;
 
     // delegates
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "pseudo", "property", "pseudoPage", "elementSubsequent", 
-        "charSet", "medium", "synpred3_Css3", "hexColor", "syncTo_IDENT_RBRACKET_LBRACE", 
-        "bodyset", "namespace", "media", "selector", "term", "esPred", "attrib", 
-        "attrvalue", "selectorsGroup", "expr", "page", "resourceIdentifier", 
-        "function", "simpleSelectorSequence", "operator", "synpred2_Css3", 
-        "syncTo_IDENT_RBRACE", "attrib_name", "synpred1_Css3", "styleSheet", 
-        "attrib_value", "prio", "combinator", "ruleSet", "typeSelector", 
-        "attrname", "nsPred", "cssClass", "cssId", "mediaList", "elementName", 
-        "unaryOperator", "namespace_wqname_prefix", "declarations", "imports", 
-        "namespace_prefix", "declaration", "attribute", "syncToFollow", 
-        "function_name", "bodylist", "namespace_wildcard_prefix"
+        "invalidRule", "synpred2_Css3", "page", "expr", "elementName", "selectorsGroup", 
+        "cssId", "attribute", "attrname", "charSet", "function_name", "declarations", 
+        "media_type", "nsPred", "function", "resourceIdentifier", "attrib", 
+        "attrib_value", "namespace_wqname_prefix", "attrvalue", "unaryOperator", 
+        "media_feature", "pseudo", "synpred1_Css3", "ruleSet", "syncTo_IDENT_RBRACE", 
+        "margin_sym", "styleSheet", "namespace", "operator", "media_expression", 
+        "term", "namespace_prefix", "syncToFollow", "attrib_name", "media", 
+        "media_query_list", "pseudoPage", "property", "bodyset", "combinator", 
+        "esPred", "synpred3_Css3", "declaration", "cssClass", "typeSelector", 
+        "simpleSelectorSequence", "media_query", "medium", "hexColor", "imports", 
+        "prio", "bodylist", "selector", "namespace_wildcard_prefix", "syncTo_IDENT_RBRACKET_LBRACE", 
+        "margin", "elementSubsequent"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -121,11 +142,14 @@ public class Css3Parser extends DebugParser {
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
-            false, false, false, false, false, false, false, false, true, 
-            true, false, true, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
-            false, false, false, false, false, false, false, false, false
+            false, false, false, false, false, false, false, false, false, 
+            false, true, true, false, true, false, false, false, false, 
+            false, false, false, false, false, false, false, false, false, 
+            false, false, false, false, false, false, false, false, false, 
+            false, false, false, false, false, false, false, false, false, 
+            false, false
     };
 
      
@@ -913,7 +937,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "imports"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:164:1: imports : IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* ( mediaList )? SEMI ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:164:1: imports : IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* media_query_list SEMI ;
     public final void imports() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "imports");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -921,10 +945,10 @@ public class Css3Parser extends DebugParser {
         dbg.location(164, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:5: ( IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* ( mediaList )? SEMI )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:5: ( IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* media_query_list SEMI )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:9: IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* ( mediaList )? SEMI
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:9: IMPORT_SYM ( WS )* ( resourceIdentifier ) ( WS )* media_query_list SEMI
             {
             dbg.location(165,9);
             match(input,IMPORT_SYM,FOLLOW_IMPORT_SYM_in_imports256); if (state.failed) return ;
@@ -1016,39 +1040,13 @@ public class Css3Parser extends DebugParser {
             } finally {dbg.exitSubRule(14);}
 
             dbg.location(165,49);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:49: ( mediaList )?
-            int alt15=2;
-            try { dbg.enterSubRule(15);
-            try { dbg.enterDecision(15, decisionCanBacktrack[15]);
+            pushFollow(FOLLOW_media_query_list_in_imports268);
+            media_query_list();
 
-            int LA15_0 = input.LA(1);
-
-            if ( (LA15_0==IDENT||LA15_0==GEN) ) {
-                alt15=1;
-            }
-            } finally {dbg.exitDecision(15);}
-
-            switch (alt15) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:165:49: mediaList
-                    {
-                    dbg.location(165,49);
-                    pushFollow(FOLLOW_mediaList_in_imports268);
-                    mediaList();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(15);}
-
-            dbg.location(165,60);
-            match(input,SEMI,FOLLOW_SEMI_in_imports271); if (state.failed) return ;
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(165,66);
+            match(input,SEMI,FOLLOW_SEMI_in_imports270); if (state.failed) return ;
 
             }
 
@@ -1074,7 +1072,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "media"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:172:1: media : MEDIA_SYM ( WS )* mediaList LBRACE ( WS )* ruleSet ( WS )* RBRACE ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:172:1: media : MEDIA_SYM ( WS )* media_query_list LBRACE ( WS )* ruleSet ( WS )* RBRACE ;
     public final void media() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "media");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -1082,15 +1080,59 @@ public class Css3Parser extends DebugParser {
         dbg.location(172, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:5: ( MEDIA_SYM ( WS )* mediaList LBRACE ( WS )* ruleSet ( WS )* RBRACE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:5: ( MEDIA_SYM ( WS )* media_query_list LBRACE ( WS )* ruleSet ( WS )* RBRACE )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:7: MEDIA_SYM ( WS )* mediaList LBRACE ( WS )* ruleSet ( WS )* RBRACE
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:7: MEDIA_SYM ( WS )* media_query_list LBRACE ( WS )* ruleSet ( WS )* RBRACE
             {
             dbg.location(173,7);
-            match(input,MEDIA_SYM,FOLLOW_MEDIA_SYM_in_media292); if (state.failed) return ;
+            match(input,MEDIA_SYM,FOLLOW_MEDIA_SYM_in_media291); if (state.failed) return ;
             dbg.location(173,17);
             // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:17: ( WS )*
+            try { dbg.enterSubRule(15);
+
+            loop15:
+            do {
+                int alt15=2;
+                try { dbg.enterDecision(15, decisionCanBacktrack[15]);
+
+                int LA15_0 = input.LA(1);
+
+                if ( (LA15_0==WS) ) {
+                    alt15=1;
+                }
+
+
+                } finally {dbg.exitDecision(15);}
+
+                switch (alt15) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:17: WS
+            	    {
+            	    dbg.location(173,17);
+            	    match(input,WS,FOLLOW_WS_in_media293); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop15;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(15);}
+
+            dbg.location(173,21);
+            pushFollow(FOLLOW_media_query_list_in_media296);
+            media_query_list();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(174,9);
+            match(input,LBRACE,FOLLOW_LBRACE_in_media306); if (state.failed) return ;
+            dbg.location(174,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:174:16: ( WS )*
             try { dbg.enterSubRule(16);
 
             loop16:
@@ -1111,10 +1153,10 @@ public class Css3Parser extends DebugParser {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:173:17: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:174:16: WS
             	    {
-            	    dbg.location(173,17);
-            	    match(input,WS,FOLLOW_WS_in_media294); if (state.failed) return ;
+            	    dbg.location(174,16);
+            	    match(input,WS,FOLLOW_WS_in_media308); if (state.failed) return ;
 
             	    }
             	    break;
@@ -1125,16 +1167,14 @@ public class Css3Parser extends DebugParser {
             } while (true);
             } finally {dbg.exitSubRule(16);}
 
-            dbg.location(173,21);
-            pushFollow(FOLLOW_mediaList_in_media297);
-            mediaList();
+            dbg.location(175,13);
+            pushFollow(FOLLOW_ruleSet_in_media323);
+            ruleSet();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(174,9);
-            match(input,LBRACE,FOLLOW_LBRACE_in_media307); if (state.failed) return ;
-            dbg.location(174,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:174:16: ( WS )*
+            dbg.location(176,9);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:176:9: ( WS )*
             try { dbg.enterSubRule(17);
 
             loop17:
@@ -1155,10 +1195,10 @@ public class Css3Parser extends DebugParser {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:174:16: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:176:9: WS
             	    {
-            	    dbg.location(174,16);
-            	    match(input,WS,FOLLOW_WS_in_media309); if (state.failed) return ;
+            	    dbg.location(176,9);
+            	    match(input,WS,FOLLOW_WS_in_media333); if (state.failed) return ;
 
             	    }
             	    break;
@@ -1169,50 +1209,8 @@ public class Css3Parser extends DebugParser {
             } while (true);
             } finally {dbg.exitSubRule(17);}
 
-            dbg.location(175,13);
-            pushFollow(FOLLOW_ruleSet_in_media324);
-            ruleSet();
-
-            state._fsp--;
-            if (state.failed) return ;
-            dbg.location(176,9);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:176:9: ( WS )*
-            try { dbg.enterSubRule(18);
-
-            loop18:
-            do {
-                int alt18=2;
-                try { dbg.enterDecision(18, decisionCanBacktrack[18]);
-
-                int LA18_0 = input.LA(1);
-
-                if ( (LA18_0==WS) ) {
-                    alt18=1;
-                }
-
-
-                } finally {dbg.exitDecision(18);}
-
-                switch (alt18) {
-            	case 1 :
-            	    dbg.enterAlt(1);
-
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:176:9: WS
-            	    {
-            	    dbg.location(176,9);
-            	    match(input,WS,FOLLOW_WS_in_media334); if (state.failed) return ;
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop18;
-                }
-            } while (true);
-            } finally {dbg.exitSubRule(18);}
-
             dbg.location(176,13);
-            match(input,RBRACE,FOLLOW_RBRACE_in_media337); if (state.failed) return ;
+            match(input,RBRACE,FOLLOW_RBRACE_in_media336); if (state.failed) return ;
 
             }
 
@@ -1237,102 +1235,128 @@ public class Css3Parser extends DebugParser {
     // $ANTLR end "media"
 
 
-    // $ANTLR start "mediaList"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:179:1: mediaList : medium ( COMMA ( WS )* medium )* ;
-    public final void mediaList() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "mediaList");
+    // $ANTLR start "media_query_list"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:183:1: media_query_list : ( media_query ( COMMA ( WS )* media_query )* )? ;
+    public final void media_query_list() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "media_query_list");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(179, 1);
+        dbg.location(183, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:9: ( medium ( COMMA ( WS )* medium )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:2: ( ( media_query ( COMMA ( WS )* media_query )* )? )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:11: medium ( COMMA ( WS )* medium )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:4: ( media_query ( COMMA ( WS )* media_query )* )?
             {
-            dbg.location(180,11);
-            pushFollow(FOLLOW_medium_in_mediaList358);
-            medium();
-
-            state._fsp--;
-            if (state.failed) return ;
-            dbg.location(180,18);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:18: ( COMMA ( WS )* medium )*
+            dbg.location(184,4);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:4: ( media_query ( COMMA ( WS )* media_query )* )?
+            int alt20=2;
             try { dbg.enterSubRule(20);
+            try { dbg.enterDecision(20, decisionCanBacktrack[20]);
 
-            loop20:
-            do {
-                int alt20=2;
-                try { dbg.enterDecision(20, decisionCanBacktrack[20]);
+            int LA20_0 = input.LA(1);
 
-                int LA20_0 = input.LA(1);
+            if ( (LA20_0==IDENT||(LA20_0>=ONLY && LA20_0<=NOT)||LA20_0==GEN||LA20_0==LPAREN) ) {
+                alt20=1;
+            }
+            } finally {dbg.exitDecision(20);}
 
-                if ( (LA20_0==COMMA) ) {
-                    alt20=1;
-                }
+            switch (alt20) {
+                case 1 :
+                    dbg.enterAlt(1);
 
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:6: media_query ( COMMA ( WS )* media_query )*
+                    {
+                    dbg.location(184,6);
+                    pushFollow(FOLLOW_media_query_in_media_query_list356);
+                    media_query();
 
-                } finally {dbg.exitDecision(20);}
+                    state._fsp--;
+                    if (state.failed) return ;
+                    dbg.location(184,18);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:18: ( COMMA ( WS )* media_query )*
+                    try { dbg.enterSubRule(19);
 
-                switch (alt20) {
-            	case 1 :
-            	    dbg.enterAlt(1);
+                    loop19:
+                    do {
+                        int alt19=2;
+                        try { dbg.enterDecision(19, decisionCanBacktrack[19]);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:19: COMMA ( WS )* medium
-            	    {
-            	    dbg.location(180,19);
-            	    match(input,COMMA,FOLLOW_COMMA_in_mediaList361); if (state.failed) return ;
-            	    dbg.location(180,25);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:25: ( WS )*
-            	    try { dbg.enterSubRule(19);
+                        int LA19_0 = input.LA(1);
 
-            	    loop19:
-            	    do {
-            	        int alt19=2;
-            	        try { dbg.enterDecision(19, decisionCanBacktrack[19]);
-
-            	        int LA19_0 = input.LA(1);
-
-            	        if ( (LA19_0==WS) ) {
-            	            alt19=1;
-            	        }
+                        if ( (LA19_0==COMMA) ) {
+                            alt19=1;
+                        }
 
 
-            	        } finally {dbg.exitDecision(19);}
+                        } finally {dbg.exitDecision(19);}
 
-            	        switch (alt19) {
-            	    	case 1 :
-            	    	    dbg.enterAlt(1);
+                        switch (alt19) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
 
-            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:180:25: WS
-            	    	    {
-            	    	    dbg.location(180,25);
-            	    	    match(input,WS,FOLLOW_WS_in_mediaList363); if (state.failed) return ;
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:20: COMMA ( WS )* media_query
+                    	    {
+                    	    dbg.location(184,20);
+                    	    match(input,COMMA,FOLLOW_COMMA_in_media_query_list360); if (state.failed) return ;
+                    	    dbg.location(184,26);
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:26: ( WS )*
+                    	    try { dbg.enterSubRule(18);
 
-            	    	    }
-            	    	    break;
+                    	    loop18:
+                    	    do {
+                    	        int alt18=2;
+                    	        try { dbg.enterDecision(18, decisionCanBacktrack[18]);
 
-            	    	default :
-            	    	    break loop19;
-            	        }
-            	    } while (true);
-            	    } finally {dbg.exitSubRule(19);}
+                    	        int LA18_0 = input.LA(1);
 
-            	    dbg.location(180,29);
-            	    pushFollow(FOLLOW_medium_in_mediaList366);
-            	    medium();
+                    	        if ( (LA18_0==WS) ) {
+                    	            alt18=1;
+                    	        }
 
-            	    state._fsp--;
-            	    if (state.failed) return ;
 
-            	    }
-            	    break;
+                    	        } finally {dbg.exitDecision(18);}
 
-            	default :
-            	    break loop20;
-                }
-            } while (true);
+                    	        switch (alt18) {
+                    	    	case 1 :
+                    	    	    dbg.enterAlt(1);
+
+                    	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:184:26: WS
+                    	    	    {
+                    	    	    dbg.location(184,26);
+                    	    	    match(input,WS,FOLLOW_WS_in_media_query_list362); if (state.failed) return ;
+
+                    	    	    }
+                    	    	    break;
+
+                    	    	default :
+                    	    	    break loop18;
+                    	        }
+                    	    } while (true);
+                    	    } finally {dbg.exitSubRule(18);}
+
+                    	    dbg.location(184,30);
+                    	    pushFollow(FOLLOW_media_query_in_media_query_list365);
+                    	    media_query();
+
+                    	    state._fsp--;
+                    	    if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop19;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(19);}
+
+
+                    }
+                    break;
+
+            }
             } finally {dbg.exitSubRule(20);}
 
 
@@ -1345,35 +1369,384 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(181, 2);
+        dbg.location(185, 2);
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "mediaList");
+            dbg.exitRule(getGrammarFileName(), "media_query_list");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "mediaList"
+    // $ANTLR end "media_query_list"
 
 
-    // $ANTLR start "medium"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:186:1: medium : ( IDENT | GEN ) ( WS )* ;
-    public final void medium() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "medium");
+    // $ANTLR start "media_query"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:187:1: media_query : ( ( ( ONLY | NOT ) ( WS )* )? media_type ( WS )* ( AND ( WS )* media_expression )* | media_expression ( AND ( WS )* media_expression )* );
+    public final void media_query() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "media_query");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(186, 1);
+        dbg.location(187, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:187:5: ( ( IDENT | GEN ) ( WS )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:2: ( ( ( ONLY | NOT ) ( WS )* )? media_type ( WS )* ( AND ( WS )* media_expression )* | media_expression ( AND ( WS )* media_expression )* )
+            int alt28=2;
+            try { dbg.enterDecision(28, decisionCanBacktrack[28]);
+
+            int LA28_0 = input.LA(1);
+
+            if ( (LA28_0==IDENT||(LA28_0>=ONLY && LA28_0<=NOT)||LA28_0==GEN) ) {
+                alt28=1;
+            }
+            else if ( (LA28_0==LPAREN) ) {
+                alt28=2;
+            }
+            else {
+                if (state.backtracking>0) {state.failed=true; return ;}
+                NoViableAltException nvae =
+                    new NoViableAltException("", 28, 0, input);
+
+                dbg.recognitionException(nvae);
+                throw nvae;
+            }
+            } finally {dbg.exitDecision(28);}
+
+            switch (alt28) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:4: ( ( ONLY | NOT ) ( WS )* )? media_type ( WS )* ( AND ( WS )* media_expression )*
+                    {
+                    dbg.location(188,4);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:4: ( ( ONLY | NOT ) ( WS )* )?
+                    int alt22=2;
+                    try { dbg.enterSubRule(22);
+                    try { dbg.enterDecision(22, decisionCanBacktrack[22]);
+
+                    int LA22_0 = input.LA(1);
+
+                    if ( ((LA22_0>=ONLY && LA22_0<=NOT)) ) {
+                        alt22=1;
+                    }
+                    } finally {dbg.exitDecision(22);}
+
+                    switch (alt22) {
+                        case 1 :
+                            dbg.enterAlt(1);
+
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:5: ( ONLY | NOT ) ( WS )*
+                            {
+                            dbg.location(188,5);
+                            if ( (input.LA(1)>=ONLY && input.LA(1)<=NOT) ) {
+                                input.consume();
+                                state.errorRecovery=false;state.failed=false;
+                            }
+                            else {
+                                if (state.backtracking>0) {state.failed=true; return ;}
+                                MismatchedSetException mse = new MismatchedSetException(null,input);
+                                dbg.recognitionException(mse);
+                                throw mse;
+                            }
+
+                            dbg.location(188,18);
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:18: ( WS )*
+                            try { dbg.enterSubRule(21);
+
+                            loop21:
+                            do {
+                                int alt21=2;
+                                try { dbg.enterDecision(21, decisionCanBacktrack[21]);
+
+                                int LA21_0 = input.LA(1);
+
+                                if ( (LA21_0==WS) ) {
+                                    alt21=1;
+                                }
+
+
+                                } finally {dbg.exitDecision(21);}
+
+                                switch (alt21) {
+                            	case 1 :
+                            	    dbg.enterAlt(1);
+
+                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:18: WS
+                            	    {
+                            	    dbg.location(188,18);
+                            	    match(input,WS,FOLLOW_WS_in_media_query392); if (state.failed) return ;
+
+                            	    }
+                            	    break;
+
+                            	default :
+                            	    break loop21;
+                                }
+                            } while (true);
+                            } finally {dbg.exitSubRule(21);}
+
+
+                            }
+                            break;
+
+                    }
+                    } finally {dbg.exitSubRule(22);}
+
+                    dbg.location(188,26);
+                    pushFollow(FOLLOW_media_type_in_media_query399);
+                    media_type();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+                    dbg.location(188,37);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:37: ( WS )*
+                    try { dbg.enterSubRule(23);
+
+                    loop23:
+                    do {
+                        int alt23=2;
+                        try { dbg.enterDecision(23, decisionCanBacktrack[23]);
+
+                        int LA23_0 = input.LA(1);
+
+                        if ( (LA23_0==WS) ) {
+                            alt23=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(23);}
+
+                        switch (alt23) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:37: WS
+                    	    {
+                    	    dbg.location(188,37);
+                    	    match(input,WS,FOLLOW_WS_in_media_query401); if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop23;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(23);}
+
+                    dbg.location(188,41);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:41: ( AND ( WS )* media_expression )*
+                    try { dbg.enterSubRule(25);
+
+                    loop25:
+                    do {
+                        int alt25=2;
+                        try { dbg.enterDecision(25, decisionCanBacktrack[25]);
+
+                        int LA25_0 = input.LA(1);
+
+                        if ( (LA25_0==AND) ) {
+                            alt25=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(25);}
+
+                        switch (alt25) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:43: AND ( WS )* media_expression
+                    	    {
+                    	    dbg.location(188,43);
+                    	    match(input,AND,FOLLOW_AND_in_media_query406); if (state.failed) return ;
+                    	    dbg.location(188,47);
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:47: ( WS )*
+                    	    try { dbg.enterSubRule(24);
+
+                    	    loop24:
+                    	    do {
+                    	        int alt24=2;
+                    	        try { dbg.enterDecision(24, decisionCanBacktrack[24]);
+
+                    	        int LA24_0 = input.LA(1);
+
+                    	        if ( (LA24_0==WS) ) {
+                    	            alt24=1;
+                    	        }
+
+
+                    	        } finally {dbg.exitDecision(24);}
+
+                    	        switch (alt24) {
+                    	    	case 1 :
+                    	    	    dbg.enterAlt(1);
+
+                    	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:188:47: WS
+                    	    	    {
+                    	    	    dbg.location(188,47);
+                    	    	    match(input,WS,FOLLOW_WS_in_media_query408); if (state.failed) return ;
+
+                    	    	    }
+                    	    	    break;
+
+                    	    	default :
+                    	    	    break loop24;
+                    	        }
+                    	    } while (true);
+                    	    } finally {dbg.exitSubRule(24);}
+
+                    	    dbg.location(188,51);
+                    	    pushFollow(FOLLOW_media_expression_in_media_query411);
+                    	    media_expression();
+
+                    	    state._fsp--;
+                    	    if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop25;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(25);}
+
+
+                    }
+                    break;
+                case 2 :
+                    dbg.enterAlt(2);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:189:4: media_expression ( AND ( WS )* media_expression )*
+                    {
+                    dbg.location(189,4);
+                    pushFollow(FOLLOW_media_expression_in_media_query419);
+                    media_expression();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+                    dbg.location(189,21);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:189:21: ( AND ( WS )* media_expression )*
+                    try { dbg.enterSubRule(27);
+
+                    loop27:
+                    do {
+                        int alt27=2;
+                        try { dbg.enterDecision(27, decisionCanBacktrack[27]);
+
+                        int LA27_0 = input.LA(1);
+
+                        if ( (LA27_0==AND) ) {
+                            alt27=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(27);}
+
+                        switch (alt27) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:189:23: AND ( WS )* media_expression
+                    	    {
+                    	    dbg.location(189,23);
+                    	    match(input,AND,FOLLOW_AND_in_media_query423); if (state.failed) return ;
+                    	    dbg.location(189,27);
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:189:27: ( WS )*
+                    	    try { dbg.enterSubRule(26);
+
+                    	    loop26:
+                    	    do {
+                    	        int alt26=2;
+                    	        try { dbg.enterDecision(26, decisionCanBacktrack[26]);
+
+                    	        int LA26_0 = input.LA(1);
+
+                    	        if ( (LA26_0==WS) ) {
+                    	            alt26=1;
+                    	        }
+
+
+                    	        } finally {dbg.exitDecision(26);}
+
+                    	        switch (alt26) {
+                    	    	case 1 :
+                    	    	    dbg.enterAlt(1);
+
+                    	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:189:27: WS
+                    	    	    {
+                    	    	    dbg.location(189,27);
+                    	    	    match(input,WS,FOLLOW_WS_in_media_query425); if (state.failed) return ;
+
+                    	    	    }
+                    	    	    break;
+
+                    	    	default :
+                    	    	    break loop26;
+                    	        }
+                    	    } while (true);
+                    	    } finally {dbg.exitSubRule(26);}
+
+                    	    dbg.location(189,31);
+                    	    pushFollow(FOLLOW_media_expression_in_media_query428);
+                    	    media_expression();
+
+                    	    state._fsp--;
+                    	    if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop27;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(27);}
+
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(190, 2);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "media_query");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "media_query"
+
+
+    // $ANTLR start "media_type"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:192:1: media_type : ( IDENT | GEN );
+    public final void media_type() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "media_type");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(192, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:193:2: ( IDENT | GEN )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:187:7: ( IDENT | GEN ) ( WS )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
             {
-            dbg.location(187,7);
+            dbg.location(193,2);
             if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -1385,42 +1758,6 @@ public class Css3Parser extends DebugParser {
                 throw mse;
             }
 
-            dbg.location(187,23);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:187:23: ( WS )*
-            try { dbg.enterSubRule(21);
-
-            loop21:
-            do {
-                int alt21=2;
-                try { dbg.enterDecision(21, decisionCanBacktrack[21]);
-
-                int LA21_0 = input.LA(1);
-
-                if ( (LA21_0==WS) ) {
-                    alt21=1;
-                }
-
-
-                } finally {dbg.exitDecision(21);}
-
-                switch (alt21) {
-            	case 1 :
-            	    dbg.enterAlt(1);
-
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:187:23: WS
-            	    {
-            	    dbg.location(187,23);
-            	    match(input,WS,FOLLOW_WS_in_medium395); if (state.failed) return ;
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop21;
-                }
-            } while (true);
-            } finally {dbg.exitSubRule(21);}
-
 
             }
 
@@ -1431,420 +1768,38 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(188, 5);
+        dbg.location(194, 2);
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "medium");
+            dbg.exitRule(getGrammarFileName(), "media_type");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "medium"
+    // $ANTLR end "media_type"
 
 
-    // $ANTLR start "bodylist"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:191:1: bodylist : ( bodyset )* ;
-    public final void bodylist() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "bodylist");
+    // $ANTLR start "media_expression"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:196:1: media_expression : '(' ( WS )* media_feature ( WS )* ( ':' ( WS )* expr )? ')' ( WS )* ;
+    public final void media_expression() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "media_expression");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(191, 1);
+        dbg.location(196, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:192:5: ( ( bodyset )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:2: ( '(' ( WS )* media_feature ( WS )* ( ':' ( WS )* expr )? ')' ( WS )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:192:7: ( bodyset )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:4: '(' ( WS )* media_feature ( WS )* ( ':' ( WS )* expr )? ')' ( WS )*
             {
-            dbg.location(192,7);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:192:7: ( bodyset )*
-            try { dbg.enterSubRule(22);
-
-            loop22:
-            do {
-                int alt22=2;
-                try { dbg.enterDecision(22, decisionCanBacktrack[22]);
-
-                int LA22_0 = input.LA(1);
-
-                if ( (LA22_0==IDENT||LA22_0==MEDIA_SYM||(LA22_0>=GEN && LA22_0<=COLON)||(LA22_0>=STAR && LA22_0<=DCOLON)) ) {
-                    alt22=1;
-                }
-
-
-                } finally {dbg.exitDecision(22);}
-
-                switch (alt22) {
-            	case 1 :
-            	    dbg.enterAlt(1);
-
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:192:7: bodyset
-            	    {
-            	    dbg.location(192,7);
-            	    pushFollow(FOLLOW_bodyset_in_bodylist418);
-            	    bodyset();
-
-            	    state._fsp--;
-            	    if (state.failed) return ;
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop22;
-                }
-            } while (true);
-            } finally {dbg.exitSubRule(22);}
-
-
-            }
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(193, 5);
-
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "bodylist");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
-
-        return ;
-    }
-    // $ANTLR end "bodylist"
-
-
-    // $ANTLR start "bodyset"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:195:1: bodyset : ( ruleSet | media | page ) ( WS )* ;
-    public final void bodyset() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "bodyset");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(195, 1);
-
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:196:5: ( ( ruleSet | media | page ) ( WS )* )
-            dbg.enterAlt(1);
-
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:196:7: ( ruleSet | media | page ) ( WS )*
-            {
-            dbg.location(196,7);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:196:7: ( ruleSet | media | page )
-            int alt23=3;
-            try { dbg.enterSubRule(23);
-            try { dbg.enterDecision(23, decisionCanBacktrack[23]);
-
-            switch ( input.LA(1) ) {
-            case IDENT:
-            case GEN:
-            case COLON:
-            case STAR:
-            case PIPE:
-            case HASH:
-            case DOT:
-            case LBRACKET:
-            case DCOLON:
-                {
-                alt23=1;
-                }
-                break;
-            case MEDIA_SYM:
-                {
-                alt23=2;
-                }
-                break;
-            case PAGE_SYM:
-                {
-                alt23=3;
-                }
-                break;
-            default:
-                if (state.backtracking>0) {state.failed=true; return ;}
-                NoViableAltException nvae =
-                    new NoViableAltException("", 23, 0, input);
-
-                dbg.recognitionException(nvae);
-                throw nvae;
-            }
-
-            } finally {dbg.exitDecision(23);}
-
-            switch (alt23) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:6: ruleSet
-                    {
-                    dbg.location(197,6);
-                    pushFollow(FOLLOW_ruleSet_in_bodyset447);
-                    ruleSet();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-                case 2 :
-                    dbg.enterAlt(2);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:198:11: media
-                    {
-                    dbg.location(198,11);
-                    pushFollow(FOLLOW_media_in_bodyset459);
-                    media();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-                case 3 :
-                    dbg.enterAlt(3);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:199:11: page
-                    {
-                    dbg.location(199,11);
-                    pushFollow(FOLLOW_page_in_bodyset471);
-                    page();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(23);}
-
-            dbg.location(201,7);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:201:7: ( WS )*
-            try { dbg.enterSubRule(24);
-
-            loop24:
-            do {
-                int alt24=2;
-                try { dbg.enterDecision(24, decisionCanBacktrack[24]);
-
-                int LA24_0 = input.LA(1);
-
-                if ( (LA24_0==WS) ) {
-                    alt24=1;
-                }
-
-
-                } finally {dbg.exitDecision(24);}
-
-                switch (alt24) {
-            	case 1 :
-            	    dbg.enterAlt(1);
-
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:201:7: WS
-            	    {
-            	    dbg.location(201,7);
-            	    match(input,WS,FOLLOW_WS_in_bodyset487); if (state.failed) return ;
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop24;
-                }
-            } while (true);
-            } finally {dbg.exitSubRule(24);}
-
-
-            }
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(202, 5);
-
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "bodyset");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
-
-        return ;
-    }
-    // $ANTLR end "bodyset"
-
-
-    // $ANTLR start "page"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:204:1: page : PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* declaration SEMI ( declaration SEMI )* RBRACE ;
-    public final void page() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "page");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(204, 1);
-
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:5: ( PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* declaration SEMI ( declaration SEMI )* RBRACE )
-            dbg.enterAlt(1);
-
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:7: PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* declaration SEMI ( declaration SEMI )* RBRACE
-            {
-            dbg.location(205,7);
-            match(input,PAGE_SYM,FOLLOW_PAGE_SYM_in_page509); if (state.failed) return ;
-            dbg.location(205,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:16: ( WS )?
-            int alt25=2;
-            try { dbg.enterSubRule(25);
-            try { dbg.enterDecision(25, decisionCanBacktrack[25]);
-
-            int LA25_0 = input.LA(1);
-
-            if ( (LA25_0==WS) ) {
-                alt25=1;
-            }
-            } finally {dbg.exitDecision(25);}
-
-            switch (alt25) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:16: WS
-                    {
-                    dbg.location(205,16);
-                    match(input,WS,FOLLOW_WS_in_page511); if (state.failed) return ;
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(25);}
-
-            dbg.location(205,20);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:20: ( pseudoPage ( WS )* )?
-            int alt27=2;
-            try { dbg.enterSubRule(27);
-            try { dbg.enterDecision(27, decisionCanBacktrack[27]);
-
-            int LA27_0 = input.LA(1);
-
-            if ( (LA27_0==COLON) ) {
-                alt27=1;
-            }
-            } finally {dbg.exitDecision(27);}
-
-            switch (alt27) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:21: pseudoPage ( WS )*
-                    {
-                    dbg.location(205,21);
-                    pushFollow(FOLLOW_pseudoPage_in_page515);
-                    pseudoPage();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-                    dbg.location(205,32);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:32: ( WS )*
-                    try { dbg.enterSubRule(26);
-
-                    loop26:
-                    do {
-                        int alt26=2;
-                        try { dbg.enterDecision(26, decisionCanBacktrack[26]);
-
-                        int LA26_0 = input.LA(1);
-
-                        if ( (LA26_0==WS) ) {
-                            alt26=1;
-                        }
-
-
-                        } finally {dbg.exitDecision(26);}
-
-                        switch (alt26) {
-                    	case 1 :
-                    	    dbg.enterAlt(1);
-
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:205:32: WS
-                    	    {
-                    	    dbg.location(205,32);
-                    	    match(input,WS,FOLLOW_WS_in_page517); if (state.failed) return ;
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    break loop26;
-                        }
-                    } while (true);
-                    } finally {dbg.exitSubRule(26);}
-
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(27);}
-
-            dbg.location(206,9);
-            match(input,LBRACE,FOLLOW_LBRACE_in_page530); if (state.failed) return ;
-            dbg.location(206,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:206:16: ( WS )*
-            try { dbg.enterSubRule(28);
-
-            loop28:
-            do {
-                int alt28=2;
-                try { dbg.enterDecision(28, decisionCanBacktrack[28]);
-
-                int LA28_0 = input.LA(1);
-
-                if ( (LA28_0==WS) ) {
-                    alt28=1;
-                }
-
-
-                } finally {dbg.exitDecision(28);}
-
-                switch (alt28) {
-            	case 1 :
-            	    dbg.enterAlt(1);
-
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:206:16: WS
-            	    {
-            	    dbg.location(206,16);
-            	    match(input,WS,FOLLOW_WS_in_page532); if (state.failed) return ;
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop28;
-                }
-            } while (true);
-            } finally {dbg.exitSubRule(28);}
-
-            dbg.location(207,13);
-            pushFollow(FOLLOW_declaration_in_page547);
-            declaration();
-
-            state._fsp--;
-            if (state.failed) return ;
-            dbg.location(207,25);
-            match(input,SEMI,FOLLOW_SEMI_in_page549); if (state.failed) return ;
-            dbg.location(207,30);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:30: ( declaration SEMI )*
+            dbg.location(197,4);
+            match(input,LPAREN,FOLLOW_LPAREN_in_media_expression459); if (state.failed) return ;
+            dbg.location(197,8);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:8: ( WS )*
             try { dbg.enterSubRule(29);
 
             loop29:
@@ -1854,7 +1809,7 @@ public class Css3Parser extends DebugParser {
 
                 int LA29_0 = input.LA(1);
 
-                if ( (LA29_0==IDENT||LA29_0==GEN) ) {
+                if ( (LA29_0==WS) ) {
                     alt29=1;
                 }
 
@@ -1865,16 +1820,10 @@ public class Css3Parser extends DebugParser {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:31: declaration SEMI
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:8: WS
             	    {
-            	    dbg.location(207,31);
-            	    pushFollow(FOLLOW_declaration_in_page552);
-            	    declaration();
-
-            	    state._fsp--;
-            	    if (state.failed) return ;
-            	    dbg.location(207,43);
-            	    match(input,SEMI,FOLLOW_SEMI_in_page554); if (state.failed) return ;
+            	    dbg.location(197,8);
+            	    match(input,WS,FOLLOW_WS_in_media_expression461); if (state.failed) return ;
 
             	    }
             	    break;
@@ -1885,184 +1834,71 @@ public class Css3Parser extends DebugParser {
             } while (true);
             } finally {dbg.exitSubRule(29);}
 
-            dbg.location(208,9);
-            match(input,RBRACE,FOLLOW_RBRACE_in_page566); if (state.failed) return ;
+            dbg.location(197,12);
+            pushFollow(FOLLOW_media_feature_in_media_expression464);
+            media_feature();
 
-            }
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(197,26);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:26: ( WS )*
+            try { dbg.enterSubRule(30);
 
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(209, 5);
+            loop30:
+            do {
+                int alt30=2;
+                try { dbg.enterDecision(30, decisionCanBacktrack[30]);
 
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "page");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
+                int LA30_0 = input.LA(1);
 
-        return ;
-    }
-    // $ANTLR end "page"
+                if ( (LA30_0==WS) ) {
+                    alt30=1;
+                }
 
 
-    // $ANTLR start "pseudoPage"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:211:1: pseudoPage : COLON IDENT ;
-    public final void pseudoPage() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "pseudoPage");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(211, 1);
+                } finally {dbg.exitDecision(30);}
 
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:5: ( COLON IDENT )
-            dbg.enterAlt(1);
+                switch (alt30) {
+            	case 1 :
+            	    dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:7: COLON IDENT
-            {
-            dbg.location(212,7);
-            match(input,COLON,FOLLOW_COLON_in_pseudoPage587); if (state.failed) return ;
-            dbg.location(212,13);
-            match(input,IDENT,FOLLOW_IDENT_in_pseudoPage589); if (state.failed) return ;
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:26: WS
+            	    {
+            	    dbg.location(197,26);
+            	    match(input,WS,FOLLOW_WS_in_media_expression466); if (state.failed) return ;
 
-            }
+            	    }
+            	    break;
 
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(213, 5);
+            	default :
+            	    break loop30;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(30);}
 
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "pseudoPage");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
-
-        return ;
-    }
-    // $ANTLR end "pseudoPage"
-
-
-    // $ANTLR start "operator"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:215:1: operator : ( SOLIDUS ( WS )* | COMMA ( WS )* | );
-    public final void operator() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "operator");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(215, 1);
-
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:5: ( SOLIDUS ( WS )* | COMMA ( WS )* | )
-            int alt32=3;
+            dbg.location(197,30);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:30: ( ':' ( WS )* expr )?
+            int alt32=2;
+            try { dbg.enterSubRule(32);
             try { dbg.enterDecision(32, decisionCanBacktrack[32]);
 
-            switch ( input.LA(1) ) {
-            case SOLIDUS:
-                {
+            int LA32_0 = input.LA(1);
+
+            if ( (LA32_0==COLON) ) {
                 alt32=1;
-                }
-                break;
-            case COMMA:
-                {
-                alt32=2;
-                }
-                break;
-            case IDENT:
-            case STRING:
-            case URI:
-            case GEN:
-            case PLUS:
-            case MINUS:
-            case HASH:
-            case NUMBER:
-            case PERCENTAGE:
-            case LENGTH:
-            case EMS:
-            case EXS:
-            case ANGLE:
-            case TIME:
-            case FREQ:
-                {
-                alt32=3;
-                }
-                break;
-            default:
-                if (state.backtracking>0) {state.failed=true; return ;}
-                NoViableAltException nvae =
-                    new NoViableAltException("", 32, 0, input);
-
-                dbg.recognitionException(nvae);
-                throw nvae;
             }
-
             } finally {dbg.exitDecision(32);}
 
             switch (alt32) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:7: SOLIDUS ( WS )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:32: ':' ( WS )* expr
                     {
-                    dbg.location(216,7);
-                    match(input,SOLIDUS,FOLLOW_SOLIDUS_in_operator610); if (state.failed) return ;
-                    dbg.location(216,15);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:15: ( WS )*
-                    try { dbg.enterSubRule(30);
-
-                    loop30:
-                    do {
-                        int alt30=2;
-                        try { dbg.enterDecision(30, decisionCanBacktrack[30]);
-
-                        int LA30_0 = input.LA(1);
-
-                        if ( (LA30_0==WS) ) {
-                            alt30=1;
-                        }
-
-
-                        } finally {dbg.exitDecision(30);}
-
-                        switch (alt30) {
-                    	case 1 :
-                    	    dbg.enterAlt(1);
-
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:15: WS
-                    	    {
-                    	    dbg.location(216,15);
-                    	    match(input,WS,FOLLOW_WS_in_operator612); if (state.failed) return ;
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    break loop30;
-                        }
-                    } while (true);
-                    } finally {dbg.exitSubRule(30);}
-
-
-                    }
-                    break;
-                case 2 :
-                    dbg.enterAlt(2);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:217:7: COMMA ( WS )*
-                    {
-                    dbg.location(217,7);
-                    match(input,COMMA,FOLLOW_COMMA_in_operator621); if (state.failed) return ;
-                    dbg.location(217,13);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:217:13: ( WS )*
+                    dbg.location(197,32);
+                    match(input,COLON,FOLLOW_COLON_in_media_expression471); if (state.failed) return ;
+                    dbg.location(197,36);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:36: ( WS )*
                     try { dbg.enterSubRule(31);
 
                     loop31:
@@ -2083,10 +1919,10 @@ public class Css3Parser extends DebugParser {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:217:13: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:36: WS
                     	    {
-                    	    dbg.location(217,13);
-                    	    match(input,WS,FOLLOW_WS_in_operator623); if (state.failed) return ;
+                    	    dbg.location(197,36);
+                    	    match(input,WS,FOLLOW_WS_in_media_expression473); if (state.failed) return ;
 
                     	    }
                     	    break;
@@ -2097,18 +1933,60 @@ public class Css3Parser extends DebugParser {
                     } while (true);
                     } finally {dbg.exitSubRule(31);}
 
+                    dbg.location(197,40);
+                    pushFollow(FOLLOW_expr_in_media_expression476);
+                    expr();
 
-                    }
-                    break;
-                case 3 :
-                    dbg.enterAlt(3);
+                    state._fsp--;
+                    if (state.failed) return ;
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:219:5: 
-                    {
                     }
                     break;
 
             }
+            } finally {dbg.exitSubRule(32);}
+
+            dbg.location(197,48);
+            match(input,RPAREN,FOLLOW_RPAREN_in_media_expression481); if (state.failed) return ;
+            dbg.location(197,52);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:52: ( WS )*
+            try { dbg.enterSubRule(33);
+
+            loop33:
+            do {
+                int alt33=2;
+                try { dbg.enterDecision(33, decisionCanBacktrack[33]);
+
+                int LA33_0 = input.LA(1);
+
+                if ( (LA33_0==WS) ) {
+                    alt33=1;
+                }
+
+
+                } finally {dbg.exitDecision(33);}
+
+                switch (alt33) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:197:52: WS
+            	    {
+            	    dbg.location(197,52);
+            	    match(input,WS,FOLLOW_WS_in_media_expression483); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop33;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(33);}
+
+
+            }
+
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -2116,49 +1994,245 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(219, 5);
+        dbg.location(198, 2);
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "operator");
+            dbg.exitRule(getGrammarFileName(), "media_expression");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "operator"
+    // $ANTLR end "media_expression"
 
 
-    // $ANTLR start "combinator"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:221:1: combinator : ( PLUS ( WS )* | GREATER ( WS )* | TILDE ( WS )* | );
-    public final void combinator() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "combinator");
+    // $ANTLR start "media_feature"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:199:1: media_feature : IDENT ;
+    public final void media_feature() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "media_feature");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(221, 1);
+        dbg.location(199, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:222:5: ( PLUS ( WS )* | GREATER ( WS )* | TILDE ( WS )* | )
-            int alt36=4;
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:200:2: ( IDENT )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:200:4: IDENT
+            {
+            dbg.location(200,4);
+            match(input,IDENT,FOLLOW_IDENT_in_media_feature494); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(201, 2);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "media_feature");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "media_feature"
+
+
+    // $ANTLR start "medium"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:206:1: medium : ( IDENT | GEN ) ( WS )* ;
+    public final void medium() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "medium");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(206, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:5: ( ( IDENT | GEN ) ( WS )* )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:7: ( IDENT | GEN ) ( WS )*
+            {
+            dbg.location(207,7);
+            if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
+                input.consume();
+                state.errorRecovery=false;state.failed=false;
+            }
+            else {
+                if (state.backtracking>0) {state.failed=true; return ;}
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                dbg.recognitionException(mse);
+                throw mse;
+            }
+
+            dbg.location(207,23);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:23: ( WS )*
+            try { dbg.enterSubRule(34);
+
+            loop34:
+            do {
+                int alt34=2;
+                try { dbg.enterDecision(34, decisionCanBacktrack[34]);
+
+                int LA34_0 = input.LA(1);
+
+                if ( (LA34_0==WS) ) {
+                    alt34=1;
+                }
+
+
+                } finally {dbg.exitDecision(34);}
+
+                switch (alt34) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:207:23: WS
+            	    {
+            	    dbg.location(207,23);
+            	    match(input,WS,FOLLOW_WS_in_medium521); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop34;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(34);}
+
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(208, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "medium");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "medium"
+
+
+    // $ANTLR start "bodylist"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:211:1: bodylist : ( bodyset )* ;
+    public final void bodylist() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "bodylist");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(211, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:5: ( ( bodyset )* )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:7: ( bodyset )*
+            {
+            dbg.location(212,7);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:7: ( bodyset )*
+            try { dbg.enterSubRule(35);
+
+            loop35:
+            do {
+                int alt35=2;
+                try { dbg.enterDecision(35, decisionCanBacktrack[35]);
+
+                int LA35_0 = input.LA(1);
+
+                if ( (LA35_0==IDENT||LA35_0==MEDIA_SYM||(LA35_0>=GEN && LA35_0<=PAGE_SYM)||LA35_0==COLON||(LA35_0>=STAR && LA35_0<=DCOLON)) ) {
+                    alt35=1;
+                }
+
+
+                } finally {dbg.exitDecision(35);}
+
+                switch (alt35) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:212:7: bodyset
+            	    {
+            	    dbg.location(212,7);
+            	    pushFollow(FOLLOW_bodyset_in_bodylist544);
+            	    bodyset();
+
+            	    state._fsp--;
+            	    if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop35;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(35);}
+
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(213, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "bodylist");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "bodylist"
+
+
+    // $ANTLR start "bodyset"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:215:1: bodyset : ( ruleSet | media | page ) ( WS )* ;
+    public final void bodyset() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "bodyset");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(215, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:5: ( ( ruleSet | media | page ) ( WS )* )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:7: ( ruleSet | media | page ) ( WS )*
+            {
+            dbg.location(216,7);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:216:7: ( ruleSet | media | page )
+            int alt36=3;
+            try { dbg.enterSubRule(36);
             try { dbg.enterDecision(36, decisionCanBacktrack[36]);
 
             switch ( input.LA(1) ) {
-            case PLUS:
-                {
-                alt36=1;
-                }
-                break;
-            case GREATER:
-                {
-                alt36=2;
-                }
-                break;
-            case TILDE:
-                {
-                alt36=3;
-                }
-                break;
             case IDENT:
             case GEN:
             case COLON:
@@ -2169,7 +2243,17 @@ public class Css3Parser extends DebugParser {
             case LBRACKET:
             case DCOLON:
                 {
-                alt36=4;
+                alt36=1;
+                }
+                break;
+            case MEDIA_SYM:
+                {
+                alt36=2;
+                }
+                break;
+            case PAGE_SYM:
+                {
+                alt36=3;
                 }
                 break;
             default:
@@ -2187,45 +2271,839 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:222:7: PLUS ( WS )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:217:6: ruleSet
                     {
-                    dbg.location(222,7);
-                    match(input,PLUS,FOLLOW_PLUS_in_combinator651); if (state.failed) return ;
-                    dbg.location(222,12);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:222:12: ( WS )*
-                    try { dbg.enterSubRule(33);
+                    dbg.location(217,6);
+                    pushFollow(FOLLOW_ruleSet_in_bodyset573);
+                    ruleSet();
 
-                    loop33:
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+                case 2 :
+                    dbg.enterAlt(2);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:218:11: media
+                    {
+                    dbg.location(218,11);
+                    pushFollow(FOLLOW_media_in_bodyset585);
+                    media();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+                case 3 :
+                    dbg.enterAlt(3);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:219:11: page
+                    {
+                    dbg.location(219,11);
+                    pushFollow(FOLLOW_page_in_bodyset597);
+                    page();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(36);}
+
+            dbg.location(221,7);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:221:7: ( WS )*
+            try { dbg.enterSubRule(37);
+
+            loop37:
+            do {
+                int alt37=2;
+                try { dbg.enterDecision(37, decisionCanBacktrack[37]);
+
+                int LA37_0 = input.LA(1);
+
+                if ( (LA37_0==WS) ) {
+                    alt37=1;
+                }
+
+
+                } finally {dbg.exitDecision(37);}
+
+                switch (alt37) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:221:7: WS
+            	    {
+            	    dbg.location(221,7);
+            	    match(input,WS,FOLLOW_WS_in_bodyset613); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop37;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(37);}
+
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(222, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "bodyset");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "bodyset"
+
+
+    // $ANTLR start "page"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:224:1: page : PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* ( declaration | margin )? ( SEMI ( WS )* ( declaration | margin )? )* RBRACE ;
+    public final void page() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "page");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(224, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:5: ( PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* ( declaration | margin )? ( SEMI ( WS )* ( declaration | margin )? )* RBRACE )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:7: PAGE_SYM ( WS )? ( pseudoPage ( WS )* )? LBRACE ( WS )* ( declaration | margin )? ( SEMI ( WS )* ( declaration | margin )? )* RBRACE
+            {
+            dbg.location(225,7);
+            match(input,PAGE_SYM,FOLLOW_PAGE_SYM_in_page635); if (state.failed) return ;
+            dbg.location(225,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:16: ( WS )?
+            int alt38=2;
+            try { dbg.enterSubRule(38);
+            try { dbg.enterDecision(38, decisionCanBacktrack[38]);
+
+            int LA38_0 = input.LA(1);
+
+            if ( (LA38_0==WS) ) {
+                alt38=1;
+            }
+            } finally {dbg.exitDecision(38);}
+
+            switch (alt38) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:16: WS
+                    {
+                    dbg.location(225,16);
+                    match(input,WS,FOLLOW_WS_in_page637); if (state.failed) return ;
+
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(38);}
+
+            dbg.location(225,20);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:20: ( pseudoPage ( WS )* )?
+            int alt40=2;
+            try { dbg.enterSubRule(40);
+            try { dbg.enterDecision(40, decisionCanBacktrack[40]);
+
+            int LA40_0 = input.LA(1);
+
+            if ( (LA40_0==COLON) ) {
+                alt40=1;
+            }
+            } finally {dbg.exitDecision(40);}
+
+            switch (alt40) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:21: pseudoPage ( WS )*
+                    {
+                    dbg.location(225,21);
+                    pushFollow(FOLLOW_pseudoPage_in_page641);
+                    pseudoPage();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+                    dbg.location(225,32);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:32: ( WS )*
+                    try { dbg.enterSubRule(39);
+
+                    loop39:
                     do {
-                        int alt33=2;
-                        try { dbg.enterDecision(33, decisionCanBacktrack[33]);
+                        int alt39=2;
+                        try { dbg.enterDecision(39, decisionCanBacktrack[39]);
 
-                        int LA33_0 = input.LA(1);
+                        int LA39_0 = input.LA(1);
 
-                        if ( (LA33_0==WS) ) {
-                            alt33=1;
+                        if ( (LA39_0==WS) ) {
+                            alt39=1;
                         }
 
 
-                        } finally {dbg.exitDecision(33);}
+                        } finally {dbg.exitDecision(39);}
 
-                        switch (alt33) {
+                        switch (alt39) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:222:12: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:225:32: WS
                     	    {
-                    	    dbg.location(222,12);
-                    	    match(input,WS,FOLLOW_WS_in_combinator653); if (state.failed) return ;
+                    	    dbg.location(225,32);
+                    	    match(input,WS,FOLLOW_WS_in_page643); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop33;
+                    	    break loop39;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(33);}
+                    } finally {dbg.exitSubRule(39);}
+
+
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(40);}
+
+            dbg.location(226,9);
+            match(input,LBRACE,FOLLOW_LBRACE_in_page656); if (state.failed) return ;
+            dbg.location(226,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:226:16: ( WS )*
+            try { dbg.enterSubRule(41);
+
+            loop41:
+            do {
+                int alt41=2;
+                try { dbg.enterDecision(41, decisionCanBacktrack[41]);
+
+                int LA41_0 = input.LA(1);
+
+                if ( (LA41_0==WS) ) {
+                    alt41=1;
+                }
+
+
+                } finally {dbg.exitDecision(41);}
+
+                switch (alt41) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:226:16: WS
+            	    {
+            	    dbg.location(226,16);
+            	    match(input,WS,FOLLOW_WS_in_page658); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop41;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(41);}
+
+            dbg.location(227,13);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:13: ( declaration | margin )?
+            int alt42=3;
+            try { dbg.enterSubRule(42);
+            try { dbg.enterDecision(42, decisionCanBacktrack[42]);
+
+            int LA42_0 = input.LA(1);
+
+            if ( (LA42_0==IDENT||LA42_0==GEN) ) {
+                alt42=1;
+            }
+            else if ( ((LA42_0>=TOPLEFTCORNER_SYM && LA42_0<=RIGHTBOTTOM_SYM)) ) {
+                alt42=2;
+            }
+            } finally {dbg.exitDecision(42);}
+
+            switch (alt42) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:15: declaration
+                    {
+                    dbg.location(227,15);
+                    pushFollow(FOLLOW_declaration_in_page675);
+                    declaration();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+                case 2 :
+                    dbg.enterAlt(2);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:29: margin
+                    {
+                    dbg.location(227,29);
+                    pushFollow(FOLLOW_margin_in_page679);
+                    margin();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(42);}
+
+            dbg.location(227,39);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:39: ( SEMI ( WS )* ( declaration | margin )? )*
+            try { dbg.enterSubRule(45);
+
+            loop45:
+            do {
+                int alt45=2;
+                try { dbg.enterDecision(45, decisionCanBacktrack[45]);
+
+                int LA45_0 = input.LA(1);
+
+                if ( (LA45_0==SEMI) ) {
+                    alt45=1;
+                }
+
+
+                } finally {dbg.exitDecision(45);}
+
+                switch (alt45) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:41: SEMI ( WS )* ( declaration | margin )?
+            	    {
+            	    dbg.location(227,41);
+            	    match(input,SEMI,FOLLOW_SEMI_in_page686); if (state.failed) return ;
+            	    dbg.location(227,46);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:46: ( WS )*
+            	    try { dbg.enterSubRule(43);
+
+            	    loop43:
+            	    do {
+            	        int alt43=2;
+            	        try { dbg.enterDecision(43, decisionCanBacktrack[43]);
+
+            	        int LA43_0 = input.LA(1);
+
+            	        if ( (LA43_0==WS) ) {
+            	            alt43=1;
+            	        }
+
+
+            	        } finally {dbg.exitDecision(43);}
+
+            	        switch (alt43) {
+            	    	case 1 :
+            	    	    dbg.enterAlt(1);
+
+            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:46: WS
+            	    	    {
+            	    	    dbg.location(227,46);
+            	    	    match(input,WS,FOLLOW_WS_in_page688); if (state.failed) return ;
+
+            	    	    }
+            	    	    break;
+
+            	    	default :
+            	    	    break loop43;
+            	        }
+            	    } while (true);
+            	    } finally {dbg.exitSubRule(43);}
+
+            	    dbg.location(227,50);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:50: ( declaration | margin )?
+            	    int alt44=3;
+            	    try { dbg.enterSubRule(44);
+            	    try { dbg.enterDecision(44, decisionCanBacktrack[44]);
+
+            	    int LA44_0 = input.LA(1);
+
+            	    if ( (LA44_0==IDENT||LA44_0==GEN) ) {
+            	        alt44=1;
+            	    }
+            	    else if ( ((LA44_0>=TOPLEFTCORNER_SYM && LA44_0<=RIGHTBOTTOM_SYM)) ) {
+            	        alt44=2;
+            	    }
+            	    } finally {dbg.exitDecision(44);}
+
+            	    switch (alt44) {
+            	        case 1 :
+            	            dbg.enterAlt(1);
+
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:51: declaration
+            	            {
+            	            dbg.location(227,51);
+            	            pushFollow(FOLLOW_declaration_in_page692);
+            	            declaration();
+
+            	            state._fsp--;
+            	            if (state.failed) return ;
+
+            	            }
+            	            break;
+            	        case 2 :
+            	            dbg.enterAlt(2);
+
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:227:65: margin
+            	            {
+            	            dbg.location(227,65);
+            	            pushFollow(FOLLOW_margin_in_page696);
+            	            margin();
+
+            	            state._fsp--;
+            	            if (state.failed) return ;
+
+            	            }
+            	            break;
+
+            	    }
+            	    } finally {dbg.exitSubRule(44);}
+
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop45;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(45);}
+
+            dbg.location(228,9);
+            match(input,RBRACE,FOLLOW_RBRACE_in_page711); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(229, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "page");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "page"
+
+
+    // $ANTLR start "margin"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:231:1: margin : margin_sym ( WS )* LBRACE declaration ( SEMI ( WS )* ( declaration )? )* RBRACE ;
+    public final void margin() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "margin");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(231, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:2: ( margin_sym ( WS )* LBRACE declaration ( SEMI ( WS )* ( declaration )? )* RBRACE )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:4: margin_sym ( WS )* LBRACE declaration ( SEMI ( WS )* ( declaration )? )* RBRACE
+            {
+            dbg.location(232,4);
+            pushFollow(FOLLOW_margin_sym_in_margin730);
+            margin_sym();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(232,15);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:15: ( WS )*
+            try { dbg.enterSubRule(46);
+
+            loop46:
+            do {
+                int alt46=2;
+                try { dbg.enterDecision(46, decisionCanBacktrack[46]);
+
+                int LA46_0 = input.LA(1);
+
+                if ( (LA46_0==WS) ) {
+                    alt46=1;
+                }
+
+
+                } finally {dbg.exitDecision(46);}
+
+                switch (alt46) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:15: WS
+            	    {
+            	    dbg.location(232,15);
+            	    match(input,WS,FOLLOW_WS_in_margin732); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop46;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(46);}
+
+            dbg.location(232,19);
+            match(input,LBRACE,FOLLOW_LBRACE_in_margin735); if (state.failed) return ;
+            dbg.location(232,26);
+            pushFollow(FOLLOW_declaration_in_margin737);
+            declaration();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(232,38);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:38: ( SEMI ( WS )* ( declaration )? )*
+            try { dbg.enterSubRule(49);
+
+            loop49:
+            do {
+                int alt49=2;
+                try { dbg.enterDecision(49, decisionCanBacktrack[49]);
+
+                int LA49_0 = input.LA(1);
+
+                if ( (LA49_0==SEMI) ) {
+                    alt49=1;
+                }
+
+
+                } finally {dbg.exitDecision(49);}
+
+                switch (alt49) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:40: SEMI ( WS )* ( declaration )?
+            	    {
+            	    dbg.location(232,40);
+            	    match(input,SEMI,FOLLOW_SEMI_in_margin741); if (state.failed) return ;
+            	    dbg.location(232,45);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:45: ( WS )*
+            	    try { dbg.enterSubRule(47);
+
+            	    loop47:
+            	    do {
+            	        int alt47=2;
+            	        try { dbg.enterDecision(47, decisionCanBacktrack[47]);
+
+            	        int LA47_0 = input.LA(1);
+
+            	        if ( (LA47_0==WS) ) {
+            	            alt47=1;
+            	        }
+
+
+            	        } finally {dbg.exitDecision(47);}
+
+            	        switch (alt47) {
+            	    	case 1 :
+            	    	    dbg.enterAlt(1);
+
+            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:45: WS
+            	    	    {
+            	    	    dbg.location(232,45);
+            	    	    match(input,WS,FOLLOW_WS_in_margin743); if (state.failed) return ;
+
+            	    	    }
+            	    	    break;
+
+            	    	default :
+            	    	    break loop47;
+            	        }
+            	    } while (true);
+            	    } finally {dbg.exitSubRule(47);}
+
+            	    dbg.location(232,49);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:49: ( declaration )?
+            	    int alt48=2;
+            	    try { dbg.enterSubRule(48);
+            	    try { dbg.enterDecision(48, decisionCanBacktrack[48]);
+
+            	    int LA48_0 = input.LA(1);
+
+            	    if ( (LA48_0==IDENT||LA48_0==GEN) ) {
+            	        alt48=1;
+            	    }
+            	    } finally {dbg.exitDecision(48);}
+
+            	    switch (alt48) {
+            	        case 1 :
+            	            dbg.enterAlt(1);
+
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:232:49: declaration
+            	            {
+            	            dbg.location(232,49);
+            	            pushFollow(FOLLOW_declaration_in_margin746);
+            	            declaration();
+
+            	            state._fsp--;
+            	            if (state.failed) return ;
+
+            	            }
+            	            break;
+
+            	    }
+            	    } finally {dbg.exitSubRule(48);}
+
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop49;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(49);}
+
+            dbg.location(232,65);
+            match(input,RBRACE,FOLLOW_RBRACE_in_margin752); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(233, 8);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "margin");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "margin"
+
+
+    // $ANTLR start "margin_sym"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:235:1: margin_sym : ( TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM );
+    public final void margin_sym() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "margin_sym");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(235, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:236:2: ( TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
+            {
+            dbg.location(236,2);
+            if ( (input.LA(1)>=TOPLEFTCORNER_SYM && input.LA(1)<=RIGHTBOTTOM_SYM) ) {
+                input.consume();
+                state.errorRecovery=false;state.failed=false;
+            }
+            else {
+                if (state.backtracking>0) {state.failed=true; return ;}
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                dbg.recognitionException(mse);
+                throw mse;
+            }
+
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(253, 8);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "margin_sym");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "margin_sym"
+
+
+    // $ANTLR start "pseudoPage"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:255:1: pseudoPage : COLON IDENT ;
+    public final void pseudoPage() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "pseudoPage");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(255, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:256:5: ( COLON IDENT )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:256:7: COLON IDENT
+            {
+            dbg.location(256,7);
+            match(input,COLON,FOLLOW_COLON_in_pseudoPage981); if (state.failed) return ;
+            dbg.location(256,13);
+            match(input,IDENT,FOLLOW_IDENT_in_pseudoPage983); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(257, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "pseudoPage");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "pseudoPage"
+
+
+    // $ANTLR start "operator"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:259:1: operator : ( SOLIDUS ( WS )* | COMMA ( WS )* | );
+    public final void operator() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "operator");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(259, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:260:5: ( SOLIDUS ( WS )* | COMMA ( WS )* | )
+            int alt52=3;
+            try { dbg.enterDecision(52, decisionCanBacktrack[52]);
+
+            switch ( input.LA(1) ) {
+            case SOLIDUS:
+                {
+                alt52=1;
+                }
+                break;
+            case COMMA:
+                {
+                alt52=2;
+                }
+                break;
+            case IDENT:
+            case STRING:
+            case URI:
+            case GEN:
+            case PLUS:
+            case MINUS:
+            case HASH:
+            case NUMBER:
+            case PERCENTAGE:
+            case LENGTH:
+            case EMS:
+            case EXS:
+            case ANGLE:
+            case TIME:
+            case FREQ:
+            case RESOLUTION:
+                {
+                alt52=3;
+                }
+                break;
+            default:
+                if (state.backtracking>0) {state.failed=true; return ;}
+                NoViableAltException nvae =
+                    new NoViableAltException("", 52, 0, input);
+
+                dbg.recognitionException(nvae);
+                throw nvae;
+            }
+
+            } finally {dbg.exitDecision(52);}
+
+            switch (alt52) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:260:7: SOLIDUS ( WS )*
+                    {
+                    dbg.location(260,7);
+                    match(input,SOLIDUS,FOLLOW_SOLIDUS_in_operator1004); if (state.failed) return ;
+                    dbg.location(260,15);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:260:15: ( WS )*
+                    try { dbg.enterSubRule(50);
+
+                    loop50:
+                    do {
+                        int alt50=2;
+                        try { dbg.enterDecision(50, decisionCanBacktrack[50]);
+
+                        int LA50_0 = input.LA(1);
+
+                        if ( (LA50_0==WS) ) {
+                            alt50=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(50);}
+
+                        switch (alt50) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:260:15: WS
+                    	    {
+                    	    dbg.location(260,15);
+                    	    match(input,WS,FOLLOW_WS_in_operator1006); if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop50;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(50);}
 
 
                     }
@@ -2233,45 +3111,45 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:223:7: GREATER ( WS )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:261:7: COMMA ( WS )*
                     {
-                    dbg.location(223,7);
-                    match(input,GREATER,FOLLOW_GREATER_in_combinator662); if (state.failed) return ;
-                    dbg.location(223,15);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:223:15: ( WS )*
-                    try { dbg.enterSubRule(34);
+                    dbg.location(261,7);
+                    match(input,COMMA,FOLLOW_COMMA_in_operator1015); if (state.failed) return ;
+                    dbg.location(261,13);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:261:13: ( WS )*
+                    try { dbg.enterSubRule(51);
 
-                    loop34:
+                    loop51:
                     do {
-                        int alt34=2;
-                        try { dbg.enterDecision(34, decisionCanBacktrack[34]);
+                        int alt51=2;
+                        try { dbg.enterDecision(51, decisionCanBacktrack[51]);
 
-                        int LA34_0 = input.LA(1);
+                        int LA51_0 = input.LA(1);
 
-                        if ( (LA34_0==WS) ) {
-                            alt34=1;
+                        if ( (LA51_0==WS) ) {
+                            alt51=1;
                         }
 
 
-                        } finally {dbg.exitDecision(34);}
+                        } finally {dbg.exitDecision(51);}
 
-                        switch (alt34) {
+                        switch (alt51) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:223:15: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:261:13: WS
                     	    {
-                    	    dbg.location(223,15);
-                    	    match(input,WS,FOLLOW_WS_in_combinator664); if (state.failed) return ;
+                    	    dbg.location(261,13);
+                    	    match(input,WS,FOLLOW_WS_in_operator1017); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop34;
+                    	    break loop51;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(34);}
+                    } finally {dbg.exitSubRule(51);}
 
 
                     }
@@ -2279,53 +3157,7 @@ public class Css3Parser extends DebugParser {
                 case 3 :
                     dbg.enterAlt(3);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:224:7: TILDE ( WS )*
-                    {
-                    dbg.location(224,7);
-                    match(input,TILDE,FOLLOW_TILDE_in_combinator673); if (state.failed) return ;
-                    dbg.location(224,13);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:224:13: ( WS )*
-                    try { dbg.enterSubRule(35);
-
-                    loop35:
-                    do {
-                        int alt35=2;
-                        try { dbg.enterDecision(35, decisionCanBacktrack[35]);
-
-                        int LA35_0 = input.LA(1);
-
-                        if ( (LA35_0==WS) ) {
-                            alt35=1;
-                        }
-
-
-                        } finally {dbg.exitDecision(35);}
-
-                        switch (alt35) {
-                    	case 1 :
-                    	    dbg.enterAlt(1);
-
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:224:13: WS
-                    	    {
-                    	    dbg.location(224,13);
-                    	    match(input,WS,FOLLOW_WS_in_combinator675); if (state.failed) return ;
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    break loop35;
-                        }
-                    } while (true);
-                    } finally {dbg.exitSubRule(35);}
-
-
-                    }
-                    break;
-                case 4 :
-                    dbg.enterAlt(4);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:226:5: 
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:263:5: 
                     {
                     }
                     break;
@@ -2338,7 +3170,229 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(226, 5);
+        dbg.location(263, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "operator");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "operator"
+
+
+    // $ANTLR start "combinator"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:1: combinator : ( PLUS ( WS )* | GREATER ( WS )* | TILDE ( WS )* | );
+    public final void combinator() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "combinator");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(265, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:266:5: ( PLUS ( WS )* | GREATER ( WS )* | TILDE ( WS )* | )
+            int alt56=4;
+            try { dbg.enterDecision(56, decisionCanBacktrack[56]);
+
+            switch ( input.LA(1) ) {
+            case PLUS:
+                {
+                alt56=1;
+                }
+                break;
+            case GREATER:
+                {
+                alt56=2;
+                }
+                break;
+            case TILDE:
+                {
+                alt56=3;
+                }
+                break;
+            case IDENT:
+            case GEN:
+            case COLON:
+            case STAR:
+            case PIPE:
+            case HASH:
+            case DOT:
+            case LBRACKET:
+            case DCOLON:
+                {
+                alt56=4;
+                }
+                break;
+            default:
+                if (state.backtracking>0) {state.failed=true; return ;}
+                NoViableAltException nvae =
+                    new NoViableAltException("", 56, 0, input);
+
+                dbg.recognitionException(nvae);
+                throw nvae;
+            }
+
+            } finally {dbg.exitDecision(56);}
+
+            switch (alt56) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:266:7: PLUS ( WS )*
+                    {
+                    dbg.location(266,7);
+                    match(input,PLUS,FOLLOW_PLUS_in_combinator1045); if (state.failed) return ;
+                    dbg.location(266,12);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:266:12: ( WS )*
+                    try { dbg.enterSubRule(53);
+
+                    loop53:
+                    do {
+                        int alt53=2;
+                        try { dbg.enterDecision(53, decisionCanBacktrack[53]);
+
+                        int LA53_0 = input.LA(1);
+
+                        if ( (LA53_0==WS) ) {
+                            alt53=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(53);}
+
+                        switch (alt53) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:266:12: WS
+                    	    {
+                    	    dbg.location(266,12);
+                    	    match(input,WS,FOLLOW_WS_in_combinator1047); if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop53;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(53);}
+
+
+                    }
+                    break;
+                case 2 :
+                    dbg.enterAlt(2);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:7: GREATER ( WS )*
+                    {
+                    dbg.location(267,7);
+                    match(input,GREATER,FOLLOW_GREATER_in_combinator1056); if (state.failed) return ;
+                    dbg.location(267,15);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:15: ( WS )*
+                    try { dbg.enterSubRule(54);
+
+                    loop54:
+                    do {
+                        int alt54=2;
+                        try { dbg.enterDecision(54, decisionCanBacktrack[54]);
+
+                        int LA54_0 = input.LA(1);
+
+                        if ( (LA54_0==WS) ) {
+                            alt54=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(54);}
+
+                        switch (alt54) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:15: WS
+                    	    {
+                    	    dbg.location(267,15);
+                    	    match(input,WS,FOLLOW_WS_in_combinator1058); if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop54;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(54);}
+
+
+                    }
+                    break;
+                case 3 :
+                    dbg.enterAlt(3);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:268:7: TILDE ( WS )*
+                    {
+                    dbg.location(268,7);
+                    match(input,TILDE,FOLLOW_TILDE_in_combinator1067); if (state.failed) return ;
+                    dbg.location(268,13);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:268:13: ( WS )*
+                    try { dbg.enterSubRule(55);
+
+                    loop55:
+                    do {
+                        int alt55=2;
+                        try { dbg.enterDecision(55, decisionCanBacktrack[55]);
+
+                        int LA55_0 = input.LA(1);
+
+                        if ( (LA55_0==WS) ) {
+                            alt55=1;
+                        }
+
+
+                        } finally {dbg.exitDecision(55);}
+
+                        switch (alt55) {
+                    	case 1 :
+                    	    dbg.enterAlt(1);
+
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:268:13: WS
+                    	    {
+                    	    dbg.location(268,13);
+                    	    match(input,WS,FOLLOW_WS_in_combinator1069); if (state.failed) return ;
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop55;
+                        }
+                    } while (true);
+                    } finally {dbg.exitSubRule(55);}
+
+
+                    }
+                    break;
+                case 4 :
+                    dbg.enterAlt(4);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:270:5: 
+                    {
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(270, 5);
 
         }
         finally {
@@ -2353,20 +3407,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "unaryOperator"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:228:1: unaryOperator : ( MINUS | PLUS );
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:272:1: unaryOperator : ( MINUS | PLUS );
     public final void unaryOperator() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "unaryOperator");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(228, 1);
+        dbg.location(272, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:229:5: ( MINUS | PLUS )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:273:5: ( MINUS | PLUS )
             dbg.enterAlt(1);
 
             // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
             {
-            dbg.location(229,5);
+            dbg.location(273,5);
             if ( input.LA(1)==PLUS||input.LA(1)==MINUS ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -2388,7 +3442,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(231, 5);
+        dbg.location(275, 5);
 
         }
         finally {
@@ -2403,20 +3457,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "property"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:233:1: property : ( IDENT | GEN ) ( WS )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:277:1: property : ( IDENT | GEN ) ( WS )* ;
     public final void property() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "property");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(233, 1);
+        dbg.location(277, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:234:5: ( ( IDENT | GEN ) ( WS )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:278:5: ( ( IDENT | GEN ) ( WS )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:234:7: ( IDENT | GEN ) ( WS )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:278:7: ( IDENT | GEN ) ( WS )*
             {
-            dbg.location(234,7);
+            dbg.location(278,7);
             if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -2428,41 +3482,41 @@ public class Css3Parser extends DebugParser {
                 throw mse;
             }
 
-            dbg.location(234,21);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:234:21: ( WS )*
-            try { dbg.enterSubRule(37);
+            dbg.location(278,21);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:278:21: ( WS )*
+            try { dbg.enterSubRule(57);
 
-            loop37:
+            loop57:
             do {
-                int alt37=2;
-                try { dbg.enterDecision(37, decisionCanBacktrack[37]);
+                int alt57=2;
+                try { dbg.enterDecision(57, decisionCanBacktrack[57]);
 
-                int LA37_0 = input.LA(1);
+                int LA57_0 = input.LA(1);
 
-                if ( (LA37_0==WS) ) {
-                    alt37=1;
+                if ( (LA57_0==WS) ) {
+                    alt57=1;
                 }
 
 
-                } finally {dbg.exitDecision(37);}
+                } finally {dbg.exitDecision(57);}
 
-                switch (alt37) {
+                switch (alt57) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:234:21: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:278:21: WS
             	    {
-            	    dbg.location(234,21);
-            	    match(input,WS,FOLLOW_WS_in_property743); if (state.failed) return ;
+            	    dbg.location(278,21);
+            	    match(input,WS,FOLLOW_WS_in_property1137); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop37;
+            	    break loop57;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(37);}
+            } finally {dbg.exitSubRule(57);}
 
 
             }
@@ -2474,7 +3528,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(235, 5);
+        dbg.location(279, 5);
 
         }
         finally {
@@ -2489,77 +3543,77 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "ruleSet"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:237:1: ruleSet : selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:281:1: ruleSet : selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE ;
     public final void ruleSet() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "ruleSet");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(237, 1);
+        dbg.location(281, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:238:5: ( selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:282:5: ( selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:238:9: selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:282:9: selectorsGroup LBRACE ( WS )* syncTo_IDENT_RBRACE declarations RBRACE
             {
-            dbg.location(238,9);
-            pushFollow(FOLLOW_selectorsGroup_in_ruleSet768);
+            dbg.location(282,9);
+            pushFollow(FOLLOW_selectorsGroup_in_ruleSet1162);
             selectorsGroup();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(239,9);
-            match(input,LBRACE,FOLLOW_LBRACE_in_ruleSet778); if (state.failed) return ;
-            dbg.location(239,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:239:16: ( WS )*
-            try { dbg.enterSubRule(38);
+            dbg.location(283,9);
+            match(input,LBRACE,FOLLOW_LBRACE_in_ruleSet1172); if (state.failed) return ;
+            dbg.location(283,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:283:16: ( WS )*
+            try { dbg.enterSubRule(58);
 
-            loop38:
+            loop58:
             do {
-                int alt38=2;
-                try { dbg.enterDecision(38, decisionCanBacktrack[38]);
+                int alt58=2;
+                try { dbg.enterDecision(58, decisionCanBacktrack[58]);
 
-                int LA38_0 = input.LA(1);
+                int LA58_0 = input.LA(1);
 
-                if ( (LA38_0==WS) ) {
-                    alt38=1;
+                if ( (LA58_0==WS) ) {
+                    alt58=1;
                 }
 
 
-                } finally {dbg.exitDecision(38);}
+                } finally {dbg.exitDecision(58);}
 
-                switch (alt38) {
+                switch (alt58) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:239:16: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:283:16: WS
             	    {
-            	    dbg.location(239,16);
-            	    match(input,WS,FOLLOW_WS_in_ruleSet780); if (state.failed) return ;
+            	    dbg.location(283,16);
+            	    match(input,WS,FOLLOW_WS_in_ruleSet1174); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop38;
+            	    break loop58;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(38);}
+            } finally {dbg.exitSubRule(58);}
 
-            dbg.location(239,20);
-            pushFollow(FOLLOW_syncTo_IDENT_RBRACE_in_ruleSet783);
+            dbg.location(283,20);
+            pushFollow(FOLLOW_syncTo_IDENT_RBRACE_in_ruleSet1177);
             syncTo_IDENT_RBRACE();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(240,13);
-            pushFollow(FOLLOW_declarations_in_ruleSet797);
+            dbg.location(284,13);
+            pushFollow(FOLLOW_declarations_in_ruleSet1191);
             declarations();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(241,9);
-            match(input,RBRACE,FOLLOW_RBRACE_in_ruleSet807); if (state.failed) return ;
+            dbg.location(285,9);
+            match(input,RBRACE,FOLLOW_RBRACE_in_ruleSet1201); if (state.failed) return ;
 
             }
 
@@ -2570,7 +3624,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(242, 5);
+        dbg.location(286, 5);
 
         }
         finally {
@@ -2585,40 +3639,40 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "declarations"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:244:1: declarations : ( declaration )? ( SEMI ( WS )* ( declaration )? )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:288:1: declarations : ( declaration )? ( SEMI ( WS )* ( declaration )? )* ;
     public final void declarations() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "declarations");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(244, 1);
+        dbg.location(288, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:245:5: ( ( declaration )? ( SEMI ( WS )* ( declaration )? )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:289:5: ( ( declaration )? ( SEMI ( WS )* ( declaration )? )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:9: ( declaration )? ( SEMI ( WS )* ( declaration )? )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:9: ( declaration )? ( SEMI ( WS )* ( declaration )? )*
             {
-            dbg.location(247,9);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:9: ( declaration )?
-            int alt39=2;
-            try { dbg.enterSubRule(39);
-            try { dbg.enterDecision(39, decisionCanBacktrack[39]);
+            dbg.location(291,9);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:9: ( declaration )?
+            int alt59=2;
+            try { dbg.enterSubRule(59);
+            try { dbg.enterDecision(59, decisionCanBacktrack[59]);
 
-            int LA39_0 = input.LA(1);
+            int LA59_0 = input.LA(1);
 
-            if ( (LA39_0==IDENT||LA39_0==GEN) ) {
-                alt39=1;
+            if ( (LA59_0==IDENT||LA59_0==GEN) ) {
+                alt59=1;
             }
-            } finally {dbg.exitDecision(39);}
+            } finally {dbg.exitDecision(59);}
 
-            switch (alt39) {
+            switch (alt59) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:9: declaration
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:9: declaration
                     {
-                    dbg.location(247,9);
-                    pushFollow(FOLLOW_declaration_in_declarations845);
+                    dbg.location(291,9);
+                    pushFollow(FOLLOW_declaration_in_declarations1239);
                     declaration();
 
                     state._fsp--;
@@ -2628,91 +3682,91 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(39);}
+            } finally {dbg.exitSubRule(59);}
 
-            dbg.location(247,22);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:22: ( SEMI ( WS )* ( declaration )? )*
-            try { dbg.enterSubRule(42);
+            dbg.location(291,22);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:22: ( SEMI ( WS )* ( declaration )? )*
+            try { dbg.enterSubRule(62);
 
-            loop42:
+            loop62:
             do {
-                int alt42=2;
-                try { dbg.enterDecision(42, decisionCanBacktrack[42]);
+                int alt62=2;
+                try { dbg.enterDecision(62, decisionCanBacktrack[62]);
 
-                int LA42_0 = input.LA(1);
+                int LA62_0 = input.LA(1);
 
-                if ( (LA42_0==SEMI) ) {
-                    alt42=1;
+                if ( (LA62_0==SEMI) ) {
+                    alt62=1;
                 }
 
 
-                } finally {dbg.exitDecision(42);}
+                } finally {dbg.exitDecision(62);}
 
-                switch (alt42) {
+                switch (alt62) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:23: SEMI ( WS )* ( declaration )?
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:23: SEMI ( WS )* ( declaration )?
             	    {
-            	    dbg.location(247,23);
-            	    match(input,SEMI,FOLLOW_SEMI_in_declarations849); if (state.failed) return ;
-            	    dbg.location(247,28);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:28: ( WS )*
-            	    try { dbg.enterSubRule(40);
+            	    dbg.location(291,23);
+            	    match(input,SEMI,FOLLOW_SEMI_in_declarations1243); if (state.failed) return ;
+            	    dbg.location(291,28);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:28: ( WS )*
+            	    try { dbg.enterSubRule(60);
 
-            	    loop40:
+            	    loop60:
             	    do {
-            	        int alt40=2;
-            	        try { dbg.enterDecision(40, decisionCanBacktrack[40]);
+            	        int alt60=2;
+            	        try { dbg.enterDecision(60, decisionCanBacktrack[60]);
 
-            	        int LA40_0 = input.LA(1);
+            	        int LA60_0 = input.LA(1);
 
-            	        if ( (LA40_0==WS) ) {
-            	            alt40=1;
+            	        if ( (LA60_0==WS) ) {
+            	            alt60=1;
             	        }
 
 
-            	        } finally {dbg.exitDecision(40);}
+            	        } finally {dbg.exitDecision(60);}
 
-            	        switch (alt40) {
+            	        switch (alt60) {
             	    	case 1 :
             	    	    dbg.enterAlt(1);
 
-            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:28: WS
+            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:28: WS
             	    	    {
-            	    	    dbg.location(247,28);
-            	    	    match(input,WS,FOLLOW_WS_in_declarations851); if (state.failed) return ;
+            	    	    dbg.location(291,28);
+            	    	    match(input,WS,FOLLOW_WS_in_declarations1245); if (state.failed) return ;
 
             	    	    }
             	    	    break;
 
             	    	default :
-            	    	    break loop40;
+            	    	    break loop60;
             	        }
             	    } while (true);
-            	    } finally {dbg.exitSubRule(40);}
+            	    } finally {dbg.exitSubRule(60);}
 
-            	    dbg.location(247,32);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:32: ( declaration )?
-            	    int alt41=2;
-            	    try { dbg.enterSubRule(41);
-            	    try { dbg.enterDecision(41, decisionCanBacktrack[41]);
+            	    dbg.location(291,32);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:32: ( declaration )?
+            	    int alt61=2;
+            	    try { dbg.enterSubRule(61);
+            	    try { dbg.enterDecision(61, decisionCanBacktrack[61]);
 
-            	    int LA41_0 = input.LA(1);
+            	    int LA61_0 = input.LA(1);
 
-            	    if ( (LA41_0==IDENT||LA41_0==GEN) ) {
-            	        alt41=1;
+            	    if ( (LA61_0==IDENT||LA61_0==GEN) ) {
+            	        alt61=1;
             	    }
-            	    } finally {dbg.exitDecision(41);}
+            	    } finally {dbg.exitDecision(61);}
 
-            	    switch (alt41) {
+            	    switch (alt61) {
             	        case 1 :
             	            dbg.enterAlt(1);
 
-            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:247:32: declaration
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:291:32: declaration
             	            {
-            	            dbg.location(247,32);
-            	            pushFollow(FOLLOW_declaration_in_declarations854);
+            	            dbg.location(291,32);
+            	            pushFollow(FOLLOW_declaration_in_declarations1248);
             	            declaration();
 
             	            state._fsp--;
@@ -2722,17 +3776,17 @@ public class Css3Parser extends DebugParser {
             	            break;
 
             	    }
-            	    } finally {dbg.exitSubRule(41);}
+            	    } finally {dbg.exitSubRule(61);}
 
 
             	    }
             	    break;
 
             	default :
-            	    break loop42;
+            	    break loop62;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(42);}
+            } finally {dbg.exitSubRule(62);}
 
 
             }
@@ -2744,7 +3798,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(248, 5);
+        dbg.location(292, 5);
 
         }
         finally {
@@ -2759,89 +3813,89 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "selectorsGroup"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:250:1: selectorsGroup : selector ( COMMA ( WS )* selector )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:294:1: selectorsGroup : selector ( COMMA ( WS )* selector )* ;
     public final void selectorsGroup() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "selectorsGroup");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(250, 1);
+        dbg.location(294, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:5: ( selector ( COMMA ( WS )* selector )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:5: ( selector ( COMMA ( WS )* selector )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:7: selector ( COMMA ( WS )* selector )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:7: selector ( COMMA ( WS )* selector )*
             {
-            dbg.location(251,7);
-            pushFollow(FOLLOW_selector_in_selectorsGroup878);
+            dbg.location(295,7);
+            pushFollow(FOLLOW_selector_in_selectorsGroup1272);
             selector();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(251,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:16: ( COMMA ( WS )* selector )*
-            try { dbg.enterSubRule(44);
+            dbg.location(295,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:16: ( COMMA ( WS )* selector )*
+            try { dbg.enterSubRule(64);
 
-            loop44:
+            loop64:
             do {
-                int alt44=2;
-                try { dbg.enterDecision(44, decisionCanBacktrack[44]);
+                int alt64=2;
+                try { dbg.enterDecision(64, decisionCanBacktrack[64]);
 
-                int LA44_0 = input.LA(1);
+                int LA64_0 = input.LA(1);
 
-                if ( (LA44_0==COMMA) ) {
-                    alt44=1;
+                if ( (LA64_0==COMMA) ) {
+                    alt64=1;
                 }
 
 
-                } finally {dbg.exitDecision(44);}
+                } finally {dbg.exitDecision(64);}
 
-                switch (alt44) {
+                switch (alt64) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:17: COMMA ( WS )* selector
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:17: COMMA ( WS )* selector
             	    {
-            	    dbg.location(251,17);
-            	    match(input,COMMA,FOLLOW_COMMA_in_selectorsGroup881); if (state.failed) return ;
-            	    dbg.location(251,23);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:23: ( WS )*
-            	    try { dbg.enterSubRule(43);
+            	    dbg.location(295,17);
+            	    match(input,COMMA,FOLLOW_COMMA_in_selectorsGroup1275); if (state.failed) return ;
+            	    dbg.location(295,23);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:23: ( WS )*
+            	    try { dbg.enterSubRule(63);
 
-            	    loop43:
+            	    loop63:
             	    do {
-            	        int alt43=2;
-            	        try { dbg.enterDecision(43, decisionCanBacktrack[43]);
+            	        int alt63=2;
+            	        try { dbg.enterDecision(63, decisionCanBacktrack[63]);
 
-            	        int LA43_0 = input.LA(1);
+            	        int LA63_0 = input.LA(1);
 
-            	        if ( (LA43_0==WS) ) {
-            	            alt43=1;
+            	        if ( (LA63_0==WS) ) {
+            	            alt63=1;
             	        }
 
 
-            	        } finally {dbg.exitDecision(43);}
+            	        } finally {dbg.exitDecision(63);}
 
-            	        switch (alt43) {
+            	        switch (alt63) {
             	    	case 1 :
             	    	    dbg.enterAlt(1);
 
-            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:251:23: WS
+            	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:295:23: WS
             	    	    {
-            	    	    dbg.location(251,23);
-            	    	    match(input,WS,FOLLOW_WS_in_selectorsGroup883); if (state.failed) return ;
+            	    	    dbg.location(295,23);
+            	    	    match(input,WS,FOLLOW_WS_in_selectorsGroup1277); if (state.failed) return ;
 
             	    	    }
             	    	    break;
 
             	    	default :
-            	    	    break loop43;
+            	    	    break loop63;
             	        }
             	    } while (true);
-            	    } finally {dbg.exitSubRule(43);}
+            	    } finally {dbg.exitSubRule(63);}
 
-            	    dbg.location(251,27);
-            	    pushFollow(FOLLOW_selector_in_selectorsGroup886);
+            	    dbg.location(295,27);
+            	    pushFollow(FOLLOW_selector_in_selectorsGroup1280);
             	    selector();
 
             	    state._fsp--;
@@ -2851,10 +3905,10 @@ public class Css3Parser extends DebugParser {
             	    break;
 
             	default :
-            	    break loop44;
+            	    break loop64;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(44);}
+            } finally {dbg.exitSubRule(64);}
 
 
             }
@@ -2866,7 +3920,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(252, 5);
+        dbg.location(296, 5);
 
         }
         finally {
@@ -2881,57 +3935,57 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "selector"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:254:1: selector : simpleSelectorSequence ( combinator simpleSelectorSequence )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:298:1: selector : simpleSelectorSequence ( combinator simpleSelectorSequence )* ;
     public final void selector() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "selector");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(254, 1);
+        dbg.location(298, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:255:5: ( simpleSelectorSequence ( combinator simpleSelectorSequence )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:5: ( simpleSelectorSequence ( combinator simpleSelectorSequence )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:255:7: simpleSelectorSequence ( combinator simpleSelectorSequence )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:7: simpleSelectorSequence ( combinator simpleSelectorSequence )*
             {
-            dbg.location(255,7);
-            pushFollow(FOLLOW_simpleSelectorSequence_in_selector909);
+            dbg.location(299,7);
+            pushFollow(FOLLOW_simpleSelectorSequence_in_selector1303);
             simpleSelectorSequence();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(255,30);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:255:30: ( combinator simpleSelectorSequence )*
-            try { dbg.enterSubRule(45);
+            dbg.location(299,30);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:30: ( combinator simpleSelectorSequence )*
+            try { dbg.enterSubRule(65);
 
-            loop45:
+            loop65:
             do {
-                int alt45=2;
-                try { dbg.enterDecision(45, decisionCanBacktrack[45]);
+                int alt65=2;
+                try { dbg.enterDecision(65, decisionCanBacktrack[65]);
 
-                int LA45_0 = input.LA(1);
+                int LA65_0 = input.LA(1);
 
-                if ( (LA45_0==IDENT||LA45_0==GEN||LA45_0==COLON||(LA45_0>=PLUS && LA45_0<=TILDE)||(LA45_0>=STAR && LA45_0<=DCOLON)) ) {
-                    alt45=1;
+                if ( (LA65_0==IDENT||LA65_0==GEN||LA65_0==COLON||(LA65_0>=PLUS && LA65_0<=TILDE)||(LA65_0>=STAR && LA65_0<=DCOLON)) ) {
+                    alt65=1;
                 }
 
 
-                } finally {dbg.exitDecision(45);}
+                } finally {dbg.exitDecision(65);}
 
-                switch (alt45) {
+                switch (alt65) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:255:31: combinator simpleSelectorSequence
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:31: combinator simpleSelectorSequence
             	    {
-            	    dbg.location(255,31);
-            	    pushFollow(FOLLOW_combinator_in_selector912);
+            	    dbg.location(299,31);
+            	    pushFollow(FOLLOW_combinator_in_selector1306);
             	    combinator();
 
             	    state._fsp--;
             	    if (state.failed) return ;
-            	    dbg.location(255,42);
-            	    pushFollow(FOLLOW_simpleSelectorSequence_in_selector914);
+            	    dbg.location(299,42);
+            	    pushFollow(FOLLOW_simpleSelectorSequence_in_selector1308);
             	    simpleSelectorSequence();
 
             	    state._fsp--;
@@ -2941,10 +3995,10 @@ public class Css3Parser extends DebugParser {
             	    break;
 
             	default :
-            	    break loop45;
+            	    break loop65;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(45);}
+            } finally {dbg.exitSubRule(65);}
 
 
             }
@@ -2956,7 +4010,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(256, 5);
+        dbg.location(300, 5);
 
         }
         finally {
@@ -2971,81 +4025,81 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "simpleSelectorSequence"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:259:1: simpleSelectorSequence : ( ( typeSelector ( ( esPred )=> elementSubsequent )* ) | ( ( ( esPred )=> elementSubsequent )+ ) );
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:303:1: simpleSelectorSequence : ( ( typeSelector ( ( esPred )=> elementSubsequent )* ) | ( ( ( esPred )=> elementSubsequent )+ ) );
     public final void simpleSelectorSequence() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "simpleSelectorSequence");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(259, 1);
+        dbg.location(303, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:261:2: ( ( typeSelector ( ( esPred )=> elementSubsequent )* ) | ( ( ( esPred )=> elementSubsequent )+ ) )
-            int alt48=2;
-            try { dbg.enterDecision(48, decisionCanBacktrack[48]);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:305:2: ( ( typeSelector ( ( esPred )=> elementSubsequent )* ) | ( ( ( esPred )=> elementSubsequent )+ ) )
+            int alt68=2;
+            try { dbg.enterDecision(68, decisionCanBacktrack[68]);
 
-            int LA48_0 = input.LA(1);
+            int LA68_0 = input.LA(1);
 
-            if ( (LA48_0==IDENT||LA48_0==GEN||(LA48_0>=STAR && LA48_0<=PIPE)) ) {
-                alt48=1;
+            if ( (LA68_0==IDENT||LA68_0==GEN||(LA68_0>=STAR && LA68_0<=PIPE)) ) {
+                alt68=1;
             }
-            else if ( (LA48_0==COLON||(LA48_0>=HASH && LA48_0<=DCOLON)) ) {
-                alt48=2;
+            else if ( (LA68_0==COLON||(LA68_0>=HASH && LA68_0<=DCOLON)) ) {
+                alt68=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return ;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 48, 0, input);
+                    new NoViableAltException("", 68, 0, input);
 
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(48);}
+            } finally {dbg.exitDecision(68);}
 
-            switch (alt48) {
+            switch (alt68) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:2: ( typeSelector ( ( esPred )=> elementSubsequent )* )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:2: ( typeSelector ( ( esPred )=> elementSubsequent )* )
                     {
-                    dbg.location(265,2);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:2: ( typeSelector ( ( esPred )=> elementSubsequent )* )
+                    dbg.location(309,2);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:2: ( typeSelector ( ( esPred )=> elementSubsequent )* )
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:5: typeSelector ( ( esPred )=> elementSubsequent )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:5: typeSelector ( ( esPred )=> elementSubsequent )*
                     {
-                    dbg.location(265,5);
-                    pushFollow(FOLLOW_typeSelector_in_simpleSelectorSequence954);
+                    dbg.location(309,5);
+                    pushFollow(FOLLOW_typeSelector_in_simpleSelectorSequence1348);
                     typeSelector();
 
                     state._fsp--;
                     if (state.failed) return ;
-                    dbg.location(265,18);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:18: ( ( esPred )=> elementSubsequent )*
-                    try { dbg.enterSubRule(46);
+                    dbg.location(309,18);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:18: ( ( esPred )=> elementSubsequent )*
+                    try { dbg.enterSubRule(66);
 
-                    loop46:
+                    loop66:
                     do {
-                        int alt46=2;
-                        try { dbg.enterDecision(46, decisionCanBacktrack[46]);
+                        int alt66=2;
+                        try { dbg.enterDecision(66, decisionCanBacktrack[66]);
 
                         try {
                             isCyclicDecision = true;
-                            alt46 = dfa46.predict(input);
+                            alt66 = dfa66.predict(input);
                         }
                         catch (NoViableAltException nvae) {
                             dbg.recognitionException(nvae);
                             throw nvae;
                         }
-                        } finally {dbg.exitDecision(46);}
+                        } finally {dbg.exitDecision(66);}
 
-                        switch (alt46) {
+                        switch (alt66) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:19: ( esPred )=> elementSubsequent
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:19: ( esPred )=> elementSubsequent
                     	    {
-                    	    dbg.location(265,29);
-                    	    pushFollow(FOLLOW_elementSubsequent_in_simpleSelectorSequence961);
+                    	    dbg.location(309,29);
+                    	    pushFollow(FOLLOW_elementSubsequent_in_simpleSelectorSequence1355);
                     	    elementSubsequent();
 
                     	    state._fsp--;
@@ -3055,10 +4109,10 @@ public class Css3Parser extends DebugParser {
                     	    break;
 
                     	default :
-                    	    break loop46;
+                    	    break loop66;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(46);}
+                    } finally {dbg.exitSubRule(66);}
 
 
                     }
@@ -3069,31 +4123,31 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:2: ( ( ( esPred )=> elementSubsequent )+ )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:2: ( ( ( esPred )=> elementSubsequent )+ )
                     {
-                    dbg.location(267,2);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:2: ( ( ( esPred )=> elementSubsequent )+ )
+                    dbg.location(311,2);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:2: ( ( ( esPred )=> elementSubsequent )+ )
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:4: ( ( esPred )=> elementSubsequent )+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:4: ( ( esPred )=> elementSubsequent )+
                     {
-                    dbg.location(267,4);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:4: ( ( esPred )=> elementSubsequent )+
-                    int cnt47=0;
-                    try { dbg.enterSubRule(47);
+                    dbg.location(311,4);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:4: ( ( esPred )=> elementSubsequent )+
+                    int cnt67=0;
+                    try { dbg.enterSubRule(67);
 
-                    loop47:
+                    loop67:
                     do {
-                        int alt47=2;
-                        try { dbg.enterDecision(47, decisionCanBacktrack[47]);
+                        int alt67=2;
+                        try { dbg.enterDecision(67, decisionCanBacktrack[67]);
 
                         switch ( input.LA(1) ) {
                         case HASH:
                             {
-                            int LA47_2 = input.LA(2);
+                            int LA67_2 = input.LA(2);
 
                             if ( (synpred2_Css3()) ) {
-                                alt47=1;
+                                alt67=1;
                             }
 
 
@@ -3101,10 +4155,10 @@ public class Css3Parser extends DebugParser {
                             break;
                         case DOT:
                             {
-                            int LA47_3 = input.LA(2);
+                            int LA67_3 = input.LA(2);
 
                             if ( (synpred2_Css3()) ) {
-                                alt47=1;
+                                alt67=1;
                             }
 
 
@@ -3112,10 +4166,10 @@ public class Css3Parser extends DebugParser {
                             break;
                         case LBRACKET:
                             {
-                            int LA47_4 = input.LA(2);
+                            int LA67_4 = input.LA(2);
 
                             if ( (synpred2_Css3()) ) {
-                                alt47=1;
+                                alt67=1;
                             }
 
 
@@ -3124,10 +4178,10 @@ public class Css3Parser extends DebugParser {
                         case COLON:
                         case DCOLON:
                             {
-                            int LA47_5 = input.LA(2);
+                            int LA67_5 = input.LA(2);
 
                             if ( (synpred2_Css3()) ) {
-                                alt47=1;
+                                alt67=1;
                             }
 
 
@@ -3136,16 +4190,16 @@ public class Css3Parser extends DebugParser {
 
                         }
 
-                        } finally {dbg.exitDecision(47);}
+                        } finally {dbg.exitDecision(67);}
 
-                        switch (alt47) {
+                        switch (alt67) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:5: ( esPred )=> elementSubsequent
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:5: ( esPred )=> elementSubsequent
                     	    {
-                    	    dbg.location(267,15);
-                    	    pushFollow(FOLLOW_elementSubsequent_in_simpleSelectorSequence979);
+                    	    dbg.location(311,15);
+                    	    pushFollow(FOLLOW_elementSubsequent_in_simpleSelectorSequence1373);
                     	    elementSubsequent();
 
                     	    state._fsp--;
@@ -3155,17 +4209,17 @@ public class Css3Parser extends DebugParser {
                     	    break;
 
                     	default :
-                    	    if ( cnt47 >= 1 ) break loop47;
+                    	    if ( cnt67 >= 1 ) break loop67;
                     	    if (state.backtracking>0) {state.failed=true; return ;}
                                 EarlyExitException eee =
-                                    new EarlyExitException(47, input);
+                                    new EarlyExitException(67, input);
                                 dbg.recognitionException(eee);
 
                                 throw eee;
                         }
-                        cnt47++;
+                        cnt67++;
                     } while (true);
-                    } finally {dbg.exitSubRule(47);}
+                    } finally {dbg.exitSubRule(67);}
 
 
                     }
@@ -3184,7 +4238,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(268, 2);
+        dbg.location(312, 2);
 
         }
         finally {
@@ -3199,43 +4253,43 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "typeSelector"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:282:1: typeSelector options {k=2; } : ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* ) ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:326:1: typeSelector options {k=2; } : ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* ) ;
     public final void typeSelector() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "typeSelector");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(282, 1);
+        dbg.location(326, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:3: ( ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:3: ( ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* ) )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:6: ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:6: ( ( nsPred )=> namespace_wqname_prefix )? ( elementName ( WS )* )
             {
-            dbg.location(284,6);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:6: ( ( nsPred )=> namespace_wqname_prefix )?
-            int alt49=2;
-            try { dbg.enterSubRule(49);
-            try { dbg.enterDecision(49, decisionCanBacktrack[49]);
+            dbg.location(328,6);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:6: ( ( nsPred )=> namespace_wqname_prefix )?
+            int alt69=2;
+            try { dbg.enterSubRule(69);
+            try { dbg.enterDecision(69, decisionCanBacktrack[69]);
 
             try {
                 isCyclicDecision = true;
-                alt49 = dfa49.predict(input);
+                alt69 = dfa69.predict(input);
             }
             catch (NoViableAltException nvae) {
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(49);}
+            } finally {dbg.exitDecision(69);}
 
-            switch (alt49) {
+            switch (alt69) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:7: ( nsPred )=> namespace_wqname_prefix
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:7: ( nsPred )=> namespace_wqname_prefix
                     {
-                    dbg.location(284,17);
-                    pushFollow(FOLLOW_namespace_wqname_prefix_in_typeSelector1030);
+                    dbg.location(328,17);
+                    pushFollow(FOLLOW_namespace_wqname_prefix_in_typeSelector1424);
                     namespace_wqname_prefix();
 
                     state._fsp--;
@@ -3245,55 +4299,55 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(49);}
+            } finally {dbg.exitSubRule(69);}
 
-            dbg.location(284,43);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:43: ( elementName ( WS )* )
+            dbg.location(328,43);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:43: ( elementName ( WS )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:45: elementName ( WS )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:45: elementName ( WS )*
             {
-            dbg.location(284,45);
-            pushFollow(FOLLOW_elementName_in_typeSelector1036);
+            dbg.location(328,45);
+            pushFollow(FOLLOW_elementName_in_typeSelector1430);
             elementName();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(284,57);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:57: ( WS )*
-            try { dbg.enterSubRule(50);
+            dbg.location(328,57);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:57: ( WS )*
+            try { dbg.enterSubRule(70);
 
-            loop50:
+            loop70:
             do {
-                int alt50=2;
-                try { dbg.enterDecision(50, decisionCanBacktrack[50]);
+                int alt70=2;
+                try { dbg.enterDecision(70, decisionCanBacktrack[70]);
 
-                int LA50_0 = input.LA(1);
+                int LA70_0 = input.LA(1);
 
-                if ( (LA50_0==WS) ) {
-                    alt50=1;
+                if ( (LA70_0==WS) ) {
+                    alt70=1;
                 }
 
 
-                } finally {dbg.exitDecision(50);}
+                } finally {dbg.exitDecision(70);}
 
-                switch (alt50) {
+                switch (alt70) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:57: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:57: WS
             	    {
-            	    dbg.location(284,57);
-            	    match(input,WS,FOLLOW_WS_in_typeSelector1038); if (state.failed) return ;
+            	    dbg.location(328,57);
+            	    match(input,WS,FOLLOW_WS_in_typeSelector1432); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop50;
+            	    break loop70;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(50);}
+            } finally {dbg.exitSubRule(70);}
 
 
             }
@@ -3308,7 +4362,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(285, 3);
+        dbg.location(329, 3);
 
         }
         finally {
@@ -3323,20 +4377,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "nsPred"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:287:2: nsPred : ( IDENT | STAR ) PIPE ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:331:2: nsPred : ( IDENT | STAR ) PIPE ;
     public final void nsPred() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "nsPred");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(287, 2);
+        dbg.location(331, 2);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:288:3: ( ( IDENT | STAR ) PIPE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:332:3: ( ( IDENT | STAR ) PIPE )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:289:3: ( IDENT | STAR ) PIPE
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:333:3: ( IDENT | STAR ) PIPE
             {
-            dbg.location(289,3);
+            dbg.location(333,3);
             if ( input.LA(1)==IDENT||input.LA(1)==STAR ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -3348,8 +4402,8 @@ public class Css3Parser extends DebugParser {
                 throw mse;
             }
 
-            dbg.location(289,18);
-            match(input,PIPE,FOLLOW_PIPE_in_nsPred1071); if (state.failed) return ;
+            dbg.location(333,18);
+            match(input,PIPE,FOLLOW_PIPE_in_nsPred1465); if (state.failed) return ;
 
             }
 
@@ -3360,7 +4414,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(290, 3);
+        dbg.location(334, 3);
 
         }
         finally {
@@ -3375,164 +4429,164 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "namespace_wqname_prefix"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:298:2: namespace_wqname_prefix : ( ( namespace_prefix ( WS )* )? PIPE | namespace_wildcard_prefix ( WS )* PIPE );
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:342:2: namespace_wqname_prefix : ( ( namespace_prefix ( WS )* )? PIPE | namespace_wildcard_prefix ( WS )* PIPE );
     public final void namespace_wqname_prefix() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "namespace_wqname_prefix");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(298, 2);
+        dbg.location(342, 2);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:3: ( ( namespace_prefix ( WS )* )? PIPE | namespace_wildcard_prefix ( WS )* PIPE )
-            int alt54=2;
-            try { dbg.enterDecision(54, decisionCanBacktrack[54]);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:3: ( ( namespace_prefix ( WS )* )? PIPE | namespace_wildcard_prefix ( WS )* PIPE )
+            int alt74=2;
+            try { dbg.enterDecision(74, decisionCanBacktrack[74]);
 
-            int LA54_0 = input.LA(1);
+            int LA74_0 = input.LA(1);
 
-            if ( (LA54_0==IDENT||LA54_0==PIPE) ) {
-                alt54=1;
+            if ( (LA74_0==IDENT||LA74_0==PIPE) ) {
+                alt74=1;
             }
-            else if ( (LA54_0==STAR) ) {
-                alt54=2;
+            else if ( (LA74_0==STAR) ) {
+                alt74=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return ;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 54, 0, input);
+                    new NoViableAltException("", 74, 0, input);
 
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(54);}
+            } finally {dbg.exitDecision(74);}
 
-            switch (alt54) {
+            switch (alt74) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:5: ( namespace_prefix ( WS )* )? PIPE
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:5: ( namespace_prefix ( WS )* )? PIPE
                     {
-                    dbg.location(299,5);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:5: ( namespace_prefix ( WS )* )?
-                    int alt52=2;
-                    try { dbg.enterSubRule(52);
-                    try { dbg.enterDecision(52, decisionCanBacktrack[52]);
+                    dbg.location(343,5);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:5: ( namespace_prefix ( WS )* )?
+                    int alt72=2;
+                    try { dbg.enterSubRule(72);
+                    try { dbg.enterDecision(72, decisionCanBacktrack[72]);
 
-                    int LA52_0 = input.LA(1);
+                    int LA72_0 = input.LA(1);
 
-                    if ( (LA52_0==IDENT) ) {
-                        alt52=1;
+                    if ( (LA72_0==IDENT) ) {
+                        alt72=1;
                     }
-                    } finally {dbg.exitDecision(52);}
+                    } finally {dbg.exitDecision(72);}
 
-                    switch (alt52) {
+                    switch (alt72) {
                         case 1 :
                             dbg.enterAlt(1);
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:7: namespace_prefix ( WS )*
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:7: namespace_prefix ( WS )*
                             {
-                            dbg.location(299,7);
-                            pushFollow(FOLLOW_namespace_prefix_in_namespace_wqname_prefix1101);
+                            dbg.location(343,7);
+                            pushFollow(FOLLOW_namespace_prefix_in_namespace_wqname_prefix1495);
                             namespace_prefix();
 
                             state._fsp--;
                             if (state.failed) return ;
-                            dbg.location(299,24);
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:24: ( WS )*
-                            try { dbg.enterSubRule(51);
+                            dbg.location(343,24);
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:24: ( WS )*
+                            try { dbg.enterSubRule(71);
 
-                            loop51:
+                            loop71:
                             do {
-                                int alt51=2;
-                                try { dbg.enterDecision(51, decisionCanBacktrack[51]);
+                                int alt71=2;
+                                try { dbg.enterDecision(71, decisionCanBacktrack[71]);
 
-                                int LA51_0 = input.LA(1);
+                                int LA71_0 = input.LA(1);
 
-                                if ( (LA51_0==WS) ) {
-                                    alt51=1;
+                                if ( (LA71_0==WS) ) {
+                                    alt71=1;
                                 }
 
 
-                                } finally {dbg.exitDecision(51);}
+                                } finally {dbg.exitDecision(71);}
 
-                                switch (alt51) {
+                                switch (alt71) {
                             	case 1 :
                             	    dbg.enterAlt(1);
 
-                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:299:24: WS
+                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:343:24: WS
                             	    {
-                            	    dbg.location(299,24);
-                            	    match(input,WS,FOLLOW_WS_in_namespace_wqname_prefix1103); if (state.failed) return ;
+                            	    dbg.location(343,24);
+                            	    match(input,WS,FOLLOW_WS_in_namespace_wqname_prefix1497); if (state.failed) return ;
 
                             	    }
                             	    break;
 
                             	default :
-                            	    break loop51;
+                            	    break loop71;
                                 }
                             } while (true);
-                            } finally {dbg.exitSubRule(51);}
+                            } finally {dbg.exitSubRule(71);}
 
 
                             }
                             break;
 
                     }
-                    } finally {dbg.exitSubRule(52);}
+                    } finally {dbg.exitSubRule(72);}
 
-                    dbg.location(299,31);
-                    match(input,PIPE,FOLLOW_PIPE_in_namespace_wqname_prefix1109); if (state.failed) return ;
+                    dbg.location(343,31);
+                    match(input,PIPE,FOLLOW_PIPE_in_namespace_wqname_prefix1503); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:300:6: namespace_wildcard_prefix ( WS )* PIPE
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:344:6: namespace_wildcard_prefix ( WS )* PIPE
                     {
-                    dbg.location(300,6);
-                    pushFollow(FOLLOW_namespace_wildcard_prefix_in_namespace_wqname_prefix1116);
+                    dbg.location(344,6);
+                    pushFollow(FOLLOW_namespace_wildcard_prefix_in_namespace_wqname_prefix1510);
                     namespace_wildcard_prefix();
 
                     state._fsp--;
                     if (state.failed) return ;
-                    dbg.location(300,32);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:300:32: ( WS )*
-                    try { dbg.enterSubRule(53);
+                    dbg.location(344,32);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:344:32: ( WS )*
+                    try { dbg.enterSubRule(73);
 
-                    loop53:
+                    loop73:
                     do {
-                        int alt53=2;
-                        try { dbg.enterDecision(53, decisionCanBacktrack[53]);
+                        int alt73=2;
+                        try { dbg.enterDecision(73, decisionCanBacktrack[73]);
 
-                        int LA53_0 = input.LA(1);
+                        int LA73_0 = input.LA(1);
 
-                        if ( (LA53_0==WS) ) {
-                            alt53=1;
+                        if ( (LA73_0==WS) ) {
+                            alt73=1;
                         }
 
 
-                        } finally {dbg.exitDecision(53);}
+                        } finally {dbg.exitDecision(73);}
 
-                        switch (alt53) {
+                        switch (alt73) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:300:32: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:344:32: WS
                     	    {
-                    	    dbg.location(300,32);
-                    	    match(input,WS,FOLLOW_WS_in_namespace_wqname_prefix1118); if (state.failed) return ;
+                    	    dbg.location(344,32);
+                    	    match(input,WS,FOLLOW_WS_in_namespace_wqname_prefix1512); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop53;
+                    	    break loop73;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(53);}
+                    } finally {dbg.exitSubRule(73);}
 
-                    dbg.location(300,36);
-                    match(input,PIPE,FOLLOW_PIPE_in_namespace_wqname_prefix1121); if (state.failed) return ;
+                    dbg.location(344,36);
+                    match(input,PIPE,FOLLOW_PIPE_in_namespace_wqname_prefix1515); if (state.failed) return ;
 
                     }
                     break;
@@ -3545,7 +4599,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(301, 3);
+        dbg.location(345, 3);
 
         }
         finally {
@@ -3560,21 +4614,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "namespace_wildcard_prefix"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:303:1: namespace_wildcard_prefix : STAR ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:347:1: namespace_wildcard_prefix : STAR ;
     public final void namespace_wildcard_prefix() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "namespace_wildcard_prefix");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(303, 1);
+        dbg.location(347, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:304:4: ( STAR )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:348:4: ( STAR )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:305:4: STAR
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:349:4: STAR
             {
-            dbg.location(305,4);
-            match(input,STAR,FOLLOW_STAR_in_namespace_wildcard_prefix1143); if (state.failed) return ;
+            dbg.location(349,4);
+            match(input,STAR,FOLLOW_STAR_in_namespace_wildcard_prefix1537); if (state.failed) return ;
 
             }
 
@@ -3585,7 +4639,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(306, 4);
+        dbg.location(350, 4);
 
         }
         finally {
@@ -3600,20 +4654,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "esPred"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:308:1: esPred : ( HASH | DOT | LBRACKET | COLON | DCOLON );
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:352:1: esPred : ( HASH | DOT | LBRACKET | COLON | DCOLON );
     public final void esPred() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "esPred");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(308, 1);
+        dbg.location(352, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:5: ( HASH | DOT | LBRACKET | COLON | DCOLON )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:353:5: ( HASH | DOT | LBRACKET | COLON | DCOLON )
             dbg.enterAlt(1);
 
             // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
             {
-            dbg.location(309,5);
+            dbg.location(353,5);
             if ( input.LA(1)==COLON||(input.LA(1)>=HASH && input.LA(1)<=DCOLON) ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -3635,7 +4689,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(310, 5);
+        dbg.location(354, 5);
 
         }
         finally {
@@ -3650,66 +4704,66 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "elementSubsequent"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:312:1: elementSubsequent : ( cssId | cssClass | attrib | pseudo ) ( WS )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:356:1: elementSubsequent : ( cssId | cssClass | attrib | pseudo ) ( WS )* ;
     public final void elementSubsequent() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "elementSubsequent");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(312, 1);
+        dbg.location(356, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:313:5: ( ( cssId | cssClass | attrib | pseudo ) ( WS )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:357:5: ( ( cssId | cssClass | attrib | pseudo ) ( WS )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:314:5: ( cssId | cssClass | attrib | pseudo ) ( WS )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:358:5: ( cssId | cssClass | attrib | pseudo ) ( WS )*
             {
-            dbg.location(314,5);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:314:5: ( cssId | cssClass | attrib | pseudo )
-            int alt55=4;
-            try { dbg.enterSubRule(55);
-            try { dbg.enterDecision(55, decisionCanBacktrack[55]);
+            dbg.location(358,5);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:358:5: ( cssId | cssClass | attrib | pseudo )
+            int alt75=4;
+            try { dbg.enterSubRule(75);
+            try { dbg.enterDecision(75, decisionCanBacktrack[75]);
 
             switch ( input.LA(1) ) {
             case HASH:
                 {
-                alt55=1;
+                alt75=1;
                 }
                 break;
             case DOT:
                 {
-                alt55=2;
+                alt75=2;
                 }
                 break;
             case LBRACKET:
                 {
-                alt55=3;
+                alt75=3;
                 }
                 break;
             case COLON:
             case DCOLON:
                 {
-                alt55=4;
+                alt75=4;
                 }
                 break;
             default:
                 if (state.backtracking>0) {state.failed=true; return ;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 55, 0, input);
+                    new NoViableAltException("", 75, 0, input);
 
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
 
-            } finally {dbg.exitDecision(55);}
+            } finally {dbg.exitDecision(75);}
 
-            switch (alt55) {
+            switch (alt75) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:315:6: cssId
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:359:6: cssId
                     {
-                    dbg.location(315,6);
-                    pushFollow(FOLLOW_cssId_in_elementSubsequent1216);
+                    dbg.location(359,6);
+                    pushFollow(FOLLOW_cssId_in_elementSubsequent1610);
                     cssId();
 
                     state._fsp--;
@@ -3720,10 +4774,10 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:316:8: cssClass
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:360:8: cssClass
                     {
-                    dbg.location(316,8);
-                    pushFollow(FOLLOW_cssClass_in_elementSubsequent1225);
+                    dbg.location(360,8);
+                    pushFollow(FOLLOW_cssClass_in_elementSubsequent1619);
                     cssClass();
 
                     state._fsp--;
@@ -3734,10 +4788,10 @@ public class Css3Parser extends DebugParser {
                 case 3 :
                     dbg.enterAlt(3);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:317:11: attrib
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:361:11: attrib
                     {
-                    dbg.location(317,11);
-                    pushFollow(FOLLOW_attrib_in_elementSubsequent1237);
+                    dbg.location(361,11);
+                    pushFollow(FOLLOW_attrib_in_elementSubsequent1631);
                     attrib();
 
                     state._fsp--;
@@ -3748,10 +4802,10 @@ public class Css3Parser extends DebugParser {
                 case 4 :
                     dbg.enterAlt(4);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:318:11: pseudo
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:362:11: pseudo
                     {
-                    dbg.location(318,11);
-                    pushFollow(FOLLOW_pseudo_in_elementSubsequent1249);
+                    dbg.location(362,11);
+                    pushFollow(FOLLOW_pseudo_in_elementSubsequent1643);
                     pseudo();
 
                     state._fsp--;
@@ -3761,43 +4815,43 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(55);}
+            } finally {dbg.exitSubRule(75);}
 
-            dbg.location(320,5);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:320:5: ( WS )*
-            try { dbg.enterSubRule(56);
+            dbg.location(364,5);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:364:5: ( WS )*
+            try { dbg.enterSubRule(76);
 
-            loop56:
+            loop76:
             do {
-                int alt56=2;
-                try { dbg.enterDecision(56, decisionCanBacktrack[56]);
+                int alt76=2;
+                try { dbg.enterDecision(76, decisionCanBacktrack[76]);
 
-                int LA56_0 = input.LA(1);
+                int LA76_0 = input.LA(1);
 
-                if ( (LA56_0==WS) ) {
-                    alt56=1;
+                if ( (LA76_0==WS) ) {
+                    alt76=1;
                 }
 
 
-                } finally {dbg.exitDecision(56);}
+                } finally {dbg.exitDecision(76);}
 
-                switch (alt56) {
+                switch (alt76) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:320:5: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:364:5: WS
             	    {
-            	    dbg.location(320,5);
-            	    match(input,WS,FOLLOW_WS_in_elementSubsequent1261); if (state.failed) return ;
+            	    dbg.location(364,5);
+            	    match(input,WS,FOLLOW_WS_in_elementSubsequent1655); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop56;
+            	    break loop76;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(56);}
+            } finally {dbg.exitSubRule(76);}
 
 
             }
@@ -3809,7 +4863,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(321, 5);
+        dbg.location(365, 5);
 
         }
         finally {
@@ -3824,21 +4878,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "cssId"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:323:1: cssId : HASH ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:367:1: cssId : HASH ;
     public final void cssId() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "cssId");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(323, 1);
+        dbg.location(367, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:324:5: ( HASH )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:368:5: ( HASH )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:324:7: HASH
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:368:7: HASH
             {
-            dbg.location(324,7);
-            match(input,HASH,FOLLOW_HASH_in_cssId1283); if (state.failed) return ;
+            dbg.location(368,7);
+            match(input,HASH,FOLLOW_HASH_in_cssId1677); if (state.failed) return ;
 
             }
 
@@ -3849,7 +4903,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(325, 5);
+        dbg.location(369, 5);
 
         }
         finally {
@@ -3864,22 +4918,22 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "cssClass"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:327:1: cssClass : DOT ( IDENT | GEN ) ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:371:1: cssClass : DOT ( IDENT | GEN ) ;
     public final void cssClass() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "cssClass");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(327, 1);
+        dbg.location(371, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:5: ( DOT ( IDENT | GEN ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:372:5: ( DOT ( IDENT | GEN ) )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:7: DOT ( IDENT | GEN )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:372:7: DOT ( IDENT | GEN )
             {
-            dbg.location(328,7);
-            match(input,DOT,FOLLOW_DOT_in_cssClass1300); if (state.failed) return ;
-            dbg.location(328,11);
+            dbg.location(372,7);
+            match(input,DOT,FOLLOW_DOT_in_cssClass1694); if (state.failed) return ;
+            dbg.location(372,11);
             if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -3901,7 +4955,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(329, 5);
+        dbg.location(373, 5);
 
         }
         finally {
@@ -3916,20 +4970,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "elementName"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:332:1: elementName : ( ( IDENT | GEN ) | '*' );
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:376:1: elementName : ( ( IDENT | GEN ) | '*' );
     public final void elementName() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "elementName");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(332, 1);
+        dbg.location(376, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:333:5: ( ( IDENT | GEN ) | '*' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:377:5: ( ( IDENT | GEN ) | '*' )
             dbg.enterAlt(1);
 
             // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
             {
-            dbg.location(333,5);
+            dbg.location(377,5);
             if ( input.LA(1)==IDENT||input.LA(1)==GEN||input.LA(1)==STAR ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -3951,7 +5005,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(334, 5);
+        dbg.location(378, 5);
 
         }
         finally {
@@ -3966,45 +5020,45 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attrib"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:336:1: attrib : LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:380:1: attrib : LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET ;
     public final void attrib() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attrib");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(336, 1);
+        dbg.location(380, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:337:5: ( LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:381:5: ( LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:337:7: LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:381:7: LBRACKET ( namespace_wqname_prefix )? ( WS )* attrib_name ( WS )* ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )? RBRACKET
             {
-            dbg.location(337,7);
-            match(input,LBRACKET,FOLLOW_LBRACKET_in_attrib1366); if (state.failed) return ;
-            dbg.location(338,6);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:338:6: ( namespace_wqname_prefix )?
-            int alt57=2;
-            try { dbg.enterSubRule(57);
-            try { dbg.enterDecision(57, decisionCanBacktrack[57]);
+            dbg.location(381,7);
+            match(input,LBRACKET,FOLLOW_LBRACKET_in_attrib1760); if (state.failed) return ;
+            dbg.location(382,6);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:382:6: ( namespace_wqname_prefix )?
+            int alt77=2;
+            try { dbg.enterSubRule(77);
+            try { dbg.enterDecision(77, decisionCanBacktrack[77]);
 
             try {
                 isCyclicDecision = true;
-                alt57 = dfa57.predict(input);
+                alt77 = dfa77.predict(input);
             }
             catch (NoViableAltException nvae) {
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(57);}
+            } finally {dbg.exitDecision(77);}
 
-            switch (alt57) {
+            switch (alt77) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:338:6: namespace_wqname_prefix
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:382:6: namespace_wqname_prefix
                     {
-                    dbg.location(338,6);
-                    pushFollow(FOLLOW_namespace_wqname_prefix_in_attrib1373);
+                    dbg.location(382,6);
+                    pushFollow(FOLLOW_namespace_wqname_prefix_in_attrib1767);
                     namespace_wqname_prefix();
 
                     state._fsp--;
@@ -4014,106 +5068,106 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(57);}
+            } finally {dbg.exitSubRule(77);}
 
-            dbg.location(338,31);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:338:31: ( WS )*
-            try { dbg.enterSubRule(58);
+            dbg.location(382,31);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:382:31: ( WS )*
+            try { dbg.enterSubRule(78);
 
-            loop58:
+            loop78:
             do {
-                int alt58=2;
-                try { dbg.enterDecision(58, decisionCanBacktrack[58]);
+                int alt78=2;
+                try { dbg.enterDecision(78, decisionCanBacktrack[78]);
 
-                int LA58_0 = input.LA(1);
+                int LA78_0 = input.LA(1);
 
-                if ( (LA58_0==WS) ) {
-                    alt58=1;
+                if ( (LA78_0==WS) ) {
+                    alt78=1;
                 }
 
 
-                } finally {dbg.exitDecision(58);}
+                } finally {dbg.exitDecision(78);}
 
-                switch (alt58) {
+                switch (alt78) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:338:31: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:382:31: WS
             	    {
-            	    dbg.location(338,31);
-            	    match(input,WS,FOLLOW_WS_in_attrib1376); if (state.failed) return ;
+            	    dbg.location(382,31);
+            	    match(input,WS,FOLLOW_WS_in_attrib1770); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop58;
+            	    break loop78;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(58);}
+            } finally {dbg.exitSubRule(78);}
 
-            dbg.location(339,9);
-            pushFollow(FOLLOW_attrib_name_in_attrib1387);
+            dbg.location(383,9);
+            pushFollow(FOLLOW_attrib_name_in_attrib1781);
             attrib_name();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(339,21);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:339:21: ( WS )*
-            try { dbg.enterSubRule(59);
+            dbg.location(383,21);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:21: ( WS )*
+            try { dbg.enterSubRule(79);
 
-            loop59:
+            loop79:
             do {
-                int alt59=2;
-                try { dbg.enterDecision(59, decisionCanBacktrack[59]);
+                int alt79=2;
+                try { dbg.enterDecision(79, decisionCanBacktrack[79]);
 
-                int LA59_0 = input.LA(1);
+                int LA79_0 = input.LA(1);
 
-                if ( (LA59_0==WS) ) {
-                    alt59=1;
+                if ( (LA79_0==WS) ) {
+                    alt79=1;
                 }
 
 
-                } finally {dbg.exitDecision(59);}
+                } finally {dbg.exitDecision(79);}
 
-                switch (alt59) {
+                switch (alt79) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:339:21: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:21: WS
             	    {
-            	    dbg.location(339,21);
-            	    match(input,WS,FOLLOW_WS_in_attrib1389); if (state.failed) return ;
+            	    dbg.location(383,21);
+            	    match(input,WS,FOLLOW_WS_in_attrib1783); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop59;
+            	    break loop79;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(59);}
+            } finally {dbg.exitSubRule(79);}
 
-            dbg.location(341,13);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:341:13: ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )?
-            int alt62=2;
-            try { dbg.enterSubRule(62);
-            try { dbg.enterDecision(62, decisionCanBacktrack[62]);
+            dbg.location(385,13);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:385:13: ( ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )* )?
+            int alt82=2;
+            try { dbg.enterSubRule(82);
+            try { dbg.enterDecision(82, decisionCanBacktrack[82]);
 
-            int LA62_0 = input.LA(1);
+            int LA82_0 = input.LA(1);
 
-            if ( ((LA62_0>=OPEQ && LA62_0<=DASHMATCH)) ) {
-                alt62=1;
+            if ( ((LA82_0>=OPEQ && LA82_0<=DASHMATCH)) ) {
+                alt82=1;
             }
-            } finally {dbg.exitDecision(62);}
+            } finally {dbg.exitDecision(82);}
 
-            switch (alt62) {
+            switch (alt82) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:342:17: ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:386:17: ( OPEQ | INCLUDES | DASHMATCH ) ( WS )* attrib_value ( WS )*
                     {
-                    dbg.location(342,17);
+                    dbg.location(386,17);
                     if ( (input.LA(1)>=OPEQ && input.LA(1)<=DASHMATCH) ) {
                         input.consume();
                         state.errorRecovery=false;state.failed=false;
@@ -4125,93 +5179,93 @@ public class Css3Parser extends DebugParser {
                         throw mse;
                     }
 
-                    dbg.location(347,17);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:347:17: ( WS )*
-                    try { dbg.enterSubRule(60);
+                    dbg.location(391,17);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:17: ( WS )*
+                    try { dbg.enterSubRule(80);
 
-                    loop60:
+                    loop80:
                     do {
-                        int alt60=2;
-                        try { dbg.enterDecision(60, decisionCanBacktrack[60]);
+                        int alt80=2;
+                        try { dbg.enterDecision(80, decisionCanBacktrack[80]);
 
-                        int LA60_0 = input.LA(1);
+                        int LA80_0 = input.LA(1);
 
-                        if ( (LA60_0==WS) ) {
-                            alt60=1;
+                        if ( (LA80_0==WS) ) {
+                            alt80=1;
                         }
 
 
-                        } finally {dbg.exitDecision(60);}
+                        } finally {dbg.exitDecision(80);}
 
-                        switch (alt60) {
+                        switch (alt80) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:347:17: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:17: WS
                     	    {
-                    	    dbg.location(347,17);
-                    	    match(input,WS,FOLLOW_WS_in_attrib1539); if (state.failed) return ;
+                    	    dbg.location(391,17);
+                    	    match(input,WS,FOLLOW_WS_in_attrib1933); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop60;
+                    	    break loop80;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(60);}
+                    } finally {dbg.exitSubRule(80);}
 
-                    dbg.location(348,17);
-                    pushFollow(FOLLOW_attrib_value_in_attrib1558);
+                    dbg.location(392,17);
+                    pushFollow(FOLLOW_attrib_value_in_attrib1952);
                     attrib_value();
 
                     state._fsp--;
                     if (state.failed) return ;
-                    dbg.location(349,17);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:349:17: ( WS )*
-                    try { dbg.enterSubRule(61);
+                    dbg.location(393,17);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:393:17: ( WS )*
+                    try { dbg.enterSubRule(81);
 
-                    loop61:
+                    loop81:
                     do {
-                        int alt61=2;
-                        try { dbg.enterDecision(61, decisionCanBacktrack[61]);
+                        int alt81=2;
+                        try { dbg.enterDecision(81, decisionCanBacktrack[81]);
 
-                        int LA61_0 = input.LA(1);
+                        int LA81_0 = input.LA(1);
 
-                        if ( (LA61_0==WS) ) {
-                            alt61=1;
+                        if ( (LA81_0==WS) ) {
+                            alt81=1;
                         }
 
 
-                        } finally {dbg.exitDecision(61);}
+                        } finally {dbg.exitDecision(81);}
 
-                        switch (alt61) {
+                        switch (alt81) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:349:17: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:393:17: WS
                     	    {
-                    	    dbg.location(349,17);
-                    	    match(input,WS,FOLLOW_WS_in_attrib1576); if (state.failed) return ;
+                    	    dbg.location(393,17);
+                    	    match(input,WS,FOLLOW_WS_in_attrib1970); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop61;
+                    	    break loop81;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(61);}
+                    } finally {dbg.exitSubRule(81);}
 
 
                     }
                     break;
 
             }
-            } finally {dbg.exitSubRule(62);}
+            } finally {dbg.exitSubRule(82);}
 
-            dbg.location(352,7);
-            match(input,RBRACKET,FOLLOW_RBRACKET_in_attrib1605); if (state.failed) return ;
+            dbg.location(396,7);
+            match(input,RBRACKET,FOLLOW_RBRACKET_in_attrib1999); if (state.failed) return ;
 
             }
 
@@ -4224,7 +5278,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(353, 1);
+        dbg.location(397, 1);
 
         }
         finally {
@@ -4239,7 +5293,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "syncTo_IDENT_RBRACKET_LBRACE"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:359:1: syncTo_IDENT_RBRACKET_LBRACE : ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:403:1: syncTo_IDENT_RBRACKET_LBRACE : ;
     public final void syncTo_IDENT_RBRACKET_LBRACE() throws RecognitionException {
 
                 syncToSet(BitSet.of(IDENT, RBRACKET, LBRACE));
@@ -4247,20 +5301,20 @@ public class Css3Parser extends DebugParser {
         try { dbg.enterRule(getGrammarFileName(), "syncTo_IDENT_RBRACKET_LBRACE");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(359, 1);
+        dbg.location(403, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:363:6: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:407:6: ()
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:364:6: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:408:6: 
             {
             }
 
         }
         finally {
         }
-        dbg.location(364, 6);
+        dbg.location(408, 6);
 
         }
         finally {
@@ -4275,21 +5329,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attrib_name"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:367:1: attrib_name : IDENT ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:411:1: attrib_name : IDENT ;
     public final void attrib_name() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attrib_name");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(367, 1);
+        dbg.location(411, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:368:2: ( IDENT )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:412:2: ( IDENT )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:368:4: IDENT
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:412:4: IDENT
             {
-            dbg.location(368,4);
-            match(input,IDENT,FOLLOW_IDENT_in_attrib_name1648); if (state.failed) return ;
+            dbg.location(412,4);
+            match(input,IDENT,FOLLOW_IDENT_in_attrib_name2042); if (state.failed) return ;
 
             }
 
@@ -4300,7 +5354,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(369, 2);
+        dbg.location(413, 2);
 
         }
         finally {
@@ -4315,20 +5369,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attrib_value"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:371:1: attrib_value : ( IDENT | STRING ) ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:415:1: attrib_value : ( IDENT | STRING ) ;
     public final void attrib_value() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attrib_value");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(371, 1);
+        dbg.location(415, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:372:2: ( ( IDENT | STRING ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:416:2: ( ( IDENT | STRING ) )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:373:2: ( IDENT | STRING )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:417:2: ( IDENT | STRING )
             {
-            dbg.location(373,2);
+            dbg.location(417,2);
             if ( (input.LA(1)>=IDENT && input.LA(1)<=STRING) ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -4350,7 +5404,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(377, 9);
+        dbg.location(421, 9);
 
         }
         finally {
@@ -4365,20 +5419,20 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "pseudo"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:379:1: pseudo : ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )? ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:423:1: pseudo : ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )? ;
     public final void pseudo() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "pseudo");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(379, 1);
+        dbg.location(423, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:380:5: ( ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )? )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:424:5: ( ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )? )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:380:7: ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:424:7: ( COLON | DCOLON ) ( IDENT | GEN ) ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?
             {
-            dbg.location(380,7);
+            dbg.location(424,7);
             if ( input.LA(1)==COLON||input.LA(1)==DCOLON ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -4390,7 +5444,7 @@ public class Css3Parser extends DebugParser {
                 throw mse;
             }
 
-            dbg.location(381,13);
+            dbg.location(425,13);
             if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
                 input.consume();
                 state.errorRecovery=false;state.failed=false;
@@ -4402,122 +5456,122 @@ public class Css3Parser extends DebugParser {
                 throw mse;
             }
 
-            dbg.location(382,17);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:382:17: ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?
-            int alt67=2;
-            try { dbg.enterSubRule(67);
-            try { dbg.enterDecision(67, decisionCanBacktrack[67]);
+            dbg.location(426,17);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:426:17: ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?
+            int alt87=2;
+            try { dbg.enterSubRule(87);
+            try { dbg.enterDecision(87, decisionCanBacktrack[87]);
 
             try {
                 isCyclicDecision = true;
-                alt67 = dfa67.predict(input);
+                alt87 = dfa87.predict(input);
             }
             catch (NoViableAltException nvae) {
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(67);}
+            } finally {dbg.exitDecision(87);}
 
-            switch (alt67) {
+            switch (alt87) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:21: ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:21: ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN
                     {
-                    dbg.location(383,21);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:21: ( WS )*
-                    try { dbg.enterSubRule(63);
+                    dbg.location(427,21);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:21: ( WS )*
+                    try { dbg.enterSubRule(83);
 
-                    loop63:
+                    loop83:
                     do {
-                        int alt63=2;
-                        try { dbg.enterDecision(63, decisionCanBacktrack[63]);
+                        int alt83=2;
+                        try { dbg.enterDecision(83, decisionCanBacktrack[83]);
 
-                        int LA63_0 = input.LA(1);
+                        int LA83_0 = input.LA(1);
 
-                        if ( (LA63_0==WS) ) {
-                            alt63=1;
+                        if ( (LA83_0==WS) ) {
+                            alt83=1;
                         }
 
 
-                        } finally {dbg.exitDecision(63);}
+                        } finally {dbg.exitDecision(83);}
 
-                        switch (alt63) {
+                        switch (alt83) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:21: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:21: WS
                     	    {
-                    	    dbg.location(383,21);
-                    	    match(input,WS,FOLLOW_WS_in_pseudo1793); if (state.failed) return ;
+                    	    dbg.location(427,21);
+                    	    match(input,WS,FOLLOW_WS_in_pseudo2187); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop63;
+                    	    break loop83;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(63);}
+                    } finally {dbg.exitSubRule(83);}
 
-                    dbg.location(383,25);
-                    match(input,LPAREN,FOLLOW_LPAREN_in_pseudo1796); if (state.failed) return ;
-                    dbg.location(383,32);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:32: ( WS )*
-                    try { dbg.enterSubRule(64);
+                    dbg.location(427,25);
+                    match(input,LPAREN,FOLLOW_LPAREN_in_pseudo2190); if (state.failed) return ;
+                    dbg.location(427,32);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:32: ( WS )*
+                    try { dbg.enterSubRule(84);
 
-                    loop64:
+                    loop84:
                     do {
-                        int alt64=2;
-                        try { dbg.enterDecision(64, decisionCanBacktrack[64]);
+                        int alt84=2;
+                        try { dbg.enterDecision(84, decisionCanBacktrack[84]);
 
-                        int LA64_0 = input.LA(1);
+                        int LA84_0 = input.LA(1);
 
-                        if ( (LA64_0==WS) ) {
-                            alt64=1;
+                        if ( (LA84_0==WS) ) {
+                            alt84=1;
                         }
 
 
-                        } finally {dbg.exitDecision(64);}
+                        } finally {dbg.exitDecision(84);}
 
-                        switch (alt64) {
+                        switch (alt84) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:32: WS
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:32: WS
                     	    {
-                    	    dbg.location(383,32);
-                    	    match(input,WS,FOLLOW_WS_in_pseudo1798); if (state.failed) return ;
+                    	    dbg.location(427,32);
+                    	    match(input,WS,FOLLOW_WS_in_pseudo2192); if (state.failed) return ;
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop64;
+                    	    break loop84;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(64);}
+                    } finally {dbg.exitSubRule(84);}
 
-                    dbg.location(383,36);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:36: ( ( IDENT | GEN ) ( WS )* )?
-                    int alt66=2;
-                    try { dbg.enterSubRule(66);
-                    try { dbg.enterDecision(66, decisionCanBacktrack[66]);
+                    dbg.location(427,36);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:36: ( ( IDENT | GEN ) ( WS )* )?
+                    int alt86=2;
+                    try { dbg.enterSubRule(86);
+                    try { dbg.enterDecision(86, decisionCanBacktrack[86]);
 
-                    int LA66_0 = input.LA(1);
+                    int LA86_0 = input.LA(1);
 
-                    if ( (LA66_0==IDENT||LA66_0==GEN) ) {
-                        alt66=1;
+                    if ( (LA86_0==IDENT||LA86_0==GEN) ) {
+                        alt86=1;
                     }
-                    } finally {dbg.exitDecision(66);}
+                    } finally {dbg.exitDecision(86);}
 
-                    switch (alt66) {
+                    switch (alt86) {
                         case 1 :
                             dbg.enterAlt(1);
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:37: ( IDENT | GEN ) ( WS )*
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:37: ( IDENT | GEN ) ( WS )*
                             {
-                            dbg.location(383,37);
+                            dbg.location(427,37);
                             if ( input.LA(1)==IDENT||input.LA(1)==GEN ) {
                                 input.consume();
                                 state.errorRecovery=false;state.failed=false;
@@ -4529,57 +5583,57 @@ public class Css3Parser extends DebugParser {
                                 throw mse;
                             }
 
-                            dbg.location(383,53);
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:53: ( WS )*
-                            try { dbg.enterSubRule(65);
+                            dbg.location(427,53);
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:53: ( WS )*
+                            try { dbg.enterSubRule(85);
 
-                            loop65:
+                            loop85:
                             do {
-                                int alt65=2;
-                                try { dbg.enterDecision(65, decisionCanBacktrack[65]);
+                                int alt85=2;
+                                try { dbg.enterDecision(85, decisionCanBacktrack[85]);
 
-                                int LA65_0 = input.LA(1);
+                                int LA85_0 = input.LA(1);
 
-                                if ( (LA65_0==WS) ) {
-                                    alt65=1;
+                                if ( (LA85_0==WS) ) {
+                                    alt85=1;
                                 }
 
 
-                                } finally {dbg.exitDecision(65);}
+                                } finally {dbg.exitDecision(85);}
 
-                                switch (alt65) {
+                                switch (alt85) {
                             	case 1 :
                             	    dbg.enterAlt(1);
 
-                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:53: WS
+                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:53: WS
                             	    {
-                            	    dbg.location(383,53);
-                            	    match(input,WS,FOLLOW_WS_in_pseudo1812); if (state.failed) return ;
+                            	    dbg.location(427,53);
+                            	    match(input,WS,FOLLOW_WS_in_pseudo2206); if (state.failed) return ;
 
                             	    }
                             	    break;
 
                             	default :
-                            	    break loop65;
+                            	    break loop85;
                                 }
                             } while (true);
-                            } finally {dbg.exitSubRule(65);}
+                            } finally {dbg.exitSubRule(85);}
 
 
                             }
                             break;
 
                     }
-                    } finally {dbg.exitSubRule(66);}
+                    } finally {dbg.exitSubRule(86);}
 
-                    dbg.location(383,59);
-                    match(input,RPAREN,FOLLOW_RPAREN_in_pseudo1817); if (state.failed) return ;
+                    dbg.location(427,59);
+                    match(input,RPAREN,FOLLOW_RPAREN_in_pseudo2211); if (state.failed) return ;
 
                     }
                     break;
 
             }
-            } finally {dbg.exitSubRule(67);}
+            } finally {dbg.exitSubRule(87);}
 
 
             }
@@ -4591,7 +5645,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(385, 5);
+        dbg.location(429, 5);
 
         }
         finally {
@@ -4606,90 +5660,90 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "declaration"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:387:1: declaration : property COLON ( WS )* expr ( prio )? ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:431:1: declaration : property COLON ( WS )* expr ( prio )? ;
     public final void declaration() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "declaration");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(387, 1);
+        dbg.location(431, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:388:5: ( property COLON ( WS )* expr ( prio )? )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:432:5: ( property COLON ( WS )* expr ( prio )? )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:390:5: property COLON ( WS )* expr ( prio )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:434:5: property COLON ( WS )* expr ( prio )?
             {
-            dbg.location(390,5);
-            pushFollow(FOLLOW_property_in_declaration1863);
+            dbg.location(434,5);
+            pushFollow(FOLLOW_property_in_declaration2257);
             property();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(390,14);
-            match(input,COLON,FOLLOW_COLON_in_declaration1865); if (state.failed) return ;
-            dbg.location(390,20);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:390:20: ( WS )*
-            try { dbg.enterSubRule(68);
+            dbg.location(434,14);
+            match(input,COLON,FOLLOW_COLON_in_declaration2259); if (state.failed) return ;
+            dbg.location(434,20);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:434:20: ( WS )*
+            try { dbg.enterSubRule(88);
 
-            loop68:
+            loop88:
             do {
-                int alt68=2;
-                try { dbg.enterDecision(68, decisionCanBacktrack[68]);
+                int alt88=2;
+                try { dbg.enterDecision(88, decisionCanBacktrack[88]);
 
-                int LA68_0 = input.LA(1);
+                int LA88_0 = input.LA(1);
 
-                if ( (LA68_0==WS) ) {
-                    alt68=1;
+                if ( (LA88_0==WS) ) {
+                    alt88=1;
                 }
 
 
-                } finally {dbg.exitDecision(68);}
+                } finally {dbg.exitDecision(88);}
 
-                switch (alt68) {
+                switch (alt88) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:390:20: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:434:20: WS
             	    {
-            	    dbg.location(390,20);
-            	    match(input,WS,FOLLOW_WS_in_declaration1867); if (state.failed) return ;
+            	    dbg.location(434,20);
+            	    match(input,WS,FOLLOW_WS_in_declaration2261); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop68;
+            	    break loop88;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(68);}
+            } finally {dbg.exitSubRule(88);}
 
-            dbg.location(390,24);
-            pushFollow(FOLLOW_expr_in_declaration1870);
+            dbg.location(434,24);
+            pushFollow(FOLLOW_expr_in_declaration2264);
             expr();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(390,29);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:390:29: ( prio )?
-            int alt69=2;
-            try { dbg.enterSubRule(69);
-            try { dbg.enterDecision(69, decisionCanBacktrack[69]);
+            dbg.location(434,29);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:434:29: ( prio )?
+            int alt89=2;
+            try { dbg.enterSubRule(89);
+            try { dbg.enterDecision(89, decisionCanBacktrack[89]);
 
-            int LA69_0 = input.LA(1);
+            int LA89_0 = input.LA(1);
 
-            if ( (LA69_0==IMPORTANT_SYM) ) {
-                alt69=1;
+            if ( (LA89_0==IMPORTANT_SYM) ) {
+                alt89=1;
             }
-            } finally {dbg.exitDecision(69);}
+            } finally {dbg.exitDecision(89);}
 
-            switch (alt69) {
+            switch (alt89) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:390:29: prio
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:434:29: prio
                     {
-                    dbg.location(390,29);
-                    pushFollow(FOLLOW_prio_in_declaration1872);
+                    dbg.location(434,29);
+                    pushFollow(FOLLOW_prio_in_declaration2266);
                     prio();
 
                     state._fsp--;
@@ -4699,7 +5753,7 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(69);}
+            } finally {dbg.exitSubRule(89);}
 
 
             }
@@ -4715,7 +5769,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(391, 5);
+        dbg.location(435, 5);
 
         }
         finally {
@@ -4730,7 +5784,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "syncTo_IDENT_RBRACE"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:401:1: syncTo_IDENT_RBRACE : ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:445:1: syncTo_IDENT_RBRACE : ;
     public final void syncTo_IDENT_RBRACE() throws RecognitionException {
 
                 syncToSet(BitSet.of(IDENT, RBRACE));
@@ -4738,20 +5792,20 @@ public class Css3Parser extends DebugParser {
         try { dbg.enterRule(getGrammarFileName(), "syncTo_IDENT_RBRACE");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(401, 1);
+        dbg.location(445, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:405:6: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:449:6: ()
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:406:6: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:450:6: 
             {
             }
 
         }
         finally {
         }
-        dbg.location(406, 6);
+        dbg.location(450, 6);
 
         }
         finally {
@@ -4766,7 +5820,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "syncToFollow"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:409:1: syncToFollow : ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:453:1: syncToFollow : ;
     public final void syncToFollow() throws RecognitionException {
 
                 syncToSet();
@@ -4774,20 +5828,20 @@ public class Css3Parser extends DebugParser {
         try { dbg.enterRule(getGrammarFileName(), "syncToFollow");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(409, 1);
+        dbg.location(453, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:413:6: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:457:6: ()
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:414:6: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:458:6: 
             {
             }
 
         }
         finally {
         }
-        dbg.location(414, 6);
+        dbg.location(458, 6);
 
         }
         finally {
@@ -4802,21 +5856,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "prio"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:417:1: prio : IMPORTANT_SYM ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:461:1: prio : IMPORTANT_SYM ;
     public final void prio() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "prio");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(417, 1);
+        dbg.location(461, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:418:5: ( IMPORTANT_SYM )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:462:5: ( IMPORTANT_SYM )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:418:7: IMPORTANT_SYM
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:462:7: IMPORTANT_SYM
             {
-            dbg.location(418,7);
-            match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_prio1965); if (state.failed) return ;
+            dbg.location(462,7);
+            match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_prio2359); if (state.failed) return ;
 
             }
 
@@ -4827,7 +5881,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(419, 5);
+        dbg.location(463, 5);
 
         }
         finally {
@@ -4842,58 +5896,58 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "expr"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:421:1: expr : term ( operator term )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:465:1: expr : term ( operator term )* ;
     public final void expr() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "expr");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(421, 1);
+        dbg.location(465, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:422:5: ( term ( operator term )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:466:5: ( term ( operator term )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:422:7: term ( operator term )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:466:7: term ( operator term )*
             {
-            dbg.location(422,7);
-            pushFollow(FOLLOW_term_in_expr1986);
+            dbg.location(466,7);
+            pushFollow(FOLLOW_term_in_expr2380);
             term();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(422,12);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:422:12: ( operator term )*
-            try { dbg.enterSubRule(70);
+            dbg.location(466,12);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:466:12: ( operator term )*
+            try { dbg.enterSubRule(90);
 
-            loop70:
+            loop90:
             do {
-                int alt70=2;
-                try { dbg.enterDecision(70, decisionCanBacktrack[70]);
+                int alt90=2;
+                try { dbg.enterDecision(90, decisionCanBacktrack[90]);
 
                 try {
                     isCyclicDecision = true;
-                    alt70 = dfa70.predict(input);
+                    alt90 = dfa90.predict(input);
                 }
                 catch (NoViableAltException nvae) {
                     dbg.recognitionException(nvae);
                     throw nvae;
                 }
-                } finally {dbg.exitDecision(70);}
+                } finally {dbg.exitDecision(90);}
 
-                switch (alt70) {
+                switch (alt90) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:422:13: operator term
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:466:13: operator term
             	    {
-            	    dbg.location(422,13);
-            	    pushFollow(FOLLOW_operator_in_expr1989);
+            	    dbg.location(466,13);
+            	    pushFollow(FOLLOW_operator_in_expr2383);
             	    operator();
 
             	    state._fsp--;
             	    if (state.failed) return ;
-            	    dbg.location(422,22);
-            	    pushFollow(FOLLOW_term_in_expr1991);
+            	    dbg.location(466,22);
+            	    pushFollow(FOLLOW_term_in_expr2385);
             	    term();
 
             	    state._fsp--;
@@ -4903,10 +5957,10 @@ public class Css3Parser extends DebugParser {
             	    break;
 
             	default :
-            	    break loop70;
+            	    break loop90;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(70);}
+            } finally {dbg.exitSubRule(90);}
 
 
             }
@@ -4918,7 +5972,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(423, 5);
+        dbg.location(467, 5);
 
         }
         finally {
@@ -4933,40 +5987,40 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "term"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:425:1: term : ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:1: term : ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )* ;
     public final void term() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "term");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(425, 1);
+        dbg.location(469, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:426:5: ( ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:470:5: ( ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:426:7: ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:470:7: ( unaryOperator )? ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION ) | STRING | IDENT | GEN | URI | hexColor | function ) ( WS )*
             {
-            dbg.location(426,7);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:426:7: ( unaryOperator )?
-            int alt71=2;
-            try { dbg.enterSubRule(71);
-            try { dbg.enterDecision(71, decisionCanBacktrack[71]);
+            dbg.location(470,7);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:470:7: ( unaryOperator )?
+            int alt91=2;
+            try { dbg.enterSubRule(91);
+            try { dbg.enterDecision(91, decisionCanBacktrack[91]);
 
-            int LA71_0 = input.LA(1);
+            int LA91_0 = input.LA(1);
 
-            if ( (LA71_0==PLUS||LA71_0==MINUS) ) {
-                alt71=1;
+            if ( (LA91_0==PLUS||LA91_0==MINUS) ) {
+                alt91=1;
             }
-            } finally {dbg.exitDecision(71);}
+            } finally {dbg.exitDecision(91);}
 
-            switch (alt71) {
+            switch (alt91) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:426:7: unaryOperator
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:470:7: unaryOperator
                     {
-                    dbg.location(426,7);
-                    pushFollow(FOLLOW_unaryOperator_in_term2014);
+                    dbg.location(470,7);
+                    pushFollow(FOLLOW_unaryOperator_in_term2408);
                     unaryOperator();
 
                     state._fsp--;
@@ -4976,32 +6030,32 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(71);}
+            } finally {dbg.exitSubRule(91);}
 
-            dbg.location(427,9);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:427:9: ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ ) | STRING | IDENT | GEN | URI | hexColor | function )
-            int alt72=7;
-            try { dbg.enterSubRule(72);
-            try { dbg.enterDecision(72, decisionCanBacktrack[72]);
+            dbg.location(471,9);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:471:9: ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION ) | STRING | IDENT | GEN | URI | hexColor | function )
+            int alt92=7;
+            try { dbg.enterSubRule(92);
+            try { dbg.enterDecision(92, decisionCanBacktrack[92]);
 
             try {
                 isCyclicDecision = true;
-                alt72 = dfa72.predict(input);
+                alt92 = dfa92.predict(input);
             }
             catch (NoViableAltException nvae) {
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(72);}
+            } finally {dbg.exitDecision(92);}
 
-            switch (alt72) {
+            switch (alt92) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:428:9: ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:472:9: ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION )
                     {
-                    dbg.location(428,9);
-                    if ( (input.LA(1)>=NUMBER && input.LA(1)<=FREQ) ) {
+                    dbg.location(472,9);
+                    if ( (input.LA(1)>=NUMBER && input.LA(1)<=RESOLUTION) ) {
                         input.consume();
                         state.errorRecovery=false;state.failed=false;
                     }
@@ -5018,50 +6072,50 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:438:7: STRING
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:483:7: STRING
                     {
-                    dbg.location(438,7);
-                    match(input,STRING,FOLLOW_STRING_in_term2181); if (state.failed) return ;
+                    dbg.location(483,7);
+                    match(input,STRING,FOLLOW_STRING_in_term2591); if (state.failed) return ;
 
                     }
                     break;
                 case 3 :
                     dbg.enterAlt(3);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:439:7: IDENT
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:484:7: IDENT
                     {
-                    dbg.location(439,7);
-                    match(input,IDENT,FOLLOW_IDENT_in_term2189); if (state.failed) return ;
+                    dbg.location(484,7);
+                    match(input,IDENT,FOLLOW_IDENT_in_term2599); if (state.failed) return ;
 
                     }
                     break;
                 case 4 :
                     dbg.enterAlt(4);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:440:7: GEN
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:485:7: GEN
                     {
-                    dbg.location(440,7);
-                    match(input,GEN,FOLLOW_GEN_in_term2197); if (state.failed) return ;
+                    dbg.location(485,7);
+                    match(input,GEN,FOLLOW_GEN_in_term2607); if (state.failed) return ;
 
                     }
                     break;
                 case 5 :
                     dbg.enterAlt(5);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:441:7: URI
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:7: URI
                     {
-                    dbg.location(441,7);
-                    match(input,URI,FOLLOW_URI_in_term2205); if (state.failed) return ;
+                    dbg.location(486,7);
+                    match(input,URI,FOLLOW_URI_in_term2615); if (state.failed) return ;
 
                     }
                     break;
                 case 6 :
                     dbg.enterAlt(6);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:442:7: hexColor
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:7: hexColor
                     {
-                    dbg.location(442,7);
-                    pushFollow(FOLLOW_hexColor_in_term2213);
+                    dbg.location(487,7);
+                    pushFollow(FOLLOW_hexColor_in_term2623);
                     hexColor();
 
                     state._fsp--;
@@ -5072,10 +6126,10 @@ public class Css3Parser extends DebugParser {
                 case 7 :
                     dbg.enterAlt(7);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:443:7: function
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:488:7: function
                     {
-                    dbg.location(443,7);
-                    pushFollow(FOLLOW_function_in_term2221);
+                    dbg.location(488,7);
+                    pushFollow(FOLLOW_function_in_term2631);
                     function();
 
                     state._fsp--;
@@ -5085,43 +6139,43 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(72);}
+            } finally {dbg.exitSubRule(92);}
 
-            dbg.location(445,5);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:445:5: ( WS )*
-            try { dbg.enterSubRule(73);
+            dbg.location(490,5);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:490:5: ( WS )*
+            try { dbg.enterSubRule(93);
 
-            loop73:
+            loop93:
             do {
-                int alt73=2;
-                try { dbg.enterDecision(73, decisionCanBacktrack[73]);
+                int alt93=2;
+                try { dbg.enterDecision(93, decisionCanBacktrack[93]);
 
-                int LA73_0 = input.LA(1);
+                int LA93_0 = input.LA(1);
 
-                if ( (LA73_0==WS) ) {
-                    alt73=1;
+                if ( (LA93_0==WS) ) {
+                    alt93=1;
                 }
 
 
-                } finally {dbg.exitDecision(73);}
+                } finally {dbg.exitDecision(93);}
 
-                switch (alt73) {
+                switch (alt93) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:445:5: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:490:5: WS
             	    {
-            	    dbg.location(445,5);
-            	    match(input,WS,FOLLOW_WS_in_term2233); if (state.failed) return ;
+            	    dbg.location(490,5);
+            	    match(input,WS,FOLLOW_WS_in_term2643); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop73;
+            	    break loop93;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(73);}
+            } finally {dbg.exitSubRule(93);}
 
 
             }
@@ -5133,7 +6187,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(446, 5);
+        dbg.location(491, 5);
 
         }
         finally {
@@ -5148,123 +6202,123 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "function"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:448:1: function : function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:493:1: function : function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN ;
     public final void function() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "function");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(448, 1);
+        dbg.location(493, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:449:2: ( function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:494:2: ( function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:449:5: function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:494:5: function_name ( WS )* LPAREN ( WS )* ( expr | ( attribute ( COMMA ( WS )* attribute )* ) ) RPAREN
             {
-            dbg.location(449,5);
-            pushFollow(FOLLOW_function_name_in_function2249);
+            dbg.location(494,5);
+            pushFollow(FOLLOW_function_name_in_function2659);
             function_name();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(449,19);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:449:19: ( WS )*
-            try { dbg.enterSubRule(74);
+            dbg.location(494,19);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:494:19: ( WS )*
+            try { dbg.enterSubRule(94);
 
-            loop74:
+            loop94:
             do {
-                int alt74=2;
-                try { dbg.enterDecision(74, decisionCanBacktrack[74]);
+                int alt94=2;
+                try { dbg.enterDecision(94, decisionCanBacktrack[94]);
 
-                int LA74_0 = input.LA(1);
+                int LA94_0 = input.LA(1);
 
-                if ( (LA74_0==WS) ) {
-                    alt74=1;
+                if ( (LA94_0==WS) ) {
+                    alt94=1;
                 }
 
 
-                } finally {dbg.exitDecision(74);}
+                } finally {dbg.exitDecision(94);}
 
-                switch (alt74) {
+                switch (alt94) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:449:19: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:494:19: WS
             	    {
-            	    dbg.location(449,19);
-            	    match(input,WS,FOLLOW_WS_in_function2251); if (state.failed) return ;
+            	    dbg.location(494,19);
+            	    match(input,WS,FOLLOW_WS_in_function2661); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop74;
+            	    break loop94;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(74);}
+            } finally {dbg.exitSubRule(94);}
 
-            dbg.location(450,3);
-            match(input,LPAREN,FOLLOW_LPAREN_in_function2256); if (state.failed) return ;
-            dbg.location(450,10);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:450:10: ( WS )*
-            try { dbg.enterSubRule(75);
+            dbg.location(495,3);
+            match(input,LPAREN,FOLLOW_LPAREN_in_function2666); if (state.failed) return ;
+            dbg.location(495,10);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:495:10: ( WS )*
+            try { dbg.enterSubRule(95);
 
-            loop75:
+            loop95:
             do {
-                int alt75=2;
-                try { dbg.enterDecision(75, decisionCanBacktrack[75]);
+                int alt95=2;
+                try { dbg.enterDecision(95, decisionCanBacktrack[95]);
 
-                int LA75_0 = input.LA(1);
+                int LA95_0 = input.LA(1);
 
-                if ( (LA75_0==WS) ) {
-                    alt75=1;
+                if ( (LA95_0==WS) ) {
+                    alt95=1;
                 }
 
 
-                } finally {dbg.exitDecision(75);}
+                } finally {dbg.exitDecision(95);}
 
-                switch (alt75) {
+                switch (alt95) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:450:10: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:495:10: WS
             	    {
-            	    dbg.location(450,10);
-            	    match(input,WS,FOLLOW_WS_in_function2258); if (state.failed) return ;
+            	    dbg.location(495,10);
+            	    match(input,WS,FOLLOW_WS_in_function2668); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop75;
+            	    break loop95;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(75);}
+            } finally {dbg.exitSubRule(95);}
 
-            dbg.location(451,3);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:451:3: ( expr | ( attribute ( COMMA ( WS )* attribute )* ) )
-            int alt78=2;
-            try { dbg.enterSubRule(78);
-            try { dbg.enterDecision(78, decisionCanBacktrack[78]);
+            dbg.location(496,3);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:496:3: ( expr | ( attribute ( COMMA ( WS )* attribute )* ) )
+            int alt98=2;
+            try { dbg.enterSubRule(98);
+            try { dbg.enterDecision(98, decisionCanBacktrack[98]);
 
             try {
                 isCyclicDecision = true;
-                alt78 = dfa78.predict(input);
+                alt98 = dfa98.predict(input);
             }
             catch (NoViableAltException nvae) {
                 dbg.recognitionException(nvae);
                 throw nvae;
             }
-            } finally {dbg.exitDecision(78);}
+            } finally {dbg.exitDecision(98);}
 
-            switch (alt78) {
+            switch (alt98) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:452:4: expr
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:497:4: expr
                     {
-                    dbg.location(452,4);
-                    pushFollow(FOLLOW_expr_in_function2269);
+                    dbg.location(497,4);
+                    pushFollow(FOLLOW_expr_in_function2679);
                     expr();
 
                     state._fsp--;
@@ -5275,84 +6329,84 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:454:6: ( attribute ( COMMA ( WS )* attribute )* )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:499:6: ( attribute ( COMMA ( WS )* attribute )* )
                     {
-                    dbg.location(454,6);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:454:6: ( attribute ( COMMA ( WS )* attribute )* )
+                    dbg.location(499,6);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:499:6: ( attribute ( COMMA ( WS )* attribute )* )
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:455:5: attribute ( COMMA ( WS )* attribute )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:500:5: attribute ( COMMA ( WS )* attribute )*
                     {
-                    dbg.location(455,5);
-                    pushFollow(FOLLOW_attribute_in_function2287);
+                    dbg.location(500,5);
+                    pushFollow(FOLLOW_attribute_in_function2697);
                     attribute();
 
                     state._fsp--;
                     if (state.failed) return ;
-                    dbg.location(455,15);
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:455:15: ( COMMA ( WS )* attribute )*
-                    try { dbg.enterSubRule(77);
+                    dbg.location(500,15);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:500:15: ( COMMA ( WS )* attribute )*
+                    try { dbg.enterSubRule(97);
 
-                    loop77:
+                    loop97:
                     do {
-                        int alt77=2;
-                        try { dbg.enterDecision(77, decisionCanBacktrack[77]);
+                        int alt97=2;
+                        try { dbg.enterDecision(97, decisionCanBacktrack[97]);
 
-                        int LA77_0 = input.LA(1);
+                        int LA97_0 = input.LA(1);
 
-                        if ( (LA77_0==COMMA) ) {
-                            alt77=1;
+                        if ( (LA97_0==COMMA) ) {
+                            alt97=1;
                         }
 
 
-                        } finally {dbg.exitDecision(77);}
+                        } finally {dbg.exitDecision(97);}
 
-                        switch (alt77) {
+                        switch (alt97) {
                     	case 1 :
                     	    dbg.enterAlt(1);
 
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:455:16: COMMA ( WS )* attribute
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:500:16: COMMA ( WS )* attribute
                     	    {
-                    	    dbg.location(455,16);
-                    	    match(input,COMMA,FOLLOW_COMMA_in_function2290); if (state.failed) return ;
-                    	    dbg.location(455,22);
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:455:22: ( WS )*
-                    	    try { dbg.enterSubRule(76);
+                    	    dbg.location(500,16);
+                    	    match(input,COMMA,FOLLOW_COMMA_in_function2700); if (state.failed) return ;
+                    	    dbg.location(500,22);
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:500:22: ( WS )*
+                    	    try { dbg.enterSubRule(96);
 
-                    	    loop76:
+                    	    loop96:
                     	    do {
-                    	        int alt76=2;
-                    	        try { dbg.enterDecision(76, decisionCanBacktrack[76]);
+                    	        int alt96=2;
+                    	        try { dbg.enterDecision(96, decisionCanBacktrack[96]);
 
-                    	        int LA76_0 = input.LA(1);
+                    	        int LA96_0 = input.LA(1);
 
-                    	        if ( (LA76_0==WS) ) {
-                    	            alt76=1;
+                    	        if ( (LA96_0==WS) ) {
+                    	            alt96=1;
                     	        }
 
 
-                    	        } finally {dbg.exitDecision(76);}
+                    	        } finally {dbg.exitDecision(96);}
 
-                    	        switch (alt76) {
+                    	        switch (alt96) {
                     	    	case 1 :
                     	    	    dbg.enterAlt(1);
 
-                    	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:455:22: WS
+                    	    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:500:22: WS
                     	    	    {
-                    	    	    dbg.location(455,22);
-                    	    	    match(input,WS,FOLLOW_WS_in_function2292); if (state.failed) return ;
+                    	    	    dbg.location(500,22);
+                    	    	    match(input,WS,FOLLOW_WS_in_function2702); if (state.failed) return ;
 
                     	    	    }
                     	    	    break;
 
                     	    	default :
-                    	    	    break loop76;
+                    	    	    break loop96;
                     	        }
                     	    } while (true);
-                    	    } finally {dbg.exitSubRule(76);}
+                    	    } finally {dbg.exitSubRule(96);}
 
-                    	    dbg.location(455,26);
-                    	    pushFollow(FOLLOW_attribute_in_function2295);
+                    	    dbg.location(500,26);
+                    	    pushFollow(FOLLOW_attribute_in_function2705);
                     	    attribute();
 
                     	    state._fsp--;
@@ -5362,10 +6416,10 @@ public class Css3Parser extends DebugParser {
                     	    break;
 
                     	default :
-                    	    break loop77;
+                    	    break loop97;
                         }
                     } while (true);
-                    } finally {dbg.exitSubRule(77);}
+                    } finally {dbg.exitSubRule(97);}
 
 
                     }
@@ -5375,10 +6429,10 @@ public class Css3Parser extends DebugParser {
                     break;
 
             }
-            } finally {dbg.exitSubRule(78);}
+            } finally {dbg.exitSubRule(98);}
 
-            dbg.location(458,3);
-            match(input,RPAREN,FOLLOW_RPAREN_in_function2316); if (state.failed) return ;
+            dbg.location(503,3);
+            match(input,RPAREN,FOLLOW_RPAREN_in_function2726); if (state.failed) return ;
 
             }
 
@@ -5391,7 +6445,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(459, 2);
+        dbg.location(504, 2);
 
         }
         finally {
@@ -5406,92 +6460,92 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "function_name"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:465:1: function_name : ( IDENT COLON )? IDENT ( DOT IDENT )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:510:1: function_name : ( IDENT COLON )? IDENT ( DOT IDENT )* ;
     public final void function_name() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "function_name");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(465, 1);
+        dbg.location(510, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:2: ( ( IDENT COLON )? IDENT ( DOT IDENT )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:2: ( ( IDENT COLON )? IDENT ( DOT IDENT )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:4: ( IDENT COLON )? IDENT ( DOT IDENT )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:4: ( IDENT COLON )? IDENT ( DOT IDENT )*
             {
-            dbg.location(469,4);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:4: ( IDENT COLON )?
-            int alt79=2;
-            try { dbg.enterSubRule(79);
-            try { dbg.enterDecision(79, decisionCanBacktrack[79]);
+            dbg.location(514,4);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:4: ( IDENT COLON )?
+            int alt99=2;
+            try { dbg.enterSubRule(99);
+            try { dbg.enterDecision(99, decisionCanBacktrack[99]);
 
-            int LA79_0 = input.LA(1);
+            int LA99_0 = input.LA(1);
 
-            if ( (LA79_0==IDENT) ) {
-                int LA79_1 = input.LA(2);
+            if ( (LA99_0==IDENT) ) {
+                int LA99_1 = input.LA(2);
 
-                if ( (LA79_1==COLON) ) {
-                    alt79=1;
+                if ( (LA99_1==COLON) ) {
+                    alt99=1;
                 }
             }
-            } finally {dbg.exitDecision(79);}
+            } finally {dbg.exitDecision(99);}
 
-            switch (alt79) {
+            switch (alt99) {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:5: IDENT COLON
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:5: IDENT COLON
                     {
-                    dbg.location(469,5);
-                    match(input,IDENT,FOLLOW_IDENT_in_function_name2364); if (state.failed) return ;
-                    dbg.location(469,11);
-                    match(input,COLON,FOLLOW_COLON_in_function_name2366); if (state.failed) return ;
+                    dbg.location(514,5);
+                    match(input,IDENT,FOLLOW_IDENT_in_function_name2774); if (state.failed) return ;
+                    dbg.location(514,11);
+                    match(input,COLON,FOLLOW_COLON_in_function_name2776); if (state.failed) return ;
 
                     }
                     break;
 
             }
-            } finally {dbg.exitSubRule(79);}
+            } finally {dbg.exitSubRule(99);}
 
-            dbg.location(469,19);
-            match(input,IDENT,FOLLOW_IDENT_in_function_name2370); if (state.failed) return ;
-            dbg.location(469,25);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:25: ( DOT IDENT )*
-            try { dbg.enterSubRule(80);
+            dbg.location(514,19);
+            match(input,IDENT,FOLLOW_IDENT_in_function_name2780); if (state.failed) return ;
+            dbg.location(514,25);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:25: ( DOT IDENT )*
+            try { dbg.enterSubRule(100);
 
-            loop80:
+            loop100:
             do {
-                int alt80=2;
-                try { dbg.enterDecision(80, decisionCanBacktrack[80]);
+                int alt100=2;
+                try { dbg.enterDecision(100, decisionCanBacktrack[100]);
 
-                int LA80_0 = input.LA(1);
+                int LA100_0 = input.LA(1);
 
-                if ( (LA80_0==DOT) ) {
-                    alt80=1;
+                if ( (LA100_0==DOT) ) {
+                    alt100=1;
                 }
 
 
-                } finally {dbg.exitDecision(80);}
+                } finally {dbg.exitDecision(100);}
 
-                switch (alt80) {
+                switch (alt100) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:26: DOT IDENT
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:514:26: DOT IDENT
             	    {
-            	    dbg.location(469,26);
-            	    match(input,DOT,FOLLOW_DOT_in_function_name2373); if (state.failed) return ;
-            	    dbg.location(469,30);
-            	    match(input,IDENT,FOLLOW_IDENT_in_function_name2375); if (state.failed) return ;
+            	    dbg.location(514,26);
+            	    match(input,DOT,FOLLOW_DOT_in_function_name2783); if (state.failed) return ;
+            	    dbg.location(514,30);
+            	    match(input,IDENT,FOLLOW_IDENT_in_function_name2785); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop80;
+            	    break loop100;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(80);}
+            } finally {dbg.exitSubRule(100);}
 
 
             }
@@ -5503,7 +6557,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(470, 6);
+        dbg.location(515, 6);
 
         }
         finally {
@@ -5518,101 +6572,101 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attribute"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:472:1: attribute : attrname ( WS )* OPEQ ( WS )* attrvalue ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:517:1: attribute : attrname ( WS )* OPEQ ( WS )* attrvalue ;
     public final void attribute() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attribute");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(472, 1);
+        dbg.location(517, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:2: ( attrname ( WS )* OPEQ ( WS )* attrvalue )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:2: ( attrname ( WS )* OPEQ ( WS )* attrvalue )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:4: attrname ( WS )* OPEQ ( WS )* attrvalue
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:4: attrname ( WS )* OPEQ ( WS )* attrvalue
             {
-            dbg.location(473,4);
-            pushFollow(FOLLOW_attrname_in_attribute2397);
+            dbg.location(518,4);
+            pushFollow(FOLLOW_attrname_in_attribute2807);
             attrname();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(473,13);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:13: ( WS )*
-            try { dbg.enterSubRule(81);
+            dbg.location(518,13);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:13: ( WS )*
+            try { dbg.enterSubRule(101);
 
-            loop81:
+            loop101:
             do {
-                int alt81=2;
-                try { dbg.enterDecision(81, decisionCanBacktrack[81]);
+                int alt101=2;
+                try { dbg.enterDecision(101, decisionCanBacktrack[101]);
 
-                int LA81_0 = input.LA(1);
+                int LA101_0 = input.LA(1);
 
-                if ( (LA81_0==WS) ) {
-                    alt81=1;
+                if ( (LA101_0==WS) ) {
+                    alt101=1;
                 }
 
 
-                } finally {dbg.exitDecision(81);}
+                } finally {dbg.exitDecision(101);}
 
-                switch (alt81) {
+                switch (alt101) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:13: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:13: WS
             	    {
-            	    dbg.location(473,13);
-            	    match(input,WS,FOLLOW_WS_in_attribute2399); if (state.failed) return ;
+            	    dbg.location(518,13);
+            	    match(input,WS,FOLLOW_WS_in_attribute2809); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop81;
+            	    break loop101;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(81);}
+            } finally {dbg.exitSubRule(101);}
 
-            dbg.location(473,17);
-            match(input,OPEQ,FOLLOW_OPEQ_in_attribute2402); if (state.failed) return ;
-            dbg.location(473,22);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:22: ( WS )*
-            try { dbg.enterSubRule(82);
+            dbg.location(518,17);
+            match(input,OPEQ,FOLLOW_OPEQ_in_attribute2812); if (state.failed) return ;
+            dbg.location(518,22);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:22: ( WS )*
+            try { dbg.enterSubRule(102);
 
-            loop82:
+            loop102:
             do {
-                int alt82=2;
-                try { dbg.enterDecision(82, decisionCanBacktrack[82]);
+                int alt102=2;
+                try { dbg.enterDecision(102, decisionCanBacktrack[102]);
 
-                int LA82_0 = input.LA(1);
+                int LA102_0 = input.LA(1);
 
-                if ( (LA82_0==WS) ) {
-                    alt82=1;
+                if ( (LA102_0==WS) ) {
+                    alt102=1;
                 }
 
 
-                } finally {dbg.exitDecision(82);}
+                } finally {dbg.exitDecision(102);}
 
-                switch (alt82) {
+                switch (alt102) {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:22: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:518:22: WS
             	    {
-            	    dbg.location(473,22);
-            	    match(input,WS,FOLLOW_WS_in_attribute2404); if (state.failed) return ;
+            	    dbg.location(518,22);
+            	    match(input,WS,FOLLOW_WS_in_attribute2814); if (state.failed) return ;
 
             	    }
             	    break;
 
             	default :
-            	    break loop82;
+            	    break loop102;
                 }
             } while (true);
-            } finally {dbg.exitSubRule(82);}
+            } finally {dbg.exitSubRule(102);}
 
-            dbg.location(473,26);
-            pushFollow(FOLLOW_attrvalue_in_attribute2407);
+            dbg.location(518,26);
+            pushFollow(FOLLOW_attrvalue_in_attribute2817);
             attrvalue();
 
             state._fsp--;
@@ -5627,7 +6681,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(474, 2);
+        dbg.location(519, 2);
 
         }
         finally {
@@ -5642,21 +6696,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attrname"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:476:1: attrname : IDENT ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:521:1: attrname : IDENT ;
     public final void attrname() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attrname");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(476, 1);
+        dbg.location(521, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:477:2: ( IDENT )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:522:2: ( IDENT )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:477:4: IDENT
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:522:4: IDENT
             {
-            dbg.location(477,4);
-            match(input,IDENT,FOLLOW_IDENT_in_attrname2422); if (state.failed) return ;
+            dbg.location(522,4);
+            match(input,IDENT,FOLLOW_IDENT_in_attrname2832); if (state.failed) return ;
 
             }
 
@@ -5667,7 +6721,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(478, 2);
+        dbg.location(523, 2);
 
         }
         finally {
@@ -5682,21 +6736,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "attrvalue"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:480:1: attrvalue : expr ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:525:1: attrvalue : expr ;
     public final void attrvalue() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "attrvalue");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(480, 1);
+        dbg.location(525, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:481:2: ( expr )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:526:2: ( expr )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:481:4: expr
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:526:4: expr
             {
-            dbg.location(481,4);
-            pushFollow(FOLLOW_expr_in_attrvalue2434);
+            dbg.location(526,4);
+            pushFollow(FOLLOW_expr_in_attrvalue2844);
             expr();
 
             state._fsp--;
@@ -5711,7 +6765,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(482, 2);
+        dbg.location(527, 2);
 
         }
         finally {
@@ -5726,21 +6780,21 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "hexColor"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:484:1: hexColor : HASH ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:529:1: hexColor : HASH ;
     public final void hexColor() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "hexColor");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
-        dbg.location(484, 1);
+        dbg.location(529, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:485:5: ( HASH )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:530:5: ( HASH )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:485:7: HASH
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:530:7: HASH
             {
-            dbg.location(485,7);
-            match(input,HASH,FOLLOW_HASH_in_hexColor2452); if (state.failed) return ;
+            dbg.location(530,7);
+            match(input,HASH,FOLLOW_HASH_in_hexColor2862); if (state.failed) return ;
 
             }
 
@@ -5751,7 +6805,7 @@ public class Css3Parser extends DebugParser {
         }
         finally {
         }
-        dbg.location(486, 5);
+        dbg.location(531, 5);
 
         }
         finally {
@@ -5766,13 +6820,13 @@ public class Css3Parser extends DebugParser {
 
     // $ANTLR start synpred1_Css3
     public final void synpred1_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:19: ( esPred )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:19: ( esPred )
         dbg.enterAlt(1);
 
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:265:20: esPred
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:309:20: esPred
         {
-        dbg.location(265,20);
-        pushFollow(FOLLOW_esPred_in_synpred1_Css3958);
+        dbg.location(309,20);
+        pushFollow(FOLLOW_esPred_in_synpred1_Css31352);
         esPred();
 
         state._fsp--;
@@ -5784,13 +6838,13 @@ public class Css3Parser extends DebugParser {
 
     // $ANTLR start synpred2_Css3
     public final void synpred2_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:5: ( esPred )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:5: ( esPred )
         dbg.enterAlt(1);
 
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:267:6: esPred
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:311:6: esPred
         {
-        dbg.location(267,6);
-        pushFollow(FOLLOW_esPred_in_synpred2_Css3976);
+        dbg.location(311,6);
+        pushFollow(FOLLOW_esPred_in_synpred2_Css31370);
         esPred();
 
         state._fsp--;
@@ -5802,13 +6856,13 @@ public class Css3Parser extends DebugParser {
 
     // $ANTLR start synpred3_Css3
     public final void synpred3_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:7: ( nsPred )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:7: ( nsPred )
         dbg.enterAlt(1);
 
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:284:8: nsPred
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:328:8: nsPred
         {
-        dbg.location(284,8);
-        pushFollow(FOLLOW_nsPred_in_synpred3_Css31027);
+        dbg.location(328,8);
+        pushFollow(FOLLOW_nsPred_in_synpred3_Css31421);
         nsPred();
 
         state._fsp--;
@@ -5870,84 +6924,84 @@ public class Css3Parser extends DebugParser {
     }
 
 
-    protected DFA46 dfa46 = new DFA46(this);
-    protected DFA49 dfa49 = new DFA49(this);
-    protected DFA57 dfa57 = new DFA57(this);
-    protected DFA67 dfa67 = new DFA67(this);
-    protected DFA70 dfa70 = new DFA70(this);
-    protected DFA72 dfa72 = new DFA72(this);
-    protected DFA78 dfa78 = new DFA78(this);
-    static final String DFA46_eotS =
+    protected DFA66 dfa66 = new DFA66(this);
+    protected DFA69 dfa69 = new DFA69(this);
+    protected DFA77 dfa77 = new DFA77(this);
+    protected DFA87 dfa87 = new DFA87(this);
+    protected DFA90 dfa90 = new DFA90(this);
+    protected DFA92 dfa92 = new DFA92(this);
+    protected DFA98 dfa98 = new DFA98(this);
+    static final String DFA66_eotS =
         "\27\uffff";
-    static final String DFA46_eofS =
+    static final String DFA66_eofS =
         "\27\uffff";
-    static final String DFA46_minS =
+    static final String DFA66_minS =
         "\1\6\1\uffff\1\0\1\6\1\4\1\6\1\uffff\1\0\4\4\1\0\2\4\1\0\7\4";
-    static final String DFA46_maxS =
-        "\1\35\1\uffff\1\0\1\20\1\31\1\20\1\uffff\1\0\1\41\1\6\1\31\1\6\1"+
-        "\0\1\41\1\7\1\0\1\41\1\31\1\6\1\7\3\41";
-    static final String DFA46_acceptS =
+    static final String DFA66_maxS =
+        "\1\60\1\uffff\1\0\1\23\1\54\1\23\1\uffff\1\0\1\64\1\6\1\54\1\6\1"+
+        "\0\1\64\1\7\1\0\1\64\1\54\1\6\1\7\3\64";
+    static final String DFA66_acceptS =
         "\1\uffff\1\2\4\uffff\1\1\20\uffff";
-    static final String DFA46_specialS =
-        "\2\uffff\1\2\4\uffff\1\3\4\uffff\1\1\2\uffff\1\0\7\uffff}>";
-    static final String[] DFA46_transitionS = {
-            "\1\1\6\uffff\1\1\1\uffff\2\1\1\uffff\1\5\1\uffff\3\1\1\uffff"+
-            "\2\1\1\2\1\3\1\4\1\5",
+    static final String DFA66_specialS =
+        "\2\uffff\1\3\4\uffff\1\1\4\uffff\1\0\2\uffff\1\2\7\uffff}>";
+    static final String[] DFA66_transitionS = {
+            "\1\1\6\uffff\1\1\1\uffff\1\1\3\uffff\1\1\21\uffff\1\5\1\uffff"+
+            "\3\1\1\uffff\2\1\1\2\1\3\1\4\1\5",
             "",
             "\1\uffff",
-            "\1\7\11\uffff\1\7",
-            "\1\13\1\uffff\1\10\21\uffff\1\12\1\11",
-            "\1\14\11\uffff\1\14",
+            "\1\7\14\uffff\1\7",
+            "\1\13\1\uffff\1\10\44\uffff\1\12\1\11",
+            "\1\14\14\uffff\1\14",
             "",
             "\1\uffff",
-            "\1\15\24\uffff\1\11\4\uffff\3\16\1\17",
+            "\1\15\47\uffff\1\11\4\uffff\3\16\1\17",
             "\1\13\1\uffff\1\20",
-            "\1\21\24\uffff\1\22",
+            "\1\21\47\uffff\1\22",
             "\1\13\1\uffff\1\20",
             "\1\uffff",
-            "\1\15\24\uffff\1\11\4\uffff\3\16\1\17",
+            "\1\15\47\uffff\1\11\4\uffff\3\16\1\17",
             "\1\23\1\uffff\2\24",
             "\1\uffff",
-            "\1\25\31\uffff\3\16\1\17",
-            "\1\21\24\uffff\1\22",
+            "\1\25\54\uffff\3\16\1\17",
+            "\1\21\47\uffff\1\22",
             "\1\13\1\uffff\1\20",
             "\1\23\1\uffff\2\24",
-            "\1\26\34\uffff\1\17",
-            "\1\25\31\uffff\3\16\1\17",
-            "\1\26\34\uffff\1\17"
+            "\1\26\57\uffff\1\17",
+            "\1\25\54\uffff\3\16\1\17",
+            "\1\26\57\uffff\1\17"
     };
 
-    static final short[] DFA46_eot = DFA.unpackEncodedString(DFA46_eotS);
-    static final short[] DFA46_eof = DFA.unpackEncodedString(DFA46_eofS);
-    static final char[] DFA46_min = DFA.unpackEncodedStringToUnsignedChars(DFA46_minS);
-    static final char[] DFA46_max = DFA.unpackEncodedStringToUnsignedChars(DFA46_maxS);
-    static final short[] DFA46_accept = DFA.unpackEncodedString(DFA46_acceptS);
-    static final short[] DFA46_special = DFA.unpackEncodedString(DFA46_specialS);
-    static final short[][] DFA46_transition;
+    static final short[] DFA66_eot = DFA.unpackEncodedString(DFA66_eotS);
+    static final short[] DFA66_eof = DFA.unpackEncodedString(DFA66_eofS);
+    static final char[] DFA66_min = DFA.unpackEncodedStringToUnsignedChars(DFA66_minS);
+    static final char[] DFA66_max = DFA.unpackEncodedStringToUnsignedChars(DFA66_maxS);
+    static final short[] DFA66_accept = DFA.unpackEncodedString(DFA66_acceptS);
+    static final short[] DFA66_special = DFA.unpackEncodedString(DFA66_specialS);
+    static final short[][] DFA66_transition;
 
     static {
-        int numStates = DFA46_transitionS.length;
-        DFA46_transition = new short[numStates][];
+        int numStates = DFA66_transitionS.length;
+        DFA66_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA46_transition[i] = DFA.unpackEncodedString(DFA46_transitionS[i]);
+            DFA66_transition[i] = DFA.unpackEncodedString(DFA66_transitionS[i]);
         }
     }
 
-    class DFA46 extends DFA {
+    class DFA66 extends DFA {
 
-        public DFA46(BaseRecognizer recognizer) {
+        public DFA66(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 46;
-            this.eot = DFA46_eot;
-            this.eof = DFA46_eof;
-            this.min = DFA46_min;
-            this.max = DFA46_max;
-            this.accept = DFA46_accept;
-            this.special = DFA46_special;
-            this.transition = DFA46_transition;
+            this.decisionNumber = 66;
+            this.eot = DFA66_eot;
+            this.eof = DFA66_eof;
+            this.min = DFA66_min;
+            this.max = DFA66_max;
+            this.accept = DFA66_accept;
+            this.special = DFA66_special;
+            this.transition = DFA66_transition;
         }
         public String getDescription() {
-            return "()* loopback of 265:18: ( ( esPred )=> elementSubsequent )*";
+            return "()* loopback of 309:18: ( ( esPred )=> elementSubsequent )*";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
@@ -5957,10 +7011,10 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA46_15 = input.LA(1);
+                        int LA66_12 = input.LA(1);
 
                          
-                        int index46_15 = input.index();
+                        int index66_12 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred1_Css3()) ) {s = 6;}
@@ -5968,14 +7022,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 1;}
 
                          
-                        input.seek(index46_15);
+                        input.seek(index66_12);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA46_12 = input.LA(1);
+                        int LA66_7 = input.LA(1);
 
                          
-                        int index46_12 = input.index();
+                        int index66_7 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred1_Css3()) ) {s = 6;}
@@ -5983,14 +7037,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 1;}
 
                          
-                        input.seek(index46_12);
+                        input.seek(index66_7);
                         if ( s>=0 ) return s;
                         break;
                     case 2 : 
-                        int LA46_2 = input.LA(1);
+                        int LA66_15 = input.LA(1);
 
                          
-                        int index46_2 = input.index();
+                        int index66_15 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred1_Css3()) ) {s = 6;}
@@ -5998,14 +7052,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 1;}
 
                          
-                        input.seek(index46_2);
+                        input.seek(index66_15);
                         if ( s>=0 ) return s;
                         break;
                     case 3 : 
-                        int LA46_7 = input.LA(1);
+                        int LA66_2 = input.LA(1);
 
                          
-                        int index46_7 = input.index();
+                        int index66_2 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred1_Css3()) ) {s = 6;}
@@ -6013,72 +7067,72 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 1;}
 
                          
-                        input.seek(index46_7);
+                        input.seek(index66_2);
                         if ( s>=0 ) return s;
                         break;
             }
             if (state.backtracking>0) {state.failed=true; return -1;}
             NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 46, _s, input);
+                new NoViableAltException(getDescription(), 66, _s, input);
             error(nvae);
             throw nvae;
         }
     }
-    static final String DFA49_eotS =
+    static final String DFA69_eotS =
         "\7\uffff";
-    static final String DFA49_eofS =
+    static final String DFA69_eofS =
         "\7\uffff";
-    static final String DFA49_minS =
+    static final String DFA69_minS =
         "\1\6\1\0\1\uffff\1\4\1\uffff\1\4\1\0";
-    static final String DFA49_maxS =
-        "\1\31\1\0\1\uffff\1\35\1\uffff\1\35\1\0";
-    static final String DFA49_acceptS =
+    static final String DFA69_maxS =
+        "\1\54\1\0\1\uffff\1\60\1\uffff\1\60\1\0";
+    static final String DFA69_acceptS =
         "\2\uffff\1\1\1\uffff\1\2\2\uffff";
-    static final String DFA49_specialS =
-        "\1\2\1\1\4\uffff\1\0}>";
-    static final String[] DFA49_transitionS = {
-            "\1\1\11\uffff\1\4\7\uffff\1\3\1\2",
+    static final String DFA69_specialS =
+        "\1\0\1\2\4\uffff\1\1}>";
+    static final String[] DFA69_transitionS = {
+            "\1\1\14\uffff\1\4\27\uffff\1\3\1\2",
             "\1\uffff",
             "",
-            "\1\5\1\uffff\1\4\6\uffff\1\4\1\uffff\2\4\1\uffff\1\4\1\uffff"+
-            "\3\4\1\uffff\1\4\1\6\4\4",
+            "\1\5\1\uffff\1\4\6\uffff\1\4\1\uffff\1\4\3\uffff\1\4\21\uffff"+
+            "\1\4\1\uffff\3\4\1\uffff\1\4\1\6\4\4",
             "",
-            "\1\5\1\uffff\1\4\6\uffff\1\4\1\uffff\2\4\1\uffff\1\4\1\uffff"+
-            "\3\4\1\uffff\1\4\1\6\4\4",
+            "\1\5\1\uffff\1\4\6\uffff\1\4\1\uffff\1\4\3\uffff\1\4\21\uffff"+
+            "\1\4\1\uffff\3\4\1\uffff\1\4\1\6\4\4",
             "\1\uffff"
     };
 
-    static final short[] DFA49_eot = DFA.unpackEncodedString(DFA49_eotS);
-    static final short[] DFA49_eof = DFA.unpackEncodedString(DFA49_eofS);
-    static final char[] DFA49_min = DFA.unpackEncodedStringToUnsignedChars(DFA49_minS);
-    static final char[] DFA49_max = DFA.unpackEncodedStringToUnsignedChars(DFA49_maxS);
-    static final short[] DFA49_accept = DFA.unpackEncodedString(DFA49_acceptS);
-    static final short[] DFA49_special = DFA.unpackEncodedString(DFA49_specialS);
-    static final short[][] DFA49_transition;
+    static final short[] DFA69_eot = DFA.unpackEncodedString(DFA69_eotS);
+    static final short[] DFA69_eof = DFA.unpackEncodedString(DFA69_eofS);
+    static final char[] DFA69_min = DFA.unpackEncodedStringToUnsignedChars(DFA69_minS);
+    static final char[] DFA69_max = DFA.unpackEncodedStringToUnsignedChars(DFA69_maxS);
+    static final short[] DFA69_accept = DFA.unpackEncodedString(DFA69_acceptS);
+    static final short[] DFA69_special = DFA.unpackEncodedString(DFA69_specialS);
+    static final short[][] DFA69_transition;
 
     static {
-        int numStates = DFA49_transitionS.length;
-        DFA49_transition = new short[numStates][];
+        int numStates = DFA69_transitionS.length;
+        DFA69_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA49_transition[i] = DFA.unpackEncodedString(DFA49_transitionS[i]);
+            DFA69_transition[i] = DFA.unpackEncodedString(DFA69_transitionS[i]);
         }
     }
 
-    class DFA49 extends DFA {
+    class DFA69 extends DFA {
 
-        public DFA49(BaseRecognizer recognizer) {
+        public DFA69(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 49;
-            this.eot = DFA49_eot;
-            this.eof = DFA49_eof;
-            this.min = DFA49_min;
-            this.max = DFA49_max;
-            this.accept = DFA49_accept;
-            this.special = DFA49_special;
-            this.transition = DFA49_transition;
+            this.decisionNumber = 69;
+            this.eot = DFA69_eot;
+            this.eof = DFA69_eof;
+            this.min = DFA69_min;
+            this.max = DFA69_max;
+            this.accept = DFA69_accept;
+            this.special = DFA69_special;
+            this.transition = DFA69_transition;
         }
         public String getDescription() {
-            return "284:6: ( ( nsPred )=> namespace_wqname_prefix )?";
+            return "328:6: ( ( nsPred )=> namespace_wqname_prefix )?";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
@@ -6088,25 +7142,29 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA49_6 = input.LA(1);
+                        int LA69_0 = input.LA(1);
 
                          
-                        int index49_6 = input.index();
+                        int index69_0 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred3_Css3()) ) {s = 2;}
+                        if ( (LA69_0==IDENT) ) {s = 1;}
 
-                        else if ( (true) ) {s = 4;}
+                        else if ( (LA69_0==PIPE) && (synpred3_Css3())) {s = 2;}
+
+                        else if ( (LA69_0==STAR) ) {s = 3;}
+
+                        else if ( (LA69_0==GEN) ) {s = 4;}
 
                          
-                        input.seek(index49_6);
+                        input.seek(index69_0);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA49_1 = input.LA(1);
+                        int LA69_6 = input.LA(1);
 
                          
-                        int index49_1 = input.index();
+                        int index69_6 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred3_Css3()) ) {s = 2;}
@@ -6114,329 +7172,326 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 4;}
 
                          
-                        input.seek(index49_1);
+                        input.seek(index69_6);
                         if ( s>=0 ) return s;
                         break;
                     case 2 : 
-                        int LA49_0 = input.LA(1);
+                        int LA69_1 = input.LA(1);
 
                          
-                        int index49_0 = input.index();
+                        int index69_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA49_0==IDENT) ) {s = 1;}
+                        if ( (synpred3_Css3()) ) {s = 2;}
 
-                        else if ( (LA49_0==PIPE) && (synpred3_Css3())) {s = 2;}
-
-                        else if ( (LA49_0==STAR) ) {s = 3;}
-
-                        else if ( (LA49_0==GEN) ) {s = 4;}
+                        else if ( (true) ) {s = 4;}
 
                          
-                        input.seek(index49_0);
+                        input.seek(index69_1);
                         if ( s>=0 ) return s;
                         break;
             }
             if (state.backtracking>0) {state.failed=true; return -1;}
             NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 49, _s, input);
+                new NoViableAltException(getDescription(), 69, _s, input);
             error(nvae);
             throw nvae;
         }
     }
-    static final String DFA57_eotS =
+    static final String DFA77_eotS =
         "\5\uffff";
-    static final String DFA57_eofS =
+    static final String DFA77_eofS =
         "\5\uffff";
-    static final String DFA57_minS =
+    static final String DFA77_minS =
         "\2\4\2\uffff\1\4";
-    static final String DFA57_maxS =
-        "\1\31\1\41\2\uffff\1\41";
-    static final String DFA57_acceptS =
+    static final String DFA77_maxS =
+        "\1\54\1\64\2\uffff\1\64";
+    static final String DFA77_acceptS =
         "\2\uffff\1\1\1\2\1\uffff";
-    static final String DFA57_specialS =
+    static final String DFA77_specialS =
         "\5\uffff}>";
-    static final String[] DFA57_transitionS = {
-            "\1\3\1\uffff\1\1\21\uffff\2\2",
-            "\1\4\24\uffff\1\2\4\uffff\4\3",
+    static final String[] DFA77_transitionS = {
+            "\1\3\1\uffff\1\1\44\uffff\2\2",
+            "\1\4\47\uffff\1\2\4\uffff\4\3",
             "",
             "",
-            "\1\4\24\uffff\1\2\4\uffff\4\3"
+            "\1\4\47\uffff\1\2\4\uffff\4\3"
     };
 
-    static final short[] DFA57_eot = DFA.unpackEncodedString(DFA57_eotS);
-    static final short[] DFA57_eof = DFA.unpackEncodedString(DFA57_eofS);
-    static final char[] DFA57_min = DFA.unpackEncodedStringToUnsignedChars(DFA57_minS);
-    static final char[] DFA57_max = DFA.unpackEncodedStringToUnsignedChars(DFA57_maxS);
-    static final short[] DFA57_accept = DFA.unpackEncodedString(DFA57_acceptS);
-    static final short[] DFA57_special = DFA.unpackEncodedString(DFA57_specialS);
-    static final short[][] DFA57_transition;
+    static final short[] DFA77_eot = DFA.unpackEncodedString(DFA77_eotS);
+    static final short[] DFA77_eof = DFA.unpackEncodedString(DFA77_eofS);
+    static final char[] DFA77_min = DFA.unpackEncodedStringToUnsignedChars(DFA77_minS);
+    static final char[] DFA77_max = DFA.unpackEncodedStringToUnsignedChars(DFA77_maxS);
+    static final short[] DFA77_accept = DFA.unpackEncodedString(DFA77_acceptS);
+    static final short[] DFA77_special = DFA.unpackEncodedString(DFA77_specialS);
+    static final short[][] DFA77_transition;
 
     static {
-        int numStates = DFA57_transitionS.length;
-        DFA57_transition = new short[numStates][];
+        int numStates = DFA77_transitionS.length;
+        DFA77_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA57_transition[i] = DFA.unpackEncodedString(DFA57_transitionS[i]);
+            DFA77_transition[i] = DFA.unpackEncodedString(DFA77_transitionS[i]);
         }
     }
 
-    class DFA57 extends DFA {
+    class DFA77 extends DFA {
 
-        public DFA57(BaseRecognizer recognizer) {
+        public DFA77(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 57;
-            this.eot = DFA57_eot;
-            this.eof = DFA57_eof;
-            this.min = DFA57_min;
-            this.max = DFA57_max;
-            this.accept = DFA57_accept;
-            this.special = DFA57_special;
-            this.transition = DFA57_transition;
+            this.decisionNumber = 77;
+            this.eot = DFA77_eot;
+            this.eof = DFA77_eof;
+            this.min = DFA77_min;
+            this.max = DFA77_max;
+            this.accept = DFA77_accept;
+            this.special = DFA77_special;
+            this.transition = DFA77_transition;
         }
         public String getDescription() {
-            return "338:6: ( namespace_wqname_prefix )?";
+            return "382:6: ( namespace_wqname_prefix )?";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA67_eotS =
+    static final String DFA87_eotS =
         "\4\uffff";
-    static final String DFA67_eofS =
+    static final String DFA87_eofS =
         "\4\uffff";
-    static final String DFA67_minS =
+    static final String DFA87_minS =
         "\2\4\2\uffff";
-    static final String DFA67_maxS =
-        "\2\42\2\uffff";
-    static final String DFA67_acceptS =
+    static final String DFA87_maxS =
+        "\2\65\2\uffff";
+    static final String DFA87_acceptS =
         "\2\uffff\1\1\1\2";
-    static final String DFA67_specialS =
+    static final String DFA87_specialS =
         "\4\uffff}>";
-    static final String[] DFA67_transitionS = {
-            "\1\1\1\uffff\1\3\6\uffff\1\3\1\uffff\2\3\1\uffff\1\3\1\uffff"+
-            "\3\3\1\uffff\6\3\4\uffff\1\2",
-            "\1\1\1\uffff\1\3\6\uffff\1\3\1\uffff\2\3\1\uffff\1\3\1\uffff"+
-            "\3\3\1\uffff\6\3\4\uffff\1\2",
+    static final String[] DFA87_transitionS = {
+            "\1\1\1\uffff\1\3\6\uffff\1\3\1\uffff\1\3\3\uffff\1\3\21\uffff"+
+            "\1\3\1\uffff\3\3\1\uffff\6\3\4\uffff\1\2",
+            "\1\1\1\uffff\1\3\6\uffff\1\3\1\uffff\1\3\3\uffff\1\3\21\uffff"+
+            "\1\3\1\uffff\3\3\1\uffff\6\3\4\uffff\1\2",
             "",
             ""
     };
 
-    static final short[] DFA67_eot = DFA.unpackEncodedString(DFA67_eotS);
-    static final short[] DFA67_eof = DFA.unpackEncodedString(DFA67_eofS);
-    static final char[] DFA67_min = DFA.unpackEncodedStringToUnsignedChars(DFA67_minS);
-    static final char[] DFA67_max = DFA.unpackEncodedStringToUnsignedChars(DFA67_maxS);
-    static final short[] DFA67_accept = DFA.unpackEncodedString(DFA67_acceptS);
-    static final short[] DFA67_special = DFA.unpackEncodedString(DFA67_specialS);
-    static final short[][] DFA67_transition;
+    static final short[] DFA87_eot = DFA.unpackEncodedString(DFA87_eotS);
+    static final short[] DFA87_eof = DFA.unpackEncodedString(DFA87_eofS);
+    static final char[] DFA87_min = DFA.unpackEncodedStringToUnsignedChars(DFA87_minS);
+    static final char[] DFA87_max = DFA.unpackEncodedStringToUnsignedChars(DFA87_maxS);
+    static final short[] DFA87_accept = DFA.unpackEncodedString(DFA87_acceptS);
+    static final short[] DFA87_special = DFA.unpackEncodedString(DFA87_specialS);
+    static final short[][] DFA87_transition;
 
     static {
-        int numStates = DFA67_transitionS.length;
-        DFA67_transition = new short[numStates][];
+        int numStates = DFA87_transitionS.length;
+        DFA87_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA67_transition[i] = DFA.unpackEncodedString(DFA67_transitionS[i]);
+            DFA87_transition[i] = DFA.unpackEncodedString(DFA87_transitionS[i]);
         }
     }
 
-    class DFA67 extends DFA {
+    class DFA87 extends DFA {
 
-        public DFA67(BaseRecognizer recognizer) {
+        public DFA87(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 67;
-            this.eot = DFA67_eot;
-            this.eof = DFA67_eof;
-            this.min = DFA67_min;
-            this.max = DFA67_max;
-            this.accept = DFA67_accept;
-            this.special = DFA67_special;
-            this.transition = DFA67_transition;
+            this.decisionNumber = 87;
+            this.eot = DFA87_eot;
+            this.eof = DFA87_eof;
+            this.min = DFA87_min;
+            this.max = DFA87_max;
+            this.accept = DFA87_accept;
+            this.special = DFA87_special;
+            this.transition = DFA87_transition;
         }
         public String getDescription() {
-            return "382:17: ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?";
+            return "426:17: ( ( WS )* LPAREN ( WS )* ( ( IDENT | GEN ) ( WS )* )? RPAREN )?";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA70_eotS =
+    static final String DFA90_eotS =
         "\7\uffff";
-    static final String DFA70_eofS =
+    static final String DFA90_eofS =
         "\7\uffff";
-    static final String DFA70_minS =
+    static final String DFA90_minS =
         "\1\6\1\uffff\1\4\1\uffff\3\4";
-    static final String DFA70_maxS =
-        "\1\54\1\uffff\1\54\1\uffff\3\54";
-    static final String DFA70_acceptS =
+    static final String DFA90_maxS =
+        "\1\100\1\uffff\1\100\1\uffff\3\100";
+    static final String DFA90_acceptS =
         "\1\uffff\1\2\1\uffff\1\1\3\uffff";
-    static final String DFA70_specialS =
+    static final String DFA90_specialS =
         "\7\uffff}>";
-    static final String[] DFA70_transitionS = {
-            "\3\3\1\uffff\1\1\3\uffff\1\1\1\2\1\3\2\uffff\2\3\2\uffff\1\3"+
-            "\2\uffff\1\3\10\uffff\2\1\10\3",
+    static final String[] DFA90_transitionS = {
+            "\3\3\1\uffff\1\1\3\uffff\1\1\1\2\3\uffff\1\3\22\uffff\2\3\2"+
+            "\uffff\1\3\2\uffff\1\3\10\uffff\2\1\11\3",
             "",
-            "\1\4\1\uffff\1\5\2\3\7\uffff\1\3\3\uffff\1\3\2\uffff\1\3\2"+
-            "\uffff\1\3\12\uffff\10\3",
+            "\1\4\1\uffff\1\5\2\3\12\uffff\1\3\23\uffff\1\3\2\uffff\1\3"+
+            "\2\uffff\1\3\12\uffff\11\3",
             "",
-            "\1\4\1\uffff\1\5\2\3\7\uffff\1\3\3\uffff\1\3\2\uffff\1\3\2"+
-            "\uffff\1\3\12\uffff\10\3",
-            "\1\6\1\uffff\3\3\1\uffff\1\3\3\uffff\3\3\1\uffff\3\3\2\uffff"+
-            "\1\3\2\uffff\2\3\2\uffff\1\1\3\uffff\13\3",
-            "\1\6\1\uffff\3\3\1\uffff\1\3\3\uffff\3\3\2\uffff\2\3\2\uffff"+
-            "\1\3\2\uffff\1\3\3\uffff\1\1\3\uffff\13\3"
+            "\1\4\1\uffff\1\5\2\3\12\uffff\1\3\23\uffff\1\3\2\uffff\1\3"+
+            "\2\uffff\1\3\12\uffff\11\3",
+            "\1\6\1\uffff\3\3\1\uffff\1\3\3\uffff\2\3\3\uffff\1\3\21\uffff"+
+            "\3\3\2\uffff\1\3\2\uffff\2\3\2\uffff\1\1\3\uffff\14\3",
+            "\1\6\1\uffff\3\3\1\uffff\1\3\3\uffff\2\3\3\uffff\1\3\22\uffff"+
+            "\2\3\2\uffff\1\3\2\uffff\1\3\3\uffff\1\1\3\uffff\14\3"
     };
 
-    static final short[] DFA70_eot = DFA.unpackEncodedString(DFA70_eotS);
-    static final short[] DFA70_eof = DFA.unpackEncodedString(DFA70_eofS);
-    static final char[] DFA70_min = DFA.unpackEncodedStringToUnsignedChars(DFA70_minS);
-    static final char[] DFA70_max = DFA.unpackEncodedStringToUnsignedChars(DFA70_maxS);
-    static final short[] DFA70_accept = DFA.unpackEncodedString(DFA70_acceptS);
-    static final short[] DFA70_special = DFA.unpackEncodedString(DFA70_specialS);
-    static final short[][] DFA70_transition;
+    static final short[] DFA90_eot = DFA.unpackEncodedString(DFA90_eotS);
+    static final short[] DFA90_eof = DFA.unpackEncodedString(DFA90_eofS);
+    static final char[] DFA90_min = DFA.unpackEncodedStringToUnsignedChars(DFA90_minS);
+    static final char[] DFA90_max = DFA.unpackEncodedStringToUnsignedChars(DFA90_maxS);
+    static final short[] DFA90_accept = DFA.unpackEncodedString(DFA90_acceptS);
+    static final short[] DFA90_special = DFA.unpackEncodedString(DFA90_specialS);
+    static final short[][] DFA90_transition;
 
     static {
-        int numStates = DFA70_transitionS.length;
-        DFA70_transition = new short[numStates][];
+        int numStates = DFA90_transitionS.length;
+        DFA90_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA70_transition[i] = DFA.unpackEncodedString(DFA70_transitionS[i]);
+            DFA90_transition[i] = DFA.unpackEncodedString(DFA90_transitionS[i]);
         }
     }
 
-    class DFA70 extends DFA {
+    class DFA90 extends DFA {
 
-        public DFA70(BaseRecognizer recognizer) {
+        public DFA90(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 70;
-            this.eot = DFA70_eot;
-            this.eof = DFA70_eof;
-            this.min = DFA70_min;
-            this.max = DFA70_max;
-            this.accept = DFA70_accept;
-            this.special = DFA70_special;
-            this.transition = DFA70_transition;
+            this.decisionNumber = 90;
+            this.eot = DFA90_eot;
+            this.eof = DFA90_eof;
+            this.min = DFA90_min;
+            this.max = DFA90_max;
+            this.accept = DFA90_accept;
+            this.special = DFA90_special;
+            this.transition = DFA90_transition;
         }
         public String getDescription() {
-            return "()* loopback of 422:12: ( operator term )*";
+            return "()* loopback of 466:12: ( operator term )*";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA72_eotS =
+    static final String DFA92_eotS =
         "\12\uffff";
-    static final String DFA72_eofS =
+    static final String DFA92_eofS =
         "\12\uffff";
-    static final String DFA72_minS =
+    static final String DFA92_minS =
         "\1\6\2\uffff\1\4\4\uffff\1\4\1\uffff";
-    static final String DFA72_maxS =
-        "\1\54\2\uffff\1\54\4\uffff\1\54\1\uffff";
-    static final String DFA72_acceptS =
+    static final String DFA92_maxS =
+        "\1\100\2\uffff\1\100\4\uffff\1\100\1\uffff";
+    static final String DFA92_acceptS =
         "\1\uffff\1\1\1\2\1\uffff\1\4\1\5\1\6\1\7\1\uffff\1\3";
-    static final String DFA72_specialS =
+    static final String DFA92_specialS =
         "\12\uffff}>";
-    static final String[] DFA72_transitionS = {
-            "\1\3\1\2\1\5\7\uffff\1\4\11\uffff\1\6\12\uffff\10\1",
+    static final String[] DFA92_transitionS = {
+            "\1\3\1\2\1\5\12\uffff\1\4\31\uffff\1\6\12\uffff\11\1",
             "",
             "",
-            "\1\10\1\uffff\3\11\1\uffff\1\11\3\uffff\3\11\1\uffff\1\7\2"+
-            "\11\2\uffff\1\11\2\uffff\1\11\1\7\6\uffff\1\7\12\11",
+            "\1\10\1\uffff\3\11\1\uffff\1\11\3\uffff\2\11\3\uffff\1\11\21"+
+            "\uffff\1\7\2\11\2\uffff\1\11\2\uffff\1\11\1\7\6\uffff\1\7\13"+
+            "\11",
             "",
             "",
             "",
             "",
-            "\1\10\1\uffff\3\11\1\uffff\1\11\3\uffff\3\11\2\uffff\2\11\2"+
-            "\uffff\1\11\2\uffff\1\11\7\uffff\1\7\12\11",
+            "\1\10\1\uffff\3\11\1\uffff\1\11\3\uffff\2\11\3\uffff\1\11\22"+
+            "\uffff\2\11\2\uffff\1\11\2\uffff\1\11\7\uffff\1\7\13\11",
             ""
     };
 
-    static final short[] DFA72_eot = DFA.unpackEncodedString(DFA72_eotS);
-    static final short[] DFA72_eof = DFA.unpackEncodedString(DFA72_eofS);
-    static final char[] DFA72_min = DFA.unpackEncodedStringToUnsignedChars(DFA72_minS);
-    static final char[] DFA72_max = DFA.unpackEncodedStringToUnsignedChars(DFA72_maxS);
-    static final short[] DFA72_accept = DFA.unpackEncodedString(DFA72_acceptS);
-    static final short[] DFA72_special = DFA.unpackEncodedString(DFA72_specialS);
-    static final short[][] DFA72_transition;
+    static final short[] DFA92_eot = DFA.unpackEncodedString(DFA92_eotS);
+    static final short[] DFA92_eof = DFA.unpackEncodedString(DFA92_eofS);
+    static final char[] DFA92_min = DFA.unpackEncodedStringToUnsignedChars(DFA92_minS);
+    static final char[] DFA92_max = DFA.unpackEncodedStringToUnsignedChars(DFA92_maxS);
+    static final short[] DFA92_accept = DFA.unpackEncodedString(DFA92_acceptS);
+    static final short[] DFA92_special = DFA.unpackEncodedString(DFA92_specialS);
+    static final short[][] DFA92_transition;
 
     static {
-        int numStates = DFA72_transitionS.length;
-        DFA72_transition = new short[numStates][];
+        int numStates = DFA92_transitionS.length;
+        DFA92_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA72_transition[i] = DFA.unpackEncodedString(DFA72_transitionS[i]);
+            DFA92_transition[i] = DFA.unpackEncodedString(DFA92_transitionS[i]);
         }
     }
 
-    class DFA72 extends DFA {
+    class DFA92 extends DFA {
 
-        public DFA72(BaseRecognizer recognizer) {
+        public DFA92(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 72;
-            this.eot = DFA72_eot;
-            this.eof = DFA72_eof;
-            this.min = DFA72_min;
-            this.max = DFA72_max;
-            this.accept = DFA72_accept;
-            this.special = DFA72_special;
-            this.transition = DFA72_transition;
+            this.decisionNumber = 92;
+            this.eot = DFA92_eot;
+            this.eof = DFA92_eof;
+            this.min = DFA92_min;
+            this.max = DFA92_max;
+            this.accept = DFA92_accept;
+            this.special = DFA92_special;
+            this.transition = DFA92_transition;
         }
         public String getDescription() {
-            return "427:9: ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ ) | STRING | IDENT | GEN | URI | hexColor | function )";
+            return "471:9: ( ( NUMBER | PERCENTAGE | LENGTH | EMS | EXS | ANGLE | TIME | FREQ | RESOLUTION ) | STRING | IDENT | GEN | URI | hexColor | function )";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA78_eotS =
+    static final String DFA98_eotS =
         "\5\uffff";
-    static final String DFA78_eofS =
+    static final String DFA98_eofS =
         "\5\uffff";
-    static final String DFA78_minS =
+    static final String DFA98_minS =
         "\1\6\1\uffff\2\4\1\uffff";
-    static final String DFA78_maxS =
-        "\1\54\1\uffff\2\54\1\uffff";
-    static final String DFA78_acceptS =
+    static final String DFA98_maxS =
+        "\1\100\1\uffff\2\100\1\uffff";
+    static final String DFA98_acceptS =
         "\1\uffff\1\1\2\uffff\1\2";
-    static final String DFA78_specialS =
+    static final String DFA98_specialS =
         "\5\uffff}>";
-    static final String[] DFA78_transitionS = {
-            "\1\2\2\1\7\uffff\1\1\3\uffff\1\1\2\uffff\1\1\2\uffff\1\1\12"+
-            "\uffff\10\1",
+    static final String[] DFA98_transitionS = {
+            "\1\2\2\1\12\uffff\1\1\23\uffff\1\1\2\uffff\1\1\2\uffff\1\1\12"+
+            "\uffff\11\1",
             "",
-            "\1\3\1\uffff\3\1\6\uffff\2\1\1\uffff\3\1\2\uffff\1\1\2\uffff"+
-            "\2\1\2\uffff\1\4\3\uffff\2\1\1\uffff\10\1",
-            "\1\3\1\uffff\3\1\6\uffff\2\1\2\uffff\2\1\2\uffff\1\1\2\uffff"+
-            "\1\1\3\uffff\1\4\3\uffff\2\1\1\uffff\10\1",
+            "\1\3\1\uffff\3\1\6\uffff\1\1\3\uffff\1\1\21\uffff\3\1\2\uffff"+
+            "\1\1\2\uffff\2\1\2\uffff\1\4\3\uffff\2\1\1\uffff\11\1",
+            "\1\3\1\uffff\3\1\6\uffff\1\1\3\uffff\1\1\22\uffff\2\1\2\uffff"+
+            "\1\1\2\uffff\1\1\3\uffff\1\4\3\uffff\2\1\1\uffff\11\1",
             ""
     };
 
-    static final short[] DFA78_eot = DFA.unpackEncodedString(DFA78_eotS);
-    static final short[] DFA78_eof = DFA.unpackEncodedString(DFA78_eofS);
-    static final char[] DFA78_min = DFA.unpackEncodedStringToUnsignedChars(DFA78_minS);
-    static final char[] DFA78_max = DFA.unpackEncodedStringToUnsignedChars(DFA78_maxS);
-    static final short[] DFA78_accept = DFA.unpackEncodedString(DFA78_acceptS);
-    static final short[] DFA78_special = DFA.unpackEncodedString(DFA78_specialS);
-    static final short[][] DFA78_transition;
+    static final short[] DFA98_eot = DFA.unpackEncodedString(DFA98_eotS);
+    static final short[] DFA98_eof = DFA.unpackEncodedString(DFA98_eofS);
+    static final char[] DFA98_min = DFA.unpackEncodedStringToUnsignedChars(DFA98_minS);
+    static final char[] DFA98_max = DFA.unpackEncodedStringToUnsignedChars(DFA98_maxS);
+    static final short[] DFA98_accept = DFA.unpackEncodedString(DFA98_acceptS);
+    static final short[] DFA98_special = DFA.unpackEncodedString(DFA98_specialS);
+    static final short[][] DFA98_transition;
 
     static {
-        int numStates = DFA78_transitionS.length;
-        DFA78_transition = new short[numStates][];
+        int numStates = DFA98_transitionS.length;
+        DFA98_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA78_transition[i] = DFA.unpackEncodedString(DFA78_transitionS[i]);
+            DFA98_transition[i] = DFA.unpackEncodedString(DFA98_transitionS[i]);
         }
     }
 
-    class DFA78 extends DFA {
+    class DFA98 extends DFA {
 
-        public DFA78(BaseRecognizer recognizer) {
+        public DFA98(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 78;
-            this.eot = DFA78_eot;
-            this.eof = DFA78_eof;
-            this.min = DFA78_min;
-            this.max = DFA78_max;
-            this.accept = DFA78_accept;
-            this.special = DFA78_special;
-            this.transition = DFA78_transition;
+            this.decisionNumber = 98;
+            this.eot = DFA98_eot;
+            this.eof = DFA98_eof;
+            this.min = DFA98_min;
+            this.max = DFA98_max;
+            this.accept = DFA98_accept;
+            this.special = DFA98_special;
+            this.transition = DFA98_transition;
         }
         public String getDescription() {
-            return "451:3: ( expr | ( attribute ( COMMA ( WS )* attribute )* ) )";
+            return "496:3: ( expr | ( attribute ( COMMA ( WS )* attribute )* ) )";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
@@ -6444,11 +7499,11 @@ public class Css3Parser extends DebugParser {
     }
  
 
-    public static final BitSet FOLLOW_charSet_in_styleSheet79 = new BitSet(new long[]{0x000000003F071870L});
-    public static final BitSet FOLLOW_WS_in_styleSheet87 = new BitSet(new long[]{0x000000003F071870L});
-    public static final BitSet FOLLOW_imports_in_styleSheet99 = new BitSet(new long[]{0x000000003F071870L});
-    public static final BitSet FOLLOW_WS_in_styleSheet101 = new BitSet(new long[]{0x000000003F071870L});
-    public static final BitSet FOLLOW_namespace_in_styleSheet116 = new BitSet(new long[]{0x000000003F071060L});
+    public static final BitSet FOLLOW_charSet_in_styleSheet79 = new BitSet(new long[]{0x0001F82000181870L});
+    public static final BitSet FOLLOW_WS_in_styleSheet87 = new BitSet(new long[]{0x0001F82000181870L});
+    public static final BitSet FOLLOW_imports_in_styleSheet99 = new BitSet(new long[]{0x0001F82000181870L});
+    public static final BitSet FOLLOW_WS_in_styleSheet101 = new BitSet(new long[]{0x0001F82000181870L});
+    public static final BitSet FOLLOW_namespace_in_styleSheet116 = new BitSet(new long[]{0x0001F82000181060L});
     public static final BitSet FOLLOW_bodylist_in_styleSheet127 = new BitSet(new long[]{0x0000000000000000L});
     public static final BitSet FOLLOW_EOF_in_styleSheet134 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_NAMESPACE_SYM_in_namespace149 = new BitSet(new long[]{0x00000000000001D0L});
@@ -6468,160 +7523,193 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_SEMI_in_charSet234 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IMPORT_SYM_in_imports256 = new BitSet(new long[]{0x00000000000001D0L});
     public static final BitSet FOLLOW_WS_in_imports258 = new BitSet(new long[]{0x00000000000001D0L});
-    public static final BitSet FOLLOW_resourceIdentifier_in_imports262 = new BitSet(new long[]{0x0000000000010450L});
-    public static final BitSet FOLLOW_WS_in_imports265 = new BitSet(new long[]{0x0000000000010450L});
-    public static final BitSet FOLLOW_mediaList_in_imports268 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_SEMI_in_imports271 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_MEDIA_SYM_in_media292 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_WS_in_media294 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_mediaList_in_media297 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_LBRACE_in_media307 = new BitSet(new long[]{0x000000003F050050L});
-    public static final BitSet FOLLOW_WS_in_media309 = new BitSet(new long[]{0x000000003F050050L});
-    public static final BitSet FOLLOW_ruleSet_in_media324 = new BitSet(new long[]{0x0000000000004010L});
-    public static final BitSet FOLLOW_WS_in_media334 = new BitSet(new long[]{0x0000000000004010L});
-    public static final BitSet FOLLOW_RBRACE_in_media337 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_medium_in_mediaList358 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_COMMA_in_mediaList361 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_WS_in_mediaList363 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_medium_in_mediaList366 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_set_in_medium385 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_medium395 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_bodyset_in_bodylist418 = new BitSet(new long[]{0x000000003F071042L});
-    public static final BitSet FOLLOW_ruleSet_in_bodyset447 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_media_in_bodyset459 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_page_in_bodyset471 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_bodyset487 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_PAGE_SYM_in_page509 = new BitSet(new long[]{0x0000000000042010L});
-    public static final BitSet FOLLOW_WS_in_page511 = new BitSet(new long[]{0x0000000000042000L});
-    public static final BitSet FOLLOW_pseudoPage_in_page515 = new BitSet(new long[]{0x0000000000002010L});
-    public static final BitSet FOLLOW_WS_in_page517 = new BitSet(new long[]{0x0000000000002010L});
-    public static final BitSet FOLLOW_LBRACE_in_page530 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_WS_in_page532 = new BitSet(new long[]{0x0000000000010050L});
-    public static final BitSet FOLLOW_declaration_in_page547 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_SEMI_in_page549 = new BitSet(new long[]{0x0000000000014050L});
-    public static final BitSet FOLLOW_declaration_in_page552 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_SEMI_in_page554 = new BitSet(new long[]{0x0000000000014050L});
-    public static final BitSet FOLLOW_RBRACE_in_page566 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_pseudoPage587 = new BitSet(new long[]{0x0000000000000040L});
-    public static final BitSet FOLLOW_IDENT_in_pseudoPage589 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SOLIDUS_in_operator610 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_operator612 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_COMMA_in_operator621 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_operator623 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_PLUS_in_combinator651 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_combinator653 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_GREATER_in_combinator662 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_combinator664 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_TILDE_in_combinator673 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_combinator675 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_resourceIdentifier_in_imports262 = new BitSet(new long[]{0x00200000000B0450L});
+    public static final BitSet FOLLOW_WS_in_imports265 = new BitSet(new long[]{0x00200000000B0450L});
+    public static final BitSet FOLLOW_media_query_list_in_imports268 = new BitSet(new long[]{0x0000000000000400L});
+    public static final BitSet FOLLOW_SEMI_in_imports270 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_MEDIA_SYM_in_media291 = new BitSet(new long[]{0x00200000000B2050L});
+    public static final BitSet FOLLOW_WS_in_media293 = new BitSet(new long[]{0x00200000000B2050L});
+    public static final BitSet FOLLOW_media_query_list_in_media296 = new BitSet(new long[]{0x0000000000002000L});
+    public static final BitSet FOLLOW_LBRACE_in_media306 = new BitSet(new long[]{0x0001F82000080050L});
+    public static final BitSet FOLLOW_WS_in_media308 = new BitSet(new long[]{0x0001F82000080050L});
+    public static final BitSet FOLLOW_ruleSet_in_media323 = new BitSet(new long[]{0x0000000000004010L});
+    public static final BitSet FOLLOW_WS_in_media333 = new BitSet(new long[]{0x0000000000004010L});
+    public static final BitSet FOLLOW_RBRACE_in_media336 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_media_query_in_media_query_list356 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_COMMA_in_media_query_list360 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_WS_in_media_query_list362 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_media_query_in_media_query_list365 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_set_in_media_query384 = new BitSet(new long[]{0x00000000000B0050L});
+    public static final BitSet FOLLOW_WS_in_media_query392 = new BitSet(new long[]{0x00000000000B0050L});
+    public static final BitSet FOLLOW_media_type_in_media_query399 = new BitSet(new long[]{0x0000000000040012L});
+    public static final BitSet FOLLOW_WS_in_media_query401 = new BitSet(new long[]{0x0000000000040012L});
+    public static final BitSet FOLLOW_AND_in_media_query406 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_WS_in_media_query408 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_media_expression_in_media_query411 = new BitSet(new long[]{0x0000000000040002L});
+    public static final BitSet FOLLOW_media_expression_in_media_query419 = new BitSet(new long[]{0x0000000000040002L});
+    public static final BitSet FOLLOW_AND_in_media_query423 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_WS_in_media_query425 = new BitSet(new long[]{0x00200000000B0050L});
+    public static final BitSet FOLLOW_media_expression_in_media_query428 = new BitSet(new long[]{0x0000000000040002L});
+    public static final BitSet FOLLOW_set_in_media_type0 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAREN_in_media_expression459 = new BitSet(new long[]{0x0000000000000050L});
+    public static final BitSet FOLLOW_WS_in_media_expression461 = new BitSet(new long[]{0x0000000000000050L});
+    public static final BitSet FOLLOW_media_feature_in_media_expression464 = new BitSet(new long[]{0x0040002000000010L});
+    public static final BitSet FOLLOW_WS_in_media_expression466 = new BitSet(new long[]{0x0040002000000010L});
+    public static final BitSet FOLLOW_COLON_in_media_expression471 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_WS_in_media_expression473 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_expr_in_media_expression476 = new BitSet(new long[]{0x0040000000000000L});
+    public static final BitSet FOLLOW_RPAREN_in_media_expression481 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_media_expression483 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_IDENT_in_media_feature494 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_medium511 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_medium521 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_bodyset_in_bodylist544 = new BitSet(new long[]{0x0001F82000181042L});
+    public static final BitSet FOLLOW_ruleSet_in_bodyset573 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_media_in_bodyset585 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_page_in_bodyset597 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_bodyset613 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_PAGE_SYM_in_page635 = new BitSet(new long[]{0x0000002000002010L});
+    public static final BitSet FOLLOW_WS_in_page637 = new BitSet(new long[]{0x0000002000002000L});
+    public static final BitSet FOLLOW_pseudoPage_in_page641 = new BitSet(new long[]{0x0000000000002010L});
+    public static final BitSet FOLLOW_WS_in_page643 = new BitSet(new long[]{0x0000000000002010L});
+    public static final BitSet FOLLOW_LBRACE_in_page656 = new BitSet(new long[]{0x0000001FFFE84450L});
+    public static final BitSet FOLLOW_WS_in_page658 = new BitSet(new long[]{0x0000001FFFE84450L});
+    public static final BitSet FOLLOW_declaration_in_page675 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_margin_in_page679 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_SEMI_in_page686 = new BitSet(new long[]{0x0000001FFFE84450L});
+    public static final BitSet FOLLOW_WS_in_page688 = new BitSet(new long[]{0x0000001FFFE84450L});
+    public static final BitSet FOLLOW_declaration_in_page692 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_margin_in_page696 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_RBRACE_in_page711 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_margin_sym_in_margin730 = new BitSet(new long[]{0x0000000000002010L});
+    public static final BitSet FOLLOW_WS_in_margin732 = new BitSet(new long[]{0x0000000000002010L});
+    public static final BitSet FOLLOW_LBRACE_in_margin735 = new BitSet(new long[]{0x0000000000080040L});
+    public static final BitSet FOLLOW_declaration_in_margin737 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_SEMI_in_margin741 = new BitSet(new long[]{0x0000000000084450L});
+    public static final BitSet FOLLOW_WS_in_margin743 = new BitSet(new long[]{0x0000000000084450L});
+    public static final BitSet FOLLOW_declaration_in_margin746 = new BitSet(new long[]{0x0000000000004400L});
+    public static final BitSet FOLLOW_RBRACE_in_margin752 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_margin_sym0 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_COLON_in_pseudoPage981 = new BitSet(new long[]{0x0000000000000040L});
+    public static final BitSet FOLLOW_IDENT_in_pseudoPage983 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SOLIDUS_in_operator1004 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_operator1006 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_COMMA_in_operator1015 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_operator1017 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_PLUS_in_combinator1045 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_combinator1047 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_GREATER_in_combinator1056 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_combinator1058 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_TILDE_in_combinator1067 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_combinator1069 = new BitSet(new long[]{0x0000000000000012L});
     public static final BitSet FOLLOW_set_in_unaryOperator0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_property735 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_property743 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_selectorsGroup_in_ruleSet768 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_LBRACE_in_ruleSet778 = new BitSet(new long[]{0x0000000000014450L});
-    public static final BitSet FOLLOW_WS_in_ruleSet780 = new BitSet(new long[]{0x0000000000014450L});
-    public static final BitSet FOLLOW_syncTo_IDENT_RBRACE_in_ruleSet783 = new BitSet(new long[]{0x0000000000014450L});
-    public static final BitSet FOLLOW_declarations_in_ruleSet797 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_RBRACE_in_ruleSet807 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_declaration_in_declarations845 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_SEMI_in_declarations849 = new BitSet(new long[]{0x0000000000010452L});
-    public static final BitSet FOLLOW_WS_in_declarations851 = new BitSet(new long[]{0x0000000000010452L});
-    public static final BitSet FOLLOW_declaration_in_declarations854 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_selector_in_selectorsGroup878 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_COMMA_in_selectorsGroup881 = new BitSet(new long[]{0x000000003F050050L});
-    public static final BitSet FOLLOW_WS_in_selectorsGroup883 = new BitSet(new long[]{0x000000003F050050L});
-    public static final BitSet FOLLOW_selector_in_selectorsGroup886 = new BitSet(new long[]{0x0000000000008002L});
-    public static final BitSet FOLLOW_simpleSelectorSequence_in_selector909 = new BitSet(new long[]{0x000000003F750042L});
-    public static final BitSet FOLLOW_combinator_in_selector912 = new BitSet(new long[]{0x000000003F050040L});
-    public static final BitSet FOLLOW_simpleSelectorSequence_in_selector914 = new BitSet(new long[]{0x000000003F750042L});
-    public static final BitSet FOLLOW_typeSelector_in_simpleSelectorSequence954 = new BitSet(new long[]{0x000000003F050042L});
-    public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence961 = new BitSet(new long[]{0x000000003F050042L});
-    public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence979 = new BitSet(new long[]{0x000000003F050042L});
-    public static final BitSet FOLLOW_namespace_wqname_prefix_in_typeSelector1030 = new BitSet(new long[]{0x0000000003010040L});
-    public static final BitSet FOLLOW_elementName_in_typeSelector1036 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_typeSelector1038 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_set_in_nsPred1063 = new BitSet(new long[]{0x0000000002000000L});
-    public static final BitSet FOLLOW_PIPE_in_nsPred1071 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_namespace_prefix_in_namespace_wqname_prefix1101 = new BitSet(new long[]{0x0000000002000010L});
-    public static final BitSet FOLLOW_WS_in_namespace_wqname_prefix1103 = new BitSet(new long[]{0x0000000002000010L});
-    public static final BitSet FOLLOW_PIPE_in_namespace_wqname_prefix1109 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_namespace_wildcard_prefix_in_namespace_wqname_prefix1116 = new BitSet(new long[]{0x0000000002000010L});
-    public static final BitSet FOLLOW_WS_in_namespace_wqname_prefix1118 = new BitSet(new long[]{0x0000000002000010L});
-    public static final BitSet FOLLOW_PIPE_in_namespace_wqname_prefix1121 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STAR_in_namespace_wildcard_prefix1143 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_property1129 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_property1137 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_selectorsGroup_in_ruleSet1162 = new BitSet(new long[]{0x0000000000002000L});
+    public static final BitSet FOLLOW_LBRACE_in_ruleSet1172 = new BitSet(new long[]{0x0000000000084450L});
+    public static final BitSet FOLLOW_WS_in_ruleSet1174 = new BitSet(new long[]{0x0000000000084450L});
+    public static final BitSet FOLLOW_syncTo_IDENT_RBRACE_in_ruleSet1177 = new BitSet(new long[]{0x0000000000084440L});
+    public static final BitSet FOLLOW_declarations_in_ruleSet1191 = new BitSet(new long[]{0x0000000000004000L});
+    public static final BitSet FOLLOW_RBRACE_in_ruleSet1201 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_declaration_in_declarations1239 = new BitSet(new long[]{0x0000000000000402L});
+    public static final BitSet FOLLOW_SEMI_in_declarations1243 = new BitSet(new long[]{0x0000000000080452L});
+    public static final BitSet FOLLOW_WS_in_declarations1245 = new BitSet(new long[]{0x0000000000080452L});
+    public static final BitSet FOLLOW_declaration_in_declarations1248 = new BitSet(new long[]{0x0000000000000402L});
+    public static final BitSet FOLLOW_selector_in_selectorsGroup1272 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_COMMA_in_selectorsGroup1275 = new BitSet(new long[]{0x0001F82000080050L});
+    public static final BitSet FOLLOW_WS_in_selectorsGroup1277 = new BitSet(new long[]{0x0001F82000080050L});
+    public static final BitSet FOLLOW_selector_in_selectorsGroup1280 = new BitSet(new long[]{0x0000000000008002L});
+    public static final BitSet FOLLOW_simpleSelectorSequence_in_selector1303 = new BitSet(new long[]{0x0001FBA000080042L});
+    public static final BitSet FOLLOW_combinator_in_selector1306 = new BitSet(new long[]{0x0001F82000080040L});
+    public static final BitSet FOLLOW_simpleSelectorSequence_in_selector1308 = new BitSet(new long[]{0x0001FBA000080042L});
+    public static final BitSet FOLLOW_typeSelector_in_simpleSelectorSequence1348 = new BitSet(new long[]{0x0001F82000080042L});
+    public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence1355 = new BitSet(new long[]{0x0001F82000080042L});
+    public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence1373 = new BitSet(new long[]{0x0001F82000080042L});
+    public static final BitSet FOLLOW_namespace_wqname_prefix_in_typeSelector1424 = new BitSet(new long[]{0x0000180000080040L});
+    public static final BitSet FOLLOW_elementName_in_typeSelector1430 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_typeSelector1432 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_set_in_nsPred1457 = new BitSet(new long[]{0x0000100000000000L});
+    public static final BitSet FOLLOW_PIPE_in_nsPred1465 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_namespace_prefix_in_namespace_wqname_prefix1495 = new BitSet(new long[]{0x0000100000000010L});
+    public static final BitSet FOLLOW_WS_in_namespace_wqname_prefix1497 = new BitSet(new long[]{0x0000100000000010L});
+    public static final BitSet FOLLOW_PIPE_in_namespace_wqname_prefix1503 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_namespace_wildcard_prefix_in_namespace_wqname_prefix1510 = new BitSet(new long[]{0x0000100000000010L});
+    public static final BitSet FOLLOW_WS_in_namespace_wqname_prefix1512 = new BitSet(new long[]{0x0000100000000010L});
+    public static final BitSet FOLLOW_PIPE_in_namespace_wqname_prefix1515 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STAR_in_namespace_wildcard_prefix1537 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_esPred0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cssId_in_elementSubsequent1216 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_cssClass_in_elementSubsequent1225 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_attrib_in_elementSubsequent1237 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_pseudo_in_elementSubsequent1249 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_elementSubsequent1261 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_HASH_in_cssId1283 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DOT_in_cssClass1300 = new BitSet(new long[]{0x0000000000010040L});
-    public static final BitSet FOLLOW_set_in_cssClass1302 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_cssId_in_elementSubsequent1610 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_cssClass_in_elementSubsequent1619 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_attrib_in_elementSubsequent1631 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_pseudo_in_elementSubsequent1643 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_elementSubsequent1655 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_HASH_in_cssId1677 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DOT_in_cssClass1694 = new BitSet(new long[]{0x0000000000080040L});
+    public static final BitSet FOLLOW_set_in_cssClass1696 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_elementName0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LBRACKET_in_attrib1366 = new BitSet(new long[]{0x0000000003000050L});
-    public static final BitSet FOLLOW_namespace_wqname_prefix_in_attrib1373 = new BitSet(new long[]{0x0000000003000050L});
-    public static final BitSet FOLLOW_WS_in_attrib1376 = new BitSet(new long[]{0x0000000003000050L});
-    public static final BitSet FOLLOW_attrib_name_in_attrib1387 = new BitSet(new long[]{0x00000003C0000010L});
-    public static final BitSet FOLLOW_WS_in_attrib1389 = new BitSet(new long[]{0x00000003C0000010L});
-    public static final BitSet FOLLOW_set_in_attrib1431 = new BitSet(new long[]{0x00000000000000D0L});
-    public static final BitSet FOLLOW_WS_in_attrib1539 = new BitSet(new long[]{0x00000000000000D0L});
-    public static final BitSet FOLLOW_attrib_value_in_attrib1558 = new BitSet(new long[]{0x0000000200000010L});
-    public static final BitSet FOLLOW_WS_in_attrib1576 = new BitSet(new long[]{0x0000000200000010L});
-    public static final BitSet FOLLOW_RBRACKET_in_attrib1605 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_attrib_name1648 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_attrib_value1662 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_pseudo1722 = new BitSet(new long[]{0x0000000000010040L});
-    public static final BitSet FOLLOW_set_in_pseudo1744 = new BitSet(new long[]{0x0000000400000012L});
-    public static final BitSet FOLLOW_WS_in_pseudo1793 = new BitSet(new long[]{0x0000000400000010L});
-    public static final BitSet FOLLOW_LPAREN_in_pseudo1796 = new BitSet(new long[]{0x0000000800010050L});
-    public static final BitSet FOLLOW_WS_in_pseudo1798 = new BitSet(new long[]{0x0000000800010050L});
-    public static final BitSet FOLLOW_set_in_pseudo1802 = new BitSet(new long[]{0x0000000800000010L});
-    public static final BitSet FOLLOW_WS_in_pseudo1812 = new BitSet(new long[]{0x0000000800000010L});
-    public static final BitSet FOLLOW_RPAREN_in_pseudo1817 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_property_in_declaration1863 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_COLON_in_declaration1865 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_WS_in_declaration1867 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_expr_in_declaration1870 = new BitSet(new long[]{0x0000001000000002L});
-    public static final BitSet FOLLOW_prio_in_declaration1872 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IMPORTANT_SYM_in_prio1965 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_term_in_expr1986 = new BitSet(new long[]{0x00001FE0049981D2L});
-    public static final BitSet FOLLOW_operator_in_expr1989 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_term_in_expr1991 = new BitSet(new long[]{0x00001FE0049981D2L});
-    public static final BitSet FOLLOW_unaryOperator_in_term2014 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_set_in_term2035 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_STRING_in_term2181 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_IDENT_in_term2189 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_GEN_in_term2197 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_URI_in_term2205 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_hexColor_in_term2213 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_function_in_term2221 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_WS_in_term2233 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_function_name_in_function2249 = new BitSet(new long[]{0x0000000400000010L});
-    public static final BitSet FOLLOW_WS_in_function2251 = new BitSet(new long[]{0x0000000400000010L});
-    public static final BitSet FOLLOW_LPAREN_in_function2256 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_WS_in_function2258 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_expr_in_function2269 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_attribute_in_function2287 = new BitSet(new long[]{0x0000000800008000L});
-    public static final BitSet FOLLOW_COMMA_in_function2290 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_WS_in_function2292 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_attribute_in_function2295 = new BitSet(new long[]{0x0000000800008000L});
-    public static final BitSet FOLLOW_RPAREN_in_function2316 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_function_name2364 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_COLON_in_function_name2366 = new BitSet(new long[]{0x0000000000000040L});
-    public static final BitSet FOLLOW_IDENT_in_function_name2370 = new BitSet(new long[]{0x0000000008000002L});
-    public static final BitSet FOLLOW_DOT_in_function_name2373 = new BitSet(new long[]{0x0000000000000040L});
-    public static final BitSet FOLLOW_IDENT_in_function_name2375 = new BitSet(new long[]{0x0000000008000002L});
-    public static final BitSet FOLLOW_attrname_in_attribute2397 = new BitSet(new long[]{0x0000000040000010L});
-    public static final BitSet FOLLOW_WS_in_attribute2399 = new BitSet(new long[]{0x0000000040000010L});
-    public static final BitSet FOLLOW_OPEQ_in_attribute2402 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_WS_in_attribute2404 = new BitSet(new long[]{0x00001FE0049101D0L});
-    public static final BitSet FOLLOW_attrvalue_in_attribute2407 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_attrname2422 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expr_in_attrvalue2434 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_HASH_in_hexColor2452 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_esPred_in_synpred1_Css3958 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_esPred_in_synpred2_Css3976 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_nsPred_in_synpred3_Css31027 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LBRACKET_in_attrib1760 = new BitSet(new long[]{0x0000180000000050L});
+    public static final BitSet FOLLOW_namespace_wqname_prefix_in_attrib1767 = new BitSet(new long[]{0x0000180000000050L});
+    public static final BitSet FOLLOW_WS_in_attrib1770 = new BitSet(new long[]{0x0000180000000050L});
+    public static final BitSet FOLLOW_attrib_name_in_attrib1781 = new BitSet(new long[]{0x001E000000000010L});
+    public static final BitSet FOLLOW_WS_in_attrib1783 = new BitSet(new long[]{0x001E000000000010L});
+    public static final BitSet FOLLOW_set_in_attrib1825 = new BitSet(new long[]{0x00000000000000D0L});
+    public static final BitSet FOLLOW_WS_in_attrib1933 = new BitSet(new long[]{0x00000000000000D0L});
+    public static final BitSet FOLLOW_attrib_value_in_attrib1952 = new BitSet(new long[]{0x0010000000000010L});
+    public static final BitSet FOLLOW_WS_in_attrib1970 = new BitSet(new long[]{0x0010000000000010L});
+    public static final BitSet FOLLOW_RBRACKET_in_attrib1999 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_attrib_name2042 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_attrib_value2056 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_pseudo2116 = new BitSet(new long[]{0x0000000000080040L});
+    public static final BitSet FOLLOW_set_in_pseudo2138 = new BitSet(new long[]{0x0020000000000012L});
+    public static final BitSet FOLLOW_WS_in_pseudo2187 = new BitSet(new long[]{0x0020000000000010L});
+    public static final BitSet FOLLOW_LPAREN_in_pseudo2190 = new BitSet(new long[]{0x0040000000080050L});
+    public static final BitSet FOLLOW_WS_in_pseudo2192 = new BitSet(new long[]{0x0040000000080050L});
+    public static final BitSet FOLLOW_set_in_pseudo2196 = new BitSet(new long[]{0x0040000000000010L});
+    public static final BitSet FOLLOW_WS_in_pseudo2206 = new BitSet(new long[]{0x0040000000000010L});
+    public static final BitSet FOLLOW_RPAREN_in_pseudo2211 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_property_in_declaration2257 = new BitSet(new long[]{0x0000002000000000L});
+    public static final BitSet FOLLOW_COLON_in_declaration2259 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_WS_in_declaration2261 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_expr_in_declaration2264 = new BitSet(new long[]{0x0080000000000002L});
+    public static final BitSet FOLLOW_prio_in_declaration2266 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IMPORTANT_SYM_in_prio2359 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_term_in_expr2380 = new BitSet(new long[]{0xFF0024C0000881D2L,0x0000000000000001L});
+    public static final BitSet FOLLOW_operator_in_expr2383 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_term_in_expr2385 = new BitSet(new long[]{0xFF0024C0000881D2L,0x0000000000000001L});
+    public static final BitSet FOLLOW_unaryOperator_in_term2408 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_set_in_term2429 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_STRING_in_term2591 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_IDENT_in_term2599 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_GEN_in_term2607 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_URI_in_term2615 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_hexColor_in_term2623 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_function_in_term2631 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_WS_in_term2643 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_function_name_in_function2659 = new BitSet(new long[]{0x0020000000000010L});
+    public static final BitSet FOLLOW_WS_in_function2661 = new BitSet(new long[]{0x0020000000000010L});
+    public static final BitSet FOLLOW_LPAREN_in_function2666 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_WS_in_function2668 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_expr_in_function2679 = new BitSet(new long[]{0x0040000000000000L});
+    public static final BitSet FOLLOW_attribute_in_function2697 = new BitSet(new long[]{0x0040000000008000L});
+    public static final BitSet FOLLOW_COMMA_in_function2700 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_WS_in_function2702 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_attribute_in_function2705 = new BitSet(new long[]{0x0040000000008000L});
+    public static final BitSet FOLLOW_RPAREN_in_function2726 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_function_name2774 = new BitSet(new long[]{0x0000002000000000L});
+    public static final BitSet FOLLOW_COLON_in_function_name2776 = new BitSet(new long[]{0x0000000000000040L});
+    public static final BitSet FOLLOW_IDENT_in_function_name2780 = new BitSet(new long[]{0x0000400000000002L});
+    public static final BitSet FOLLOW_DOT_in_function_name2783 = new BitSet(new long[]{0x0000000000000040L});
+    public static final BitSet FOLLOW_IDENT_in_function_name2785 = new BitSet(new long[]{0x0000400000000002L});
+    public static final BitSet FOLLOW_attrname_in_attribute2807 = new BitSet(new long[]{0x0002000000000010L});
+    public static final BitSet FOLLOW_WS_in_attribute2809 = new BitSet(new long[]{0x0002000000000010L});
+    public static final BitSet FOLLOW_OPEQ_in_attribute2812 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_WS_in_attribute2814 = new BitSet(new long[]{0xFF002480000801D0L,0x0000000000000001L});
+    public static final BitSet FOLLOW_attrvalue_in_attribute2817 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_attrname2832 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expr_in_attrvalue2844 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_HASH_in_hexColor2862 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_esPred_in_synpred1_Css31352 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_esPred_in_synpred2_Css31370 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_nsPred_in_synpred3_Css31421 = new BitSet(new long[]{0x0000000000000002L});
 
 }

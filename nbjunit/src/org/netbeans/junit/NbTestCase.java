@@ -57,7 +57,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,6 +70,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,6 +96,56 @@ import org.netbeans.junit.internal.NbModuleLogHandler;
  * directory for test files, testing memory usage, etc.
  */
 public abstract class NbTestCase extends TestCase implements NbTest {
+
+    private static final List<Method[]> allDeclaredMethods = new LinkedList<Method[]>();
+    static {
+        if (System.getProperty("NbTestCase.order") != null) {
+            try {
+                Field classesF = ClassLoader.class.getDeclaredField("classes");
+                classesF.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                Collection<Class<?>> classes = new ArrayList<Class<?>>((Collection<Class<?>>) classesF.get(NbTestCase.class.getClassLoader()));
+                for (Class<?> c : classes) {
+                    if (NbTestCase.class.isAssignableFrom(c) && c != NbTestCase.class) {
+                        orderMethods(c);
+                    }
+                }
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
+    }
+    static void orderMethods(Class<?> c) throws Exception { // #7023180
+        String orderS = System.getProperty("NbTestCase.order");
+        if (orderS == null) {
+            return;
+        }
+        Field declaredMethodsF = Class.class.getDeclaredField("declaredMethods");
+        declaredMethodsF.setAccessible(true);
+        Method[] ms = null;
+        while (ms == null) {
+            c.getDeclaredMethods();
+            ms = (Method[]) ((SoftReference) declaredMethodsF.get(c)).get();
+        }
+        allDeclaredMethods.add(ms); // prevent GC
+        if (orderS.equals("a-z")) {
+            Arrays.sort(ms, new Comparator<Method>() {
+                @Override public int compare(Method m1, Method m2) {
+                    return m1.toString().compareTo(m2.toString());
+                }
+            });
+        } else if (orderS.equals("z-a")) {
+            Arrays.sort(ms, new Comparator<Method>() {
+                @Override public int compare(Method m1, Method m2) {
+                    return m2.toString().compareTo(m1.toString());
+                }
+            });
+        } else if (orderS.equals("shuffle")) {
+            Collections.shuffle(Arrays.asList(ms));
+        } else {
+            throw new Exception("Specify -DNbTestCase.order=a-z or =z-a or =shuffle");
+        }
+    }
     
     /**
      * active filter

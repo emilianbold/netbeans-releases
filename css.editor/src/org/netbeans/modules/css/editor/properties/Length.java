@@ -57,6 +57,12 @@ public class Length extends NumberPostfixAcceptor {
     * em: the 'font-size' of the relevant font
     * ex: the 'x-height' of the relevant font
     * px: pixels, relative to the viewing device 
+    * gd 	the grid defined by 'layout-grid' described in the CSS3 Text module [CSS3TEXT]
+    * rem 	the font size of the root element
+    * vw 	the viewport's width
+    * vh 	the viewport's height
+    * vm 	the viewport's height or width, whichever is smaller of the two
+    * ch 	The width of the "0" (ZERO, U+0030) glyph found in the font for the font size used to render. If the "0" glyph is not found in the font, the average character width may be used. How is the "average character width" found?
     
     absolute units:
      
@@ -66,7 +72,7 @@ public class Length extends NumberPostfixAcceptor {
     * pt: points -- the points used by CSS2 are equal to 1/72th of an inch.
     * pc: picas -- 1 pica is equal to 12 points. 
     */
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "cm", "mm", "pt", "pc"}); //NOI18N
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "gd", "rem", "vw", "vh","vm","ch", "cm", "mm", "pt", "pc"}); //NOI18N
     
     public String id() {
         return "length"; //NOI18N

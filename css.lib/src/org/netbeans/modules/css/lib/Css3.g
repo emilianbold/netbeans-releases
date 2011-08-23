@@ -162,7 +162,7 @@ charSet
 // Import.  Location of an external style sheet to include in the ruleset.
 //
 imports
-    :   IMPORT_SYM WS* (resourceIdentifier) WS* mediaList? SEMI
+    :   IMPORT_SYM WS* (resourceIdentifier) WS* media_query_list SEMI
     ;
 
 // ---------
@@ -170,15 +170,35 @@ imports
 //          it belongs to the signified medium.
 //
 media
-    : MEDIA_SYM WS* mediaList
+    : MEDIA_SYM WS* media_query_list
         LBRACE WS*
             ruleSet
         WS* RBRACE
     ;
 
-mediaList
-        : medium (COMMA WS* medium)*
-	;
+//mediaList
+//        : medium (COMMA WS* medium)*
+//	;
+
+media_query_list
+ : ( media_query ( COMMA WS* media_query )* )?
+ ;
+ 
+media_query
+ : ((ONLY | NOT) WS* )?  media_type WS* ( AND WS* media_expression )*
+ | media_expression ( AND WS* media_expression )*
+ ;
+ 
+media_type
+ : IDENT | GEN
+ ;
+ 
+media_expression
+ : '(' WS* media_feature WS* ( ':' WS* expr )? ')' WS*
+ ;
+media_feature
+ : IDENT
+ ;
 
 // ---------    
 // Medium.  The name of a medim that are particulare set of rules applies to.
@@ -204,9 +224,33 @@ bodyset
 page
     : PAGE_SYM WS? (pseudoPage WS*)?
         LBRACE WS*
-            declaration SEMI (declaration SEMI)*
+            ( declaration | margin )? ( SEMI WS* (declaration | margin)? )*
         RBRACE
     ;
+    
+margin	
+	: margin_sym WS* LBRACE declaration ( SEMI WS* declaration? )* RBRACE
+       ;
+       
+margin_sym 
+	:
+       TOPLEFTCORNER_SYM | 
+       TOPLEFT_SYM | 
+       TOPCENTER_SYM | 
+       TOPRIGHT_SYM | 
+       TOPRIGHTCORNER_SYM |
+       BOTTOMLEFTCORNER_SYM | 
+       BOTTOMLEFT_SYM | 
+       BOTTOMCENTER_SYM | 
+       BOTTOMRIGHT_SYM |
+       BOTTOMRIGHTCORNER_SYM |
+       LEFTTOP_SYM |
+       LEFTMIDDLE_SYM |
+       LEFTBOTTOM_SYM |
+       RIGHTTOP_SYM |
+       RIGHTMIDDLE_SYM |
+       RIGHTBOTTOM_SYM 
+       ;
     
 pseudoPage
     : COLON IDENT
@@ -434,6 +478,7 @@ term
             | ANGLE
             | TIME
             | FREQ
+            | RESOLUTION
         )
     | STRING
     | IDENT
@@ -566,9 +611,8 @@ fragment    NMCHAR      : '_'
 fragment    NAME        : NMCHAR+   ;
 
 fragment    URL         : ( 
-                              '['|'!'|'#'|'$'|'%'|'&'|'*'|'-'|'~'
-                            | NONASCII
-                            | ESCAPE
+                              '['|'!'|'#'|'$'|'%'|'&'|'*'|'~'|'.'|':'|'/'
+                            | NMCHAR
                           )*
                         ;
 
@@ -833,6 +877,11 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                     )
                 ;
 
+
+ONLY 		: O N L Y;
+NOT		: N O T; 
+AND		: A N D;
+
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
 //
@@ -850,6 +899,55 @@ CHARSET_SYM     : '@charset '           ;
 NAMESPACE_SYM       : '@' N A M E S P A C E ;
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
+
+TOPLEFTCORNER_SYM     :'@top-left-corner';
+TOPLEFT_SYM           :'@top-left';
+TOPCENTER_SYM         :'@top-center';
+TOPRIGHT_SYM          :'@top-right';
+TOPRIGHTCORNER_SYM    :'@top-right-corner';
+BOTTOMLEFTCORNER_SYM  :'@bottom-left-corner'; 
+BOTTOMLEFT_SYM        :'@bottom-left';
+BOTTOMCENTER_SYM      :'@bottom-center';
+BOTTOMRIGHT_SYM       :'@bottom-right';
+BOTTOMRIGHTCORNER_SYM :'@bottom-right-corner';
+LEFTTOP_SYM           :'@left-top';
+LEFTMIDDLE_SYM        :'@left-middle';
+LEFTBOTTOM_SYM        :'@left-bottom';
+RIGHTTOP_SYM          :'@right-top';
+RIGHTMIDDLE_SYM       :'@right-middle';
+RIGHTBOTTOM_SYM       :'@right-bottom';
+
+
+//I cannot figure out how to use the fragment tokens to generate the following tokens.
+//the parser generator cycles itself indefinitely.
+
+//fragment TOP          : '@' T O P '-';
+//fragment TOPLEFT      : TOP L E F T;
+//fragment TOPRIGHT     : TOP R I G H T;
+
+//TOPLEFTCORNER_SYM     : TOPLEFT '-' C O R N E R;
+//TOPLEFT_SYM           : TOPLEFT;
+//TOPCENTER_SYM         :	TOP '-' C E N T E R;
+//TOPRIGHT_SYM          : TOPRIGHT;
+//TOPRIGHTCORNER_SYM    : TOPRIGHT '-' C O R N E R;
+
+//fragment BOTTOM          : '@' B O T T O M '-';
+//fragment BOTTOMLEFT      : BOTTOM L E F T;
+//fragment BOTTOMRIGHT     : BOTTOM R I G H T;
+
+//BOTTOMLEFTCORNER_SYM  : BOTTOMLEFT '-' C O R N E R;
+//BOTTOMLEFT_SYM        : BOTTOMLEFT;
+//BOTTOMCENTER_SYM      :	BOTTOM '-' C E N T E R;
+//BOTTOMRIGHT_SYM       :	BOTTOMRIGHT; 
+//BOTTOMRIGHTCORNER_SYM : BOTTOMRIGHT '-' C O R N E R;
+  
+//LEFTTOP_SYM           : '@' L E F T '-' T O P;
+//LEFTMIDDLE_SYM        : '@' L E F T '-' M I D D L E;
+//LEFTBOTTOM_SYM        : '@' L E F T '-' B O T T O M;
+
+//RIGHTTOP_SYM          : '@' R I G H T '-' T O P;
+//RIGHTMIDDLE_SYM       : '@' R I G H T '-' M I D D L E;
+//RIGHTBOTTOM_SYM       : '@' R I G H T '-' B O T T O M;
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
@@ -869,6 +967,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
+fragment    RESOLUTION  :;  //dpi,dpcm	
 
 NUMBER
     :   (
@@ -876,7 +975,14 @@ NUMBER
             | '.' '0'..'9'+
         )
         (
-              (E (M|X))=>
+              (D P (I|C))=>
+                D P
+                (
+                     I | C M     
+                )
+                { $type = RESOLUTION; }
+        	
+            | (E (M|X))=>
                 E
                 (
                       M     { $type = EMS;          }

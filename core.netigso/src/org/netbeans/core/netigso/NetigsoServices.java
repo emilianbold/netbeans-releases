@@ -118,6 +118,9 @@ implements BundleListener, ServiceListener, InstanceContent.Convertor<ServiceRef
 
     @Override
     public void bundleChanged(BundleEvent be) {
+        if (be.getBundle().getLocation().startsWith("netigso://")) {
+            return;
+        }
         netigso.notifyBundleChange(
             be.getBundle().getSymbolicName(),
             be.getBundle().getVersion(),

@@ -775,6 +775,14 @@ final class PropUtils {
 
         return missing;
     }
+    
+    private static PropertyEditor ignored(PropertyEditor p) {
+        if (p != null && p.getClass().getName().equals("sun.beans.editors.EnumEditor")) { // NOI18N
+            return null;
+        } else {
+            return p;
+        }
+    }
 
     /**
      * Gets a property editor appropriate to the class.
@@ -782,7 +790,7 @@ final class PropUtils {
      * Also handles enum types, and has a fallback dummy editor.
      */
     static PropertyEditor getPropertyEditor(Class<?> c) {
-        PropertyEditor result = PropertyEditorManager.findEditor(c);
+        PropertyEditor result = ignored(PropertyEditorManager.findEditor(c));
         ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
         ClassLoader now = Thread.currentThread().getContextClassLoader();
         if (

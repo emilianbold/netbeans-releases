@@ -82,6 +82,10 @@ public enum CssTokenId implements TokenId {
     
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, "error"),
     
+    AND(Css3Lexer.AND, "keyword"),
+    NOT(Css3Lexer.NOT, "keyword"),
+    ONLY(Css3Lexer.ONLY, "keyword"),
+    RESOLUTION(Css3Lexer.RESOLUTION, "number"),
     WS(Css3Lexer.WS, "whitespace"),
     CHARSET_SYM(Css3Lexer.CHARSET_SYM, "keyword"),
     STRING(Css3Lexer.STRING, "string"),
