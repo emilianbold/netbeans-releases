@@ -76,6 +76,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 
@@ -192,7 +193,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     
     @Override
     public void engineRemoved(DebuggerEngine engine) {
-        // The screenhots components are closed automatically by org.netbeans.modules.debugger.visual.VisualDebuggerListener
+        ScreenshotComponent.closeScreenshots(engine);
         JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
         logger.fine("engineRemoved("+engine+"), debugger = "+debugger);
         if (debugger != null) {

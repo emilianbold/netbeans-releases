@@ -89,10 +89,12 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
-import org.netbeans.spi.debugger.visual.ComponentInfo;
-import org.netbeans.spi.debugger.visual.RemoteScreenshot;
+import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -553,8 +555,18 @@ public class RemoteAWTScreenshot {
         
         @Override
         public Action[] getActions(boolean context) {
-            return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
-                                        ShowListenersAction.get(ShowListenersAction.class) };
+            FieldInfo fieldInfo = getField();
+            if (fieldInfo != null) {
+                return new SystemAction[] { GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class),
+                                            GoToSourceAction.get(GoToSourceAction.class),
+                                            ShowListenersAction.get(ShowListenersAction.class),
+                                            ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
+                
+            } else {
+                return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
+                                            ShowListenersAction.get(ShowListenersAction.class),
+                                            ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
+            }
         }
 
         @Override

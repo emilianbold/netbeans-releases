@@ -1954,9 +1954,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
                                             oldSF, newSF);
     }
+    
+    private CallStackFrame preferredTopFrame;
+    
+    public void setPreferredTopFrame(CallStackFrame preferredTopFrame) {
+        this.preferredTopFrame = preferredTopFrame;
+    }
 
     private CallStackFrame getTopFrame(JPDAThread thread) {
         CallStackFrame callStackFrame;
+        if (preferredTopFrame != null) {
+            callStackFrame = preferredTopFrame;
+            preferredTopFrame = null;
+            return callStackFrame;
+        }
         if ((thread == null) || (thread.getStackDepth () < 1)) {
             callStackFrame = null;
         } else {
