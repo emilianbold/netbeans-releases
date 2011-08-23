@@ -91,6 +91,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.editor.BaseKit.CutAction;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -322,7 +323,7 @@ public class ClipboardHandler {
 
         @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
-            if (comp instanceof JTextComponent) {
+            if (comp instanceof JTextComponent && comp.getClientProperty(NO_IMPORTS) == null) {
                 final JTextComponent tc = (JTextComponent) comp;
                 final int start = tc.getSelectionStart();
                 final int end = tc.getSelectionEnd();
@@ -437,6 +438,7 @@ public class ClipboardHandler {
         }
     }
 
+    private static final Object NO_IMPORTS = new Object();
     private static final DataFlavor IMPORT_FLAVOR = new DataFlavor(ImportsWrapper.class, NbBundle.getMessage(ClipboardHandler.class, "MSG_ClipboardImportFlavor"));
 
     private static final class WrappedTransferable implements Transferable {
@@ -487,4 +489,52 @@ public class ClipboardHandler {
             this.identifiers = identifiers;
         }
     }
+
+    public static final class JavaCutAction extends CutAction {
+        @Override public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            JavaSource js = JavaSource.forDocument(target.getDocument());
+            final Object lock = new Object();
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final AtomicBoolean alreadyRunning = new AtomicBoolean();
+
+            try {
+                Future<Void> fut = js.runWhenScanFinished(new Task<CompilationController>() {
+                    @Override public void run(CompilationController parameter) throws Exception {
+                        synchronized (lock) {
+                            if (cancel.get()) return;
+                            alreadyRunning.set(true);
+                        }
+                        JavaCutAction.super.actionPerformed(evt, target);
+                    }
+                }, true);
+
+                fut.get(100, TimeUnit.MILLISECONDS);
+
+                return;
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (TimeoutException ex) {
+                //ok.
+                LOG.log(Level.FINE, null, ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            synchronized (lock) {
+                if (alreadyRunning.get()) return;
+                cancel.set(true);
+            }
+
+            try {
+                target.putClientProperty(NO_IMPORTS, true);
+
+                super.actionPerformed(evt, target);
+            } finally {
+                target.putClientProperty(NO_IMPORTS, null);
+            }
+        }
+    }
+
 }

@@ -72,12 +72,15 @@ public class CategoryPanelVisual extends StorablePanel {
         uploadAgentCheckBox = new javax.swing.JCheckBox();
         uploadAgentDescriptionLabel1 = new javax.swing.JLabel();
         uploadAgentDescriptionLabel2 = new javax.swing.JLabel();
+        componentBreakpointsCheckBox = new javax.swing.JCheckBox();
 
         uploadAgentCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelVisual.class, "CategoryPanelVisual.AgentCheckBox.text")); // NOI18N
 
         uploadAgentDescriptionLabel1.setText(org.openide.util.NbBundle.getMessage(CategoryPanelVisual.class, "CategoryPanelVisual.uploadAgentDescriptionLabel1.text")); // NOI18N
 
         uploadAgentDescriptionLabel2.setText(org.openide.util.NbBundle.getMessage(CategoryPanelVisual.class, "CategoryPanelVisual.uploadAgentDescriptionLabel2.text")); // NOI18N
+
+        componentBreakpointsCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelVisual.class, "CategoryPanelVisual.componentBreakpointsCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -95,6 +98,10 @@ public class CategoryPanelVisual extends StorablePanel {
                 .addGap(29, 29, 29)
                 .addComponent(uploadAgentDescriptionLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(componentBreakpointsCheckBox)
+                .addContainerGap(411, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -104,10 +111,13 @@ public class CategoryPanelVisual extends StorablePanel {
                 .addComponent(uploadAgentDescriptionLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(uploadAgentDescriptionLabel2)
-                .addContainerGap(239, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(componentBreakpointsCheckBox)
+                .addContainerGap(208, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox componentBreakpointsCheckBox;
     private javax.swing.JCheckBox uploadAgentCheckBox;
     private javax.swing.JLabel uploadAgentDescriptionLabel1;
     private javax.swing.JLabel uploadAgentDescriptionLabel2;
@@ -117,11 +127,13 @@ public class CategoryPanelVisual extends StorablePanel {
     public void load() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA.visual");
         uploadAgentCheckBox.setSelected(p.getBoolean("UploadAgent", true));
+        componentBreakpointsCheckBox.setSelected(p.getBoolean("TrackComponentChanges", true));
     }
 
     @Override
     public void store() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA.visual");
         p.setBoolean("UploadAgent", uploadAgentCheckBox.isSelected());
+        p.setBoolean("TrackComponentChanges", componentBreakpointsCheckBox.isSelected());
     }
 }

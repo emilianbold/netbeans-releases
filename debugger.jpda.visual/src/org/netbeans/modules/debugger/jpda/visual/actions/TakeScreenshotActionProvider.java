@@ -41,24 +41,35 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
+import com.sun.jdi.ObjectReference;
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteFXScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
+import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.visual.RemoteScreenshot;
-import org.netbeans.spi.debugger.visual.ScreenshotUIManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  * Grabs screenshot of remote application.
@@ -69,10 +80,14 @@ import org.openide.util.NbBundle;
 public class TakeScreenshotActionProvider extends ActionsProviderSupport {
     
     private JPDADebugger debugger;
+    private BPListener bpListener;
 
     public TakeScreenshotActionProvider (ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         addEngineListener();
+        bpListener = new BPListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                WeakListeners.create(DebuggerManagerListener.class, bpListener, DebuggerManager.getDebuggerManager()));
     }
     
     @Override
@@ -88,6 +103,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
             for (int i = 0; i < screenshots.length; i++) {
                 final RemoteScreenshot screenshot = screenshots[i];
                 screenshot.getScreenshotUIManager().open();
+                bpListener.addScreenshot(screenshot);
                 /*
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -150,6 +166,115 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
         //DebuggerManager.getDebuggerManager().addDebuggerListener(
         //        DebuggerManager.PROP_CURRENT_ENGINE, enableListener);
         RemoteServices.addServiceListener(enableListener);
+    }
+    
+    private class BPListener implements DebuggerManagerListener {
+        
+        private final Set<RemoteScreenshot> screenshots = new WeakSet<RemoteScreenshot>();
+        
+        void addScreenshot(RemoteScreenshot screenshot) {
+            synchronized (screenshots) {
+                screenshots.add(screenshot);
+            }
+            Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+            for (Breakpoint b : breakpoints) {
+                if (b instanceof AWTComponentBreakpoint) {
+                    markBreakpoint(screenshot, (AWTComponentBreakpoint) b);
+                }
+            }
+        }
+        
+        private void markBreakpoint(RemoteScreenshot screenshot, AWTComponentBreakpoint b) {
+            ObjectReference oc = ((AWTComponentBreakpoint) b).getComponent().getComponent(debugger);
+            if (oc != null) {
+                ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
+                if (ci != null) {
+                    screenshot.getScreenshotUIManager().markBreakpoint(ci);
+                }
+            }
+        }
+        
+        private void unmarkBreakpoint(RemoteScreenshot screenshot, AWTComponentBreakpoint b) {
+            ObjectReference oc = ((AWTComponentBreakpoint) b).getComponent().getComponent(debugger);
+            if (oc != null) {
+                ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
+                if (ci != null) {
+                    screenshot.getScreenshotUIManager().unmarkBreakpoint(ci);
+                }
+            }
+        }
+        
+        private ComponentInfo findComponentInfo(ComponentInfo ci, ObjectReference oc) {
+            if (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) {
+                ObjectReference or = ((RemoteAWTScreenshot.AWTComponentInfo) ci).getComponent();
+                if (oc.equals(or)) {
+                    return ci;
+                }
+            }
+            for (ComponentInfo sci : ci.getSubComponents()) {
+                ComponentInfo fci = findComponentInfo(sci, oc);
+                if (fci != null) {
+                    return fci;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Breakpoint[] initBreakpoints() {
+            return new Breakpoint[] {};
+        }
+
+        @Override
+        public void breakpointAdded(Breakpoint breakpoint) {
+            if (breakpoint instanceof AWTComponentBreakpoint) {
+                RemoteScreenshot[] scrs;
+                synchronized (screenshots) {
+                    scrs = screenshots.toArray(new RemoteScreenshot[] {});
+                }
+                for (RemoteScreenshot screenshot : scrs) {
+                    markBreakpoint(screenshot, (AWTComponentBreakpoint) breakpoint);
+                }
+            }
+        }
+
+        @Override
+        public void breakpointRemoved(Breakpoint breakpoint) {
+            if (breakpoint instanceof AWTComponentBreakpoint) {
+                RemoteScreenshot[] scrs;
+                synchronized (screenshots) {
+                    scrs = screenshots.toArray(new RemoteScreenshot[] {});
+                }
+                for (RemoteScreenshot screenshot : scrs) {
+                    unmarkBreakpoint(screenshot, (AWTComponentBreakpoint) breakpoint);
+                }
+            }
+        }
+
+        @Override
+        public void initWatches() {}
+
+        @Override
+        public void watchAdded(Watch watch) {}
+
+        @Override
+        public void watchRemoved(Watch watch) {}
+
+        @Override
+        public void sessionAdded(Session session) {}
+
+        @Override
+        public void sessionRemoved(Session session) {}
+
+        @Override
+        public void engineAdded(DebuggerEngine engine) {}
+
+        @Override
+        public void engineRemoved(DebuggerEngine engine) {}
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {}
+        
     }
 
 }

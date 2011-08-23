@@ -65,7 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
@@ -129,7 +129,7 @@ class ModelBuilder {
         return classScope;
     }
 
-    void buildMagicMethod(PHPDocTag node,  OccurenceBuilder occurencesBuilder) {
+    void buildMagicMethod(PHPDocMethodTag node,  OccurenceBuilder occurencesBuilder) {
         MagicMethodDeclarationInfo info = MagicMethodDeclarationInfo.create(node);
         if (info != null) {
             MethodScopeImpl methodScope = new MethodScopeImpl(getCurrentScope(), info);
@@ -151,10 +151,10 @@ class ModelBuilder {
             ScopeImpl createdScope = currentScope.pop();
             if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
-            } 
+            }
         }
     }
-    
+
     /**
      * This method basically restore stack of scopes for scanning a node
      * that was not scanned during lazy scanning

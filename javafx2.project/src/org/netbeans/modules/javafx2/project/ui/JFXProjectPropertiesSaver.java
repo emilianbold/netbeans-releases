@@ -63,6 +63,7 @@ public class JFXProjectPropertiesSaver implements J2SECustomPropertySaver {
         if(prop != null) {
             try {
                 prop.store();
+                prop.cleanup(project.getLookup());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
