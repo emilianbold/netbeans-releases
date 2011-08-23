@@ -82,7 +82,7 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
     private static final String ADDITIONAL_ARGUMENTS = "additionalArguments"; // NOI18N
 
     public @Override boolean checkRunConfig(RunConfig config) {
-        String val = config.getProperties().getProperty(PROPERTY);
+        String val = config.getProperties().get(PROPERTY);
         if (val == null) {
             return true;
         }

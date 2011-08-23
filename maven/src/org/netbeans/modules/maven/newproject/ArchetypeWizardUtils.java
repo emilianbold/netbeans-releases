@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -204,37 +203,34 @@ public class ArchetypeWizardUtils {
     }
 
     private static void runArchetype(File directory, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional) throws IOException {
-        Properties props = new Properties();
-
-        props.setProperty("artifactId", vi.artifactId); //NOI18N
-        props.setProperty("version", vi.version); //NOI18N
-        props.setProperty("groupId", vi.groupId); //NOI18N
+        BeanRunConfig config = new BeanRunConfig();
+        config.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
+        config.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
+        config.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
+        String repo = arch.getRepository();
+        config.setProperty("archetypeRepository", repo != null ? repo : RepositoryPreferences.REPO_CENTRAL); //NOI18N
+        config.setProperty("groupId", vi.groupId); //NOI18N
+        config.setProperty("artifactId", vi.artifactId); //NOI18N
+        config.setProperty("version", vi.version); //NOI18N
         final String pack = vi.packageName;
         if (pack != null && pack.trim().length() > 0) {
-            props.setProperty("package", pack); //NOI18N
+            config.setProperty("package", pack); //NOI18N
         }
-        props.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
-        props.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
-        props.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
-        props.setProperty("basedir", directory.getAbsolutePath());//NOI18N
+        config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
 
         if (additional != null) {
             for (String key : additional.keySet()) {
-                props.setProperty(key, additional.get(key));
+                config.setProperty(key, additional.get(key));
             }
         }
-        BeanRunConfig config = new BeanRunConfig();
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
         config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
-        String repo = arch.getRepository();
-        props.setProperty("archetypeRepository", repo != null ? repo : RepositoryPreferences.REPO_CENTRAL); //NOI18N
 
         //ExecutionRequest.setInteractive seems to have no influence on archetype plugin.
         config.setInteractive(false);
-        props.setProperty("archetype.interactive", "false");//NOI18N
-        config.setProperties(props);
+        config.setProperty("archetype.interactive", "false");//NOI18N
         //#136853 make sure to get the latest snapshot always..
         if (arch.getVersion().contains("SNAPSHOT")) { //NOI18N
             config.setUpdateSnapshots(true);
