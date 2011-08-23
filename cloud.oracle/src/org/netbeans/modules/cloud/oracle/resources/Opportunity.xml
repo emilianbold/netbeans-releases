@@ -54,7 +54,7 @@
     api-doc="http://oracle.com"
     url="file:/org/netbeans/modules/cloud/oracle/resources/services/OpportunityService.wsdl">
 
-    <description>Oracle Cloud-9 Services</description>
+    <description>Oracle Public Cloud Services</description>
     
     <display-name>Opportunity Service</display-name>
 

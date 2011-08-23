@@ -54,7 +54,7 @@
     api-doc="http://oracle.com"
     url="http://fusiongsi-internal-crm.us.oracle.com/foundationParties/CustomerAccountService?wsdl">
 
-    <description>Oracle Cloud-9 Services</description>
+    <description>Oracle Public Cloud Services</description>
     
     <display-name>Customer Account Service</display-name>
 
