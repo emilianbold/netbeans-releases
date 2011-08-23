@@ -66,6 +66,14 @@ public class NbCss3LexerTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
     }
+    
+    public void testAllANTLRTokensHasNbTokenIds() {
+        for(String tokenName : Css3Parser.tokenNames) {
+            if(!tokenName.startsWith("<")) {
+                assertNotNull(CssTokenId.valueOf(tokenName));
+            }
+        }
+    }
 
     //http://www.netbeans.org/issues/show_bug.cgi?id=161642
     public void testIssue161642() throws Exception {

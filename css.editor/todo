@@ -9,9 +9,10 @@ Css modules list (source http://www.css3.info/modules/)
 * CSS Basic User Interface 
 * CSS Multi-column Layout
 * CSS Values & Units 
+(*) Media Queries 
+(*) CSS Paged Media 
 
-CSS Paged Media 
-Media Queries 
+
 CSS Style Attributes 
 CSS Cascading & Inheritance 
 CSS Text 

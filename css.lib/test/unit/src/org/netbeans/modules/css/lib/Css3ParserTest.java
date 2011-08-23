@@ -77,6 +77,12 @@ public class Css3ParserTest extends CslTestBase {
         super.setUp();
         CssParserResult.IN_UNIT_TESTS = true;
     }
+    
+    public void testAllANTLRRulesHaveNodeTypes() {
+        for(String rule : Css3Parser.ruleNames) {
+            assertNotNull(NodeType.valueOf(rule));
+        }
+    }
 
     public void testErrorRecoveryInRule() throws ParseException, BadLocationException {
         //resync the parser to the last right curly bracket
@@ -652,6 +658,72 @@ public class Css3ParserTest extends CslTestBase {
         assertResultOK(TestUtil.parse("@media (orientation: portrait) { p {} }"));
     }
 
+    public void testPagedMedia() throws ParseException, BadLocationException {
+        String content = "@page :first {"
+                + "color: green;"
+                + "@top-left {"
+                + "content: \"foo\";"
+                + "color: blue;"
+                + "};"
+                + "@top-right {"
+                + "content: \"bar\";"
+                + "}"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        assertResultOK(result);
+        
+        //test page node
+        Node page = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "page");
+        assertNotNull(page);
+        
+        //pseudo page
+        Node pseudoPage = NodeUtil.query(page,
+                "pseudoPage");
+        assertNotNull(pseudoPage);
+        assertEquals(":first", pseudoPage.image().toString());
+        
+        //declaration
+        Node declaration = NodeUtil.query(page,
+                "declaration");
+        assertNotNull(declaration);
+        assertEquals("color: green", declaration.image().toString());
+        
+        //margin
+        Node margin = NodeUtil.query(page,
+                "margin");
+        assertNotNull(margin);
+        
+        //margin symbol
+        Node margin_sym = NodeUtil.query(margin, "margin_sym");
+        assertNotNull(margin_sym);
+        assertEquals("@top-left", margin_sym.image().toString());
+        
+        //declaration in the margin body
+        Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration");
+        assertNotNull(declarationInMargin);
+        
+        //next margin
+        Node margin2 = NodeUtil.query(page,
+                "margin|1");
+        assertNotNull(margin2);
+        
+        //next margin symbol
+        Node margin_sym2 = NodeUtil.query(margin2, "margin_sym");
+        assertNotNull(margin_sym2);
+        assertEquals("@top-right", margin_sym2.image().toString());
+
+        assertNotNull(NodeUtil.query(margin2, "declarations/declaration"));
+        
+        
+
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);

@@ -46,7 +46,7 @@ import java.util.Arrays;
 import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
- * <b>Warning:</b> Subclasses should not hold strong reference
+ * <b>Warning:</b> To avoid memory leaks, subclasses should not hold strong reference
  * to {@link org.netbeans.modules.php.api.phpmodule.PhpModule PHP module}.
  * @author Petr Hejl, Tomas Mysik
  */
@@ -56,6 +56,7 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     private final String description;
     private final String displayName;
     private volatile String help;
+
 
     protected FrameworkCommand(String command, String description, String displayName) {
         this(new String[] {command}, description, displayName);
@@ -88,36 +89,36 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     /**
      * @since 1.24
      */
-    public String[] getCommands() {
+    public final String[] getCommands() {
         String[] copy = new String[commands.length];
         System.arraycopy(commands, 0, copy, 0, commands.length);
         return copy;
     }
 
-    public String getDescription() {
+    public final String getDescription() {
         return description;
     }
 
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return displayName;
     }
 
     /**
      * This method can be time consuming so it should be called in a background thread.
      */
-    public String getHelp() {
+    public final String getHelp() {
         if (help == null) {
             help = getHelpInternal();
         }
         return help;
     }
 
-    public boolean hasHelp() {
+    public final boolean hasHelp() {
         return help != null;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -132,14 +133,14 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         int hash = 3;
         hash = 67 * hash + Arrays.deepHashCode(commands);
         return hash;
     }
 
     @Override
-    public int compareTo(FrameworkCommand o) {
+    public final int compareTo(FrameworkCommand o) {
         if (commands.length == 0 || o.commands.length == 0) {
             assert displayName != null : "displayName not null";
             assert o.getDisplayName() != null : "other displayName not null";
@@ -149,7 +150,7 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         StringBuilder buffer = new StringBuilder(200);
         buffer.append(getClass().getName());
         buffer.append(" [displayName: "); // NOI18N
@@ -163,4 +164,5 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         buffer.append("]"); // NOI18N
         return buffer.toString();
     }
+
 }

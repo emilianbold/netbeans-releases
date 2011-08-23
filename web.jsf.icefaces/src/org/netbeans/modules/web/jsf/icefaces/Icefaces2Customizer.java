@@ -41,19 +41,14 @@
  */
 package org.netbeans.modules.web.jsf.icefaces;
 
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
@@ -72,7 +67,6 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
 
     private static final Logger LOGGER = Logger.getLogger(Icefaces2Customizer.class.getName());
     private Icefaces2CustomizerPanelVisual panel;
-    private volatile boolean initialized;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     @Override
@@ -89,28 +83,49 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     public JComponent getComponent() {
         if (panel == null) {
             panel = new Icefaces2CustomizerPanelVisual(new PanelChangeListener());
-            panel.addAncestorListener(new IcefacesPanelAncestorListener());
+            panel.initLibraries(true);
         }
         return panel;
     }
 
     @Override
     public boolean isValid() {
-        return true;
+        Preferences preferences = Icefaces2Implementation.getIcefacesPreferences();
+        String icefacesLibrary = preferences.get(Icefaces2Implementation.ICEFACES_CORE_CLASS, ""); //NOI18N
+        if (LibraryManager.getDefault().getLibrary(icefacesLibrary) != null) {
+            return true;
+        }
+
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { // NOI18N
+                continue;
+            }
+
+            List<URL> content = library.getContent("classpath"); //NOI18N
+            if (isValidIcefacesLibrary(content)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
     public String getErrorMessage() {
-        return null;
+        return panel.getErrorMessage();
     }
 
     @Override
     public String getWarningMessage() {
-        return null;
+        return panel.getWarningMessage();
     }
 
     @Override
     public void saveConfiguration() {
+        Preferences preferences = Icefaces2Implementation.getIcefacesPreferences();
+        if (panel.getIcefacesLibrary() != null) {
+            preferences.put(Icefaces2Implementation.PREF_LIBRARY_NAME, panel.getIcefacesLibrary());
+        }
     }
 
     @Override
@@ -147,16 +162,11 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
      */
     public static boolean isValidIcefacesLibrary(List<URL> libraryContent) {
         try {
-            if (Util.containsClass(libraryContent, Icefaces2Implementation.ICEFACES_CORE_CLASS)) {
-                return true;
-            } else {
-
-            }
+            return Util.containsClass(libraryContent, Icefaces2Implementation.ICEFACES_CORE_CLASS);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;
         }
-        return false;
     }
 
     /**
@@ -167,46 +177,6 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
         @Override
         public void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
-        }
-    }
-
-    /**
-     * {@code AncestorListener} for initialization of
-     */
-    private class IcefacesPanelAncestorListener implements AncestorListener {
-
-        @Override
-        public void ancestorAdded(AncestorEvent event) {
-            Container component = event.getAncestor();
-            if (component instanceof Dialog) {
-                Dialog ancestorDialog = (Dialog) component;
-                ancestorDialog.addWindowFocusListener(new WindowFocusListener() {
-
-                    @Override
-                    public void windowGainedFocus(WindowEvent e) {
-                        synchronized (Icefaces2Customizer.class) {
-                            if (!initialized) {
-                                panel.initLibraries(true);
-                                initialized = false;
-                            } else {
-                                changeSupport.fireChange();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void windowLostFocus(WindowEvent e) {
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void ancestorRemoved(AncestorEvent event) {
-        }
-
-        @Override
-        public void ancestorMoved(AncestorEvent event) {
         }
     }
 }
