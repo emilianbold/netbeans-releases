@@ -110,6 +110,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="cloud">
+            <api name="cloud_registration"/>
+            <summary>Establish layer to register cloud providers</summary>
+            <version major="1" minor="15"/>
+            <date day="24" month="8" year="2011"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                Reuse existing server support provided by this module and use
+                it to support concept of cloud providers. At the moment registration
+                of cloud providers is implemented (<code>/Cloud</code> folder in layer). Their
+                visualization will be added later. This is work in progress.
+            </description>
+        </change>
         <change id="node.actions">
             <api name="common_server_properties_api"/>
             <summary>Extensible actions on root server node</summary>

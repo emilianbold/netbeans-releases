@@ -42,81 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.server.ui.wizard;
+package org.netbeans.modules.server.ui.node;
 
-import java.awt.Component;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.server.ServerRegistry;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
 
 /**
+ * Add server instance action launches the Add Server wizard.
  *
  * @author Andrei Badea
- * @author Petr Hejl
  */
-class ServerWizardPanel implements WizardDescriptor.Panel, ChangeListener {
-
-    private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
-
-    private ServerWizardVisual component;
-    private ServerRegistry registry;
-
-    public ServerWizardPanel(ServerRegistry registry) {
-        super();
-        assert registry != null;
-        this.registry = registry;
-    }
-
-    public Component getComponent() {
-        if (component == null) {
-            component = new ServerWizardVisual(registry);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
-
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public void readSettings(Object settings) {
-        getVisual().read((AddServerInstanceWizard) settings);
-    }
-
-    public void storeSettings(Object settings) {
-        getVisual().store((AddServerInstanceWizard) settings);
-    }
-
-    public boolean isValid() {
-        return getVisual().hasValidData();
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        if (listener != null) {
-            listeners.remove(listener);
-        }
-    }
-
-    public void stateChanged(ChangeEvent event) {
-        fireChange(event);
-    }
-
-    private void fireChange(ChangeEvent event) {
-        for (ChangeListener listener : listeners) {
-            listener.stateChanged(event);
-        }
-    }
-
-    private ServerWizardVisual getVisual() {
-        return (ServerWizardVisual) getComponent();
+public class AddCloudInstanceAction implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        AddServerInstanceWizard.showAddCloudInstanceWizard();
     }
 }
