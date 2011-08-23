@@ -56,6 +56,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -87,6 +90,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -528,6 +532,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 template.append(superTemplate);
             } else {
                 template.append(getName());
+            }
+
+            TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
+            TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence().subSequence(request.anchor, request.result.getModel().getVariableScope(request.anchor).getBlockRange().getEnd());
+            while (tokenSequence.moveNext()) {
+                Token<PHPTokenId> token = tokenSequence.token();
+                PHPTokenId id = token.id();
+                if (PHPTokenId.WHITESPACE.equals(id)) {
+                    continue;
+                }
+                if (PHPTokenId.PHP_TOKEN.equals(id)) {
+                    if (token.toString().equals("(")) { // NOI18N
+                        return template.toString();
+                    } else {
+                        break;
+                    }
+                }
             }
 
             template.append("("); //NOI18N
