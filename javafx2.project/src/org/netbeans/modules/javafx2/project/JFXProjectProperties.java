@@ -212,6 +212,9 @@ public final class JFXProjectProperties {
     public Project getProject() {
         return project;
     }
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
+    }
     
     /** Keeps singleton instance for any fx project for which property customizer is opened at once */
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
