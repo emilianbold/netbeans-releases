@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.libs.oracle.cloud;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
@@ -120,9 +121,6 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case METHOD:
                     String methodName = vmSignatures[1];
                     List<String> params = paramsOnly(vmSignatures[2]);
-                    
-                    // XXX: Whitelist API has to clarify in what format arguments are expected to be passed:
-                    
                     res = icc.checkMethodAllowed(vmSignatures[0], methodName, params);
                     if (!res.isAllowed()) {
                         return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
@@ -147,7 +145,28 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
             int index = name.lastIndexOf(')');  //NOI18N
             assert index > 0;
             name = name.substring(1, index);
-            return Arrays.asList(name.split(", "));
+            List<String> l = new ArrayList<String>();
+            
+            // this is what is expected:
+            //    E.g) 1. java.lang.String
+            //         2. int
+            //         3. java.lang.Integer[] - for array.
+            //         4. com.something.MyClass.StaticInnerClass - innerclass 
+
+            // XXX TOMAS ZEZULA: is this correct:
+            
+            for (String param : name.split(", ")) {
+                if (param.startsWith("L")) {
+                    param = param.substring(1);
+                }
+                if (param.endsWith(";")) {
+                    param = param.substring(0, param.length()-1);
+                }
+                param = param.replace('/', '.');
+                param = param.replace('$', '.');
+                l.add(param);
+            }
+            return l;
         }
     }
 
