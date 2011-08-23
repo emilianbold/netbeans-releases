@@ -598,7 +598,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
             CssValueElement handle = new CssValueElement(propertyDescriptor, e);
             String origin = e.getResolvedOrigin();
-            if("color".equals(origin)) { //NOI18N
+            if("colors-list".equals(origin)) { //NOI18N
                 if(!colorChooserAdded) {
                     //add color chooser item
                     proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
