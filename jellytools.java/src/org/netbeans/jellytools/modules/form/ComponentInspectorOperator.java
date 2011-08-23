@@ -86,7 +86,7 @@ public class ComponentInspectorOperator extends NavigatorOperator {
      */
     public PropertySheetOperator properties(String componentPath) {
         new FormDesignerOperator(null).makeComponentVisible();
-        JTreeOperator treeOper = getTree();
+        JTreeOperator treeOper = treeComponents();
         // do not use Node.performPopup() because it changes context of navigator
         Node node = new Node(treeOper, componentPath);
         TreePath treePath = node.getTreePath();
@@ -102,14 +102,14 @@ public class ComponentInspectorOperator extends NavigatorOperator {
      */
     public void selectComponent(String componentPath) {
         new FormDesignerOperator(null).makeComponentVisible();
-        JTreeOperator treeOper = getTree();
+        JTreeOperator treeOper = treeComponents();
         // do not use Node.select() because it changes context of navigator
         treeOper.setSelectionPath(new Node(treeOper, componentPath).getTreePath());
     }
 
     /** Performs verification by accessing all sub-components */
     public void verify() {
-        getTree();
+        treeComponents();
         properties().verify();
     }
 
