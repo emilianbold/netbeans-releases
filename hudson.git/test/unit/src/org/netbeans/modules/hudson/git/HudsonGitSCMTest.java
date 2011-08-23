@@ -86,5 +86,13 @@ public class HudsonGitSCMTest extends NbTestCase {
         String text = baos.toString("UTF-8");
         assertTrue(text, text.contains("x/y.git"));
     }
+
+    public void testROReplacement() throws Exception {
+        assertEquals("git://github.com/x/y.git", HudsonGitSCM.roReplacement("ssh://git@github.com/x/y.git"));
+        // XXX should https://user@github.com/user/repo.git also be replaced?
+        assertEquals("git://kenai.com/repo", HudsonGitSCM.roReplacement("ssh://user@git.kenai.com/repo"));
+        // XXX test java.net too
+        assertEquals(null, HudsonGitSCM.roReplacement("ssh://elsewhere/stuff.git"));
+    }
     
 }

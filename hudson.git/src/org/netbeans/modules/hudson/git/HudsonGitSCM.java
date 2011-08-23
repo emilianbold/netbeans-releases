@@ -54,6 +54,7 @@ import org.ini4j.InvalidFileFormatException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import static org.netbeans.modules.hudson.git.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
@@ -67,17 +68,13 @@ public class HudsonGitSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonGitSCM.class.getName());
 
-    // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
-    private static final String GITHUB_SSH_PREFIX = "ssh://git@github.com/";
-    private static final String GITHUB_GIT_PREFIX = "git://github.com/";
-    // XXX should https://user@github.com/user/repo.git also be replaced?
-    @Messages({"# {0} - original URL path", "ssh_url=Replacing " + GITHUB_SSH_PREFIX + "{0} with " + GITHUB_GIT_PREFIX + "{0} in Hudson configuration."})
+    @Messages({"# {0} - original URL", "# {1} - replacement URL", "ro_replacement=Replacing {0} with {1} in Hudson configuration."})
     @Override public Configuration forFolder(File folder) {
         final URI origin = getRemoteOrigin(folder.toURI(), null);
         if (origin == null) {
             return null;
         }
-        final String githubSuffix = origin.toString().startsWith(GITHUB_SSH_PREFIX) ? origin.toString().substring(GITHUB_SSH_PREFIX.length()) : null;
+        final String replacement = roReplacement(origin.toString());
         return new Configuration() {
             @Override public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -85,12 +82,12 @@ public class HudsonGitSCM implements HudsonSCM {
                 configXmlSCM.setAttribute("class", "hudson.plugins.git.GitSCM");
                 // GitSCM config is horribly complex. Let readResolve do the hard work for now.
                 // Note that all this will be wrong if the local repo is using a nondefault remote, or a branch, etc. etc.
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(githubSuffix != null ? GITHUB_GIT_PREFIX + githubSuffix : origin.toString()));
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(replacement != null ? replacement : origin.toString()));
                 Helper.addTrigger(doc);
             }
             @Override public ConfigurationStatus problems() {
-                if (githubSuffix != null) {
-                    return ConfigurationStatus.withWarning(Bundle.ssh_url(githubSuffix));
+                if (replacement != null) {
+                    return ConfigurationStatus.withWarning(ro_replacement(origin, replacement));
                 } else {
                     return null;
                 }
@@ -155,6 +152,19 @@ public class HudsonGitSCM implements HudsonSCM {
             LOG.log(Level.FINE, "could not load origin from {0}: {1}", new Object[] {cfg, x});
             return null;
         }
+    }
+
+    // http://stackoverflow.com/questions/3189520/hudson-git-plugin-wont-clone-repo-on-linux
+    static @CheckForNull String roReplacement(String url) {
+        String prefix = "ssh://git@github.com/";
+        if (url.startsWith(prefix)) {
+            return "git://github.com/" + url.substring(prefix.length());
+        }
+        Matcher m = Pattern.compile("ssh://.+@git[.]((?:kenai[.]com|java[.]net).+)").matcher(url);
+        if (m.matches()) {
+            return "git://" + m.group(1);
+        }
+        return null;
     }
 
 }
