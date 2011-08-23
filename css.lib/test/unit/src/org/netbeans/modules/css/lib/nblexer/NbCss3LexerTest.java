@@ -85,7 +85,7 @@ public class NbCss3LexerTest extends NbTestCase {
         assertTrue(ts.moveNext());
         assertEquals("/* c */", ts.token().text().toString());
         assertEquals(CssTokenId.COMMENT, ts.token().id());
-        assertEquals("comment", ts.token().id().primaryCategory());
+        assertEquals("comments", ts.token().id().primaryCategory());
 
         assertTrue(ts.moveNext());
         assertEquals(";", ts.token().text().toString());
