@@ -153,6 +153,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -327,8 +328,8 @@ public final class NbMavenProjectImpl implements Project {
 
     //#172952 for property expression resolution we need this to include
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
-    public Properties createSystemPropsForPropertyExpressions() {
-        Properties props = cloneStaticProps();
+    public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
+        Map<String,String> props = NbCollections.checkedMapByCopy(cloneStaticProps(), String.class, String.class, true);
         props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
