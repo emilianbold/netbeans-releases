@@ -121,7 +121,13 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        return new PhpModuleProperties();
+        PhpModuleProperties properties = new PhpModuleProperties();
+        FileObject web = phpModule.getSourceDirectory().getFileObject("web"); // NOI18N
+        if (web != null) {
+            properties = properties.setWebRoot(web);
+        }
+        // XXX unit tests?
+        return properties;
     }
 
     @Override
