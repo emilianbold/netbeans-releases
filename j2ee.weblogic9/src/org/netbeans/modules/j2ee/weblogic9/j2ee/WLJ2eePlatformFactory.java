@@ -109,7 +109,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * A sub-class of the J2eePlatformFactory that is set up to return the 
  * plugin-specific J2eePlatform.
  * 
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
@@ -123,9 +123,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile(
             "^.*javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
-    // _2.0 is for javax.persistence.dwp_2.0.jar
     private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile(
-            "^.*javax\\.persistence.*((_2-\\d+-\\d+)|(_2.0))\\.jar$");
+            "^.*javax\\.persistence.*(_2-\\d+(-\\d+)?)\\.jar$");
     
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
     
@@ -296,7 +295,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     break;
                 } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
                     foundJpa1 = true;
-                    break;
+                    // we still may found jpa2
                 }
             }
         }  
@@ -313,12 +312,23 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
-                    }
-                });
+                FilenameFilter filter = null;
+                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(j2eePlatform.dm.getServerVersion())) {
+                    filter = new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JAVAX_PERSISTENCE_2_PATTERN.matcher(name).matches();
+                        }
+                    };
+                } else {
+                    filter = new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
+                        }
+                    };
+                }
+                File[] persistenceCandidates = modules.listFiles(filter);
                 if (persistenceCandidates.length > 0) {
                     for (File candidate : persistenceCandidates) {
                         list.add(fileToUrl(candidate));
