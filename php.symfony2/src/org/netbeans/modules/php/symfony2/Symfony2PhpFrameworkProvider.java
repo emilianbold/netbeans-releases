@@ -52,6 +52,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -92,8 +93,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        // XXX hard-coded name
-        FileObject console = phpModule.getSourceDirectory().getFileObject("app/console"); // NOI18N
+        FileObject console = phpModule.getSourceDirectory().getFileObject(Symfony2Script.SCRIPT_PATH);
         return console != null && console.isData();
     }
 
