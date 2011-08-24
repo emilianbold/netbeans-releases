@@ -136,7 +136,7 @@ public class JPDABreakpoint extends Breakpoint {
      *
      * @return value of suspend property
      */
-    public int getSuspend () {
+    public synchronized int getSuspend () {
         return suspend;
     }
 
@@ -146,9 +146,12 @@ public class JPDABreakpoint extends Breakpoint {
      * @param s a new value of suspend property
      */
     public void setSuspend (int s) {
-        if (s == suspend) return;
-        int old = suspend;
-        suspend = s;
+        int old;
+        synchronized (this) {
+            if (s == suspend) return;
+            old = suspend;
+            suspend = s;
+        }
         firePropertyChange (PROP_SUSPEND, Integer.valueOf(old), Integer.valueOf(s));
     }
     
@@ -157,7 +160,7 @@ public class JPDABreakpoint extends Breakpoint {
      *
      * @return value of hidden property
      */
-    public boolean isHidden () {
+    public synchronized boolean isHidden () {
         return hidden;
     }
 
@@ -167,9 +170,12 @@ public class JPDABreakpoint extends Breakpoint {
      * @param h a new value of hidden property
      */
     public void setHidden (boolean h) {
-        if (h == hidden) return;
-        boolean old = hidden;
-        hidden = h;
+        boolean old;
+        synchronized (this) {
+            if (h == hidden) return;
+            old = hidden;
+            hidden = h;
+        }
         firePropertyChange (PROP_HIDDEN, Boolean.valueOf (old), Boolean.valueOf (h));
     }
     
@@ -178,7 +184,7 @@ public class JPDABreakpoint extends Breakpoint {
      *
      * @return value of print text property or <code>null</code>.
      */
-    public String getPrintText () {
+    public synchronized String getPrintText () {
         return printText;
     }
 
@@ -188,11 +194,14 @@ public class JPDABreakpoint extends Breakpoint {
      * @param printText a new value of print text property. Can be <code>null</code>.
      */
     public void setPrintText (String printText) {
-        if (printText == this.printText || (printText != null && printText.equals(this.printText))) {
-            return;
+        String old;
+        synchronized (this) {
+            if (printText == this.printText || (printText != null && printText.equals(this.printText))) {
+                return;
+            }
+            old = this.printText;
+            this.printText = printText;
         }
-        String old = this.printText;
-        this.printText = printText;
         firePropertyChange (PROP_PRINT_TEXT, old, printText);
     }
 
@@ -201,16 +210,20 @@ public class JPDABreakpoint extends Breakpoint {
      *
      * @return <code>true</code> if so
      */
-    public boolean isEnabled () {
+    @Override
+    public synchronized boolean isEnabled () {
         return enabled;
     }
     
     /**
      * Disables the breakpoint.
      */
+    @Override
     public void disable () {
-        if (!enabled) return;
-        enabled = false;
+        synchronized (this) {
+            if (!enabled) return;
+            enabled = false;
+        }
         firePropertyChange 
             (PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
     }
@@ -218,9 +231,12 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Enables the breakpoint.
      */
+    @Override
     public void enable () {
-        if (enabled) return;
-        enabled = true;
+        synchronized (this) {
+            if (enabled) return;
+            enabled = true;
+        }
         firePropertyChange 
             (PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
     }
