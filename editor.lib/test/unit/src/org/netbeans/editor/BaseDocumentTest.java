@@ -83,7 +83,7 @@ public class BaseDocumentTest extends NbTestCase {
         assertEquals(2, bpos3.getOffset());
         assertEquals(2, pos4.getOffset()); // Removal; pos3 inside => moved to 2
         assertEquals(2, bpos4.getOffset());
-        Position pos22 = doc.createPosition(2, Bias.Backward); // pos at 2 after removal
+        Position pos22 = doc.createPosition(2, Bias.Backward); // pos at 2 after removal (3 originally)
         BackwardPosition bpos22 = new BackwardPosition(doc, 2);
         undoManager.undo(); // Undo of removal means insertion
         assertEquals(3, pos3.getOffset()); // Undo of removal => return BB pos to orig. offset
@@ -91,7 +91,7 @@ public class BaseDocumentTest extends NbTestCase {
         assertEquals(4, pos4.getOffset()); // Undo -> 4
         assertEquals(2, bpos4.getOffset());
         // BB position created prior undo of removal => position not moved (like on insert)
-        assertEquals(2, pos22.getOffset());
+        assertEquals(3, pos22.getOffset());
         assertEquals(2, bpos22.getOffset());
         
         Position pos12 = doc.createPosition(10, Bias.Backward);
