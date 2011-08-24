@@ -43,18 +43,23 @@ package org.netbeans.modules.maven.indexer.api;
 
 import java.io.IOException;
 import java.io.SyncFailedException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -92,6 +97,8 @@ public final class RepositoryPreferences {
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
     private final Map<FileObject, RepositoryInfo> infoCache = new HashMap<FileObject, RepositoryInfo>();
+    private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
+    private final ChangeSupport cs = new ChangeSupport(this);
     private static final String REPO_FOLDER = "Projects/org-netbeans-modules-maven/Repositories";
 
     //---------------------------------------------------------------------------
@@ -139,8 +146,10 @@ public final class RepositoryPreferences {
     public List<RepositoryInfo> getRepositoryInfos() {
         final FileObject repoFolder = getRepoFolder();
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        if (repoFolder != null) {
-            synchronized (infoCache) {
+        Set<String> ids = new HashSet<String>();
+        Set<String> urls = new HashSet<String>();
+        synchronized (infoCache) {
+            if (repoFolder != null) {
                 List<FileObject> repos = FileUtil.getOrder(Arrays.asList(repoFolder.getChildren()), false);
                 HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
                 for (FileObject fo : repos) {
@@ -161,9 +170,18 @@ public final class RepositoryPreferences {
                     }
                     toRet.add(ri);
                     gone.remove(fo);
+                    ids.add(ri.getId());
+                    urls.add(ri.getRepositoryUrl());
                 }
                 for (FileObject g : gone) {
                     infoCache.remove(g);
+                }
+            }
+            for (List<RepositoryInfo> infos : transients.values()) {
+                for (RepositoryInfo info : infos) {
+                    if (ids.add(info.getId()) && urls.add(info.getRepositoryUrl())) {
+                        toRet.add(info);
+                    }
                 }
             }
         }
@@ -195,6 +213,7 @@ public final class RepositoryPreferences {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        cs.fireChange();
     }
 
     private static final char[] forbiddenChars =
@@ -230,6 +249,7 @@ public final class RepositoryPreferences {
             } catch (IOException x) {
                 LOG.log(Level.FINE, "Cannot delete repository in system filesystem", x); //NOI18N
             }
+            cs.fireChange();
         }
     }
 
@@ -247,6 +267,50 @@ public final class RepositoryPreferences {
 
     public void setLastIndexUpdate(String repoId,Date date) {
         getPreferences().putLong(PROP_LAST_INDEX_UPDATE + "." + repoId, date.getTime());
+    }
+
+    /**
+     * Register a transient repository.
+     * Its definition will not be persisted.
+     * Repositories whose ID or URL duplicate that of a persistent repository,
+     * or previously registered transient repository, will be ignored
+     * (unless and until that repository is removed).
+     * {@link #TYPE_NEXUS} is assumed.
+     * @param key an arbitrary key for use with {@link #removeTransientRepositories}
+     * @param id the repository ID
+     * @param displayName a display name (may just be {@code id})
+     * @param url the remote URL (prefer the canonical public URL to that of a mirror)
+     * @throws URISyntaxException in case the URL is malformed
+     */
+    public void addTransientRepository(Object key, String id, String displayName, String url) throws URISyntaxException {
+        synchronized (infoCache) {
+            List<RepositoryInfo> infos = transients.get(key);
+            if (infos == null) {
+                infos = new ArrayList<RepositoryInfo>();
+                transients.put(key, infos);
+            }
+            infos.add(new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, displayName, null, url));
+        }
+        cs.fireChange();
+    }
+
+    /**
+     * Remote all transient repositories associated with a given ID.
+     * @param key a key as with {@link #addTransientRepository}
+     */
+    public void removeTransientRepositories(Object key) {
+        synchronized (infoCache) {
+            transients.remove(key);
+        }
+        cs.fireChange();
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
 
 }
