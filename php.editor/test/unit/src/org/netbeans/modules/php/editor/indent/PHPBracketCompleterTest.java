@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.api.html.lexer.HTMLTokenId;
