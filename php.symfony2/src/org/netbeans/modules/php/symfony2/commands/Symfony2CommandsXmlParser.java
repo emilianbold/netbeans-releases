@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -156,6 +157,9 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     }
 
     private static String processHelp(String help) {
+        if (!StringUtils.hasText(help)) {
+            return ""; // NOI18N
+        }
         help = help.replace("<info>", "<i>"); // NOI18N
         help = help.replace("</info>", "</i>"); // NOI18N
         help = help.replace("<comment>", "<i>"); // NOI18N

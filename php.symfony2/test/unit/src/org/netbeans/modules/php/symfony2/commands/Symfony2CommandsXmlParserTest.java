@@ -75,6 +75,11 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
                 + " <br>"
                 + "   <i>php app/console help --xml list</i>", command.getHelp());
 
+        command = commands.get(2);
+        assertEquals("assetic:dump", command.getCommand());
+        assertEquals("Dumps all assets to the filesystem", command.getDescription());
+        assertEquals("", command.getHelp());
+
         command = commands.get(5);
         assertEquals("cache:warmup", command.getCommand());
         assertEquals("Warms up an empty cache", command.getDescription());
