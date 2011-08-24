@@ -125,7 +125,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
 
         trm.addRepositoryConnector(brc);
 
-        WebUtil.init();
+//        WebUtil.init();
     }
     
     public void testGetRepositoryFromName () throws Throwable {
