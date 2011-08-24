@@ -67,11 +67,6 @@ import org.openide.util.actions.NodeAction;
 public class ReconfigureAction extends NodeAction {
     private static final RequestProcessor RP = new RequestProcessor(ReconfigureAction.class.getName(), 1);
 
-    private final static boolean TEST_ACTION = true;
-
-    private JMenuItem presenter;
-    private boolean inited = false;
-
     public ReconfigureAction() {
     }
 
@@ -79,47 +74,9 @@ public class ReconfigureAction extends NodeAction {
         return SharedClassObject.findObject(ReconfigureAction.class, true);
     }
 
-    private static boolean running = false;
-
     @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ReconfigureAction"); //NOI18N
-    }
-
-    @Override
-    public JMenuItem getMenuPresenter() {
-        return getPresenter();
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        return getPresenter();
-    }
-
-    private JMenuItem getPresenter() {
-        if (!inited) {
-            presenter = new JMenuItem();
-            org.openide.awt.Actions.connect(presenter, (Action) this, true);
-            inited = true;
-        }
-        final Project p = getProject(getActivatedNodes());
-        if (TEST_ACTION) {
-            if (p == null) {
-                setEnabled(!running);
-                presenter.setVisible(false);
-            } else {
-                try {
-                    presenter.setVisible(true);
-                    setEnabled(!running);
-                } catch (Throwable thr) {
-                    thr.printStackTrace();
-                    setEnabled(false);
-                }
-            }
-        } else {
-            presenter.setVisible(false);
-        }
-        return presenter;
     }
 
     @Override
@@ -158,7 +115,6 @@ public class ReconfigureAction extends NodeAction {
 
     @Override
     public void performAction(final Node[] activatedNodes) {
-        running = true;
         Project p = getProject(activatedNodes);
         final ReconfigureProject reconfigurator = new ReconfigureProject(p);
         String cFlags;
@@ -200,7 +156,6 @@ public class ReconfigureAction extends NodeAction {
                 }
             });
         }
-        running = false;
     }
 
     private String getLegend(ReconfigureProject reconfigurator){
