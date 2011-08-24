@@ -800,10 +800,7 @@ public final class ModuleList {
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "project.properties"))); // NOI18N
         eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
-        String platformS = eval.getProperty("nbplatform.active"); // NOI18N
-        if (platformS != null) {
-            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(NETBEANS_DEST_DIR, "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
-        }
+        providers.add(new DestDirProvider(eval));
         return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
@@ -1078,10 +1075,7 @@ public final class ModuleList {
                 providers.add(PropertyUtils.globalPropertyProvider());
             }
             eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
-            String platformS = eval.getProperty("nbplatform.active"); // NOI18N
-            if (platformS != null) {
-                providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(NETBEANS_DEST_DIR, "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
-            }
+            providers.add(new DestDirProvider(eval));
         }
         // private.properties & project.properties.
         providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
