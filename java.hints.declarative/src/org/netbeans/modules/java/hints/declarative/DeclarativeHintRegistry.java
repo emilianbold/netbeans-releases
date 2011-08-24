@@ -41,6 +41,7 @@ package org.netbeans.modules.java.hints.declarative;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -147,21 +148,19 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
     }
 
     private static Collection<? extends FileObject> findGlobalFiles() {
+        Collection<FileObject> result = new ArrayList<FileObject>();
         FileObject folder = FileUtil.getConfigFile("org-netbeans-modules-java-hints/declarative");
 
-        if (folder == null) {
-            return Collections.emptyList();
+        if (folder != null) {
+            result.addAll(findFilesRecursive(folder));
         }
-
-        Collection result = findFilesRecursive(folder);
         
         folder = FileUtil.getConfigFile("rules");
         
-        if (folder==null) {
-            return result;
+        if (folder != null) {
+            result.addAll(findFilesRecursive(folder));
         }
         
-        result.addAll(findFilesRecursive(folder));
         return result;
     }
 
