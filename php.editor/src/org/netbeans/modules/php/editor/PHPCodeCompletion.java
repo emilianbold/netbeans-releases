@@ -223,6 +223,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
 
+    private static final String EXCEPTION_CLASS_NAME = "\\Exception"; // NOI18N
+
     private boolean caseSensitive;
     private QuerySupport.Kind nameKind;
 
@@ -397,6 +399,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(completionResult, request, INHERITANCE_KEYWORDS);
                     break;
+                case CATCH:
+                    autoCompleteNamespaces(completionResult, request);
+                    autoCompleteExceptions(completionResult, request);
+                    break;
                 case SERVER_ENTRY_CONSTANTS:
                     //TODO: probably better PHPCompletionItem instance should be used
                     //autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
@@ -534,6 +540,31 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 completionResult.add(newClassItem);
             }
         }
+    }
+
+    private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
+        final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+        final Set<ClassElement> classes = request.index.getClasses(nameQuery);
+        for (ClassElement classElement : classes) {
+            if (isExceptionClass(classElement)) {
+                completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                continue;
+            }
+            if (classElement.getSuperClassName() != null) {
+                Set<ClassElement> inheritedClasses = request.index.getInheritedClasses(classElement);
+                for (ClassElement inheritedClass : inheritedClasses) {
+                    if (isExceptionClass(inheritedClass)) {
+                        completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isExceptionClass(ClassElement classElement) {
+        return classElement.getFullyQualifiedName().toString().equals(EXCEPTION_CLASS_NAME);
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,

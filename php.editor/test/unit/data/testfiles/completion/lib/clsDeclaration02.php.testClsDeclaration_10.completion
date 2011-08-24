@@ -6,6 +6,8 @@ PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
+PACKAGE    Extra                           [PUBLIC]   null
+PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
 CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
@@ -46,6 +48,12 @@ CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
+CLASS      EmptyClass                      [PUBLIC]   issue194875.php
+CLASS      EmptyClassFromNs                [PUBLIC]   Extra
+CLASS      ExMyException                   [PUBLIC]   issue194875.php
+CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
+CLASS      Exception                       [PUBLIC]   MySpace
+CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      HTML                            [PUBLIC]   html.php
@@ -57,6 +65,8 @@ CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
+CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
+CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
@@ -91,7 +101,9 @@ CLASS      Test148856Class                 [PUBLIC]   issue148856.php
 CLASS      Test154055                      [PUBLIC]   issue154055.php
 CLASS      TestCCOnMethods                 [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
+CLASS      TestClass                       [PUBLIC]   Extra
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
+CLASS      TestClass                       [PUBLIC]   issue194875.php
 CLASS      TestClass                       [PUBLIC]   tests166339.php
 CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
