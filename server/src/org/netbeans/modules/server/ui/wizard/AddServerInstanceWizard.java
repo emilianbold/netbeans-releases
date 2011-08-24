@@ -98,13 +98,13 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     private ServerWizardPanel chooser;
 
     private static final Logger LOGGER = Logger.getLogger(AddServerInstanceWizard.class.getName()); // NOI18N
-
+    
     private ServerRegistry registry;
 
     private AddServerInstanceWizard(ServerRegistry registry) {
         this(new AddServerInstanceWizardIterator(registry));
         this.registry = registry;
-
+        
         putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
         putProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);
         putProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);
@@ -113,8 +113,8 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_Title"));
             setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ACIW_TitleFormat")));
         } else {
-        setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Title"));
-        setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_TitleFormat")));
+            setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Title"));
+            setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_TitleFormat")));
         }
 
         initialize();
@@ -125,7 +125,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         super(iterator);
         this.iterator = iterator;
     }
-
+    
     public static ServerInstance showAddServerInstanceWizard() {
         return showAddServerInstanceWizard(ServerRegistry.getInstance());
     }
@@ -301,7 +301,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             }
         }
     }
-
+    
     private static String[] getFirstPanelContentData(boolean cloud) {
         if (cloud) {
             return new String[] {
@@ -325,7 +325,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         private AddServerInstanceWizard wd;
 
         public boolean showingChooser = true;
-
+        
         private ServerRegistry registry;
 
         public AddServerInstanceWizardIterator(ServerRegistry registry) {

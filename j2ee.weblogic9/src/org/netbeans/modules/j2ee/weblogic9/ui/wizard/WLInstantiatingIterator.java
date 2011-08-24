@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudDomainDetector;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -151,6 +152,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         String displayName = (String) wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
 
+        result.add(instantiateCloud(displayName));
+        return result;
+    }
+
+    // FIXME used from cloud9
+    public InstanceProperties instantiateCloud(String displayName) throws IOException {
         // if all the data is normally validated - create the instance and
         // attach the additional properties
         Map<String, String> props = new HashMap<String, String>();
@@ -160,6 +167,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
+        props.put(CloudDomainDetector.IS_CLOUD_INSTANCE, Boolean.TRUE.toString());
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
         
         if (Utilities.isMac()) {
@@ -169,11 +177,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
         
-        // add the created instance properties to the result set
-        result.add(ip);
-
-        // return the result
-        return result;
+        return ip;
     }
 
     /**
@@ -239,8 +243,10 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         this.serverRoot = serverRoot;
 
         // reinit the instances list
-        serverPropertiesPanel.getVisual().updateInstancesList();
-        serverPropertiesPanel.getVisual().updateJpa2Button();
+        if (serverPropertiesPanel != null) {
+            serverPropertiesPanel.getVisual().updateInstancesList();
+            serverPropertiesPanel.getVisual().updateJpa2Button();
+        }
     }
 
     /**
