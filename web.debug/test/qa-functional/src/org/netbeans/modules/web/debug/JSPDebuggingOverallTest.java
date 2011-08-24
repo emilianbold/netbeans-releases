@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,16 +27,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.web.debug;
 
@@ -73,130 +69,90 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
-/** Test of web application debugging. Manual test specification is here:
- * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
+/**
+ * Test of web application debugging. Manual test specification is here:
+ * http://wiki.netbeans.org/TS_70_WebEnterpriseDebug
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class JSPDebuggingOverallTest extends J2eeTestCase {
-    // status bar tracer used to wait for state
+
+    /**
+     * status bar tracer used to wait for state
+     */
     private MainWindowOperator.StatusTextTracer stt;
-    
+
     public JSPDebuggingOverallTest(String testName) {
         super(testName);
     }
-    
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf,"testOpenProjects","testRunProject","testSetBreakpoint",
-                "testDebugProject","testDebugReload"/*,"testAttachDebugger"*/,"testDebugAfterBreakpoint",
-                "testDebugAndStopServer","testStartAnotherSession","testJavaSession","testStopServer");
+        conf = addServerTests(Server.GLASSFISH, conf,
+                "testOpenProjects",
+                // "testSetTomcatPort", // use this for tomcat
+                "testRunProject",
+                "testSetBreakpoint",
+                "testDebugProject",
+                "testDebugReload",
+                "testAttachDebugger",
+                "testDebugAfterBreakpoint",
+                "testDebugAndStopServer",
+                "testStartAnotherSession",
+                "testJavaSession",
+                "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
-        /*if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
-            
-            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
-                    "testOpenProjects",
-                    "testSetTomcatPort", /// <---
-                    "testRunProject",
-                    "testSetBreakpoint",
-                    "testDebugProject",
-                    "testDebugReload",
-                    "testAttachDebugger",
-                    "testDebugAfterBreakpoint",
-                    "testDebugAndStopServer",
-                    "testStartAnotherSession",
-                    "testJavaSession",
-                    "testStopServer"
-                    ).enableModules(".*").clusters(".*"));
-        } else {
-            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
-                    "testOpenProjects",
-                    "testRunProject",
-                    "testSetBreakpoint",
-                    "testDebugProject",
-                    "testDebugReload",
-                    "testAttachDebugger",
-                    "testDebugAfterBreakpoint",
-                    "testDebugAndStopServer",
-                    "testStartAnotherSession",
-                    "testJavaSession",
-                    "testStopServer"
-                    ).enableModules(".*").clusters(".*"));
-        }
-        */
+        return conf.suite();
     }
-    
+
     /** Print test name and initialize status bar tracer. */
     @Override
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
         stt = MainWindowOperator.getDefault().getStatusTextTracer();
         // start to track Main Window status bar
         stt.start();
         // increase timeout to 60 seconds when waiting for status bar text
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 1000);
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
     }
-    
+
     /** Stops status bar tracer. */
     @Override
     public void tearDown() {
         stt.stop();
     }
-    
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "MainTestApplication";  //NOI18N
-    
-    
+
     /** Opens test projects. */
-    public void testOpenProjects() {
+    public void testOpenProjects() throws IOException {
         String[] projects = {"MainTestApplication", "TestFreeformLibrary", "TestLibrary", "TestTagLibrary"}; //NOI18N
-        for(int i=0;i<projects.length;i++) {
-            //ProjectSupport.openProject(new File(getDataDir(), projects[i]));
-            try {
-                openProjects(new File(getDataDir(), projects[i]).getAbsolutePath());
-                ProjectSupport.waitScanFinished();
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-            }
+        for (int i = 0; i < projects.length; i++) {
+            openProjects(new File(getDataDir(), projects[i]).getAbsolutePath());
+            waitScanFinished();
         }
         // Set as Main Project
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-        // not display browser on run
-        // open project properties
-        ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME).properties();
-        // "Project Properties"
-        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
-        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-        // select "Run" category
-        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
-        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
-        // confirm properties dialog
-        propertiesDialogOper.ok();
-        // if setting default server, it scans server jars; otherwise it continues immediatelly
-        ProjectSupport.waitScanFinished();
+        Utils.suppressBrowserOnRun(SAMPLE_WEB_PROJECT_NAME);
+        waitScanFinished();
+        // TODO - probably obsolete
         // start thread to close any information dialog
         //closeInformationDialog();
     }
-    
+
     /** Set a random port for Tomcat server and socket debugger transport. */
     public void testSetTomcatPort() throws Exception {
         Utils.setTomcatProperties();
     }
-    
+
     /** Run project. */
     public void testRunProject() {
-        String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
-        new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+        new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run");
     }
 
@@ -219,7 +175,10 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Debug");
-        Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
+        // TODO - probably obsolete
+        //Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
+        // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
+        new NbDialogOperator("Port Selection Notice").close();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         //MainWindowOperator.getDefault().waitStatusText("Finished building "+SAMPLE_WEB_PROJECT_NAME+" (debug)");
     }
@@ -236,13 +195,13 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         new ContinueAction().perform();
         Utils.finishDebugger();
     }
-    
+
     /** Attach debugger.
-     * - call Run|Attach Debugger... main menu item
+     * - call Debug|Attach Debugger... main menu item
      * - in Attach dialog set socket attach, port and click OK
      * - wait User program running appears in status bar
      * - reload page in browser
@@ -266,10 +225,10 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         Utils.finishDebugger();
     }
-    
+
     /** Restart debugger after breakpoint reached.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -287,17 +246,17 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         stt.clear();
         Utils.finishDebugger();
         // start debugger again
         new DebugProjectAction().perform();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
-        stt.waitText("index.jsp:"+line); // NOI18N
+        stt.waitText("index.jsp:" + line); // NOI18N
         Utils.finishDebugger();
     }
-    
+
     /** Restart debugger after server stopped.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -317,17 +276,17 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         stt.clear();
-        
+
         // check it is not possible to stop server
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         assertFalse("Start action on server node should be disabled when stopped at breakpoint.", new StartAction().isEnabled(serverNode));
-        assertFalse("Stop action on server node should be disabled when stopped at breakpoint.", new StopAction().isEnabled(serverNode));
-        assertFalse("Restart action on server node should be disabled when stopped at breakpoint.", new RestartAction().isEnabled(serverNode));
+        assertTrue("Stop action on server node should be enabled when stopped at breakpoint.", new StopAction().isEnabled(serverNode));
+        assertTrue("Restart action on server node should be enabled when stopped at breakpoint.", new RestartAction().isEnabled(serverNode));
         assertFalse("Start in Debug Mode action on server node should be disabled when stopped at breakpoint.", new StartDebugAction().isEnabled(serverNode));
         assertTrue("Refresh action on server node should be enabled when stopped at breakpoint.", new RefreshAction().isEnabled(serverNode));
-        
+
         Utils.finishDebugger();
         verifyServerNode(serverNode);
         J2eeServerNode.invoke(Utils.DEFAULT_SERVER).stop();
@@ -335,21 +294,23 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         new DebugProjectAction().perform();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         Utils.finishDebugger();
     }
 
-    static void verifyActiveNode(Node node){
-        try{
+    static void verifyActiveNode(Node node) {
+        try {
             node.select();
-        }catch (TimeoutExpiredException e){}
+        } catch (TimeoutExpiredException e) {
+        }
     }
-    
-    static void verifyServerNode(J2eeServerNode serverNode){
+
+    static void verifyServerNode(J2eeServerNode serverNode) {
         verifyActiveNode(serverNode);
         assertTrue("Refresh action on server node should be allways enabled.", new RefreshAction().isEnabled(serverNode));
         new RefreshAction().perform(serverNode);
     }
+
     /** Start another session.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -369,25 +330,24 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
-        stt.waitText("index.jsp:"+line);
+        stt.waitText("index.jsp:" + line);
         new StopAction().perform();
-        
-        new DebugProjectAction().perform();       
+
+        new DebugProjectAction().perform();
         OutputTabOperator outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
         // "Cannot perform required operation, since the server is currently in suspended state and thus cannot handle any requests."
         String suspendedMessage = Bundle.getString("org.netbeans.modules.j2ee.deployment.impl.Bundle", "MSG_ServerSuspended");
         outputOper.waitText(suspendedMessage);
         outputOper.close();
-        
-        String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
-        Action runProjectAction = new Action(null, runProjectItem);
+
+        Action runProjectAction = new Action(null, "Run");
         runProjectAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
         outputOper.waitText(suspendedMessage);
         outputOper.close();
         Utils.finishDebugger();
     }
-    
+
     /** Test concurrent java and jsp debugging sessions. Also test debugging
      * of jsp in sub folder.
      * - open main class MyBean.java
@@ -413,8 +373,8 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         EditorOperator eoBean = new EditorOperator("MyBean.java"); // NOI18N
         final int lineJavaSource = Utils.setBreakpoint(eoBean, "System.out.println"); // NOI18N
         new DebugJavaFileAction().perform(beanNode);
-        stt.waitText("MyBean.java:"+lineJavaSource); //NOI18N
-        
+        stt.waitText("MyBean.java:" + lineJavaSource); //NOI18N
+
         Node pageNode = new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "incl|simpleInclude.jsp"); //NOI18N
         new OpenAction().performAPI(pageNode);
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
@@ -422,50 +382,56 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // "Debug File"
         new Action(null, new DebugJavaFileAction().getPopupPath()).perform(pageNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
-        stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N
-        
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/incl/simpleInclude.jsp");
+        stt.waitText("simpleInclude.jsp:" + lineJSP); //NOI18N
+
         SessionsOperator so = SessionsOperator.invoke();
         so.makeCurrent("MyBean"); //NOI18N
         // wait pointer in editor (two annotations there)
         new Waiter(new Waitable() {
+
+            @Override
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(lineJavaSource).length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator) editorOper).getAnnotations(lineJavaSource).length == 2 ? Boolean.TRUE : null;
             }
+
+            @Override
             public String getDescription() {
-                return("Wait 2 annotations in editor."); // NOI18N
+                return ("Wait 2 annotations in editor."); // NOI18N
             }
         }).waitAction(eoBean);
-        // when issue 52506 fixed use proper name
         so.makeCurrent("MainTestApplication");
         // wait pointer in editor (three annotations there)
         new Waiter(new Waitable() {
+
+            @Override
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator) editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
             }
+
+            @Override
             public String getDescription() {
-                return("Wait 2 annotations in editor."); // NOI18N
+                return ("Wait 2 annotations in editor."); // NOI18N
             }
         }).waitAction(eoPage);
-        //ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
-        //so.finishAll();
+        ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
+        so.finishAll();
         // wait until Debug toolbar dismiss
-        //debugToolbarOper.waitComponentVisible(false);
-        new ContinueAction().perform();
+        debugToolbarOper.waitComponentShowing(false);
         so.close();
     }
-    
+
     /** Stop server just for clean-up.
      * - stop server and wait until it finishes
      */
     public void testStopServer() {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         verifyServerNode(serverNode);
-        if (serverNode.getServerState() != J2eeServerNode.STATE_STOPPED){
+        if (serverNode.getServerState() != J2eeServerNode.STATE_STOPPED) {
             serverNode.stop();
         }
     }
-    
+
     /** Sometimes is opened an information dialog with the following message:
      * "The Admin Server is stopped at a Break Point. No calls can be executed.
      * Please, complete your debugging session (continue) in order to be able
@@ -476,6 +442,8 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     private void closeInformationDialog() {
         new Thread(new Runnable() {
+
+            @Override
             public void run() {
                 // "Information"
                 String informationTitle = Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");

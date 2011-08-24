@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
@@ -177,10 +178,15 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 client.init(this);
                 branches = new HashMap<String, GitBranch>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
-            } catch (GitException ex) {
+            } catch (final GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
                 setValid(false, new Message(ex.getMessage(), false));
-                return;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        setValid(true, new Message(ex.getMessage(), false));
+                    }
+                });
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
             }
