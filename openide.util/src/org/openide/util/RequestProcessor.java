@@ -1985,6 +1985,8 @@ outer:  do {
                     } catch (StackOverflowError e) {
                         // recoverable too
                         doNotify(todo, e);
+                    } catch (ThreadDeath t) {
+                        // #201098: ignore
                     } catch (Throwable t) {
                         doNotify(todo, t);
                     } finally {
