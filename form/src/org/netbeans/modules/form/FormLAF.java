@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.*;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.*;
 import org.openide.ErrorManager;
@@ -176,12 +175,6 @@ public class FormLAF {
 
             ClassLoader classLoader = lafClass.getClassLoader();
             if (classLoader != null) previewDefaults.put("ClassLoader", classLoader); // NOI18N
-
-            // Force switch of the LayoutStyle
-            if (previewDefaults.get("LayoutStyle.instance") == null) { // NOI18N
-                previewDefaults.put("LayoutStyle.instance", // NOI18N
-                    createLayoutStyle(previewLookAndFeel)); 
-            }
 
             return info;
         } catch (Exception ex) {
@@ -405,59 +398,6 @@ public class FormLAF {
         } catch (Exception ex) {
             Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * HACK - creates a LayoutStyle that corresponds to the given LAF.
-     * LayoutStyle is created according to UIManager.getLookAndFeel()
-     * which is not affected by our LAF switch => we have to create
-     * the new LayoutStyle manually.
-     */
-    private static LayoutStyle createLayoutStyle(LookAndFeel laf) {
-        String lafID = laf.getID();
-        boolean useCoreLayoutStyle = false;
-        try {
-            Class.forName("javax.swing.LayoutStyle"); // NOI18N
-            useCoreLayoutStyle = true;
-        } catch (ClassNotFoundException cnfex) {}
-        String layoutStyleClass;
-        if (useCoreLayoutStyle) {
-            if ("Aqua" == lafID) { // NOI18N
-                try {
-                    laf.getClass().getDeclaredMethod("getLayoutStyle", new Class[0]); // NOI18N
-                    layoutStyleClass = "Swing"; // NOI18N
-                } catch (NoSuchMethodException nsfex) {
-                    // getLayoutStyle() not overriden => use our own (issue 52)
-                    layoutStyleClass = "Aqua";
-                }
-            } else {
-                layoutStyleClass = "Swing"; // NOI18N
-            }
-        } else if ("Metal" == lafID) { // NOI18N
-            layoutStyleClass = "Metal"; // NOI18N
-        }
-        else if ("Windows" == lafID) { // NOI18N
-            layoutStyleClass = "Windows"; // NOI18N
-        }
-        else if ("GTK" == lafID) { // NOI18N
-            layoutStyleClass = "Gnome"; // NOI18N
-        }
-        else if ("Aqua" == lafID) { // NOI18N
-            layoutStyleClass = "Aqua"; // NOI18N
-        } else {
-            layoutStyleClass = ""; // NOI18N
-        }
-        layoutStyleClass = "org.jdesktop.layout." + layoutStyleClass + "LayoutStyle"; // NOI18N
-        LayoutStyle layoutStyle = null;
-        try {
-            Class clazz = Class.forName(layoutStyleClass);
-            java.lang.reflect.Constructor constr = clazz.getDeclaredConstructor(new Class[0]);
-            constr.setAccessible(true);
-            layoutStyle = (LayoutStyle)constr.newInstance((Object[])null);
-        } catch (Exception ex) {
-            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-        }
-        return layoutStyle;
     }
 
     static javax.swing.LayoutStyle getDesignerLayoutStyle() {
