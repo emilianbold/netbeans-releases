@@ -377,7 +377,7 @@ public abstract class FrameworkCommandSupport {
      * @see #getProcessBuilder(boolean)
      * @since 1.51
      */
-    protected File redirectScriptOutput(String command, String... arguments) {
+    protected final File redirectScriptOutput(String command, String... arguments) {
         ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
         if (processBuilder == null) {
             return null;
