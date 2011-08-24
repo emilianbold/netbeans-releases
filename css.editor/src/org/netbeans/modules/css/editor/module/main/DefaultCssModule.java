@@ -95,7 +95,8 @@ public class DefaultCssModule extends CssModule {
         "values_and_units", 
         "text", 
         "writing_modes",
-        "generated_content_for_paged_media"
+        "generated_content_for_paged_media",
+        "fonts"
     };
     private static Collection<PropertyDescriptor> propertyDescriptors;
 

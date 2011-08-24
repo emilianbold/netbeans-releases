@@ -18,8 +18,8 @@ Css modules list (source http://www.css3.info/modules/)
 * CSS Cascading & Inheritance 
 * CSS Text 
 * CSS Writing Modes 
-CSS Generated Content for Paged Media 
-CSS Fonts 
+* CSS Generated Content for Paged Media 
+* CSS Fonts 
 CSS Basic Box Model 
 CSS Template Layout 
 CSS Speech 
@@ -45,7 +45,7 @@ CSS Presentation Levels
 general:
 - css module should be able to provide new unit acceptors
 - support for functions providing + completion, checking?
-
+- inherit property support (parsing, error checking, completion, ...)
 
 selectors module:
 --------------------
