@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.apache.tools.ant.module.spi;
+package org.netbeans.modules.php.editor;
 
 import java.io.File;
-import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 
-/** Factory method for urls.
+/**
  *
- * @author Jaroslav Tulach
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-final class AutomaticExtraClasspath implements AutomaticExtraClasspathProvider {
-    private File file;
+public class PHPCodeCompletion194875Test extends PHPTestBase {
 
-
-    private AutomaticExtraClasspath(File file) {
-        this.file = file;
+    public PHPCodeCompletion194875Test(String testName) {
+        super(testName);
     }
 
-    public static AutomaticExtraClasspathProvider url(Map<?,?> map) throws Exception {
-        Object obj = map.get("url"); // NOI18N
-        if (obj instanceof URL) {
-            FileObject fo = URLMapper.findFileObject((URL)obj);
-            File f = fo != null ? FileUtil.toFile(fo) : null;
-            if (f == null) {
-                Logger.getLogger(AutomaticExtraClasspathProvider.class.getName()).log(obj.toString().contains("com.jcraft.") ? Level.FINE : Level.WARNING, "No File found for {0}", obj);
-            }
-            return new AutomaticExtraClasspath(f);
-        } else {
-            throw new IllegalArgumentException("url arg is not URL: " + obj); // NOI18N
-        }
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875.php", "} catch (^", false);
     }
 
-    @Override public File[] getClasspathItems() {
-        return file != null ? new File[] {file} : new File[0];
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875.php", "} catch (E^", false);
     }
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875_1.php", "} catch (^", false);
+    }
+
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875_1.php", "} catch (E^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests194875/"))
+            })
+        );
+    }
+
 }

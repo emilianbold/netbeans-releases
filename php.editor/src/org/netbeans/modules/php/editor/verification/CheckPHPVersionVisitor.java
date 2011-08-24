@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
@@ -72,7 +72,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     public CheckPHPVersionVisitor(FileObject fobj) {
         this.fobj = fobj;
     }
-    
+
     public static  boolean appliesTo(FileObject fobj) {
         if (fobj != null){
             Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
@@ -99,7 +99,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     public void visit(LambdaFunctionDeclaration declaration) {
         createError(declaration);
     }
-    
+
     @Override
     public void visit(GotoLabel label) {
         createError(label);
@@ -110,7 +110,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         for (ASTNode node : getPath()) {
             if (node instanceof TypeDeclaration) {
                 return;
-            } 
+            }
         }
         createError(statement);
     }
@@ -143,7 +143,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         PHPVersionError error = new PHPVersionError(startOffset, endOffset);
         errors.add(error);
     }
-    
+
     private void createError(ASTNode node){
         createError(node.getStartOffset(), node.getEndOffset());
         super.visit(node);
@@ -159,38 +159,47 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
             this.endPosition = endPosition;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDesc");
         }
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDispName");
         }
 
+        @Override
         public String getKey() {
             return "php.ver"; //NOI18N
         }
 
+        @Override
         public FileObject getFile() {
             return fobj;
         }
 
+        @Override
         public int getStartPosition() {
             return startPosition;
         }
 
+        @Override
         public int getEndPosition() {
             return endPosition;
         }
 
+        @Override
         public boolean isLineError() {
             return true;
         }
 
+        @Override
         public Severity getSeverity() {
             return Severity.ERROR;
         }
 
+        @Override
         public Object[] getParameters() {
             return new Object[]{};
         }

@@ -51,7 +51,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -66,7 +65,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,14 +73,17 @@ import org.openide.util.NbBundle;
  */
 public class AssignVariableHint extends AbstractRule {
 
+    @Override
     public String getId() {
         return "assign.variable.hint"; //NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(AssignVariableHint.class, "AssignVariableHintDesc");//NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(AssignVariableHint.class, "AssignVariableHintDisplayName");//NOI18N
     }
@@ -150,7 +151,7 @@ public class AssignVariableHint extends AbstractRule {
                     guessName = CodeUtils.extractFunctionName(functionInvocation);
                 } else if (expression instanceof StaticMethodInvocation) {
                     StaticMethodInvocation methodInvocation = (StaticMethodInvocation) expression;
-                    guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());                    
+                    guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 }
 
                 if (guessName != null) {
@@ -192,10 +193,12 @@ public class AssignVariableHint extends AbstractRule {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
@@ -204,10 +207,12 @@ public class AssignVariableHint extends AbstractRule {
             this.variables = variables;
         }
 
+        @Override
         public String getDescription() {
             return AssignVariableHint.this.getDescription();
         }
 
+        @Override
         public void implement() throws Exception {
             int textOffset = getTextOffset();
             String variableName = getVariableName();
@@ -286,6 +291,7 @@ public class AssignVariableHint extends AbstractRule {
             this.guessName = variable;
         }
 
+        @Override
         protected String getVariableName() {
             return super.getVariableName(guessName);
         }

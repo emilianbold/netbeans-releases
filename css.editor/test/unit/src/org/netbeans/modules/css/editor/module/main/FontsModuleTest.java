@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.apache.tools.ant.module.spi;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-
-/** Factory method for urls.
  *
- * @author Jaroslav Tulach
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-final class AutomaticExtraClasspath implements AutomaticExtraClasspathProvider {
-    private File file;
+package org.netbeans.modules.css.editor.module.main;
 
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class FontsModuleTest extends CssModuleTestBase {
 
-    private AutomaticExtraClasspath(File file) {
-        this.file = file;
+    public FontsModuleTest(String testName) {
+        super(testName);
     }
-
-    public static AutomaticExtraClasspathProvider url(Map<?,?> map) throws Exception {
-        Object obj = map.get("url"); // NOI18N
-        if (obj instanceof URL) {
-            FileObject fo = URLMapper.findFileObject((URL)obj);
-            File f = fo != null ? FileUtil.toFile(fo) : null;
-            if (f == null) {
-                Logger.getLogger(AutomaticExtraClasspathProvider.class.getName()).log(obj.toString().contains("com.jcraft.") ? Level.FINE : Level.WARNING, "No File found for {0}", obj);
-            }
-            return new AutomaticExtraClasspath(f);
-        } else {
-            throw new IllegalArgumentException("url arg is not URL: " + obj); // NOI18N
-        }
+    
+    public void testProperties() {
+        assertPropertyValues("font", "caption", "italic 20px sans-serif");
+        
+        assertPropertyValues("font-size", "20px", "small", "smaller");
+        
+        assertPropertyValues("font-stretch", "ultra-condensed");
+        
+        assertPropertyValues("font-variant", 
+                "normal", 
+                "additional-ligatures", 
+                "historical-forms",
+                "styleset(10)", 
+                "styleset(10,20,30)", 
+                "character-variant(1)", 
+                "character-variant(10,20,30)", 
+                "swash(10)", "swash", 
+                "annotation(1)", "annotation", 
+                "hojo-kanji");
+        
+        assertPropertyValues("font-variant-alternates", 
+                "normal",
+                "contextual",
+                "styleset(feature, another)",
+                "character-variant(feature)", 
+                "annotation(feature)"
+                );
+        
+        assertPropertyValues("font-variant-east-asian", "hojo-kanji");
+        
+        assertPropertyValues("font-variant-numeric", 
+                "lining-nums tabular-nums stacked-fractions",
+                "stacked-fractions",
+                "tabular-nums stacked-fractions");
+        
     }
-
-    @Override public File[] getClasspathItems() {
-        return file != null ? new File[] {file} : new File[0];
-    }
+    
 }
