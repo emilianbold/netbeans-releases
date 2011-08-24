@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.web.debug;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
@@ -51,34 +50,37 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
+import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Exceptions;
 
 /** Test of web application debugging. Manual test specification is here:
- * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
+ * http://wiki.netbeans.org/TS_70_WebEnterpriseDebug
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class ServletDebuggingTest extends J2eeTestCase {
-    // status bar tracer used to wait for state
 
+    /** Status bar tracer used to wait for state. */
     private MainWindowOperator.StatusTextTracer stt;
-
+    // name of sample web application project
+    private static final String SAMPLE_WEB_PROJECT_NAME = "MainTestApplication";  //NOI18N
+    // line number of breakpoint
+    private static int line;
+    // servlet node in Projects view
+    private Node servletNode;
+    
     public ServletDebuggingTest(String testName) {
         super(testName);
     }
@@ -86,16 +88,18 @@ public class ServletDebuggingTest extends J2eeTestCase {
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
                 "testSetBreakpoint",
+                "testDebugProject",
                 "testStepInto",
                 "testStepOut",
                 "testStepOver",
                 "testApplyCodeChanges",
-                "testStopServer").enableModules(".*").clusters(".*"));
+                "testStopServer").
+                enableModules(".*").clusters(".*"));
     }
 
     /** Print test name and initialize status bar tracer. */
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("########  " + getName() + "  #######");
         stt = MainWindowOperator.getDefault().getStatusTextTracer();
         // start to track Main Window status bar
@@ -103,12 +107,8 @@ public class ServletDebuggingTest extends J2eeTestCase {
         // increase timeout to 60 seconds when waiting for status bar text
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         // find servlet node in Projects view
-        try {
-            openProjects(new File(getDataDir(), SAMPLE_WEB_PROJECT_NAME).getAbsolutePath());
-            ProjectSupport.waitScanFinished();
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
+        openProjects(new File(getDataDir(), SAMPLE_WEB_PROJECT_NAME).getAbsolutePath());
+        waitScanFinished();
         servletNode = new Node(new SourcePackagesNode(SAMPLE_WEB_PROJECT_NAME),
                 "org.netbeans.test.servlets|DivideServlet.java"); //NOI18N
     }
@@ -118,12 +118,6 @@ public class ServletDebuggingTest extends J2eeTestCase {
     public void tearDown() {
         stt.stop();
     }
-    // name of sample web application project
-    private static final String SAMPLE_WEB_PROJECT_NAME = "MainTestApplication";  //NOI18N
-    // line number of breakpoint
-    private static int line;
-    // servlet node in Projects view
-    private Node servletNode;
 
     /** Set breakpoint.
      * - open Source Packages|org.netbeans.test.servlets|DivideServlet.java
@@ -131,6 +125,8 @@ public class ServletDebuggingTest extends J2eeTestCase {
      * - toggle breakpoint at selected line
      */
     public void testSetBreakpoint() throws Exception {
+        Utils.suppressBrowserOnRun(SAMPLE_WEB_PROJECT_NAME);
+        waitScanFinished();
         new OpenAction().performAPI(servletNode);
         // find file in Editor
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
@@ -138,130 +134,95 @@ public class ServletDebuggingTest extends J2eeTestCase {
     }
 
     /** Step into in Servlet.
-     * - call Debug "DivideServlet.java" popup on servlets node
+     * - debug project (#199576 - Debug File on servlet doesn't run debugger)
+     * - close "Port Selection Notice" dialog
+     * - wait until debugger is started
+     */
+    public void testDebugProject() {
+        //Bug 199576 - Debug File on servlet doesn't run debugger 
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
+        rootNode.performPopupActionNoBlock("Debug");
+        // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
+        new NbDialogOperator("Port Selection Notice").close();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+    }
+    
+    /** Step into in Servlet.
+     * - call "Debug File"  popup on servlet's node
      * - wait until debugger stops at previously set breakpoint
-     * - set sources from TestFreeformLibrary to be used for debugging
-     * - call Run|Step Into from main menu
+     * - call Debug|Step Into from main menu
+     * - call Debug|Step Into from main menu to confirm method selection
      * - wait until debugger stops at next line
-     * - call Run|Step Into from main menu again
+     * - call Debug|Step Into from main menu again
      * - wait until debugger stops at line in Divider.java
      * - find and close editor tab with Divider.java
-     * - finish debugger
+     * - continue
      */
     public void testStepInto() {
-        // "Debug "DivideServlet.java""
-        String debugFileItem =
-                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
-                "LBL_DebugSingleAction_Name",
-                new Object[]{new Integer(1), servletNode.getText()});
-        new ActionNoBlock(null, debugFileItem).perform(servletNode);
-        String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
-        Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
-        new NbDialogOperator(setURITitle).ok();
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        //OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
-        //outputTab.waitText("BUILD SUCCESSFUL");
-        //stt.waitText("DivideServlet.java:" + line); //NOI18N
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        waitEnabled(new StepIntoAction());
+        debugServlet();
         new StepIntoAction().perform();
-        MainWindowOperator.getDefault().pressKey(KeyEvent.VK_ENTER);
+        // confirm step into selection
+        new StepIntoAction().perform();
+        // #201275 - use Debugger Console instead of status bar
+        new OutputTabOperator("Debugger Console").waitText("DivideServlet.java:" + (line + 2)); //NOI18N
         //stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
         new StepIntoAction().perform();
-        //stt.waitText("DivideServlet.java:"+(line+4));
-        Utils.finishDebugger();
+        // org.netbeans.test.freeformlib.Divider should be used in servlet when #199615 is fixed
+        stt.waitText("Multiplier.java:"); //NOI18N
+        new EditorOperator("Multiplier.java").close(); //NOI18N
+        new ContinueAction().perform();
     }
 
-    private void waitEnabled(final Action action) {
-        Waiter waiter = new Waiter(new Waitable() {
-
-            public Object actionProduced(Object arg0) {
-                if (!action.isEnabled()){
-                    return null;
-                }else{
-                    return this;
-                }
-            }
-
-            public String getDescription() {
-                return "waiting for enabled Step Into Action";
-            }
-        });
-        try {
-            waiter.waitAction(null);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
     /** Step out from servlet.
-     * - call Debug File popup on servlets node
+     * - call Debug File popup on servlet's node
      * - wait until debugger stops at previously set breakpoint
-     * - call Run|Step Out from main menu
+     * - call Debug|Step Out from main menu
      * - wait until debugger stops in doGet method
-     * - finish debugger
+     * - continue
      */
     public void testStepOut() {
-        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugJavaFileAction().perform(servletNode);
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
-        eo.select("<h1>"); // NOI18N
-        line = eo.getLineNumber();
-        stt.waitText("DivideServlet.java:" + line); //NOI18N
+        debugServlet();
         stt.clear();
-        waitEnabled(new StepOutAction());
         new StepOutAction().perform();
         // it stops at doGet method
         stt.waitText("DivideServlet.java:"); //NOI18N
-        Utils.finishDebugger();
+        new ContinueAction().perform();
     }
 
     /** Step over servlet.
-     * - call Debug File popup on servlets node
+     * - call Debug File popup on servlet's node
      * - wait until debugger stops at previously set breakpoint
-     * - call Run|Step Over from main menu
+     * - call Debug|Step Over from main menu
      * - wait until debugger stops at next line
-     * - call Run|Step Over from main menu again
+     * - call Debug|Step Over from main menu again
      * - wait until debugger stops at next line
-     * - finish debugger
+     * - continue
      */
     public void testStepOver() {
-        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugJavaFileAction().perform(servletNode);
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        stt.waitText("DivideServlet.java:" + line); //NOI18N
+        debugServlet();
         new StepOverAction().perform();
         stt.waitText("DivideServlet.java:" + (line + 2)); //NOI18N
         new StepOverAction().perform();
         stt.waitText("DivideServlet.java:" + (line + 4)); //NOI18N
-        Utils.finishDebugger();
+        new ContinueAction().perform();
     }
 
     /** Apply code changes in servlet.
-     * - call Debug File popup on servlets node
+     * - call Debug File popup on servlet's node
      * - wait until debugger stops at previously set breakpoint
      * - replace "Servlet DIVIDE" by "Servlet DIVIDE Changed" in DivideServlet.java
-     * - call Run|Apply Code Changes from main menu
+     * - call Debug|Apply Code Changes from main menu
      * - wait until debugger stops somewhere in DivideServlet.java
      * - finish debugger
      * - open URL connection and wait for changed text
      */
     public void testApplyCodeChanges() {
-        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugJavaFileAction().perform(servletNode);
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        stt.waitText("DivideServlet.java:" + line); //NOI18N
+        debugServlet();
         stt.clear();
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
         eo.replace("Servlet DIVIDE", "Servlet DIVIDE Changed"); //NOI18N
         new ApplyCodeChangesAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug-fix");
         stt.waitText("DivideServlet.java:"); //NOI18N
         Utils.finishDebugger();
         Utils.waitText(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet", 240000, "Servlet DIVIDE Changed");
@@ -274,5 +235,22 @@ public class ServletDebuggingTest extends J2eeTestCase {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         JSPDebuggingOverallTest.verifyServerNode(serverNode);
         serverNode.stop();
+    }
+    
+    /**
+     * - call Debug File popup on servlet's node
+     * - close Set URI dialog
+     * - wait until project execution is finished
+     * - reload page because browser doesn't open automatically
+     * - wait until debugger stops at previously set breakpoint
+     */
+    private void debugServlet() {
+        new ActionNoBlock(null, "Debug File").perform(servletNode);
+        String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
+        new NbDialogOperator(setURITitle).ok();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run"); // should be "debug" when #199576 fixed
+        // reload page because browser is suppressed
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
     }
 }
