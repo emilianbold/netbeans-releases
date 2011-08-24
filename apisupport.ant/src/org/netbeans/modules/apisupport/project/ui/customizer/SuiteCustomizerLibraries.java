@@ -410,7 +410,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         logger.log(Level.FINE, "refreshPlatforms --> {0}", plaf.getLabel());
         platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(plaf)); // refresh
-        platformValue.requestFocus();
+        if (getProperties().getEvaluator().getProperty("nbplatform.active") != null) {
+            platformValue.requestFocus();
+        } else { // custom local platform, typical with #197038
+            platform.setEnabled(false);
+            platformValue.setEnabled(false);
+            managePlafsButton.setEnabled(false);
+        }
     }
     
     @Override
