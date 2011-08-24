@@ -255,17 +255,17 @@ public class IOManager {
         }
     }
     
-    static class Line {
+    public final static class Line {
         private String url;
         private int lineNumber;
         private JPDADebugger debugger;
         
-        Line (String url, int lineNumber, JPDADebugger debugger) {
+        public Line (String url, int lineNumber, JPDADebugger debugger) {
             this.url = url;
             this.lineNumber = lineNumber;
         }
         
-        void show () {
+        public void show () {
             EditorContextBridge.getContext().showSource (url, lineNumber, debugger);
         }
     }

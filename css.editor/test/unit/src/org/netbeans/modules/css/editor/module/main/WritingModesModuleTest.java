@@ -41,37 +41,20 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import junit.framework.AssertionFailedError;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssModuleTestBase extends CslTestBase {
+public class WritingModesModuleTest extends CssModuleTestBase {
 
-    public CssModuleTestBase(String name) {
-        super(name);
+    public WritingModesModuleTest(String testName) {
+        super(testName);
     }
-
-    protected void assertPropertyValues(String propertyName, String... values) {
-        
-        PropertyModel model = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(String.format("Cannot find property %s", propertyName), model);
-        
-        for(String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if(!value.success()) {
-                PropertyModelTest.dumpResult(value);
-                throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
-            }
-            
-        }
-        
+    
+    public void testProperties() {
+        assertPropertyValues("direction", "ltr", "rtl");
+        assertPropertyValues("column-width", "10px", "20%", "max-content");
+        assertPropertyValues("unicode-bidi", "normal", "isolate", "isolate plaintext");
     }
     
 }

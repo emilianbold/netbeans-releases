@@ -30,6 +30,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="createIcefacesLibraryButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="noteLabel" alignment="0" pref="501" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -40,7 +41,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="icefacesLibraryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="icefacesLibraryComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -50,7 +51,9 @@
                   <Component id="notExistingLibraryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="createIcefacesLibraryButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="188" max="32767" attributes="0"/>
+              <EmptySpace pref="28" max="32767" attributes="0"/>
+              <Component id="noteLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -95,6 +98,15 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createIcefacesLibraryButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="noteLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/icefaces/ui/Bundle.properties" key="Icefaces2CustomizerPanelVisual.noteLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="verticalAlignment" type="int" value="1"/>
+        <Property name="verticalTextPosition" type="int" value="1"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
