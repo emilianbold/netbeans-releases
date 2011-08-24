@@ -54,6 +54,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.netbeans.modules.php.symfony2.ui.actions.Symfony2PhpModuleActionsExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -133,7 +134,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
-        return null;
+        return new Symfony2PhpModuleActionsExtender();
     }
 
     @Override
