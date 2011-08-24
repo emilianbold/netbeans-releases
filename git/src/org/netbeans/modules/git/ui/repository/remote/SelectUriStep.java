@@ -233,6 +233,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run () {
+                    if (message[0] != null) {
+                        setValid(true, message[0]);
+                    }
                     setEnabled(true);
                     enableFields();
                 }
