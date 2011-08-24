@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.ui.pull;
 
+import java.util.ListIterator;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
@@ -302,7 +303,13 @@ public class PullAction extends ContextAction {
             }
             if (listIncoming == null || listIncoming.isEmpty()) return;
             
-            boolean bNoChanges = HgCommand.isNoChanges(listIncoming.get(listIncoming.size() - 1));
+            boolean bNoChanges = false;
+            for (ListIterator<String> it = listIncoming.listIterator(listIncoming.size()); it.hasPrevious(); ) {
+                bNoChanges = HgCommand.isNoChanges(it.previous());
+                if (bNoChanges) {
+                    break;
+                }
+            }
 
             // Warn User when there are Local Changes present that Pull will overwrite
             if (!bNoChanges && !confirmWithLocalChanges(root, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming, logger)) { // NOI18N
