@@ -698,6 +698,7 @@ public final class SearchBar extends JPanel {
                 totalWidth += c.getPreferredSize().width;
 
                 if (totalWidth > parentWidth) {
+                    
                     break;
                 }
                 inPopup.removeFirst();
@@ -1091,15 +1092,15 @@ public final class SearchBar extends JPanel {
         return closeButton;
     }
 
-    public JLabel getFindLabel() {
+    JLabel getFindLabel() {
         return findLabel;
     }
 
-    public JButton getFindNextButton() {
+    JButton getFindNextButton() {
         return findNextButton;
     }
 
-    public JButton getFindPreviousButton() {
+    JButton getFindPreviousButton() {
         return findPreviousButton;
     }
 
