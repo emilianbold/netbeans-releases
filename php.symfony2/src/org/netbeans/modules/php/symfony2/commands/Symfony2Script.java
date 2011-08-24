@@ -70,7 +70,7 @@ public final class Symfony2Script extends PhpProgram {
      */
     @CheckForNull
     @Messages("MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})")
-    public static Symfony2Script forPhpModule(PhpModule phpModule, boolean warn) {
+    public static Symfony2Script forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpProgramException {
         String console = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_PATH.replace('/', File.separatorChar)).getAbsolutePath(); // NOI18N
         String error = validate(console);
         if (error == null) {
@@ -83,7 +83,7 @@ public final class Symfony2Script extends PhpProgram {
             DialogDisplayer.getDefault().notify(message);
         }
         // in fact should not happen since the console script is used for framework detection
-        return null;
+        throw new InvalidPhpProgramException(error);
     }
 
     public static String validate(String command) {
