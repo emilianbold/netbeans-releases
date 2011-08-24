@@ -50,7 +50,6 @@ import java.beans.VetoableChangeListener;
 import java.util.Hashtable;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.Map;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
@@ -58,7 +57,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,7 +85,6 @@ import javax.swing.text.Segment;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.WrappedPlainView;
-import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.CannotUndoException;
@@ -108,6 +105,11 @@ import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.modules.editor.lib2.document.ContentEdit;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
+import org.netbeans.modules.editor.lib2.document.LineElementRoot;
+import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
+import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.util.RequestProcessor;
@@ -188,17 +190,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Highlight search finder property. */
     public static final String BLOCKS_FINDER_PROP = "blocks-finder"; // NOI18N
 
-    /** Maximum line width encountered during the initial read operation.
-    * This is filled by Analyzer and used by UI to set the correct initial width
-    * of the component.
-    * Values: java.lang.Integer
-    */
+    /**
+     * Maximum line width encountered during the initial read operation.
+     * This is filled by Analyzer and used by UI to set the correct initial width
+     * of the component.
+     * Values: java.lang.Integer
+     * @deprecated property no longer populated; deprecated without replacement.
+     */
     public static final String LINE_LIMIT_PROP = "line-limit"; // NOI18N
 
 
-    /** Size of the line batch. Line batch can be used at various places
-    * especially when processing lines by syntax scanner.
-    */
+    /**
+     * Size of the line batch. Line batch can be used at various places
+     * especially when processing lines by syntax scanner.
+     * @deprecated property no longer populated; deprecated without replacement.
+     */
     public static final String LINE_BATCH_SIZE = "line-batch-size"; // NOI18N
 
     /** Line separator is marked by CR (Macintosh) */
@@ -220,11 +226,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     private static final String BEFORE_MODIFICATION_LISTENER = "modificationListener"; // NOI18N
 
-    /** Maximum of concurrent read threads (other will wait until
-    * one of these will leave).
-    */
-    private static final int MAX_READ_THREADS = 10;
-
     /** Write lock without write lock */
     private static final String WRITE_LOCK_MISSING = "extWriteUnlock() without extWriteLock()"; // NOI18N
 
@@ -237,8 +238,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final Object getVisColFromPosLock = new Object();
     private static final Object getOffsetFromVisColLock = new Object();
 
-    /** Debug modifications performed on the document */
-    private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.document"); // NOI18N
     /** Debug the stack of calling of the insert/remove */
     private static final boolean debugStack = Boolean.getBoolean("netbeans.debug.editor.document.stack"); // NOI18N
     /** Debug the document insert/remove but do not output text inserted/removed */
@@ -297,7 +296,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 //    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
-    LineRootElement lineRootElement;
+    LineElementRoot lineElementRoot;
 
     /** Last document event to be undone. The field is filled
      * by the lastly done modification undoable edit.
@@ -314,13 +313,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
      private boolean composedText = false;
 
-    /**
-     * Map of [multi-mark, Mark-instance] pairs.
-     * These multi-marks need to be stored separately and not be undone/redone.
-     */
-    final Map<MultiMark, Mark> marks = new HashMap<MultiMark, Mark>();
-    final MarkVector marksStorage = new MarkVector();
-
     /** Finder for visual x-coord to position conversion */
     private FinderFactory.VisColPosFwdFinder visColPosFwdFinder;
 
@@ -331,7 +323,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private AtomicLockEvent atomicLockEventInstance = new AtomicLockEvent(this);
 
     private FixLineSyntaxState fixLineSyntaxState;
-    private UndoableEdit removeUpdateLineUndo;
 
     private Object[] atomicLockListenerList;
 
@@ -356,6 +347,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     private int shiftWidth = -1;
     private int tabSize;
+    
+    private CharSequence text;
+    
+    private UndoableEdit removeUpdateLineUndo;
 
     private Preferences prefs;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
@@ -478,7 +473,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      *   in favor of mime types.
      */
     public BaseDocument(Class kitClass, boolean addToRegistry) {
-        super(new DocumentContent());
+        super(new EditorDocumentContent());
 
         if (LOG.isLoggable(Level.FINE) || LOG.isLoggable(Level.WARNING)) {
             String msg = "Using deprecated document construction for " + //NOI18N
@@ -510,7 +505,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * @since 1.26
      */
     public BaseDocument(boolean addToRegistry, String mimeType) {
-        super(new DocumentContent());
+        super(new EditorDocumentContent());
         this.deprecatedKitClass = null;
         this.mimeType = mimeType;
         init(addToRegistry);
@@ -522,8 +517,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         setDocumentProperties(createDocumentProperties(getDocumentProperties()));
         super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
 
-        putProperty(GapStart.class, getDocumentContent());
-        putProperty(CharSequence.class, getDocumentContent().createCharSequenceView());
+        text = ((EditorDocumentContent)getContent()).getText();
+        putProperty(CharSequence.class, text);
+        putProperty(GapStart.class, new GapStart() {
+            @Override
+            public int getGapStart() {
+                return ((EditorDocumentContent)getContent()).getCharContentGapStart();
+            }
+        });
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
@@ -539,7 +540,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         });
         putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
-        lineRootElement = new LineRootElement(this);
+        lineElementRoot = new LineElementRoot(this);
 
         // Line separators default to platform ones
         putProperty(READ_LINE_SEPARATOR_PROP, Analyzer.getPlatformLS());
@@ -577,12 +578,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    private DocumentContent getDocumentContent() {
-        return (DocumentContent)getContent();
-    }
-
     public CharSeq getText() {
-        return getDocumentContent();
+        return new CharSeq() {
+            @Override
+            public int length() {
+                return text.length();
+            }
+            @Override
+            public char charAt(int index) {
+                return text.charAt(index);
+            }
+        };
     }
 
     private void findSupportChange(PropertyChangeEvent evt) {
@@ -737,7 +743,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         // possible CR-LF conversion
-        text = Analyzer.convertLSToLF(text);
+        text = ReadWriteUtils.convertToNewlines(text);
 
         // Check whether there is an active postModificationDocumentListener
         // and if so then start an atomic transaction.
@@ -936,10 +942,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 preRemoveCheck(offset, len);
 
                 BaseDocumentEvent evt = getDocumentEvent(offset, len, DocumentEvent.EventType.REMOVE, null);
+                // Store modification text as an event's property
+                org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(evt);
+                String removedText = getText(offset, len);
+                org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(evt, String.class, removedText);
 
                 removeUpdate(evt);
 
-                UndoableEdit edit = getContent().remove(offset, len);
+                UndoableEdit edit = ((EditorDocumentContent)getContent()).remove(offset, removedText);
                 if (edit != null) {
                     evt.addEdit(edit);
 
@@ -951,7 +961,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                         + ", origDocLen=" + docLen // NOI18N
                         + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
                         + ", len=" + len // NOI18N
-                        + (debugNoText ? "" : (", removedText='" + ((DocumentContent.Edit)edit).getUndoRedoText() + "'")); //NOI18N
+                        + (debugNoText ? "" : (", removedText='" + ((ContentEdit)edit).getText() + "'")); //NOI18N
 
                     if (debugStack) {
                         LOG.log(Level.FINE, msg, new Throwable(msg));
@@ -1093,24 +1103,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
                 ((BaseDocumentEvent)chng).getText());
 
-        MarksStorageUndo marksStorageUndo = new MarksStorageUndo(chng);
-        marksStorageUndo.updateMarksStorage();
-        chng.addEdit(marksStorageUndo); // fix compatible marks
-
-        UndoableEdit lineUndo = lineRootElement.insertUpdate(chng.getOffset(), chng.getLength());
-        if (lineUndo != null) {
-            chng.addEdit(lineUndo);
-        }
+        lineElementRoot.insertUpdate(chng, attr);
 
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
         fixLineSyntaxState = null;
-
-        // Useful for lexer snapshots
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
-        BaseDocumentEvent bEvt = (BaseDocumentEvent)chng;
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(
-                chng, String.class, bEvt.getText());
 
         for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
             listener.insertUpdate(chng);
@@ -1125,17 +1122,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected @Override void removeUpdate(DefaultDocumentEvent chng) {
         super.removeUpdate(chng);
 
-        // Store modification text as an event's property
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
-        String removedText;
-        try {
-            removedText = getText(chng.getOffset(), chng.getLength());
-        } catch (BadLocationException e) {
-            throw new IllegalStateException(e);
-        }
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
-                removedText);
-
         // Notify the remove update listeners - before the actual remove happens
         // so that it adheres to removeUpdate() logic; also the listeners can check
         // positions' offsets before the actual removal happens.
@@ -1144,7 +1130,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         // Remember the line changes here but add them to chng during postRemoveUpdate()
-        removeUpdateLineUndo = lineRootElement.removeUpdate(chng.getOffset(), chng.getLength());
+        // in order to satisfy the legacy syntax update mechanism
+        removeUpdateLineUndo = lineElementRoot.legacyRemoveUpdate(chng);
 
         fixLineSyntaxState = new FixLineSyntaxState(chng);
         chng.addEdit(fixLineSyntaxState.createBeforeLineUndo());
@@ -1153,10 +1140,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected @Override void postRemoveUpdate(DefaultDocumentEvent chng) {
         super.postRemoveUpdate(chng);
 
-        MarksStorageUndo marksStorageUndo = new MarksStorageUndo(chng);
-        marksStorageUndo.updateMarksStorage();
-        chng.addEdit(marksStorageUndo); // fix compatible marks
-
+        // addEdit() for previously remembered removeUpdateLineUndo
         if (removeUpdateLineUndo != null) {
             chng.addEdit(removeUpdateLineUndo);
             removeUpdateLineUndo = null;
@@ -1240,7 +1224,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         Segment text = new Segment();
-        int gapStart = DocumentUtilities.getGapStart(this);
+        int gapStart = ((EditorDocumentContent)getContent()).getCharContentGapStart();
         if (gapStart == -1) {
             throw new IllegalStateException("Cannot get gapStart"); // NOI18N
         }
@@ -1386,17 +1370,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     /** Create biased position in document */
-    public Position createPosition(int offset, Position.Bias bias)
-    throws BadLocationException {
-        return getDocumentContent().createBiasPosition(offset, bias);
-    }
-
-    MultiMark createMark(int offset) throws BadLocationException {
-        return getDocumentContent().createMark(offset);
-    }
-
-    MultiMark createBiasMark(int offset, Position.Bias bias) throws BadLocationException {
-        return getDocumentContent().createBiasMark(offset, bias);
+    public Position createPosition(int offset, Position.Bias bias) throws BadLocationException {
+        EditorDocumentContent content = (EditorDocumentContent) getContent();
+        Position pos;
+        if (bias == Position.Bias.Forward) {
+            pos = content.createPosition(offset);
+        } else {
+            pos = content.createBackwardBiasPosition(offset);
+        }
+        return pos;
     }
 
     /** Return array of root elements - usually only one */
@@ -1409,7 +1391,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Return default root element */
     public @Override Element getDefaultRootElement() {
         if (defaultRootElem == null) {
-            defaultRootElem = getLineRootElement();
+            defaultRootElem = lineElementRoot;
         }
         return defaultRootElem;
     }
@@ -1497,13 +1479,16 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (pos < 0 || pos > getLength()) {
                 throw new BadLocationException("BaseDocument.read()", pos); // NOI18N
             }
-
-            if (inited || modified) { // was the document already initialized?
-                Analyzer.read(this, reader, pos);
-            } else { // not initialized yet, we can use initialRead()
-                Analyzer.initialRead(this, reader, true);
-                inited = true; // initialized but not modified
+            ReadWriteBuffer buffer = ReadWriteUtils.read(reader);
+            if (!inited) { // Fill line-separator properties
+                String lineSeparator = ReadWriteUtils.findFirstLineSeparator(buffer);
+                if (lineSeparator == null) {
+                    lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                }
+                putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, lineSeparator);
             }
+            insertString(pos, buffer.toString(), null);
+            inited = true; // initialized but not modified
             if (debugRead) {
                 LOG.log(Level.FINE, "BaseDocument.read(): StreamDescriptionProperty: {0}", getProperty(StreamDescriptionProperty));
             }
@@ -1518,15 +1503,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             Boolean inPaste = BaseKit.IN_PASTE.get();
             if (inPaste == null || !inPaste) {
                 TrailingWhitespaceRemove.install(this).resetModRegions();
-            }
-            
-            // Compact storage - can also be called from Paste so only compact for first read
-            Content content = getContent();
-            if (content instanceof DocumentContent) {
-                DocumentContent docContent = (DocumentContent)content;
-                if (!docContent.isConservativeReallocation())
-                    docContent.compact();
-                docContent.setConservativeReallocation(true);
             }
             lastModifyUndoEdit = null;
         } finally {
@@ -1547,7 +1523,16 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if ((pos < 0) || ((pos + len) > getLength())) {
                 throw new BadLocationException("BaseDocument.write()", pos); // NOI18N
             }
-            Analyzer.write(this, writer, pos, len);
+            String lineSeparator = (String) getProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP);
+            if (lineSeparator == null) {
+                lineSeparator = (String) getProperty(BaseDocument.READ_LINE_SEPARATOR_PROP);
+                if (lineSeparator == null) {
+                    lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                }
+            }
+            CharSequence text = (CharSequence) getProperty(CharSequence.class);
+            ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(text, lineSeparator);
+            ReadWriteUtils.write(writer, buffer);
             writer.flush();
         } finally {
             readUnlock();
@@ -2080,13 +2065,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return modified;
     }
 
-    private LineRootElement getLineRootElement() {
-        return lineRootElement;
-    }
-
     public @Override Element getParagraphElement(int pos) {
-        return getLineRootElement().getElement(
-                   getLineRootElement().getElementIndex(pos));
+        return lineElementRoot.getElement(lineElementRoot.getElementIndex(pos));
     }
 
     /** Returns object which represent list of annotations which are
@@ -2451,43 +2431,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     } // End of LazyPropertyMap class
 
-    private static final class MarksStorageUndo extends AbstractUndoableEdit {
-
-        private DocumentEvent evt;
-
-        MarksStorageUndo(DocumentEvent evt) {
-            this.evt = evt;
-        }
-
-        private int getLength() {
-            int length = evt.getLength();
-            if (evt.getType() == DocumentEvent.EventType.REMOVE) {
-                length = -length;
-            }
-            return length;
-        }
-
-        void updateMarksStorage() {
-            BaseDocument doc = (BaseDocument)evt.getDocument();
-            // Update document's compatible marks storage - no undo
-            doc.marksStorage.update(evt.getOffset(), getLength(), null);
-        }
-
-        public @Override void undo() throws CannotUndoException {
-            BaseDocument doc = (BaseDocument)evt.getDocument();
-            // Update document's compatible marks storage - no undo
-            doc.marksStorage.update(evt.getOffset(), -getLength(), null);
-            super.undo();
-        }
-
-        public @Override void redo() throws CannotRedoException {
-            updateMarksStorage();
-            super.redo();
-        }
-
-
-    }
-
     private static final class NotifyModifyStatus {
         /**
          * Listener instance that was modified prior obtaining
@@ -2541,12 +2484,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         @Override
         public MarkVector BaseDocument_getMarksStorage(BaseDocument doc) {
-            return doc.marksStorage;
+            return null; // doc.marksStorage no longer supported; DrawEngine no longer used
         }
 
         @Override
         public Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark) {
-            return doc.marks.get(multiMark);
+            return null; // doc.marks.get(multiMark) no longer supported; DrawEngine no longer used
         }
 
         @Override

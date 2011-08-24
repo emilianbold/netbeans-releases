@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,42 +42,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib2.document;
 
-/**
- * A given object can publish this interface if it allows
- * an efficient access to its gap-based data storage
- * and wants to give its clients a hint about how to access
- * the data efficiently.
- * <P>For example {@link javax.swing.text.Document} instance
- * having gap-based document content can allow to get an instance
- * of GapStart as a property:<PRE>
- *      GapStart gs = (GapStart)doc.getProperty(GapStart.class);
- *      int gapStart = gs.getGapStart();
- * <PRE>
- * Once the start of the gap is known the client can optimize
- * access to the document's data. For example if the client
- * does not care about the chunks in which it gets the document's data
- * it can access the characters so that no character copying is done:<PRE>
- *      Segment text = new Segment();
- *      doc.getText(0, gapStart, text); // document's data below gap
- *      ...
- *      doc.getText(gapStart, doc.getLength(), text); // document's data over gap
- *      ...
- * <PRE>
- *
- * @author Miloslav Metelka
- * @version 1.00
- * @deprecated deprecated without replacement. Possibly use document's view as CharSequence
- *  by {@link org.netbeans.lib.editor.util.swing.DocumentUtilities#getText(javax.swing.text.Document)}.
- */
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
 
-public interface GapStart {
 
-    /**
-     * Get the begining of the gap in the object's gap-based data.
-     * @return &gt;=0 and &lt;= total size of the data of the object.
-     */
-    public int getGapStart();
+public class TestEditorDocument extends PlainDocument {
+    
+    LineElementRoot lineElementRoot;
+
+    public TestEditorDocument() {
+        super(new EditorDocumentContent()); // Content to be tested
+        ((EditorDocumentContent)getContent()).init(this);
+        lineElementRoot = new LineElementRoot(this);
+    }
+    
+    EditorDocumentContent getDocumentContent() {
+        return (EditorDocumentContent) getContent();
+    }
+
+    @Override
+    public synchronized Element getDefaultRootElement() {
+        return lineElementRoot;
+    }
+
+    @Override
+    protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
+//        super.insertUpdate(chng, attr);
+        lineElementRoot.insertUpdate(chng, attr);
+    }
+
+    @Override
+    protected void removeUpdate(DefaultDocumentEvent chng) {
+//        super.removeUpdate(chng);
+        lineElementRoot.removeUpdate(chng);
+    }
 
 }

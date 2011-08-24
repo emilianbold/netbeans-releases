@@ -42,42 +42,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib2.document;
+
+import javax.swing.text.Position;
 
 /**
- * A given object can publish this interface if it allows
- * an efficient access to its gap-based data storage
- * and wants to give its clients a hint about how to access
- * the data efficiently.
- * <P>For example {@link javax.swing.text.Document} instance
- * having gap-based document content can allow to get an instance
- * of GapStart as a property:<PRE>
- *      GapStart gs = (GapStart)doc.getProperty(GapStart.class);
- *      int gapStart = gs.getGapStart();
- * <PRE>
- * Once the start of the gap is known the client can optimize
- * access to the document's data. For example if the client
- * does not care about the chunks in which it gets the document's data
- * it can access the characters so that no character copying is done:<PRE>
- *      Segment text = new Segment();
- *      doc.getText(0, gapStart, text); // document's data below gap
- *      ...
- *      doc.getText(gapStart, doc.getLength(), text); // document's data over gap
- *      ...
- * <PRE>
+ * Position implementation in document.
+ * <br/>
+ * Each position has its corresponding mark which holds a weak reference to it
+ * and there's queue that notifies mark vector once the position can be GCed.
  *
  * @author Miloslav Metelka
- * @version 1.00
- * @deprecated deprecated without replacement. Possibly use document's view as CharSequence
- *  by {@link org.netbeans.lib.editor.util.swing.DocumentUtilities#getText(javax.swing.text.Document)}.
+ * @since 1.46
  */
 
-public interface GapStart {
+final class EditorPosition implements Position {
 
     /**
-     * Get the begining of the gap in the object's gap-based data.
-     * @return &gt;=0 and &lt;= total size of the data of the object.
+     * The mark that serves this position.
+     * It's non-final field since the instance must be given to Mark's constructor.
      */
-    public int getGapStart();
+    private Mark mark; // 8-super + 4 = 12 bytes
+    
+    public EditorPosition() {
+    }
+
+    /** Get offset in document for this position */
+    @Override
+    public int getOffset() {
+        return mark.getOffset();
+    }
+    
+    public boolean isBackwardBias() {
+        return mark.isBackwardBias();
+    }
+    
+    void setMark(Mark mark) {
+        this.mark = mark;
+    }
+    
+    @Override
+    public String toString() {
+        return mark.toString(); // NOI18N
+    }
+
+    public String toStringDetail() {
+        return mark.toStringDetail(); // NOI18N
+    }
 
 }
