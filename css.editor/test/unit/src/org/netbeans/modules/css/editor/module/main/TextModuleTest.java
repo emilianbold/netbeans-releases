@@ -41,36 +41,23 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import junit.framework.AssertionFailedError;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssModuleTestBase extends CslTestBase {
+public class TextModuleTest extends CssModuleTestBase {
 
-    public CssModuleTestBase(String name) {
-        super(name);
+    public TextModuleTest(String testName) {
+        super(testName);
     }
-
-    protected void assertPropertyValues(String propertyName, String... values) {
-        
-        PropertyModel model = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(String.format("Cannot find property %s", propertyName), model);
-        
-        for(String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if(!value.success()) {
-                PropertyModelTest.dumpResult(value);
-                throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
-            }
-            
-        }
+    
+    public void testProperties() {
+        assertPropertyValues("bikeshedding", "collapse");
+        assertPropertyValues("hanging-punctuation", "first force-end");
+        assertPropertyValues("hyphenate-limit-chars", "auto", "1", "1 2", "1 2 3");
+        assertPropertyValues("text-align", "start center", "center");
+        assertPropertyValues("text-outline", "red 20px 30px", "20px blue");
+        assertPropertyValues("text-trim", "normal keep-end no-justify");
         
     }
     

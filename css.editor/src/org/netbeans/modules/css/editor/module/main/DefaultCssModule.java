@@ -92,6 +92,7 @@ public class DefaultCssModule extends CssModule {
     private static final String RUBY_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/ruby"; //NOI18N
     private static final String MULTICOLUMN_LAYOUT_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/multi-column_layout"; //NOI18N
     private static final String VALUE_AND_UNITS_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/values_and_units"; //NOI18N
+    private static final String TEXT_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/text"; //NOI18N
     
     private static Collection<PropertyDescriptor> propertyDescriptors;
     
@@ -104,6 +105,7 @@ public class DefaultCssModule extends CssModule {
             propertyDescriptors.addAll(DefaultProperties.parseSource(RUBY_PROPERTIES_DEFINITION_PATH));
             propertyDescriptors.addAll(DefaultProperties.parseSource(MULTICOLUMN_LAYOUT_PROPERTIES_DEFINITION_PATH));
             propertyDescriptors.addAll(DefaultProperties.parseSource(VALUE_AND_UNITS_PROPERTIES_DEFINITION_PATH));
+            propertyDescriptors.addAll(DefaultProperties.parseSource(TEXT_PROPERTIES_DEFINITION_PATH));
         }
         return propertyDescriptors;
     }
