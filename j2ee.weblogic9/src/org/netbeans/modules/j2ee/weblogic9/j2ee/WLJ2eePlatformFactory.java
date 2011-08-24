@@ -198,7 +198,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
 
-            addPersistenceLibrary(list, mwHome, j2eePlatform);
+            addPersistenceLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
             list.add(fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
@@ -282,8 +282,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
     // method checks whether there is already persistence API present in the list
-    private static void addPersistenceLibrary(List<URL> list, @NullAllowed File middleware,
-            @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
+    private static void addPersistenceLibrary(List<URL> list, @NonNull File serverRoot,
+            @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
         boolean foundJpa2 = false;
         boolean foundJpa1 = false;
@@ -313,7 +313,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
                 FilenameFilter filter = null;
-                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(j2eePlatform.dm.getServerVersion())) {
+                Version serverVersion = null;
+                if (j2eePlatform != null) {
+                    serverVersion = j2eePlatform.dm.getServerVersion();
+                } else {
+                    serverVersion = WLPluginProperties.getServerVersion(serverRoot);
+                }
+                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
                     filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
