@@ -28,8 +28,9 @@
                     </path>
                 </pathconvert>
                 <echo message="Downloading clusters ${{download.clusters}}"/>
-                <get src="${{bootstrap.url}}" dest="${{harness.dir}}/tasks.jar" usetimestamp="true" verbose="true"/>
-                <taskdef name="autoupdate" classname="org.netbeans.nbbuild.AutoUpdate" classpath="${{harness.dir}}/tasks.jar"/>
+                <property name="tasks.jar" location="${{java.io.tmpdir}}/tasks.jar"/>
+                <get src="${{bootstrap.url}}" dest="${{tasks.jar}}" usetimestamp="true" verbose="true"/>
+                <taskdef name="autoupdate" classname="org.netbeans.nbbuild.AutoUpdate" classpath="${{tasks.jar}}"/>
                 <autoupdate installdir="${{nbplatform.active.dir}}" updatecenter="${{autoupdate.catalog.url}}">
                     <modules includes="${{module.includes}}.*" clusters="${{download.clusters}}"/>
                     <modules includes="org[.]netbeans[.]modules[.]apisupport[.]harness" clusters="harness"/>
