@@ -41,11 +41,24 @@
  */
 package org.netbeans.modules.web.jsf.icefaces;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.icefaces.ui.Icefaces2CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.openide.filesystems.FileObject;
@@ -57,6 +70,8 @@ import org.openide.util.NbPreferences;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class Icefaces2Implementation implements JsfComponentImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(Icefaces2Implementation.class.getName());
 
     /**
      * Name of the node in NetBeans preferences.
@@ -77,6 +92,10 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     private Icefaces2Customizer customizer;
 
+    // Constants for web.xml
+    private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD";
+    private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS";
+
     @Override
     public String getName() {
         return ICEFACES_NAME;
@@ -89,7 +108,71 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Add library to webmodule classpath
+        try {
+            List<Library> libraries = new ArrayList<Library>(1);
+            Library ifLibrary = null;
+
+            // get the ICEfaces library from customizer
+            if (jsfComponentCustomizer != null) {
+                Icefaces2CustomizerPanelVisual icefacesPanel =
+                        ((Icefaces2CustomizerPanelVisual) jsfComponentCustomizer.getComponent());
+                String chosenLibrary = icefacesPanel.getIcefacesLibrary();
+                ifLibrary = LibraryManager.getDefault().getLibrary(chosenLibrary);
+            }
+
+            // search for library stored in ICEfaces2 preferences
+            if (ifLibrary == null) {
+                Preferences preferences = getIcefacesPreferences();
+                ifLibrary = LibraryManager.getDefault().getLibrary(
+                        preferences.get(Icefaces2Implementation.PREF_LIBRARY_NAME, "")); //NOI18N
+            }
+
+            // otherwise search for any registered ICEfaces library in IDE
+            if (ifLibrary == null) {
+                ifLibrary = Icefaces2Customizer.getIcefacesLibraries().get(0);
+            }
+
+            if (ifLibrary != null) {
+                libraries.add(ifLibrary);
+                FileObject[] javaSources = webModule.getJavaSources();
+                ProjectClassPathModifier.addLibraries(
+                        libraries.toArray(new Library[1]),
+                        javaSources[0],
+                        ClassPath.COMPILE);
+            } else {
+                LOGGER.log(Level.SEVERE, "No ICEfaces library was found.");
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        }
+
+        // Update web.xml DD if required
+        try {
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(webModule.getDeploymentDescriptor());
+
+            // add context-param - javax.faces.STATE_SAVING_METHOD
+            InitParam savingMethodParam = (InitParam) ddRoot.createBean("InitParam");    //NOI18N
+            savingMethodParam.setParamName(FACES_SAVING_METHOD);
+            savingMethodParam.setParamValue("server"); //NOI18N
+            ddRoot.addContextParam(savingMethodParam);
+
+            // add context-param - javax.faces.FACELETS_SKIP_COMMENTS
+            InitParam skipCommentsParam = (InitParam) ddRoot.createBean("InitParam");    //NOI18N
+            skipCommentsParam.setParamName(FACES_SKIP_COMMENTS);
+            skipCommentsParam.setParamValue("true"); //NOI18N
+            ddRoot.addContextParam(skipCommentsParam);
+
+            ddRoot.write(webModule.getDeploymentDescriptor());
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.WARNING, "Exception during updating web.xml DD", ex); //NOI18N
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during updating web.xml DD", ex); //NOI18N
+        }
+
+        return Collections.<FileObject>emptySet();
     }
 
     @Override
