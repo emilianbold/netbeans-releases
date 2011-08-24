@@ -179,8 +179,8 @@ public final class ClusterUtils {
         }
 
         for (String path : wp) {
-            boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
+            boolean isPlaf = cd.getParentFile().equals(nbPlatformRoot);
             Project prj = null;
             Project _prj = FileOwnerQuery.getOwner(cd.toURI());
             if (_prj != null) {
