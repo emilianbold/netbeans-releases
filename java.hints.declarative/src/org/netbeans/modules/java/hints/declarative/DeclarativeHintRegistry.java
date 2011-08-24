@@ -231,7 +231,12 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         HintMetadata meta;
         String primarySuppressWarningsKey;
         String id = parsed.options.get("hint");
+        String fallbackDisplayName = file != null ? file.getName() : null;
 
+        if (id == null || file != null) {
+            id = file.getNameExt();
+        }
+        
         if (id != null) {
             String cat = parsed.options.get("hint-category");
 
@@ -245,7 +250,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
 
             String[] w = suppressWarnings(parsed.options);
 
-            meta = HintMetadata.Builder.create(id).setBundle(bundle).setCategory(cat).addSuppressWarnings(w).build();
+            meta = HintMetadata.Builder.create(id).setBundle(bundle, fallbackDisplayName, fallbackDisplayName).setCategory(cat).addSuppressWarnings(w).build();
             primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
         } else {
             meta = null;
@@ -288,7 +293,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
 
             HintMetadata currentMeta = meta;
 
-            if (currentMeta == null) {
+            if (currentMeta == null || hint.options.get("hint") != null) {
                 String[] w = suppressWarnings(hint.options);
                 String currentId = hint.options.get("hint");
                 String cat = parsed.options.get("hint-category");
@@ -329,6 +334,10 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
             hints.add(f.produce());
 
             count++;
+        }
+
+        if (meta != null && result.isEmpty()) {
+            result.put(meta, Collections.<HintDescription>emptyList());
         }
 
         return new LinkedHashMap<HintMetadata, Collection<? extends HintDescription>>(result);

@@ -42,12 +42,18 @@
 
 package org.netbeans.modules.java.hints.declarative;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
+import org.netbeans.api.java.source.TestUtilities;
 import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -79,6 +85,25 @@ public class DeclarativeHintRegistryTest extends NbTestCase {
         HintDescription hd = allHints.iterator().next().iterator().next();
 
         assertEquals(Arrays.asList("isDirectory"), hd.getSuppressWarnings());
+    }
+
+    public void testEmptyFileShouldHaveHintMetadata() throws Exception {
+        clearWorkDir();
+
+        File wd = getWorkDir();
+        File hint = new File(wd, "test.hint");
+
+        TestUtilities.copyStringToFile(hint, "");
+
+        Map<HintMetadata, Collection<? extends HintDescription>> allHints = DeclarativeHintRegistry.parseHints(FileUtil.toFileObject(hint), "");
+
+        assertEquals(1, allHints.size());
+        assertTrue(allHints.values().iterator().next().isEmpty());
+
+        HintMetadata hm = allHints.keySet().iterator().next();
+
+        assertEquals("test.hint", hm.id);
+        assertEquals("test", hm.displayName);
     }
 
 }
