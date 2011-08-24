@@ -86,26 +86,29 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
-
     private static final String DEFAULT_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/resources/css_property_table"; //NOI18N
-    private static final String MODULE_PATH_BASE="org/netbeans/modules/css/editor/module/main/"; //NOI18N    
-
+    private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/"; //NOI18N    
     private static final String[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new String[]{
-        "marquee", "ruby", "multi-column_layout", "values_and_units", "text", "writing_modes"
+        "marquee", 
+        "ruby", 
+        "multi-column_layout", 
+        "values_and_units", 
+        "text", 
+        "writing_modes",
+        "generated_content_for_paged_media"
     };
-    
     private static Collection<PropertyDescriptor> propertyDescriptors;
-    
+
     @Override
     public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
-        if(propertyDescriptors == null) {
+        if (propertyDescriptors == null) {
             propertyDescriptors = new ArrayList<PropertyDescriptor>();
             propertyDescriptors.addAll(DefaultProperties.parseSource(DEFAULT_PROPERTIES_DEFINITION_PATH));
-            for(String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
+            for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + fileName;
                 propertyDescriptors.addAll(DefaultProperties.parseSource(path));
             }
-            
+
         }
         return propertyDescriptors;
     }
