@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -362,18 +361,12 @@ public class CheckoutUI extends javax.swing.JPanel {
         brc.setGoals(goals);
         brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", project.getArtifactId() + " : " + project.getVersion()));
         brc.setExecutionName(brc.getTaskDisplayName());
-        Properties properties = new Properties();
-
-        properties.put("checkoutDirectory", getCheckoutDirectory().getAbsolutePath());//NOI18N
-
-        properties.put("connectionUrl", txtUrl.getText());//NOI18N
-
+        brc.setProperty("checkoutDirectory", getCheckoutDirectory().getAbsolutePath());//NOI18N
+        brc.setProperty("connectionUrl", txtUrl.getText());//NOI18N
         if (txtUser.getText().trim().length() != 0) {
-            properties.put("username", txtUser.getText());//NOI18N
-
-            properties.put("password ", new String(txtPassword.getPassword()));//NOI18N
+            brc.setProperty("username", txtUser.getText());//NOI18N
+            brc.setProperty("password ", new String(txtPassword.getPassword()));//NOI18N
         }
-        brc.setProperties(properties);
         brc.setShowDebug(chkPrintDebugInfo.isSelected());
         brc.setShowError(chkPrintDebugInfo.isSelected());
         brc.setOffline(false);

@@ -79,4 +79,7 @@ public class ServiceLoaderLineTest extends NbTestCase {
         return w.toString().replace('\n', ' ').replace("\r", "");
     }
 
+    public static void clearLookupsForPath() {
+        NamedServicesProvider.clearCache();
+    }
 }

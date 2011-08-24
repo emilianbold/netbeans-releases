@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -109,8 +110,13 @@ public class SingleModulePropertiesTest extends TestBase {
         clearWorkDir();
         super.setUp();
         RestrictThreadCreation.permitStandard();
-        RestrictThreadCreation.permit("org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl.getIgnoredFiles");
+        RestrictThreadCreation.permit("org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl.getIgnoredFiles",
+                "org.openide.util.lookup.MetaInfServicesLookup.beforeLookup");
         RestrictThreadCreation.forbidNewThreads(true);
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
     }
     
     /** Tests few basic properties to be sure that loading works. */

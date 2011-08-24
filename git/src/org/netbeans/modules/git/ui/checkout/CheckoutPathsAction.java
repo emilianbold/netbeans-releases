@@ -57,6 +57,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -94,8 +95,22 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                         }
                     });
                     client.addNotificationListener(new DefaultFileListener(roots));
-                    LOG.log(Level.FINE, "Checking out paths, revision: {0}", revision); //NOI18N
-                    client.checkout(roots, revision, this);
+                    File[][] split = Utils.splitFlatOthers(roots);
+                    for (int c = 0; c < split.length; c++) {
+                        File[] splitRoots = split[c];
+                        if (splitRoots.length == 0) {
+                            continue;
+                        }
+                        if (c == 1) {
+                            // recursive
+                            LOG.log(Level.FINE, "Checking out paths recursively, revision: {0}", revision); //NOI18N
+                            client.checkout(splitRoots, revision, true, this);
+                        } else {
+                            // not recursive, list only direct descendants
+                            LOG.log(Level.FINE, "Checking out paths non-recursively, revision: {0}", revision); //NOI18N
+                            client.checkout(splitRoots, revision, false, this);
+                        }
+                    }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {

@@ -87,9 +87,25 @@ public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
+    private static final String DEFAULT_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/resources/css_property_table"; //NOI18N
+    private static final String MARQUEE_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/marquee"; //NOI18N
+    private static final String RUBY_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/ruby"; //NOI18N
+    private static final String MULTICOLUMN_LAYOUT_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/multi-column_layout"; //NOI18N
+    private static final String VALUE_AND_UNITS_PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/values_and_units"; //NOI18N
+    
+    private static Collection<PropertyDescriptor> propertyDescriptors;
+    
     @Override
-    public Collection<PropertyDescriptor> getPropertyDescriptors() {
-        return DefaultProperties.properties();
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if(propertyDescriptors == null) {
+            propertyDescriptors = new ArrayList<PropertyDescriptor>();
+            propertyDescriptors.addAll(DefaultProperties.parseSource(DEFAULT_PROPERTIES_DEFINITION_PATH));
+            propertyDescriptors.addAll(DefaultProperties.parseSource(MARQUEE_PROPERTIES_DEFINITION_PATH));
+            propertyDescriptors.addAll(DefaultProperties.parseSource(RUBY_PROPERTIES_DEFINITION_PATH));
+            propertyDescriptors.addAll(DefaultProperties.parseSource(MULTICOLUMN_LAYOUT_PROPERTIES_DEFINITION_PATH));
+            propertyDescriptors.addAll(DefaultProperties.parseSource(VALUE_AND_UNITS_PROPERTIES_DEFINITION_PATH));
+        }
+        return propertyDescriptors;
     }
 
     @Override

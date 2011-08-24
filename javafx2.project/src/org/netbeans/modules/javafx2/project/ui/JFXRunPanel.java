@@ -44,7 +44,11 @@
 package org.netbeans.modules.javafx2.project.ui;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
 import java.util.Comparator;
@@ -53,19 +57,26 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,11 +84,12 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author psomol
+ * @author Petr Somol
  */
 public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private Project project;
+    private PropertyEvaluator evaluator;
     private JTextField[] data;
     private JLabel[] dataLabels;
     private String[] keys;
@@ -93,6 +105,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         initComponents();
 
         project = jfxProps.getProject();
+        evaluator = jfxProps.getEvaluator();
         configs = jfxProps.getRunConfigs();
         
         data = new JTextField[] {
@@ -176,7 +189,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             });
         }
         
-        //jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+        buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
     }
 
     /** This method is called from within the constructor to
@@ -332,7 +345,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(textFieldAppClass, gridBagConstraints);
 
         buttonAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
-        buttonAppClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
@@ -732,8 +744,8 @@ private void comboConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
 private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonNewActionPerformed
         NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.prompt"),
-                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.title"));
+                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.prompt"),  // NOI18N
+                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.title"));  // NOI18N
         if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
             return;
         }
@@ -742,14 +754,14 @@ private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (config.trim().length() == 0) {
             //#143764
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.empty", config),
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.empty", config),  // NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
             
         }
         if (configs.get(config) != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config),
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config),  // NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
@@ -875,7 +887,7 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             model.addElement(c);
         }
         comboConfig.setModel(model);
-        comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");
+        comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");  // NOI18N
         Map<String,String> m = configs.get(activeConfig);
         Map<String,String> def = configs.get(null);
         if (m != null) {
@@ -962,6 +974,66 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         return new HelpCtx( JFXRunPanel.class );
     }
 
+     // Innerclasses -------------------------------------------------------------
+     
+     private class MainClassListener implements ActionListener /*, DocumentListener */ {
+         
+         private final JButton okButton;
+         private final PropertyEvaluator evaluator;
+         private final Project project;
+         
+         MainClassListener( final @NonNull Project p, final @NonNull PropertyEvaluator pe ) {            
+             this.evaluator = pe;
+             this.project = p;
+             this.okButton  = new JButton (NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_OK")); // NOI18N
+             this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
+         }
+         
+         // Implementation of ActionListener ------------------------------------
+         
+         /** Handles button events
+          */        
+         @Override
+         public void actionPerformed( ActionEvent e ) {
+             
+             // only chooseMainClassButton can be performed
+             
+             //final MainClassChooser panel = new MainClassChooser (sourceRoots.getRoots(), null, mainClassTextField.getText());
+             final JFXApplicationClassChooser panel = new JFXApplicationClassChooser(project, evaluator);
+             Object[] options = new Object[] {
+                 okButton,
+                 DialogDescriptor.CANCEL_OPTION
+             };
+             panel.addChangeListener (new ChangeListener () {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                        // click button and finish the dialog with selected class
+                        okButton.doClick ();
+                    } else {
+                        okButton.setEnabled (panel.getSelectedClass () != null);
+                    }
+                }
+             });
+             okButton.setEnabled (false);
+             DialogDescriptor desc = new DialogDescriptor (
+                 panel,
+                 NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_Title" ),  // NOI18N
+                 true, 
+                 options, 
+                 options[0], 
+                 DialogDescriptor.BOTTOM_ALIGN, 
+                 null, 
+                 null);
+             //desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+             Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+             dlg.setVisible (true);
+             if (desc.getValue() == options[0]) {
+                textFieldAppClass.setText (panel.getSelectedClass ());
+             } 
+             dlg.dispose();
+         }
+    }
     private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
         
         public ConfigListCellRenderer () {
@@ -1030,7 +1102,7 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
         @Override
         public String getDescription() {
-            return NbBundle.getMessage(JFXRunPanel.class, "MSG_HtmlFileFilter_Description");
+            return NbBundle.getMessage(JFXRunPanel.class, "MSG_HtmlFileFilter_Description");  // NOI18N
         }
 
     }

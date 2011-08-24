@@ -186,6 +186,7 @@ public class ListComponent extends JPanel {
         }
         
         mainLabel.setText(handle.getDisplayName());
+        mainLabel.setToolTipText(mainLabel.getText());
         NbProgressBar.setupBar(handle, bar);
         addFocusListener(new FocusListener() {
             public void focusGained(java.awt.event.FocusEvent e) {

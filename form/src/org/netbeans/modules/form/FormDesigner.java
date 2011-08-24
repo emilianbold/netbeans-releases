@@ -54,9 +54,6 @@ import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jdesktop.layout.Baseline;
-import org.jdesktop.layout.LayoutStyle;
-
 import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
@@ -1971,7 +1968,7 @@ public class FormDesigner {
 
             if (baseLinePos == -1) {
                 if (comp != null) {
-                     baseLinePos = Baseline.getBaseline(comp, width, height);
+                     baseLinePos = comp.getBaseline(width, height);
                 } else {
                     baseLinePos = 0;
                 }
@@ -2011,8 +2008,8 @@ public class FormDesigner {
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert comp2Alignment == LEADING || comp2Alignment == TRAILING;
 
-            int type = paddingType == PaddingType.INDENT ? LayoutStyle.INDENT :
-                (paddingType == PaddingType.RELATED ? LayoutStyle.RELATED : LayoutStyle.UNRELATED);
+            LayoutStyle.ComponentPlacement type = paddingType == PaddingType.INDENT ? LayoutStyle.ComponentPlacement.INDENT :
+                (paddingType == PaddingType.RELATED ? LayoutStyle.ComponentPlacement.RELATED : LayoutStyle.ComponentPlacement.UNRELATED);
             int position = 0;
             if (dimension == HORIZONTAL) {
                 if (paddingType == PaddingType.INDENT) {

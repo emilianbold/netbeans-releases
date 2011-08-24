@@ -85,8 +85,7 @@ import org.openide.util.Utilities;
  * maven dependencies to the way classpath items are added through this api.
  * @author mkleint
  */
-@SuppressWarnings("deprecation")
-public class CPExtender extends ProjectClassPathModifierImplementation implements org.netbeans.spi.java.project.classpath.ProjectClassPathExtender {
+public class CPExtender extends ProjectClassPathModifierImplementation {
 
     private NbMavenProjectImpl project;
     private static final String POM_XML = "pom.xml"; //NOI18N
@@ -105,52 +104,6 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         this.project = project;
     }
     
-    public boolean addLibrary(final Library library) throws IOException {
-        final Boolean[] added = new Boolean[1];
-        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
-                try {
-                    added[0] = addRemoveLibrary(library, model, null, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                    added[0] = Boolean.FALSE;
-                }
-            }
-        };
-        FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
-        org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
-        if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-        }
-
-        return added[0];
-    }
-    
-    public boolean addArchiveFile(FileObject arch) throws IOException {
-        final File jar = FileUtil.archiveOrDirForURL(arch.getURL());
-        if (jar == null || jar.isDirectory()) {
-            throw new IOException("Cannot add folders to Maven projects as dependencies: " + arch); //NOI18N
-        }
-        final AtomicBoolean added = new AtomicBoolean();
-        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
-                try {
-                    added.compareAndSet(false, addRemoveJAR(jar, model, null, true));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        };
-        FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
-        org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        if (added.get()) {
-            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-        }
-        return added.get();
-    }
-
     private boolean addRemoveLibrary(Library library, POMModel model, String scope, boolean add) throws IOException {
         Boolean modified = checkLibraryForPoms(library, model, scope, add);
         if (modified == null) {
@@ -260,10 +213,6 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         return modified;
     }
         
-    public boolean addAntArtifact(AntArtifact arg0, URI arg1) throws IOException {
-        throw new IOException("Cannot add Ant based projects as subprojecs to Maven projects."); //NOI18N
-    }
-    
     public SourceGroup[] getExtensibleSourceGroups() {
         Sources s = this.project.getLookup().lookup(Sources.class);
         assert s != null;

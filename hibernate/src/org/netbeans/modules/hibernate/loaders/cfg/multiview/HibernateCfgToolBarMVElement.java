@@ -45,6 +45,7 @@ import org.netbeans.modules.hibernate.loaders.cfg.*;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.hibernate.cfg.model.Event;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
@@ -61,13 +62,23 @@ import org.netbeans.modules.xml.multiview.ui.EditDialog;
 import org.netbeans.modules.xml.multiview.ui.SectionContainer;
 import org.netbeans.modules.xml.multiview.ui.SectionContainerNode;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * ToolBarMultiView for Hibernate Configuration file
  * 
  * @author Dongmei Cao
  */
+@MultiViewElement.Registration(
+    mimeType=HibernateCfgDataLoader.REQUIRED_MIME,
+    iconBase=HibernateCfgDataObject.ICON,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=HibernateCfgDataObject.DESIGN_VIEW_ID,
+    displayName="#LBL_Design",
+    position=2560
+)
 public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
 
     public static final String PROPERTIES = "Properties";
@@ -93,6 +104,10 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
     private Project project;
     private Action addEvent,  removeEventAction;
 
+    public HibernateCfgToolBarMVElement(Lookup lookup){
+        this(lookup.lookup(HibernateCfgDataObject.class));
+    }
+    
     public HibernateCfgToolBarMVElement(HibernateCfgDataObject dObj) {
         super(dObj);
         this.configDataObject = dObj;

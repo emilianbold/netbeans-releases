@@ -60,7 +60,7 @@ public class ColorsModule extends CssModule {
 
     private final PropertyDescriptor colorPropertyDescriptor = new PropertyDescriptor(
             "color", 
-            "'-colors-list' | '-system-color' |  '-rgb' | '-rgba' | '-hsl' | '-hsla' | !hash_color_code | transparent | currentColor | inherit", 
+            "<colors-list> | <system-color> |  <rgb> | <rgba> | <hsl> | <hsla> | !hash_color_code | transparent | currentColor | inherit", 
             null,
             null,
             true,
@@ -69,7 +69,7 @@ public class ColorsModule extends CssModule {
     
     private final PropertyDescriptor rgbPropertyDescriptor = new PropertyDescriptor(
             "-rgb", 
-            "rgb > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > )", 
+            "rgb  (  [!number | !percentage]  ,  [ !number | !percentage ]  , [ !number | !percentage]  )", 
             null,
             null,
             false,
@@ -78,7 +78,7 @@ public class ColorsModule extends CssModule {
     
     private final PropertyDescriptor rgbaPropertyDescriptor = new PropertyDescriptor(
             "-rgba", 
-            "rgba > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > , > !number )", 
+            "rgba  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  ,  !number )", 
             null,
             null,
             false,
@@ -87,7 +87,7 @@ public class ColorsModule extends CssModule {
     
     private final PropertyDescriptor hslPropertyDescriptor = new PropertyDescriptor(
             "-hsl", 
-            "hsl > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > )", 
+            "hsl  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  )", 
             null,
             null,
             false,
@@ -96,7 +96,7 @@ public class ColorsModule extends CssModule {
     
     private final PropertyDescriptor hslaPropertyDescriptor = new PropertyDescriptor(
             "-hsla", 
-            "hsla > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > , > !number )", 
+            "hsla  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  ,  !number )", 
             null,
             null,
             false,

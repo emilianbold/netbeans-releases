@@ -249,7 +249,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     }
     
     public @Override void propertyChange(PropertyChangeEvent evt) {
-        if ("netbeans.dest.dir".equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
+        if (ModuleList.NETBEANS_DEST_DIR.equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
             // Module list may have changed.
             reset();
         } else {
@@ -312,7 +312,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
             File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
-            stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
+            stock.put(ModuleList.NETBEANS_DEST_DIR, destDir.getAbsolutePath());
             stock.put("nb.build.dir", "${nb_all}/nbbuild/build"); // #199286
             stock.put("nbantext.jar", "${nb.build.dir}/nbantext.jar");
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
@@ -388,7 +388,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     if (platformS != null) {
                         Map<String,String> m = new HashMap<String,String>();
                         // XXX should really be nbplatform.active.dir, but would require changes in a bunch of places
-                        m.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}");
+                        m.put(ModuleList.NETBEANS_DEST_DIR, "${nbplatform." + platformS + ".netbeans.dest.dir}");
                         m.put("harness.dir", "${nbplatform." + platformS + ".harness.dir}");
                         return m;
                     } else {

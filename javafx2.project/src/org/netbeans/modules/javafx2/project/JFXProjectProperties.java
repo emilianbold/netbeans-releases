@@ -56,6 +56,7 @@ import javax.swing.JToggleButton;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -94,20 +95,20 @@ public final class JFXProjectProperties {
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
     public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
-    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
     public static final String PRELOADER = "javafx.preloader.enabled"; // NOI18N
     public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
     public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
-    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
+    public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
     public static final String RUN_APP_HEIGHT = "javafx.run.height"; // NOI18N
     public static final String RUN_IN_HTMLPAGE = "javafx.run.inhtmlpage"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
-    public static final String DEFAULT_APP_WIDTH = "800";
-    public static final String DEFAULT_APP_HEIGHT = "600";
+    public static final String DEFAULT_APP_WIDTH = "800"; // NOI18N
+    public static final String DEFAULT_APP_HEIGHT = "600"; // NOI18N
 
     // Deployment properties
     public static final String BACKGROUND_UPDATE_CHECK = "javafx.deploy.backgroundupdate"; // NOI18N
@@ -115,7 +116,7 @@ public final class JFXProjectProperties {
     public static final String INSTALL_PERMANENTLY = "javafx.deploy.installpermanently"; // NOI18N
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
-    public static final String ICON_FILE = "javafx.deploy.icon";
+    public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -211,6 +212,9 @@ public final class JFXProjectProperties {
     public Project getProject() {
         return project;
     }
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
+    }
     
     /** Keeps singleton instance for any fx project for which property customizer is opened at once */
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
@@ -236,6 +240,12 @@ public final class JFXProjectProperties {
             return prop;
         }
         return null;
+    }
+
+    public static void cleanup(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        propInstance.remove(projDir);
     }
     
     /** Creates a new instance of JFXProjectProperties */
@@ -267,7 +277,7 @@ public final class JFXProjectProperties {
 
             // CustomizerRun
             RUN_CONFIGS = readRunConfigs();
-            activeConfig = evaluator.getProperty("config");
+            activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
         }
     }
     
@@ -318,10 +328,10 @@ public final class JFXProjectProperties {
             def.put(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 EditableProperties cep = null;
@@ -333,10 +343,10 @@ public final class JFXProjectProperties {
                 m.put(kid.getName(), new TreeMap<String,String>(cep) );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 Map<String,String> c = m.get(kid.getName());
@@ -500,7 +510,7 @@ public final class JFXProjectProperties {
         final FileObject propsFO;
         if(f == null) {
             propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
-            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802
+            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
         } else {
             propsFO = f;
         }
