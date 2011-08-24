@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="jfx-impl" default="jfx-deployment" basedir="..">
    
-   <target name="check-jfx-deployment">
+    <target name="-init-javafx">
+        <taskdef name="fxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
+        <taskdef name="fxjar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
+    </target>
+
+   <target name="check-jfx-deployment" depends="-init-javafx">
         <condition property="jfx-deployment-available">
-            <typefound name="fxjar"/>
+            <and>
+                <typefound name="fxdeploy"/>
+                <typefound name="fxjar"/>
+            </and>
         </condition>
    </target>
    
    <target name="jfx-deployment" depends="check-jfx-deployment" if="jfx-deployment-available">
-        <!-- settings default width and height values -->
-        <property name="jfx.applet.width" value="800"/>
-        <property name="jfx.applet.height" value="600"/>
-        
         <basename property="jfx.deployment.jar" file="${dist.jar}"/>
         <property name="jfx.deployment.dir" location="${dist.dir}"/>      
         <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
@@ -29,7 +33,7 @@
             </manifest>
         </fxjar>
 
-        <fxdeploy width="${jfx.applet.width}" height="${jfx.applet.height}"
+        <fxdeploy width="${javafx.run.width}" height="${javafx.run.height}"
                   outdir="${jfx.deployment.dir}" embedJNLP="true"
                   outfile="${application.title}">
             <info title="${application.title}"

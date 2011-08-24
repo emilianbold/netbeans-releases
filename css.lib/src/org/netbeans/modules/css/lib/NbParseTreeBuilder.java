@@ -51,6 +51,7 @@ import org.antlr.runtime.debug.BlankDebugEventListener;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.antlr.runtime.NoViableAltException;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -236,8 +237,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         //invalid token found int the stream
         unexpectedToken = (CommonToken) e.token;
         int unexpectedTokenCode = e.getUnexpectedType();
-        CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
+        CssTokenId unexpectedTokenId = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
 
+        assert unexpectedTokenId != null : "No CssTokenId for " + unexpectedToken;
 
         //let the error range be the area between last consumed token end and the error token end
         from = lastConsumedToken != null
@@ -246,7 +248,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
         to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; //beginning of the unexpected token
 
-        if (uneexpectedToken == CssTokenId.ERROR) {
+        if (unexpectedTokenId == CssTokenId.ERROR) {
             //for error tokens always include them to the error node range,
             //they won't be matched by any other rule. Otherwise 
             //limit the error node to the beginning of the unexpected token
@@ -254,11 +256,11 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             to++;
         }
 
-        if (uneexpectedToken == CssTokenId.EOF) {
+        if (unexpectedTokenId == CssTokenId.EOF) {
             message = String.format("Premature end of file");
         } else {
             message = String.format("Unexpected token '%s' found at %s:%s (offset range %s-%s).",
-                    uneexpectedToken.name(),
+                    unexpectedTokenId.name(),
                     e.line,
                     e.charPositionInLine,
                     from,
@@ -276,7 +278,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
         addNodeChild(ruleNode, errorNode);
 
-        if (uneexpectedToken == CssTokenId.ERROR) {
+        if (unexpectedTokenId == CssTokenId.ERROR) {
             //if the unexpected token is error token, add the token as a child of the error node
             TokenNode tokenNode = new TokenNode(unexpectedToken);
             addNodeChild(errorNode, tokenNode);

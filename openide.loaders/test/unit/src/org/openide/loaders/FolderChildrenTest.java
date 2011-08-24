@@ -63,6 +63,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.loaders.DataNodeUtils;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.*;
 
@@ -700,7 +701,7 @@ public class FolderChildrenTest extends NbTestCase {
         FileObject bb = FileUtil.getConfigFile("/FK");
 
         DataFolder folder = DataFolder.findFolder (bb);
-        Task t = DataNode.RP.post(new Runnable() {
+        Task t = DataNodeUtils.reqProcessor().post(new Runnable() {
 
                          @Override
                          public void run() {

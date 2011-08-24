@@ -62,6 +62,7 @@ CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
+CLASS      MagicMethods                    [PUBLIC]   issue196714.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
@@ -76,6 +77,7 @@ CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
+CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   User

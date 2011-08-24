@@ -60,10 +60,12 @@ import org.openide.util.lookup.Lookups;
 public final class ServerRegistry {
 
     public static final String SERVERS_PATH = "Servers"; // NOI18N
+    public static final String CLOUD_PATH = "Cloud"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(ServerRegistry.class.getName());
 
     private static ServerRegistry registry;
+    private static ServerRegistry cloudRegistry;
 
     private static ProviderLookupListener l;
 
@@ -73,18 +75,41 @@ public final class ServerRegistry {
 
     private final Lookup lookup;
 
-    private ServerRegistry() {
-        lookup = Lookups.forPath(SERVERS_PATH);
+    private String path;
+    
+    private boolean cloud;
+
+    private ServerRegistry(String path, boolean cloud) {
+        this.path = path;
+        this.cloud = cloud;
+        lookup = Lookups.forPath(path);
         result = lookup.lookupResult(ServerInstanceProvider.class);
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public boolean isCloud() {
+        return cloud;
+    }
+    
     public static synchronized ServerRegistry getInstance() {
         if (registry == null) {
-            registry = new ServerRegistry();
+            registry = new ServerRegistry(SERVERS_PATH, false);
             registry.result.allItems();
             registry.result.addLookupListener(l = new ProviderLookupListener(registry.changeSupport));
         }
         return registry;
+    }
+
+    public static synchronized ServerRegistry getCloudInstance() {
+        if (cloudRegistry == null) {
+            cloudRegistry = new ServerRegistry(CLOUD_PATH, true);
+            cloudRegistry.result.allItems();
+            cloudRegistry.result.addLookupListener(l = new ProviderLookupListener(cloudRegistry.changeSupport));
+        }
+        return cloudRegistry;
     }
 
     public Collection<? extends ServerInstanceProvider> getProviders() {

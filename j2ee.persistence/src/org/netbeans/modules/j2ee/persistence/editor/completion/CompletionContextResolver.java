@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
-import com.sun.source.tree.ExpressionTree;
 import java.util.List;
 
 /**

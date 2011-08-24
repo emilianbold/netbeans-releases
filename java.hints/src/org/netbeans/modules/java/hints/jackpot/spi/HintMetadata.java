@@ -138,8 +138,8 @@ public class HintMetadata {
         }
 
         public Builder setBundle(ResourceBundle bundle) {
-            this.displayName = lookup(bundle, "DN_" + id, "No Display Name");
-            this.description = lookup(bundle, "DESC_" + id, "No Description");
+            this.displayName = lookup(bundle, "DN_" + id.replace('$', '.'), "No Display Name");
+            this.description = lookup(bundle, "DESC_" + id.replace('$', '.'), "No Description");
             return this;
         }
 

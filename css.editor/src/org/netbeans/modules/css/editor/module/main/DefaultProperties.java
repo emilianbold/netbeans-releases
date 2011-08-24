@@ -47,32 +47,17 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.module.spi.RenderingEngine;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @todo fix minimum multiplicity, now we always anticipate 1-sg.
- * 
  * @author mfukala@netbeans.org
  */
 public class DefaultProperties {
-    
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/resources/css_property_table"; //NOI18N
-    
-    private static Collection<PropertyDescriptor> properties;
 
-    public static synchronized Collection<PropertyDescriptor> properties() {
-        if(properties == null) {
-            properties = new ArrayList<PropertyDescriptor>();
-            parseSource(PROPERTIES_DEFINITION_PATH);
-        }
-        return properties;
-    }
-
-    private static void parseSource(String sourcePath) {
+    static Collection<PropertyDescriptor> parseSource(String sourcePath) {
+        Collection<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
         Enumeration<String> keys = bundle.getKeys();
@@ -82,23 +67,25 @@ public class DefaultProperties {
 
             //parse the value - delimiter is semicolon
             StringTokenizer st = new StringTokenizer(value, ";"); //NOI18N
+            if(!st.hasMoreTokens()) {
+                throw new IllegalArgumentException("Error parsing property " + name);
+            }
             String values = st.nextToken();
 
-            String initialValue = st.nextToken().trim();
-            String appliedTo = st.nextToken().trim();
-            boolean inherited = Boolean.parseBoolean(st.nextToken());
-            String percentages = st.nextToken().trim();
+            //following tokens are not mandatory
+            String initialValue = getNextToken(st);
+            String appliedTo = getNextToken(st);
+            boolean inherited = Boolean.parseBoolean(getNextToken(st));
+            String percentages = getNextToken(st);
 
             //parse media groups list
-            String mediaGroups = st.nextToken();
+            String mediaGroups = getNextToken(st);
             ArrayList<String> mediaGroupsList = new ArrayList<String>();
-            StringTokenizer st3 = new StringTokenizer(mediaGroups, ","); //NOI18N
-            while (st3.hasMoreTokens()) {
-                mediaGroupsList.add(st3.nextToken());
-            }
-
-            if (st.hasMoreTokens()) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Error in source for css properties model for property: {0}", name); //NOI18N
+            if (mediaGroups != null) {
+                StringTokenizer st3 = new StringTokenizer(mediaGroups, ","); //NOI18N
+                while (st3.hasMoreTokens()) {
+                    mediaGroupsList.add(st3.nextToken());
+                }
             }
 
             //parse bundle key - there might be more properties separated by semicolons
@@ -107,7 +94,7 @@ public class DefaultProperties {
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
 
-                PropertyDescriptor prop = new PropertyDescriptor(parsed_name, values, initialValue, 
+                PropertyDescriptor prop = new PropertyDescriptor(parsed_name, values, initialValue,
                         appliedTo, inherited, mediaGroupsList, RenderingEngine.ALL);
 
                 properties.add(prop);
@@ -115,6 +102,10 @@ public class DefaultProperties {
 
         }
 
+        return properties;
     }
 
+    private static String getNextToken(StringTokenizer st) {
+        return st.hasMoreTokens() ? st.nextToken().trim() : null;
+    }
 }

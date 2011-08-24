@@ -60,7 +60,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -94,7 +96,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,16 +130,13 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         
         Library lib = LibraryManager.getDefault().getLibrary("struts");                         //NOI18N
         if (lib != null) {
-            ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
-            if (cpExtender != null) {
+            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sgs.length > 0) {
                 try {
-                    cpExtender.addLibrary(lib);
+                    ProjectClassPathModifier.addLibraries(new Library[] {lib}, sgs[0].getRootFolder(), ClassPath.COMPILE);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            } else {
-                Logger.getLogger("global").log(Level.INFO,
-                        "WebProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
 
             try {
