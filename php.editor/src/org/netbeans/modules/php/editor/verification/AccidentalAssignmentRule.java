@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
@@ -66,15 +66,18 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
     private Preferences prefs = null;
     private boolean inclWhile = false;
     private boolean topLvlStmtsOnly = true;
-    
+
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public String getId() {
         return "accidental.assignment"; //NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDesc");
     }
@@ -86,7 +89,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         topLvlStmtsOnly = topLevelStmtsOnly(prefs);
         super.visit(program);
     }
-    
+
     @Override
     public void visit(IfStatement node) {
         check(node.getCondition());
@@ -98,7 +101,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         if (inclWhile){
             check(node.getCondition());
         }
-        
+
         super.visit(node);
     }
 
@@ -116,7 +119,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         if (inclWhile){
             check(node.getCondition());
         }
-        
+
         super.visit(node);
     }
 
@@ -131,6 +134,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         }
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDispName");
     }
@@ -143,7 +147,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
     public static final boolean includeAssignementsInWhile(Preferences prefs){
         return prefs.getBoolean(INCL_WHILE_PREFS_KEY, false);
     }
-    
+
     public static final void setIncludeAssignementsInWhile(Preferences prefs, boolean value){
         prefs.putBoolean(INCL_WHILE_PREFS_KEY, value);
     }
@@ -156,6 +160,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         prefs.putBoolean(TOP_LEVEL_STMT_ONLY, value);
     }
 
+    @Override
     public void setPreferences(Preferences prefs) {
         this.prefs = prefs;
     }

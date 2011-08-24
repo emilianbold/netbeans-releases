@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Function/method arguments with default value defined must be
- * on the right side
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WrongOrderOfArgsRule extends PHPRule {
+public class PHPCodeCompletion194875Test extends PHPTestBase {
 
-    @Override
-    public String getId() {
-        return "wrong.order.of.args"; //NOI18N
+    public PHPCodeCompletion194875Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875.php", "} catch (^", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875.php", "} catch (E^", false);
+    }
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875_1.php", "} catch (^", false);
+    }
+
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests194875/issue194875_1.php", "} catch (E^", false);
     }
 
     @Override
-    public String getDescription() {
-        return NbBundle.getMessage(WrongOrderOfArgsRule.class, "WrongOrderOfArgsRuleDesc");
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests194875/"))
+            })
+        );
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(WrongOrderOfArgsRule.class, "WrongOrderOfArgsRuleDispName");
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-
-    @Override
-    public void visit(FunctionDeclaration functionDeclaration) {
-        boolean wasDefaultVar = false;
-
-        for (FormalParameter param : functionDeclaration.getFormalParameters()) {
-            if (param.getDefaultValue() != null) {
-                wasDefaultVar = true;
-            } else if (wasDefaultVar) {
-                OffsetRange range = new OffsetRange(param.getStartOffset(), param.getEndOffset());
-
-                Hint hint = new Hint(WrongOrderOfArgsRule.this, getDisplayName(),
-                        context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
-
-                addResult(hint);
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void visit(MethodDeclaration methodDeclaration) {
-        visit(methodDeclaration.getFunction());
-    }
 }
