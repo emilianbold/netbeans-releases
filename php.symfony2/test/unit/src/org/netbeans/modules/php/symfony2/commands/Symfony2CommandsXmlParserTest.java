@@ -67,7 +67,10 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
         Symfony2CommandVO command = commands.get(0);
         assertEquals("help", command.getCommand());
         assertEquals("Displays help for a command", command.getDescription());
-        assertEquals("<html>The <i>help</i> command displays help for a given command:<br>"
+        assertEquals("<html>Usage:<br>"
+                + "<i>help [--xml] [command_name]</i><br>"
+                + "<br>"
+                + "The <i>help</i> command displays help for a given command:<br>"
                 + " <br>"
                 + "   <i>php app/console help list</i><br>"
                 + " <br>"
@@ -78,12 +81,17 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
         command = commands.get(2);
         assertEquals("assetic:dump", command.getCommand());
         assertEquals("Dumps all assets to the filesystem", command.getDescription());
-        assertEquals("", command.getHelp());
+        assertEquals("<html>Usage:<br>"
+                + "<i>assetic:dump [--watch] [--force] [--period=\"...\"] [write_to]</i><br>"
+                + "<br>", command.getHelp());
 
         command = commands.get(5);
         assertEquals("cache:warmup", command.getCommand());
         assertEquals("Warms up an empty cache", command.getDescription());
-        assertEquals("<html>The <i>cache:warmup</i> command warms up the cache.<br>"
+        assertEquals("<html>Usage:<br>"
+                + "<i>cache:warmup</i><br>"
+                + "<br>"
+                + "The <i>cache:warmup</i> command warms up the cache.<br>"
                 + " <br>"
                 + " Before running this command, the cache must be empty.", command.getHelp());
 

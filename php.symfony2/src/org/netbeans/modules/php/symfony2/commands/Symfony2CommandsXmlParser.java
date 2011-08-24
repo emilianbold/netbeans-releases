@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.openide.util.NbBundle.Messages;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -65,6 +66,7 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     private final List<Symfony2CommandVO> commands;
 
     private String currentCommand = null;
+    private StringBuilder currentUsage = null;
     private String currentDescription = null;
     private StringBuilder currentHelp = null;
     private Content content = Content.NONE;
@@ -100,9 +102,19 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if ("command".equals(qName)) { // NOI18N
             assert currentCommand == null;
+            assert currentUsage == null;
             assert currentDescription == null;
             assert currentHelp == null;
             currentCommand = attributes.getValue("name"); // NOI18N
+        } else if ("usage".equals(qName)) { // NOI18N
+            assert content == Content.NONE;
+            assert currentUsage == null;
+            assert currentDescription == null;
+            assert currentHelp == null;
+            if (currentCommand != null) {
+                content = Content.USAGE;
+                currentUsage = new StringBuilder();
+            }
         } else if ("description".equals(qName)) { // NOI18N
             assert content == Content.NONE;
             assert currentDescription == null;
@@ -123,19 +135,30 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("description".equals(qName)) { // NOI18N
+        if ("usage".equals(qName)) { // NOI18N
+            if (content == Content.USAGE) {
+                content = Content.NONE;
+            }
+        } else if ("description".equals(qName)) { // NOI18N
             if (content == Content.DESCRIPTION) {
                 content = Content.NONE;
             }
         } else if ("help".equals(qName)) { // NOI18N
             if (content == Content.HELP) {
                 assert currentCommand != null;
+                if (currentUsage == null) {
+                    currentUsage = new StringBuilder();
+                }
                 if (currentDescription == null) {
                     currentDescription = ""; // NOI18N
                 }
 
-                commands.add(new Symfony2CommandVO(currentCommand.trim(), currentDescription.trim(), processHelp(currentHelp.toString().trim())));
+                commands.add(new Symfony2CommandVO(
+                        currentCommand.trim(),
+                        currentDescription.trim(),
+                        processHelp(currentUsage.toString().trim(), currentHelp.toString().trim())));
                 currentCommand = null;
+                currentUsage = null;
                 currentDescription = null;
                 currentHelp = null;
                 content = Content.NONE;
@@ -146,6 +169,9 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
         switch (content) {
+            case USAGE:
+                currentUsage.append(ch, start, length);
+                break;
             case DESCRIPTION:
                 currentDescription = new String(ch, start, length);
                 break;
@@ -156,22 +182,34 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
         }
     }
 
-    private static String processHelp(String help) {
-        if (!StringUtils.hasText(help)) {
+    @Messages("LBL_Usage=Usage:")
+    private static String processHelp(String usage, String help) {
+        StringBuilder result = new StringBuilder();
+        if (StringUtils.hasText(usage)) {
+            result.append(Bundle.LBL_Usage());
+            result.append("<br><i>"); // NOI18N
+            result.append(usage);
+            result.append("</i><br><br>"); // NOI18N
+        }
+        if (StringUtils.hasText(help)) {
+            help = help.replace("<info>", "<i>"); // NOI18N
+            help = help.replace("</info>", "</i>"); // NOI18N
+            help = help.replace("<comment>", "<i>"); // NOI18N
+            help = help.replace("</comment>", "</i>"); // NOI18N
+            help = help.replace("\n", "<br>"); // NOI18N
+            result.append(help);
+        }
+        if (result.length() == 0) {
             return ""; // NOI18N
         }
-        help = help.replace("<info>", "<i>"); // NOI18N
-        help = help.replace("</info>", "</i>"); // NOI18N
-        help = help.replace("<comment>", "<i>"); // NOI18N
-        help = help.replace("</comment>", "</i>"); // NOI18N
-        help = help.replace("\n", "<br>"); // NOI18N
-        return "<html>" + help; // NOI18N
+        return "<html>" + result.toString(); // NOI18N
     }
 
     //~ Inner classes
 
     enum Content {
         NONE,
+        USAGE,
         DESCRIPTION,
         HELP,
     };
