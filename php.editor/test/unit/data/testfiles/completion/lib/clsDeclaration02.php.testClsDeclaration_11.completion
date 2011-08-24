@@ -6,6 +6,8 @@ PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
+PACKAGE    Extra                           [PUBLIC]   null
+PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
