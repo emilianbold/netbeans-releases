@@ -62,7 +62,7 @@ public final class Symfony2Command extends FrameworkCommand {
 
     @Override
     public String getPreview() {
-        return "php " + Symfony2Script.SCRIPT_PATH + " " + super.getPreview(); // NOI18N
+        return Symfony2Script.SCRIPT_PATH + " " + super.getPreview(); // NOI18N
     }
 
 }
