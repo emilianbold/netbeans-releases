@@ -461,6 +461,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             if (args.size()>0) {
                 if (pathMapper != null) {
                     compilePath = pathMapper.getLocalPath(args.get(0));
+                    if (compilePath == null) {
+                        compilePath = args.get(0);
+                    }
                 } else {
                     compilePath = args.get(0);
                 }
@@ -493,7 +496,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
                 for(String s : aUserIncludes){
                     if (s.startsWith("/") && pathMapper != null) { // NOI18N
-                        s = pathMapper.getLocalPath(s);
+                        String mapped = pathMapper.getLocalPath(s);
+                        if (mapped != null) {
+                            s = mapped;
+                        }
                     }
                     userIncludes.add(PathCache.getString(s));
                 }
@@ -507,7 +513,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
                 if (what.startsWith("/")){  //NOI18N
                     if (pathMapper != null) {
-                        what = pathMapper.getLocalPath(what);
+                        String mapped = pathMapper.getLocalPath(what);
+                        if (mapped != null) {
+                            what = mapped;
+                        }
                     }
                     fullName = what;
                     sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
