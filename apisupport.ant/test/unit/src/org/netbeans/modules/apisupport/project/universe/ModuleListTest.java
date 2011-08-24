@@ -134,7 +134,7 @@ public class ModuleListTest extends TestBase {
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
         PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), NbModuleType.NETBEANS_ORG, "org.netbeans.modules.ant.browsetask");
-        String nbdestdir = eval.getProperty("netbeans.dest.dir");
+        String nbdestdir = eval.getProperty(ModuleList.NETBEANS_DEST_DIR);
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals("modules/org-netbeans-modules-ant-browsetask.jar", eval.getProperty("module.jar"));
@@ -145,20 +145,20 @@ public class ModuleListTest extends TestBase {
         assertEquals("modules/org-openide-loaders.jar", eval.getProperty("module.jar"));
         basedir = new File(suite1, "action-project");
         eval = ModuleList.parseProperties(basedir, suite1, NbModuleType.SUITE_COMPONENT, "org.netbeans.examples.modules.action");
-        nbdestdir = eval.getProperty("netbeans.dest.dir");
+        nbdestdir = eval.getProperty(ModuleList.NETBEANS_DEST_DIR);
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals(suite1, PropertyUtils.resolveFile(basedir, eval.getProperty("suite.dir")));
         basedir = new File(suite2, "misc-project");
         eval = ModuleList.parseProperties(basedir, suite2, NbModuleType.SUITE_COMPONENT, "org.netbeans.examples.modules.misc");
-        nbdestdir = eval.getProperty("netbeans.dest.dir");
+        nbdestdir = eval.getProperty(ModuleList.NETBEANS_DEST_DIR);
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals(file(suite2, "build/cluster"), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertEquals(suite2, PropertyUtils.resolveFile(basedir, eval.getProperty("suite.dir")));
         basedir = new File(standaloneSuite3, "dummy-project");
         eval = ModuleList.parseProperties(basedir, standaloneSuite3, NbModuleType.STANDALONE, "org.netbeans.examples.modules.dummy");
-        nbdestdir = eval.getProperty("netbeans.dest.dir");
+        nbdestdir = eval.getProperty(ModuleList.NETBEANS_DEST_DIR);
         assertNotNull(nbdestdir);
         assertEquals(file(standaloneSuite3, "nbplatform"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals(file(standaloneSuite3, "dummy-project/build/cluster"), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
