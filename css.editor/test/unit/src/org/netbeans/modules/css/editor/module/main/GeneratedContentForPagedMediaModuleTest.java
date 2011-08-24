@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
+package org.netbeans.modules.css.editor.module.main;
 
 /**
  *
- * @author Radek Matous
+ * @author mfukala@netbeans.org
  */
-public abstract class AbstractRule implements AstRule {
-    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        if (isKindSupported(kind)) {
-            computeHintsImpl(context, hints, kind);
-        }
-    }
-    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException;
+public class GeneratedContentForPagedMediaModuleTest extends CssModuleTestBase {
 
-    boolean isKindSupported(PHPHintsProvider.Kind kind) {
-        return kind.equals(PHPHintsProvider.Kind.SUGGESTION);
+    public GeneratedContentForPagedMediaModuleTest(String testName) {
+        super(testName);
     }
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_LINE_HINTS);
+    
+    public void testFnProperties() {
+        assertPropertyValues("-content_fn", "content()", "content(before)");
+        assertPropertyValues("-attr_fn", "attr()", "attr(title)", "attr(title, string)");
+        
     }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
+    
+    public void testProperties() {
+        assertPropertyValues("bleed", "20px");
+        assertPropertyValues("bookmark-label", "\"hello\"", "attr(hello)", "content(hello)");
+        assertPropertyValues("float-offset", "1px", "1cm 2em");
+        assertPropertyValues("marks", "crop", "cross", "none", "cross crop", "cross crop");
+        
+        assertPropertyValues("string-set", "ble bli \"bla\" (ble)! 347 #@$#");
+        
     }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
-    }
+    
 }

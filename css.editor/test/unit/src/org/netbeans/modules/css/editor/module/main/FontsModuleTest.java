@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
+package org.netbeans.modules.css.editor.module.main;
 
 /**
  *
- * @author Radek Matous
+ * @author mfukala@netbeans.org
  */
-public abstract class AbstractRule implements AstRule {
-    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        if (isKindSupported(kind)) {
-            computeHintsImpl(context, hints, kind);
-        }
-    }
-    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException;
+public class FontsModuleTest extends CssModuleTestBase {
 
-    boolean isKindSupported(PHPHintsProvider.Kind kind) {
-        return kind.equals(PHPHintsProvider.Kind.SUGGESTION);
+    public FontsModuleTest(String testName) {
+        super(testName);
     }
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_LINE_HINTS);
+    
+    public void testProperties() {
+        assertPropertyValues("font", "caption", "italic 20px sans-serif");
+        
+        assertPropertyValues("font-size", "20px", "small", "smaller");
+        
+        assertPropertyValues("font-stretch", "ultra-condensed");
+        
+        assertPropertyValues("font-variant", 
+                "normal", 
+                "additional-ligatures", 
+                "historical-forms",
+                "styleset(10)", 
+                "styleset(10,20,30)", 
+                "character-variant(1)", 
+                "character-variant(10,20,30)", 
+                "swash(10)", "swash", 
+                "annotation(1)", "annotation", 
+                "hojo-kanji");
+        
+        assertPropertyValues("font-variant-alternates", 
+                "normal",
+                "contextual",
+                "styleset(feature, another)",
+                "character-variant(feature)", 
+                "annotation(feature)"
+                );
+        
+        assertPropertyValues("font-variant-east-asian", "hojo-kanji");
+        
+        assertPropertyValues("font-variant-numeric", 
+                "lining-nums tabular-nums stacked-fractions",
+                "stacked-fractions",
+                "tabular-nums stacked-fractions");
+        
     }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
-    }
+    
 }
