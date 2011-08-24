@@ -41,36 +41,29 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import junit.framework.AssertionFailedError;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssModuleTestBase extends CslTestBase {
+public class GeneratedContentForPagedMediaModuleTest extends CssModuleTestBase {
 
-    public CssModuleTestBase(String name) {
-        super(name);
+    public GeneratedContentForPagedMediaModuleTest(String testName) {
+        super(testName);
     }
-
-    protected void assertPropertyValues(String propertyName, String... values) {
+    
+    public void testFnProperties() {
+        assertPropertyValues("-content_fn", "content()", "content(before)");
+        assertPropertyValues("-attr_fn", "attr()", "attr(title)", "attr(title, string)");
         
-        PropertyModel model = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(String.format("Cannot find property %s", propertyName), model);
+    }
+    
+    public void testProperties() {
+        assertPropertyValues("bleed", "20px");
+        assertPropertyValues("bookmark-label", "\"hello\"", "attr(hello)", "content(hello)");
+        assertPropertyValues("float-offset", "1px", "1cm 2em");
+        assertPropertyValues("marks", "crop", "cross", "none", "cross crop", "cross crop");
         
-        for(String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if(!value.success()) {
-                PropertyModelTest.dumpResult(value);
-                throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
-            }
-            
-        }
+        assertPropertyValues("string-set", "ble bli \"bla\" (ble)! 347 #@$#");
         
     }
     

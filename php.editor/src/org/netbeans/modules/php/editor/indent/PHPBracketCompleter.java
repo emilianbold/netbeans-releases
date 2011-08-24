@@ -192,11 +192,21 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 return null;
             }
         }
-
+        
         PHPTokenId returnValeu = null;
+        PHPTokenId previousToken = null;
+        if (ts.movePrevious()) {
+            previousToken = ts.token().id();
+            ts.moveNext();
+        }
+        
+        if (previousToken == PHPTokenId.PHPDOC_COMMENT_START || previousToken == PHPTokenId.PHP_COMMENT_START) {
+            return null;
+        }
         // at fist there should be find a bracket  '{' or column ':'
         Token <?extends PHPTokenId> bracketColumnToken = LexUtilities.findPrevious(ts,
                 Arrays.asList(PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                PHPTokenId.PHPDOC_COMMENT_START,PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END,
                 PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CLOSETAG));
         if (bracketColumnToken != null
                 && (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN
@@ -232,6 +242,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 startOfContext[0] = ts.offset();
             }
         }
+        
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
