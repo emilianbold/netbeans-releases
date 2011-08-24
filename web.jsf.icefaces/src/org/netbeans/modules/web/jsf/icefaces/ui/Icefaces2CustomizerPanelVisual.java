@@ -47,6 +47,7 @@
  */
 package org.netbeans.modules.web.jsf.icefaces.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -88,6 +89,8 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
      */
     public Icefaces2CustomizerPanelVisual(ChangeListener listener) {
         initComponents();
+        noteLabel.setPreferredSize(new Dimension(1, 1));
+
         changeSupport.addChangeListener(listener);
 
         initLibraries(true);
@@ -198,6 +201,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
         icefacesLibraryComboBox = new javax.swing.JComboBox();
         notExistingLibraryLabel = new javax.swing.JLabel();
         createIcefacesLibraryButton = new javax.swing.JButton();
+        noteLabel = new javax.swing.JLabel();
 
         headerLabel.setText(org.openide.util.NbBundle.getMessage(Icefaces2CustomizerPanelVisual.class, "Icefaces2CustomizerPanelVisual.headerLabel.text")); // NOI18N
 
@@ -214,6 +218,10 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
             }
         });
 
+        noteLabel.setText(org.openide.util.NbBundle.getMessage(Icefaces2CustomizerPanelVisual.class, "Icefaces2CustomizerPanelVisual.noteLabel.text")); // NOI18N
+        noteLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        noteLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -229,7 +237,8 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(notExistingLibraryLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(createIcefacesLibraryButton)))
+                        .addComponent(createIcefacesLibraryButton))
+                    .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 501, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -237,7 +246,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(headerLabel)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(icefacesLibraryLabel)
                     .addComponent(icefacesLibraryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -245,7 +254,9 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(notExistingLibraryLabel)
                     .addComponent(createIcefacesLibraryButton))
-                .addContainerGap(188, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addComponent(noteLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -260,6 +271,7 @@ private void createIcefacesLibraryButtonActionPerformed(java.awt.event.ActionEve
     private javax.swing.JComboBox icefacesLibraryComboBox;
     private javax.swing.JLabel icefacesLibraryLabel;
     private javax.swing.JLabel notExistingLibraryLabel;
+    private javax.swing.JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
 
 }
