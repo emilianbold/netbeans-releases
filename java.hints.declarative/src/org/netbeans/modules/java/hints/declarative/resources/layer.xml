@@ -195,7 +195,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="Templates">
+<!--    <folder name="Templates">
         <folder name="Other">
             <file name="DeclarativeHintsTestTemplate.test" url="DeclarativeHintsTestTemplate.test">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.declarative.resources.Bundle"/>
@@ -211,7 +211,7 @@ made subject to such option by the copyright holder.
                 </file>
                 
         </folder>
-    </folder>
+    </folder>-->
 
     <folder name="Editors">
         <folder name="text">
