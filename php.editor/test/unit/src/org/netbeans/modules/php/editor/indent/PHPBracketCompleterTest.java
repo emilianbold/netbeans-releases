@@ -1371,4 +1371,52 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("a selected^ word", '"', "a \"selected\"^ word", "selected");
     }
     
+    public void testIssue200729_01() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /*^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_02() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /**^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /**\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_03() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /**\n"
+                + "     * ^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_04() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /*\n"
+                + "     * \n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
 }
