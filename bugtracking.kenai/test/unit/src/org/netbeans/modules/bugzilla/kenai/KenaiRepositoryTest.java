@@ -105,12 +105,13 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
 
         kenai.login(username, password.toCharArray(), false);
         
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // XXX MYLYN
+//        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
         taskRepository = new TaskRepository("bugzilla", KENAI_REPO_URL);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, password);
         taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);

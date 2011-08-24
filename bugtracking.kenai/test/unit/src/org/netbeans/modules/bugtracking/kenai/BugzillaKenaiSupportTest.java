@@ -112,12 +112,13 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
             System.setProperty("https.proxyPort", port);           
         }
         
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // XXX MYLYN
+//        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
         trm = new TaskRepositoryManager();
         brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
