@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.test.CssCompletionTestBase;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -99,6 +102,28 @@ public class PagedMediaModuleTest extends CssCompletionTestBase {
         checkCC("@page { @top-left { color:re| } }", arr("red"), Match.CONTAINS);
     }
     
+   
+    public void testProperties() {
+        PropertyModel p = CssModuleSupport.getProperty("size");
+        assertNotNull(p);
+        assertTrue(new PropertyValue(p, "10px 20px").success());
+        assertTrue(new PropertyValue(p, "auto").success());
+        assertTrue(new PropertyValue(p, "portrait").success());
+        
+        p = CssModuleSupport.getProperty("orphans");
+        assertNotNull(p);
+        assertTrue(new PropertyValue(p, "2").success());
+        
+        p = CssModuleSupport.getProperty("fit-position");
+        assertNotNull(p);
+        assertTrue(new PropertyValue(p, "10% 20%").success());
+        assertTrue(new PropertyValue(p, "10px 20px").success());
+        assertTrue(new PropertyValue(p, "auto").success());
+        assertTrue(new PropertyValue(p, "top center").success());
+        assertTrue(new PropertyValue(p, "bottom right").success());
+        assertFalse(new PropertyValue(p, "bottom bottom").success());
+        
+    }
     
    
 }

@@ -2,21 +2,22 @@ Css modules list (source http://www.css3.info/modules/)
 
 * Selectors 
 * CSS Color 
+
 * CSS Namespaces 
 * CSS Backgrounds & Borders 
+* CSS Multi-column Layout
+(*) Media Queries 
 * CSS Marquee 
 * CSS Ruby 
 * CSS Basic User Interface 
-* CSS Multi-column Layout
+* CSS Style Attributes 
+
+* CSS Paged Media 
+
 * CSS Values & Units 
-(*) Media Queries 
-(*) CSS Paged Media 
-
-
-CSS Style Attributes 
-CSS Cascading & Inheritance 
-CSS Text 
-CSS Writing Modes 
+* CSS Cascading & Inheritance 
+* CSS Text 
+* CSS Writing Modes 
 CSS Generated Content for Paged Media 
 CSS Fonts 
 CSS Basic Box Model 

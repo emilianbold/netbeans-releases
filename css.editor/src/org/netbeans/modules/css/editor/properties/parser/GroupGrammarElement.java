@@ -55,6 +55,9 @@ public class GroupGrammarElement extends GrammarElement {
 
     public enum Type {
 
+//        /** All of the group members need to be present in arbitrary order */
+//        ALL,
+//        
         SET,
         
         /** any of the elements can be present in the value otherwise just one of them */
