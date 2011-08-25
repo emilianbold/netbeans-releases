@@ -2,11 +2,15 @@
 
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import fxml.MyGroup?> 
+<#if package?? && package != "">
+<?import ${package}.MyGroup?> 
+<#else>
+<?import MyGroup?> 
+</#if>
 
 <MyGroup xmlns:fx="http://javafx.com/fxml">    
     <children>      
         <Button text="Click Me!" onAction="#handleButtonAction" />
         <Label  fx:id="label" translateX="0" translateY="30" text=""/>  
     </children>
-</MyGroup >    
+</MyGroup>    
