@@ -86,8 +86,10 @@ public class DependenciesNodeFactory implements NodeFactory {
         
         @Override public List<DependenciesNode.DependenciesChildren> keys() {
             List<DependenciesNode.DependenciesChildren> list = new ArrayList<DependenciesNode.DependenciesChildren>();
-            compile.regenerateKeys();
-            list.add(compile);
+            int compileCount = compile.regenerateKeys();
+            if (compileCount > 0 || !project.getProjectWatcher().getPackagingType().equals(NbMavenProject.TYPE_POM)) {
+                list.add(compile);
+            }
             if (runtime.regenerateKeys() > 0) {
                 list.add(runtime);
             }
