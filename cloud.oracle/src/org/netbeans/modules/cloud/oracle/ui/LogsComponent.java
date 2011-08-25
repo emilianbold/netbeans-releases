@@ -58,6 +58,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -76,6 +78,8 @@ persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 public class LogsComponent extends TopComponent {
 
+    private static final Logger LOG = Logger.getLogger(LogsComponent.class.getName());
+    
     private List<Job> jobs;
     private ApplicationManager am;
     
@@ -86,7 +90,7 @@ public class LogsComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
         jobs = new ArrayList<Job>();
-        jobs.add(createInitJob());
+        jobs.add(createInitJob("LogsComponent.loading"));
         jobsTable.setModel(new JobsModel(jobs));
         jobsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -97,20 +101,30 @@ public class LogsComponent extends TopComponent {
         loadJobs();
     }
     
-    private Job createInitJob() {
+    private Job createInitJob(String s) {
+        s = NbBundle.getMessage(LogsComponent.class, s);
         Job jt = new Job();
-        jt.setOperation("loading...");
+        jt.setOperation(s);
         return jt;
     }
     
     private void loadJobs() {
         jobs = new ArrayList<Job>();
-        jobs.add(createInitJob());
+        jobs.add(createInitJob("LogsComponent.loading"));
         jobsTable.setModel(new JobsModel(jobs));
         OracleInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final List<Job> jobs_ = am.listJobs();
+                final List<Job> jobs_;
+                try {
+                    jobs_ = am.listJobs();
+                } catch (Throwable t) {
+                    LOG.log(Level.INFO, "cannot fetch jobs", t);
+                    jobs = new ArrayList<Job>();
+                    jobs.add(createInitJob("LogsComponent.loading.failed"));
+                    jobsTable.setModel(new JobsModel(jobs));
+                    return null;
+                }
                 Collections.reverse(jobs_);
                 final List<Job> jobs = new ArrayList<Job>();
                 int i = 0;
