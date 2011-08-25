@@ -114,8 +114,7 @@ public class ClipboardHandler {
     private static final Logger LOG = Logger.getLogger(ClipboardHandler.class.getName());
     private static final RequestProcessor WORKER = new RequestProcessor(ClipboardHandler.class.getName(), 1, false, false);
     
-    private static void doImport(final Document doc, final int caret, final Map<String, String> simple2ImportFQN, final List<Position[]> inSpans, AtomicBoolean cancel) {
-        JavaSource js = JavaSource.forDocument(doc);
+    private static void doImport(JavaSource js, final Document doc, final int caret, final Map<String, String> simple2ImportFQN, final List<Position[]> inSpans, AtomicBoolean cancel) {
         final Map<Position[], String> putFQNs = new HashMap<Position[], String>();
 
         try {
@@ -171,7 +170,7 @@ public class ClipboardHandler {
         }
     }
 
-    private static void showImportDialog(final Document doc, final int caret, final Map<String, String> simple2ImportFQN, Collection<String> toShow, final List<Position[]> inSpans) {
+    private static void showImportDialog(final JavaSource js, final Document doc, final int caret, final Map<String, String> simple2ImportFQN, Collection<String> toShow, final List<Position[]> inSpans) {
         ClipboardImportPanel panel = new ClipboardImportPanel(toShow);
         final AtomicBoolean cancel = new AtomicBoolean();
         final JButton okButton = new JButton(NbBundle.getMessage(ClipboardHandler.class, "BTN_ClipboardImportOK"));
@@ -186,7 +185,7 @@ public class ClipboardHandler {
                 okButton.setEnabled(false);
                 WORKER.post(new Runnable() {
                     @Override public void run() {
-                        doImport(doc, caret, simple2ImportFQN, inSpans, cancel);
+                        doImport(js, doc, caret, simple2ImportFQN, inSpans, cancel);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
                                 d[0].setVisible(false);
@@ -208,8 +207,7 @@ public class ClipboardHandler {
         d[0].setVisible(true);
     }
 
-    private static Collection<? extends String> needsImports(Document doc, final int caret, final Map<String, String> simple2FQNs) {
-        JavaSource js = JavaSource.forDocument(doc);
+    private static Collection<? extends String> needsImports(JavaSource js, final int caret, final Map<String, String> simple2FQNs) {
         final List<String> unavailable = new ArrayList<String>();
 
         try {
@@ -323,11 +321,12 @@ public class ClipboardHandler {
 
         @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
-            if (comp instanceof JTextComponent && comp.getClientProperty(NO_IMPORTS) == null) {
+            JavaSource js;
+
+            if (comp instanceof JTextComponent && comp.getClientProperty(NO_IMPORTS) == null && (js = JavaSource.forDocument(((JTextComponent) comp).getDocument())) != null) {
                 final JTextComponent tc = (JTextComponent) comp;
                 final int start = tc.getSelectionStart();
                 final int end = tc.getSelectionEnd();
-                JavaSource js = JavaSource.forDocument(tc.getDocument());
 
                 try {
                     final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
@@ -410,7 +409,11 @@ public class ClipboardHandler {
 
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
-                                Collection<? extends String> unavailable = needsImports(tc.getDocument(), caret, imports.simple2ImportFQN);
+                                JavaSource js = JavaSource.forDocument(tc.getDocument());
+
+                                if (js == null) return;
+
+                                Collection<? extends String> unavailable = needsImports(js, caret, imports.simple2ImportFQN);
 
                                 if (unavailable == null) {
                                     unavailable = (file == null || !file.equals(imports.sourceFO)) ? imports.simple2ImportFQN.values() : Collections.<String>emptyList();
@@ -421,7 +424,7 @@ public class ClipboardHandler {
                                 toShow.retainAll(unavailable);
 
                                 if (!unavailable.isEmpty()) {
-                                    showImportDialog(doc, caret, imports.simple2ImportFQN, toShow, inSpans);
+                                    showImportDialog(js, doc, caret, imports.simple2ImportFQN, toShow, inSpans);
                                 }
                             }
                         });
@@ -501,19 +504,21 @@ public class ClipboardHandler {
             final AtomicBoolean alreadyRunning = new AtomicBoolean();
 
             try {
-                Future<Void> fut = js.runWhenScanFinished(new Task<CompilationController>() {
-                    @Override public void run(CompilationController parameter) throws Exception {
-                        synchronized (lock) {
-                            if (cancel.get()) return;
-                            alreadyRunning.set(true);
+                if (js != null) {
+                    Future<Void> fut = js.runWhenScanFinished(new Task<CompilationController>() {
+                        @Override public void run(CompilationController parameter) throws Exception {
+                            synchronized (lock) {
+                                if (cancel.get()) return;
+                                alreadyRunning.set(true);
+                            }
+                            JavaCutAction.super.actionPerformed(evt, target);
                         }
-                        JavaCutAction.super.actionPerformed(evt, target);
-                    }
-                }, true);
+                    }, true);
 
-                fut.get(100, TimeUnit.MILLISECONDS);
+                    fut.get(100, TimeUnit.MILLISECONDS);
 
-                return;
+                    return;
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
