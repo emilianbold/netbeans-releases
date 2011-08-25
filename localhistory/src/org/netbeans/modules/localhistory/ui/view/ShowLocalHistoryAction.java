@@ -80,6 +80,7 @@ public class ShowLocalHistoryAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     protected void performAction(final Node[] activatedNodes) {                        
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         final Set<File> rootSet = ctx.getRootFiles();                    
@@ -118,7 +119,7 @@ public class ShowLocalHistoryAction extends NodeAction {
             @Override
             public void run() {
                 final LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
-                tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName()));
+                tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName())); // NOI18N
                 tc.open();
                 tc.requestActive();                                
                 tc.init(files);
@@ -165,7 +166,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                                 public void run() {
                                     handler.requestActive(p);
                                     tc.requestActive();
-    }
+                                }
                             });
                             break;
                         } 
@@ -177,13 +178,14 @@ public class ShowLocalHistoryAction extends NodeAction {
         return false;
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {     
         if(activatedNodes == null || activatedNodes.length != 1) {
             return false;
         }
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         Set<File> rootSet = ctx.getRootFiles();                
-        if(rootSet == null || rootSet.size() == 0) { 
+        if(rootSet == null || rootSet.isEmpty()) { 
             return false;
         }                        
         for (File file : rootSet) {            
@@ -194,10 +196,12 @@ public class ShowLocalHistoryAction extends NodeAction {
         return true;           
     }
     
+    @Override
     public String getName() {
-        return NbBundle.getMessage(this.getClass(), "CTL_ShowLocalHistory");        
+        return NbBundle.getMessage(this.getClass(), "CTL_ShowLocalHistory");    // NOI8N    
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ShowLocalHistoryAction.class);
     }
