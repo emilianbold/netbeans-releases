@@ -51,6 +51,10 @@ import org.openide.WizardDescriptor.Panel;
  * @author Anton Chechel
  */
 public class FXMLTemplateWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+    
+    public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
+        return new FXMLTemplateWizardIterator();
+    }
 
     @Override
     public Set instantiate() throws IOException {

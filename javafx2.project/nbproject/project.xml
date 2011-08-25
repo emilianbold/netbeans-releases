@@ -211,9 +211,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.javafx2.project</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

@@ -22,7 +22,7 @@
 
         <folder name="javafx">
             <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx"/>
-            <attr name="position" intvalue="900"/>
+            <attr name="position" intvalue="909"/>
 
             <file name="FXMain.java" url="templates/FXMain.template">
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
@@ -44,6 +44,7 @@
             </file>
             <file name="FXML.xml" url="templates/FXML_xml.template">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
     </folder>  
