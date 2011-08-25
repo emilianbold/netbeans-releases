@@ -94,7 +94,7 @@ class FixExecutor implements Runnable {
 	    io = DebuggerManager.get().getIO();
 	    // TODO
 	    if (io != null) {
-		io.setFocusTaken(true);
+// CR 7082759	io.setFocusTaken(true);
 		io.setErrVisible(false);
 		io.setErrSeparated(false);
 	    }
