@@ -94,14 +94,17 @@ public abstract class SearchAndReplaceBarHandler {
                     //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
                     JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                     if (comp != null) {
-                       JPanel jp = findComponent(comp, SearchJPanel.class, 5);
-                        SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
-                        jp.add(searchBarInstance);
-                        ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
-                        if (replaceBarInstance.isVisible())
-                            replaceBarInstance.looseFocus();
-                        searchBarInstance.gainFocus();
-                        makeSearchAndReplaceBarPersistent();
+                        JPanel jp = findComponent(comp, SearchJPanel.class, 5);
+                        if (jp != null) {
+                            SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
+                            jp.add(searchBarInstance);
+                            ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
+                            if (replaceBarInstance.isVisible()) {
+                                replaceBarInstance.looseFocus();
+                            }
+                            searchBarInstance.gainFocus();
+                            makeSearchAndReplaceBarPersistent();
+                        }
                     }
                 }
             }
@@ -145,11 +148,13 @@ public abstract class SearchAndReplaceBarHandler {
                     JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                     if (comp != null) {
                         JPanel jp = findComponent(comp, SearchJPanel.class, 5);
-                        SearchBar searchBar = SearchBar.getInstance(eui.getComponent());
-                        jp.add(searchBar);
-                        jp.add(ReplaceBar.getInstance(searchBar));
-                        ReplaceBar.getInstance(searchBar).gainFocus();
-                        makeSearchAndReplaceBarPersistent();
+                        if (jp != null) {
+                            SearchBar searchBar = SearchBar.getInstance(eui.getComponent());
+                            jp.add(searchBar);
+                            jp.add(ReplaceBar.getInstance(searchBar));
+                            ReplaceBar.getInstance(searchBar).gainFocus();
+                            makeSearchAndReplaceBarPersistent();
+                        }
                     }
                 }
             }
@@ -189,19 +194,21 @@ public abstract class SearchAndReplaceBarHandler {
                             JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                             if (comp != null) {
                                 JPanel jp = findComponent(comp, SearchJPanel.class, 5);
-                                SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
-                                ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
-                                jp.add(searchBarInstance);
-                                if (replaceBarInstance.isVisible()) {
-                                    jp.add(replaceBarInstance);
-                                    if (replaceBarInstance.hadFocusOnTextField()) {
-                                        replaceBarInstance.gainFocus();
-                                    }  
-                                } 
-                                jp.revalidate();
-                                
-                                if (searchBarInstance.hadFocusOnTextField()) {
-                                    searchBarInstance.gainFocus();
+                                if (jp != null) {
+                                    SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
+                                    ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
+                                    jp.add(searchBarInstance);
+                                    if (replaceBarInstance.isVisible()) {
+                                        jp.add(replaceBarInstance);
+                                        if (replaceBarInstance.hadFocusOnTextField()) {
+                                            replaceBarInstance.gainFocus();
+                                        }
+                                    }
+                                    jp.revalidate();
+
+                                    if (searchBarInstance.hadFocusOnTextField()) {
+                                        searchBarInstance.gainFocus();
+                                    }
                                 }
                             }
                         }
@@ -211,6 +218,4 @@ public abstract class SearchAndReplaceBarHandler {
             EditorRegistry.addPropertyChangeListener(searchAndReplaceBarPersistentListener);
         }
     }
-    
- 
 }
