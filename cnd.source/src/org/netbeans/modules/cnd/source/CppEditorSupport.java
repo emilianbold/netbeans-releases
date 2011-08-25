@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -67,6 +68,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -193,6 +195,18 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             return dataObject.getPrimaryFile().getNameExt();
         }
         return ""; // NOI18N
+    }
+
+    @Override
+    protected Pane createPane() {
+        CndPaneProvider provider = Lookup.getDefault().lookup(CndPaneProvider.class);
+        if (provider != null) {
+            Pane pane = provider.createPane(this);
+            if (pane != null) {
+                return pane;
+            }
+        }
+        return super.createPane();
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
