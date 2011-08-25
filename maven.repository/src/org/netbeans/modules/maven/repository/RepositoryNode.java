@@ -132,7 +132,7 @@ public class RepositoryNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return !info.getId().equals("local");
+        return RepositoryPreferences.getInstance().isPersistent(info.getId());
     }
 
     @Override
@@ -206,6 +206,10 @@ public class RepositoryNode extends AbstractNode {
     private class EditAction extends AbstractAction {
         public EditAction() {
             putValue(NAME, NbBundle.getMessage(RepositoryNode.class, "ACT_Edit..."));
+        }
+
+        @Override public boolean isEnabled() {
+            return RepositoryPreferences.getInstance().isPersistent(info.getId());
         }
 
         public @Override void actionPerformed(ActionEvent e) {

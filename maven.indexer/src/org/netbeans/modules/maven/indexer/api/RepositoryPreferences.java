@@ -237,6 +237,16 @@ public final class RepositoryPreferences {
         }
         return toRet;
     }
+
+    /**
+     * Checks whether a given repository is persisted.
+     * @param id the repository's ID
+     * @return true if it is persistent (custom), false if it is the local repository or was added transiently
+     * @since 2.1
+     */
+    public boolean isPersistent(String id) {
+        return !id.equals("local") && getRepoFolder().getFileObject(getFileObjectName(id)) != null;
+    }
     
     public void removeRepositoryInfo(RepositoryInfo info) {
         FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
@@ -281,6 +291,7 @@ public final class RepositoryPreferences {
      * @param displayName a display name (may just be {@code id})
      * @param url the remote URL (prefer the canonical public URL to that of a mirror)
      * @throws URISyntaxException in case the URL is malformed
+     * @since 2.1
      */
     public void addTransientRepository(Object key, String id, String displayName, String url) throws URISyntaxException {
         synchronized (infoCache) {
@@ -297,6 +308,7 @@ public final class RepositoryPreferences {
     /**
      * Remote all transient repositories associated with a given ID.
      * @param key a key as with {@link #addTransientRepository}
+     * @since 2.1
      */
     public void removeTransientRepositories(Object key) {
         synchronized (infoCache) {
@@ -305,10 +317,16 @@ public final class RepositoryPreferences {
         cs.fireChange();
     }
 
+    /**
+     * @since 2.1
+     */
     public void addChangeListener(ChangeListener l) {
         cs.addChangeListener(l);
     }
 
+    /**
+     * @since 2.1
+     */
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
     }
