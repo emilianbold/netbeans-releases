@@ -375,43 +375,43 @@ public class PropertyModelTest extends TestBase {
 
     }
 
-    public void testVoiceFamily() {
-        PropertyModel p = CssModuleSupport.getProperty("voice-family");
-        String text = "male";
-        PropertyValue csspv = new PropertyValue(p, text);
-        assertTrue(csspv.success());
-        assertEquals(1, csspv.alternatives().size());
-        assertEquals(",", csspv.alternatives().iterator().next().toString());
-
-        text = "male, ";
-        csspv = new PropertyValue(p, text);
-
-//        dumpResult(csspv);
-
-        assertTrue(csspv.success());
-        assertEquals(3, csspv.visibleAlternatives().size());
-
-        Collection<String> altNames = getAlternativesNames(csspv.visibleAlternatives());
-        assertTrue(altNames.contains("male"));
-        assertTrue(altNames.contains("female"));
-        assertTrue(altNames.contains("child"));
-
-        text = "";
-        csspv = new PropertyValue(p, text);
-
-        assertTrue(csspv.success());
-        assertEquals(4, csspv.visibleAlternatives().size());
-
-        altNames = getAlternativesNames(csspv.visibleAlternatives());
-        assertTrue(altNames.contains("inherit"));
-        assertTrue(altNames.contains("male"));
-        assertTrue(altNames.contains("female"));
-        assertTrue(altNames.contains("child"));
-
-        text = "\"ovecka\"";
-        csspv = new PropertyValue(p, text);
-        assertTrue(csspv.success());
-    }
+//    public void testVoiceFamily() {
+//        PropertyModel p = CssModuleSupport.getProperty("voice-family");
+//        String text = "male";
+//        PropertyValue csspv = new PropertyValue(p, text);
+//        assertTrue(csspv.success());
+//        assertEquals(1, csspv.alternatives().size());
+//        assertEquals(",", csspv.alternatives().iterator().next().toString());
+//
+//        text = "male, ";
+//        csspv = new PropertyValue(p, text);
+//
+////        dumpResult(csspv);
+//
+//        assertTrue(csspv.success());
+//        assertEquals(3, csspv.visibleAlternatives().size());
+//
+//        Collection<String> altNames = getAlternativesNames(csspv.visibleAlternatives());
+//        assertTrue(altNames.contains("male"));
+//        assertTrue(altNames.contains("female"));
+//        assertTrue(altNames.contains("child"));
+//
+//        text = "";
+//        csspv = new PropertyValue(p, text);
+//
+//        assertTrue(csspv.success());
+//        assertEquals(4, csspv.visibleAlternatives().size());
+//
+//        altNames = getAlternativesNames(csspv.visibleAlternatives());
+//        assertTrue(altNames.contains("inherit"));
+//        assertTrue(altNames.contains("male"));
+//        assertTrue(altNames.contains("female"));
+//        assertTrue(altNames.contains("child"));
+//
+//        text = "\"ovecka\"";
+//        csspv = new PropertyValue(p, text);
+//        assertTrue(csspv.success());
+//    }
 
     public void testBackgroundImageURL() {
         PropertyModel p = CssModuleSupport.getProperty("background-image");
