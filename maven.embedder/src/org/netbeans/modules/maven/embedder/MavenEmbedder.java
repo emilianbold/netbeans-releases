@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,9 @@ import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -85,7 +88,10 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
@@ -175,6 +181,26 @@ public final class MavenEmbedder {
     }
 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
+        req.setWorkspaceReader(new WorkspaceReader() {
+            final WorkspaceRepository repo = new WorkspaceRepository("ide", getClass());
+            final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
+            @Override public WorkspaceRepository getRepository() {
+                return repo;
+            }
+            @Override public File findArtifact(org.sonatype.aether.artifact.Artifact aetherArtifact) {
+                Artifact mavenArtifact = new DefaultArtifact(aetherArtifact.getGroupId(), aetherArtifact.getArtifactId(), aetherArtifact.getVersion(), null, aetherArtifact.getExtension(), aetherArtifact.getClassifier(), new DefaultArtifactHandler(aetherArtifact.getExtension()));
+                for (ArtifactFixer fixer : fixers) {
+                    File f = fixer.resolve(mavenArtifact);
+                    if (f != null) {
+                        return f;
+                    }
+                }
+                return null;
+            }
+            @Override public List<String> findVersions(org.sonatype.aether.artifact.Artifact artifact) {
+                return Collections.emptyList();
+            }
+        });
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
