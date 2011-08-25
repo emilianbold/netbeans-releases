@@ -54,17 +54,20 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -86,16 +89,21 @@ import org.openide.util.WeakListeners;
  */
 public class ModulesNode extends AbstractNode {
 
+    private final NbMavenProjectImpl proj;
+
     @Messages("LBL_Modules=Modules")
     public ModulesNode(NbMavenProjectImpl proj) {
         super(Children.create(new ModulesChildFactory(proj), true));
+        this.proj = proj;
         setName("Modules"); //NOI18N
         setDisplayName(LBL_Modules());
     }
 
     @Override
     public Action[] getActions(boolean bool) {
-        return new Action[]{};
+        return new Action[] {
+            new AddModuleAction(),
+        };
     }
 
     private Image getIcon(boolean opened) {
@@ -272,4 +280,40 @@ public class ModulesNode extends AbstractNode {
             };
         }
     }
+
+    private class AddModuleAction extends AbstractAction {
+
+        @Messages("BTN_add_module=Add Module...")
+        AddModuleAction() {
+            super(BTN_add_module());
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            JFileChooser c = ProjectChooser.projectChooser();
+            File basedir = FileUtil.toFile(proj.getProjectDirectory());
+            c.setCurrentDirectory(basedir);
+            if (c.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            final List<String> mods = new ArrayList<String>();
+            for (File d : c.getSelectedFiles()) {
+                String mod = FileUtilities.relativizeFile(basedir, d);
+                if (mod != null && !mod.equals(".")) {
+                    mods.add(mod);
+                }
+            }
+            if (mods.isEmpty()) {
+                return;
+            }
+            org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(proj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
+                @Override public void performOperation(POMModel model) {
+                    for (String mod : mods) {
+                        model.getProject().addModule(mod);
+                    }
+                }
+            }));
+        }
+
+    }
+
 }
