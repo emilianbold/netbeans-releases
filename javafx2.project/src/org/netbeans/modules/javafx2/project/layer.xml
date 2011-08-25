@@ -13,7 +13,7 @@
                     <attr name="position" intvalue="105"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/JavaFXApp.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/ui/resources/jfxicon.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator"/>
                 </file>
             </folder>

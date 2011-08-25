@@ -110,6 +110,10 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     boolean isChanged() {
         return (added != null) || (removeCount > 0);
     }
+    
+    boolean isMakingViewEmpty() {
+        return index == 0 && removeCount == view.getViewCount() && addedSize() == 0;
+    }
 
     @Override
     public String toString() {

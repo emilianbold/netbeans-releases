@@ -275,6 +275,7 @@ java.guards = java/editor
 javahelp = platform/help system
 java.helpset = platform/help system
 java.hints = java/hints
+java.hints.declarative = java/hints
 java.j2seplatform = java/project
 java.j2seproject = java/project
 java.kit = java/project

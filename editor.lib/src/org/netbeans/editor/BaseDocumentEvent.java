@@ -55,6 +55,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
+import org.netbeans.modules.editor.lib2.document.ContentEdit;
 
 /**
 * Document implementation
@@ -68,7 +69,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     private static final boolean debugUndo
             = Boolean.getBoolean("netbeans.debug.editor.document.undo");
 
-    private DocumentContent.Edit modifyUndoEdit;
+    private ContentEdit modifyUndoEdit;
     
     private FixLineSyntaxState fixLineSyntaxState;
 
@@ -152,13 +153,13 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return null;
     }
 
-    private DocumentContent.Edit getModifyUndoEdit() {
+    private ContentEdit getModifyUndoEdit() {
         if (getType() == DocumentEvent.EventType.CHANGE) {
             throw new IllegalStateException("Cannot be called for CHANGE events."); // NOI18N
         }
 
         if (modifyUndoEdit == null) {
-            modifyUndoEdit = (DocumentContent.Edit)findEdit(DocumentContent.Edit.class);
+            modifyUndoEdit = (ContentEdit) findEdit(ContentEdit.class);
         }
         return modifyUndoEdit;
     }
@@ -191,7 +192,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     * for change event.
     */
     public String getText() {
-        return (getModifyUndoEdit() != null) ? getModifyUndoEdit().getUndoRedoText() : null;
+        return (getModifyUndoEdit() != null) ? getModifyUndoEdit().getText() : null;
     }
 
     /**
@@ -439,7 +440,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 return true; // OK in this case
             }
             
-            DocumentContent.Edit undoEdit = getModifyUndoEdit();
+            ContentEdit undoEdit = getModifyUndoEdit();
             return (undoEdit == doc.lastModifyUndoEdit);
         } finally {
             doc.extWriteUnlock();

@@ -50,6 +50,14 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.php.project</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>com.jcraft.jsch</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.1.43</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -74,14 +82,6 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.jcraft.jsch</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>0.1.43</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -194,7 +194,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.50</specification-version>
+                        <specification-version>1.51</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

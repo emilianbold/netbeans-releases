@@ -51,8 +51,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -61,6 +63,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
@@ -69,16 +72,24 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
+import javax.swing.table.TableModel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -88,6 +99,10 @@ import org.openide.util.Utilities;
  */
 public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
+    /** web browser selection related constants */
+    private static final String EA_HIDDEN = "hidden"; // NOI18N    
+    private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
+
     private Project project;
     private PropertyEvaluator evaluator;
     private JTextField[] data;
@@ -96,6 +111,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     private JFXProjectProperties jfxProps;
     private File lastHtmlFolder = null;
+    private static String appParamsColumnNames[];
 
     /**
      * Creates new form JFXRunPanel
@@ -110,7 +126,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         
         data = new JTextField[] {
             textFieldAppClass,
-            textFieldParams,
+            //textFieldParams,
             textFieldPreloaderClass,
             textFieldVMOptions,
             textFieldWebPage,
@@ -120,7 +136,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         dataLabels = new JLabel[] {
             labelAppClass,
-            labelParams,
+            //labelParams,
             labelPreloaderClass,
             labelVMOptions,
             labelWebPage,
@@ -130,7 +146,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         keys = new String[] {
             JFXProjectProperties.MAIN_CLASS,
-            JFXProjectProperties.APPLICATION_ARGS,
+            //JFXProjectProperties.APPLICATION_ARGS,
             JFXProjectProperties.PRELOADER_CLASS,
             JFXProjectProperties.RUN_JVM_ARGS,
             JFXProjectProperties.RUN_IN_HTMLPAGE,
@@ -188,8 +204,13 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 }
             });
         }
+        appParamsColumnNames = new String[] {
+            NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.name"), // NOI18N
+            NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.value") // NOI18N
+        };
         
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
+        updateWebBrowsers();
     }
 
     /** This method is called from within the constructor to
@@ -373,7 +394,11 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(textFieldParams, gridBagConstraints);
 
         buttonParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
-        buttonParams.setEnabled(false);
+        buttonParams.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonParamsActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
@@ -676,15 +701,12 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
 
         labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
-        labelWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
-
-        comboBoxWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
@@ -862,6 +884,56 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
 }//GEN-LAST:event_buttonWebPageActionPerformed
 
+private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
+    List<Map<String,String>> origProps = jfxProps.getActiveAppParameters();
+    List<Map<String,String>> props = copyList(origProps);
+    TableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectProperties.APP_PARAM_SUFFIXES, appParamsColumnNames);
+    JPanel panel = new JFXApplicationParametersPanel((PropertiesTableModel) appParametersTableModel);
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
+    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+    dialog.setVisible(true);
+    if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
+        jfxProps.setActiveAppParameters(props);
+        textFieldParams.setText(getParamsString(props));
+    }
+    dialog.dispose();
+}//GEN-LAST:event_buttonParamsActionPerformed
+
+    private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
+        List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
+        if(list2Copy != null ) {
+            for (Map<String,String> map : list2Copy) {
+                Map<String,String> newMap = new HashMap<String,String>();
+                for(String key : map.keySet()) {
+                    String value = map.get(key);
+                    newMap.put(key, value);
+                }
+                list2Return.add(newMap);
+            }
+        }
+        return list2Return;
+    }
+
+    private String getParamsString(List<Map<String,String>> props) {
+        String s = new String();
+        for(Map<String,String> m : props) {
+            if(s.length() > 0) {
+                s += ", "; // NOI18N
+            }
+            int suffixIdx = 0;
+            for(String propName : JFXProjectProperties.APP_PARAM_SUFFIXES) {
+                if(m.get(propName) != null && !m.get(propName).isEmpty()) {
+                    if(suffixIdx > 0) {
+                        s += "="; // NOI18N
+                    }
+                    s += m.get(propName);
+                    suffixIdx++;
+                }
+            }
+        }
+        return s;
+    }
+    
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement("");
@@ -1105,6 +1177,55 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             return NbBundle.getMessage(JFXRunPanel.class, "MSG_HtmlFileFilter_Description");  // NOI18N
         }
 
+    }
+
+    private void updateWebBrowsers() {
+        //TODO - incomplete, now produces plain text list only without any functionality
+        comboBoxWebBrowser.removeAllItems ();
+
+        ArrayList<String> list = new ArrayList<String> (6);
+        Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
+            list.add(i.getDisplayName());
+        }
+
+        // PENDING need to get rid of this filtering
+        FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
+        if (fo != null) {
+            DataFolder folder = DataFolder.findFolder (fo);
+            DataObject [] dobjs = folder.getChildren ();
+            for (int i = 0; i<dobjs.length; i++) {
+                // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
+                if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
+                        dobjs[i].getCookie(InstanceCookie.class) == null) {
+                    FileObject fo2 = dobjs[i].getPrimaryFile();
+                    String n = fo2.getName();
+                    try {
+                        n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
+                    } catch (FileStateInvalidException e) {
+                        // Never mind.
+                    }
+                    list.remove(n);
+                }
+            }
+        }
+        String[] tags = new String[list.size ()];
+        list.toArray (tags);
+        if (tags.length > 0) {
+            for (String tag : tags) {
+                comboBoxWebBrowser.addItem(tag);
+            }
+            //comboBoxWebBrowser.setSelectedItem(editor.getAsText());
+            labelWebBrowser.setEnabled(true);
+            comboBoxWebBrowser.setEnabled(true);
+            //buttonWebBrowser.setEnabled(true);
+            jSeparator2.setEnabled(true);
+        } else {
+            labelWebBrowser.setEnabled(false);
+            comboBoxWebBrowser.setEnabled(false);
+            //buttonWebBrowser.setEnabled(false);
+            jSeparator2.setEnabled(false);
+        }
     }
 
 }
