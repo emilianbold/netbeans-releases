@@ -20,18 +20,18 @@ Css modules list (source http://www.css3.info/modules/)
 * CSS Writing Modes 
 * CSS Generated Content for Paged Media 
 * CSS Fonts 
-CSS Basic Box Model 
-CSS Template Layout 
-CSS Speech 
-CSS Grid Positioning 
+* CSS Basic Box Model 
+x CSS Template Layout 
+* CSS Speech 
+* CSS Grid Positioning 
 CSS Flexible Box Layout 
 CSS Image Values & Replaced Content 
 CSS 2D Transformations 
 CSS 3D Transformations 
 CSS Transitions 
 CSS Animations 
-CSSOM View 
-* CSS Syntax 
+* CSSOM View 
+x CSS Syntax 
 CSS Lists 
 CSS Reader Media Type 
 CSS Generated & Replaced Content
@@ -46,6 +46,10 @@ general:
 - css module should be able to provide new unit acceptors
 - support for functions providing + completion, checking?
 - inherit property support (parsing, error checking, completion, ...)
+- support for extending property grammar definition by other module/s (merging)
+- characters escaping in grammar definition (like '[' or '*' chars), see GridPositioningModuleTest
+    -uncomment #display=flexbox | inline-flexbox then
+
 
 selectors module:
 --------------------
