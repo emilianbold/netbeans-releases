@@ -1532,7 +1532,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
             CharSequence docText = (CharSequence) getProperty(CharSequence.class);
             // Skip extra '\n' (added by AbstractDocument convention) at the end of char sequence
-            ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(docText, pos, len, lineSeparator);
+            ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(docText, pos, pos + len, lineSeparator);
             ReadWriteUtils.write(writer, buffer);
             writer.flush();
         } finally {
