@@ -54,10 +54,12 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.execute.Bundle.*;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -80,11 +82,13 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         ReRunAction rerun;
         ReRunAction rerunDebug;
         StopAction stop;
+        OptionsAction options;
         @Override protected TabContext clone() {
             TabContext c = new TabContext();
             c.rerun = rerun;
             c.rerunDebug = rerunDebug;
             c.stop = stop;
+            c.options = options;
             return c;
         }
     }
@@ -217,6 +221,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         tabContext.rerun = new ReRunAction(false);
         tabContext.rerunDebug = new ReRunAction(true);
         tabContext.stop = new StopAction();
+        tabContext.options = new OptionsAction();
         tabContext.rerun.setConfig(config);
         tabContext.rerunDebug.setConfig(config);
         tabContext.stop.setExecutor(this);
@@ -224,6 +229,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             tabContext.rerun,
             tabContext.rerunDebug,
             tabContext.stop,
+            tabContext.options,
         };
     }
 
@@ -301,6 +307,19 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
                 }
             });
         }
+    }
+
+    private static final class OptionsAction extends AbstractAction {
+
+        @Messages("LBL_OptionsAction=Maven Settings")
+        OptionsAction() {
+            super(LBL_OptionsAction(), ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/options.png", true));
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH);
+        }
+
     }
 
     private class MavenItem implements BuildExecutionSupport.Item {
