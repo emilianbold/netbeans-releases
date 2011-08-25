@@ -866,7 +866,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     }
 
     private DataObject getDataObject(HintMetadata selectedHint) {
-        FileObject fo = FileUtil.getConfigFile("rules/" + selectedHint.id.substring(0,selectedHint.id.lastIndexOf('-')));
+        String fileName = selectedHint.id.indexOf('-') != (-1) ? selectedHint.id.substring(0,selectedHint.id.lastIndexOf('-')) : selectedHint.id; //XXX
+        FileObject fo = FileUtil.getConfigFile("rules/" + fileName);
         try {
             return DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
