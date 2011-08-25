@@ -39,22 +39,16 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer;
 
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.FileNotFoundException;
-import org.apache.maven.index.expr.StringSearchExpression;
-import org.codehaus.plexus.util.FileUtils;
-import java.util.Map;
-import org.apache.lucene.document.Document;
-import org.netbeans.modules.maven.indexer.api.QueryField;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -70,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -81,6 +76,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
@@ -107,23 +103,24 @@ import org.apache.maven.index.DefaultArtifactContextProducer;
 import org.apache.maven.index.Field;
 import org.apache.maven.index.FlatSearchRequest;
 import org.apache.maven.index.FlatSearchResponse;
-import org.apache.maven.index.IndexerField;
-import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.GroupedSearchRequest;
 import org.apache.maven.index.GroupedSearchResponse;
+import org.apache.maven.index.IndexerField;
 import org.apache.maven.index.IndexerFieldVersion;
 import org.apache.maven.index.MAVEN;
 import org.apache.maven.index.NexusIndexer;
-import org.apache.maven.index.context.IndexingContext;
-import org.apache.maven.index.creator.AbstractIndexCreator;
 import org.apache.maven.index.SearchEngine;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexUtils;
+import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.creator.AbstractIndexCreator;
 import org.apache.maven.index.creator.JarFileContentsIndexCreator;
 import org.apache.maven.index.creator.MavenArchetypeArtifactInfoIndexCreator;
 import org.apache.maven.index.creator.MavenPluginArtifactInfoIndexCreator;
 import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
+import org.apache.maven.index.expr.StringSearchExpression;
+import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
@@ -136,16 +133,6 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.Wagon;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
-import org.netbeans.modules.maven.indexer.spi.BaseQueries;
-import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
-import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
-import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -156,8 +143,23 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.Base64;
+import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import static org.netbeans.modules.maven.indexer.Bundle.*;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
+import org.netbeans.modules.maven.indexer.spi.BaseQueries;
+import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
+import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
+import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
+import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -166,7 +168,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -306,6 +308,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     //always call from mutex.writeAccess
+    @Messages("MSG_Reconstruct_Index=Reconstructing a broken Maven repository index.")
     private void loadIndexingContext(final RepositoryInfo info) throws IOException {
         LOAD: {
             assert getRepoMutex(info).isWriteAccess();
@@ -366,7 +369,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, "Found a broken index at " + loc.getAbsolutePath(), ex);
                     FileUtils.deleteDirectory(loc);
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "MSG_Reconstruct_Index"));
+                    StatusDisplayer.getDefault().setStatusText(MSG_Reconstruct_Index());
                     try {
                     indexer.addIndexingContextForced(
                             info.getId(), // context id
