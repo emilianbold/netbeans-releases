@@ -39,13 +39,11 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer.api;
 
-import java.io.IOException;
-import java.io.SyncFailedException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,17 +53,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import static org.netbeans.modules.maven.indexer.api.Bundle.*;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
 /**
- *
- * @author Anuradha G
+ * List of Maven repositories of interest.
  */
 public final class RepositoryPreferences {
 
@@ -84,11 +85,11 @@ public final class RepositoryPreferences {
     public static final String TYPE_NEXUS = "nexus"; //NOI18N
     
 
-    static final String KEY_TYPE = "provider";//NOI18N
-    static final String KEY_DISPLAY_NAME = "displayName";//NOI18N
-    static final String KEY_PATH = "path";//NOI18N
-    static final String KEY_INDEX_URL = "repoIndexUrl";//NOI18N
-    static final String KEY_REPO_URL = "repoUrl";//NOI18N
+    private static final String KEY_TYPE = "provider";//NOI18N
+    private static final String KEY_DISPLAY_NAME = "name";//NOI18N
+    private static final String KEY_PATH = "path";//NOI18N
+    private static final String KEY_INDEX_URL = "index";//NOI18N
+    private static final String KEY_REPO_URL = "url";//NOI18N
     /*index settings */
     public static final String PROP_INDEX_FREQ = "indexUpdateFrequency"; //NOI18N
     public static final String PROP_LAST_INDEX_UPDATE = "lastIndexUpdate"; //NOI18N
@@ -96,35 +97,26 @@ public final class RepositoryPreferences {
     public static final int FREQ_ONCE_DAY = 1;
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
-    private final Map<FileObject, RepositoryInfo> infoCache = new HashMap<FileObject, RepositoryInfo>();
+    private final Map<String,RepositoryInfo> infoCache = new HashMap<String,RepositoryInfo>();
     private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
+    private final RepositoryInfo local;
     private final ChangeSupport cs = new ChangeSupport(this);
-    private static final String REPO_FOLDER = "Projects/org-netbeans-modules-maven/Repositories";
 
-    //---------------------------------------------------------------------------
+    @Messages("local=Local")
     private RepositoryPreferences() {
+        try {
+            local = new RepositoryInfo(LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+        } catch (URISyntaxException x) {
+            throw new AssertionError(x);
+        }
     }
-
 
     private Preferences getPreferences() {
         return NbPreferences.root().node("org/netbeans/modules/maven/nexus/indexing"); //NOI18N
     }
 
-    //#138102
-    private FileObject getRepoFolder() {
-        FileObject repo = FileUtil.getConfigFile(REPO_FOLDER);
-        if (repo == null) {
-            LOG.warning(
-                    "Maven Repository root folder " + REPO_FOLDER + //NOI18N
-                    " was deleted somehow, creating dummy (empty) one."); //NOI18N
-            try {
-                repo = FileUtil.createFolder(FileUtil.getConfigRoot(), REPO_FOLDER);
-            } catch (IOException ex) {
-                // what to do? config file system probably totally broken here...
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return repo;
+    private Preferences storage() {
+        return NbPreferences.root().node("org/netbeans/modules/maven/repositories");
     }
 
     public synchronized static RepositoryPreferences getInstance() {
@@ -132,6 +124,19 @@ public final class RepositoryPreferences {
             instance = new RepositoryPreferences();
         }
         return instance;
+    }
+
+    private static @CheckForNull RepositoryInfo createRepositoryInfo(Preferences p) throws URISyntaxException {
+        String type = p.get(KEY_TYPE, TYPE_NEXUS);
+        String id = p.name();
+        String name = p.get(KEY_DISPLAY_NAME, null);
+        if (name == null) {
+            return null;
+        }
+        String path = p.get(KEY_PATH, null);
+        String repourl = p.get(KEY_REPO_URL, null);
+        String indexurl = p.get(KEY_INDEX_URL, null);
+        return new RepositoryInfo(id, type, name, path, repourl, indexurl);
     }
 
     public RepositoryInfo getRepositoryInfoById(String id) {
@@ -144,38 +149,45 @@ public final class RepositoryPreferences {
     }
 
     public List<RepositoryInfo> getRepositoryInfos() {
-        final FileObject repoFolder = getRepoFolder();
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
+        toRet.add(local);
         Set<String> ids = new HashSet<String>();
+        ids.add(LOCAL_REPO_ID);
         Set<String> urls = new HashSet<String>();
         synchronized (infoCache) {
-            if (repoFolder != null) {
-                List<FileObject> repos = FileUtil.getOrder(Arrays.asList(repoFolder.getChildren()), false);
-                HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
-                for (FileObject fo : repos) {
-                    RepositoryInfo ri = infoCache.get(fo);
+            Preferences storage = storage();
+            try {
+                Set<String> gone = new HashSet<String>(infoCache.keySet());
+                for (String c : storage.childrenNames()) {
+                    RepositoryInfo ri = infoCache.get(c);
                     if (ri == null) {
+                        Preferences child = storage.node(c);
                         try {
-                            ri = RepositoryInfo.createRepositoryInfo(fo);
-                            infoCache.put(fo, ri);
+                            ri = createRepositoryInfo(child);
+                            if (ri == null) {
+                                continue;
+                            }
+                            infoCache.put(c, ri);
                         } catch (/*IllegalArgument,URISyntax*/Exception x) {
-                            LOG.log(Level.INFO, fo.getPath(), x);
+                            LOG.log(Level.INFO, c, x);
                             try {
-                                fo.delete();
-                            } catch (IOException x2) {
+                                child.removeNode();
+                            } catch (BackingStoreException x2) {
                                 LOG.log(Level.INFO, null, x2);
                             }
                             continue;
                         }
                     }
                     toRet.add(ri);
-                    gone.remove(fo);
+                    gone.remove(c);
                     ids.add(ri.getId());
                     urls.add(ri.getRepositoryUrl());
                 }
-                for (FileObject g : gone) {
+                for (String g : gone) {
                     infoCache.remove(g);
                 }
+            } catch (BackingStoreException x) {
+                LOG.log(Level.INFO, null, x);
             }
             for (List<RepositoryInfo> infos : transients.values()) {
                 for (RepositoryInfo info : infos) {
@@ -188,54 +200,27 @@ public final class RepositoryPreferences {
         return toRet;
     }
 
-    public synchronized void addOrModifyRepositoryInfo(RepositoryInfo info) {
-        try {
-            FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
-            if (fo == null) {
-                List<FileObject> kids = new ArrayList<FileObject>(FileUtil.getOrder(Arrays.asList(getRepoFolder().getChildren()), true));
-                fo = getRepoFolder().createData(getFileObjectName(info.getId()));
-                kids.add(fo);
-                FileUtil.setOrder(kids);
-            } else {
-                if (infoCache.containsKey(fo)) {
-                    infoCache.put(fo, info);
-                }
-            }
-            fo.setAttribute(KEY_TYPE, info.getType());
-            fo.setAttribute(KEY_DISPLAY_NAME, info.getName());
-            fo.setAttribute(KEY_PATH, info.getRepositoryPath());
-            fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
+    public void addOrModifyRepositoryInfo(RepositoryInfo info) {
+        String id = info.getId();
+        synchronized (infoCache) {
+            infoCache.put(id, info);
+            Preferences p = storage().node(id);
+            put(p, KEY_TYPE, info.getType().equals(TYPE_NEXUS) ? null : info.getType());
+            p.put(KEY_DISPLAY_NAME, info.getName());
+            put(p, KEY_PATH, info.getRepositoryPath());
+            put(p, KEY_REPO_URL, info.getRepositoryUrl());
             if (info.getRepositoryUrl() != null) {
-                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl().equals(info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX) ? null : info.getIndexUpdateUrl());
+                put(p, KEY_INDEX_URL, info.getIndexUpdateUrl().equals(info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX) ? null : info.getIndexUpdateUrl());
             }
-        } catch (SyncFailedException x) {
-            LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         cs.fireChange();
     }
-
-    private static final char[] forbiddenChars =
-            new char[] {'/', '\\', '?', '%', '*', ':', '|', '"', '<', '>' };
-    private static final char replaceChar = '-';
-
-
-    private String getFileObjectName(String id) {
-        char[] chars = id.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            for (int j = 0; j < forbiddenChars.length; j++) {
-                if (chars[i] == forbiddenChars[j]) {
-                    chars[i] = replaceChar;
-                }
-            }
+    private static void put(@NonNull Preferences p, @NonNull String key, @NullAllowed String value) {
+        if (value != null) {
+            p.put(key, value);
+        } else {
+            p.remove(key);
         }
-
-        String toRet = String.valueOf(chars);
-        if (toRet.contains(".")) { //NOI18N
-            toRet = toRet + ".ext"; //NOI18N
-        }
-        return toRet;
     }
 
     /**
@@ -245,22 +230,20 @@ public final class RepositoryPreferences {
      * @since 2.1
      */
     public boolean isPersistent(String id) {
-        return !id.equals("local") && getRepoFolder().getFileObject(getFileObjectName(id)) != null;
+        return storage().node(id).get(KEY_DISPLAY_NAME, null) != null;
     }
     
     public void removeRepositoryInfo(RepositoryInfo info) {
-        FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
-        if (fo != null) {
-            synchronized (infoCache) {
-                infoCache.remove(fo);
-            }
+        synchronized (infoCache) {
+            String id = info.getId();
+            infoCache.remove(id);
             try {
-                fo.delete();
-            } catch (IOException x) {
-                LOG.log(Level.FINE, "Cannot delete repository in system filesystem", x); //NOI18N
+                storage().node(id).removeNode();
+            } catch (BackingStoreException x) {
+                LOG.log(Level.INFO, null, x);
             }
-            cs.fireChange();
         }
+        cs.fireChange();
     }
 
     public void setIndexUpdateFrequency(int fr) {
@@ -272,11 +255,17 @@ public final class RepositoryPreferences {
     }
 
     public Date getLastIndexUpdate(String repoId) {
-        return new Date(getPreferences().getLong(PROP_LAST_INDEX_UPDATE + "."+repoId, 0));
+        long old = getPreferences().getLong(PROP_LAST_INDEX_UPDATE + "." + repoId, 0); // compatibility
+        if (old != 0) { // upgrade it
+            getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
+            storage().node(repoId).putLong(PROP_LAST_INDEX_UPDATE, old);
+        }
+        return new Date(storage().node(repoId).getLong(PROP_LAST_INDEX_UPDATE, 0));
     }
 
     public void setLastIndexUpdate(String repoId,Date date) {
-        getPreferences().putLong(PROP_LAST_INDEX_UPDATE + "." + repoId, date.getTime());
+        getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
+        storage().node(repoId).putLong(PROP_LAST_INDEX_UPDATE, date.getTime());
     }
 
     /**

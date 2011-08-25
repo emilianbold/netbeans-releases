@@ -161,7 +161,6 @@ import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
@@ -221,11 +220,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private Lookup lookup;
 
     private static final int MAX_RESULT_COUNT = 512;
-
-    //#138102
-    public static String createLocalRepositoryPath(FileObject fo) {
-        return EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir();
-    }
 
     public NexusRepositoryIndexerImpl() {
         lookup = Lookups.singleton(this);
