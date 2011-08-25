@@ -61,6 +61,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.eclipse.mylyn.monitor.ui</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
