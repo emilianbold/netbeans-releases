@@ -51,9 +51,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.nodes.AddDependencyPanel;
+import static org.netbeans.modules.maven.spi.grammar.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * A factory class that creates dialogs to add/edit stuff,
@@ -76,11 +77,12 @@ public final class DialogFactory {
      *
      *
      */
+    @Messages("TIT_Add_Library=Add Library")
     public static String[] showDependencyDialog(Project prj, boolean showDepMan) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
-        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
-        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
+        pnl.getAccessibleContext().setAccessibleDescription(TIT_Add_Library());
+        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Add_Library());
         dd.setClosingOptions(new Object[]{
                     pnl.getOkButton(),
                     DialogDescriptor.CANCEL_OPTION
@@ -104,10 +106,11 @@ public final class DialogFactory {
         return null;
     }
 
+    @Messages("TIT_Exclude=Add Dependency Excludes")
     public static Map<Artifact, List<Artifact>> showDependencyExcludeDialog(Project prj) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(nbproj.getMavenProject());
-        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class,"TIT_Exclude"));
+        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Exclude());
         pnl.setStatusDisplayer(dd.createNotificationLineSupport());
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
