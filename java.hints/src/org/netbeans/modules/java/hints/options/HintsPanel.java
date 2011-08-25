@@ -239,7 +239,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             toSelect = null;
         }
         
-        boolean editEnabled = !allHints && FileUtil.getConfigFile("Templates/Other/HintSample.hint")!=null;
+        boolean editEnabled = !allHints && FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint")!=null;
         newButton.setVisible(editEnabled);
         importButton.setVisible(false);
         exportButton.setVisible(false);
@@ -590,7 +590,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         try {
-            FileObject tempFO = FileUtil.getConfigFile("Templates/Other/HintSample.hint"); // NOI18N
+            FileObject tempFO = FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint"); // NOI18N
             FileObject folderFO = FileUtil.getConfigFile("rules");
             if (folderFO == null) {
                 folderFO = FileUtil.getConfigRoot().createFolder("rules");

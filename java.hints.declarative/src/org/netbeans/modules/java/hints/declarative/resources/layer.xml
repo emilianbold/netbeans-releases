@@ -212,6 +212,15 @@ made subject to such option by the copyright holder.
                 
         </folder>
     </folder>-->
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="templates">
+            <file name="HintSample.hint" url="HintSample.hint">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.declarative.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
+    
 
     <folder name="Editors">
         <folder name="text">
