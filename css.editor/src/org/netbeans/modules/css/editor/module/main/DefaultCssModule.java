@@ -96,7 +96,11 @@ public class DefaultCssModule extends CssModule {
         "text", 
         "writing_modes",
         "generated_content_for_paged_media",
-        "fonts"
+        "fonts",
+        "basic_box_model",
+        "speech",
+        "grid_positioning",
+        "flexible_box_layout"
     };
     private static Collection<PropertyDescriptor> propertyDescriptors;
 

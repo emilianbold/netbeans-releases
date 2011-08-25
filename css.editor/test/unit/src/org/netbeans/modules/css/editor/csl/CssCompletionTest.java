@@ -109,9 +109,9 @@ public class CssCompletionTest extends CssCompletionTestBase {
 //        checkCC("h1 { color: ble| }", arr(), Match.EMPTY); //fails - issue #161129
     }
 
-    public void testIssue160870() throws ParseException {
-        checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
-    }
+//    public void testIssue160870() throws ParseException {
+//        checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
+//    }
 
     public void testHtmlSelectorsCompletion() throws ParseException {
         checkCC("|", arr("html"), Match.CONTAINS);

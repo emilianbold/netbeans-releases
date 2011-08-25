@@ -233,7 +233,8 @@ public class CssModuleSupport {
             for(PropertyDescriptor pd: module.getPropertyDescriptors()) {
                 PropertyDescriptor original = all.put(pd.getName(), pd);
                 if(original != null) {
-                    LOGGER.warning(String.format("Duplicate property %s found, offending css module: %s", pd.getName(), module));
+                    //TODO - add support for more property values for one property name
+                    //LOGGER.warning(String.format("Duplicate property %s found, offending css module: %s", pd.getName(), module));
                 }
             }
         }
