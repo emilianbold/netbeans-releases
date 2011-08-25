@@ -1,0 +1,4 @@
+$1.toString()
+=> $1 :: $1 instanceof java.lang.String
+=> java.lang.String.valueOf($1) :: ! $1 instanceof java.lang.String
+;;

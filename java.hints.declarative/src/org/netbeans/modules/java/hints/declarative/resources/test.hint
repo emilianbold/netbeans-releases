@@ -1,0 +1,4 @@
+"Use of java.io.File.toURL()":$1{java.io.File}.toURL()
+    => "Rewrite to .toURI().toURL()":$1.toURI().toURL();
+"Use of DO.getCookie":$1{org.openide.loaders.DataObject}.getCookie($2{java.lang.Class<? extends org.openide.nodes.Node.Cookie>})
+    => "Use getLookup":$1.getLookup().lookup($2);
