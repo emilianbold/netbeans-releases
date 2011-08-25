@@ -82,8 +82,14 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -92,6 +98,10 @@ import org.openide.util.Utilities;
  * @author Petr Somol
  */
 public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+
+    /** web browser selection related constants */
+    private static final String EA_HIDDEN = "hidden"; // NOI18N    
+    private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
 
     private Project project;
     private PropertyEvaluator evaluator;
@@ -200,6 +210,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
+        updateWebBrowsers();
     }
 
     /** This method is called from within the constructor to
@@ -690,15 +701,12 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
 
         labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
-        labelWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
-
-        comboBoxWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
@@ -1169,6 +1177,55 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             return NbBundle.getMessage(JFXRunPanel.class, "MSG_HtmlFileFilter_Description");  // NOI18N
         }
 
+    }
+
+    private void updateWebBrowsers() {
+        //TODO - incomplete, now produces plain text list only without any functionality
+        comboBoxWebBrowser.removeAllItems ();
+
+        ArrayList<String> list = new ArrayList<String> (6);
+        Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
+            list.add(i.getDisplayName());
+        }
+
+        // PENDING need to get rid of this filtering
+        FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
+        if (fo != null) {
+            DataFolder folder = DataFolder.findFolder (fo);
+            DataObject [] dobjs = folder.getChildren ();
+            for (int i = 0; i<dobjs.length; i++) {
+                // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
+                if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
+                        dobjs[i].getCookie(InstanceCookie.class) == null) {
+                    FileObject fo2 = dobjs[i].getPrimaryFile();
+                    String n = fo2.getName();
+                    try {
+                        n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
+                    } catch (FileStateInvalidException e) {
+                        // Never mind.
+                    }
+                    list.remove(n);
+                }
+            }
+        }
+        String[] tags = new String[list.size ()];
+        list.toArray (tags);
+        if (tags.length > 0) {
+            for (String tag : tags) {
+                comboBoxWebBrowser.addItem(tag);
+            }
+            //comboBoxWebBrowser.setSelectedItem(editor.getAsText());
+            labelWebBrowser.setEnabled(true);
+            comboBoxWebBrowser.setEnabled(true);
+            //buttonWebBrowser.setEnabled(true);
+            jSeparator2.setEnabled(true);
+        } else {
+            labelWebBrowser.setEnabled(false);
+            comboBoxWebBrowser.setEnabled(false);
+            //buttonWebBrowser.setEnabled(false);
+            jSeparator2.setEnabled(false);
+        }
     }
 
 }
