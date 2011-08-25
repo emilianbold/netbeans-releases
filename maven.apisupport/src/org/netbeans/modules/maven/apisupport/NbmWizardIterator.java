@@ -177,7 +177,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 //create the nbm module
                 ProjectInfo nbm = new ProjectInfo(vi.groupId, nbm_artifactId, vi.version, vi.packageName);
                 File nbm_folder = FileUtil.normalizeFile(new File(projFile, nbm_artifactId));
-                ArchetypeWizards.createFromArchetype(handle, nbm_folder, nbm, NB_MODULE_ARCH, additional, 2, true);
+                ArchetypeWizards.createFromArchetype(handle, nbm_folder, nbm, NB_MODULE_ARCH, additional, 2, false);
                 trimInheritedFromNbmProject(nbm_folder);
                 if (archetype == NB_APP_ARCH) {
                     File appDir = new File(projFile, "application"); //NOI18N

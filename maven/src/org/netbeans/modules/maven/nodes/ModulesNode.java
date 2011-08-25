@@ -62,6 +62,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -76,7 +77,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /**
@@ -85,11 +86,11 @@ import org.openide.util.WeakListeners;
  */
 public class ModulesNode extends AbstractNode {
 
-    /** Creates a new instance of ModulesNode */
+    @Messages("LBL_Modules=Modules")
     public ModulesNode(NbMavenProjectImpl proj) {
         super(Children.create(new ModulesChildFactory(proj), true));
         setName("Modules"); //NOI18N
-        setDisplayName(org.openide.util.NbBundle.getMessage(ModulesNode.class, "LBL_Modules"));
+        setDisplayName(LBL_Modules());
     }
 
     @Override
@@ -214,15 +215,16 @@ public class ModulesNode extends AbstractNode {
         private NbMavenProjectImpl project;
         private NbMavenProjectImpl parent;
 
-        public RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ModulesNode.class, "BTN_Remove_Module"));
+        @Messages("BTN_Remove_Module=Remove Module")
+        RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
+            putValue(Action.NAME, BTN_Remove_Module());
             project = proj;
             this.parent = parent;
         }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(ModulesNode.class, "MSG_Remove_Module"), NotifyDescriptor.YES_NO_OPTION);
+        @Messages("MSG_Remove_Module=Do you want to remove the module from the parent POM?")
+        @Override public void actionPerformed(ActionEvent e) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(MSG_Remove_Module(), NotifyDescriptor.YES_NO_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 FileObject fo = FileUtil.toFileObject(parent.getPOMFile());
@@ -260,8 +262,9 @@ public class ModulesNode extends AbstractNode {
             assert false;
         }
 
+        @Messages("BTN_Open_Project=Open Project")
         public @Override Action createContextAwareInstance(final Lookup context) {
-            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+            return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
                     OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);

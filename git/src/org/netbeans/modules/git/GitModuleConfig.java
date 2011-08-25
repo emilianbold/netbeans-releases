@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.FileInformation.Mode;
+import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
@@ -84,6 +85,7 @@ public final class GitModuleConfig {
     private static final String AUTO_IGNORE_FILES       = "autoIgnoreFiles"; //NOI18N
     private static final String SHOW_CLONE_COMPLETED    = "cloneCompleted.showCloneCompleted";        // NOI18N  
     private static final String GURI_PASSWORD           = "guri_password";
+    private static final String GURI_PASSPHRASE           = "guri_passphrase";
     
     private static final String DELIMITER               = "<=~=>";              // NOI18N
     private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
@@ -298,43 +300,43 @@ public final class GitModuleConfig {
         getPreferences().putBoolean(KEY_SHOW_FILE_INFO, info);
     }
     
-    private final HashMap<String, GitURI> cachedUris = new HashMap<String, GitURI>(5);
-    public void insertRecentGitURI(GitURI guri, boolean saveCredentials) {
+    private final HashMap<String, ConnectionSettings> cachedConnectionSettings = new HashMap<String, ConnectionSettings>(5);
+    public void insertRecentConnectionSettings (ConnectionSettings toStore) {
         assert !EventQueue.isDispatchThread();
-        String guriString = getUriStringWithoutCredentials(guri);
-        if(guriString == null) {
+        String guriString = getUriStringWithoutCredentials(toStore.getUri());
+        if (guriString == null) {
             return;
         }        
         Preferences prefs = getPreferences();
         removeStaleEntries(prefs, guriString);
         
-        if(saveCredentials && guri.getPass() != null) {
+        if (toStore.isSaveCredentials() && (toStore.getPassphrase() != null || toStore.getPassword() != null)) {
             // keep permanently and remove from cache
-            storeCredentials(guri);
-            cachedUris.remove(guriString);
+            storeCredentials(toStore);
+            cachedConnectionSettings.remove(guriString);
         } else {
             // remove from perm storage, we should not keep it forever
-            deleteCredentials(guri);
+            deleteCredentials(toStore.getUri());
             // but keep until end of session
-            cachedUris.put(guriString, guri);
+            cachedConnectionSettings.put(guriString, toStore);
         }
         
-        if (!"".equals(guriString)) {                                           //NOI18N
-            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), saveCredentials).toString() , -1);
+        if (!guriString.isEmpty()) {
+            Utils.insert(prefs, RECENT_GURI, new GitConnectionSettingsEntry(guriString, toStore).toString(), -1);
         }
     }
 
-    public void removeRecentGitURI (GitURI guri) {
+    public void removeConnectionSettings (GitURI toRemove) {
         assert !EventQueue.isDispatchThread();
-        String guriString = getUriStringWithoutCredentials(guri);
-        if(guriString == null) {
+        String guriString = getUriStringWithoutCredentials(toRemove);
+        if (guriString == null) {
             return;
         }        
         Preferences prefs = getPreferences();
         removeStaleEntries(prefs, guriString);
         
-        cachedUris.remove(guriString);
-        deleteCredentials(guri);
+        cachedConnectionSettings.remove(guriString);
+        deleteCredentials(toRemove);
     }
 
     private void removeStaleEntries (Preferences prefs, String guriString) {
@@ -343,7 +345,7 @@ public final class GitModuleConfig {
             String rcOldString = it.next();
             GitURI guriOld = null;
             try {
-                GitURIEntry entry = GitURIEntry.create(rcOldString);
+                GitConnectionSettingsEntry entry = GitConnectionSettingsEntry.create(rcOldString);
                 if(entry != null) {
                     guriOld = new GitURI(entry.guriString);
                 }
@@ -356,122 +358,121 @@ public final class GitModuleConfig {
         }
     }    
     
-    public List<GitURI> getRecentUrls() {
+    public List<ConnectionSettings> getRecentConnectionSettings () {
         assert !EventQueue.isDispatchThread();
         
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
-        List<GitURI> ret = new ArrayList<GitURI>(urls.size());
+        List<ConnectionSettings> ret = new ArrayList<ConnectionSettings>(urls.size());
         for (String guriString : urls) {
-            GitURIEntry entry = GitURIEntry.create(guriString);
+            GitConnectionSettingsEntry entry = GitConnectionSettingsEntry.create(guriString);
+            if (entry == null) {
+                continue;
+            }
             // before we contact keyring, check the cache:
-            GitURI guri = cachedUris.get(entry.guriString);
-            if (guri == null) {
-                try {
-                    guri = new GitURI(entry.guriString);
-                    if (!entry.username.isEmpty()) {
-                        guri = guri.setUser(entry.username);
+            ConnectionSettings connSettings = cachedConnectionSettings.get(entry.guriString);
+            if (connSettings == null) {
+                connSettings = entry.toConnectionSettings();
+                if (connSettings.isPrivateKeyAuth()) {
+                    char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, connSettings.getUri().toString());
+                    if (passphrase != null) {
+                        connSettings.setPassphrase(passphrase);
                     }
-                } catch (URISyntaxException ex) {
-                    Git.LOG.log(Level.WARNING, guriString, ex);
-                    continue;
-                }
-                char[] password = KeyringSupport.read(GURI_PASSWORD, guri.toString());
-                if(password != null) {
-                    guri = guri.setPass(new String(password));
+                } else {
+                    char[] password = KeyringSupport.read(GURI_PASSWORD, connSettings.getUri().toString());
+                    if(password != null) {
+                        connSettings.setPassword(password);
+                    }
                 }
             }
-            ret.add(guri);
+            ret.add(connSettings);
         }
         return ret;
     }
     
-    public GitURI getRecentUri (String uriString) {
+    public ConnectionSettings getConnectionSettings (String uriString) {
         assert !EventQueue.isDispatchThread();
-        GitURI retval = null;
+        ConnectionSettings retval = null;
         String username = null;
         try {
             GitURI uri = new GitURI(uriString);
             username = uri.getUser();
-            uriString = uri.setUser(null).setPass(null).toString();
+            uriString = getUriStringWithoutCredentials(uri);
         } catch (URISyntaxException ex) {
             //
         }
         
         // before we contact keyring, check the cache:
-        GitURI cachedUri = cachedUris.get(uriString);
-        if (cachedUri != null && (username == null || cachedUri.getUser() == null || username.equals(cachedUri.getUser()))) {
-            return cachedUri;
+        ConnectionSettings cachedSetting = cachedConnectionSettings.get(uriString);
+        if (cachedSetting != null && (username == null || cachedSetting.getUser() == null || username.equals(cachedSetting.getUser()))) {
+            return cachedSetting;
         }
         
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
         for (String guriString : urls) {
-            GitURIEntry entry = GitURIEntry.create(guriString);
-            GitURI storedUri;
-            try {
-                storedUri = new GitURI(entry.guriString);
-            } catch (URISyntaxException ex) {
-                Git.LOG.log(Level.WARNING, guriString, ex);
+            GitConnectionSettingsEntry entry = GitConnectionSettingsEntry.create(guriString);
+            if (entry == null) {
                 continue;
             }
-            if (uriString.equals(storedUri.toString()) && (username == null || entry.username == null || username.equals(entry.username))) {
-                if (!entry.username.isEmpty()) {
-                    storedUri = storedUri.setUser(entry.username);
+            ConnectionSettings storedSettings = entry.toConnectionSettings();
+            if (uriString.equals(entry.guriString) && (username == null || storedSettings.getUser() == null || username.equals(storedSettings.getUser()))) {
+                if (storedSettings.isPrivateKeyAuth()) {
+                    char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, storedSettings.getUri().toString());
+                    if (passphrase != null) {
+                        storedSettings.setPassphrase(passphrase);
+                    }
+                } else {
+                    char[] password = KeyringSupport.read(GURI_PASSWORD, storedSettings.getUri().toString());
+                    if(password != null) {
+                        storedSettings.setPassword(password);
+                    }
                 }
-                char[] password = KeyringSupport.read(GURI_PASSWORD, storedUri.toString());
-                if(password != null) {
-                    storedUri = storedUri.setPass(new String(password));
-                }
-                retval = storedUri;
+                retval = storedSettings;
                 break;
             }
         }
         return retval;
     }
 
-    private void storeCredentials (final GitURI guri) {
-        assert guri.getPass() != null;
+    private void storeCredentials (ConnectionSettings settings) {
         assert !EventQueue.isDispatchThread();
-        String passwd = guri.getPass();
-        KeyringSupport.save(GURI_PASSWORD, guri.toString(), passwd.toCharArray(), null);
+        GitURI uri = settings.getUri().setUser(settings.getUser());
+        KeyringSupport.save(GURI_PASSWORD, uri.toString(), settings.getPassword(), null);
+        KeyringSupport.save(GURI_PASSPHRASE, uri.toString(), settings.getPassphrase(), null);
     }
     
-    private void deleteCredentials (final GitURI guri) {
+    private void deleteCredentials (GitURI guri) {
         assert !EventQueue.isDispatchThread();
         KeyringSupport.save(GURI_PASSWORD, guri.toString(), null, null);
+        KeyringSupport.save(GURI_PASSPHRASE, guri.toString(), null, null);
     }
 
     private String getUriStringWithoutCredentials (GitURI guri) {
         String guriString = null;
-        if(guri != null) {
-            try {
-                // we need to compare all uris with the one without username or password
-                guriString = new GitURI(guri.toString()).setUser(null).setPass(null).toString();
-            } catch (URISyntaxException ex) {
-                Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
-            }
+        if (guri != null) {
+            guriString = guri.setUser(null).setPass(null).toString();
         }
         return guriString;
     }
     
-    private static class GitURIEntry {
+    private static class GitConnectionSettingsEntry {
         final String guriString;
-        private final boolean saveCredentials;
         private String stringValue;
-        private final String username;
-        static GitURIEntry create(String entryString) {
+        private final ConnectionSettings settings;
+        static GitConnectionSettingsEntry create (String entryString) {
             String[] s = entryString.split(DELIMITER);
-            assert s.length == 2 || s.length == 3;
-            if(s.length < 2) {
+            assert s.length > 0;
+            try {
+                return new GitConnectionSettingsEntry(s[0], parse(s));
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, "Cannot parse stored connection settings: {0}, {1}", new Object[] { s, ex.getMessage() });
                 return null;
             }
-            return s.length == 2 ? new GitURIEntry(s[0], null, Boolean.parseBoolean(s[1])) : new GitURIEntry(s[0], s[1], Boolean.parseBoolean(s[2]));
         }
-        GitURIEntry(String guriString, String username, boolean saveCredentials) {
+        GitConnectionSettingsEntry (String guriString, ConnectionSettings setts) {
             this.guriString = guriString;
-            this.username = username == null ? "" : username; //NOI18N
-            this.saveCredentials = saveCredentials;
+            this.settings = setts;
         }
         @Override
         public String toString() {
@@ -479,12 +480,38 @@ public final class GitModuleConfig {
                 StringBuilder sb = new StringBuilder();
                 sb.append(guriString);
                 sb.append(DELIMITER);
-                sb.append(saveCredentials ? username : ""); //NOI18N
+                sb.append(settings.getUser());
                 sb.append(DELIMITER);
-                sb.append(saveCredentials);
+                sb.append(settings.isSaveCredentials() ? "1" : "0"); //NOI18N
+                sb.append(DELIMITER);
+                sb.append(settings.isPrivateKeyAuth() ? "1" : "0"); //NOI18N
+                sb.append(DELIMITER);
+                sb.append(settings.getIdentityFile());
                 stringValue = sb.toString();
             }
             return stringValue;
+        }
+
+        private static ConnectionSettings parse (String[] s) throws URISyntaxException {
+            String uri = s[0];
+            ConnectionSettings setts = new ConnectionSettings(new GitURI(uri));
+            if (s.length > 1) {
+                setts.setUser(s[1].isEmpty() ? null : s[1]);
+            }
+            if (s.length > 2) {
+                setts.setSaveCredentials("1".equals(s[2]));
+            }
+            if (s.length > 3) {
+                setts.setPrivateKeyAuth("1".equals(s[3]));
+            }
+            if (s.length > 4) {
+                setts.setIdentityFile(s[4]);
+            }
+            return setts;
+        }
+
+        private ConnectionSettings toConnectionSettings () {
+            return settings;
         }
     }
     
