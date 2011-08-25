@@ -7,7 +7,9 @@ PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
+PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
+PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
