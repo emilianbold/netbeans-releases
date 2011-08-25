@@ -173,11 +173,11 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             try {
                 ai.testConnection();
             } catch (ManagerException ex) {
-                LOG.log(Level.WARNING, "cannot connect to oracle cloud", ex);
+                LOG.log(Level.INFO, "cannot connect to oracle cloud", ex);
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
             } catch (Throwable t) {
-                LOG.log(Level.WARNING, "cannot connect", t);
+                LOG.log(Level.INFO, "cannot connect", t);
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection exception", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong"));
             }
