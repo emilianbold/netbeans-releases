@@ -56,6 +56,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -72,6 +73,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -207,6 +210,7 @@ public class ModulesNode extends AbstractNode {
         public Action[] getActions(boolean b) {
             ArrayList<Action> lst = new ArrayList<Action>();
             lst.add(OpenProjectAction.SINGLETON);
+            lst.add(OpenPOMAction.SINGLETON);
             lst.add(new RemoveModuleAction(parent, project));
 //            lst.addAll(Arrays.asList(super.getActions(b)));
             return lst.toArray(new Action[lst.size()]);
@@ -276,6 +280,40 @@ public class ModulesNode extends AbstractNode {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
                     OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                }
+            };
+        }
+    }
+
+    private static class OpenPOMAction extends AbstractAction implements ContextAwareAction {
+
+        static final OpenPOMAction SINGLETON = new OpenPOMAction();
+
+        private OpenPOMAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        @Messages("BTN_open_pom=Open POM")
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(BTN_open_pom()) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    for (NbMavenProjectImpl project : context.lookupAll(NbMavenProjectImpl.class)) {
+                        FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");
+                        if (pom != null) {
+                            DataObject d;
+                            try {
+                                d = DataObject.find(pom);
+                            } catch (DataObjectNotFoundException x) {
+                                continue;
+                            }
+                            Openable o = d.getLookup().lookup(Openable.class);
+                            if (o != null) {
+                                o.open();
+                            }
+                        }
+                    }
                 }
             };
         }
