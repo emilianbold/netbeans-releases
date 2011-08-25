@@ -146,12 +146,23 @@ public final class ReadWriteUtils {
     /**
      * Convert all occurrences of '\n' to given line separator.
      *
+     * @see #convertFromNewlines(java.lang.CharSequence, int, int, java.lang.String)
+     */
+    public static ReadWriteBuffer convertFromNewlines(CharSequence text, String lineSeparator) {
+        return convertFromNewlines(text, 0, text.length(), lineSeparator);
+    }
+
+    /**
+     * Convert all occurrences of '\n' to given line separator.
+     *
      * @param text text being converted.
+     * @param start start index in text.
+     * @param end end index in text.
      * @param lineSeparator either '\n' or '\r' or '\r\n'.
      * @return converted text with '\n' instead of '\r' and '\r\n'.
      */
-    public static ReadWriteBuffer convertFromNewlines(CharSequence text, String lineSeparator) {
-        int textLen = text.length();
+    public static ReadWriteBuffer convertFromNewlines(CharSequence text, int start, int end, String lineSeparator) {
+        int textLen = end - start;
         char[] output;
         int j = 0; // Target index
         if ("\r\n".equals(lineSeparator)) {
@@ -164,7 +175,7 @@ public final class ReadWriteUtils {
                     output = tmp;
                     outputSafeLen = output.length - 2;
                 }
-                char ch = text.charAt(i);
+                char ch = text.charAt(start + i);
                 if (ch == '\n') {
                     output[j++] = '\r';
                 }
@@ -175,7 +186,7 @@ public final class ReadWriteUtils {
             output = new char[textLen];
             if ("\r".equals(lineSeparator)) {
                 for (; j < textLen; j++) {
-                    char ch = text.charAt(j);
+                    char ch = text.charAt(start + j);
                     if (ch == '\n') {
                         ch = '\r';
                     }
@@ -183,7 +194,7 @@ public final class ReadWriteUtils {
                 }
             } else { // '\n'
                 for (; j < textLen; j++) {
-                    output[j] = text.charAt(j);
+                    output[j] = text.charAt(start + j);
                 }
             }
         }

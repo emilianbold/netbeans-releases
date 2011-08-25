@@ -124,6 +124,15 @@ public class ReadWriteUtilsTest extends NbTestCase {
         assertConvert(containsLF, containsLF, "\n");
         assertConvert(containsCRLF, containsLF, "\r\n");
         assertConvert(containsCR, containsLF, "\r");
+        
+        String convert = "12\n345\n678";
+        ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(convert, 1, convert.length() - 2, "\r");
+        assertEquals(convert.substring(1, convert.length() - 2).replace('\n', '\r'), buffer.toString());
+        
+        // Test realloc of extra space for extra "\r" when converting to "\r\n"
+        convert = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+        buffer = ReadWriteUtils.convertFromNewlines(convert, 1, convert.length() - 2, "\r\n");
+        assertEquals(convert.substring(1, convert.length() - 2).replace("\n", "\r\n"), buffer.toString());
     }
 
 }

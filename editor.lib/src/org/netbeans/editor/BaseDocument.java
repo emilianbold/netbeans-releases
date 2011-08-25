@@ -543,7 +543,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         lineElementRoot = new LineElementRoot(this);
 
         // Line separators default to platform ones
-        putProperty(READ_LINE_SEPARATOR_PROP, Analyzer.getPlatformLS());
+        putProperty(READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
 
         // Initialize preferences and document properties
         prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
@@ -1530,8 +1530,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     lineSeparator = ReadWriteUtils.getSystemLineSeparator();
                 }
             }
-            CharSequence text = (CharSequence) getProperty(CharSequence.class);
-            ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(text, lineSeparator);
+            CharSequence docText = (CharSequence) getProperty(CharSequence.class);
+            // Skip extra '\n' (added by AbstractDocument convention) at the end of char sequence
+            ReadWriteBuffer buffer = ReadWriteUtils.convertFromNewlines(docText, 0, docText.length() - 1, lineSeparator);
             ReadWriteUtils.write(writer, buffer);
             writer.flush();
         } finally {
