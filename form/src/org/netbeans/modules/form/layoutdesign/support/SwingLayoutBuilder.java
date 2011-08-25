@@ -49,9 +49,6 @@ import java.util.*;
 import java.util.List;
 import javax.swing.*;
 
-import org.jdesktop.layout.LayoutStyle;
-import org.jdesktop.layout.GroupLayout;
-
 import org.netbeans.modules.form.layoutdesign.*;
 
 /**
@@ -187,12 +184,12 @@ public class SwingLayoutBuilder {
                         GroupLayout.ParallelGroup parallel;
                         if (!(layoutGroups[dim] instanceof GroupLayout.ParallelGroup)) {
                             parallel = layout.createParallelGroup();
-                            parallel.add(layoutGroups[dim]);
+                            parallel.addGroup(layoutGroups[dim]);
                             layoutGroups[dim] = parallel;
                         } else {
                             parallel = (GroupLayout.ParallelGroup) layoutGroups[dim];
                         }
-                        parallel.add(group);
+                        parallel.addGroup(group);
                     }
                 }
             }
@@ -227,7 +224,7 @@ public class SwingLayoutBuilder {
         GroupLayout.Group group = null;
         if (interval.isGroup()) {            
             if (interval.isParallel()) {
-                int groupAlignment = convertAlignment(interval.getGroupAlignment());
+                GroupLayout.Alignment groupAlignment = convertAlignment(interval.getGroupAlignment());
                 boolean notResizable = interval.getMaximumSize(designMode) == LayoutConstants.USE_PREFERRED_SIZE;
                 group = layout.createParallelGroup(groupAlignment, !notResizable);
             } else if (interval.isSequential()) {
@@ -257,9 +254,9 @@ public class SwingLayoutBuilder {
         int alignment = getIntervalAlignment(interval);
         if (interval.isGroup()) {
             if (group instanceof GroupLayout.SequentialGroup) {
-                ((GroupLayout.SequentialGroup)group).add(composeGroup(layout, interval, first, last));
+                ((GroupLayout.SequentialGroup)group).addGroup(composeGroup(layout, interval, first, last));
             } else {
-                ((GroupLayout.ParallelGroup)group).add(
+                ((GroupLayout.ParallelGroup)group).addGroup(
                         convertAlignment(alignment),
                         composeGroup(layout, interval, first, last));
             }
@@ -286,10 +283,10 @@ public class SwingLayoutBuilder {
                     }
                 }
                 if (group instanceof GroupLayout.SequentialGroup) {
-                    ((GroupLayout.SequentialGroup)group).add(comp, min, pref, max);
+                    ((GroupLayout.SequentialGroup)group).addComponent(comp, min, pref, max);
                 } else {
                     GroupLayout.ParallelGroup pGroup = (GroupLayout.ParallelGroup)group;
-                    pGroup.add(convertAlignment(alignment), comp, min, pref, max);
+                    pGroup.addComponent(comp, convertAlignment(alignment), min, pref, max);
                 }
             } else {
                 assert interval.isEmptySpace();
@@ -301,9 +298,9 @@ public class SwingLayoutBuilder {
                     } else {
                         LayoutConstants.PaddingType paddingType = interval.getPaddingType();
                         if (paddingType == null || paddingType == LayoutConstants.PaddingType.RELATED) {
-                            seqGroup.addPreferredGap(LayoutStyle.RELATED, pref, max);
+                            seqGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, pref, max);
                         } else if (paddingType == LayoutConstants.PaddingType.UNRELATED) {
-                            seqGroup.addPreferredGap(LayoutStyle.UNRELATED, pref, max);
+                            seqGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, pref, max);
                         } else if (paddingType == LayoutConstants.PaddingType.SEPARATE) {
                             // special case - SEPARATE padding not known by LayoutStyle
                             if (pref == GroupLayout.DEFAULT_SIZE) {
@@ -312,7 +309,7 @@ public class SwingLayoutBuilder {
                             if (max == GroupLayout.DEFAULT_SIZE) {
                                 max = PADDING_SEPARATE_VALUE;
                             }
-                            seqGroup.add(PADDING_SEPARATE_VALUE, pref, max);
+                            seqGroup.addGap(PADDING_SEPARATE_VALUE, pref, max);
                         } else {
                             assert paddingType == LayoutConstants.PaddingType.INDENT;
                             // TBD
@@ -325,16 +322,16 @@ public class SwingLayoutBuilder {
                     if (group instanceof GroupLayout.SequentialGroup) {
                         if (pref < 0) { // survive invalid pref size (#159536)
                             ((GroupLayout.SequentialGroup)group)
-                                    .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, max);
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, max);
                         } else {
-                            ((GroupLayout.SequentialGroup)group).add(min, pref, max);
+                            ((GroupLayout.SequentialGroup)group).addGap(min, pref, max);
                         }
                     } else {
                         if (pref < 0) { // survive invalid pref size (#159536)
                             pref = 0;
                             min = 0;
                         }
-                        ((GroupLayout.ParallelGroup)group).add(min, pref, max);
+                        ((GroupLayout.ParallelGroup)group).addGap(min, pref, max);
                     }
                 }
             }
@@ -367,15 +364,15 @@ public class SwingLayoutBuilder {
         return alignment;
     }
 
-    private static int convertAlignment(int alignment) {
-        int groupAlignment = 0;
+    private static GroupLayout.Alignment convertAlignment(int alignment) {
+        GroupLayout.Alignment groupAlignment;
         switch (alignment) {
-            case LayoutConstants.DEFAULT: groupAlignment = GroupLayout.LEADING; break;
-            case LayoutConstants.LEADING: groupAlignment = GroupLayout.LEADING; break;
-            case LayoutConstants.TRAILING: groupAlignment = GroupLayout.TRAILING; break;
-            case LayoutConstants.CENTER: groupAlignment = GroupLayout.CENTER; break;
-            case LayoutConstants.BASELINE: groupAlignment = GroupLayout.BASELINE; break;
-            default: assert false; break;
+            case LayoutConstants.DEFAULT: groupAlignment = GroupLayout.Alignment.LEADING; break;
+            case LayoutConstants.LEADING: groupAlignment = GroupLayout.Alignment.LEADING; break;
+            case LayoutConstants.TRAILING: groupAlignment = GroupLayout.Alignment.TRAILING; break;
+            case LayoutConstants.CENTER: groupAlignment = GroupLayout.Alignment.CENTER; break;
+            case LayoutConstants.BASELINE: groupAlignment = GroupLayout.Alignment.BASELINE; break;
+            default: throw new IllegalArgumentException("Alignment: " + alignment); // NOI18N
         }
         return groupAlignment;
     }
@@ -424,10 +421,10 @@ public class SwingLayoutBuilder {
             Component[] compArray = components.toArray(new Component[components.size()]);
             if (compArray != null) {
                 if (dimension == LayoutConstants.HORIZONTAL) {
-                    layout.linkSize(compArray, GroupLayout.HORIZONTAL);
+                    layout.linkSize(SwingConstants.HORIZONTAL, compArray);
                 }
                 if (dimension == LayoutConstants.VERTICAL) {
-                    layout.linkSize(compArray, GroupLayout.VERTICAL);
+                    layout.linkSize(SwingConstants.VERTICAL, compArray);
                 }
             }
         }

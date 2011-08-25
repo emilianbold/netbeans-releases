@@ -81,6 +81,15 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
     );
 
+    private static final List<Object[]> THROW_NEW_TOKEN_CHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_THROW},
+            new Object[]{PHPTokenId.PHP_THROW, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_THROW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_NEW},
+            new Object[]{PHPTokenId.PHP_THROW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_THROW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_THROW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+
     private static final List<Object[]> FUNCTION_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_FUNCTION},
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
@@ -213,7 +222,7 @@ class CompletionContextFinder {
     public static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
-        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, CATCH};
+        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -255,7 +264,10 @@ class CompletionContextFinder {
             return CompletionContext.USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)){
             return CompletionContext.NAMESPACE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces)){
+        } else if (acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)) {
+            return CompletionContext.THROW_CATCH;
+        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces) &&
+                !acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)){
             return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.CLASS_MEMBER;
@@ -268,7 +280,7 @@ class CompletionContextFinder {
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.PHPDOC;
         } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)){
-            return CompletionContext.CATCH;
+            return CompletionContext.THROW_CATCH;
        } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)){
            return CompletionContext.TYPE_NAME;
         } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
