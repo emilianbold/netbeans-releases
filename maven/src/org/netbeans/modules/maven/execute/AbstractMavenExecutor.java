@@ -55,13 +55,10 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import static org.netbeans.modules.maven.execute.Bundle.*;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
-import org.netbeans.modules.maven.spi.lifecycle.MavenBuildPlanSupport;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,7 +66,6 @@ import org.openide.execution.ExecutorTask;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -85,7 +81,6 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     protected ReRunAction rerun;
     protected ReRunAction rerunDebug;
     protected StopAction stop;
-    protected BuildPlanAction buildPlan;
     private List<String> messages = new ArrayList<String>();
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
@@ -165,11 +160,6 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
             public void run() {
                 rerun.setEnabled(false);
                 rerunDebug.setEnabled(false);
-                if (AbstractMavenExecutor.this instanceof MavenCommandLineExecutor) {
-                    buildPlan.setEnabled(false);
-                } else {
-                    buildPlan.setEnabled(true);
-                }
                 stop.setEnabled(true);
             }
         });
@@ -190,10 +180,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         rerun = (ReRunAction) vals.next();
         rerunDebug = (ReRunAction) vals.next();
         stop = (StopAction) vals.next();
-        buildPlan = (BuildPlanAction) vals.next();
         rerun.setConfig(config);
         rerunDebug.setConfig(config);
-        buildPlan.setConfig(config);
         stop.setExecutor(this);
     }
 
@@ -216,7 +204,6 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         col.add(rerun);
         col.add(rerunDebug);
         col.add(stop);
-        col.add(buildPlan);
         return col;
     }
 
@@ -225,31 +212,14 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         rerun = new ReRunAction(false);
         rerunDebug = new ReRunAction(true);
         stop = new StopAction();
-        buildPlan = new BuildPlanAction();
         rerun.setConfig(config);
         rerunDebug.setConfig(config);
-        buildPlan.setConfig(config);
         stop.setExecutor(this);
-        Action[] actions;
-        if (! isEmbedded()) {
-            actions = new Action[]{
-                rerun,
-                rerunDebug,
-                stop
-            };
-        } else {
-            actions = new Action[]{
-                rerun,
-                rerunDebug,
-                buildPlan,
-                stop
-            };
-        }
-        return actions;
-    }
-
-    protected boolean isEmbedded() {
-        return false;
+        return new Action[] {
+            rerun,
+            rerunDebug,
+            stop
+        };
     }
 
     static class ReRunAction extends AbstractAction {
@@ -325,51 +295,6 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
                     exec.cancel();
                 }
             });
-        }
-    }
-
-    static class BuildPlanAction extends AbstractAction {
-
-        private MavenEmbedder embedder;
-        private RunConfig config;
-        private MavenBuildPlanSupport mbps;
-
-        @Messages({
-            "TXT_Build_Plan=View Build Plan",
-            "TIP_Build_Plan_tip=View Maven Build Plan of the currently executing build"
-        })
-        BuildPlanAction() {
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/buildplangoals.png", false)); //NOi18N
-
-            putValue(Action.NAME, TXT_Build_Plan());
-            putValue(Action.SHORT_DESCRIPTION, TIP_Build_Plan_tip());
-            mbps = Lookup.getDefault().lookup(MavenBuildPlanSupport.class);
-            setEnabled(false);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return mbps != null && config!=null && config.getProject()!=null
-                    && super.isEnabled();
-        }
-
-        public void setConfig(RunConfig config) {
-            this.config = config;
-        }
-
-        public void setEmbedder(MavenEmbedder embedder) {
-            this.embedder = embedder;
-            setEnabled(embedder != null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            //
-            if (embedder != null && config != null && config.getProject() != null) {
-                NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
-                mbps.openBuildPlanView(embedder,
-                        prj.getMavenProject(),
-                        config.getGoals().toArray(new String[0]));
-            }
         }
     }
 

@@ -453,7 +453,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.spi.customizer</package>
                 <package>org.netbeans.modules.maven.spi.debug</package>
                 <package>org.netbeans.modules.maven.spi.grammar</package>
-                <package>org.netbeans.modules.maven.spi.lifecycle</package>
                 <package>org.netbeans.modules.maven.spi.nodes</package>
                 <package>org.netbeans.modules.maven.spi.queries</package>
             </friend-packages>
