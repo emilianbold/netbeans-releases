@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.nodes;
 
 import java.awt.BorderLayout;
@@ -77,22 +78,25 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -104,6 +108,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -111,10 +116,46 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
  * @author  mkleint
  */
 public class AddDependencyPanel extends javax.swing.JPanel {
+
+    /**
+     * Shows the Add Dependency dialog.
+     * @param prj a project to add a dependency to
+     * @param showDepMan true to show the dependency management panel
+     * @param selectedScope an initial scope selection (such as {@code compile})
+     * @return groupId + artifactId + version + scope + type + classifier, or null if canceled
+     */
+    @Messages("TIT_Add_Library=Add Library")
+    public static @CheckForNull String[] show(Project prj, boolean showDepMan, String selectedScope) {
+        NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
+        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
+        pnl.getAccessibleContext().setAccessibleDescription(TIT_Add_Library());
+        pnl.setSelectedScope(selectedScope);
+        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Add_Library());
+        dd.setClosingOptions(new Object[] {
+            pnl.getOkButton(),
+            DialogDescriptor.CANCEL_OPTION
+        });
+        dd.setOptions(new Object[] {
+            pnl.getOkButton(),
+            DialogDescriptor.CANCEL_OPTION
+        });
+        pnl.attachDialogDisplayer(dd);
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (pnl.getOkButton() == ret) {
+            return new String[] {
+                pnl.getGroupId(),
+                pnl.getArtifactId(),
+                pnl.getVersion(),
+                pnl.getScope(),
+                null,
+                null
+            };
+        }
+        return null;
+    }
 
     private MavenProject project;
 
@@ -134,7 +175,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private NotificationLineSupport nls;
 
-    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
+    @Messages("BTN_OK=Add")
+    private AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
@@ -169,7 +211,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
         });
 
-        okButton = new JButton(NbBundle.getMessage(AddDependencyPanel.class, "BTN_OK"));
+        okButton = new JButton(BTN_OK());
 
         DocumentListener docList = new DocumentListener() {
 
@@ -236,23 +278,24 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    public JButton getOkButton() {
+    private JButton getOkButton() {
         return okButton;
     }
 
-    public String getGroupId() {
+    private String getGroupId() {
         return txtGroupId.getText().trim();
     }
 
-    public String getArtifactId() {
+    private String getArtifactId() {
         return txtArtifactId.getText().trim();
     }
 
-    public String getVersion() {
-        return txtVersion.getText().trim();
+    private String getVersion() {
+        String v = txtVersion.getText().trim();
+        return v.isEmpty() ? null : v;
     }
 
-    public String getScope() {
+    private String getScope() {
         String scope = comScope.getSelectedItem().toString();
         if ("compile".equals(scope)) { //NOI18N
             //compile is the default scope, no need to explicitly define.
@@ -264,7 +307,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     /** For gaining access to DialogDisplayer instance to manage
      * warning messages
      */
-    public void attachDialogDisplayer(DialogDescriptor dd) {
+    private void attachDialogDisplayer(DialogDescriptor dd) {
         nls = dd.getNotificationLineSupport();
         if (nls == null) {
             nls = dd.createNotificationLineSupport();
@@ -277,7 +320,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         assert nls != null : " The notificationLineSupport was not attached to the panel."; //NOI18N
     }
 
-    void setSelectedScope(String type) {
+    private void setSelectedScope(String type) {
         comScope.setSelectedItem(type);
     }
 
@@ -729,7 +772,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         return 0;
     }
 
-    void setFields(String groupId, String artifactId, String version) {
+    private void setFields(String groupId, String artifactId, String version) {
         boolean sameGrId = false;
         if (groupId != null && groupId.equals(project.getGroupId())) {
             groupId = "${project.groupId}"; //NOI18N

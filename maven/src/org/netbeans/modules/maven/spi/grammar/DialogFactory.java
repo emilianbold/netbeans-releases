@@ -64,6 +64,8 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class DialogFactory {
 
+    private DialogFactory() {}
+
     /**
      * 
      * @param prj
@@ -77,33 +79,8 @@ public final class DialogFactory {
      *
      *
      */
-    @Messages("TIT_Add_Library=Add Library")
     public static String[] showDependencyDialog(Project prj, boolean showDepMan) {
-        NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
-        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
-        pnl.getAccessibleContext().setAccessibleDescription(TIT_Add_Library());
-        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Add_Library());
-        dd.setClosingOptions(new Object[]{
-                    pnl.getOkButton(),
-                    DialogDescriptor.CANCEL_OPTION
-                });
-        dd.setOptions(new Object[]{
-                    pnl.getOkButton(),
-                    DialogDescriptor.CANCEL_OPTION
-                });
-        pnl.attachDialogDisplayer(dd);
-        Object ret = DialogDisplayer.getDefault().notify(dd);
-        if (pnl.getOkButton() == ret) {
-            return new String[]{
-                        pnl.getGroupId(),
-                        pnl.getArtifactId(),
-                        pnl.getVersion(),
-                        pnl.getScope(),
-                        null,
-                        null
-                    };
-        }
-        return null;
+        return AddDependencyPanel.show(prj, showDepMan, "compile");
     }
 
     @Messages("TIT_Exclude=Add Dependency Excludes")

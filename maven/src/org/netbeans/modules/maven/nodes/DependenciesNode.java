@@ -76,8 +76,6 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -354,32 +352,12 @@ public class DependenciesNode extends AbstractNode {
             putValue(Action.NAME, BTN_Add_Library());
         }
 
-        @Messages("TIT_Add_Library=Add Dependency")
-        public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), true, project);
+        @Override public void actionPerformed(ActionEvent event) {
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
-            pnl.setSelectedScope(typeString);
-        
-            pnl.getAccessibleContext().setAccessibleDescription(TIT_Add_Library());
-            DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Add_Library());
-            dd.setClosingOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            dd.setOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            pnl.attachDialogDisplayer(dd);
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (pnl.getOkButton() == ret) {
-                String version = pnl.getVersion();
-                if (version != null && version.trim().length() == 0) {
-                    version = null;
-                }
+            String[] data = AddDependencyPanel.show(project, true, typeString);
+            if (data != null) {
                 ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
-                       pnl.getGroupId(), pnl.getArtifactId(), version,
-                       null, pnl.getScope(), null,false);
+                       data[0], data[1], data[2], data[4], data[3], data[5], false);
                 project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
             }
         }
