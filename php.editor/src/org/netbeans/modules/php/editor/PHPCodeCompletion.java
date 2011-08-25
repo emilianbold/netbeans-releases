@@ -399,7 +399,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(completionResult, request, INHERITANCE_KEYWORDS);
                     break;
-                case CATCH:
+                case THROW_CATCH:
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteExceptions(completionResult, request);
                     break;

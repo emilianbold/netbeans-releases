@@ -74,6 +74,8 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     /**
      * Get the help for the current command. This method is called just once,
      * the result is cached and used later each time user wants to see it.
+     * <p>
+     * Since 1.51, HTML can be used, the returned String must start with '&lt;html>' (case-sensitive).
      * @return the help message for the current command, it should not be <code>null</code>
      */
     protected abstract String getHelpInternal();
