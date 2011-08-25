@@ -1247,7 +1247,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         private MavenEmbedder getEmbedder() {
             MavenEmbedder res = (null!=embedderRef ? embedderRef.get() : null);
             if (null == res) {
-                res = EmbedderFactory.getOnlineEmbedder();
+                res = EmbedderFactory.getProjectEmbedder();
                 embedderRef = new WeakReference<MavenEmbedder>(res);
             }
             return res;
