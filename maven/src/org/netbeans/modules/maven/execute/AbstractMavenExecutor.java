@@ -75,12 +75,27 @@ import org.openide.windows.OutputListener;
  * common code for MAvenExecutors, sharing tabs and actions..
  * @author mkleint
  */
-public abstract class AbstractMavenExecutor extends OutputTabMaintainer implements MavenExecutor, Cancellable {
+public abstract class AbstractMavenExecutor extends OutputTabMaintainer<AbstractMavenExecutor.TabContext> implements MavenExecutor, Cancellable {
+
+    static final class TabContext {
+        ReRunAction rerun;
+        ReRunAction rerunDebug;
+        StopAction stop;
+        @Override protected TabContext clone() {
+            TabContext c = new TabContext();
+            c.rerun = rerun;
+            c.rerunDebug = rerunDebug;
+            c.stop = stop;
+            return c;
+        }
+    }
+
+    @Override protected Class<TabContext> tabContextType() {
+        return TabContext.class;
+    }
 
     protected RunConfig config;
-    protected ReRunAction rerun;
-    protected ReRunAction rerunDebug;
-    protected StopAction stop;
+    private TabContext tabContext = new TabContext();
     private List<String> messages = new ArrayList<String>();
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
@@ -158,9 +173,9 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     protected final void actionStatesAtStart() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                rerun.setEnabled(false);
-                rerunDebug.setEnabled(false);
-                stop.setEnabled(true);
+                tabContext.rerun.setEnabled(false);
+                tabContext.rerunDebug.setEnabled(false);
+                tabContext.stop.setEnabled(true);
             }
         });
     }
@@ -168,21 +183,19 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     protected final void actionStatesAtFinish() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                rerun.setEnabled(true);
-                rerunDebug.setEnabled(true);
-                stop.setEnabled(false);
+                tabContext.rerun.setEnabled(true);
+                tabContext.rerunDebug.setEnabled(true);
+                tabContext.stop.setEnabled(false);
             }
         });
     }
 
     @Override
-    protected void reassignAdditionalContext(Iterator vals) {
-        rerun = (ReRunAction) vals.next();
-        rerunDebug = (ReRunAction) vals.next();
-        stop = (StopAction) vals.next();
-        rerun.setConfig(config);
-        rerunDebug.setConfig(config);
-        stop.setExecutor(this);
+    protected void reassignAdditionalContext(TabContext tabContext) {
+        this.tabContext = tabContext;
+        tabContext.rerun.setConfig(config);
+        tabContext.rerunDebug.setConfig(config);
+        tabContext.stop.setExecutor(this);
     }
 
     public static final Properties excludeNetBeansProperties(Properties props) {
@@ -198,27 +211,21 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         return toRet;
     }
 
-    @Override
-    protected final Collection createContext() {
-        Collection col = super.createContext();
-        col.add(rerun);
-        col.add(rerunDebug);
-        col.add(stop);
-        return col;
+    @Override protected final TabContext createContext() {
+        return tabContext.clone();
     }
 
-    @Override
-    protected Action[] createNewTabActions() {
-        rerun = new ReRunAction(false);
-        rerunDebug = new ReRunAction(true);
-        stop = new StopAction();
-        rerun.setConfig(config);
-        rerunDebug.setConfig(config);
-        stop.setExecutor(this);
+    @Override protected Action[] createNewTabActions() {
+        tabContext.rerun = new ReRunAction(false);
+        tabContext.rerunDebug = new ReRunAction(true);
+        tabContext.stop = new StopAction();
+        tabContext.rerun.setConfig(config);
+        tabContext.rerunDebug.setConfig(config);
+        tabContext.stop.setExecutor(this);
         return new Action[] {
-            rerun,
-            rerunDebug,
-            stop
+            tabContext.rerun,
+            tabContext.rerunDebug,
+            tabContext.stop,
         };
     }
 
