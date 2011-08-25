@@ -54,7 +54,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
- *
+ *  Support for writing {@link WhiteListQueryImplementation}.
+ * @author David Konecny
  */
 public class WhiteListQueryMergerSupport {
 

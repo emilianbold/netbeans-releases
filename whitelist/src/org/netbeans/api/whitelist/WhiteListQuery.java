@@ -58,6 +58,7 @@ import org.openide.util.Parameters;
  * restriction implement the {@link WhiteListQueryImplementation} to provide a
  * white list of allowed types (methods).
  * @author Tomas Zezula
+ * @author David Konecny
  */
 public final class WhiteListQuery {
 
@@ -85,11 +86,15 @@ public final class WhiteListQuery {
     }
 
     /**
-     * At the moment assumption is that if a project want to automatically enable 
-     * some whitelist then they likely know whitelistId.
+     * Enables the given white list in the project.
+     * At the moment assumption is that if a project want to automatically enable
+     * some white list then they likely know whitelistId.
+     * @param project the project in  which the white list should be enabled
+     * @param whiteListId the white list identifier
+     * @param enable if true the white list is enabled if false white list is disabled
      */
-    public static void enableWhiteListInProject(@NonNull Project p, @NonNull String whiteListId, boolean enable) {
-        WhiteListCategoryPanel.enableWhiteListInProject(p, whiteListId, enable);
+    public static void enableWhiteListInProject(@NonNull Project project, @NonNull String whiteListId, boolean enable) {
+        WhiteListCategoryPanel.enableWhiteListInProject(project, whiteListId, enable);
     }
     
     /**
@@ -109,7 +114,8 @@ public final class WhiteListQuery {
         /**
          * Checks if given method (type) can be invoked (accessed).
          * @param element to check
-         * @return true if the element is allowed
+         * @param operation the operation which should be tested
+         * @return a {@link Result} holding the details.
          */
         public final Result check(
             @NonNull final ElementHandle<?> element,
@@ -120,10 +126,19 @@ public final class WhiteListQuery {
         }
     }
 
+    /**
+     * Operation on element to be tested (usage, subclassing)
+     */
     public enum Operation {
+        /**
+         * Checks the white list if usage of given element is supported.
+         */
         USAGE
     }
 
+    /**
+     * Result of the white list check.
+     */
     public static final class Result {
         private final boolean allowed;
         private final String violatedRuleName;
@@ -136,14 +151,28 @@ public final class WhiteListQuery {
             this.violatedRuleDescription = violatedRuleDescription;
         }
 
+        /**
+         * Returns true if the operation on given element is allowed by white list.
+         * @return true if the operation on given element is allowed
+         */
         public boolean isAllowed() {
             return allowed;
         }
 
+        /**
+         * Returns description of violated rule if {@link WhiteListQuery.Result#isAllowed}
+         * returned false otherwise returns null.
+         * @return the description of violated rule.
+         */
         public String getViolatedRuleDescription() {
             return violatedRuleDescription;
         }
 
+        /**
+         * Returns name of violated rule if {@link WhiteListQuery.Result#isAllowed}
+         * returned false otherwise returns null.
+         * @return the name of violated rule.
+         */
         public String getViolatedRuleName() {
             return violatedRuleName;
         }

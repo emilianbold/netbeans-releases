@@ -101,14 +101,6 @@ public final class WhiteListImplementationBuilder {
     }
 
     @NonNull
-    public WhiteListImplementationBuilder addSubclassableClass(@NonNull final String classBinaryName) {
-        Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
-        checkPreconditions();
-        model.addClass(classBinaryName, OVERRIDE);
-        return this;
-    }
-
-    @NonNull
     public WhiteListImplementationBuilder addInvocableMethod(
             @NonNull final String classBinaryName,
             @NonNull final String methodName,
@@ -121,6 +113,13 @@ public final class WhiteListImplementationBuilder {
         return this;
     }
 
+    @NonNull
+    public WhiteListImplementationBuilder addSubclassableClass(@NonNull final String classBinaryName) {
+        Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
+        checkPreconditions();
+        model.addClass(classBinaryName, OVERRIDE);
+        return this;
+    }
 
     @NonNull
     public WhiteListImplementationBuilder addOverridableMethod(

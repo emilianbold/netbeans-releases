@@ -47,16 +47,24 @@ import org.netbeans.api.whitelist.WhiteListQuery;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Permits projects to provide wite list used to emit errors for usages of non allowed
+ * types or methods. The project types supporting a runtime with class usage
+ * restriction implement this interface to provide a white list of allowed types (methods).
  * @author Tomas Zezula
+ * @author David Konecny
  */
 public interface WhiteListQueryImplementation {
 
+    /**
+     * Returns a white list for given file.
+     * @param file to return white list for.
+     * @return the {@link WhiteListImplementation} for given file.
+     */
     WhiteListImplementation getWhiteList(
           @NonNull FileObject file);
 
     /**
-     * All whitelists which should be displayed in UI for user should implement
+     * All white lists which should be displayed in UI for user should implement
      * this interface. And on the other hand non-visible implementations like
      * for example merging WhiteListQueryImplementation should not implement it.
      */
@@ -65,7 +73,18 @@ public interface WhiteListQueryImplementation {
         String getId();
     }
 
+    /**
+     * The white list implementation used to emit errors for usages of non allowed
+     * types or methods.
+     */
     public interface WhiteListImplementation {
+
+        /**
+         * Checks if given method (type) can be invoked (accessed).
+         * @param element to check
+         * @param operation the operation which should be tested
+         * @return a {@link Result} holding the details.
+         */
         WhiteListQuery.Result check(@NonNull ElementHandle<?> element, @NonNull WhiteListQuery.Operation operation);
     }
 
