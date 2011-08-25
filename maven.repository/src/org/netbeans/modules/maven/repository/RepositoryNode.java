@@ -45,7 +45,9 @@ package org.netbeans.modules.maven.repository;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -156,7 +158,8 @@ public class RepositoryNode extends AbstractNode {
         "LBL_Local_repository_path=Local repository path",
         "LBL_Remote_Index=Remote Index Downloadable",
         "LBL_Remote_URL=Remote Repository URL",
-        "LBL_Remote_Index_URL=Remote Index URL"
+        "LBL_Remote_Index_URL=Remote Index URL",
+        "LBL_last_indexed=Last Indexed"
     })
     @Override protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
@@ -182,9 +185,13 @@ public class RepositoryNode extends AbstractNode {
             repoURL.setDisplayName(LBL_Remote_URL());
             Node.Property<?> indexURL = new PropertySupport.Reflection<String>(info, String.class, "getIndexUpdateUrl", null); //NOI18N
             indexURL.setDisplayName(LBL_Remote_Index_URL());
+            Node.Property<?> lastIndexed = new PropertySupport.ReadOnly<Date>("lastIndexed", Date.class, LBL_last_indexed(), null) {
+                @Override public Date getValue() throws IllegalAccessException, InvocationTargetException {
+                    return RepositoryPreferences.getInstance().getLastIndexUpdate(info.getId());
+                }
+            };
             basicProps.put(new Node.Property<?>[] {
-                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL
-            
+                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();
