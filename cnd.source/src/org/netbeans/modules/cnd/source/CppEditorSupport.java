@@ -61,6 +61,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 import org.netbeans.modules.cnd.source.spi.CndMultiViewProvider;
+import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -239,6 +240,16 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     
     @Override
     protected Pane createPane() {
+
+        // if there is a CndPaneProvider, us it
+        CndPaneProvider paneProvider = Lookup.getDefault().lookup(CndPaneProvider.class);
+        if (paneProvider != null) {
+            Pane pane = paneProvider.createPane(this);
+            if (pane != null) {
+                return pane;
+            }
+        }
+        
         DataObject dataObject = getDataObject();
         if (dataObject != null && dataObject.isValid()) {
             Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
