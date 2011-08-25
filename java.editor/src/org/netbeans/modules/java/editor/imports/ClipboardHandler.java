@@ -400,28 +400,31 @@ public class ClipboardHandler {
 
                     if (result = delegate.importData(comp, t)) {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
-                        FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
-                        Collection<? extends String> unavailable = needsImports(tc.getDocument(), caret, imports.simple2ImportFQN);
+                        final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
+                        final Document doc = tc.getDocument();
+                        final List<Position[]> inSpans = new ArrayList<Position[]>();
 
-                        if (unavailable == null) unavailable = (file == null || !file.equals(imports.sourceFO)) ? imports.simple2ImportFQN.values() : Collections.<String>emptyList();
+                        for (int[] span : imports.identifiers) {
+                            inSpans.add(new Position[] {doc.createPosition(caret + span[0]), doc.createPosition(caret + span[1])});
+                        }
 
-                        if (!unavailable.isEmpty()) {
-                            final Document doc = tc.getDocument();
-                            final List<Position[]> inSpans = new ArrayList<Position[]>();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                Collection<? extends String> unavailable = needsImports(tc.getDocument(), caret, imports.simple2ImportFQN);
 
-                            for (int[] span : imports.identifiers) {
-                                inSpans.add(new Position[] {doc.createPosition(caret + span[0]), doc.createPosition(caret + span[1])});
-                            }
+                                if (unavailable == null) {
+                                    unavailable = (file == null || !file.equals(imports.sourceFO)) ? imports.simple2ImportFQN.values() : Collections.<String>emptyList();
+                                }
 
-                            final Collection<String> toShow = new HashSet<String>(imports.simple2ImportFQN.values());
-                            toShow.retainAll(unavailable);
+                                final Collection<String> toShow = new HashSet<String>(imports.simple2ImportFQN.values());
+                                
+                                toShow.retainAll(unavailable);
 
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override public void run() {
+                                if (!unavailable.isEmpty()) {
                                     showImportDialog(doc, caret, imports.simple2ImportFQN, toShow, inSpans);
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
