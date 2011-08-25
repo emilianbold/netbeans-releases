@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
@@ -103,7 +104,8 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private JPanel toolBar;
-
+    private boolean isPartOfMultiview = false;
+    
     public LocalHistoryTopComponent() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
@@ -115,6 +117,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
 
     public LocalHistoryTopComponent(Lookup context) {
         this();
+        isPartOfMultiview = true;
         DataObject dataObject = context.lookup(DataObject.class);
 
         List<File> files = new LinkedList<File>();
@@ -125,7 +128,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             Collection<File> doFiles = toFileCollection(dataObject.files());
             files.addAll(doFiles);
         }
-        init(files.toArray(new File[files.size()]));        
+        init(files.toArray(new File[files.size()]));    
     }
     
     private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -289,6 +292,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     @Override
     public void componentActivated() {
         super.componentActivated();
+        masterView.requestActive();
     }
 
     @Override
@@ -352,5 +356,12 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             this.support = support;
             searchHistoryButton.setVisible(true);
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(isPartOfMultiview ? 
+                           "org.netbeans.modules.localhistory.ui.view.LHHistoryTab" :               // NO18N
+                           "org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent");   // NO18N
     }
 }
