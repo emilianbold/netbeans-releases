@@ -41,6 +41,7 @@
  */
 
 package org.netbeans.modules.maven.nodes;
+
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,15 +61,7 @@ import org.openide.nodes.Node;
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=500)
 public class DependenciesNodeFactory implements NodeFactory {
     
-    private static final String KEY_DEPENDENCIES = "dependencies"; //NOI18N
-    private static final String KEY_TEST_DEPENDENCIES = "dependencies2"; //NOI18N
-    private static final String KEY_RUNTIME_DEPENDENCIES = "dependencies3"; //NOI18N
-    
-    /** Creates a new instance of DependenciesNodeFactory */
-    public DependenciesNodeFactory() {
-    }
-    
-    public NodeList createNodes(Project project) {
+    @Override public NodeList<?> createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return new NList(prj);
     }
@@ -85,13 +78,13 @@ public class DependenciesNodeFactory implements NodeFactory {
             test = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_TEST);
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
+        @Override public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();
             }
         }
         
-        public List<DependenciesNode.DependenciesChildren> keys() {
+        @Override public List<DependenciesNode.DependenciesChildren> keys() {
             List<DependenciesNode.DependenciesChildren> list = new ArrayList<DependenciesNode.DependenciesChildren>();
             compile.regenerateKeys();
             list.add(compile);
@@ -104,7 +97,7 @@ public class DependenciesNodeFactory implements NodeFactory {
             return list;
         }
         
-        public Node node(DependenciesNode.DependenciesChildren key) {
+        @Override public Node node(DependenciesNode.DependenciesChildren key) {
             if (key == compile) {
                 if (key.getParentNode() != null) {
                     return key.getParentNode();
