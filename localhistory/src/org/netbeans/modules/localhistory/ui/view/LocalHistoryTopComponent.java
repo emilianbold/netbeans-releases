@@ -71,7 +71,6 @@ import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.history.LinkButton;

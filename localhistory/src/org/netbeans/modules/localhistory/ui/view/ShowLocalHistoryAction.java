@@ -85,7 +85,7 @@ public class ShowLocalHistoryAction extends NodeAction {
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         final Set<File> rootSet = ctx.getRootFiles();                    
 
-                File[] files = rootSet.toArray(new File[rootSet.size()]);                
+        File[] files = rootSet.toArray(new File[rootSet.size()]);                
 
         if(!files[0].isFile()) {
             return;
@@ -143,10 +143,10 @@ public class ShowLocalHistoryAction extends NodeAction {
                         cookie.edit();
                         findInOpenTC(dataObject);
                         return true;
-                            }
-                        } 
+                    }
                 } 
-            }
+            } 
+        }
         return false;
     }
 
