@@ -41,37 +41,31 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.openide.util.NbBundle;
 
-/**
- * Symfony2 actions extender.
- */
-public class Symfony2PhpModuleActionsExtender extends PhpModuleActionsExtender {
+public final class CacheWarmupAction extends Symfony2Action {
 
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
+    private static final long serialVersionUID = 546873213433L;
+    private static final CacheWarmupAction INSTANCE = new CacheWarmupAction();
 
 
-    @Messages("LBL_MenuName=Symfony2")
-    @Override
-    public String getMenuName() {
-        return Bundle.LBL_MenuName();
+    private CacheWarmupAction() {
+    }
+
+    public static CacheWarmupAction getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return Symfony2RunCommandAction.getInstance();
+    protected String getCommand() {
+        return Symfony2Script.CACHE_WARMUP_COMMAND;
     }
 
+    @NbBundle.Messages("LBL_WarmupCache=Warmup Cache")
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    protected String getPureName() {
+        return Bundle.LBL_WarmupCache();
     }
 
 }

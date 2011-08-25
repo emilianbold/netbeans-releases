@@ -41,37 +41,39 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.openide.util.NbBundle.Messages;
+import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.actions.BaseAction;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony2.Symfony2PhpFrameworkProvider;
 
 /**
- * Symfony2 actions extender.
+ * Base class for Symfony2 separate commands.
  */
-public class Symfony2PhpModuleActionsExtender extends PhpModuleActionsExtender {
-
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
+abstract class Symfony2Action extends BaseAction {
 
 
-    @Messages("LBL_MenuName=Symfony2")
+    protected abstract String getCommand();
+
     @Override
-    public String getMenuName() {
-        return Bundle.LBL_MenuName();
+    public void actionPerformed(PhpModule phpModule) {
+        if (!Symfony2PhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
+        }
+
+        FrameworkCommandSupport commandSupport = Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
+        Callable<Process> callable = commandSupport.createCommand(getCommand());
+        ExecutionDescriptor descriptor = commandSupport.getDescriptor();
+        String displayName = commandSupport.getOutputTitle(getCommand());
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+        service.run();
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return Symfony2RunCommandAction.getInstance();
-    }
-
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    protected String getFullName() {
+        return Bundle.LBL_Symfony2Action(getPureName());
     }
 
 }

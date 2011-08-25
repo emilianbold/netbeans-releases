@@ -41,37 +41,31 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.openide.util.NbBundle;
 
-/**
- * Symfony2 actions extender.
- */
-public class Symfony2PhpModuleActionsExtender extends PhpModuleActionsExtender {
+public final class CacheClearAction extends Symfony2Action {
 
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
+    private static final long serialVersionUID = 687876544313213143L;
+    private static final CacheClearAction INSTANCE = new CacheClearAction();
 
 
-    @Messages("LBL_MenuName=Symfony2")
-    @Override
-    public String getMenuName() {
-        return Bundle.LBL_MenuName();
+    private CacheClearAction() {
+    }
+
+    public static CacheClearAction getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return Symfony2RunCommandAction.getInstance();
+    protected String getCommand() {
+        return Symfony2Script.CACHE_CLEAR_COMMAND;
     }
 
+    @NbBundle.Messages("LBL_ClearCache=Clear Cache")
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    protected String getPureName() {
+        return Bundle.LBL_ClearCache();
     }
 
 }

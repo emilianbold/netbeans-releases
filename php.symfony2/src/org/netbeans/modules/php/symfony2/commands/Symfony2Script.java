@@ -57,6 +57,9 @@ import org.openide.util.NbBundle.Messages;
 public final class Symfony2Script extends PhpProgram {
 
     public static final String SCRIPT_PATH = "app/console"; // NOI18N
+    public static final String CACHE_CLEAR_COMMAND = "cache:clear"; // NOI18N
+    public static final String CACHE_WARMUP_COMMAND = "cache:warmup"; // NOI18N
+
 
     Symfony2Script(String command) {
         super(command);
