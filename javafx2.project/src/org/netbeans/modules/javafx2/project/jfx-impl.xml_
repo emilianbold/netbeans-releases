@@ -1,53 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="jfx-impl" default="jfx-deployment" basedir="..">
-   
+<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:fx="javafx:com.sun.javafx.tools.ant">
+
     <target name="-init-javafx">
-        <taskdef name="fxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
-        <taskdef name="fxjar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
+        <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+            uri="javafx:com.sun.javafx.tools.ant"
+            classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
     </target>
 
-   <target name="check-jfx-deployment" depends="-init-javafx">
+    <target name="check-jfx-deployment" depends="-init-javafx">
         <condition property="jfx-deployment-available">
             <and>
-                <typefound name="fxdeploy"/>
-                <typefound name="fxjar"/>
+                <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
             </and>
         </condition>
-   </target>
-   
-   <target name="jfx-deployment" depends="check-jfx-deployment" if="jfx-deployment-available">
+    </target>
+
+    <target name="jfx-deployment" depends="check-jfx-deployment" if="jfx-deployment-available">
         <basename property="jfx.deployment.jar" file="${dist.jar}"/>
-        <property name="jfx.deployment.dir" location="${dist.dir}"/>      
+        <property name="jfx.deployment.dir" location="${dist.dir}"/>
+
         <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
         <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
         <delete file="${jfx.deployment.dir}/README.TXT"/>
         <!-- hack end -->
 
-        <fxjar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}"
-             applicationClass="${main.class}" >
-            <fileset dir="${build.classes.dir}"/>
-            <manifest>
-              <attribute name="Implementation-Vendor" value="${application.vendor}"/>
-              <attribute name="Implementation-Title" value="${application.title}"/>
-              <attribute name="Implementation-Version" value="1.0"/>
-            </manifest>
-        </fxjar>
+        <fx:application id="fxApp" name="${application.title}" mainClass="${main.class}"/>
+<!--            preloaderClass="testpreloader.Preloader" fallbackClass="test.UseMeIfNoFX"-->
 
-        <fxdeploy width="${javafx.run.width}" height="${javafx.run.height}"
+        <fx:resources id="appRes">
+            <!-- PRELOADER -->
+<!--            <fileset dir="dist"
+                requiredFor="preloader"
+                includes="mypreloader.jar"/>      -->
+            <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
+                <include name="${jfx.deployment.jar}"/>
+                <include name="lib/*.jar"/>
+                <exclude name="**/jfxrt.jar"/>
+            </fx:fileset>
+        </fx:resources>
+
+        <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <fileset dir="${build.classes.dir}"/>
+
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${application.vendor}"/>
+                <attribute name="Implementation-Title" value="${application.title}"/>
+                <attribute name="Implementation-Version" value="1.0"/>
+            </manifest>
+        </fx:jar>
+
+            <!-- SIGNING -->
+<!--        <fx:signjar keyStore="${basedir}/sample.jks" destdir="dist"
+               alias="javafx" storePass="****" keyPass="****">
+            <fileset dir='dist/*.jar'/>
+        </fx:signjar>-->
+
+        <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}"
                   outdir="${jfx.deployment.dir}" embedJNLP="true"
                   outfile="${application.title}">
-            <info title="${application.title}"
-                  vendor="${application.vendor}"/>
-            <application name="${application.title}"
-                         appclass="${main.class}"/>
-            <resources type="eager">
-               <fileset dir="${jfx.deployment.dir}">
-                  <include name="${jfx.deployment.jar}"/>
-                  <include name="lib/*.jar"/>
-                  <exclude name="**/jfxrt.jar"/>
-               </fileset>
-            </resources>
-        </fxdeploy>  
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <info title="${application.title}" vendor="${application.vendor}"/>
+            <!-- Request elevated permissions -->
+<!--            <permissions elevate="true"/>-->
+        </fx:deploy>
     </target>
-    
+
 </project>

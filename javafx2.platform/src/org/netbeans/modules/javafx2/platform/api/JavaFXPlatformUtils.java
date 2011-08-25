@@ -85,6 +85,9 @@ public final class JavaFXPlatformUtils {
      * @return is JavaFX supported
      */
     public static boolean isJavaFXEnabled(final JavaPlatform platform) {
+        if (platform == null) {
+            return false;
+        }
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
         String sdkPath = properties.get(Utils.getSDKPropertyKey(platform));
         String runtimePath = properties.get(Utils.getRuntimePropertyKey(platform));
@@ -118,10 +121,10 @@ public final class JavaFXPlatformUtils {
      */
     public static String[] getJavaFXClassPath() {
         return new String[] {
-                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/jfxrt.jar:", // NOI18N
-                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/deploy.jar:", // NOI18N
-                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/javaws.jar:", // NOI18N
-                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/plugin.jar" // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/jfxrt.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/deploy.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/javaws.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/plugin.jar" // NOI18N
         };
     }
     
