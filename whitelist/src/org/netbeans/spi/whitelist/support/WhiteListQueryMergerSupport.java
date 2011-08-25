@@ -41,9 +41,13 @@
  */
 package org.netbeans.spi.whitelist.support;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.whitelist.WhiteListQuery;
@@ -51,11 +55,16 @@ import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
- *  Support for writing {@link WhiteListQueryImplementation}.
+ * Support for writing {@link WhiteListQueryImplementation}.
  * @author David Konecny
+ * @author Tomas Zezula
  */
 public class WhiteListQueryMergerSupport {
 
@@ -81,34 +90,54 @@ public class WhiteListQueryMergerSupport {
     
     private static class WhiteListQueryImplementationMerged implements WhiteListQueryImplementation {
         private Lookup lkp;
+        private final Map<FileObject,Reference<WhiteListImplementation>> canonicalCache;
 
         public WhiteListQueryImplementationMerged(Lookup lkp) {
             this.lkp = lkp;
+            this.canonicalCache = new WeakHashMap<FileObject, Reference<WhiteListImplementation>>();
         }
 
         @Override
-        public WhiteListImplementation getWhiteList(FileObject file) {
-            List<WhiteListImplementation> list = new ArrayList<WhiteListImplementation>();
-            Collection<? extends WhiteListQueryImplementation> wl = lkp.lookupAll(WhiteListQueryImplementation.class);
-            for (WhiteListQueryImplementation impl : wl) {
+        public synchronized WhiteListImplementation getWhiteList(final FileObject file) {
+            final Reference<WhiteListImplementation> ref = canonicalCache.get(file);
+            WhiteListImplementation wl = ref == null ? null : ref.get();
+            if (wl != null) {
+                return wl;
+            }
+            final Lookup.Result<WhiteListQueryImplementation> lr = lkp.lookupResult(WhiteListQueryImplementation.class);
+            boolean empty = true;
+            for (WhiteListQueryImplementation impl : lr.allInstances()) {
                 WhiteListImplementation i = impl.getWhiteList(file);
                 if (i != null) {
-                    list.add(i);
+                    empty = false;
+                    break;
                 }
             }
-            if (list.isEmpty()) {
+            if (empty) {
                 return null;
             }
-            return new WhiteListImplementationMerged(list);
+            wl = new WhiteListImplementationMerged(lr,file);
+            canonicalCache.put(file,new WeakReference<WhiteListImplementation>(wl));
+            return wl;
         }
     }
     
-    private static class WhiteListImplementationMerged implements WhiteListImplementation {
+    private static class WhiteListImplementationMerged implements WhiteListImplementation, ChangeListener, LookupListener {
 
-        private List<WhiteListImplementation> list;
+        private final Lookup.Result<WhiteListQueryImplementation> lr;
+        private final FileObject file;
+        private final ChangeSupport changeSupport;
+        //@GuardedBy("this")
+        private Map<WhiteListImplementation,ChangeListener> cache;
 
-        public WhiteListImplementationMerged(List<WhiteListImplementation> list) {
-            this.list = list;
+        @SuppressWarnings("LeakingThisInConstructor")
+        public WhiteListImplementationMerged(
+            @NonNull final Lookup.Result<WhiteListQueryImplementation> lr,
+            @NonNull final FileObject file) {
+            this.lr = lr;
+            this.file = file;
+            this.changeSupport = new ChangeSupport(this);
+            this.lr.addLookupListener(WeakListeners.create(LookupListener.class, this, this.lr));
         }
 
         @Override
@@ -116,13 +145,54 @@ public class WhiteListQueryMergerSupport {
         public WhiteListQuery.Result check(
                 @NonNull final ElementHandle<?> element,
                 @NonNull final WhiteListQuery.Operation operation) {
-            for (WhiteListImplementation impl : list) {
+            for (WhiteListImplementation impl : getWhiteLists()) {
                 WhiteListQuery.Result r = impl.check(element, operation);
                 if (r != null) {
                     return r;
                 }
             }
             return null;
+        }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            this.changeSupport.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
+            this.changeSupport.removeChangeListener(listener);
+        }
+
+        @Override
+        public void stateChanged(final ChangeEvent event) {
+            this.changeSupport.fireChange();
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            this.changeSupport.fireChange();
+        }
+
+        private Iterable<WhiteListImplementation> getWhiteLists() {
+            synchronized (this) {
+                if (cache != null) {
+                    return cache.keySet();
+                }
+            }
+            final Map<WhiteListImplementation,ChangeListener> map = new IdentityHashMap<WhiteListImplementation,ChangeListener>();
+            for (WhiteListQueryImplementation wlq : lr.allInstances()) {
+                final WhiteListImplementation wl = wlq.getWhiteList(file);
+                final ChangeListener cl = WeakListeners.change(this, wl);
+                wl.addChangeListener(cl);
+                map.put(wl, cl);
+            }
+            synchronized (this) {
+                if (cache == null) {
+                    cache = map;
+                }
+                return cache.keySet();
+            }
         }
     }
     

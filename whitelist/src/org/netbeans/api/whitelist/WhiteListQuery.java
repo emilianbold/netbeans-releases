@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.whitelist;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
@@ -96,7 +97,7 @@ public final class WhiteListQuery {
     public static void enableWhiteListInProject(@NonNull Project project, @NonNull String whiteListId, boolean enable) {
         WhiteListCategoryPanel.enableWhiteListInProject(project, whiteListId, enable);
     }
-    
+
     /**
      * The white list used to emit errors for usages of non allowed
      * types or methods.
@@ -123,6 +124,25 @@ public final class WhiteListQuery {
             Parameters.notNull("element", element); //NOI18N;
             Parameters.notNull("operation", operation); //NOI18N;
             return impl.check(element, operation);
+        }
+
+        /**
+         * Adds {@link ChangeListener} to white list. The listener is
+         * notified when the white list is changed.
+         * @param listener to be added
+         */
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            impl.addChangeListener(listener);
+        }
+
+        /**
+         * Removes {@link ChangeListener} from white list.
+         * @param listener to be removed
+         */
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            impl.removeChangeListener(listener);
         }
     }
 

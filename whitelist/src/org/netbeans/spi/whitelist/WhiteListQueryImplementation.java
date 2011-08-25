@@ -41,6 +41,7 @@
  */
 package org.netbeans.spi.whitelist;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.whitelist.WhiteListQuery;
@@ -86,6 +87,18 @@ public interface WhiteListQueryImplementation {
          * @return a {@link Result} holding the details.
          */
         WhiteListQuery.Result check(@NonNull ElementHandle<?> element, @NonNull WhiteListQuery.Operation operation);
+
+        /**
+         * Adds {@link ChangeListener} to white list.
+         * @param listener to be added
+         */
+        void addChangeListener(@NonNull final ChangeListener listener);
+
+        /**
+         * Removes {@link ChangeListener} from white list.
+         * @param listener to be removed
+         */
+        void removeChangeListener(@NonNull final ChangeListener listener);
     }
 
 }

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
+import javax.swing.event.ChangeListener;
 import oracle.cloud.scanning.api.config.IClassConfiguration;
 import oracle.cloud.scanning.spi.config.factory.ConfigurationFactory;
 import org.netbeans.api.annotations.common.NonNull;
@@ -167,6 +168,16 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 l.add(param);
             }
             return l;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            //Imutable - nop
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            //Imutable - nop
         }
     }
 

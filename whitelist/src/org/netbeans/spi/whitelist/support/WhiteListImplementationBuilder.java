@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -211,6 +212,16 @@ public final class WhiteListImplementationBuilder {
                     b,
                     ruleName,
                     ruleDesc);
+        }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            //immutable no change support
+        }
+
+        @Override
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
+            //immutable no change support
         }
 
         @NonNull
