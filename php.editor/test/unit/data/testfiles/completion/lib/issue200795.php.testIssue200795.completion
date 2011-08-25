@@ -29,6 +29,7 @@ CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
+CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
 CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
@@ -64,6 +65,7 @@ CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
+CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
