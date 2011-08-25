@@ -7,7 +7,9 @@ PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
+PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
+PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
 CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
@@ -49,11 +51,17 @@ CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
+CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra
+CLASS      EmptyClassFromNs                [PUBLIC]   ExtraThrow
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
+CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
+CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
 CLASS      Exception                       [PUBLIC]   MySpace
+CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   issue194875.php
+CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      HTML                            [PUBLIC]   html.php
@@ -66,7 +74,9 @@ CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
+CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
+CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
@@ -104,7 +114,9 @@ CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
 CLASS      TestClass                       [PUBLIC]   Extra
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php
+CLASS      TestClass                       [PUBLIC]   issue201310.php
 CLASS      TestClass                       [PUBLIC]   tests166339.php
+CLASS      TestClassFromNs                 [PUBLIC]   ExtraThrow
 CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
