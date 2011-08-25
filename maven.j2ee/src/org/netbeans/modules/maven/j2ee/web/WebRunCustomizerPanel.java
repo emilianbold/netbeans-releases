@@ -442,7 +442,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_comServerActionPerformed
 
     private void updateContextPathEnablement() {
-        if (listener.getValue() == null || ExecutionChecker.DEV_NULL.equals(listener.getValue().getServerID())) {
+        Wrapper wp = (Wrapper)comServer.getSelectedItem();
+        if (wp == null || 
+                (ExecutionChecker.DEV_NULL.equals(wp.getServerID()) && wp.getSessionServerInstanceId() == null)) {
             if (txtContextPath.isEnabled()) {
                 txtContextPath.setEnabled(false);
                 oldContextPath = txtContextPath.getText();
@@ -522,21 +524,21 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
 
-        String contextPath = "";
-        if (txtContextPath.isEnabled()) {
-            contextPath = txtContextPath.getText().trim();
-        }
-
         //#109507 workaround
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        sc.setServerInstanceId(null);
+        if (listener.getValue() != null) {
+            sc.setServerInstanceId(null);
+        }
         //TODO - not sure this is necessary since the PoHImpl listens on project changes.
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.setContextPath(contextPath);
         poh.hackModuleServerChange();
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        
+        if (txtContextPath.isEnabled()) {
+            String contextPath = txtContextPath.getText().trim();
+            WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+            impl.setContextPath(contextPath);
+        }
     }
     
     

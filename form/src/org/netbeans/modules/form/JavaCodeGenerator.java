@@ -3279,7 +3279,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private String getDefaultEventBody() {
-        return FormUtils.getBundleString("MSG_EventHandlerBody"); // NOI18N
+        return " " + FormUtils.getBundleString("MSG_EventHandlerBody"); // NOI18N
     }
 
     /** Renames the specified event handler to the given new name.

@@ -60,36 +60,40 @@ import org.openide.util.Exceptions;
  */
 public class Wrapper {
 
-    private String id;
-    private String sessionServerId;
+    private String serverInstanceId;
+    private String sessionServerInstanceId;
 
-    public Wrapper(String serverid) {
-        id = serverid;
+    public Wrapper(String serverInstanceId) {
+        this.serverInstanceId = serverInstanceId;
     }
 
-    public Wrapper(String serverid, String sessionServerId) {
-        this(serverid);
-        assert ExecutionChecker.DEV_NULL.equals(serverid);
-        this.sessionServerId = sessionServerId;
+    public Wrapper(String serverInstanceId, String sessionServerInstanceId) {
+        this(serverInstanceId);
+        assert ExecutionChecker.DEV_NULL.equals(serverInstanceId);
+        this.sessionServerInstanceId = sessionServerInstanceId;
     }
 
     public String getServerInstanceID() {
-        return id;
+        return serverInstanceId;
     }
 
     public String getServerID() {
-        if (ExecutionChecker.DEV_NULL.equals(id)) {
+        if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
             return ExecutionChecker.DEV_NULL;
         }
-        return POHImpl.privateGetServerId(id);
+        return POHImpl.privateGetServerId(serverInstanceId);
     }
 
+    public String getSessionServerInstanceId() {
+        return sessionServerInstanceId;
+    }
+    
     @Override
     public String toString() {
-        if (ExecutionChecker.DEV_NULL.equals(id)) {
-            if (sessionServerId != null) {
-                ServerInstance si = Deployment.getDefault().getServerInstance(sessionServerId);
-                String dn = sessionServerId;
+        if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
+            if (sessionServerInstanceId != null) {
+                ServerInstance si = Deployment.getDefault().getServerInstance(sessionServerInstanceId);
+                String dn = sessionServerInstanceId;
                 try {
                     dn = si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
@@ -100,7 +104,7 @@ public class Wrapper {
                 return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Server");
             }
         }
-        ServerInstance si = Deployment.getDefault().getServerInstance(id);
+        ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceId);
         if (si != null) {
             try {
                 return si.getDisplayName();
@@ -108,7 +112,7 @@ public class Wrapper {
                 Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
             }
         }
-        return id;
+        return serverInstanceId;
     }
 
     static Wrapper findWrapperByType(String serverId, JComboBox combo) {

@@ -222,15 +222,11 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     boolean permanent = panel.isPermanent();
                     if (permanent) {
                         persistServer(project, instanceId, serverId, panel.getChosenProject());
-
                     } else {
                         SessionContent sc = project.getLookup().lookup(SessionContent.class);
                         sc.setServerInstanceId(instanceId);
                         WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
                         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                        if (prv != null) {
-                            poh.setContextPath(prv.getWebModuleImplementation().getContextPath());
-                        }
                         poh.hackModuleServerChange();
                         //provider instance not relevant from here
                         provider = null;

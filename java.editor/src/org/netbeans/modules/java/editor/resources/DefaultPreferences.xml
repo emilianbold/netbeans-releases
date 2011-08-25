@@ -83,9 +83,9 @@ made subject to such option by the copyright holder.
     <entry javaType="methodvalue" name="identifier-acceptor">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIdentifierAcceptor]]></value>
     </entry>
-    <entry javaType="methodvalue" name="indentEngine" >
+<!--    <entry javaType="methodvalue" name="indentEngine" >
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIndentEngine]]></value>
-    </entry>
+    </entry>-->
     <entry javaType="methodvalue" name="indent-hot-chars-acceptor">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIndentHotCharsAcceptor]]></value>
     </entry>
