@@ -150,8 +150,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 pnl.getArtifactId(),
                 pnl.getVersion(),
                 pnl.getScope(),
-                null,
-                null
+                pnl.getType(),
+                pnl.getClassifier()
             };
         }
         return null;
@@ -304,6 +304,16 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         return scope;
     }
 
+    private String getType() {
+        String t = txtType.getText().trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private String getClassifier() {
+        String c = txtClassifier.getText().trim();
+        return c.isEmpty() ? null : c;
+    }
+
     /** For gaining access to DialogDisplayer instance to manage
      * warning messages
      */
@@ -397,6 +407,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtVersion = new javax.swing.JTextField();
         lblScope = new javax.swing.JLabel();
         comScope = new javax.swing.JComboBox();
+        lblType = new javax.swing.JLabel();
+        txtType = new javax.swing.JTextField();
+        lblClassifier = new javax.swing.JLabel();
+        txtClassifier = new javax.swing.JTextField();
         tabPane = new javax.swing.JTabbedPane();
         searchPanel = new javax.swing.JPanel();
         searchLabel = new javax.swing.JLabel();
@@ -427,6 +441,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblScope, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_Scope")); // NOI18N
 
         comScope.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "compile", "runtime", "test", "provided" }));
+
+        lblType.setLabelFor(txtType);
+        org.openide.awt.Mnemonics.setLocalizedText(lblType, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.lblType.text")); // NOI18N
+
+        lblClassifier.setLabelFor(txtClassifier);
+        org.openide.awt.Mnemonics.setLocalizedText(lblClassifier, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.lblClassifier.text")); // NOI18N
 
         searchPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -479,16 +499,16 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
-                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(chkNbOnly))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                             .addGroup(searchPanelLayout.createSequentialGroup()
                                 .addComponent(resultsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 261, Short.MAX_VALUE)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(106, 106, 106)))))
                 .addContainerGap())
@@ -508,7 +528,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(resultsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -529,7 +549,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlOpenLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlOpenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -539,7 +559,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -561,7 +581,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlDepManLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                     .addComponent(artifactsLabel))
                 .addContainerGap())
         );
@@ -571,7 +591,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(artifactsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -586,17 +606,24 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblGroupId)
                     .addComponent(lblArtifactId)
-                    .addComponent(lblVersion))
+                    .addComponent(lblVersion)
+                    .addComponent(lblType))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                        .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblScope)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblClassifier)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtClassifier, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)))
                 .addContainerGap())
             .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
         );
@@ -617,8 +644,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(txtVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblScope))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblType)
+                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblClassifier)
+                    .addComponent(txtClassifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
+                .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
         );
 
         txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
@@ -646,8 +679,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblArtifactId;
+    private javax.swing.JLabel lblClassifier;
     private javax.swing.JLabel lblGroupId;
     private javax.swing.JLabel lblScope;
+    private javax.swing.JLabel lblType;
     private javax.swing.JLabel lblVersion;
     private javax.swing.JPanel pnlDepMan;
     private javax.swing.JPanel pnlOpen;
@@ -659,7 +694,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTabbedPane tabPane;
     private javax.swing.JTextField txtArtifactId;
+    private javax.swing.JTextField txtClassifier;
     private javax.swing.JTextField txtGroupId;
+    private javax.swing.JTextField txtType;
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
@@ -772,7 +809,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         return 0;
     }
 
-    private void setFields(String groupId, String artifactId, String version) {
+    private void setFields(String groupId, String artifactId, String version, String type, String classifier) {
         boolean sameGrId = false;
         if (groupId != null && groupId.equals(project.getGroupId())) {
             groupId = "${project.groupId}"; //NOI18N
@@ -784,6 +821,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             version = "${project.version}"; //NOI18N
         }
         txtVersion.setText(version);
+        txtType.setText(type != null && !type.equals("jar") ? type : null);
+        txtClassifier.setText(classifier);
     }
 
     private static Node noResultsNode, searchingNode, tooGeneralNode;
@@ -1398,7 +1437,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             if (prj != null) {
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 MavenProject m = mav.getMavenProject();
-                AddDependencyPanel.this.setFields(m.getGroupId(), m.getArtifactId(), m.getVersion());
+                AddDependencyPanel.this.setFields(m.getGroupId(), m.getArtifactId(), m.getVersion(), null, null);
                 set = true;
             }
             if (!set) {
@@ -1406,7 +1445,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 if (vi != null) {
                     //in dm panel we want to pass empty version
                     String ver = AddDependencyPanel.this.queryPanel.isVisible() ? vi.getVersion() : "";
-                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver);
+                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver, vi.getType(), vi.getClassifier());
                     set = true;
                 }
             }
@@ -1420,7 +1459,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     RP.post(this);
                 }
             } else {
-                AddDependencyPanel.this.setFields("","",""); //NOI18N
+                AddDependencyPanel.this.setFields("", "", "", "", ""); //NOI18N
                 //reset completion.
                 AddDependencyPanel.this.artifactCompleter.setValueList(Collections.<String>emptyList());
                 AddDependencyPanel.this.versionCompleter.setValueList(Collections.<String>emptyList());
