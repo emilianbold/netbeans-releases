@@ -45,11 +45,10 @@ package org.netbeans.modules.maven.execute;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -139,7 +138,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     }
 
 
-    public final void setTask(ExecutorTask task) {
+    @Override public final void setTask(ExecutorTask task) {
         synchronized (SEMAPHORE) {
             this.task = task;
             this.item = new MavenItem();
@@ -147,7 +146,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         }
     }
 
-    public final void addInitialMessage(String line, OutputListener listener) {
+    @Override public final void addInitialMessage(String line, OutputListener listener) {
         messages.add(line);
         listeners.add(listener);
     }
@@ -172,7 +171,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
     protected final void actionStatesAtStart() {
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 tabContext.rerun.setEnabled(false);
                 tabContext.rerunDebug.setEnabled(false);
                 tabContext.stop.setEnabled(true);
@@ -182,7 +181,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
     protected final void actionStatesAtFinish() {
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
                 tabContext.stop.setEnabled(false);
@@ -198,13 +197,12 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         tabContext.stop.setExecutor(this);
     }
 
-    public static final Properties excludeNetBeansProperties(Properties props) {
+    @SuppressWarnings("element-type-mismatch")
+    public static Properties excludeNetBeansProperties(Properties props) {
         Properties toRet = new Properties();
-        Enumeration<String> en = (Enumeration<String>) props.propertyNames();
-        while (en.hasMoreElements()) {
-            String key = en.nextElement();
-            if (!forbidden.contains(key)) {
-                toRet.put(key, props.getProperty(key));
+        for (Map.Entry<Object,Object> entry : props.entrySet()) {
+            if (!forbidden.contains(entry.getKey())) {
+                toRet.put(entry.getKey(), entry.getValue());
             }
 
         }
@@ -295,10 +293,10 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             exec = ex;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     exec.cancel();
                 }
             });
@@ -307,19 +305,19 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
     private class MavenItem implements BuildExecutionSupport.Item {
 
-        public String getDisplayName() {
+        @Override public String getDisplayName() {
             return config.getTaskDisplayName();
         }
 
-        public void repeatExecution() {
+        @Override public void repeatExecution() {
             RunUtils.executeMaven(config);
         }
 
-        public boolean isRunning() {
+        @Override public boolean isRunning() {
             return !task.isFinished();
         }
 
-        public void stopRunning() {
+        @Override public void stopRunning() {
             AbstractMavenExecutor.this.cancel();
         }
 
