@@ -217,6 +217,7 @@ bodyset
     	ruleSet
         | media
         | page
+        | counterStyle
       )
       WS*
     ;
@@ -232,6 +233,13 @@ page
         RBRACE
     ;
     
+counterStyle
+    : COUNTER_STYLE_SYM WS* IDENT WS*
+        LBRACE WS* syncTo_IDENT_RBRACE
+		declarations
+        RBRACE
+    ;
+
 margin	
 	: margin_sym WS* LBRACE WS* syncTo_IDENT_RBRACE declarations RBRACE
        ;
@@ -896,11 +904,12 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 //
 HASH            : '#' NAME              ;
 
-IMPORT_SYM      : '@' I M P O R T       ;
-PAGE_SYM        : '@' P A G E           ;
-MEDIA_SYM       : '@' M E D I A         ;
-CHARSET_SYM     : '@charset '           ;
+IMPORT_SYM          : '@' I M P O R T       ;
+PAGE_SYM            : '@' P A G E           ;
+MEDIA_SYM           : '@' M E D I A         ;
 NAMESPACE_SYM       : '@' N A M E S P A C E ;
+CHARSET_SYM         : '@charset'           ;
+COUNTER_STYLE_SYM   : '@counter-style';
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 

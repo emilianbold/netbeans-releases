@@ -49,13 +49,13 @@ import java.util.List;
  *
  * @author mfukala@netbeans.org
  */
-public class Dpi extends NumberPostfixAcceptor {
+public class Resolution extends NumberPostfixAcceptor {
 
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi"}); //NOI18N
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi", "dppx", "dpcm"}); //NOI18N
     
     @Override
     public String id() {
-        return "dpi"; //NOI18N
+        return "resolution"; //NOI18N
     }
 
     @Override

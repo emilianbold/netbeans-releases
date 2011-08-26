@@ -149,6 +149,17 @@ public class NbCss3LexerTest extends NbTestCase {
         
     }
     
+     public void testCounterStyle() throws Exception {
+        String source = "@counter-style x { }";
+ 
+        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertToken("@counter-style", CssTokenId.COUNTER_STYLE_SYM, ts);
+        assertToken(" ", CssTokenId.WS, ts);
+    }
+    
     private void assertToken(String expectedImage, CssTokenId expectedType, TokenSequence ts) {
         assertTrue(ts.moveNext());
         Token token = ts.token();

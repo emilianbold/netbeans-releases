@@ -669,12 +669,12 @@ public class PropertyModelTest extends TestBase {
     }
 
     public void testUnquotedURL() {
-        PropertyModel p = CssModuleSupport.getProperty("list-style");
+        PropertyModel p = CssModuleSupport.getProperty("-uri");
         String text = "url(http://www.redballs.com/redball.png)";
 
         PropertyValue csspv = new PropertyValue(p, text);
 
-//        dumpResult(csspv);
+        dumpResult(csspv);
 
         assertTrue(csspv.success());
 

@@ -80,6 +80,12 @@ public enum NodeType {
         bodylist, 
         bodyset, 
         combinator, 
+        
+        /** 
+         * @counter-style <counter-name> { ... }
+         */
+        counterStyle,
+        
         cssId, 
         cssClass, 
         declaration, 
