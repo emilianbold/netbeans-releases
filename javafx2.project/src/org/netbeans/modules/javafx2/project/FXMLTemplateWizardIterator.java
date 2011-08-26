@@ -1,8 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
- *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserve *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
  *
@@ -39,25 +38,77 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.project;
 
-package org.netbeans.libs.git;
+import java.io.IOException;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author ondra
+ * @author Anton Chechel
  */
-public interface GitClientCallback {
+public class FXMLTemplateWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
-    String askQuestion (String uri, String prompt);
-    
-    String getUsername (String uri, String prompt);
-    
-    char[] getPassword (String uri, String prompt);
-    
-    char[] getPassphrase (String uri, String prompt);
-    
-    String getIdentityFile (String uri, String prompt);
-    
-    Boolean askYesNoQuestion (String uri, String prompt);
+    public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
+        return new FXMLTemplateWizardIterator();
+    }
 
+    @Override
+    public Set instantiate() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void initialize(WizardDescriptor wizard) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void uninitialize(WizardDescriptor wizard) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Panel<WizardDescriptor> current() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String name() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean hasNext() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean hasPrevious() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void nextPanel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void previousPanel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

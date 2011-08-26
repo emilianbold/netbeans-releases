@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -73,6 +76,8 @@ import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,6 +90,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     private ChangeSupport support = new ChangeSupport(this);
     private final boolean urlFixed;
+    private final ConnectionSettingsType[] settingTypes;
+    private ConnectionSettingsType activeSettingsType;
 
     private enum Scheme {
         FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
@@ -116,7 +123,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     };
     
     private final RemoteRepositoryPanel panel;
-    private final JComponent[] inputFields;
     
     public RemoteRepository(String forPath) {
         this(forPath, false);
@@ -126,23 +132,15 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         assert !fixedUrl || forPath != null && !forPath.trim().isEmpty();
         this.panel = new RemoteRepositoryPanel();
         this.urlFixed = fixedUrl;
-        this.inputFields = new JComponent[] {
-            panel.urlComboBox,
-            panel.userTextField,
-            panel.userPasswordField,
-            panel.savePasswordCheckBox,
-            panel.directoryBrowseButton,
-            panel.proxySettingsButton,
-            panel.repositoryLabel,
-            panel.userLabel,
-            panel.passwordLabel,
-            panel.tipLabel,
-            panel.leaveBlankLabel,
+        settingTypes = new ConnectionSettingsType[] {
+            new SSHConnectionSettingsType(),
+            new FileConnectionSettingsType(),
+            new DefaultConnectionSettingsType()
         };
-        
+        this.activeSettingsType = settingTypes[0];
         attachListeners();
         initUrlComboValues(forPath);
-        setFieldsVisibility();
+        updateCurrentSettingsType();
         validateFields();
     }
     
@@ -168,37 +166,14 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             }
         }
         return null;
-    }    
-    
-    public void setEnabled (boolean enabled) {
-        for (JComponent inputField : inputFields) {
-            inputField.setEnabled(enabled);
-        }
     }
     
-    public void store() {
-        GitURI guri = getURI();
-        assert guri != null;
-        if(guri == null) {
-            return;
-        }
-        
-        final boolean isSelected = panel.savePasswordCheckBox.isSelected();
-        guri = guri.setUser(panel.userTextField.getText().isEmpty() ? null : panel.userTextField.getText())
-                .setPass(new String(panel.userPasswordField.getPassword()));
-        final GitURI fguri = guri;
-        Runnable outOfAWT = new Runnable() {
-            @Override
-            public void run() {
-                GitModuleConfig.getDefault().insertRecentGitURI(fguri, isSelected);
-                recentGuris.put(fguri.toString(), fguri);
-            }
-        };
-        if (EventQueue.isDispatchThread()) {
-            Git.getInstance().getRequestProcessor().post(outOfAWT);
-        } else {
-            outOfAWT.run();
-        }
+    public void store () {
+        activeSettingsType.store();
+    }
+    
+    public void setEnabled (boolean enabled) {
+        activeSettingsType.setEnabled(enabled);
     }
     
     public void removeChangeListener(ChangeListener listener) {
@@ -226,7 +201,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     public void insertUpdate(DocumentEvent de) {
         if(ignoreComboEvents) return;
         validateFields();
-        setFieldsVisibility();
+        updateCurrentSettingsType();
         findComboItem(false);
     }
 
@@ -234,14 +209,14 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     public void removeUpdate(DocumentEvent de) {
         if(ignoreComboEvents) return;
         validateFields();
-        setFieldsVisibility();
+        updateCurrentSettingsType();
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
         if(ignoreComboEvents) return;
         validateFields();
-        setFieldsVisibility();
+        updateCurrentSettingsType();
         findComboItem(false);
     }
 
@@ -258,14 +233,18 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     public void itemStateChanged(ItemEvent ie) {
         GitURI guri = getURI();
         if(guri != null) {
-            populateFields(recentGuris.get(guri.toString()));
+            activeSettingsType.populateFields(recentConnectionSettings.get(guri.toString()));
         }
     }
 
     public static boolean updateFor (String url) {
         boolean retval = false;
         final RemoteRepository repository = new RemoteRepository(url, true);
-        final DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel_Title")); //NOI18N
+        JPanel panel = repository.getPanel();
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel_Title"), //NOI18N
+                true, new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, DialogDescriptor.OK_OPTION, 
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RemoteRepository.class), null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         repository.addChangeListener(new ChangeListener() {
             @Override
@@ -278,7 +257,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            repository.store();
+            repository.activeSettingsType.store();
             retval = true;
         }
         return retval;
@@ -301,62 +280,31 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
     }    
     
-    private void setFieldsVisibility() {
-        EventQueue.invokeLater(new Runnable() {
+    private void updateCurrentSettingsType () {
+        Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
                 GitURI uri = getURI();
-                if(uri == null) {
+                if (uri == null) {
                     return;
                 }
-                
-                boolean isFile = true;
-                boolean isSsh = false;
-                if (uri.getScheme() == null) {
-                    if (uri.getHost() != null
-                        && uri.getPath() != null
-                        && uri.getHost().length() != 0
-                        && uri.getPath().length() != 0) {
-                        isFile = false;
-                        isSsh = true;
-                        panel.tipLabel.setText(null);
+                for (ConnectionSettingsType type : settingTypes) {
+                    if (type.acceptUri(uri)) {
+                        activeSettingsType = type;
+                        break;
                     }
-                } else {
-                    for (Scheme s : Scheme.values()) {
-                        if(s == Scheme.FILE) continue;
-                        if(s == Scheme.SSH) {
-                            isSsh = true;
-                        }
-                        if(uri.getScheme().startsWith(s.toString())) {
-                            panel.tipLabel.setText(s.getTip());
-                            isFile = false;
-                            break;
-                        }
-                    }
-                }
-                if(isFile) {
-                    panel.tipLabel.setText(Scheme.FILE.getTip());
                 }
                 if (urlFixed) {
                     panel.tipLabel.setText(null);
                 }
-                
-                panel.directoryBrowseButton.setVisible(isFile);
-                
-                panel.passwordLabel.setVisible(!isFile);
-                panel.userPasswordField.setVisible(!isFile);
-                panel.userLabel.setVisible(!isFile);
-                panel.userTextField.setVisible(!isFile);
-                panel.proxySettingsButton.setVisible(!isFile);
-                panel.savePasswordCheckBox.setVisible(!isFile);
-                panel.leaveBlankLabel.setVisible(!isFile);
             }
         });
     }
 
     private boolean ignoreComboEvents = false;
     private void findComboItem(boolean selectAll) {
-        final String uriString = getURIString();        
+        GitURI uri = getURI();
+        final String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
         if(uriString == null || uriString.isEmpty()) {
             return;
         }
@@ -372,18 +320,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         ignoreComboEvents = true;
                         try {
                             setComboText(item, start, end);
-                            
-                            setFieldsVisibility();
-                            
-                            GitURI guri = recentGuris.get(item);
-                            populateFields(guri);
-                            
+                            updateCurrentSettingsType();
+                            activeSettingsType.populateFields(recentConnectionSettings.get(item));
                         } finally {
                             ignoreComboEvents = false;
                         }
                     }
                 });
-                return;
             } else {
                 
             }
@@ -397,30 +340,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         txt.moveCaretPosition(start);
     }
     
-    private void populateFields(GitURI guri) {
-        if(guri == null) return;
-
-        boolean hasUser = false;
-        boolean hasPass = false;
-        String user = guri.getUser();
-        if(user != null && !user.isEmpty()) {
-            panel.userTextField.setText(guri.getUser());
-            hasUser = true;
-        } else {
-            panel.userTextField.setText("");
-        }
-        panel.userTextField.setText(guri.getUser());
-        String pass = guri.getPass();
-        if(pass != null && !pass.isEmpty()) {
-            panel.userPasswordField.setText(guri.getPass());
-            hasPass = true;
-        } else {
-            panel.userPasswordField.setText("");            // NOI18N
-        }
-        panel.savePasswordCheckBox.setSelected(hasUser || hasPass);
-    }
-    
-    private Map<String, GitURI> recentGuris = new HashMap<String, GitURI>();
+    private Map<String, ConnectionSettings> recentConnectionSettings = new HashMap<String, ConnectionSettings>();
     private void initUrlComboValues(final String forPath) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
@@ -430,14 +350,12 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     final DefaultComboBoxModel model = new DefaultComboBoxModel();
                     
                     try {
-                        List<GitURI> guris = GitModuleConfig.getDefault().getRecentUrls();
-                        for (GitURI gitURI : guris) {
-
+                        List<ConnectionSettings> settings = GitModuleConfig.getDefault().getRecentConnectionSettings();
+                        for (ConnectionSettings sett : settings) {
                             // strip user/psswd
-                            GitURI g = new GitURI(gitURI.toString()).setPass(null).setUser(null);
+                            GitURI g = sett.getUri().setPass(null).setUser(null);
                             model.addElement(g.toString());
-                            
-                            recentGuris.put(g.toString(), gitURI);
+                            recentConnectionSettings.put(g.toString(), sett);
                         }
                     } catch (Throwable t) {
                         Git.LOG.log(Level.WARNING, null, t);
@@ -456,7 +374,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                             }
                             ignoreComboEvents = false;
                             findComboItem(true);
-                            setFieldsVisibility();
+                            updateCurrentSettingsType();
                             validateFields();
                         }
                     });
@@ -501,4 +419,352 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private void onProxyConfiguration() {
         OptionsDisplayer.getDefault().open("General");              // NOI18N
     }       
+    
+    private abstract class ConnectionSettingsType {
+        protected abstract void setEnabled (boolean enabled);
+        protected void populateFields (ConnectionSettings connSettings) {
+            
+        }
+        protected abstract void store ();
+        protected abstract boolean acceptUri (GitURI uri);
+    }
+    
+    //<editor-fold defaultstate="collapsed" desc="Connection Setting Types">
+    private class DefaultConnectionSettingsType extends ConnectionSettingsType {
+        private final JComponent[] inputFields;
+        private final UserPasswordPanel settingsPanel;
+        private final EnumSet<Scheme> acceptableSchemes;
+        
+        public DefaultConnectionSettingsType () {
+            settingsPanel = new UserPasswordPanel();
+            this.inputFields = new JComponent[] {
+                panel.urlComboBox,
+                settingsPanel.userTextField,
+                settingsPanel.userPasswordField,
+                settingsPanel.savePasswordCheckBox,
+                panel.directoryBrowseButton,
+                panel.proxySettingsButton,
+                panel.repositoryLabel,
+                settingsPanel.userLabel,
+                settingsPanel.passwordLabel,
+                settingsPanel.leaveBlankLabel,
+                panel.tipLabel
+            };
+            acceptableSchemes = EnumSet.of(Scheme.GIT, Scheme.HTTP, Scheme.HTTPS, Scheme.SFTP);
+        }
+        
+        @Override
+        protected void setEnabled (boolean enabled) {
+            for (JComponent inputField : inputFields) {
+                inputField.setEnabled(enabled);
+            }
+        }
+        
+        @Override
+        protected void populateFields (ConnectionSettings settings) {
+            if (settings == null) return;
+            settingsPanel.userTextField.setText(settings.getUser());
+            char[] pass = settings.getPassword();
+            if (pass != null) {
+                settingsPanel.userPasswordField.setText(new String(pass));
+            } else {
+                settingsPanel.userPasswordField.setText(""); //NOI18N
+            }
+            settingsPanel.savePasswordCheckBox.setSelected(settings.isSaveCredentials());
+        }
+        
+        @Override
+        protected void store () {
+            GitURI guri = getURI();
+            assert guri != null;
+            if(guri == null) {
+                return;
+            }
+            
+            final ConnectionSettings settings = new ConnectionSettings(guri);
+            settings.setUser(settingsPanel.userTextField.getText());
+            settings.setPrivateKeyAuth(false);
+            settings.setSaveCredentials(settingsPanel.savePasswordCheckBox.isSelected());
+            settings.setPassword(settingsPanel.userPasswordField.getPassword());
+            
+            Runnable outOfAWT = new Runnable() {
+                @Override
+                public void run() {
+                    GitModuleConfig.getDefault().insertRecentConnectionSettings(settings);
+                    recentConnectionSettings.put(settings.getUri().setUser(null).toString(), settings);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Git.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        
+        @Override
+        protected boolean acceptUri (GitURI uri) {
+            boolean accepts = false;
+            panel.tipLabel.setText(null);
+            if (uri.getScheme() != null) {
+                accepts = true; // accept all possible schemes, acts as a default
+                for (Scheme s : acceptableSchemes) {
+                    if(uri.getScheme().equals(s.toString())) {
+                        panel.tipLabel.setText(s.getTip());
+                        break;
+                    }
+                }
+            }
+            if (accepts) {
+                panel.directoryBrowseButton.setVisible(false);
+                panel.proxySettingsButton.setVisible(true);
+                panel.connectionSettings.removeAll();
+                panel.connectionSettings.add(settingsPanel, BorderLayout.NORTH);
+            }
+            return accepts;
+        }
+    }
+    
+    private final class SSHConnectionSettingsType extends ConnectionSettingsType implements ActionListener {
+        private final JComponent[] inputFields;
+        private final SSHPanel settingsPanel;
+        private final JComponent[] authKeyFields;
+        private final JComponent[] authPasswordFields;
+        
+        public SSHConnectionSettingsType () {
+            settingsPanel = new SSHPanel();
+            this.inputFields = new JComponent[] {
+                panel.urlComboBox,
+                settingsPanel.lblUser,
+                settingsPanel.lblPassword,
+                settingsPanel.lblLeaveBlank,
+                settingsPanel.lblIdentityFile,
+                settingsPanel.lblPassphrase,
+                settingsPanel.userTextField,
+                settingsPanel.userPasswordField,
+                settingsPanel.savePasswordCheckBox,
+                settingsPanel.txtIdentityFile,
+                settingsPanel.txtPassphrase,
+                settingsPanel.btnBrowse,
+                settingsPanel.savePassphrase,
+                settingsPanel.rbPrivateKey,
+                settingsPanel.rbUsernamePassword,
+                panel.directoryBrowseButton,
+                panel.proxySettingsButton,
+                panel.repositoryLabel,
+                panel.tipLabel
+            };
+            this.authKeyFields = new JComponent[] {
+                settingsPanel.lblIdentityFile,
+                settingsPanel.lblPassphrase,
+                settingsPanel.txtIdentityFile,
+                settingsPanel.txtPassphrase,
+                settingsPanel.btnBrowse,
+                settingsPanel.savePassphrase
+            };
+            this.authPasswordFields = new JComponent[] {
+                settingsPanel.lblPassword,
+                settingsPanel.userPasswordField,
+                settingsPanel.savePasswordCheckBox
+            };
+            attachListeners();
+        }
+        
+        private void attachListeners () {
+            settingsPanel.btnBrowse.addActionListener(this);
+            settingsPanel.rbPrivateKey.addActionListener(this);
+            settingsPanel.rbUsernamePassword.addActionListener(this);
+        }
+        
+        @Override
+        protected void setEnabled (boolean enabled) {
+            for (JComponent inputField : inputFields) {
+                inputField.setEnabled(enabled);
+            }
+        }
+        
+        @Override
+        protected void populateFields (ConnectionSettings settings) {
+            if(settings == null) return;
+            settingsPanel.userTextField.setText(settings.getUser());
+            char[] pass = settings.getPassword();
+            if (pass != null) {
+                settingsPanel.userPasswordField.setText(new String(pass));
+            } else {
+                settingsPanel.userPasswordField.setText(""); //NOI18N
+            }
+            pass = settings.getPassphrase();
+            if (pass != null) {
+                settingsPanel.txtPassphrase.setText(new String(pass));
+            } else {
+                settingsPanel.txtPassphrase.setText(""); //NOI18N
+            }
+            settingsPanel.savePasswordCheckBox.setSelected(settings.isSaveCredentials());
+            settingsPanel.savePassphrase.setSelected(settings.isSaveCredentials());
+            settingsPanel.rbPrivateKey.setSelected(settings.isPrivateKeyAuth());
+            settingsPanel.rbPrivateKey.setSelected(!settings.isPrivateKeyAuth());
+            settingsPanel.txtIdentityFile.setText(settings.getIdentityFile());
+            updateAuthSelection();
+        }
+        
+        @Override
+        protected void store () {
+            GitURI guri = getURI();
+            assert guri != null;
+            if(guri == null) {
+                return;
+            }
+            
+            final ConnectionSettings settings = new ConnectionSettings(guri);
+            settings.setUser(settingsPanel.userTextField.getText());
+            settings.setPrivateKeyAuth(settingsPanel.rbPrivateKey.isSelected());
+            settings.setSaveCredentials(settings.isPrivateKeyAuth() ? settingsPanel.savePassphrase.isSelected() : settingsPanel.savePasswordCheckBox.isSelected());
+            settings.setPassword(settingsPanel.userPasswordField.getPassword());
+            settings.setPassphrase(settingsPanel.txtPassphrase.getPassword());
+            settings.setIdentityFile(settingsPanel.txtIdentityFile.getText());
+            Runnable outOfAWT = new Runnable() {
+                @Override
+                public void run() {
+                    GitModuleConfig.getDefault().insertRecentConnectionSettings(settings);
+                    recentConnectionSettings.put(settings.getUri().setUser(null).toString(), settings);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Git.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        
+        @Override
+        protected boolean acceptUri (GitURI uri) {
+            boolean accepts = false;
+            panel.tipLabel.setText(null);
+            if (uri.getScheme() == null) {
+                if (uri.getHost() != null && uri.getHost().length() != 0) {
+                    accepts = true;
+                    panel.tipLabel.setText("[user@]host.xz:path/to/repo.git/"); //NOI18N
+                }
+            } else if(uri.getScheme().equals(Scheme.SSH.toString())) {
+                accepts = true;
+                panel.tipLabel.setText(Scheme.SSH.getTip());
+            }
+            if (accepts) {
+                panel.directoryBrowseButton.setVisible(false);
+                panel.proxySettingsButton.setVisible(true);
+                panel.connectionSettings.removeAll();
+                panel.connectionSettings.add(settingsPanel, BorderLayout.NORTH);
+                updateAuthSelection();
+            }
+            return accepts;
+        }
+
+        @Override
+        public final void actionPerformed (ActionEvent e) {
+            if (e.getSource() == settingsPanel.btnBrowse) {
+                onBrowse();
+            } else if (e.getSource() == settingsPanel.rbPrivateKey || e.getSource() == settingsPanel.rbUsernamePassword) {
+                updateAuthSelection();
+            }
+        }
+        
+        private void onBrowse() {
+            File file = new File(settingsPanel.txtIdentityFile.getText());
+            JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.IdentityFile.FileChooser.Descritpion"), //NOI18N
+                    file);
+            fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+            fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.IdentityFile.FileChooser.Title")); //NOI18N
+            fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.showDialog(panel, null);
+            File f = fileChooser.getSelectedFile();
+            if (f != null) {
+                settingsPanel.txtIdentityFile.setText(f.getAbsolutePath());
+            }
+        }
+
+        private void updateAuthSelection () {
+            boolean authViaPrivateKey = settingsPanel.rbPrivateKey.isSelected();
+            boolean authViaPassword = settingsPanel.rbUsernamePassword.isSelected();
+            if (!authViaPassword && !authViaPrivateKey) {
+                authViaPassword = true;
+                settingsPanel.rbUsernamePassword.setSelected(true);
+            }
+            for (JComponent c : authKeyFields) {
+                c.setEnabled(authViaPrivateKey);
+            }
+            for (JComponent c : authPasswordFields) {
+                c.setEnabled(authViaPassword);
+            }
+        }
+    }
+    
+    private final class FileConnectionSettingsType extends ConnectionSettingsType {
+        private final JComponent[] inputFields;
+        private final EnumSet<Scheme> acceptableSchemes;
+        
+        public FileConnectionSettingsType () {
+            this.inputFields = new JComponent[] {
+                panel.urlComboBox,
+                panel.directoryBrowseButton,
+                panel.proxySettingsButton,
+                panel.repositoryLabel,
+                panel.tipLabel
+            };
+            acceptableSchemes = EnumSet.of(Scheme.FILE);
+        }
+        
+        @Override
+        protected void setEnabled (boolean enabled) {
+            for (JComponent inputField : inputFields) {
+                inputField.setEnabled(enabled);
+            }
+        }
+        
+        @Override
+        protected void store () {
+            GitURI guri = getURI();
+            assert guri != null;
+            if (guri == null) {
+                return;
+            }
+            
+            final ConnectionSettings settings = new ConnectionSettings(guri);
+            Runnable outOfAWT = new Runnable() {
+                @Override
+                public void run() {
+                    GitModuleConfig.getDefault().insertRecentConnectionSettings(settings);
+                    recentConnectionSettings.put(settings.getUri().setUser(null).toString(), settings);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Git.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        
+        @Override
+        protected boolean acceptUri (GitURI uri) {
+            boolean accepts = false;
+            if (uri.getScheme() == null) {
+                accepts = true;
+            } else {
+                for (Scheme s : acceptableSchemes) {
+                    if(uri.getScheme().equals(s.toString())) {
+                        accepts = true;
+                        break;
+                    }
+                }
+            }
+            if (accepts) {
+                panel.directoryBrowseButton.setVisible(true);
+                panel.proxySettingsButton.setVisible(false);
+                panel.connectionSettings.removeAll();
+
+                panel.tipLabel.setText(Scheme.FILE.getTip());
+            }
+            return accepts;
+        }
+    }
+    //</editor-fold>
 }
