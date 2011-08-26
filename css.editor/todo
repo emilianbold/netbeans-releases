@@ -24,16 +24,16 @@ Css modules list (source http://www.css3.info/modules/)
 x CSS Template Layout 
 * CSS Speech 
 * CSS Grid Positioning 
-CSS Flexible Box Layout 
-CSS Image Values & Replaced Content 
+* CSS Flexible Box Layout 
+* CSS Image Values & Replaced Content 
 CSS 2D Transformations 
 CSS 3D Transformations 
 CSS Transitions 
 CSS Animations 
 * CSSOM View 
 x CSS Syntax 
-CSS Lists 
-CSS Reader Media Type 
+* CSS Lists and Counters
+x CSS Reader Media Type 
 CSS Generated & Replaced Content
 CSS Line Layout 
 CSS Hyperlink Presentation 
@@ -49,6 +49,7 @@ general:
 - support for extending property grammar definition by other module/s (merging)
 - characters escaping in grammar definition (like '[' or '*' chars), see GridPositioningModuleTest
     -uncomment #display=flexbox | inline-flexbox then
+- context aware properties - works only in some context of the css file
 
 
 selectors module:

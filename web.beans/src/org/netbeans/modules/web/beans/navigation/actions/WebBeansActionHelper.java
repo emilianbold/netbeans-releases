@@ -139,6 +139,14 @@ public class WebBeansActionHelper {
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = 
         EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
+    
+    private static final PositionStrategy CARET_POSITION_STRATEGY = new PositionStrategy() {
+        
+        @Override
+        public int getOffset( JTextComponent component ) {
+            return component.getCaret().getDot();
+        }
+    };
 
     private WebBeansActionHelper(){
     }
@@ -180,6 +188,24 @@ public class WebBeansActionHelper {
     static boolean getVariableElementAtDot( final JTextComponent component,
             final Object[] variable , final boolean showStatusOnError) 
     {
+        return getVariableElementAtDot(component, variable, showStatusOnError, 
+                CARET_POSITION_STRATEGY);
+    }
+    
+    /**
+     * Compilation controller from metamodel could not be used for getting 
+     * TreePath via dot because it is not based on one FileObject ( Document ).
+     * So this method is required for searching Element at dot.
+     * If appropriate element is found it's name is placed into list 
+     * along with name of containing type.
+     * Resulted element could not be used in metamodel for injectable
+     * access. This is because element was gotten via other Compilation
+     * controller so it is from other model.
+     */
+    static boolean getVariableElementAtDot( final JTextComponent component,
+            final Object[] variable , final boolean showStatusOnError, 
+            final PositionStrategy strategy) 
+    {
         
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
@@ -191,7 +217,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities().pathFor(dot);
                     Element contextElement = controller.getTrees().getElement(tp );
                     if ( contextElement == null ){

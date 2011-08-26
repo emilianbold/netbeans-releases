@@ -188,7 +188,9 @@ public enum CssTokenId implements TokenId {
     LEFTBOTTOM_SYM(Css3Lexer.LEFTBOTTOM_SYM, KEYWORDS),
     RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, KEYWORDS),
     RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, KEYWORDS),
-    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, KEYWORDS);
+    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, KEYWORDS),
+    
+    COUNTER_STYLE_SYM(Css3Lexer.COUNTER_STYLE_SYM, KEYWORDS);
     
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();

@@ -148,9 +148,15 @@ class ModelBuilder {
 
     void reset() {
         if (!currentScope.empty()) {
-            ScopeImpl createdScope = currentScope.pop();
+            ScopeImpl createdScope = currentScope.peek();
             if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
+                if (!((NamespaceScopeImpl)createdScope).isDefaultNamespace()) {
+                    // don't remove default namespace, it's included in constructor
+                    currentScope.pop();
+                }
+            } else {
+                currentScope.pop();
             }
         }
     }
