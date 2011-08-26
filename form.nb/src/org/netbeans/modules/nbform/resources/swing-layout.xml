@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
 <library version="1.0">
     <name>swing-layout</name>
     <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
+    <localizing-bundle>org.netbeans.modules.nbform.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.jdesktop.layout/modules/ext/swing-layout-1.0.4.jar!/</resource>

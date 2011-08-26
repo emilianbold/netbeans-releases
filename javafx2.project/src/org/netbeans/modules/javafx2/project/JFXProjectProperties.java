@@ -158,6 +158,9 @@ public final class JFXProjectProperties {
     public Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> getAppParameters() {
         return APP_PARAMS;
     }   
+    public List<Map<String,String/*|null*/>> getActiveAppParameters(String config) {
+        return APP_PARAMS.get(config);
+    }   
     public List<Map<String,String/*|null*/>> getActiveAppParameters() {
         return APP_PARAMS.get(activeConfig);
     }   

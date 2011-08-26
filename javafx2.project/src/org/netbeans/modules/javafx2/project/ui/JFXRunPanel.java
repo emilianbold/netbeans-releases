@@ -213,6 +213,14 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         updateWebBrowsers();
     }
 
+    void setEmphasized(JLabel label, boolean emphasized) {
+        Font basefont = label.getFont();
+        if(emphasized) {
+            label.setFont(basefont.deriveFont(Font.ITALIC));
+        } else {
+            label.setFont(basefont.deriveFont(Font.PLAIN));
+        }
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -985,6 +993,9 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     }                
                 }
             }
+            String paramString = getParamsString(jfxProps.getActiveAppParameters(activeConfig));
+            textFieldParams.setText(paramString);
+            setEmphasized(labelParams, !paramString.equals(getParamsString(jfxProps.getActiveAppParameters(null))));
         } // else ??
         buttonDelete.setEnabled(activeConfig != null);
     }

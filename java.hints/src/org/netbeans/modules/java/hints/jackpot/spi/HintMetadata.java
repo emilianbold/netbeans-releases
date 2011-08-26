@@ -85,6 +85,11 @@ public class HintMetadata {
         this.options = options;
     }
 
+    @Override
+    public String toString() {
+        return this.displayName;
+    }
+
     private static String lookup(ResourceBundle bundle, String key, String def) {
         try {
             return bundle != null ? bundle.getString(key) : def;
