@@ -128,6 +128,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -251,15 +252,27 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
     }
 
-    @Override
-    public String getShortDescription() {
+    @Messages({
+        "DESC_Dep1=GroupId:",
+        "DESC_Dep2=ArtifactId:",
+        "DESC_Dep3=Version:",
+        "DESC_Dep4=Type:",
+        "DESC_Dep5=Classifier:",
+        "DESC_via=Via:"
+    })
+    @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
-        buf.append("<html><i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep1")).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep2")).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep3")).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep4")).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
+        buf.append("<html><i>").append(DESC_Dep1()).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
+        buf.append(DESC_Dep2()).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep3()).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep4()).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
         if (art.getClassifier() != null) {
-            buf.append("<i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep5")).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+            buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+        }
+        List<String> trail = art.getDependencyTrail();
+        for (int i = trail.size() - 2; i > 0 && /* just to be safe */ i < trail.size(); i--) {
+            String[] id = trail.get(i).split(":"); // g:a:t[:c]:v
+            buf.append("<i>").append(DESC_via()).append("</i> ").append(id[1]).append("<br>");
         }
         // it seems that with ending </html> tag the icon descriptions are not added.
 //        buf.append("</html>");//NOI18N
