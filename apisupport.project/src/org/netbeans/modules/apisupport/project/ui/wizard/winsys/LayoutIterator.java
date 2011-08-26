@@ -66,8 +66,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.winsys.NewTCIterator.DataModel;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
@@ -278,8 +280,15 @@ public final class LayoutIterator extends BasicWizardIterator {
         final Map<String, String> newModes = model.getNewModes();
         if (newModes != null) {
             Set<String> files = new HashSet<String>();
+            FileObject parent;
+            try {
+                parent = moduleInfo.getEffectiveSystemFilesystem().findResource("Windows2/Modes");
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+                parent = null;
+            }
             for (String wsmode : newModes.keySet()) {
-                files.add(wsmode + ".wsmode");
+                files.add(LayerUtils.findGeneratedName(parent, wsmode + ".wsmode"));
             }
             
             fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {

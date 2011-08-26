@@ -116,7 +116,9 @@ public final class DesignSupport implements TaskListener, Runnable {
                 return null;
             }
         }
-        FileObject fo = prj.getProjectDirectory().getFileObject("build/designdir"); // NOI18N
+        // XXX better would be an API in NbModuleProvider for finding generic build dir (${build.dir} or ${project.basedir}/target/)
+        File path = new File(prj.getLookup().lookup(NbModuleProvider.class).getClassesDirectory().getParentFile(), "designdir");
+        FileObject fo = FileUtil.toFileObject(path);
         if (fo != null) {
             if (warnPrevResult) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "MSG_AlreadyLaunched", new Object[]{}));
@@ -127,8 +129,7 @@ public final class DesignSupport implements TaskListener, Runnable {
             }
             fo.delete();
         }
-        fo = FileUtil.createFolder(prj.getProjectDirectory(), "build/designdir"); // NOI18N
-        File path = FileUtil.toFile(fo);
+        fo = FileUtil.createFolder(path);
         userDir.set(fo);
         return es.execute(
             "--nosplash", // NOI18N
