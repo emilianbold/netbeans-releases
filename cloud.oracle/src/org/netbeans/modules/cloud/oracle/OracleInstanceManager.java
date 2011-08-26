@@ -60,12 +60,14 @@ public class OracleInstanceManager {
     private static final String ORACLE_IP_NAMESPACE = "cloud.oracle"; // NOI18N
     
     private static final String PREFIX = "org.netbeans.modules.cloud.oracle."; // NOI18N
-    private static final String TENANT_USERNAME = "tenant-username"; // NOI18N
-    private static final String TENANT_PASSWORD = "tenant-password"; // NOI18N
+    private static final String USERNAME = "username"; // NOI18N
+    private static final String PASSWORD = "password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
-    private static final String URL_ENDPOINT = "url-endpoint"; // NOI18N
-    private static final String TENANT_ID = "tenant-id"; // NOI18N
-    private static final String SERVICE_NAME = "service-name"; // NOI18N
+    private static final String ADMIN_URL = "admin-url"; // NOI18N
+    private static final String INSTANCE_URL = "instance-url"; // NOI18N
+    private static final String CLOUD_URL = "cloud-url"; // NOI18N
+    private static final String SYSTEM = "system"; // NOI18N
+    private static final String SERVICE = "service-name"; // NOI18N
     private static final String ON_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     private static OracleInstanceManager instance;
@@ -107,15 +109,13 @@ public class OracleInstanceManager {
     }
     
     private void store(OracleInstance ai) {
-        // TODO: check uniqueness etc.
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(ORACLE_IP_NAMESPACE);
-        
-        Keyring.save(PREFIX+TENANT_USERNAME+"."+ai.getName(), ai.getTenantUserName().toCharArray(), "Oracle Cloud Username"); // NOI18N
-        Keyring.save(PREFIX+TENANT_PASSWORD+"."+ai.getName(), ai.getTenantPassword().toCharArray(), "Oracle Cloud Password"); // NOI18N
-        
-        props.putString(URL_ENDPOINT, ai.getUrlEndpoint());
-        props.putString(TENANT_ID, ai.getTenantId());
-        props.putString(SERVICE_NAME, ai.getServiceName());
+        saveUsernameAndPassword(ai);
+        props.putString(ADMIN_URL, ai.getAdminURL());
+        props.putString(INSTANCE_URL, ai.getInstanceURL());
+        props.putString(CLOUD_URL, ai.getCloudURL());
+        props.putString(SYSTEM, ai.getSystem());
+        props.putString(SERVICE, ai.getService());
         props.putString(NAME, ai.getName());
         if (ai.getOnPremiseServerInstanceId() != null) {
             props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
@@ -126,14 +126,21 @@ public class OracleInstanceManager {
         for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
             String name = props.getString(NAME, null); // NOI18N
             if (name.equals(ai.getName())) {
-                props.putString(URL_ENDPOINT, ai.getUrlEndpoint());
-                props.putString(TENANT_ID, ai.getTenantId());
-                props.putString(SERVICE_NAME, ai.getServiceName());
-                props.putString(NAME, ai.getName());
+                props.putString(ADMIN_URL, ai.getAdminURL());
+                props.putString(INSTANCE_URL, ai.getInstanceURL());
+                props.putString(CLOUD_URL, ai.getCloudURL());
+                props.putString(SYSTEM, ai.getSystem());
+                props.putString(SERVICE, ai.getService());
+                saveUsernameAndPassword(ai);
                 notifyChange();
                 break;
             }
         }
+    }
+    
+    private static void saveUsernameAndPassword(OracleInstance ai) {
+        Keyring.save(PREFIX+USERNAME+"."+ai.getName(), ai.getUser().toCharArray(), "Oracle Cloud Username"); // NOI18N
+        Keyring.save(PREFIX+PASSWORD+"."+ai.getName(), ai.getPassword().toCharArray(), "Oracle Cloud Password"); // NOI18N
     }
     
     private static List<OracleInstance> load() {
@@ -141,29 +148,33 @@ public class OracleInstanceManager {
         for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
             String name = props.getString(NAME, null); // NOI18N
             assert name != null : "Instance without name";
-            String url = props.getString(URL_ENDPOINT, null); // NOI18N
-            assert url != null : "Instance without url";
+            String adminURL = props.getString(ADMIN_URL, null); // NOI18N
+            assert adminURL != null : "Instance without admin url";
+            String instanceURL = props.getString(INSTANCE_URL, null); // NOI18N
+            assert instanceURL != null : "Instance without instance url";
+            String cloudURL = props.getString(CLOUD_URL, null); // NOI18N
+            assert cloudURL != null : "Instance without cloud url";
             
-            char ch[] = Keyring.read(PREFIX+TENANT_USERNAME+"."+name);
+            char ch[] = Keyring.read(PREFIX+USERNAME+"."+name);
             if (ch == null) {
                 LOG.log(Level.WARNING, "no username found for "+name);
                 continue;
             }
             String userName = new String(ch);
             assert userName != null : "username is missing for "+name; // NOI18N
-            ch = Keyring.read(PREFIX+TENANT_PASSWORD+"."+name);
+            ch = Keyring.read(PREFIX+PASSWORD+"."+name);
             if (ch == null) {
                 LOG.log(Level.WARNING, "no password found for "+name);
                 continue;
             }
             String password = new String(ch);
             assert password != null : "password is missing for "+name; // NOI18N
-            String tenant = props.getString(TENANT_ID, null); // NOI18N
+            String tenant = props.getString(SYSTEM, null); // NOI18N
             assert tenant != null : "Instance without tenant ID";
-            String service = props.getString(SERVICE_NAME, null); // NOI18N
+            String service = props.getString(SERVICE, null); // NOI18N
             assert service != null : "Instance without service name";
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
-            result.add(new OracleInstance(name, userName, password, url, tenant, service, onPremise));
+            result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise));
         }
         return result;
     }

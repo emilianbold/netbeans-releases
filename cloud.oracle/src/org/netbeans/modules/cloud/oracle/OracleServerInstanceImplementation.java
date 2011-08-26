@@ -88,11 +88,13 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                ai.setServiceName(panel.getServiceName());
-                ai.setTenantId(panel.getTenantId());
-                ai.setTenantPassword(panel.getPassword());
-                ai.setTenantUserName(panel.getUserName());
-                ai.setUrlEndpoint(panel.getUrl());
+                ai.setService(panel.getService());
+                ai.setSystem(panel.getSystem());
+                ai.setPassword(panel.getPassword());
+                ai.setUser(panel.getUserName());
+                ai.setAdminURL(panel.getAdminUrl());
+                ai.setInstanceURL(panel.getInstanceUrl());
+                ai.setCloudURL(panel.getCloudUrl());
                 OracleInstanceManager.getDefault().update(ai);
             }
         });

@@ -92,17 +92,21 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
 
     @Override
     public Set instantiate() throws IOException {
-        String username = (String)wizard.getProperty(OracleWizardPanel.TENANT_USERNAME);
+        String username = (String)wizard.getProperty(OracleWizardPanel.USERNAME);
         assert username != null;
-        String pwd = (String)wizard.getProperty(OracleWizardPanel.TENANT_PASSWORD);
+        String pwd = (String)wizard.getProperty(OracleWizardPanel.PASSWORD);
         assert pwd != null;
-        String url = (String)wizard.getProperty(OracleWizardPanel.URL_ENDPOINT);
-        assert url != null;
+        String adminURL = (String)wizard.getProperty(OracleWizardPanel.ADMIN_URL);
+        assert adminURL != null;
+        String instanceURL = (String)wizard.getProperty(OracleWizardPanel.INSTANCE_URL);
+        assert instanceURL != null;
+        String cloudURL = (String)wizard.getProperty(OracleWizardPanel.CLOUD_URL);
+        assert cloudURL != null;
         String name = (String)wizard.getProperty(PROP_DISPLAY_NAME);
         assert name != null;
-        String tenant = (String)wizard.getProperty(OracleWizardPanel.TENANT_ID);
+        String tenant = (String)wizard.getProperty(OracleWizardPanel.SYSTEM);
         assert tenant != null;
-        String service = (String)wizard.getProperty(OracleWizardPanel.SERVICE_NAME);
+        String service = (String)wizard.getProperty(OracleWizardPanel.SERVICE);
         assert service != null;
         
         String serverDir = (String)wizard.getProperty(LocalInstancePanel.LOCAL_SERVER);
@@ -143,7 +147,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             }
         }
         
-        OracleInstance instance = new OracleInstance(name, username, pwd, url, tenant, service, localServerInstanceId);
+        OracleInstance instance = new OracleInstance(name, username, pwd, adminURL, 
+                instanceURL, cloudURL, tenant, service, localServerInstanceId);
         OracleInstanceManager.getDefault().add(instance);
         
         
