@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -61,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -138,6 +140,8 @@ public final class JFXProjectProperties {
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
+    
+    public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -254,6 +258,22 @@ public final class JFXProjectProperties {
         lazyJarsChanged = changed;
     }
     
+    // Deployment - JavaScript Callbacks
+    Map<String,String> jsCallbacks;
+    boolean jsCallbacksChanged;
+    public Map<String,String> getJSCallbacks() {
+        return jsCallbacks;
+    }
+    public void setJSCallbacks(Map<String,String> newCallbacks) {
+        jsCallbacks = newCallbacks;
+    }
+    public boolean getJSCallbacksChanged() {
+        return jsCallbacksChanged;
+    }
+    public void setJSCallbacksChanged(boolean changed) {
+        jsCallbacksChanged = changed;
+    }
+        
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
     private PropertyEvaluator evaluator;
@@ -331,7 +351,8 @@ public final class JFXProjectProperties {
             activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
             
             initSigning(evaluator);
-            initResources(evaluator, project);             
+            initResources(evaluator, project);
+            initJSCallbacks(evaluator);
         }
     }
     
@@ -738,6 +759,9 @@ public final class JFXProjectProperties {
         
         // store resources
         storeResources(editableProps);
+
+        // store JavaScript callbacks
+        storeJSCallbacks(editableProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -976,5 +1000,31 @@ public final class JFXProjectProperties {
             }
         }
     }
+
+    private void initJSCallbacks (final PropertyEvaluator eval) {
+        String platformName = eval.getProperty("platform.active");
+        Map<String,List<String>/*|null*/> callbacks = JavaFXPlatformUtils.getJSCallbacks(platformName);
+        Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
+        for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {
+            String v = eval.getProperty(JFXProjectProperties.JAVASCRIPT_CALLBACK_PREFIX + entry.getKey());
+            if(v != null && !v.isEmpty()) {
+                result.put(entry.getKey(), v);
+            }
+        }
+        jsCallbacks = result;
+        jsCallbacksChanged = false;
+    }
     
+    private void storeJSCallbacks(final EditableProperties props) {
+        if (jsCallbacksChanged) {
+            for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    props.setProperty(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey(), entry.getValue());  //NOI18N
+                } else {
+                    props.remove(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey());
+                }
+            }
+        }
+    }
+
 }
