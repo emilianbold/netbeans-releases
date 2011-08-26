@@ -616,7 +616,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         editScriptButton.setVisible(false);
         editingButtons.setVisible(true);
         optionsPanel.setVisible(false);
-        
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Script_Border"));        
         DataObject dob = getDataObject(getSelectedHint());
         EditorCookie ec = dob.getCookie(EditorCookie.class);
         try {
@@ -640,6 +640,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         editingButtons.setVisible(false);
         editScriptButton.setVisible(true);
         descriptionTextArea.setEditable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border"));
 
         newButton.setEnabled(true);
         searchTextField.setEnabled(true);
