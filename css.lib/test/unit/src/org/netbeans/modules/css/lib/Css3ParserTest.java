@@ -47,9 +47,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -721,6 +723,30 @@ public class Css3ParserTest extends CslTestBase {
         assertNotNull(NodeUtil.query(margin2, "declarations/declaration"));
         
         
+
+    }
+    
+    public void testCounterStyle() throws ParseException, BadLocationException {
+        String content = "@counter-style cool { glyph: '|'; }";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node counterStyle = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "counterStyle");
+        assertNotNull(counterStyle);
+        
+        Node ident = NodeUtil.getChildTokenNode(counterStyle, CssTokenId.IDENT);
+        assertNotNull(ident);
+        assertEquals("cool", ident.image().toString());
+        
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration");
+        assertNotNull(declaration);
+        assertEquals("glyph: '|'", declaration.image().toString());
+
+        assertResultOK(result);
 
     }
     

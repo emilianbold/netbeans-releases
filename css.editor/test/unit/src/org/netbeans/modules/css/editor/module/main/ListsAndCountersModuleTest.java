@@ -45,55 +45,25 @@ import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class NamespacesModuleTest extends CssModuleTestBase {
-    
-    public NamespacesModuleTest(String name) {
-        super(name);
+public class ListsAndCountersModuleTest extends CssModuleTestBase {
+
+    public ListsAndCountersModuleTest(String testName) {
+        super(testName);
     }
 
-    public void testNamespaceKeywordCompletion() throws ParseException  {
-        checkCC("|", arr("@namespace"), Match.CONTAINS);
-        checkCC("@|", arr("@namespace"), Match.CONTAINS);
-        checkCC("@name|", arr("@namespace"), Match.CONTAINS);
-    }
-    
-    
-    public void testNamespacePrefixesCompletion() throws ParseException  {
-        String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-//        checkCC(nsdecl + "| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "f| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "foo| ", arr("foo"), Match.CONTAINS);
+    public void testProperties() {
+        assertPropertyDeclaration("list-style: upper-roman inside ");
+        assertPropertyDeclaration("list-style: circle outside)");
+        assertPropertyDeclaration("list-style: lower-alpha");
 
-        checkCC(nsdecl + "h1 | ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 f| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 foo| ", arr("foo"), Match.CONTAINS);
-        
-        //ugly - first pipe is caret, second the normal text pipe char
-        checkCC(nsdecl + "h1 ||h2 ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 f||h2 ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 foo||h2 ", arr("foo"), Match.CONTAINS);
+        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
+
     }
-    
-    public void testNamespacePrefixesInAttributeCompletion() throws ParseException  {
-        String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-        checkCC(nsdecl + "h1[|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ |", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[|]", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ |]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[f|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[foo|]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[ f|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ foo|]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[f*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        
+
+    public void testMarkerPseudoElementCompletion() throws ParseException {
+        checkCC("div::| ", arr("marker"), Match.CONTAINS);
+        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
     }
-   
 }

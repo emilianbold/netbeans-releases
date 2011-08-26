@@ -41,32 +41,36 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.parsing.spi.ParseException;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class SelectorsModuleTest extends CssModuleTestBase {
-    
-    public SelectorsModuleTest(String name) {
-        super(name);
+@ServiceProvider(service = CssModule.class)
+public class ListsAndCountersModule extends CssModule {
+
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/lists_and_counters"; //NOI18N
+    private static Collection<PropertyDescriptor> propertyDescriptors;
+    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{"marker"}); //NOI18N
+
+    @Override
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if (propertyDescriptors == null) {
+            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+        }
+        return propertyDescriptors;
     }
 
-    public void testPseudoClassesCompletion() throws ParseException  {
-        checkCC("div:| ", arr("enabled"), Match.CONTAINS);
-        checkCC("div:| \n h1 { } ", arr("enabled"), Match.CONTAINS);
-        checkCC("div:ena|", arr("enabled"), Match.CONTAINS);
-        checkCC("div:ena| h1 { }", arr("enabled"), Match.CONTAINS);
-        checkCC("div:enabled| h1 { }", arr("enabled"), Match.CONTAINS);
+    @Override
+    public Collection<String> getPseudoElements() {
+        return PSEUDO_ELEMENTS;
     }
     
-    public void testPseudoElementsCompletion() throws ParseException  {
-        checkCC("div::| ", arr("after"), Match.CONTAINS);
-        checkCC("div::|  h1 { } ", arr("after"), Match.CONTAINS);
-        checkCC("div::af|", arr("after"), Match.CONTAINS);
-        checkCC("div::af| h1 { }", arr("after"), Match.CONTAINS);
-        checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
-    }
     
+
 }

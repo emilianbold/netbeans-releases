@@ -41,59 +41,45 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.parsing.spi.ParseException;
-
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class NamespacesModuleTest extends CssModuleTestBase {
-    
-    public NamespacesModuleTest(String name) {
-        super(name);
-    }
+public class ImageValuesModuleTest extends CssModuleTestBase {
 
-    public void testNamespaceKeywordCompletion() throws ParseException  {
-        checkCC("|", arr("@namespace"), Match.CONTAINS);
-        checkCC("@|", arr("@namespace"), Match.CONTAINS);
-        checkCC("@name|", arr("@namespace"), Match.CONTAINS);
+    public ImageValuesModuleTest(String testName) {
+        super(testName);
     }
     
-    
-    public void testNamespacePrefixesCompletion() throws ParseException  {
-        String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-//        checkCC(nsdecl + "| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "f| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "foo| ", arr("foo"), Match.CONTAINS);
+    public void testProperties() {
+        assertPropertyDeclaration("image-orientation: 90deg");
+        
+        assertPropertyDeclaration("image-resolution: 300dpi");
+        assertPropertyDeclaration("image-resolution: from-image");
+        assertPropertyDeclaration("image-resolution: 300dpi from-image");
+        assertPropertyDeclaration("image-resolution: from-image 300dpi");
+        
+        assertPropertyDeclaration("background-image:url(picture.png)");
+        assertPropertyDeclaration("background: linear-gradient(white, gray);");
 
-        checkCC(nsdecl + "h1 | ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 f| ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 foo| ", arr("foo"), Match.CONTAINS);
+        assertPropertyDeclaration("-radial-gradient: radial-gradient(circle, #006, #00a 90%, #0000af 100%, white 100%)");
         
-        //ugly - first pipe is caret, second the normal text pipe char
-        checkCC(nsdecl + "h1 ||h2 ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 f||h2 ", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1 foo||h2 ", arr("foo"), Match.CONTAINS);
+        assertPropertyDeclaration("-image: linear-gradient(yellow, blue);");
+        assertPropertyDeclaration("-image: linear-gradient(top, yellow 0%, blue 100%);");
+        assertPropertyDeclaration("-image: linear-gradient(-45deg, blue, yellow);");
+        assertPropertyDeclaration("-image: radial-gradient(50% 50%, farthest-corner, yellow, green);");
+        assertPropertyDeclaration("-radial-gradient: radial-gradient(yellow, green);");
+        assertPropertyDeclaration("-radial-gradient: radial-gradient(center, ellipse cover, yellow 0%, green 100%);");
+        assertPropertyDeclaration("-radial-gradient: radial-gradient(50% 50%, farthest-corner, yellow, green);");
+//        assertPropertyDeclaration("-radial-gradient: radial-gradient(bottom left, farthest-side, red, yellow 50px, green);");
+        assertPropertyDeclaration("-radial-gradient: radial-gradient(20px 30px, 20px 20px, red, yellow, green);");
+        
+        assertPropertyDeclaration("-repeating-radial-gradient:repeating-radial-gradient(20px 30px, circle contain, red, yellow, green 100%, yellow 150%, red 200%)");
+        assertPropertyDeclaration("-repeating-radial-gradient:repeating-radial-gradient(red, blue 20px, red 40px)");
+     
+        
+        
+        
     }
     
-    public void testNamespacePrefixesInAttributeCompletion() throws ParseException  {
-        String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-        checkCC(nsdecl + "h1[|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ |", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[|]", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ |]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[f|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[foo|]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[ f|", arr("foo"), Match.CONTAINS);
-        checkCC(nsdecl + "h1[ foo|]", arr("foo"), Match.CONTAINS);
-        
-        checkCC(nsdecl + "h1[*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[f*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo*|attr=val]", arr("foo"), Match.CONTAINS, '*');
-        
-    }
-   
 }
