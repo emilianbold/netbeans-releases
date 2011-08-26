@@ -44,14 +44,13 @@ package org.netbeans.modules.css.editor.module.main;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.test.CssCompletionTestBase;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class PagedMediaModuleTest extends CssCompletionTestBase {
+public class PagedMediaModuleTest extends CssModuleTestBase {
     
     public PagedMediaModuleTest(String name) {
         super(name);

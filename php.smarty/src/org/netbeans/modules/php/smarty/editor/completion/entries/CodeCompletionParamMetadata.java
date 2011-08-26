@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,33 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor.properties;
-
-import java.util.Arrays;
-import java.util.List;
+package org.netbeans.modules.php.smarty.editor.completion.entries;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Martin Fousek
  */
-public class Dpi extends NumberPostfixAcceptor {
+public class CodeCompletionParamMetadata {
 
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi"}); //NOI18N
-    
-    @Override
-    public String id() {
-        return "dpi"; //NOI18N
+    protected String keyword;
+    protected String help;
+
+    public CodeCompletionParamMetadata(String keyword, String help) {
+        this.keyword = keyword;
+        this.help = help;
     }
 
-    @Override
-    public List<String> postfixes() {
-        return POSTFIXES;
+    public String getKeyword() {
+        return keyword;
     }
-    
+
+    public String getHelp() {
+        return help;
+    }
+
 }
