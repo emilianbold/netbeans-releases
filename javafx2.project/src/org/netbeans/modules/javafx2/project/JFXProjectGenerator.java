@@ -323,8 +323,8 @@ public class JFXProjectGenerator {
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
         ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
-        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
-        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
+//        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
+//        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
                 
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
@@ -550,7 +550,7 @@ public class JFXProjectGenerator {
             return;
         }
 
-        FileObject mainTemplate = FileUtil.getConfigFile("Templates/Classes/FXMain.java"); // NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
 
         if (mainTemplate == null) {
             return; // Don't know the template

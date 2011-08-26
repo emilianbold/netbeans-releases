@@ -1,0 +1,49 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+</#if>
+
+import java.io.IOException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends Application {
+
+    public static void main(String[] args) {
+        Application.launch(${name}.class, args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        MyGroup myGroup = null;
+
+        try {
+<#if package?? && package != "">
+            myGroup = (MyGroup) FXMLLoader.load(TestFXML.class.getResource("${package}/${name}.xml"));
+<#else>
+            myGroup = (MyGroup) FXMLLoader.load(TestFXML.class.getResource("${name}.xml"));
+</#if>
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        primaryStage.setTitle("Test FXML");
+        primaryStage.setWidth(320);
+        primaryStage.setHeight(200);
+
+        Scene scene = new Scene(myGroup);
+        primaryStage.setScene(scene);
+
+        primaryStage.setVisible(true);
+    }
+}

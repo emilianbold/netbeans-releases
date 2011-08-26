@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -63,6 +64,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -121,6 +123,21 @@ public final class JFXProjectProperties {
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+
+    public static final String SIGNING_GENERATED = "generated"; //NOI18N
+    public static final String SIGNING_KEY = "key"; //NOI18N
+
+    public static final String JAVAFX_SIGNED = "javafx.signed"; //NOI18N
+    public static final String JAVAFX_SIGNING = "javafx.signing"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE = "javafx.signing.keystore"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.alias"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.storepass"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keypass"; //NOI18N
+    public static final String RUN_CP = "run.classpath";    //NOI18N
+    public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
+    private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
+    private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -207,11 +224,32 @@ public final class JFXProjectProperties {
     String signingKeyAlias;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
+    public String getSigning() {
+        return signing;
+    }
+    public String getSigningKeyAlias() {
+        return signingKeyAlias;
+    }
     
     // Deployment - Libraries Download Mode
     List<? extends File> runtimeCP;
     List<? extends File> lazyJars;
     boolean lazyJarsChanged;
+    public List<? extends File> getRuntimeCP() {
+        return runtimeCP;
+    }
+    public List<? extends File> getLazyJars() {
+        return lazyJars;
+    }
+    public void setLazyJars(List<? extends File> newLazyJars) {
+        lazyJars = newLazyJars;
+    }
+    public boolean getLazyJarsChanged() {
+        return lazyJarsChanged;
+    }
+    public void setLazyJarsChanged(boolean changed) {
+        lazyJarsChanged = changed;
+    }
     
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
@@ -288,6 +326,9 @@ public final class JFXProjectProperties {
             RUN_CONFIGS = readRunConfigs();
             APP_PARAMS = readAppParams();
             activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
+            
+            initSigning(evaluator);
+            initResources(evaluator, project);             
         }
     }
     
@@ -669,9 +710,45 @@ public final class JFXProjectProperties {
     }
     
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
-        // TODO
+//        // store descriptor type
+//        DescType descType = getSelectedDescType();
+//        if (descType != null) {
+//            editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
+//        }
+//        //Store Mixed Code
+//        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
+//        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
+//        //Store jar indexing
+//        if (editableProps.getProperty(JAR_INDEX) == null) {
+//            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
+//        }
+//        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
+//            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
+//        }
+        // store signing info
+        editableProps.setProperty(JAVAFX_SIGNING, signing);
+        editableProps.setProperty(JAVAFX_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
+        setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
+        setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
+        setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
+        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
+        
+        // store resources
+        storeResources(editableProps);
     }
 
+    private void setOrRemove(EditableProperties props, String name, char [] value) {
+        setOrRemove(props, name, value != null ? new String(value) : null);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, String value) {
+        if (value != null) {
+            props.setProperty(name, value);
+        } else {
+            props.remove(name);
+        }
+    }
+        
     public EditableProperties readFromFile(String relativePath) throws IOException {
         final EditableProperties ep = new EditableProperties(true);
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
@@ -829,4 +906,72 @@ public final class JFXProjectProperties {
         }       
     }
 
+    private void initSigning(PropertyEvaluator eval) {
+        signing = eval.getProperty(JAVAFX_SIGNING);
+        if (signing == null) signing = "";
+        signingKeyStore = eval.getProperty(JAVAFX_SIGNING_KEYSTORE);
+        if (signingKeyStore == null) signingKeyStore = "";
+        signingKeyAlias = eval.getProperty(JAVAFX_SIGNING_KEY);
+        if (signingKeyAlias == null) signingKeyAlias = "";
+        if (eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD) != null) {
+            signingKeyStorePassword = eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD).toCharArray();
+        }
+        if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
+            signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
+        }
+        // compatibility
+        if ("".equals(signing) && "true".equals(eval.getProperty(JAVAFX_SIGNED))) { //NOI18N
+            signing = SIGNING_GENERATED;
+        }
+    }
+    
+    private void initResources (final PropertyEvaluator eval, final Project prj) {
+        final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
+        final String rcp = eval.getProperty(RUN_CP);        
+        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
+        final List<File> lazyFileList = new ArrayList<File>();
+        String[] paths;
+        if (lz != null) {
+            paths = PropertyUtils.tokenizePath(lz);            
+            for (String p : paths) {
+                lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
+            }
+        }
+        paths = PropertyUtils.tokenizePath(rcp);
+        final List<File> resFileList = new ArrayList<File>(paths.length);
+        for (String p : paths) {
+            if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
+                continue;
+            }
+            final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (bc == null || !bcDir.equals(f)) {
+                resFileList.add(f);
+                if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
+                    lazyFileList.add(f);
+                }
+            }
+        }
+        lazyJars = lazyFileList;
+        runtimeCP = resFileList;
+        lazyJarsChanged = false;
+    }
+    
+    private void storeResources(final EditableProperties props) {
+        if (lazyJarsChanged) {
+            //Remove old way if exists
+            props.remove(DOWNLOAD_MODE_LAZY_JARS);
+            final Iterator<Map.Entry<String,String>> it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                if (it.next().getKey().startsWith(DOWNLOAD_MODE_LAZY_JAR)) {
+                    it.remove();
+                }
+            }
+            for (File lazyJar : lazyJars) {
+                props.setProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, lazyJar.getName()), "true");  //NOI18N
+            }
+        }
+    }
+    
 }
