@@ -54,7 +54,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
@@ -64,6 +66,7 @@ import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -90,6 +93,7 @@ public class InjectionPointParameterAnalyzer
             }
             try {
                 if (model.isInjectionPoint(var)) {
+                    boolean isDelegate = false;
                     result.requireCdiEnabled(element, model);
                     if (!model.isDynamicInjectionPoint(var)) {
                         DependencyInjectionResult res = model.lookupInjectables(
@@ -98,6 +102,7 @@ public class InjectionPointParameterAnalyzer
                         if ( AnnotationUtil.isDelegate(var, parent, model)){
                             analyzeDecoratedBeans(res, var, element, parent,
                                     model, result );
+                            isDelegate =true;
                         }
                     }
                     if ( cancel.get()){
@@ -109,6 +114,18 @@ public class InjectionPointParameterAnalyzer
                     }
                     checkInjectionPointMetadata( var, element, parent , model , 
                             cancel , result );
+                    if ( isDelegate || AnnotationUtil.hasAnnotation(element, 
+                            AnnotationUtil.DELEGATE_FQN, model.getCompilationController()))
+                    {
+                        return;
+                    }
+                    else {
+                        VariableElement param = CdiEditorAnalysisFactory.
+                            resolveParameter(var, element, result.getInfo());
+                        EditorAnnotationsHelper helper = EditorAnnotationsHelper.
+                            getInstance(result);
+                        helper.addInjectionPoint(result, param);                    
+                    }
             }
             }
             catch( InjectionPointDefinitionError e ){

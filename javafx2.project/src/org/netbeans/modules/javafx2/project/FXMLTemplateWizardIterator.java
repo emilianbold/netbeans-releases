@@ -40,75 +40,94 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Anton Chechel
  */
-public class FXMLTemplateWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
+    private transient WizardDescriptor wiz;
+    private transient WizardDescriptor.InstantiatingIterator delegateIterator;
+
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
         return new FXMLTemplateWizardIterator();
     }
 
-    @Override
-    public Set instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+    public FXMLTemplateWizardIterator() {
+        delegateIterator = JavaTemplates.createJavaTemplateIterator();
     }
 
     @Override
     public void initialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        wiz = wizard;
+        delegateIterator.initialize(wizard);
     }
 
     @Override
     public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        delegateIterator.uninitialize(wizard);
     }
 
     @Override
-    public Panel<WizardDescriptor> current() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Set instantiate() throws IOException, IllegalArgumentException {
+        Set set = delegateIterator.instantiate();
+        FileObject createdFO = (FileObject) set.iterator().next();
+        FileObject template = Templates.getTemplate(wiz);
+        
+        return set;
     }
 
     @Override
-    public String name() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public WizardDescriptor.Panel current() {
+        return delegateIterator.current();
     }
 
     @Override
     public boolean hasNext() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasPrevious() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void nextPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void previousPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return delegateIterator.hasNext();
     }
     
+    @Override
+    public boolean hasPrevious() {
+        return delegateIterator.hasPrevious();
+    }
+    
+    @Override
+    public void nextPanel() {
+        if (delegateIterator.hasNext()) {
+            delegateIterator.nextPanel();
+        }
+    }
+    
+    @Override
+    public void previousPanel() {
+        delegateIterator.previousPanel();
+    }
+    
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        delegateIterator.addChangeListener(l);
+    }
+    
+    @Override
+    public String name() {
+        return delegateIterator.name();
+    }
+    
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        delegateIterator.removeChangeListener(l);
+    }
+
 }

@@ -59,8 +59,8 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation.CDIAnnotaitonType;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -126,7 +126,7 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
         }        
     }
     
-    public static EditorAnnotationsHelper getInstance( Result result ){
+    public static EditorAnnotationsHelper getInstance( CdiAnalysisResult result ){
         return getInstance( result.getInfo().getFileObject());
     }
     
@@ -157,16 +157,16 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
         }
     }
 
-    public void addInjectionPoint( Result result, VariableElement element )
+    public void addInjectionPoint( CdiAnalysisResult result, VariableElement element )
     {
         addAnnotation(result, element, CDIAnnotaitonType.INJECTION_POINT );
     }
 
-    public void addDelegate( Result result ,  VariableElement element ) {
+    public void addDelegate( CdiAnalysisResult result ,  VariableElement element ) {
         addAnnotation(result, element, CDIAnnotaitonType.DELEGATE_POINT );
     }
 
-    public void publish( final Result result ) {
+    public void publish( final CdiAnalysisResult result ) {
         Runnable runnable = new Runnable() {
             
             @Override
@@ -197,7 +197,7 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
         return myAnnotations.get();
     }
 
-    private void addAnnotation( Result result, Element element , 
+    private void addAnnotation( CdiAnalysisResult result, Element element , 
             CDIAnnotaitonType type) 
     {
         Tree var = result.getInfo().getTrees().getTree( element );

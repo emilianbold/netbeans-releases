@@ -7,29 +7,43 @@
 package ${package};
 </#if>
 
-import java.net.URL;
-import java.util.Map;
-import javafx.event.ActionEvent;
-import javafx.fxml.Bindable;
-import javafx.fxml.FXML;
-import javafx.fxml.Resources;
-import javafx.scene.Group;
-import javafx.scene.control.Label;
+import java.io.IOException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  *
  * @author ${user}
  */
-public class MyGroup extends Group implements Bindable {
+public class ${name} extends Application {
 
-    @FXML private Label label;
-
-    @FXML private void handleButtonAction(ActionEvent event) {
-        System.out.println("You clicked me!");
-        label.setText("Hello World!");
+    public static void main(String[] args) {
+        Application.launch(${name}.class, args);
     }
 
-    public void initialize(Map<String, Object> namespace, URL location, Resources resources) {
-        // TODO
+    @Override
+    public void start(Stage primaryStage) {
+        MyGroup myGroup = null;
+
+        try {
+<#if package?? && package != "">
+            myGroup = (MyGroup) FXMLLoader.load(${name}.class.getResource("${package}/${name}.xml"));
+<#else>
+            myGroup = (MyGroup) FXMLLoader.load(${name}.class.getResource("${name}.xml"));
+</#if>
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        primaryStage.setTitle("Test FXML");
+        primaryStage.setWidth(320);
+        primaryStage.setHeight(200);
+
+        Scene scene = new Scene(myGroup);
+        primaryStage.setScene(scene);
+
+        primaryStage.show();
     }
 }
