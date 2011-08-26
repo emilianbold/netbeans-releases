@@ -208,6 +208,8 @@ public class ReplaceBar extends JPanel {
             }
         });
         add(replaceAllButton);
+        
+        changeButtonsSizeAsSearchBarButtons();
 
         final JToolBar.Separator rightSeparator = new JToolBar.Separator();
         rightSeparator.setOrientation(SwingConstants.VERTICAL);
@@ -389,6 +391,20 @@ public class ReplaceBar extends JPanel {
         return -1;
     }
 
+    private void changeButtonsSizeAsSearchBarButtons() {
+        int replaceBarButtonsSize = replaceButton.getPreferredSize().width + replaceAllButton.getPreferredSize().width;
+        int searchBarButtonsSize = searchBar.getFindNextButton().getPreferredSize().width + searchBar.getFindPreviousButton().getPreferredSize().width;
+        int diffButtonsSize = (searchBarButtonsSize - replaceBarButtonsSize) / 2;
+        int diffEven = diffButtonsSize % 2 == 0 ? 0 : 1;
+        if (diffButtonsSize > 0 ) {
+            replaceButton.setPreferredSize(new Dimension(replaceButton.getPreferredSize().width + diffButtonsSize + diffEven, replaceButton.getPreferredSize().height));
+            replaceAllButton.setPreferredSize(new Dimension(replaceAllButton.getPreferredSize().width + diffButtonsSize, replaceAllButton.getPreferredSize().height));
+        } else {
+            searchBar.getFindNextButton().setPreferredSize(new Dimension(searchBar.getFindNextButton().getPreferredSize().width - diffButtonsSize + diffEven, searchBar.getFindNextButton().getPreferredSize().height));
+            searchBar.getFindPreviousButton().setPreferredSize(new Dimension(searchBar.getFindPreviousButton().getPreferredSize().width - diffButtonsSize, searchBar.getFindPreviousButton().getPreferredSize().height));
+        }
+    }
+    
     private void addEnterKeystrokeFindNextTo(JTextField replaceTextField) {
         replaceTextField.getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
@@ -671,6 +687,4 @@ public class ReplaceBar extends JPanel {
             Exceptions.printStackTrace(ex);
         }
     }
-
-    
 }
