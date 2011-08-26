@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
                     url="org-netbeans-modules-web-beans-annotations-event.xml"/>
                 <file name="org-netbeans-modules-web-beans-annotations-observer.xml" 
                     url="org-netbeans-modules-web-beans-annotations-observer.xml" />
-                <file name="org-netbeans-modules-web-beans-intercepted.xml" 
+                <file name="org-netbeans-modules-web-beans-annotations-intercepted.xml" 
                     url="org-netbeans-modules-web-beans-annotations-intercepted.xml" />
             </folder>
         <folder name="text">
