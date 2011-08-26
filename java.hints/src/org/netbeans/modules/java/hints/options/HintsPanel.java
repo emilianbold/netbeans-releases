@@ -209,6 +209,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
                             HintMetadata hint = (HintMetadata) o.getUserObject();
                             if (hint.category.equals("custom")) {
                                 JPopupMenu popup = new JPopupMenu();
+                                popup.add(new JMenuItem(new RenameHint(o, hint, path)));
                                 popup.add(new JMenuItem(new RemoveHint(o, hint)));
                                 popup.show(errorTree, e.getX(), e.getY());
                             }
@@ -260,7 +261,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         jSplitPane1 = new javax.swing.JSplitPane();
         treePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        errorTree = new javax.swing.JTree();
+        errorTree = new EditableJTree();
         detailsPanel = new javax.swing.JPanel();
         optionsPanel = new javax.swing.JPanel();
         severityLabel = new javax.swing.JLabel();
@@ -299,6 +300,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         treePanel.setOpaque(false);
         treePanel.setLayout(new java.awt.BorderLayout());
 
+        errorTree.setEditable(true);
         jScrollPane1.setViewportView(errorTree);
         errorTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.errorTree.AccessibleContext.accessibleName")); // NOI18N
         errorTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.errorTree.AccessibleContext.accessibleDescription")); // NOI18N
@@ -832,8 +834,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         if (allHints)
         root.add(extraNode);
+        DefaultTreeModel defaultTreeModel = new DefaultTreeModel(root) {
+
+            @Override
+            public void valueForPathChanged(TreePath path, Object newValue) {
+                DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
+                if (o.getUserObject() instanceof HintMetadata) {
+                    HintMetadata hint = (HintMetadata) o.getUserObject();
+                    throw new UnsupportedOperationException("Not implemented yet");
+                    
+                }
+            }
+        };
         
-        return new DefaultTreeModel(root);
+        return defaultTreeModel;
     }
 
     void select(HintMetadata hm) {
@@ -944,6 +958,42 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         }
     }
-
     
+    private class RenameHint extends AbstractAction {
+
+        HintMetadata hint;
+        DefaultMutableTreeNode node;
+        TreePath path;
+
+        public RenameHint(DefaultMutableTreeNode node, HintMetadata hint, TreePath path) {
+            super(NbBundle.getMessage(RemoveHint.class, "CTL_Rename"));
+            this.hint = hint;
+            this.node = node;
+            this.path = path;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            errorTree.startEditingAtPath(path);
+        }
+    }
+ 
+    private static class EditableJTree extends JTree {
+
+        public EditableJTree() {
+        }
+
+        @Override
+        public boolean isPathEditable(TreePath path) {
+
+            DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (o.getUserObject() instanceof HintMetadata) {
+                HintMetadata hint = (HintMetadata) o.getUserObject();
+                if (hint.category.equals("custom")) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }
