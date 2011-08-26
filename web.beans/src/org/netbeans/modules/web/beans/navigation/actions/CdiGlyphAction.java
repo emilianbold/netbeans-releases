@@ -144,7 +144,8 @@ public class CdiGlyphAction extends AbstractAction {
     {
         // TODO: extend for other context
         if ( annotationType.equals( CDIAnnotation.CDIAnnotaitonType.
-                INJECTION_POINT.toString()))
+                INJECTION_POINT.toString()) || annotationType.equals( 
+                        CDIAnnotation.CDIAnnotaitonType.DELEGATE_POINT.toString()))
         {
             final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
             GoToInjectableAtCaretAction action = new GoToInjectableAtCaretAction(){

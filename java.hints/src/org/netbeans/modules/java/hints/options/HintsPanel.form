@@ -69,6 +69,9 @@
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
                 <Component class="javax.swing.JTree" name="errorTree">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="true"/>
+                  </Properties>
                   <AccessibilityProperties>
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                       <ResourceString bundle="org/netbeans/modules/java/hints/options/Bundle.properties" key="HintsPanel.errorTree.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -77,6 +80,9 @@
                       <ResourceString bundle="org/netbeans/modules/java/hints/options/Bundle.properties" key="HintsPanel.errorTree.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </AccessibilityProperties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new EditableJTree()"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

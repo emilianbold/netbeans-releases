@@ -25,6 +25,7 @@
             <attr name="position" intvalue="909"/>
 
             <file name="FXMain.java" url="templates/FXMain.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXMain.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="position" intvalue="100"/>
@@ -35,6 +36,7 @@
             </file>
 
             <file name="FXML.java" url="templates/FXML_java_1.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXML.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
@@ -42,10 +44,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
             </file>
-            <file name="FXML.xml" url="templates/FXML_xml.template">
-                <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="300"/>
-            </file>
+
         </folder>
     </folder>  
 </filesystem>

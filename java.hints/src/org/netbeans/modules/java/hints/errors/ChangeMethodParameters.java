@@ -49,10 +49,12 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +75,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import sun.security.krb5.internal.KDCOptions;
 
 
 public class ChangeMethodParameters implements ErrorRule<Void> {
@@ -131,7 +134,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
             MethodInvocationTree invocation = (MethodInvocationTree) error;
             if (invocation.getMethodSelect().getKind().equals(Tree.Kind.IDENTIFIER))  {
                 IdentifierTree methodSelect = (IdentifierTree) invocation.getMethodSelect();
-                TreePath typePath = findEnclosingClass(errorPath.getParentPath());
+                TreePath typePath = findEnclosingType(errorPath.getParentPath());
                 List<TreePath> methods = new LinkedList<TreePath>();
                 for (Tree tree : ((ClassTree) typePath.getLeaf()).getMembers()) {
                     if(cancel) return Collections.<Fix>emptyList();
@@ -255,10 +258,11 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         return buf.toString();
     }
 
-    private TreePath findEnclosingClass(TreePath parentPath) {
+    private TreePath findEnclosingType(TreePath parentPath) {
+        EnumSet<Kind> types = EnumSet.of(Tree.Kind.CLASS, Tree.Kind.INTERFACE, Tree.Kind.ENUM, Tree.Kind.ANNOTATION_TYPE);
         TreePath klazz = parentPath;
         while(klazz != null) {
-            if(klazz.getLeaf().getKind().equals(Tree.Kind.CLASS))
+            if(types.contains(klazz.getLeaf().getKind()))
                 return klazz;
             klazz = klazz.getParentPath();
         }
