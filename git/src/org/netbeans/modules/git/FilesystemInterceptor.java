@@ -62,11 +62,13 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -296,6 +298,15 @@ class FilesystemInterceptor extends VCSInterceptor {
     @Override
     public boolean isMutable(File file) {
         return GitUtils.isPartOfGitMetadata(file) || super.isMutable(file);
+    }
+
+    @Override
+    public Object getAttribute(File file, String attrName) {
+        if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new GitSearchHistorySupport(file);
+        } else {
+            return super.getAttribute(file, attrName);
+        }
     }
 
     /**
@@ -769,5 +780,19 @@ class FilesystemInterceptor extends VCSInterceptor {
                 refreshOpenFilesTask.schedule(3000);
             }
         }
+    }
+    
+    public class GitSearchHistorySupport extends SearchHistorySupport {
+        public GitSearchHistorySupport(File file) {
+            super(file);
+        }
+        @Override
+        protected boolean searchHistoryImpl(final int line) throws IOException {
+            assert line < 0 : "Search History a for specific not supported yet!"; // NOI18N
+            File file = getFile();
+            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), new File[] {file}, file.getName());
+            return true;
+        }
+
     }
 }
