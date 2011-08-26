@@ -46,13 +46,32 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 	<folder name="Editors">
+            <folder name="AnnotationTypes">
+                <file name="org-netbeans-modules-web-beans-annotations-injection-point.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-injection-point.xml"/>
+                <file name="org-netbeans-modules-web-beans-annotations-delegate-point.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-delegate-point.xml"/>
+                <file name="org-netbeans-modules-web-beans-annotations-decorated-bean.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-decorated-bean.xml"/>
+                <file name="org-netbeans-modules-web-beans-annotations-event.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-event.xml"/>
+                <file name="org-netbeans-modules-web-beans-annotations-observer.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-observer.xml" />
+                <file name="org-netbeans-modules-web-beans-intercepted.xml" 
+                    url="org-netbeans-modules-web-beans-annotations-intercepted.xml" />
+            </folder>
         <folder name="text">
             <folder name="x-java">
             	<folder name="CodeGenerators">
                     <file name="org-netbeans-modules-web-beans-actions-InterceptorFactory.instance">
                         <attr name="position" intvalue="1000"/>
                     </file>
-                </folder>    
+                </folder> 
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-web-beans-navigation-actions-CdiGlyphAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                </folder>   
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="SeparatorInjectable.instance">
