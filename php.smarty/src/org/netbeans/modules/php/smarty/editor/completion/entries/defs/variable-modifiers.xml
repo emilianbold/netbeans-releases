@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : variable-modifiers.xml
+    Created on : Jun 1, 2010, 14:22 AM
+    Author     : Martin Fousek
+    Description:
+        Purpose of the document is storage for Smarty code completion keywords - variable modifiers.
+-->
+
+<entries>
+    <entry name="capitalize">
+        <description>This is used to capitalize the first letter of all words in a variable. This is similar to the PHP  ucfirst() function. </description>
+        <attributes>
+            <attribute position="1">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>This determines whether or not words with digits will be uppercased</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifiers.php#language.modifier.capitalize</url>
+    </entry>
+    
+    <entry name="cat">
+        <description>This value is concatenated to the given variable. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>This value to catenate to the given variable.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.cat.php</url>
+    </entry>
+
+    <entry name="count_characters">
+        <description> This is used to count the number of characters in a variable.</description>
+        <attributes>
+            <attribute position="1">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>This determines whether or not to include whitespace characters in the count.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.characters.php</url>
+    </entry>
+
+    <entry name="count_paragraphs">
+        <description>This is used to count the number of paragraphs in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.paragraphs.php</url>
+    </entry>
+
+    <entry name="count_sentences">
+        <description>This is used to count the number of sentences in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.sentences.php</url>
+    </entry>
+
+    <entry name="count_words">
+        <description>This is used to count the number of words in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.words.php</url>
+    </entry>
+
+    <entry name="date_format">
+        <description>This formats a date and time into the given strftime()  format. Dates can be passed to Smarty as unix timestamps, mysql timestamps or any string made up of month day year, parsable by php's strtotime(). Designers can then use date_format to have complete control of the formatting of the date. If the date passed to date_format is empty and a second parameter is passed, that will be used as the date to format. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>%b %e, %Y</default>
+                <description>This is the format for the outputted date.</description>
+            </attribute>
+            
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>This is the default date if the input is empty.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.date.format.php</url>
+    </entry>
+
+    <entry name="default">
+        <description>  This is used to set a default value for a variable. If the variable is unset or an empty string, the given default value is printed instead. Default takes the one argument. Note: With error_reporting(E_ALL), undeclared variables will always throw an error within the template. This function is useful for replacing null or zero length strings. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>This is the default value to output if the variable is empty..</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.default.php</url>
+    </entry>
+
+    <entry name="escape">
+        <description>escape is used to encode or escape a variable to for example html, url, single quotes, hex, hexentity, javascript and mail. By default its html. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>html</default>
+                <description>This is the escape format to use.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>ISO-8859-1</default>
+                <description>The character set encoding passed to htmlentities() et. al.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.escape.php</url>
+    </entry>
+
+    <entry name="indent">
+        <description>This indents a string on each line, default is 4. As an optional parameter, you can specify the number of characters to indent. As an optional second parameter, you can specify the character to use to indent with eg use "\t"  for a tab. </description>
+        <attributes>
+            <attribute position="1">
+                <type>integer</type>
+                <required>no</required>
+                <default>4</default>
+                <description>This determines how many characters to indent to.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>(one space)</default>
+                <description>This is the character used to indent with.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.indent.php</url>
+    </entry>
+
+    <entry name="lower">
+        <description>This is used to lowercase a variable. This is equivalent to the PHP  strtolower() function.</description>
+        <url>http://www.smarty.net/manual/en/language.modifier.indent.php</url>
+    </entry>
+
+    <entry name="nl2br">
+        <description>All "\n" line breaks will be converted to html <br /> tags in the given variable. This is equivalent to the PHP's  nl2br() function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.nl2br.php</url>
+    </entry>
+
+    <entry name="regex_replace">
+        <description> A regular expression search and replace on a variable. Use the  preg_replace() syntax from the PHP manual. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>This is the regular expression to be replaced.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>This is the string of text to replace with.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.regex.replace.php</url>
+    </entry>
+
+    <entry name="replace">
+        <description> A simple search and replace on a variable. This is equivalent to the PHP's  str_replace() function. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>This is the string of text to be replaced.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>This is the string of text to replace with.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.replace.php</url>
+    </entry>
+
+    <entry name="spacify">
+        <description> spacify is a way to insert a space between every character of a variable. You can optionally pass a different character or string to insert. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>one space</default>
+                <description>This what gets inserted between each character of the variable.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.spacify.php</url>
+    </entry>
+
+    <entry name="string_format">
+        <description>  This is a way to format strings, such as decimal numbers and such. Use the syntax for sprintf()  for the formatting. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>This is what format to use. (sprintf)</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.string.format.php</url>
+    </entry>
+
+    <entry name="strip">
+        <description> This replaces all repeated spaces, newlines and tabs with a single space, or with the supplied string. Note: If you want to strip blocks of template text, use the built-in {strip} function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.strip.php</url>
+    </entry>
+
+    <entry name="strip_tags">
+        <description> This strips out markup tags, basically anything between &lt; and &gt;. </description>
+        <attributes>
+            <attribute position="1">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>This determines whether the tags are replaced by ' ' or ''.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.strip.tags.php</url>
+    </entry>
+
+    <entry name="truncate">
+        <description>  This truncates a variable to a character length, the default is 80. As an optional second parameter, you can specify a string of text to display at the end if the variable was truncated. The characters in the string are included with the original truncation length. By default, truncate will attempt to cut off at a word boundary. If you want to cut off at the exact character length, pass the optional third parameter of TRUE. </description>
+        <attributes>
+            <attribute position="1">
+                <type>integer</type>
+                <required>no</required>
+                <default>80</default>
+                <description>This determines how many characters to truncate to.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>...</default>
+                <description>This is a text string that replaces the truncated text. Its length is included in the truncation length setting.</description>
+            </attribute>
+            
+            <attribute position="3">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>This determines whether or not to truncate at a word boundary with FALSE, or at the exact character with TRUE.</description>
+            </attribute>
+
+            <attribute position="4">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>This determines whether the truncation happens at the end of the string with FALSE, or in the middle of the string with TRUE. Note that if this setting is TRUE, then word boundaries are ignored. </description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.truncate.php</url>
+    </entry>
+
+    <entry name="upper">
+        <description> This is used to uppercase a variable. This is equivalent to the PHP  strtoupper() function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.upper.php</url>
+    </entry>
+
+    <entry name="wordwrap">
+        <description> Wraps a string to a column width, the default is 80. As an optional second parameter, you can specify a string of text to wrap the text to the next line, the default is a carriage return "\n". By default, wordwrap will attempt to wrap at a word boundary. If you want to cut off at the exact character length, pass the optional third parameter as TRUE. This is equivalent to the PHP wordwrap()  function. </description>
+        <attributes>
+            <attribute position="1">
+                <type>integer</type>
+                <required>no</required>
+                <default>80</default>
+                <description>This determines how many columns to wrap to.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>\n</default>
+                <description>This is the string used to wrap words with.</description>
+            </attribute>
+
+            <attribute position="3">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>This determines whether or not to wrap at a word boundary (FALSE), or at the exact character (TRUE).</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.wordwrap.php</url>
+    </entry>
+
+</entries>
