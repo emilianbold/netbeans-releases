@@ -50,5 +50,5 @@ made subject to such option by the copyright holder.
              description_key="DSCR_Delegate"
              localizing_bundle="org.netbeans.modules.web.beans.resources.Bundle"
              visible="true"
-             glyph="nbresloc:/org/netbeans/modules/editor/resources/override/is-overridden.png"
+             glyph="nbresloc:/org/netbeans/modules/web/beans/resources/delegate.png"
              priority="5"/>
