@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -221,7 +223,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(allHints?RulesManager.getInstance().allHints.keySet():Utilities.getBatchSupportedHints(), allHints);
+        errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().allHints.keySet()):Utilities.getBatchSupportedHints(), allHints);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
@@ -889,6 +891,17 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+
+    private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet) {
+        ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
+        for (HintMetadata hint:keySet) {
+            if ("custom".equals(hint.category)) {
+                continue;
+            }
+            list.add(hint);
+        }
+        return list;
     }
 
     private static final class AcceptorImpl implements Acceptor, org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter.Acceptor {
