@@ -50,12 +50,29 @@ import org.openide.util.Lookup;
 
 /**
  *
+ * JavaCustomIndexer plugin called during scan on fully attributed trees.
+ * @since 1.20
  * @author Tomas Zezula
  */
 public interface JavaIndexerPlugin {
+    /**
+     * Process given attributed compilation unit.
+     * @param toProcess the compilation unit to process
+     * @param services a {@link Lookup} containing javac services (Elements, Types, Trees)
+     */
     public void process (@NonNull CompilationUnitTree toProcess, @NonNull Lookup services);
 
+    /**
+     * Factory to create JavaIndexerPlugin.
+     * The factory instance should be registered in mime lookup.
+     */
     public interface Factory {
+        /**
+         * Creates a new instance of {@link JavaIndexerPlugin}.
+         * @param root the source root for which the plugin is created
+         * @return the new instance of {@link JavaIndexerPlugin} or null
+         * if the factory does not handle given source root
+         */
         @CheckForNull
         JavaIndexerPlugin create(@NonNull FileObject root);
     }
