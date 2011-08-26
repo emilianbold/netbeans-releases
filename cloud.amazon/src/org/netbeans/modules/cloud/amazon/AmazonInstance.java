@@ -381,30 +381,13 @@ public class AmazonInstance {
         }
     }
 
-    public synchronized static boolean isBusy() {
-        
-        // TODO: either remove this or finish implementing it
-        
-        for (Future f : tasks) {
-            if (!f.isDone()) {
-                return true;
-            }
-        }
-        tasks.clear();
-        return false;
-    }
-
-
     public static <T> Future<T> runAsynchronously(Callable<T> callable) {
         return runAsynchronously(callable, null);
     }
     
     public static synchronized <T> Future<T> runAsynchronously(Callable<T> callable, AmazonInstance ai) {
         Future<T> f = AMAZON_RP.submit(callable);
-        tasks.add(f);
         return f;
     }
-    
-    private static List<Future> tasks = new ArrayList<Future>();
     
 }

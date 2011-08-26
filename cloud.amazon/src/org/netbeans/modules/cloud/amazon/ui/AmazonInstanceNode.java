@@ -55,8 +55,6 @@ import org.openide.util.lookup.Lookups;
  */
 public class AmazonInstanceNode extends AbstractNode {
     
-    // TODO: impl this properly
-    
     private AmazonInstance ai;
     
     public AmazonInstanceNode(AmazonInstance ai) {
@@ -83,9 +81,6 @@ public class AmazonInstanceNode extends AbstractNode {
     
     private Image badgeIcon(Image origImg) {
         Image badge = null;        
-//        if (ai.isBusy()) {
-//            badge = ImageUtilities.loadImage(WAITING_ICON);
-//        }
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
     @Override

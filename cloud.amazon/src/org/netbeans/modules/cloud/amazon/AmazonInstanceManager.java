@@ -106,7 +106,6 @@ public class AmazonInstanceManager {
     }
     
     private void store(AmazonInstance ai) {
-        // TODO: check uniqueness etc.
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(AMAZON_IP_NAMESPACE);
         
         Keyring.save(PREFIX+KEY_ID+"."+ai.getName(), ai.getKeyId().toCharArray(), "Amazon Access Key ID"); // NOI18N

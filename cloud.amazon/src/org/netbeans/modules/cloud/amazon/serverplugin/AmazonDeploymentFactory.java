@@ -45,6 +45,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,20 +76,19 @@ public class AmazonDeploymentFactory implements DeploymentFactory {
 
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        // XXX
-        
-        // XXX: uri is hack here: I need container type here and so I appended it to URI.
-        return new AmazonDeploymentManager("", "", "", "", uri);
+        InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
+        return new AmazonDeploymentManager(props.getProperty(IP_APPLICATION_NAME), props.getProperty(IP_ENVIRONMENT_ID), 
+                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE));
     }
 
     @Override
     public String getDisplayName() {
-        return "Amazon Beanstalk";
+        return NbBundle.getMessage(AmazonDeploymentFactory.class, "AmazonDeploymentFactory.displayName");
     }
 
     @Override
     public String getProductVersion() {
-        return "1.0";
+        return "1.0"; // NOI18N
     }
     
 }

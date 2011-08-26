@@ -80,9 +80,6 @@ public class RootNode extends AbstractNode implements ChangeListener {
         children.init();
     }
 
-    
-    // TODO: add action to create a new Amazon account
-    
     private static class RootNodeChildren extends Children.Keys<AmazonInstance> {
 
         public RootNodeChildren() {
@@ -101,8 +98,6 @@ public class RootNode extends AbstractNode implements ChangeListener {
         protected Node[] createNodes(AmazonInstance key) {
             return new Node[]{new AmazonInstanceNode(key)};
         }
-
-        // TODO: add actions for: remove and configure
 
     }
     
