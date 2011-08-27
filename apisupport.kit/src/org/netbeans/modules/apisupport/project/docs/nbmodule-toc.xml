@@ -59,9 +59,9 @@
                     <tocitem text="Creating a Quick Search Provider" target="apisupport_create_quick_search_providers" />
                 </tocitem>
 
-                <tocitem text="Window Components" >
-                    <tocitem text="About Window Components" target="apisupport_about_window_components" />
-                    <tocitem text="Creating a Window Component" target="apisupport_create_window_component" />
+                <tocitem text="Windows" >
+                    <tocitem text="About Windows" target="apisupport_about_window_components" />
+                    <tocitem text="Creating a Window" target="apisupport_create_window_component" />
                 </tocitem>
                 <tocitem text="Wizards" >
                     <tocitem text="About Wizards" target="apisupport_about_wizards" />
