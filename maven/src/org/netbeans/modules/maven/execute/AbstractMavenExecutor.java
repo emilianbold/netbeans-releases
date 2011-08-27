@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,10 +52,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.execute.Bundle.*;
@@ -63,6 +73,7 @@ import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -81,12 +92,14 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     static final class TabContext {
         ReRunAction rerun;
         ReRunAction rerunDebug;
+        ResumeAction resume;
         StopAction stop;
         OptionsAction options;
         @Override protected TabContext clone() {
             TabContext c = new TabContext();
             c.rerun = rerun;
             c.rerunDebug = rerunDebug;
+            c.resume = resume;
             c.stop = stop;
             c.options = options;
             return c;
@@ -178,16 +191,22 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             @Override public void run() {
                 tabContext.rerun.setEnabled(false);
                 tabContext.rerunDebug.setEnabled(false);
+                tabContext.resume.setFinder(null);
                 tabContext.stop.setEnabled(true);
             }
         });
     }
 
-    protected final void actionStatesAtFinish() {
+    protected interface ResumeFromFinder {
+        @CheckForNull NbMavenProject find(@NonNull Project root);
+    }
+
+    protected final void actionStatesAtFinish(final @NullAllowed ResumeFromFinder resumeFromFinder) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
+                tabContext.resume.setFinder(resumeFromFinder);
                 tabContext.stop.setEnabled(false);
             }
         });
@@ -198,6 +217,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         this.tabContext = tabContext;
         tabContext.rerun.setConfig(config);
         tabContext.rerunDebug.setConfig(config);
+        tabContext.resume.setConfig(config);
         tabContext.stop.setExecutor(this);
     }
 
@@ -220,14 +240,17 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     @Override protected Action[] createNewTabActions() {
         tabContext.rerun = new ReRunAction(false);
         tabContext.rerunDebug = new ReRunAction(true);
+        tabContext.resume = new ResumeAction();
         tabContext.stop = new StopAction();
         tabContext.options = new OptionsAction();
         tabContext.rerun.setConfig(config);
         tabContext.rerunDebug.setConfig(config);
+        tabContext.resume.setConfig(config);
         tabContext.stop.setExecutor(this);
         return new Action[] {
             tabContext.rerun,
             tabContext.rerunDebug,
+            tabContext.resume,
             tabContext.stop,
             tabContext.options,
         };
@@ -277,6 +300,88 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             }
         //TODO the waiting on tasks won't work..
         }
+    }
+
+    private static class ResumeAction extends AbstractAction {
+
+        private static final RequestProcessor RP = new RequestProcessor(ResumeAction.class);
+        private RunConfig config;
+        private ResumeFromFinder finder;
+
+        @Messages("TIP_resume=Resume build starting from failed submodule.")
+        ResumeAction() {
+            setEnabled(false);
+            putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/forward.png", true));
+            putValue(SHORT_DESCRIPTION, TIP_resume());
+        }
+
+        void setConfig(RunConfig config) {
+            this.config = config;
+        }
+
+        void setFinder(ResumeFromFinder finder) {
+            this.finder = finder;
+            setEnabled(finder != null);
+        }
+
+        @Messages({
+            "ResumeAction_scanning=Searching for faulty module",
+            "ResumeAction_could_not_find_module=Could not determine module from which to resume build."
+        })
+        @Override public void actionPerformed(ActionEvent e) {
+            final Project p = config.getProject();
+            if (p == null) {
+                setFinder(null);
+                StatusDisplayer.getDefault().setStatusText(ResumeAction_could_not_find_module());
+                return;
+            }
+            final AtomicReference<Thread> t = new AtomicReference<Thread>();
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(ResumeAction_scanning(), new Cancellable() {
+                @Override public boolean cancel() {
+                    Thread _t = t.get();
+                    if (_t != null) {
+                        _t.interrupt();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    t.set(Thread.currentThread());
+                    handle.start();
+                    NbMavenProject nbmp;
+                    try {
+                        nbmp = finder.find(p);
+                    } finally {
+                        handle.finish();
+                    }
+                    t.set(null);
+                    if (nbmp == null || nbmp.getMavenProject().getId().equals("error:error:pom:0")) {
+                        setFinder(null);
+                        StatusDisplayer.getDefault().setStatusText(ResumeAction_could_not_find_module());
+                        return;
+                    }
+                    File root = config.getExecutionDirectory();
+                    File module = nbmp.getMavenProject().getBasedir();
+                    String rel = root != null && module != null ? FileUtilities.relativizeFile(root, module) : null;
+                    String id = rel != null ? rel : nbmp.getMavenProject().getGroupId() + ':' + nbmp.getMavenProject().getArtifactId();
+                    BeanRunConfig newConfig = new BeanRunConfig(config);
+                    List<String> goals = new ArrayList<String>(config.getGoals());
+                    int rf = goals.indexOf("--resume-from");
+                    if (rf != -1) {
+                        goals.set(rf + 1, id);
+                    } else {
+                        goals.add(0, "--resume-from");
+                        goals.add(1, id);
+                    }
+                    newConfig.setGoals(goals);
+                    RunUtils.executeMaven(newConfig);
+                }
+            });
+        }
+
     }
 
     static class StopAction extends AbstractAction {

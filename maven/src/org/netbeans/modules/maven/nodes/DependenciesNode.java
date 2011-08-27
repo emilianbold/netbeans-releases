@@ -54,7 +54,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -79,7 +78,6 @@ import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -97,7 +95,6 @@ public class DependenciesNode extends AbstractNode {
     static final int TYPE_TEST = 1;
     static final int TYPE_RUNTIME = 2;
     private static final String SHOW_NONCLASSPATH_DEPENDENCIES = "show.nonclasspath.dependencies"; //NOI18N
-    private static final String SHOW_MANAGED_DEPENDENCIES = "show.managed.dependencies"; //NOI18N
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
@@ -149,7 +146,7 @@ public class DependenciesNode extends AbstractNode {
         toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         toRet.add(null);
         toRet.add(new ShowClasspathDepsAction());
-        toRet.add(new ShowManagedStateAction());
+        toRet.add(new DependencyNode.ShowManagedStateAction());
         return toRet.toArray(new Action[toRet.size()]);
     }
     
@@ -201,19 +198,15 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected void addNotify() {
-            super.addNotify();
             NbMavenProject.addPropertyChangeListener(project, this);
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.addPreferenceChangeListener(this);
+            prefs().addPreferenceChangeListener(this);
         }
         
         @Override
         protected void removeNotify() {
             setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.removePreferenceChangeListener(this);
-            super.removeNotify();
+            prefs().removePreferenceChangeListener(this);
         }
         
         int regenerateKeys() {
@@ -437,17 +430,9 @@ public class DependenciesNode extends AbstractNode {
     }
     
     private static boolean showNonClasspath() {
-        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-        boolean b = prefs.getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false); //NOI18N
-        return b;
+        return prefs().getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false);
     }
 
-    static boolean showManagedState() {
-        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-        boolean b = prefs.getBoolean(SHOW_MANAGED_DEPENDENCIES, false); //NOI18N
-        return b;
-    }
-    
     @SuppressWarnings("serial")
     private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
 
@@ -458,14 +443,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            boolean b = showNonClasspath();
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !b); //NOI18N
-            try {
-                prefs.flush();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            prefs().putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !showNonClasspath());
         }
 
         public JMenuItem getPopupPresenter() {
@@ -476,40 +454,6 @@ public class DependenciesNode extends AbstractNode {
         
     }
 
-    @SuppressWarnings("serial")
-    private class ShowManagedStateAction extends AbstractAction implements Presenter.Popup {
-
-        @Messages("LBL_ShowManagedState=Show Managed State for dependencies")
-        ShowManagedStateAction() {
-            String s = LBL_ShowManagedState();
-            putValue(Action.NAME, s);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            boolean b = showManagedState();
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.putBoolean(SHOW_MANAGED_DEPENDENCIES, !b); //NOI18N
-            try {
-                prefs.flush();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            for (Node nd : getChildren().getNodes(true)) {
-                if (nd instanceof DependencyNode) {
-                    ((DependencyNode)nd).refreshNode();
-                }
-            }
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
-            mi.setSelected(showManagedState());
-            return mi;
-        }
-
-    }
-
-    
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
@@ -615,5 +559,8 @@ public class DependenciesNode extends AbstractNode {
         return base;
     }
     
-}
+    static Preferences prefs() {
+        return NbPreferences.root().node(PREF_DEPENDENCIES_UI);
+    }
 
+}
