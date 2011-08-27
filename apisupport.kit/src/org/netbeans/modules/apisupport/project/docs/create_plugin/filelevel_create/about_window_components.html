@@ -29,42 +29,8 @@ the IDE's Projects window is a 'window', just as the Navigator, Output window, P
  useful and reliable windows in the IDE. By using the Window wizard,
   you can be sure of the success of the initial development phase.
  This is because when you use the New Window wizard, the IDE
- creates the following files for you:
-
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-   task name. The right column lists the steps to perform.">
-  <tr valign="top"> 
-	  <th scope="col" align="left" width="30">File</th>
-    <th scope="col" align="left">Purpose</th>
-  </tr>
-
-  <tr valign="top"> 
-    <td><tt><i>xxx</i>TopComponent.java</tt></td>
-    <td>The class that extends <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://bits.netbeans.org/dev/javadoc/org-openide-windows/org/openide/windows/TopComponent.html">
-    <param name="text" value="<html><u>Class TopComponent</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>. <p>The following methods are provided when you use the New Window wizard:
-<ul><li><tt>getDefault()</tt>
-	<li><tt>getPersistenceType()</tt>
-	<li><tt>componentOpened()</tt>
-	<li><tt>componentClosed()</tt>
-	<li><tt>writeReplace()</tt>
-	<li><tt>preferredID()</tt>
-</ul>
-</td>
-  </tr>
-  <tr>
-  <td><tt><i>xxx</i>TopComponentSettings.xml</tt><br>
-  <tt><i>xxx</i>TopComponentWstcref.xml</tt></td>
-	  <td>These files dock, instantiate, and load the window. There should be no need
-	   to touch these files at all.</td>
-  </tr>
- 
-  </table>
-  
-  
+ creates a Matisse GUI Builder form that
+ extends the <tt>TopComponent</tt> class.
   <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
