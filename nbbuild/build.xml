@@ -169,7 +169,8 @@ made subject to such option by the copyright holder.
     <!-- Set up automatic all-* targets: -->
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="${nbantext.jar}"/>
     <property name="verify.checkout" value="true"/> 
-    <insert-module-all-targets checkModules="${verify.checkout}"/>
+    <property name="init.use.clusters" value="true"/> 
+    <insert-module-all-targets checkModules="${verify.checkout}" useclusters="${init.use.clusters}"/>
   </target>
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>
