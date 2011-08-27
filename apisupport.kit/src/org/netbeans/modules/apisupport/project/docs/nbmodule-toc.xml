@@ -1,68 +1,10 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright � 2010 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-*     Use is subject to license terms.
--->
-<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
-<toc version="2.0">
-    <tocitem text="IDE Basics" expand="false">
-        <tocitem text="Getting Started" >
-            <tocitem text="NetBeans Modules" target="apisupport_modules_process" />
-            <tocitem text="Rich-Client Applications" target="apisupport_richclientapp_process" />
-        </tocitem>
-    </tocitem>
-    <tocitem text="NetBeans Modules" expand="false">
-        <tocitem text="Getting Started" >
-            <tocitem text="About NetBeans Modules" target="apisupport_about_plugins" />
-            <tocitem text="About the NetBeans Platform" target="apisupport_about-netbeans-platform" />
-            <tocitem text="Working with NetBeans Modules" target="apisupport_modules_process" />
-            <tocitem text="Working with Rich-Client Applications" target="apisupport_richclientapp_process" />
-            <tocitem text="Module and Rich-Client Application Tasks: Quick Reference" target="apisupport_modules_quickref" />
-        </tocitem>
-        <tocitem text="Setting Up Modules" >
-            <tocitem text="About Setting Up Modules" target="apisupport_about_create" />
-            <tocitem text="Module Project Templates" >
-                <tocitem text="About Module Project Templates" target="apisupport_about_project_wizards" />
-                <tocitem text="Creating a Module Project" target="apisupport_create_module" />
-                <tocitem text="Creating a Library Wrapper Module Project" target="apisupport_create_library_wrapper" />
-                <tocitem text="Creating a Module Suite Project" target="apisupport_create_module_suite" />
-                <tocitem text="Creating a NetBeans Platform Application" target="apisupport_create_platform_app" />
-            </tocitem>
-        </tocitem>
-        <tocitem text="Using the NetBeans APIs" >
-            <tocitem text="About the NetBeans APIs" target="apisupport_about_open_apis" />
-            <tocitem text="Generating Skeleton API Implementations" >
-                <tocitem text="About Generating Skeleton API Implementations" target="apisupport_about_file_wizards" />
-                <tocitem text="Actions" >
-                    <tocitem text="About Actions" target="apisupport_about_actions" />
-                    <tocitem text="Creating an Action" target="apisupport_create_action" />
+*     Copyright Creating a Quick Search Provider" target="apisupport_create_quick_search_providers" />
                 </tocitem>
-                <tocitem text="Code Generator" >
-                    <tocitem text="About Code Generator" target="apisupport_about_code_generators" />
-                    <tocitem text="Creating a Code Generator" target="apisupport_create_code_generators" />
-                </tocitem>
-                <tocitem text="File Types" >
-                    <tocitem text="About File Types" target="apisupport_about_file_types" />
-                    <tocitem text="Creating a File Type" target="apisupport_create_file_type" />
-                </tocitem>
-                <tocitem text="Module Installers" >
-                    <tocitem text="About Module Installers" target="apisupport_about_module_installers" />
-                    <tocitem text="Creating a Module Installer" target="apisupport_create_module_installers" />
-                </tocitem>
-                <tocitem text="Options Panels" >
-                    <tocitem text="About Options Panels" target="apisupport_about_options_panels" />
-                    <tocitem text="Creating an Options Panel" target="apisupport_create_options_panels" />
-                </tocitem>
-                <tocitem text="Quick Search Providers" >
-                    <tocitem text="About Quick Search Providers" target="apisupport_about_quick_search_providers" />
-                    <tocitem text="Creating a Quick Search Provider" target="apisupport_create_quick_search_providers" />
-                </tocitem>
-                <tocitem text="Window Components" >
-                    <tocitem text="About Window Components" target="apisupport_about_window_components" />
-                    <tocitem text="Creating a Window Component" target="apisupport_create_window_component" />
+                <tocitem text="Windows" >
+                    <tocitem text="About Windows" target="apisupport_about_window_components" />
+                    <tocitem text="Creating a Window" target="apisupport_create_window_component" />
                 </tocitem>
                 <tocitem text="Wizards" >
                     <tocitem text="About Wizards" target="apisupport_about_wizards" />
