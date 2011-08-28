@@ -294,7 +294,6 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             remove = true;
                             line = line.substring(2);
                         }
-
                         Class<?> inst = null;
                         try {
                             Object ldr = url.getContent(new Class[] { ClassLoader.class });
@@ -303,6 +302,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             }
                         } catch (LinkageError err) {
                             // go on
+                        } catch (ClassNotFoundException ex) {
+                            LOGGER.log(Level.FINER, "No class found in " + url, ex);
                         } catch (IOException ex) {
                             LOGGER.log(Level.FINER, "URL does not support classloader protocol " + url, ex);
                         }
