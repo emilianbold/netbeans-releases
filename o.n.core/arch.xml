@@ -140,10 +140,8 @@ made subject to such option by the copyright holder.
  <answer id="arch-usecases">
    No special APIs exported beyond few friend contracts:
    <ul>
-    <li><api name="org.netbeans.core.ModuleNode.ModuleNewType" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/ModuleNode.java" /></li>
-    <li><api name="org.netbeans.core.modules.AutomaticDependencies" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/modules/AutomaticDependencies.java" /></li>
-    <li><api name="WindowSystem" category="friend" group="java" type="export" /></li>
-    <li><api name="org.netbeans.core.StatusLineElementProvider" type="export" group="lookup" category="friend" /></li>
+    <li><api name="org.netbeans.core.modules.AutomaticDependencies" category="friend" group="java" type="export" url="@org-openide-modules@/org/openide/modules/doc-files/api.html#refactoring" /></li>
+    <li><api name="org.netbeans.core.WindowSystem" category="friend" group="java" type="export"></api></li>
    </ul>
  </answer>
 
@@ -478,7 +476,7 @@ made subject to such option by the copyright holder.
    <api name='USE_Authentication' 
         category='devel'
         type='export'
-        group='property'>
+        group='branding'>
         One can use branding to disable installation of NetBeans own
         <code> java.net.Authenticator</code>. Just brand 
         <code>org.netbeans.core.Bundle</code>
@@ -575,12 +573,45 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-property">
   <p>
-   <api name="ErrorNotification" category="private" group="property" type="export" url="http://core.netbeans.org/proposals/exception_notification.html">
+   <api name="ErrorNotification" category="private" group="property" type="export">
+       <p>
         Enabling assertions (either global -ea or for class org.netbeans.core.NotifyException only) 
         changes the default error notification behavior. When assertions are enabled
         an error window pops up each time an error is encountered. Otherwise a small
         icon start flashing in the main status bar and clicking the icon then brings
         up the error dialog.
+       </p>
+       <ul>
+            <li>The status bar notification shows a small icon starts flashing 
+                at the rightmost part of the main status bar when an 
+                exception occurs</li>
+            <li>The icon is flashing for 5 seconds, then it stays
+                visible for another 30 seconds. Positioning the mouse pointer 
+                over the icon changes the default mouse cursor to 'hand' 
+                and stops the flashing. Icon's tooltip provides the exception 
+                message or the exception class name when no message is available. 
+                Single-clicking the icon brings up the exception dialog and 
+                the icon disappers. The exception dialog shows all exceptions 
+                encountered since the icon started flashing. When the exception 
+                dialog is closed via the Ok button, the exception list is cleared. 
+             </li>
+            <li>The exception dialog window 'remembers' (per IDE session) the 
+            status of the 'Show Details' flag. So when the dialog is 
+            displayed again, the last user's settings are reused. 
+            </li>
+            <li>When another exception is encountered while the icon is 
+            already flashing or visible, the flashing timer and the hide 
+            icon timer will restart. </li>
+            <li>When another exception is encountered while the exception 
+            dialog is visible, the exception message is displayed in 
+            the current dialog and the icon does not appear.</li>
+            <li>There's no tooltip nor any indication on status bar when the 
+            icon is not visible. Only a part of status bar area is reserved 
+            for the icon.</li>
+            <li>It is possible to switch the status bar notification 
+            off, e.g. for beta releases, by enabling assertions in JVM (-ea).
+            Then each exception shows the exception dialog.</li>    
+       </ul>
    </api>
    <api name="netbeans.hack.50423" category="private" group="systemproperty" type="export" url="http://www.netbeans.org/issues/show_bug.cgi?id=50423">
         Set this property to <q>true</q> to workaround the bug #50423 which
@@ -596,6 +627,13 @@ made subject to such option by the copyright holder.
             Get this property to determine when use JDK's <code>java.net.ProxySelector</code> or core's 
             implementation of <code>ProxySelector</code>.
         </api>
+        
+    <api name="TimableEventQueue.install" category="friend" group="branding" type="export">
+        By default NetBeans based applications install their own <code>EventQueue</code>.
+        One can suppress that since versiong 3.27 of <code>org.netbeans.core</code> module
+        by branding key <code>TimableEventQueue.install</code> in
+        <code>org/netbeans/core/Bundle</code> to <code>false</code>.
+    </api>
  </answer>
 
 
