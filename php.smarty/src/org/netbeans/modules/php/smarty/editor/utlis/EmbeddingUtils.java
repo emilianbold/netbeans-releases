@@ -79,7 +79,7 @@ public class EmbeddingUtils {
                 inputText,
                 true,
                 TplTokenId.language(),
-                Collections.EMPTY_SET,
+                Collections.<TplTokenId>emptySet(),
                 inputAttributes);
 
         return th;

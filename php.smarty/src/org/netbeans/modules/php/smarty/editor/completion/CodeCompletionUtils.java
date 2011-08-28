@@ -130,7 +130,7 @@ public class CodeCompletionUtils {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new ArrayList();
+        return new ArrayList<String>();
     }
 
     public static ArrayList<String> getLastKeywords(String area, String openDelimiter) {
