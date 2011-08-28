@@ -40,6 +40,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -116,9 +117,9 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
     }
 
         /** Creates new Cookie */
-    public Node.Cookie createCookie(Class klass) {
+    public <T extends Cookie> T createCookie(Class<T> klass) {
         if (klass.isAssignableFrom(TplEditorSupport.class)) {
-            return getTplEditorSupport();
+            return klass.cast(getTplEditorSupport());
         } else {
             return null;
         }
@@ -207,6 +208,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private static int[] findEncodingOffsets(String txt) {
         int[] rslt = new int[0];
         TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
