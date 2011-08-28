@@ -347,7 +347,8 @@ public class WebBeansActionHelper {
     }
     
     static boolean getMethodAtDot(
-            final JTextComponent component , final Object[] subject )
+            final JTextComponent component , final Object[] subject , 
+            final PositionStrategy strategy)
     {
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
@@ -359,7 +360,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities()
                         .pathFor(dot);
                     Element element = controller.getTrees().getElement(tp );
@@ -396,8 +397,15 @@ public class WebBeansActionHelper {
         return subject[0]!=null;
     }
     
+    static boolean getMethodAtDot(
+            final JTextComponent component , final Object[] subject )
+    {
+        return getMethodAtDot(component, subject, CARET_POSITION_STRATEGY );
+    }
+    
     public static boolean getContextEventInjectionAtDot(
-            final JTextComponent component, final Object[] variable )
+            final JTextComponent component, final Object[] variable , 
+            final PositionStrategy strategy )
     {
         try {
             ParserManager.parse(Collections.singleton (Source.create(
@@ -405,8 +413,8 @@ public class WebBeansActionHelper {
             {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result resuslt = resultIterator.getParserResult (component.getCaret().
-                            getDot());
+                    Result resuslt = resultIterator.getParserResult (
+                            strategy.getOffset(component));
                     CompilationController controller = CompilationController.get(
                             resuslt);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).
@@ -416,7 +424,7 @@ public class WebBeansActionHelper {
                     }
                     Token<JavaTokenId>[] token = new Token[1];
                     int[] span = getIdentifierSpan( component.getDocument(), 
-                            component.getCaret().getDot(), token);
+                            strategy.getOffset(component), token);
 
                     if (span == null) {
                         return ;
@@ -482,6 +490,12 @@ public class WebBeansActionHelper {
             throw new IllegalStateException(e);
         }
         return variable[1] !=null ;
+    }
+    
+    public static boolean getContextEventInjectionAtDot(
+            final JTextComponent component, final Object[] variable )
+    {
+        return getContextEventInjectionAtDot(component, variable, CARET_POSITION_STRATEGY);
     }
     
     static void showInjectablesDialog( MetadataModel<WebBeansModel> metamodel,
