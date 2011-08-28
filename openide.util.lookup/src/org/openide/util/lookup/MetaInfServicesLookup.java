@@ -295,8 +295,16 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         Class<?> inst = null;
-
                         try {
+                            Object ldr = url.getContent(new Class[] { ClassLoader.class });
+                            if (ldr instanceof ClassLoader) {
+                                inst = Class.forName(line, false, (ClassLoader)ldr);
+                            }
+                        } catch (LinkageError err) {
+                            
+                        }
+                        
+                        if (inst == null) try {
                             // Most lines are fully-qualified class names.
                             inst = Class.forName(line, false, loader);
                         } catch (LinkageError err) {
