@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -61,6 +62,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation.CDIAnnotaitonType;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -164,6 +166,16 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
 
     public void addDelegate( CdiAnalysisResult result ,  VariableElement element ) {
         addAnnotation(result, element, CDIAnnotaitonType.DELEGATE_POINT );
+    }
+    
+    public void addEventInjectionPoint( Result result, VariableElement element )
+    {
+        addAnnotation(result, element, CDIAnnotaitonType.EVENT );        
+    }
+    
+    public void addObserver( CdiAnalysisResult result, ExecutableElement element )
+    {
+        addAnnotation(result, element, CDIAnnotaitonType.OBSERVER );           
     }
 
     public void publish( final CdiAnalysisResult result ) {

@@ -57,6 +57,7 @@ import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation;
+import org.netbeans.modules.web.beans.hints.CDIAnnotation.CDIAnnotaitonType;
 import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -163,6 +164,41 @@ public class CdiGlyphAction extends AbstractAction {
             };
             action.actionPerformed(null, comp);
             
+        }
+        else if ( annotationType.equals( CDIAnnotaitonType.EVENT.toString() )){
+            final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
+            InspectCDIAtCaretAction action = new InspectCDIAtCaretAction(){
+                /* (non-Javadoc)
+                 * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
+                 */
+                @Override
+                protected boolean findContext( JTextComponent component,
+                        Object[] subject )
+                {
+                    return WebBeansActionHelper.getVariableElementAtDot( component, 
+                            subject , false , strategy) || WebBeansActionHelper.
+                            getContextEventInjectionAtDot( component, subject , strategy );
+                }
+            };
+                
+            action.actionPerformed(null, comp);
+        }
+        else if ( annotationType.equals( CDIAnnotaitonType.OBSERVER.toString() )){
+            final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
+            InspectCDIAtCaretAction action = new InspectCDIAtCaretAction(){
+                /* (non-Javadoc)
+                 * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
+                 */
+                @Override
+                protected boolean findContext( JTextComponent component,
+                        Object[] subject )
+                {
+                    return WebBeansActionHelper.getMethodAtDot(component, 
+                            subject, strategy );
+                }
+            };
+                
+            action.actionPerformed(null, comp);
         }
     }
 

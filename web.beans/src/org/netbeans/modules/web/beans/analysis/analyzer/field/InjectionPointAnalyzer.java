@@ -104,7 +104,15 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                         isDelegate = true;
                     }
                 }
-                if ( isDelegate || AnnotationUtil.hasAnnotation(element, 
+                boolean isEvent = model.isEventInjectionPoint(element);
+                if ( isEvent ){
+                    ElementHandle<VariableElement> modelHandle = ElementHandle.create(element);
+                    EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
+                            result);
+                    helper.addEventInjectionPoint( result, 
+                            modelHandle.resolve(result.getInfo()));
+                }
+                else if ( isDelegate || AnnotationUtil.hasAnnotation(element, 
                         AnnotationUtil.DELEGATE_FQN, model.getCompilationController()))
                 {
                     return;
