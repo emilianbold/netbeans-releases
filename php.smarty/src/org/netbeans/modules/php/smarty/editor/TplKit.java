@@ -51,9 +51,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.modules.csl.api.InstantRenameAction;
-import org.netbeans.modules.csl.api.SelectCodeElementAction;
-import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
@@ -103,10 +101,10 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     @Override
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
-            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
-            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new InstantRenameAction(),
-            new ToggleBlockCommentAction(),
+            CslActions.createSelectCodeElementAction(true),
+            CslActions.createSelectCodeElementAction(false),
+            CslActions.createInstantRenameAction(),
+            CslActions.createToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };

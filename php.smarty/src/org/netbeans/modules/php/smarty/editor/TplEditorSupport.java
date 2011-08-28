@@ -333,7 +333,7 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
          */
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (TplEditorSupport) getDataObject().getCookie(TplEditorSupport.class);
+            return getDataObject().getCookie(TplEditorSupport.class);
         }
     } // End of nested Environment class.
 

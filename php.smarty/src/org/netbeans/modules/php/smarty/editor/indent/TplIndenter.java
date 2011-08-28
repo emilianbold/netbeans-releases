@@ -74,9 +74,9 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
     private static final HashMap<String, ArrayList<String>> relatedCommands = new HashMap<String, ArrayList<String>>() {
 
         {
-            put("if", new ArrayList(Arrays.asList("else", "elseif")));  //NOI18N
-            put("foreach", new ArrayList(Arrays.asList("foreachelsef")));  //NOI18N
-            put("section", new ArrayList(Arrays.asList("sectionelse")));  //NOI18N
+            put("if", new ArrayList<String>(Arrays.asList("else", "elseif")));  //NOI18N
+            put("foreach", new ArrayList<String>(Arrays.asList("foreachelsef")));  //NOI18N
+            put("section", new ArrayList<String>(Arrays.asList("sectionelse")));  //NOI18N
         }
     };
 
