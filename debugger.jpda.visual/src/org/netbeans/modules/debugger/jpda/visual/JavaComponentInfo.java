@@ -186,6 +186,10 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     }
 
     final public boolean isCustomType() {
+        return isCustomType(type);
+    }
+    
+    public static boolean isCustomType(String type) {
         return !(type.startsWith("java.awt.") || type.startsWith("javax.swing."));  // NOI18N
     }
 
