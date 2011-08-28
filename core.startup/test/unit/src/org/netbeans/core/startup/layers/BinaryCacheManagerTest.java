@@ -110,7 +110,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     /** Test issue 140061 - need to update ParsingLayerCacheManager when increasing version of DTD Filesystem.*/
     public void testDTD1_2() throws SAXException, IOException {
         BinaryCacheManager m = new BinaryCacheManager();
-        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/layer1.2.xml")));
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(loadResource("data/layer1.2.xml")));
         try {
             store(m, urls);
         } catch(Exception e) {
@@ -124,7 +124,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     }
     public void testJustAttributes() throws SAXException, IOException {
         BinaryCacheManager m = new BinaryCacheManager();
-        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/attribsonly.xml")));
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(loadResource("data/attribsonly.xml")));
         FileSystem fs = store(m, urls);
         assertEquals(Boolean.TRUE, fs.getRoot().getAttribute("myAttr"));
     }
@@ -134,8 +134,8 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         LayerCacheManager m = new BinaryCacheManager();
         // layer2.xml should override layer1.xml where necessary:
         List<URL> urls = new ArrayList<URL>(Arrays.asList(
-            BinaryCacheManagerTest.class.getResource("data/layer2.xml"),
-            BinaryCacheManagerTest.class.getResource("data/layer1.xml")));
+            loadResource("data/layer2.xml"),
+            loadResource("data/layer1.xml")));
         
         FileSystem f = store(m, urls);
         FileSystem base = FileUtil.createMemoryFileSystem();
