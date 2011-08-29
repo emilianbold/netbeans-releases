@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.output;
 
+import java.util.regex.Matcher;
 import junit.framework.TestCase;
 
 public class GlobalOutputProcessorTest extends TestCase {
@@ -64,6 +65,19 @@ public class GlobalOutputProcessorTest extends TestCase {
                 fail("Line " + line + " not skipped");
             }
         }
+    }
+
+    public void testModelProblemPattern() {
+        Matcher m = GlobalOutputProcessor.MODEL_PROBLEM.matcher("[WARNING] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-plugin-plugin is missing. @ line 60, column 21");
+        assertTrue(m.matches());
+        assertEquals(null, m.group(1));
+        assertEquals("60", m.group(2));
+        assertEquals("21", m.group(3));
+        m = GlobalOutputProcessor.MODEL_PROBLEM.matcher("[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ org.glassfish:glassfish-main-parent:3.2-SNAPSHOT, /sources/glassfish/pom.xml, line 574, column 21");
+        assertTrue(m.matches());
+        assertEquals("/sources/glassfish/pom.xml", m.group(1));
+        assertEquals("574", m.group(2));
+        assertEquals("21", m.group(3));
     }
 
 }
