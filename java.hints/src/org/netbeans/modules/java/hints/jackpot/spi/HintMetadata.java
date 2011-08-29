@@ -85,6 +85,11 @@ public class HintMetadata {
         this.options = options;
     }
 
+    @Override
+    public String toString() {
+        return this.displayName;
+    }
+
     private static String lookup(ResourceBundle bundle, String key, String def) {
         try {
             return bundle != null ? bundle.getString(key) : def;
@@ -138,8 +143,15 @@ public class HintMetadata {
         }
 
         public Builder setBundle(ResourceBundle bundle) {
-            this.displayName = lookup(bundle, "DN_" + id, "No Display Name");
-            this.description = lookup(bundle, "DESC_" + id, "No Description");
+            return setBundle(bundle, null, null);
+        }
+
+        public Builder setBundle(ResourceBundle bundle, String fallbackDisplayName, String fallbackDescription) {
+            if (fallbackDisplayName == null) fallbackDisplayName = "No Display Name";
+            if (fallbackDescription == null) fallbackDescription = "No Description";
+            
+            this.displayName = lookup(bundle, "DN_" + id.replace('$', '.'), fallbackDisplayName);
+            this.description = lookup(bundle, "DESC_" + id.replace('$', '.'), fallbackDescription);
             return this;
         }
 

@@ -45,7 +45,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 
 /**
- *
+ * Utility class for platform properties manipulation
+ * 
  * @author Anton Chechel
  */
 public final class Utils {
@@ -58,25 +59,65 @@ public final class Utils {
     private Utils() {
     }
     
+    /**
+     * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform instance
+     * @return key for JavaFX SDK location
+     */
     public static String getSDKPropertyKey(JavaPlatform platform) {
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
     }
     
+    /**
+     * Returns key for <b>JavaFX Runtime location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform instance
+     * @return key for JavaFX Runtime location
+     */
     public static String getRuntimePropertyKey(JavaPlatform platform) {
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
     }
 
+    /**
+     * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform name
+     * @return key for JavaFX SDK location
+     */
+    public static String getSDKPropertyKey(String platformName) {
+        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
+    }
+
+    /**
+     * Returns key for <b>JavaFX Runtime location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform name
+     * @return key for JavaFX Runtime location
+     */
     public static String getRuntimePropertyKey(String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
     }
 
+    /**
+     * Returns key for <b>JavaFX Javadoc location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform instance
+     * @return key for JavaFX Javadoc location
+     */
     public static String getJavadocPropertyKey(JavaPlatform platform) {
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
     }
 
+    /**
+     * Returns key for <b>JavaFX Sources location</b> IDE global property value for given java platform
+     * 
+     * @param IDE java platform instance
+     * @return key for JavaFX Sources location
+     */
     public static String getSourcesPropertyKey(JavaPlatform platform) {
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N

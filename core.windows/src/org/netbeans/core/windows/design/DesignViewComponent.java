@@ -43,6 +43,8 @@
  */
 package org.netbeans.core.windows.design;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -58,13 +60,14 @@ import org.openide.windows.WindowManager;
     iconBase = "org/netbeans/core/windows/model/DesignView.png",
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED
 )
-final class DesignViewComponent extends TopComponent {
+final class DesignViewComponent extends TopComponent implements DocumentListener {
     DesignViewComponent() {
         initComponents();
         setName(NbBundle.getMessage(DesignViewComponent.class, "CTL_DesignViewComponentTopComponent"));
         setToolTipText(NbBundle.getMessage(DesignViewComponent.class, "HINT_DesignViewComponentTopComponent"));
         putClientProperty("TopComponentAllowDockAnywhere", true);
         refresh();
+        modeName.getDocument().addDocumentListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -79,7 +82,6 @@ final class DesignViewComponent extends TopComponent {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
 
         modeName.setText(org.openide.util.NbBundle.getMessage(DesignViewComponent.class, "DesignViewComponent.modeName.text", new Object[] {})); // NOI18N
         modeName.addActionListener(new java.awt.event.ActionListener() {
@@ -112,13 +114,6 @@ final class DesignViewComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DesignViewComponent.class, "DesignViewComponent.jLabel1.text", new Object[] {})); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(DesignViewComponent.class, "DesignViewComponent.jButton1.text", new Object[] {})); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -129,8 +124,7 @@ final class DesignViewComponent extends TopComponent {
                     .addComponent(jLabel1)
                     .addComponent(modeName, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -142,9 +136,7 @@ final class DesignViewComponent extends TopComponent {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(modeName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(3, 3, 3)
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(34, 34, 34)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -153,7 +145,9 @@ final class DesignViewComponent extends TopComponent {
     private void refresh() {
         Mode mode = WindowManager.getDefault().findMode(this);
         if (mode != null) {
-            modeName.setText(mode.getName());
+            if (!modeName.getText().equals(mode.getName())) {
+                modeName.setText(mode.getName());
+            }
             setName(mode.getName());
         }
     }
@@ -173,12 +167,7 @@ final class DesignViewComponent extends TopComponent {
         }
     }//GEN-LAST:event_modeNameActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        modeNameActionPerformed(evt);
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -205,5 +194,20 @@ final class DesignViewComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        modeNameActionPerformed(null);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        modeNameActionPerformed(null);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        modeNameActionPerformed(null);
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<#if package?? && package != "">
+<?import ${package}.MyGroup?> 
+<#else>
+<?import MyGroup?> 
+</#if>
+
+<MyGroup xmlns:fx="http://javafx.com/fxml">    
+    <children>      
+        <Button text="Click Me!" onAction="#handleButtonAction" />
+        <Label  fx:id="label" translateX="0" translateY="30" text=""/>  
+    </children>
+</MyGroup>    

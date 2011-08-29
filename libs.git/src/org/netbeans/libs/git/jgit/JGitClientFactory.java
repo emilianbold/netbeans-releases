@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit;
 import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.eclipse.jgit.transport.SshSessionFactory;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
@@ -87,6 +88,7 @@ public final class JGitClientFactory extends GitClientFactory {
                 // careful about keeping the reference to the repositoryRoot, rather create a new instance
                 repositoryPool.put(repositoryLocation, repository = new JGitRepository(new File(repositoryLocation.getParentFile(), repositoryLocation.getName())));
             }
+            SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault());
             return createClient(repository);
         }
     }

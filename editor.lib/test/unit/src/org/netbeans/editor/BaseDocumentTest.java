@@ -42,6 +42,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
+import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
+import javax.swing.undo.UndoManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
@@ -54,6 +57,57 @@ public class BaseDocumentTest extends NbTestCase {
 
     public BaseDocumentTest(String testName) {
         super(testName);
+    }
+    
+    public void testBackwardBiasPosition() throws Exception {
+        BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        UndoManager undoManager = new UndoManager();
+        doc.addUndoableEditListener(undoManager);
+        
+        Position pos0 = doc.createPosition(0, Bias.Backward);
+        BackwardPosition bpos0 = new BackwardPosition(doc, 0);
+        doc.insertString(0, "hlo world here is Prague", null);
+        assertEquals(0, pos0.getOffset()); // Insert at 0 - BB position stays at 0
+        assertEquals(0, bpos0.getOffset());
+        Position pos1 = doc.createPosition(1, Bias.Backward);
+        BackwardPosition bpos1 = new BackwardPosition(doc, 1);
+        doc.insertString(1, "el", null);
+        assertEquals(1, pos1.getOffset()); // Insert at 1 - BB position stays at 1
+        assertEquals(1, bpos1.getOffset());
+        Position pos3 = doc.createPosition(3, Bias.Backward);
+        BackwardPosition bpos3 = new BackwardPosition(doc, 3);
+        Position pos4 = doc.createPosition(4, Bias.Backward);
+        BackwardPosition bpos4 = new BackwardPosition(doc, 4);
+        doc.remove(2, 2);
+        assertEquals(2, pos3.getOffset()); // Removal; pos3 inside => moved to 2
+        assertEquals(2, bpos3.getOffset());
+        assertEquals(2, pos4.getOffset()); // Removal; pos3 inside => moved to 2
+        assertEquals(2, bpos4.getOffset());
+        Position pos22 = doc.createPosition(2, Bias.Backward); // pos at 2 after removal (3 originally)
+        BackwardPosition bpos22 = new BackwardPosition(doc, 2);
+        undoManager.undo(); // Undo of removal means insertion
+        assertEquals(3, pos3.getOffset()); // Undo of removal => return BB pos to orig. offset
+        assertEquals(2, bpos3.getOffset());
+        assertEquals(4, pos4.getOffset()); // Undo -> 4
+        assertEquals(2, bpos4.getOffset());
+        // BB position created prior undo of removal => position not moved (like on insert)
+        assertEquals(3, pos22.getOffset());
+        assertEquals(2, bpos22.getOffset());
+        
+        Position pos12 = doc.createPosition(10, Bias.Backward);
+        doc.remove(8, 2);
+        undoManager.undo();
+        assertEquals(10, pos12.getOffset());
+        
+        Position pos16 = doc.createPosition(16, Bias.Backward);
+        doc.remove(14, 2);
+        doc.insertString(14, "haf", null);
+        assertEquals(14, pos16.getOffset());
+
+        Position pos19 = doc.createPosition(19, Bias.Backward);
+        doc.remove(18, 2);
+        doc.insertString(18, "haf", null);
+        assertEquals(18, pos19.getOffset());
     }
 
     public void testRowUtilities() throws Exception {
@@ -244,5 +298,41 @@ public class BaseDocumentTest extends NbTestCase {
         doc.putProperty("prop-B", "value-B");
         assertEquals("Expecting no events on removed listener", 0, events.size());
     }
+
+    static class BackwardPosition implements Position, DocumentListener { // Like in openide.text
+
+        private int offset;
+
+        BackwardPosition(Document doc, int offset) {
+            this.offset = offset;
+            doc.addDocumentListener(org.openide.util.WeakListeners.document(this, doc));
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            // less, not less and equal
+            if (e.getOffset() < offset) {
+                offset += e.getLength();
+            }
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            int o = e.getOffset();
+            if (o < offset) {
+                offset -= e.getLength();
+                // was the position in deleted range? => go to its beginning
+                if (offset < o) {
+                    offset = o;
+                }
+            }
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+        }
+    }
+
 }
     

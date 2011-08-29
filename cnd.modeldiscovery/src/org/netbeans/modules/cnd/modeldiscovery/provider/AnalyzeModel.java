@@ -193,6 +193,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     private Map<String,List<String>> search(String root){
         HashSet<String> set = new HashSet<String>();
+        HashSet<String> antiLoop = new HashSet<String>();
         ArrayList<String> list = new ArrayList<String>();
         list.add(root);
         for (Iterator<String> it = list.iterator(); it.hasNext();){
@@ -200,7 +201,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                 break;
             }
             File f = new File(it.next());
-            gatherSubFolders(f, set);
+            gatherSubFolders(f, set, antiLoop);
         }
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
         for (Iterator<String> it = set.iterator(); it.hasNext();){
@@ -231,7 +232,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         return map;
     }
     
-    private void gatherSubFolders(File d, HashSet<String> set){
+    private void gatherSubFolders(File d, HashSet<String> set, HashSet<String> antiLoop){
         if (isStoped) {
             return;
         }
@@ -239,26 +240,24 @@ public class AnalyzeModel implements DiscoveryProvider {
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
-            String path = d.getAbsolutePath();
-            if (Utilities.isWindows()) {
-                path = path.replace('\\', '/');
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
             }
-            if (!set.contains(path)){
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
+                String path = d.getAbsolutePath();
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
                 set.add(path);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            try {
-                                String canPath = ff[i].getCanonicalPath();
-                                String absPath = ff[i].getAbsolutePath();
-                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                    continue;
-                                }
-                            } catch (IOException ex) {
-                                //Exceptions.printStackTrace(ex);
-                            }
-                            gatherSubFolders(ff[i], set);
+                            gatherSubFolders(ff[i], set, antiLoop);
                         }
                     }
                 }

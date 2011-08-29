@@ -287,7 +287,7 @@ public class ImportExecutable implements PropertyChangeListener {
                             if (extension.canApply(map, lastSelectedProject)) {
                                 try {
                                     extension.apply(map, lastSelectedProject);
-                                    discoverScripts(lastSelectedProject);
+                                    discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
@@ -323,7 +323,7 @@ public class ImportExecutable implements PropertyChangeListener {
         RP.post(run);
     }
 
-    private static void discoverScripts(Project project) {
+    private static void discoverScripts(Project project, String binary) {
         ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (provider == null) {
             return;
@@ -352,6 +352,10 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         }
         if (configure.script == null || configure.makefile == null) {
+            String binaryName = CndPathUtilitities.getBaseName(binary);
+            if (binaryName.indexOf('.') > 0 ) {
+                binaryName.substring(0, binaryName.lastIndexOf('.'));
+            }
             File[] listFiles = rootFile.listFiles();
             if (listFiles != null) {
                 for(File file : listFiles) {
@@ -361,6 +365,8 @@ public class ImportExecutable implements PropertyChangeListener {
                             if (configure.scriptWeight < childConfigure.scriptWeight) {
                                 configure = childConfigure;
                             }
+                        } else if (childConfigure.makefile != null && configure.makefile == null && binaryName.equals(file.getName())) {
+                            configure.setMakefile(childConfigure.makefile, childConfigure.makefileWeight);
                         }
                     }
                 }
@@ -656,23 +662,21 @@ public class ImportExecutable implements PropertyChangeListener {
         if (!DLL_FILE_SEARCH) {
             return;
         }
+        if (CndPathUtilitities.isIgnoredFolder(d)){
+            return;
+        }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            String path = d.getAbsolutePath();
-            path = path.replace('\\', '/'); // NOI18N
-            if (!set.contains(path)){
-                set.add(path);
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
+            }
+            if (!set.contains(canPath)){
+                set.add(canPath);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
-                            }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
-                        }
                         String name = ff[i].getName();
                         if (result.containsKey(name)) {
                            result.put(name, ff[i].getAbsolutePath());

@@ -43,7 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.path.DefaultPathTranslator;
 import org.apache.maven.project.path.PathTranslator;
@@ -66,14 +66,14 @@ public class NBPluginParameterExpressionEvaluator
 
     private final String basedir;
 
-    private final Properties properties;
+    private final Map<? extends String,? extends String> properties;
     
     private Settings settings;
 
     public NBPluginParameterExpressionEvaluator( 
                                                MavenProject project, 
                                                Settings settings,
-                                               Properties properties )
+                                               Map<? extends String,? extends String> properties )
     {
         this.pathTranslator = new DefaultPathTranslator();
         this.properties = properties;
@@ -324,7 +324,7 @@ public class NBPluginParameterExpressionEvaluator
                 // plugin to run a single test so I want to specify that class on the cli
                 // as a parameter.
 
-                value = properties.getProperty( expression );
+                value = properties.get(expression);
             }
 
             if ( ( value == null ) && ( ( project != null ) && ( project.getProperties() != null ) ) )

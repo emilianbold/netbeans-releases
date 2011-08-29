@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
@@ -58,7 +59,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
 import org.codehaus.plexus.util.StringInputStream;
 import org.codehaus.plexus.util.StringUtils;
-import java.util.Properties;
 import java.util.Set;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -696,7 +696,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     private MavenModule[] checkConfiguration(MavenProject prj, Object conf) {
         List<MavenModule> toRet = new ArrayList<MavenModule>();
         if (conf != null && conf instanceof Xpp3Dom) {
-            NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
+            NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), Collections.<String,String>emptyMap());
             Xpp3Dom dom = (Xpp3Dom) conf;
             Xpp3Dom modules = dom.getChild("modules"); //NOI18N
             if (modules != null) {

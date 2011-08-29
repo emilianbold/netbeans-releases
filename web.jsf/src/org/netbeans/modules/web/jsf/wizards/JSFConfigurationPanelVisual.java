@@ -1545,7 +1545,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 case 1: return item.getJsfComponent();
                 case 2:
                     if (item.isClickable()) {
-                        JButton button = new JButton("More...");
+                        JButton button = new JButton(
+                                NbBundle.getMessage(JSFConfigurationWizardPanelVisual.class, "LBL_MoreButton")); //NOI18N
                         if (!inCustomizer) {
                             button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
                         }
@@ -1553,8 +1554,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     } else {
                         return null;
                     }
+                default:
+                    return ""; //NOI18N
             }
-            return "";
         }
 
         public void setValueAt(Object value, int row, int column) {
