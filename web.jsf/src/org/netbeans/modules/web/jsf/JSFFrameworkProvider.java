@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -113,7 +114,7 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl, Po-Ting Wu, Alexey Butenko
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
-    
+
     private static final Logger LOGGER = Logger.getLogger(JSFFrameworkProvider.class.getName());
 
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
@@ -138,7 +139,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     public void setCreateWelcome(boolean set) {
         createWelcome = set;
     }
-    
+
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
     public JSFFrameworkProvider() {
@@ -146,14 +147,14 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name"),               // NOI18N
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
-    
+
     // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
     // better to move this to JSFConfigurationPanel
-    public Set extendImpl(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
+    public Set extendImpl(WebModule webModule, TreeMap<String, JsfComponentCustomizer> jsfComponentCustomizers) {
         Set result = new HashSet();
-        Library jsfLibrary = null;      
+        Library jsfLibrary = null;
         Library jstlLibrary = null;
-        
+
         JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
         if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
             // create new jsf library
@@ -179,7 +180,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
         }
-        
+
         try {
             FileObject fileObject = webModule.getDocumentBase();
             FileObject[] javaSources = webModule.getJavaSources();
@@ -219,12 +220,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS); 
+                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS);
             } else {
                 // find out whether the target server has myfaces jsf implementation on the classpath
                 ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
                 isMyFaces = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
-            }            
+            }
 
             FileObject webInf = webModule.getWebInf();
             if (webInf == null) {
@@ -253,12 +254,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             FileSystem fileSystem = webInf.getFileSystem();
-            
+
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
-            
+
             // extending for JSF component libraries
             for (JsfComponentImplementation jsfComponentDescriptor : panel.getEnabledJsfDescriptors()) {
-                result.addAll(jsfComponentDescriptor.extend(webModule, jsfComponentCustomizer));
+                result.addAll(jsfComponentDescriptor.extend(
+                        webModule, jsfComponentCustomizers.get(jsfComponentDescriptor.getName())));
             }
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
@@ -266,7 +268,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (welcomeFile != null) {
                 result.add(welcomeFile);
             }
-        } catch (IOException exception) {   
+        } catch (IOException exception) {
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         } catch (ConfigurationException exception) {
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
@@ -290,7 +292,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         br.close();
         return sbuffer.toString();
     }
-    
+
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         if (wm != null) {
@@ -306,7 +308,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
         return null;
     }
-    
+
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
@@ -349,7 +351,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             panel.setDebugFacelets(JSFUtils.debugFacelets(dd));
             panel.setSkipComments(JSFUtils.skipCommnets(dd));
         }
-        
+
         return panel;
     }
 
@@ -372,7 +374,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     public String getServletPath(FileObject file){
         String url = null;
         if (file == null) return url;
-        
+
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null){
             url = FileUtil.getRelativePath(wm.getDocumentBase(), file);
@@ -391,32 +393,32 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
         return url;
     }
-    
+
     public static void createFile(FileObject target, String content, String encoding) throws IOException{
         FileLock lock = target.lock();
         try {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
             bw.write(content);
             bw.close();
-            
+
         } finally {
             lock.releaseLock();
         }
     }
-    
+
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
         private static final String FACES_SERVLET_CLASS = "javax.faces.webapp.FacesServlet";  //NOI18N
-        private static final String FACES_SERVLET_NAME = "Faces Servlet";                     //NOI18N  
+        private static final String FACES_SERVLET_NAME = "Faces Servlet";                     //NOI18N
         private static final String MYFACES_STARTUP_LISTENER_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener";//NOI18N
 
         WebModule webModule;
         boolean isMyFaces;
-        
+
         public CreateFacesConfig(WebModule webModule, boolean isMyFaces){
             this.webModule = webModule;
             this.isMyFaces = isMyFaces;
         }
-        
+
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
@@ -427,7 +429,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             //faces servlet mapping
             String facesMapping =  panel == null ? DEFAULT_MAPPING : panel.getURLPattern();;//"/*";
-            
+
             boolean isJSF20 = false;
             Library jsfLibrary = null;
             if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
@@ -450,7 +452,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            
+
             //Add Faces Servlet and servlet-mapping into web.xml
             if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {
                 boolean shouldAddMappings = shouldAddMappings(webModule);
@@ -458,11 +460,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     if (shouldAddMappings || !DEFAULT_MAPPING.equals(facesMapping)) {
                         boolean servletDefined = false;
                         Servlet servlet;
-                        
+
                         if (ConfigurationUtils.getFacesServlet(webModule)!=null) {
                             servletDefined = true;
                         }
-                        
+
                         if (!servletDefined) {
                             servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
                             String servletName = (panel == null) ? FACES_SERVLET_NAME : panel.getServletName();
@@ -528,7 +530,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 if (dob != null) {
                                     JSFPaletteUtilities.reformat(dob);
                                 }
-                                
+
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles == null) {
@@ -770,6 +772,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 create = (dialog.getValue() == org.openide.DialogDescriptor.NO_OPTION);
             }
             return create;
-        }   
+        }
     }
 }
