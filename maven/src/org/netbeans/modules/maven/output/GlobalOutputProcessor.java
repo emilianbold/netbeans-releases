@@ -50,9 +50,10 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.options.MavenOptionController;
+import static org.netbeans.modules.maven.output.Bundle.*;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -74,6 +75,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
         return new String[] {SECTION_PROJECT};
     }
 
+    @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
     public void processLine(String line, OutputVisitor visitor) {
         if (DOWNLOAD.matcher(line).matches()) {
             visitor.skipLine();
@@ -84,7 +86,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             return;
         }
         if (LOW_MVN.matcher(line).matches()) {
-            visitor.setLine(line + NbBundle.getMessage(GlobalOutputProcessor.class, "TXT_ChangeSettings"));
+            visitor.setLine(line + '\n' + TXT_ChangeSettings());
             visitor.setColor(Color.RED);
             visitor.setOutputListener(new OutputListener() {
                 public void outputLineSelected(OutputEvent ev) {}
