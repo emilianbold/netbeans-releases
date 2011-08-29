@@ -480,7 +480,7 @@ public final class GitModuleConfig {
                 StringBuilder sb = new StringBuilder();
                 sb.append(guriString);
                 sb.append(DELIMITER);
-                sb.append(settings.getUser());
+                sb.append(settings.getUser() == null ? "" : settings.getUser());
                 sb.append(DELIMITER);
                 sb.append(settings.isSaveCredentials() ? "1" : "0"); //NOI18N
                 sb.append(DELIMITER);
