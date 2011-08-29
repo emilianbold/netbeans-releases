@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
         <folder name="Debug">
             <file name="org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.instance"/>
-                <attr name="position" intvalue="870"/>
+                <attr name="position" intvalue="950"/>
             </file>
         </folder>
     </folder>
