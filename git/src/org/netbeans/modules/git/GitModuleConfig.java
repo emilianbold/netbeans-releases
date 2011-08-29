@@ -493,7 +493,7 @@ public final class GitModuleConfig {
         }
 
         private static ConnectionSettings parse (String[] s) throws URISyntaxException {
-            String uri = s[0];
+            String uri = s[0].trim();
             ConnectionSettings setts = new ConnectionSettings(new GitURI(uri));
             if (s.length > 1) {
                 setts.setUser(s[1].isEmpty() ? null : s[1]);
