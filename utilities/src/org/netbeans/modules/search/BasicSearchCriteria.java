@@ -694,6 +694,12 @@ final class BasicSearchCriteria {
             return false;
         }
         
+        /* If replacing, skip read-only files  (including files in archives): */
+        if (!fileObj.canWrite() && isSearchAndReplace()) {
+            LOG.log(Level.INFO, "Read-only file {0} was skipped", fileObj);
+            return false;
+        }
+        
         if (fileObj.isFolder() || !fileObj.isValid() ||
                 (isFullText() && !isTextFile(fileObj))) {
             return false;

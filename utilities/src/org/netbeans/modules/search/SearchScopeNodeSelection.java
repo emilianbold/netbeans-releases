@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.filesystems.FileObject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -228,19 +230,27 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         final Lookup nodeLookup = node.getLookup();
         DataFolder dataFolder = nodeLookup.lookup(DataFolder.class);
         if (dataFolder != null) {
-            return SearchInfoFactory.createSearchInfo(
-                                dataFolder.getPrimaryFile(),
-                                true,                       //recursive
-                                new FileObjectFilter[] {
-                                        SearchInfoFactory.VISIBILITY_FILTER });
+            return createSearchInfoForFolder(dataFolder.getPrimaryFile());
         } else {
-            DataObject dataObj = nodeLookup.lookup(DataObject.class);
-            if (dataObj != null) {
-                return new DataObjectSearchInfo(dataObj);
+            FileObject fo = nodeLookup.lookup(FileObject.class);
+            if (fo != null && FileUtil.isArchiveFile(fo)) {
+                return createSearchInfoForFolder(FileUtil.getArchiveRoot(fo));
+            } else {
+                DataObject dataObj = nodeLookup.lookup(DataObject.class);
+                if (dataObj != null) {
+                    return new DataObjectSearchInfo(dataObj);
+                }
             }
         }
 
         return null;
+    }
+    
+    private static SearchInfo createSearchInfoForFolder(FileObject folder) {
+        return SearchInfoFactory.createSearchInfo(
+                folder,
+                true, new FileObjectFilter[]{
+                    SearchInfoFactory.VISIBILITY_FILTER});
     }
 
     private static final class DataObjectSearchInfo implements SearchInfo {

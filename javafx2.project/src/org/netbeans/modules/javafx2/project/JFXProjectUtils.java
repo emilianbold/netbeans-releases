@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,27 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.project;
 
-package org.netbeans.core.startup.layers;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-/** Test absence of layer cache manager.
- * @author Jesse Glick
+/**
+ * Utility class for JavaFX 2.0 Project
+ * 
+ * @author Petr Somol
  */
-public class NonCacheManagerTest extends CacheManagerTestBaseHid
-implements CacheManagerTestBaseHid.ManagerFactory {
+public final class JFXProjectUtils {
 
-    public NonCacheManagerTest(String name) {
-        super(name);
+    /**
+     * Returns list of JavaFX 2.0 JavaScript callback entries.
+     * In future should read the list from the current platform
+     * (directly from FX SDK or Ant taks).
+     * Current list taken from
+     * http://javaweb.us.oracle.com/~in81039/new-dt/js-api/Callbacks.html
+     * 
+     * @param IDE java platform name
+     * @return callback entries
+     */
+    public static Map<String,List<String>/*|null*/> getJSCallbacks(String platformName) {
+        final String[][] c = {
+            {"onDeployError", "app", "mismatchEvent"}, // NOI18N
+            {"onGetNoPluginMessage", "app"}, // NOI18N
+            {"onGetSplash", "app"}, // NOI18N
+            {"onInstallFinished", "placeholder", "component", "status", "relaunchNeeded"}, // NOI18N
+            {"onInstallNeeded", "app", "platform", "cb", "isAutoinstall", "needRelaunch", "launchFunc"}, // NOI18N
+            {"onInstallStarted", "placeholder", "component", "isAuto", "restartNeeded"}, // NOI18N
+            {"onJavascriptReady", "id"}, // NOI18N
+            {"onRuntimeError", "id", "code"} // NOI18N
+        };
+        Map<String,List<String>/*|null*/> m = new LinkedHashMap<String,List<String>/*|null*/>();
+        for(int i = 0; i < c.length; i++) {
+            String[] s = c[i];
+            assert s.length > 0;
+            List<String> l = null;
+            if(s.length > 1) {
+                l = new ArrayList<String>();
+                for(int j = 1; j < s.length; j++) {
+                    l.add(s[j]);
+                }
+            }
+            m.put(s[0], l);
+        }
+        return m;
     }
-
-    @Override
-    public LayerCacheManager createManager() throws Exception {
-        return LayerCacheManager.manager(false);
-    }
-
-    @Override
-    public boolean supportsTimestamps () {
-        return false;
-    }
+    
 }

@@ -106,6 +106,7 @@ public class HgModuleConfig {
 
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();
+    private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
     
     private static String userName;
 
@@ -621,6 +622,14 @@ public class HgModuleConfig {
 
     public void setLastCanceledCommitMessage(String message) {
         lastCanceledCommitMessage = message;
+    }
+
+    public boolean isSearchOnBranchEnabled (String branchName) {
+        return getPreferences().getBoolean(KEY_SEARCH_ON_BRANCH + branchName, true);
+    }
+
+    public void setSearchOnBranchEnabled (String branchName, boolean enabled) {
+        getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH + branchName, enabled);
     }
     
     synchronized Set<String> getCommitExclusions() {
