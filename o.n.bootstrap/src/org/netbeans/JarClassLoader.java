@@ -60,6 +60,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -536,7 +537,7 @@ public class JarClassLoader extends ProxyClassLoader {
             if (buf == null) return null;
             LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
             try {
-                return new URL(resPrefix + new URI(null, name, null).getRawPath());
+                return new URL(null, resPrefix + new URI(null, name, null).getRawPath(), new JarURLStreamHandler(jcl));
             } catch (URISyntaxException x) {
                 throw new IOException(name + " in " + resPrefix + ": " + x.toString(), x);
             }
@@ -883,10 +884,22 @@ public class JarClassLoader extends ProxyClassLoader {
     
     static class JarURLStreamHandler extends URLStreamHandler {
 
+        private static final URLStreamHandler fallback = new URLStreamHandler() {
+            protected @Override URLConnection openConnection(URL u) throws IOException {
+                return new URL(u.toString()).openConnection();
+            }
+        };
+
         private final URLStreamHandler originalJarHandler;
+        private ClassLoader loader;
 
         JarURLStreamHandler(URLStreamHandler originalJarHandler) {
             this.originalJarHandler = originalJarHandler;
+        }
+
+        private JarURLStreamHandler(ClassLoader l) {
+            this(fallback);
+            this.loader = l;
         }
 
         /**
@@ -933,7 +946,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
             LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
-            return new NbJarURLConnection (u, _src, _name);
+            return new NbJarURLConnection (u, _src, _name, loader);
         }
 
         @Override
@@ -955,16 +968,18 @@ public class JarClassLoader extends ProxyClassLoader {
         private final String name;
         private byte[] data;
         private InputStream iStream;
+        private final ClassLoader loader;
 
         /**
          * Creates new URLConnection
          * @param url the parameter for which the connection should be
          * created
          */
-        private NbJarURLConnection(URL url, Source src, String name) throws MalformedURLException {
+        private NbJarURLConnection(URL url, Source src, String name, ClassLoader l) throws MalformedURLException {
             super(url);
             this.src = (JarSource)src;
             this.name = name;
+            this.loader = l;
         }
 
         private boolean isFolder() {
@@ -1022,6 +1037,14 @@ public class JarClassLoader extends ProxyClassLoader {
         @Override
         public JarFile getJarFile() throws IOException {
             return new JarFile(src.file); // #134424
+        }
+
+        public @Override Object getContent(Class[] classes) throws IOException {
+            if (Arrays.asList(classes).contains(ClassLoader.class)) {
+                return loader;
+            } else {
+                return super.getContent(classes);
+            }
         }
     }
 }
