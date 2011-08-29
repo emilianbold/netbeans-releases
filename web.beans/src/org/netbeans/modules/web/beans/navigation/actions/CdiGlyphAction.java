@@ -148,7 +148,8 @@ public class CdiGlyphAction extends AbstractAction {
                 INJECTION_POINT.toString()) || annotationType.equals( 
                         CDIAnnotation.CDIAnnotaitonType.DELEGATE_POINT.toString()))
         {
-            final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
+            final AnnotationPositionStrategy strategy = 
+                new AnnotationPositionStrategy(part, doc);
             GoToInjectableAtCaretAction action = new GoToInjectableAtCaretAction(){
                 
                 /* (non-Javadoc)
@@ -166,7 +167,8 @@ public class CdiGlyphAction extends AbstractAction {
             
         }
         else if ( annotationType.equals( CDIAnnotaitonType.EVENT.toString() )){
-            final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
+            final AnnotationPositionStrategy strategy = 
+                new AnnotationPositionStrategy(part, doc);
             InspectCDIAtCaretAction action = new InspectCDIAtCaretAction(){
                 /* (non-Javadoc)
                  * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
@@ -184,7 +186,8 @@ public class CdiGlyphAction extends AbstractAction {
             action.actionPerformed(null, comp);
         }
         else if ( annotationType.equals( CDIAnnotaitonType.OBSERVER.toString() )){
-            final AnnotationPositionStrategy strategy = new AnnotationPositionStrategy(part, doc);
+            final AnnotationPositionStrategy strategy = 
+                new AnnotationPositionStrategy(part, doc);
             InspectCDIAtCaretAction action = new InspectCDIAtCaretAction(){
                 /* (non-Javadoc)
                  * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
@@ -195,6 +198,43 @@ public class CdiGlyphAction extends AbstractAction {
                 {
                     return WebBeansActionHelper.getMethodAtDot(component, 
                             subject, strategy );
+                }
+            };
+                
+            action.actionPerformed(null, comp);
+        }
+        else if ( annotationType.equals( CDIAnnotaitonType.INTERCEPTED_ELEMENT.toString() )){
+            final AnnotationPositionStrategy strategy = 
+                new AnnotationPositionStrategy(part, doc);
+            InspectCDIAtCaretAction action = new InspectCDIAtCaretAction(){
+                /* (non-Javadoc)
+                 * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
+                 */
+                @Override
+                protected boolean findContext( JTextComponent component,
+                        Object[] subject )
+                {
+                    return WebBeansActionHelper.getMethodAtDot(component, 
+                            subject, strategy ) || WebBeansActionHelper.
+                            getClassAtDot(component, subject, strategy);
+                }
+            };
+                
+            action.actionPerformed(null, comp);
+        }
+        else if ( annotationType.equals( CDIAnnotaitonType.DECORATED_BEAN.toString() )){
+            final AnnotationPositionStrategy strategy = 
+                new AnnotationPositionStrategy(part, doc);
+            GoToDecoratorAtCaretAction action = new GoToDecoratorAtCaretAction(){
+                /* (non-Javadoc)
+                 * @see org.netbeans.modules.web.beans.navigation.actions.InspectCDIAtCaretAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
+                 */
+                @Override
+                protected boolean findContext( JTextComponent component,
+                        Object[] subject )
+                {
+                    return WebBeansActionHelper.
+                            getClassAtDot(component, subject, strategy);
                 }
             };
                 

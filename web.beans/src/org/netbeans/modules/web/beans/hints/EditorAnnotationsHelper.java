@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -177,6 +178,19 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
     {
         addAnnotation(result, element, CDIAnnotaitonType.OBSERVER );           
     }
+    
+    public void addInterceptedBean(CdiAnalysisResult result , TypeElement element ) {
+        addAnnotation(result, element, CDIAnnotaitonType.INTERCEPTED_ELEMENT );        
+    }
+    
+    public void addInterceptedMethod( Result result, ExecutableElement element )
+    {
+        addAnnotation(result, element, CDIAnnotaitonType.INTERCEPTED_ELEMENT );
+    }
+    
+    public void addDecoratedBean( Result result, TypeElement element ) {
+        addAnnotation(result, element, CDIAnnotaitonType.DECORATED_BEAN );
+    }
 
     public void publish( final CdiAnalysisResult result ) {
         Runnable runnable = new Runnable() {
@@ -212,6 +226,9 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
     private void addAnnotation( CdiAnalysisResult result, Element element , 
             CDIAnnotaitonType type) 
     {
+        if ( element == null ){
+            return;
+        }
         Tree var = result.getInfo().getTrees().getTree( element );
         List<Integer> position = CdiEditorAnalysisFactory.getElementPosition( 
                 result.getInfo(),  var );
