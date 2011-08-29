@@ -108,6 +108,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SourceUtils-computeDuplicates">
+             <api name="general"/>
+             <summary>Added SourceUtils.computeDuplicates to get code duplicates of provided expression</summary>
+             <version major="0" minor="85"/>
+             <date day="26" month="8" year="2011"/>
+             <author login="jbecicka"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a method <code>SourceUtils.computeDuplicates</code> to get code duplicates of provided expression.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="199106"/>
+        </change>
         <change id="ElementHandle-jvm-signature">
              <api name="general"/>
              <summary>Added SourceUtils.getJVMSignature to obtain the JVM signature for an ElementHandle</summary>
