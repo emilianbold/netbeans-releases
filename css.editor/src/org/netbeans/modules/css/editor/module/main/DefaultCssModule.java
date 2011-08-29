@@ -101,7 +101,15 @@ public class DefaultCssModule extends CssModule {
         "speech",
         "grid_positioning",
         "flexible_box_layout",
-        "image_values"        
+        "image_values",
+        "animations",
+        "transforms_2d",
+        "transforms_3d",
+        "transitions",
+        "line",
+        "hyperlinks",
+        "presentation_levels",
+        "generated_and_replaced_content"
     };
     private static Collection<PropertyDescriptor> propertyDescriptors;
 
