@@ -49,7 +49,6 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.Random;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -68,13 +67,11 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.util.Exceptions;
 
 /**
  * Utility methods useful for testing of debugging.
@@ -358,48 +355,6 @@ public class Utils {
             test.getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
             test.getLog("RunOutput").print(new OutputTabOperator(projectName).getText()); // NOI18N
         }
-    }
-
-    /** Set longer time for timeout and confirm Information dialog */
-    public static void confirmInformationMessage() {
-        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
-        // increase time to wait to 240 second
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        // confirm dialog
-        new NbDialogOperator(infTitle).ok();
-        // restore default timeout
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
-    }
-
-    /** Confirming message about Client Side Debugging and setting don't show this message again. */
-    public static void confirmClientSideDebuggingMeassage(String appName) {
-        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
-        // increase time to wait to 240 second
-        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String title = "Debug Project - " + appName;
-        long time = System.currentTimeMillis();
-        JDialog dialog = null;
-        while ((System.currentTimeMillis() - 5000 < time) && dialog == null) {
-            dialog = NbDialogOperator.findJDialog(title, true, true);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (dialog != null) {
-            // wait for dialog
-            NbDialogOperator dialogOperator = new NbDialogOperator(dialog);
-            //NbDialogOperator nbd = new NbDialogOperator(title;)
-            // choose don't display this message again
-            String doNotShowTitle = "Do not show this again";
-            new JCheckBoxOperator(dialogOperator, doNotShowTitle).setSelected(true);
-            JButtonOperator jbo = new JButtonOperator(dialogOperator, "Debug");
-            jbo.clickMouse();
-        }
-        // restore default timeout
-        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
     }
 
     /** Opens project properties and sets to not display browser on run. */

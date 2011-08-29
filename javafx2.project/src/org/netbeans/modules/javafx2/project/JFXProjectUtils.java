@@ -39,20 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual;
+package org.netbeans.modules.javafx2.project;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
- * @author jbachorik
+ * Utility class for JavaFX 2.0 Project
+ * 
+ * @author Petr Somol
  */
-public class RetrievalException extends Exception {
+public final class JFXProjectUtils {
 
-    public RetrievalException(String message) {
-        super(message);
-    }
-
-    public RetrievalException(String message, Throwable cause) {
-        super(message, cause);
+    /**
+     * Returns list of JavaFX 2.0 JavaScript callback entries.
+     * In future should read the list from the current platform
+     * (directly from FX SDK or Ant taks).
+     * Current list taken from
+     * http://javaweb.us.oracle.com/~in81039/new-dt/js-api/Callbacks.html
+     * 
+     * @param IDE java platform name
+     * @return callback entries
+     */
+    public static Map<String,List<String>/*|null*/> getJSCallbacks(String platformName) {
+        final String[][] c = {
+            {"onDeployError", "app", "mismatchEvent"}, // NOI18N
+            {"onGetNoPluginMessage", "app"}, // NOI18N
+            {"onGetSplash", "app"}, // NOI18N
+            {"onInstallFinished", "placeholder", "component", "status", "relaunchNeeded"}, // NOI18N
+            {"onInstallNeeded", "app", "platform", "cb", "isAutoinstall", "needRelaunch", "launchFunc"}, // NOI18N
+            {"onInstallStarted", "placeholder", "component", "isAuto", "restartNeeded"}, // NOI18N
+            {"onJavascriptReady", "id"}, // NOI18N
+            {"onRuntimeError", "id", "code"} // NOI18N
+        };
+        Map<String,List<String>/*|null*/> m = new LinkedHashMap<String,List<String>/*|null*/>();
+        for(int i = 0; i < c.length; i++) {
+            String[] s = c[i];
+            assert s.length > 0;
+            List<String> l = null;
+            if(s.length > 1) {
+                l = new ArrayList<String>();
+                for(int j = 1; j < s.length; j++) {
+                    l.add(s[j]);
+                }
+            }
+            m.put(s[0], l);
+        }
+        return m;
     }
     
 }
