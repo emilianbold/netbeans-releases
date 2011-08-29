@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JEditorPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.test.TestBase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,25 +62,36 @@ public class HtmlAutoCompletionTest extends TestBase {
         super(name);
     }
 
-    public void testHandleEmptyTagCloseSymbol() throws BadLocationException {
-        NbEditorDocument doc = (NbEditorDocument)createDocument();
-        JTextPane pane = new JTextPane(doc);
-        doc.insertString(0, "<div/", null);
-        //                   01234
-        HtmlAutoCompletion.charInserted(doc, 4, pane.getCaret(), '/');
-        assertEquals("<div/>", doc.getText(0, doc.getLength()));
+    public void testHandleEmptyTagCloseSymbol() throws InterruptedException, InvocationTargetException {
+        SwingUtilities.invokeAndWait(new Runnable() {
 
-        doc.remove(0, doc.getLength());
-        doc.insertString(0, "<div /", null);
-        //                   01234
-        HtmlAutoCompletion.charInserted(doc, 5, pane.getCaret(), '/');
-        assertEquals("<div />", doc.getText(0, doc.getLength()));
+            @Override
+            public void run() {
+                try {
+                    JEditorPane pane = getPane("");
+                    BaseDocument doc = (BaseDocument)pane.getDocument();
+                    doc.insertString(0, "<div/", null);
+                    //                   01234
+                    HtmlAutoCompletion.charInserted(doc, 4, pane.getCaret(), '/');
+                    assertEquals("<div/>", doc.getText(0, doc.getLength()));
 
-        doc.remove(0, doc.getLength());
-        doc.insertString(0, "<div align='center'/", null);
-        //                   012345678901234567890
-        HtmlAutoCompletion.charInserted(doc, 19, pane.getCaret(), '/');
-        assertEquals("<div align='center'/>", doc.getText(0, doc.getLength()));
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, "<div /", null);
+                    //                   01234
+                    HtmlAutoCompletion.charInserted(doc, 5, pane.getCaret(), '/');
+                    assertEquals("<div />", doc.getText(0, doc.getLength()));
+
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, "<div align='center'/", null);
+                    //                   012345678901234567890
+                    HtmlAutoCompletion.charInserted(doc, 19, pane.getCaret(), '/');
+                    assertEquals("<div align='center'/>", doc.getText(0, doc.getLength()));
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+        });
 
 
     }
