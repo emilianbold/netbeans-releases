@@ -393,7 +393,7 @@ public class DebuggerAction extends AbstractAction {
         ) {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
-            if (action != da.getAction ()) return;
+            if (!action.equals(da.getAction ())) return;
             // ignore the enabled argument, check it with respect to the proper
             // actions manager.
             final boolean en = DebuggerAction.isEnabled (da.getAction ());

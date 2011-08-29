@@ -74,6 +74,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private static Set<String> allowed = Collections.emptySet();
     private static SecurityManager man;
     private static Mode mode;
+    static boolean acceptAll;
 
     public enum Mode {
         CHECK_READ, CHECK_WRITE
@@ -168,7 +169,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     public void checkRead(String file) {
         if (mode == Mode.CHECK_READ && acceptFileRead(file)) {
             String dirs = System.getProperty("netbeans.dirs");
-            if (dirs == null) {
+            if (dirs == null && !acceptAll) {
                 // not initialized yet
                 return;
             }
@@ -438,6 +439,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private boolean acceptFileRead(String file) {
         if (prefix != null && !file.startsWith(prefix)) {
             return false;
+        }
+        if (acceptAll) {
+            return true;
         }
 
         if (!file.endsWith(".jar")) {

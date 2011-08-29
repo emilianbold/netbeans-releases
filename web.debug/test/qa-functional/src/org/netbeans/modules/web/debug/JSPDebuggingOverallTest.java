@@ -41,7 +41,6 @@ package org.netbeans.modules.web.debug;
 
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -70,7 +69,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -140,9 +138,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         Utils.suppressBrowserOnRun(SAMPLE_WEB_PROJECT_NAME);
         waitScanFinished();
-        // TODO - probably obsolete
-        // start thread to close any information dialog
-        //closeInformationDialog();
     }
 
     /** Set a random port for Tomcat server and socket debugger transport. */
@@ -175,8 +170,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Debug");
-        // TODO - probably obsolete
-        //Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
         // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
         new NbDialogOperator("Port Selection Notice").close();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
@@ -430,35 +423,5 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         if (serverNode.getServerState() != J2eeServerNode.STATE_STOPPED) {
             serverNode.stop();
         }
-    }
-
-    /** Sometimes is opened an information dialog with the following message:
-     * "The Admin Server is stopped at a Break Point. No calls can be executed.
-     * Please, complete your debugging session (continue) in order to be able
-     * to manage this server instance."
-     * It happens only on qa-perf-sol4 and I am not able to reproduce it
-     * manually. That's why we start a new thread which is watching for this
-     * dialog and close it if it appears.
-     */
-    private void closeInformationDialog() {
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                // "Information"
-                String informationTitle = Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-                while (true) {
-                    JDialog dialog = JDialogOperator.findJDialog(informationTitle, false, false);
-                    if (dialog != null) {
-                        new JDialogOperator(dialog).setVisible(false);
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        }, "JSPDebuggingOverallTest - Wait for info dialog").start();
     }
 }

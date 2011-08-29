@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Stamps;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -122,7 +123,7 @@ final class BinaryFS extends FileSystem implements DataInput {
     /** list of URLs or time of their modification */
     private final List<String> urls;
     private final List<Long> modifications;
-    private final Date lastModified = new Date();
+    private final Date lastModified = new Date(Stamps.getModulesJARs().lastModified());
     private final Map<Integer,String> texts;
     private final ByteBuffer strings;
 
@@ -450,7 +451,6 @@ final class BinaryFS extends FileSystem implements DataInput {
             return true;
         }
 
-        /** Get last modification time. */
         public java.util.Date lastModified() {
             return lastModified;
         }
@@ -820,7 +820,6 @@ final class BinaryFS extends FileSystem implements DataInput {
         private int size = -1;
         private int contentOffset;
         private String uri;
-        private long lastModified = -1;
 
         public BFSFile(String name, FileObject parent, int offset) {
             super(name, parent, offset);
@@ -883,6 +882,54 @@ final class BinaryFS extends FileSystem implements DataInput {
                 return 0;
             }
         }
+        @Override
+        public Date lastModified() {
+            initialize();
+            try {
+                int index = -1;
+                java.net.URLConnection conn = null;
+                if (len == -1) {
+                    if (uri.startsWith("jar:")) { // NOI18N
+                        return super.lastModified();
+                    }
+                    conn = new URL(uri).openConnection();
+                } else {
+                    ByteBuffer sub = (ByteBuffer) content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
+                    index = sub.getInt();
+                    if (index <= -10) {
+                        index = -(index + 10);
+                    }
+                    final String url = urls.get(index);
+                    if (url.startsWith("jar:")) { // NOI18N
+                        return super.lastModified();
+                    }
+                    Long obj = modifications.get(index);
+                    if (obj != null) {
+                        return new Date(obj);
+                    }
+                    conn = new URL(url).openConnection();
+                }
+
+                /*
+                if (conn instanceof java.net.JarURLConnection) {
+                conn = ((java.net.JarURLConnection)conn).getJarFileURL ().openConnection ();
+                }
+                 */
+
+                if (conn != null) {
+                    long date = conn.getLastModified();
+                    if (date > 0) {
+                        if (index >= 0) {
+                            modifications.set(index, date);
+                        }
+                        return new Date(date);
+                    }
+                }
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+            return super.lastModified();
+        }
 
         /** A method called to finish the initialization in the subclasses.
          * When this method is called, the contentOffset field is already set up.
@@ -926,53 +973,6 @@ final class BinaryFS extends FileSystem implements DataInput {
             } else {
                 return false;
             }
-        }
-
-        @Override
-        public Date lastModified() {
-            initialize();
-                if (lastModified >= 0) {
-                    return new Date(lastModified);
-                }
-                try {
-                    int index = -1;
-                    java.net.URLConnection conn = null;
-                    if (len == -1) {
-                        conn = new URL(uri).openConnection ();
-                    } else {
-                        ByteBuffer sub = (ByteBuffer) content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
-                        index = sub.getInt();
-                        if (index <= -10) {
-                            index = -(index + 10);
-                        }
-                        Long obj = modifications.get(index);
-                        if (obj != null) {
-                            return new Date(obj);
-                        }
-                        conn = new URL(urls.get(index)).openConnection();
-                    }
-
-                    /*
-                    if (conn instanceof java.net.JarURLConnection) {
-                        conn = ((java.net.JarURLConnection)conn).getJarFileURL ().openConnection ();
-                    }
-                     */
-
-                    if (conn != null) {
-                        long date = conn.getLastModified ();
-                        if (date > 0) {
-
-                            lastModified = date;
-                            if (index >= 0) {
-                                modifications.set(index, date);
-                            }
-                            return new Date(date);
-                        }
-                    }
-                } catch (Exception e) {
-                    LOG.log(Level.WARNING, null, e);
-                }
-            return super.lastModified ();
         }
     }
 

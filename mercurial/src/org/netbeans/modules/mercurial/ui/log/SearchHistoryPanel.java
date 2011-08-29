@@ -94,6 +94,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private AbstractAction nextAction;
     private AbstractAction prevAction;
     private SearchHistoryTopComponent.DiffResultsViewFactory diffViewFactory;
+    private String currentBranch;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -465,6 +466,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             int n2 = Integer.parseInt(st2.nextToken());
             if (n1 != n2) return n2 - n1;
         }
+    }
+    
+    void setCurrentBranch (String branchName) {
+        this.currentBranch = branchName;
+    }
+
+    String getCurrentBranch () {
+        return currentBranch == null ? "" : currentBranch;
     }
     
     /** This method is called from within the constructor to
