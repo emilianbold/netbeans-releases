@@ -44,22 +44,14 @@ package org.netbeans.modules.maven.output;
 
 import junit.framework.TestCase;
 
-/**
- *
- * @author dafe
- */
 public class GlobalOutputProcessorTest extends TestCase {
 
     public GlobalOutputProcessorTest(String testName) {
         super(testName);
     }
 
-    /**
-     * Test of processLine method, of class GlobalOutputProcessor.
-     */
-    public void testProcessLine() {
-        System.out.println("processLine - skipping lines");
-        String[] lines = new String[] {
+    public void testDownloadPattern() {
+        String[] lines = {
             "51521/?", "11/12K", "11/12M", "51521/120000b",
             "51521/? 12/25K", "34/263M 464/500b",
             "51521/? 13/25K 4034/4640M",
@@ -67,9 +59,9 @@ public class GlobalOutputProcessorTest extends TestCase {
             "59/101 KB    ", "1/3 B  ", "55 KB", "300 B  ",
             "10/101 KB   48/309 KB   ", // sometimes seems to jam
         };
-        for (int i = 0; i < lines.length; i++) {
-            if (!GlobalOutputProcessor.DOWNLOAD.matcher(lines[i]).matches()) {
-                fail("Line " + lines[i] + " not skipped");
+        for (String line : lines) {
+            if (!GlobalOutputProcessor.DOWNLOAD.matcher(line).matches()) {
+                fail("Line " + line + " not skipped");
             }
         }
     }
