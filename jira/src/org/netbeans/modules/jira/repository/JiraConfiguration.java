@@ -229,7 +229,7 @@ public class JiraConfiguration {
     }
 
     public boolean supportsProjectIssueTypes(String version) {
-        return new JiraVersion(version).compareTo(JiraVersion.JIRA_3_13) > -1; // XXX MYLYN JIRA_3_12
+        return new JiraVersion(version).compareTo(new JiraVersion("3.12")) > -1; 
     }
 
     public void ensureProjectLoaded(final Project project) {
