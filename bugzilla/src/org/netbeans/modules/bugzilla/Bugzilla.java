@@ -58,7 +58,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
@@ -90,15 +89,14 @@ public class Bugzilla {
 
     private Bugzilla() {
 
-        BugtrackingRuntime.init();
+//        BugtrackingRuntime.init();
 
-        ModuleLifecycleManager.instantiated = true;
-        bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
+//        bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception ex) {
+//            LOG.log(Level.SEVERE, null, ex);
+//        }
         // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
         // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
         // in the BugzillaRepositoryConnector-s constructor
@@ -123,14 +121,6 @@ public class Bugzilla {
 
     static synchronized void init() {
         getInstance();
-    }
-
-    void shutdown() {
-        try {
-            bcp.stop(null); // forces persisting of repository configuration
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
     }
 
     public KenaiSupport getKenaiSupport() {

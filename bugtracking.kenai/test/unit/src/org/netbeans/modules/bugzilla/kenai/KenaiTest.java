@@ -107,12 +107,13 @@ public class KenaiTest extends NbTestCase implements TestConstants {
         
         br.close();
 
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // XXX MYLYN 
+//        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         
