@@ -49,6 +49,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -58,6 +59,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.openide.util.Exceptions;
 
 /**
@@ -68,7 +70,7 @@ public class AWTComponentBreakpointImpl {
     
     private AWTComponentBreakpoint cb;
     private JPDADebugger debugger;
-    private final List<Breakpoint> serviceBreakpoints = new LinkedList<Breakpoint>();
+    private final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
 
     public AWTComponentBreakpointImpl(AWTComponentBreakpoint cb, JPDADebugger debugger) {
         this.cb = cb;
@@ -140,7 +142,7 @@ public class AWTComponentBreakpointImpl {
             CallStackFrame[] callStack = thread.getCallStack();
             for (CallStackFrame csf : callStack) {
                 String cn = csf.getClassName();
-                if (!(cn.startsWith("java.awt.") || cn.startsWith("javax.swing."))) {
+                if (JavaComponentInfo.isCustomType(cn)) {
                     callStackFrame = csf;
                     break;
                 }
@@ -172,6 +174,11 @@ public class AWTComponentBreakpointImpl {
         
     }
     
+    void setSuspend(int suspend) {
+        for (JPDABreakpoint b : serviceBreakpoints) {
+            b.setSuspend(suspend);
+        }
+    }
     
     
 }

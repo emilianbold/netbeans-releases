@@ -47,6 +47,9 @@ package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 
 import org.netbeans.spi.debugger.ui.BreakpointType;
 
@@ -62,6 +65,7 @@ public class AWTComponentBreakpointType extends BreakpointType {
 
     private Reference<AWTComponentBreakpointPanel> customizerRef = new WeakReference<AWTComponentBreakpointPanel>(null);
 
+    @Override
     public String getCategoryDisplayName () {
         return NbBundle.getMessage (
             AWTComponentBreakpointType.class,
@@ -69,6 +73,7 @@ public class AWTComponentBreakpointType extends BreakpointType {
         );
     }
     
+    @Override
     public JComponent getCustomizer () {
         AWTComponentBreakpointPanel panel = new AWTComponentBreakpointPanel();
         customizerRef = new WeakReference<AWTComponentBreakpointPanel>(panel);
@@ -92,8 +97,13 @@ public class AWTComponentBreakpointType extends BreakpointType {
         );
     }
     
+    @Override
     public boolean isDefault () {
-        // TODO
+        ScreenshotUIManager activeScreenshotManager = ScreenshotUIManager.getActive();
+        if (activeScreenshotManager != null) {
+            ComponentInfo ci = activeScreenshotManager.getSelectedComponent();
+            return (ci instanceof AWTComponentInfo);
+        }
         return false;
     }
 }
