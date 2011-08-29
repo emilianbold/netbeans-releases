@@ -56,6 +56,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.openide.util.WeakListeners;
@@ -80,6 +81,8 @@ public class AWTComponentBreakpoint extends Breakpoint {
     private final Map<Session, AWTComponentBreakpointImpl> impls =
             new HashMap<Session, AWTComponentBreakpointImpl>();
     private String condition = "";
+    private int suspend;
+    private String printText;
     
     public AWTComponentBreakpoint(ComponentDescription component) {
         this.component = component;
@@ -93,6 +96,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
         for (Session s : sessions) {
             serviceBreakpointListener.sessionAdded(s);
         }
+        suspend = LineBreakpoint.create("", 0).getSuspend();
     }
     
     public ComponentDescription getComponent() {
@@ -160,6 +164,36 @@ public class AWTComponentBreakpoint extends Breakpoint {
     
     public void setCondition(String condition) {
         this.condition = condition;
+    }
+
+    void setSuspend(int suspend) {
+        int oldSuspend;
+        synchronized (this) {
+            oldSuspend = this.suspend;
+            if (suspend == oldSuspend) return ;
+            this.suspend = suspend;
+        }
+        Collection<AWTComponentBreakpointImpl> cbImpls;
+        synchronized(impls) {
+            cbImpls = new ArrayList<AWTComponentBreakpointImpl>(impls.values());
+        }
+        for (AWTComponentBreakpointImpl impl : cbImpls) {
+            impl.setSuspend(suspend);
+        }
+        firePropertyChange 
+            (JPDABreakpoint.PROP_SUSPEND, oldSuspend, suspend);
+    }
+
+    void setPrintText(String printText) {
+        String old;
+        synchronized (this) {
+            if (printText == this.printText || (printText != null && printText.equals(this.printText))) {
+                return;
+            }
+            old = this.printText;
+            this.printText = printText;
+        }
+        firePropertyChange (JPDABreakpoint.PROP_PRINT_TEXT, old, printText);
     }
     
     //public void set
