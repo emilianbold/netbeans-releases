@@ -81,13 +81,11 @@ public class JiraConfiguration {
         this.repository = repository;
         String value = System.getProperty("org.netbeans.modules.jira.datePattern"); // NOI18N
         if (value != null) {
-            // XXX MYLYN
-//            client.getConfiguration().setDatePattern(value);
+            client.getLocalConfiguration().setDatePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.dateTimePattern"); // NOI18N
         if (value != null) {
-            // XXX MYLYN
-//            client.getConfiguration().setDateTimePattern(value);
+            client.getLocalConfiguration().setDateTimePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.locale"); // NOI18N
         if (value != null) {
@@ -96,8 +94,7 @@ public class JiraConfiguration {
             String country = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             String variant = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             Locale locale = new Locale(language, country, variant);
-            // XXX MYLYN
-            //client.getConfiguration().setLocale(locale);
+            client.getLocalConfiguration().setLocale(locale);
         }
     }
 
@@ -221,11 +218,11 @@ public class JiraConfiguration {
     }
 
     public int getWorkDaysPerWeek() {
-        return 5; // XXX MYLYN client.getConfiguration().getWorkDaysPerWeek();
+        return client.getLocalConfiguration().getWorkDaysPerWeek();
     }
 
     public int getWorkHoursPerDay() {
-        return 8; // XXX MYLYNclient.getConfiguration().getWorkHoursPerDay();
+        return client.getLocalConfiguration().getWorkHoursPerDay();
     }
 
     public boolean supportsProjectIssueTypes(String version) {
