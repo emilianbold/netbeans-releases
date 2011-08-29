@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="OrganizeImports">
+             <api name="general"/>
+             <summary>Added <code>GeneratorUtilities.addImports</code> and several methods to <code>CodeStyle</code> to support organizing imports.</summary>
+             <version major="0" minor="86"/>
+             <date day="29" month="8" year="2011"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>GeneratorUtilities.addImports</code> method to add import statements for given elements to a compilation unit
+                 in a way that complies with the rules specified in <code>CodeStyle</code>. Added <code>CodeStyle.importInnerClasses</code>,
+                 <code>CodeStyle.getImportGroups</code>, and <code>CodeStyle.separateImportGroups</code> to specify the rules.
+             </description>
+             <issue number="201254"/>
+        </change>
         <change id="SourceUtils-computeDuplicates">
              <api name="general"/>
              <summary>Added SourceUtils.computeDuplicates to get code duplicates of provided expression</summary>

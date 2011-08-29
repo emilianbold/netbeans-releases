@@ -46,7 +46,6 @@ package org.netbeans.api.java.source;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -79,6 +78,7 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+
 import java.net.URISyntaxException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -100,6 +100,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
@@ -324,12 +325,14 @@ public class SourceUtils {
         if (fqn == null)
             throw new NullPointerException();
         
+        CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
+        if (cs.useFQNs())
+            return fqn;
         CompilationUnitTree cut = info.getCompilationUnit();
         final Trees trees = info.getTrees();
         final Scope scope = trees.getScope(context);
         String qName = fqn;
         StringBuilder sqName = new StringBuilder();
-        String sName = null;
         boolean clashing = false;
         ElementUtilities eu = info.getElementUtilities();
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -337,15 +340,20 @@ public class SourceUtils {
                 return (e.getKind().isClass() || e.getKind().isInterface()) && trees.isAccessible(scope, (TypeElement)e);
             }
         };
+        Element toImport = null;
         while(qName != null && qName.length() > 0) {
             int lastDot = qName.lastIndexOf('.');
-            String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
-            if (sName == null)
-                sName = simple;
-            else
-                sqName.insert(0, '.');
-            sqName.insert(0, simple);
-            if (info.getElements().getTypeElement(qName) != null) {
+            Element element = null;
+            if ((element = info.getElements().getTypeElement(qName)) != null) {
+                String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
+                if (cs.useSingleClassImport()) {
+                    if (toImport == null || !cs.importInnerClasses()) {
+                        toImport = element;
+                        if (sqName.length() > 0)
+                            sqName.insert(0, '.');
+                        sqName.insert(0, simple);
+                    }
+                }
                 boolean matchFound = false;
                 for(Element e : eu.getLocalMembersAndVars(scope, acceptor)) {
                     if (simple.contentEquals(e.getSimpleName())) {
@@ -372,19 +380,24 @@ public class SourceUtils {
                         }
                     }
                 }
+            } else if ((element = info.getElements().getPackageElement(qName)) != null) {
+                if (toImport == null || checkPackagesForStarImport(qName, cs))
+                    toImport = element;
+                break;
             }
             qName = lastDot < 0 ? null : qName.substring(0, lastDot);
         }
-        if (clashing)
+        if (clashing || toImport == null)
             return fqn;
         
         //not imported/visible so far by any means:
         String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
         if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
+            final Set<Element> elementsToImport = Collections.singleton(toImport);
             if (info instanceof WorkingCopy) {
                 CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
                 cut = nue != null ? nue : cut;
-                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
+                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(cut, elementsToImport));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -394,7 +407,7 @@ public class SourceUtils {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                                     copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));
+                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), elementsToImport));
                                 }
                             }).commit();
                         } catch (Exception e) {
@@ -403,6 +416,13 @@ public class SourceUtils {
                     }
                 });
             }
+            JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
+            ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+            for (Symbol symbol : unit.namedImportScope.getElements()) {
+                importScope.enter(symbol);
+                unit.namedImportScope = importScope;
+                unit.namedImportScope.enterIfAbsent((Symbol) toImport);
+            }        
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
             Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
@@ -412,53 +432,20 @@ public class SourceUtils {
             }
             
         }
-        TypeElement te = info.getElements().getTypeElement(fqn);
-        if (te != null) {
-            JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-            ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
-            for (Symbol symbol : unit.namedImportScope.getElements()) {
-                importScope.enter(symbol);
-            }
-            unit.namedImportScope = importScope;
-            unit.namedImportScope.enterIfAbsent((Symbol) te);
-        }        
-        return sName;
+        return sqName.toString();
     }
     
-    /**
-     *
-     *
-     */
-    private static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
-        throws IOException {
-        // do not modify the list given by the caller (may be reused or immutable).
-        toImport = new ArrayList<String>(toImport); 
-        Collections.sort(toImport);
-
-        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
-        int currentToImport = toImport.size() - 1;
-        int currentExisting = imports.size() - 1;
-        
-        while (currentToImport >= 0 && currentExisting >= 0) {
-            String currentToImportText = toImport.get(currentToImport);
-            
-            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
-                currentExisting--;
-            
-            if (currentExisting >= 0) {
-                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
-                currentToImport--;
-            }
+    private static boolean checkPackagesForStarImport(String pkgName, CodeStyle cs) {
+        for (String s : cs.getPackagesForStarImport()) {
+            if (s.endsWith(".*")) { //NOI18N
+                s = s.substring(0, s.length() - 2);
+                if (pkgName.startsWith(s))
+                    return true;
+            } else if (pkgName.equals(s)) {
+                return true;
+            }           
         }
-        // we are at the head of import section and we still have some imports
-        // to add, put them to the very beginning
-        while (currentToImport >= 0) {
-            String importText = toImport.get(currentToImport);
-            imports.add(0, make.Import(make.Identifier(importText), false));
-            currentToImport--;
-        }
-        // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return false;
     }
 
     /**

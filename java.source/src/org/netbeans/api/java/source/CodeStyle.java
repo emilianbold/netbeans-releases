@@ -44,6 +44,8 @@
 
 package org.netbeans.api.java.source;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
@@ -747,24 +749,77 @@ public final class CodeStyle {
 
     // Imports -----------------------------------------------------------------
 
+    /**
+     * Returns whether to use single class import statements when adding imports.
+     * @return <code>true</code> if the single class imports should be added,
+     * <code>false</code> if the 'star' import of the entire package should be added
+     */
     public boolean useSingleClassImport() {
         return preferences.getBoolean(useSingleClassImport, getDefaultAsBoolean(useSingleClassImport));
     }
 
+    /**
+     * Returns whether to use fully qualified class names when generating code.
+     * @return <code>true</code> if the fully qualified class name should be generated
+     * every time the class is used, <code>false</code> if the import statement
+     * and the simple class name should be used instead.
+     */
     public boolean useFQNs() {
         return preferences.getBoolean(useFQNs, getDefaultAsBoolean(useFQNs));
     }
 
+    /**
+     * Returns whether to create import statements for the inner classes.
+     * @since 0.86
+     */
+    public boolean importInnerClasses() {
+        return preferences.getBoolean(importInnerClasses, getDefaultAsBoolean(importInnerClasses));
+    }
+
+    /**
+     * Returns the number of classes that have to be imported from a package
+     * to convert the single class imports to a 'star' import of the entire package.
+     */
     public int countForUsingStarImport() {
         return preferences.getInt(countForUsingStarImport, getDefaultAsInt(countForUsingStarImport));
     }
 
+    /**
+     * Returns the number of static members that have to be imported from a class
+     * to convert the single member static imports to a 'star' import of the entire class.
+     */
     public int countForUsingStaticStarImport() {
         return preferences.getInt(countForUsingStaticStarImport, getDefaultAsInt(countForUsingStaticStarImport));
     }
 
+    /**
+     * Returns the names of packages that should be always imported using the 'star'
+     * import statements.
+     */
     public String[] getPackagesForStarImport() {
-        return null;
+        String pkgs = preferences.get(packagesForStarImport, getDefaultAsString(packagesForStarImport));
+        if (pkgs == null || pkgs.length() == 0) {
+            return new String[0];
+        } else {
+            return pkgs.trim().split("\\s*[,;]\\s*"); //NOI18N
+        }
+    }
+    
+    /**
+     * Returns an information about the desired grouping of import statements.
+     * Imported classes are grouped as per their packages. 
+     * @since 0.86
+     */
+    public ImportGroups getImportGroups() {
+        return new ImportGroups(preferences.get(importGroupsOrder, getDefaultAsString(importGroupsOrder)));
+    }
+
+    /**
+     * Returns whether to separate the import groups with blank lines.
+     * @since 0.86
+     */
+    public boolean separateImportGroups() {
+        return preferences.getBoolean(separateImportGroups, getDefaultAsBoolean(separateImportGroups));
     }
 
     // Comments -----------------------------------------------------------------
@@ -838,10 +893,86 @@ public final class CodeStyle {
         WRAP_NEVER
     }
     
+    /**
+     * Provides an information about the desired grouping of import statements,
+     * including group order.
+     * @since 0.86
+     */
+    public static final class ImportGroups {
+
+        private Info[] infos;
+        private boolean separateStatic;
+
+        private ImportGroups(String groups) {
+            if (groups == null || groups.length() == 0) {
+                this.infos = new Info[0];
+            } else {
+                String[] order = groups.trim().split("\\s*[,;]\\s*"); //NOI18N
+                this.infos = new Info[order.length];
+                for (int i = 0; i < order.length; i++) {
+                    String imp = order[i];
+                    Info info = new Info(i);
+                    if (imp.startsWith("static ")) { //NOI18N
+                        info.isStatic = true;
+                        this.separateStatic = true;
+                        imp = imp.substring(7);
+                    }
+                    info.prefix = imp + '.';                    
+                    this.infos[i] = info;
+                }
+                Arrays.sort(this.infos, new Comparator<Info>() {
+                    @Override
+                    public int compare(Info o1, Info o2) {
+                        int bal = o1.prefix.length() - o2.prefix.length();
+                        return bal == 0 ? o1.prefix.compareTo(o2.prefix) : bal;
+                    }
+                });
+            }
+        }
+
+        /**
+         * Returns the group number of the imported element. Imports with the same
+         * number form a group. Groups with lower numbers should be positioned
+         * higher in the import statement list. Imports within a group should
+         * be sorted alphabetically.
+         * @param name the imported element's package name
+         * @param isStatic is the import static
+         * @return the group number
+         * @since 0.86
+         */
+        public int getGroupId(String name, boolean isStatic) {
+            for (Info info : infos) {
+                if (separateStatic ? info.check(name, isStatic) : info.check(name))
+                    return info.groupId;
+            }
+            return infos.length;
+        }
+
+        private static final class Info {
+
+            private int groupId;
+            private boolean isStatic;
+            private String prefix;
+            
+            private Info(int id) {
+                this.groupId = id;
+            }
+
+            private boolean check(String s) {
+                return s.startsWith(prefix);
+            }
+
+            private boolean check(String s, boolean b) {
+                return isStatic == b && check(s);
+            }
+        }
+    }
+
     // Communication with non public packages ----------------------------------
     
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
+        @Override
         public CodeStyle create(Preferences preferences) {
             return new CodeStyle(preferences);
         }
