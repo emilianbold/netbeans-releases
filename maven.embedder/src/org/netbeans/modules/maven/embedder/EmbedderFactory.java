@@ -71,6 +71,8 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.sonatype.aether.RepositorySystemSession;
@@ -80,12 +82,11 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
- *
- *  Factory for creating MavenEmbedder instances for various purposes.
- * 
- * @author mkleint
+ * Factory for creating {@link MavenEmbedder}s.
  */
 public final class EmbedderFactory {
+
+    private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath";
 
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
@@ -98,29 +99,40 @@ public final class EmbedderFactory {
     /**
      * embedder seems to cache some values..
      */
-    public synchronized static void resetProjectEmbedder() {
+    public synchronized static void resetCachedEmbedders() {
         project = null;
         online = null;
     }
 
-    private static File localRepoPreference() {
-        Preferences prefs = NbPreferences.root().node("org/netbeans/modules/maven"); //NOI18N
-        String localRepo = prefs.get("localRepository", null); //NOI18N
-        if (localRepo != null) {
-            File file = new File(localRepo);
-            if (file.exists() && file.isDirectory()) {
-                return file;
-            } else if (!file.exists()) {
-                if (!file.mkdirs()) {
-                    LOG.log(Level.WARNING, "Could not create {0}", file);
-                }
-                return file;
-            }
-        }
-        return null;
+    public static File getDefaultMavenHome() {
+        return InstalledFileLocator.getDefault().locate("maven", "org.netbeans.modules.maven.embedder", false);
     }
 
-   
+    private static Preferences getPreferences() { // compatibility; used to be in MavenSettings
+        return NbPreferences.root().node("org/netbeans/modules/maven");
+    }
+
+    public static File getMavenHome() {
+        String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
+        if (str != null) {
+            return FileUtil.normalizeFile(new File(str));
+        } else {
+            return getDefaultMavenHome();
+        }
+    }
+
+    public static void setMavenHome(File path) {
+        if (path == null || path.equals(getDefaultMavenHome())) {
+            getPreferences().remove(PROP_COMMANDLINE_PATH);
+        } else {
+            getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
+        }
+        resetCachedEmbedders();
+    }
+
+    private static File getSettingsXml() {
+        return new File(getMavenHome(), "conf/settings.xml");
+    }
 
     private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
         ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
@@ -197,39 +209,8 @@ public final class EmbedderFactory {
        
         Properties props = new Properties();
         props.putAll(System.getProperties());
-        EmbedderConfiguration configuration = new EmbedderConfiguration(pc, localRepoPreference(), fillEnvVars(props), true);
+        EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());
         
-//        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-//
-//        //validating  Configuration
-//        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-//        Exception userSettingsException = cvr.getUserSettingsException();
-//        if (userSettingsException != null) {
-//            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-//                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-//        }
-//        if (cvr.isValid()) {
-//            req.setUserSettingsFile(userSettingsPath);
-//        } else {
-//            LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-//            req.setUserSettingsFile(globalSettingsPath);
-//        }
-//
-//        req.setGlobalSettingsFile(globalSettingsPath);
-//        req.setMavenEmbedderLogger(new NullEmbedderLogger());
-//        req.setConfigurationCustomizer(new ContainerCustomizer() {
-//
-//            public void customize(PlexusContainer plexusContainer) {
-//                //MEVENIDE-634
-//                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-//                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-//
-//                //MEVENIDE-634
-//                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-//                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-//                }
-//        });
         try {
             return new MavenEmbedder(configuration);
             //MEVENIDE-634 make all instances non-interactive
@@ -287,7 +268,7 @@ public final class EmbedderFactory {
 
         Properties props = new Properties();
         props.putAll(System.getProperties());
-        EmbedderConfiguration req = new EmbedderConfiguration(pc, localRepoPreference(), fillEnvVars(props), false);
+        EmbedderConfiguration req = new EmbedderConfiguration(pc, fillEnvVars(props), false, getSettingsXml());
 
 //        //TODO remove explicit activation
 //        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N

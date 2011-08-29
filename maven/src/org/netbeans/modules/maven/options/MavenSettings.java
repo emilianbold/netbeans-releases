@@ -55,14 +55,12 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
 
 /**
@@ -71,12 +69,10 @@ import org.openide.util.NbPreferences;
  */
 public class MavenSettings  {
     private static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
-    private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
     private static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
     private static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
     private static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     private static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
-    private static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
     private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
 
@@ -238,44 +234,7 @@ public class MavenSettings  {
     public void setLastArchetypeGroupId(String groupId) {
         putProperty(PROP_LAST_ARCHETYPE_GROUPID, groupId);
     }
-
-    public void setCustomLocalRepository(String text) {
-        if (text != null && text.trim().length() == 0) {
-            text = null;
-        }
-        String oldText = getCustomLocalRepository();
-        putProperty(PROP_CUSTOM_LOCAL_REPOSITORY, text);
-        //reset the project embedder to use the new local repo value.
-        if (!StringUtils.equals(oldText, text)) {
-            EmbedderFactory.resetProjectEmbedder();
-        }
-    }
     
-    public String getCustomLocalRepository() {
-        return getPreferences().get(PROP_CUSTOM_LOCAL_REPOSITORY, null);
-    }
-    
-    public static File getDefaultMavenHome() {
-        return InstalledFileLocator.getDefault().locate("maven", "org.netbeans.modules.maven.embedder", false); // NOI18N
-    }
-    
-    public File getMavenHome() {
-        String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
-        if (str != null) {
-            return FileUtil.normalizeFile(new File(str));
-        } else {
-            return getDefaultMavenHome();
-        }
-    }
-
-    public void setMavenHome(File path) {
-        if (path == null || path.equals(getDefaultMavenHome())) {
-            getPreferences().remove(PROP_COMMANDLINE_PATH);
-        } else {
-            putProperty(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
-        }
-    }
-
     public boolean isSkipTests() {
         return getPreferences().getBoolean(PROP_SKIP_TESTS, false);
     }
@@ -342,7 +301,7 @@ public class MavenSettings  {
     }
 
     public static @CheckForNull String getCommandLineMavenVersion() {
-        return getCommandLineMavenVersion(getDefault().getMavenHome());
+        return getCommandLineMavenVersion(EmbedderFactory.getMavenHome());
     }
     
     public static @CheckForNull String getCommandLineMavenVersion(File mavenHome) {

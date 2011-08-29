@@ -54,6 +54,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.namespace.QName;
+import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -63,7 +64,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -189,9 +189,9 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 addNbmPluginOsgiParameter(projFile);
             }
             if (archetype == NB_SUITE_ARCH) {
-                FileObject settingsXml = FileUtil.toFileObject(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE);
+                FileObject settingsXml = FileUtil.toFileObject(MavenCli.DEFAULT_USER_SETTINGS_FILE);
                 if (settingsXml == null) {
-                    settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
+                    settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenCli.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
                 }
                 Utilities.performSettingsModelOperations(settingsXml, Collections.<ModelOperation<SettingsModel>>singletonList(new ModelOperation<SettingsModel>() {
                     public @Override void performOperation(SettingsModel model) {

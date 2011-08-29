@@ -183,6 +183,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.artifact.resolver.filter</package>
                 <package>org.apache.maven.artifact.resolver</package>
                 <package>org.apache.maven.artifact.versioning</package>
+                <package>org.apache.maven.cli</package>
                 <package>org.apache.maven.embedder</package>
                 <package>org.apache.maven.execution</package>
                 <package>org.apache.maven.lifecycle</package>

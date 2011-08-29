@@ -74,6 +74,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Plugin;
@@ -110,7 +111,6 @@ import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -136,7 +136,6 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -568,7 +567,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public FileObject getHomeDirectory() {
-        File homeFile = MavenSettingsSingleton.getInstance().getM2UserDir();
+        File homeFile = MavenCli.userMavenConfigurationHome;
 
         FileObject home = null;
         try {
@@ -579,8 +578,7 @@ public final class NbMavenProjectImpl implements Project {
         if (home == null) {
             //TODO this is a problem, probably UNC path on windows - MEVENIDE-380
             // some functionality won't work
-            ErrorManager.getDefault().log("Cannot convert home dir to FileObject, some functionality won't work. It's usually the case on Windows and UNC paths. The path is " + homeFile); //NOI18N
-
+            LOG.log(Level.WARNING, "Cannot convert home dir to FileObject, some functionality won''t work. It''s usually the case on Windows and UNC paths. The path is {0}", homeFile);
         }
         return home;
     }
@@ -1302,7 +1300,7 @@ public final class NbMavenProjectImpl implements Project {
 
                 @Override
                 public void run() {
-                    EmbedderFactory.resetProjectEmbedder();
+                    EmbedderFactory.resetCachedEmbedders();
                     for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
                         NbMavenProject.fireMavenProjectReload(prj);
                     }
