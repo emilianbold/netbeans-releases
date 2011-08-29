@@ -48,9 +48,11 @@ package org.netbeans.modules.debugger.jpda.visual;
 public class RetrievalException extends Exception {
 
     public RetrievalException(String message) {
+        super(message);
     }
 
     public RetrievalException(String message, Throwable cause) {
+        super(message, cause);
     }
     
 }
