@@ -882,6 +882,54 @@ final class BinaryFS extends FileSystem implements DataInput {
                 return 0;
             }
         }
+        @Override
+        public Date lastModified() {
+            initialize();
+            try {
+                int index = -1;
+                java.net.URLConnection conn = null;
+                if (len == -1) {
+                    if (uri.startsWith("jar:")) { // NOI18N
+                        return super.lastModified();
+                    }
+                    conn = new URL(uri).openConnection();
+                } else {
+                    ByteBuffer sub = (ByteBuffer) content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
+                    index = sub.getInt();
+                    if (index <= -10) {
+                        index = -(index + 10);
+                    }
+                    final String url = urls.get(index);
+                    if (url.startsWith("jar:")) { // NOI18N
+                        return super.lastModified();
+                    }
+                    Long obj = modifications.get(index);
+                    if (obj != null) {
+                        return new Date(obj);
+                    }
+                    conn = new URL(url).openConnection();
+                }
+
+                /*
+                if (conn instanceof java.net.JarURLConnection) {
+                conn = ((java.net.JarURLConnection)conn).getJarFileURL ().openConnection ();
+                }
+                 */
+
+                if (conn != null) {
+                    long date = conn.getLastModified();
+                    if (date > 0) {
+                        if (index >= 0) {
+                            modifications.set(index, date);
+                        }
+                        return new Date(date);
+                    }
+                }
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+            return super.lastModified();
+        }
 
         /** A method called to finish the initialization in the subclasses.
          * When this method is called, the contentOffset field is already set up.
