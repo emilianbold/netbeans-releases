@@ -480,7 +480,7 @@ public final class GitModuleConfig {
                 StringBuilder sb = new StringBuilder();
                 sb.append(guriString);
                 sb.append(DELIMITER);
-                sb.append(settings.getUser());
+                sb.append(settings.getUser() == null ? "" : settings.getUser());
                 sb.append(DELIMITER);
                 sb.append(settings.isSaveCredentials() ? "1" : "0"); //NOI18N
                 sb.append(DELIMITER);
@@ -493,7 +493,7 @@ public final class GitModuleConfig {
         }
 
         private static ConnectionSettings parse (String[] s) throws URISyntaxException {
-            String uri = s[0];
+            String uri = s[0].trim();
             ConnectionSettings setts = new ConnectionSettings(new GitURI(uri));
             if (s.length > 1) {
                 setts.setUser(s[1].isEmpty() ? null : s[1]);
