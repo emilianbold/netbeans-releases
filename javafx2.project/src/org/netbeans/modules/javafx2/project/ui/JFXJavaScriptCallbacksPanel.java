@@ -54,8 +54,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.NbBundle;
 
@@ -196,7 +196,7 @@ public class JFXJavaScriptCallbacksPanel extends javax.swing.JPanel {
     private Map<String,String/*|null*/> createResources() {
         PropertyEvaluator eval = props.getEvaluator();
         String platformName = eval.getProperty("platform.active");
-        Map<String,List<String>/*|null*/> callbacks = JavaFXPlatformUtils.getJSCallbacks(platformName);
+        Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
         Map<String,String/*|null*/> jsCallbacks = props.getJSCallbacks();
         Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
         for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {

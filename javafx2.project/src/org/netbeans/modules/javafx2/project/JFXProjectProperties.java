@@ -62,7 +62,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -1003,7 +1002,7 @@ public final class JFXProjectProperties {
 
     private void initJSCallbacks (final PropertyEvaluator eval) {
         String platformName = eval.getProperty("platform.active");
-        Map<String,List<String>/*|null*/> callbacks = JavaFXPlatformUtils.getJSCallbacks(platformName);
+        Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
         Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
         for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {
             String v = eval.getProperty(JFXProjectProperties.JAVASCRIPT_CALLBACK_PREFIX + entry.getKey());

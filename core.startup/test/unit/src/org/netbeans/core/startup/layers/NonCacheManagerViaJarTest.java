@@ -44,23 +44,72 @@
 
 package org.netbeans.core.startup.layers;
 
-/** Test absence of layer cache manager.
- * @author Jesse Glick
- */
-public class NonCacheManagerTest extends CacheManagerTestBaseHid
-implements CacheManagerTestBaseHid.ManagerFactory {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import org.netbeans.JarClassLoader;
+import org.netbeans.junit.NbTestCase;
 
-    public NonCacheManagerTest(String name) {
+/** Test absence of layer cache manager on top of a JAR.
+ */
+public class NonCacheManagerViaJarTest extends NonCacheManagerTest {
+    private JarClassLoader jarCL;
+    public NonCacheManagerViaJarTest(String name) {
         super(name);
     }
 
     @Override
-    public LayerCacheManager createManager() throws Exception {
-        return LayerCacheManager.manager(false);
+    protected URL loadResource(String name) throws IOException {
+        if (jarCL == null) {
+            List<File> arr = Collections.singletonList(generateJAR(this));
+            jarCL = new JarClassLoader(arr, new ClassLoader[0]);
+        }
+        return jarCL.getResource(name);
     }
 
-    @Override
-    public boolean supportsTimestamps () {
-        return false;
+    
+    public static File generateJAR(NbTestCase test) throws IOException {
+        File config = new File(new File(test.getWorkDir(), "config"), "Modules");
+        config.mkdirs();
+        File xml = new File(config, test.getName() + ".xml");
+        xml.createNewFile();
+        File modules = new File(test.getWorkDir(), "modules");
+        modules.mkdirs();
+        File jar = new File(modules, test.getName() + ".jar");
+        if (!jar.exists()) {
+            File layers = new File(test.getDataDir(), "layers");
+            JarOutputStream jos = new JarOutputStream(new FileOutputStream(jar));
+            dumpDir(jos, "", layers);
+            jos.close();
+        }
+        return jar;
+    }
+    
+    private static void dumpDir(JarOutputStream jos, String path, File dir) throws IOException {
+        assertTrue("Dir is dir " + dir, dir.isDirectory());
+        for (File ch : dir.listFiles()) {
+            if (ch.isDirectory()) {
+                dumpDir(jos, path + ch.getName() + "/", ch);
+                continue;
+            }
+            jos.putNextEntry(new JarEntry(path + ch.getName()));
+            byte[] arr = new byte[4092];
+            FileInputStream is = new FileInputStream(ch);
+            for (;;) {
+                int len = is.read(arr);
+                if (len == -1) {
+                    break;
+                }
+                jos.write(arr, 0, len);
+            }
+            jos.closeEntry();
+            is.close();
+        }
     }
 }

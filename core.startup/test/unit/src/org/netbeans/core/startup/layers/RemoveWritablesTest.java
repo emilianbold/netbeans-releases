@@ -46,6 +46,7 @@ package org.netbeans.core.startup.layers;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -192,7 +193,9 @@ public class RemoveWritablesTest extends NbTestCase {
         ));
         JarEntry entry = new JarEntry("foo/mf-layer.xml");
         os.putNextEntry( entry );
-        InputStream is = RemoveWritablesTest.class.getResourceAsStream( "data/layer3.xml" );
+        
+        File l3 = new File(new File(new File(getDataDir(), "layers"), "data"), "layer3.xml");
+        InputStream is = new FileInputStream(l3);
         FileUtil.copy( is, os );
         is.close();
         os.close();

@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public class StampsTest extends NbTestCase {
+
     private File userdir;
     private File ide;
     private File platform;
@@ -100,7 +101,7 @@ public class StampsTest extends NbTestCase {
         createModule("org.netbeans.api.languages", ide, 90000L);
         createModule("org.netbeans.modules.logmanagement", userdir, 10000L);
         
-        Stamps.main("reset");
+        reset();
         
         Thread.sleep(100);
 
@@ -130,7 +131,7 @@ public class StampsTest extends NbTestCase {
         assertTrue("File created", f1.canRead());
         Thread.sleep(100);
         
-        Stamps.main("reset");
+        reset();
 
         Thread.sleep(100);
         final Stamps s = Stamps.getModulesJARs();
@@ -188,7 +189,7 @@ public class StampsTest extends NbTestCase {
         assertStamp(90000L, ide, false, true);
         assertStamp(-1L, userdir, false, false);
         
-        Stamps.main("reset");
+        reset();
         
         CountingSecurityManager.initialize(install.getPath());
 
@@ -202,7 +203,7 @@ public class StampsTest extends NbTestCase {
         assertStamp(90000L, ide, false, true);
         assertStamp(-1L, userdir, false, false);
 
-        Stamps.main("reset");
+        reset();
         CountingSecurityManager.initialize(new File(userdir, "var").getPath());
         long newStamp2 = Stamps.moduleJARs();
         
@@ -250,7 +251,7 @@ public class StampsTest extends NbTestCase {
         bb.clear();
 
         System.getProperties().remove("netbeans.dirs");
-        Stamps.main("reset");
+        reset();
         Stamps p = Stamps.getModulesJARs();
 
         assertNull(p.asByteBuffer("mycache.dat"));
@@ -637,12 +638,12 @@ public class StampsTest extends NbTestCase {
         s.scheduleSave(new SaveByte(), "branding.cache", false);
         s.waitFor(false);
 
-        Stamps.main("reset");
+        reset();
         s = Stamps.getModulesJARs();
         ByteBuffer snd = s.asByteBuffer("branding.cache");
         assertNotNull("Cache found", snd);
 
-        Stamps.main("reset");
+        reset();
         NbBundle.setBranding("my_perfect_branding");
         
         s = Stamps.getModulesJARs();
@@ -660,13 +661,13 @@ public class StampsTest extends NbTestCase {
         s.scheduleSave(new SaveByte(), "locale.cache", false);
         s.waitFor(false);
 
-        Stamps.main("reset");
+        reset();
         s = Stamps.getModulesJARs();
         ByteBuffer snd = s.asByteBuffer("locale.cache");
         assertNotNull("Cache found", snd);
 
         
-        Stamps.main("reset");
+        reset();
         Locale.setDefault(Locale.FRANCE);
         
         s = Stamps.getModulesJARs();
@@ -674,6 +675,10 @@ public class StampsTest extends NbTestCase {
         assertNull("Locale changed no cache found", third);
     }
 
+    /** Helper method to reset state of Stamps. */
+    public static void reset() {
+        Stamps.main("reset");
+    }
 
     static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {
         File globalStamp = new File(cluster, ".lastModified");
