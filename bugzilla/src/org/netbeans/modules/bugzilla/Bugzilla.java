@@ -89,9 +89,6 @@ public class Bugzilla {
 
     private Bugzilla() {
 
-        // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
-        // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
-        // in the BugzillaRepositoryConnector-s constructor
         brc = new BugzillaRepositoryConnector();
         clientManager = brc.getClientManager();
 
