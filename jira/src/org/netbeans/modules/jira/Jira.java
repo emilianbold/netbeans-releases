@@ -43,20 +43,16 @@
 package org.netbeans.modules.jira;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraCorePlugin;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
@@ -92,9 +88,9 @@ public class Jira {
     private JiraConnector connector;
     
     private Jira() {
+        ModuleLifecycleManager.instantiated = true;
 //        BugtrackingRuntime.init();
 
-//        ModuleLifecycleManager.instantiated = true;
 //        jcp = new JiraCorePlugin();
 //        try {
 //            jcp.start(null);
@@ -252,4 +248,8 @@ public class Jira {
         }
         return storageManager;
     }
+    
+    void shutdown () {
+        getStorageManager().shutdown();
+    }    
 }
