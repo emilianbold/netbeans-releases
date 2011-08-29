@@ -74,6 +74,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -304,7 +306,8 @@ public class OracleInstance {
 //                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
 //            }
             String name = "";
-            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
+            FileObject fo = FileUtil.toFileObject(f);
+            Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
@@ -326,16 +329,17 @@ public class OracleInstance {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
             }
-            String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
+            String appId = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
+            String ctx = CommandBasedDeployer.readWebContext(fo);
             ApplicationDeployment adt =new ApplicationDeployment();
             adt.setInstanceId(serviceName);
-            adt.setApplicationId(appContext);
-            adt.setArchiveUrl(f.getName());
+            adt.setApplicationId(appId);
+            adt.setArchiveUrl(ctx);
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
-                if (app.getApplicationId().equals(appContext)) {
+                if (app.getApplicationId().equals(appId)) {
                     redeploy = true;
                     adt = app;
                     break;
@@ -372,7 +376,7 @@ public class OracleInstance {
                 String jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if ("Complete".equals(jobStatus)) {
-                    url[0] = instanceURL+(instanceURL.endsWith("/") ? "" : "/")+appContext+"/";
+                    url[0] = instanceURL+(instanceURL.endsWith("/") ? ctx.substring(1) : ctx);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
