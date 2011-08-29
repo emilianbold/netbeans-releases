@@ -67,6 +67,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
@@ -121,7 +122,28 @@ public class ScreenshotComponent extends TopComponent {
         setDisplayName(title);
         componentNodes = new ComponentNode(screenshot.getComponentInfo());
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
-        setActivatedNodes(new Node[] { componentNodes });
+        ComponentInfo firstCi = getFirstCustomComponent(componentNodes);
+        if (firstCi != null) {
+            c.listener.selectComponent(firstCi, false);
+        } else {
+            setActivatedNodes(new Node[] { componentNodes });
+        }
+    }
+    
+    private static ComponentInfo getFirstCustomComponent(Node node) {
+        ComponentInfo ci = node.getLookup().lookup(ComponentInfo.class);
+        if (ci != null && ci instanceof JavaComponentInfo && ((JavaComponentInfo) ci).isCustomType()) {
+            return ci;
+        } else {
+            Node[] nodes = node.getChildren().getNodes();
+            for (Node n : nodes) {
+                ComponentInfo fci = getFirstCustomComponent(n);
+                if (fci != null) {
+                    return fci;
+                }
+            }
+        }
+        return null;
     }
     
     public static ScreenshotComponent getActive() {

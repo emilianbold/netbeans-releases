@@ -96,48 +96,8 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = new Richfaces4CustomizerPanelVisual(new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    changeSupport.fireChange();
-                }
-            });
-
-            panel.addAncestorListener(new AncestorListener() {
-
-                @Override
-                public void ancestorAdded(AncestorEvent event) {
-                    Container component = event.getAncestor();
-                    if (component instanceof Dialog) {
-                        Dialog ancestorDialog = (Dialog)component;
-                        ancestorDialog.addWindowFocusListener(new WindowFocusListener() {
-
-                            @Override
-                            public void windowGainedFocus(WindowEvent e) {
-                                if (initialize) {
-                                    panel.initLibraries(true);
-                                    initialize = false;
-                                } else {
-                                    changeSupport.fireChange();
-                                }
-                            }
-
-                            @Override
-                            public void windowLostFocus(WindowEvent e) {
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void ancestorRemoved(AncestorEvent event) {
-                }
-
-                @Override
-                public void ancestorMoved(AncestorEvent event) {
-                }
-            });
+            panel = new Richfaces4CustomizerPanelVisual(new PanelChangeListener());
+            panel.initLibraries(true);
         }
         return panel;
     }
@@ -214,6 +174,17 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public HelpCtx getHelpCtx() {
         return panel.getHelpCtx();
+    }
+
+    /**
+     * Listener for listening changes on the {@link Richfaces4CustomizerPanelVisual).
+     */
+    private class PanelChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
+        }
     }
 
 }

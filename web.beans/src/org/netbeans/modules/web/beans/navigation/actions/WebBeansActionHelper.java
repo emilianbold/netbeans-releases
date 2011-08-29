@@ -309,6 +309,13 @@ public class WebBeansActionHelper {
     static boolean getClassAtDot(
             final JTextComponent component , final Object[] subject )
     {
+        return getClassAtDot(component, subject, CARET_POSITION_STRATEGY);
+    }
+    
+    static boolean getClassAtDot(
+            final JTextComponent component , final Object[] subject, 
+            final PositionStrategy strategy )
+    {
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
             Toolkit.getDefaultToolkit().beep();
@@ -319,7 +326,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities()
                         .pathFor(dot);
                     Element element = controller.getTrees().getElement(tp );
