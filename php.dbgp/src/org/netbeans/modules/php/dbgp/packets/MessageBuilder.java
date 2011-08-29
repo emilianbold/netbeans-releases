@@ -52,11 +52,11 @@ import org.w3c.dom.Node;
  *
  */
 class MessageBuilder {
-    
+
     private static final String TYPE    = "type";       // NOI18N
-    
+
     private MessageBuilder() {
-        // avoid inst-ion 
+        // avoid inst-ion
     }
 
     static DbgpMessage createStream( Node node ) {
@@ -74,12 +74,12 @@ class MessageBuilder {
             return null;
         }
     }
-    
+
     static DbgpMessage createResponse( Node node ) {
         String command = DbgpMessage.getAttribute(node, DbgpResponse.COMMAND );
         assert command != null;
-        if ( command.equals( RunCommand.RUN ) || 
-                command.equals( StatusCommand.STATUS ) || 
+        if ( command.equals( RunCommand.RUN ) ||
+                command.equals( StatusCommand.STATUS ) ||
                 command.equals( StepOutCommand.STEP_OUT ) ||
                 command.equals( StepOverCommand.STEP_OVER )||
                 command.equals( StepIntoCommand.STEP_INTO ) ||
@@ -138,7 +138,8 @@ class MessageBuilder {
             return new BreakResponse( node );
         }
         else if( command.equals( EvalCommand.EVAL )){
-            if (node.hasChildNodes()) {
+            String transactionId = DbgpMessage.getAttribute(node, DbgpResponse.TRANSACTION_ID);
+            if (transactionId.equals(RequestedUrlEvalCommand.LAST_USED_TRANSACTION_ID)) {
                 return new RequestedUrlEvalResponse(node);
             }
             return new EvalResponse( node );
@@ -151,5 +152,5 @@ class MessageBuilder {
         }
         return null;
     }
-    
+
 }

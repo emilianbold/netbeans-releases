@@ -46,11 +46,12 @@ package org.netbeans.modules.j2ee.clientproject;
 
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URI;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -72,7 +73,6 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -255,16 +255,11 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
             getAppClient().addEjbRef(newRef);
         } catch (ClassNotFoundException ex){}
         
-        ProjectClassPathExtender cpExtender = webProject.getLookup().lookup(ProjectClassPathExtender.class);
-        if (cpExtender != null) {
-            try {
-                AntArtifact target = getAntArtifact(ejbReference, refType);
-                cpExtender.addAntArtifact(target, target.getArtifactLocations()[0].normalize());
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        } else {
-            Logger.getLogger("global").log(Level.INFO, "WebProjectClassPathExtender not found in the project lookup of project: " + webProject.getProjectDirectory().getPath());    //NOI18N
+        try {
+            AntArtifact target = getAntArtifact(ejbReference, refType);
+            ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {target}, new URI[] {target.getArtifactLocations()[0].normalize()}, referencingFile, ClassPath.COMPILE);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
         
         writeDD(referencingFile, referencingClass);

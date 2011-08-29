@@ -298,8 +298,15 @@ public final class FrameworkCommandChooser extends JPanel {
 
     void updateHelp(String help) {
         assert SwingUtilities.isEventDispatchThread() : "must be run in EDT";
-        helpTextArea.setText(help);
-        helpTextArea.setCaretPosition(0);
+        if (help != null) {
+            if (help.startsWith("<html>")) { // NOI18N
+                helpTextPane.setContentType("text/html"); // NOI18N
+            } else {
+                helpTextPane.setContentType("text/plain"); // NOI18N
+            }
+        }
+        helpTextPane.setText(help);
+        helpTextPane.setCaretPosition(0);
     }
 
     void updatePreview() {
@@ -506,7 +513,7 @@ public final class FrameworkCommandChooser extends JPanel {
         matchingTaskSP = new javax.swing.JScrollPane();
         matchingTaskList = new javax.swing.JList();
         helpScrollPane = new javax.swing.JScrollPane();
-        helpTextArea = new javax.swing.JTextArea();
+        helpTextPane = new javax.swing.JTextPane();
         previewTextField = new javax.swing.JTextField();
         previewLabel = new javax.swing.JLabel();
         keepOpenedCheckBox = new javax.swing.JCheckBox();
@@ -551,7 +558,7 @@ public final class FrameworkCommandChooser extends JPanel {
         splitPane.setDividerSize(5);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12));
+        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -566,17 +573,12 @@ public final class FrameworkCommandChooser extends JPanel {
         matchingTaskSP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskSP.AccessibleContext.accessibleName")); // NOI18N
         matchingTaskSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskSP.AccessibleContext.accessibleDescription")); // NOI18N
 
-        helpTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
-        helpTextArea.setColumns(20);
-        helpTextArea.setEditable(false);
-        helpTextArea.setRows(5);
-        helpScrollPane.setViewportView(helpTextArea);
-        helpTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextArea.AccessibleContext.accessibleName")); // NOI18N
-        helpTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextArea.AccessibleContext.accessibleDescription")); // NOI18N
+        helpTextPane.setEditable(false);
+        helpScrollPane.setViewportView(helpTextPane);
+        helpTextPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextPane.AccessibleContext.accessibleName")); // NOI18N
+        helpTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpTextPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         splitPane.setRightComponent(helpScrollPane);
-        helpScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpScrollPane.AccessibleContext.accessibleName")); // NOI18N
-        helpScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.helpScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         previewTextField.setEditable(false);
 
@@ -593,7 +595,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(keepOpenedCheckBox)
-                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(taskLabel)
@@ -606,7 +608,7 @@ public final class FrameworkCommandChooser extends JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(previewLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)))
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -752,7 +754,7 @@ public final class FrameworkCommandChooser extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debugCheckbox;
     private javax.swing.JScrollPane helpScrollPane;
-    private javax.swing.JTextArea helpTextArea;
+    private javax.swing.JTextPane helpTextPane;
     private javax.swing.JCheckBox keepOpenedCheckBox;
     private javax.swing.JLabel matchingTaskLabel;
     private javax.swing.JList matchingTaskList;

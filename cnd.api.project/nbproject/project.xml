@@ -81,6 +81,7 @@
                 <friend>com.sun.tools.ide.analysis.discover</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.model</friend>

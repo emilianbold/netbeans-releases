@@ -33,6 +33,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 <mapID target="files.tasklist" url="files/files_tasklist.html" />
+<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
 
 
 

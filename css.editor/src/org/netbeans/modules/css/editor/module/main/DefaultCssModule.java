@@ -86,10 +86,36 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
+    private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/"; //NOI18N    
+    private static final String[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new String[]{
+        "default_module",
+        "marquee", 
+        "ruby", 
+        "multi-column_layout", 
+        "values_and_units", 
+        "text", 
+        "writing_modes",
+        "generated_content_for_paged_media",
+        "fonts",
+        "basic_box_model",
+        "speech",
+        "grid_positioning",
+        "flexible_box_layout",
+        "image_values"        
+    };
+    private static Collection<PropertyDescriptor> propertyDescriptors;
 
     @Override
-    public Collection<PropertyDescriptor> getPropertyDescriptors() {
-        return DefaultProperties.properties();
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if (propertyDescriptors == null) {
+            propertyDescriptors = new ArrayList<PropertyDescriptor>();
+            for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
+                String path = MODULE_PATH_BASE + fileName;
+                propertyDescriptors.addAll(DefaultProperties.parseSource(path));
+            }
+
+        }
+        return propertyDescriptors;
     }
 
     @Override

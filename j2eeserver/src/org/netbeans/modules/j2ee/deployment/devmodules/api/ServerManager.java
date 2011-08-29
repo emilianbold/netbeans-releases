@@ -45,6 +45,8 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.awt.EventQueue;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.server.CommonServerUIs;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -96,11 +98,11 @@ public final class ServerManager {
     }
     
     /**
-     * Displays the add server instance wizarad and returns the ID of the added
+     * Displays the add server instance wizard and returns the ID of the added
      * server instance. It is intended for J2EE related code only.
      * 
      * @return server instance ID of the new server instance, or <code>null</code>
-     *         if the wizard was cancelled.
+     *         if the wizard was canceled.
      * 
      * @throws IllegalThreadStateException if the method is not called from the 
      *         event dispatch thread.
@@ -108,8 +110,25 @@ public final class ServerManager {
      * @since  1.28
      */
     public static String showAddServerInstanceWizard() {
+        return showAddServerInstanceWizard(Collections.<String, String>emptyMap());
+    }
+    
+    /**
+     * Displays the add server instance wizard and returns the ID of the added
+     * server instance. It is intended for J2EE related code only.
+     * 
+     * @param props properties which will initialize wizard descriptor properties
+     * @return server instance ID of the new server instance, or <code>null</code>
+     *         if the wizard was canceled.
+     * 
+     * @throws IllegalThreadStateException if the method is not called from the 
+     *         event dispatch thread.
+     * 
+     * @since  1.83
+     */
+    public static String showAddServerInstanceWizard(Map<String, String> props) {
         checkDispatchThread();
-        return AddServerInstanceWizard.showAddServerInstanceWizard();
+        return AddServerInstanceWizard.showAddServerInstanceWizard(props);
     }
     
     private static void checkDispatchThread() {

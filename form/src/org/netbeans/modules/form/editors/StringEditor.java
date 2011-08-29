@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditorSupport;
+import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JPanel;
@@ -55,7 +56,6 @@ import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -126,16 +126,16 @@ public class StringEditor extends PropertyEditorSupport
 
             JPanel panel = new JPanel();
             GroupLayout layout = new GroupLayout(panel);
-            layout.setAutocreateGaps(true);
+            layout.setAutoCreateGaps(true);
             panel.setLayout(layout);
             layout.setHorizontalGroup(layout.createSequentialGroup()
                     .addContainerGap()
-                    .add(layout.createParallelGroup()
-                        .add(scroll)
-                        .add(htmlTipLabel))
+                    .addGroup(layout.createParallelGroup()
+                        .addComponent(scroll)
+                        .addComponent(htmlTipLabel))
                     .addContainerGap());
             layout.setVerticalGroup(layout.createSequentialGroup()
-                    .addContainerGap().add(scroll).add(htmlTipLabel));
+                    .addContainerGap().addComponent(scroll).addComponent(htmlTipLabel));
 
             customEditor = panel;
             textComp = textArea;

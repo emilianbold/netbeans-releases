@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -24,24 +24,31 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="refactorUsingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Component id="inspectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="configurationRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="inspectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="singleRefactorRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="scopeCombo" pref="82" max="32767" attributes="0"/>
-                          <Component id="singleRefactoringCombo" pref="82" max="32767" attributes="0"/>
-                          <Component id="configurationCombo" alignment="0" pref="82" max="32767" attributes="0"/>
+                          <Component id="singleRefactoringCombo" pref="33" max="32767" attributes="0"/>
+                          <Component id="configurationCombo" alignment="0" pref="33" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="customScopeButton" min="-2" max="-2" attributes="0"/>
                           <Component id="manageSingleRefactoring" alignment="1" max="32767" attributes="1"/>
                           <Component id="manageConfigurations" alignment="1" max="32767" attributes="1"/>
                       </Group>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="scopeCombo" pref="179" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="customScopeButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -58,12 +65,11 @@
                   <Component id="customScopeButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="refactorUsingLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="configurationRadio" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="configurationCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="manageConfigurations" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="refactorUsingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="1" pref="1" max="1" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

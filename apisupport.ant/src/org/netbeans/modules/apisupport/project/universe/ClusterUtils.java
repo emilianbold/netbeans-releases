@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
-import org.netbeans.modules.apisupport.project.ui.customizer.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URL;
@@ -59,6 +58,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
@@ -179,8 +180,8 @@ public final class ClusterUtils {
         }
 
         for (String path : wp) {
-            boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
+            boolean isPlaf = cd.getParentFile().equals(nbPlatformRoot);
             Project prj = null;
             Project _prj = FileOwnerQuery.getOwner(cd.toURI());
             if (_prj != null) {

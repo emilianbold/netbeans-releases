@@ -46,13 +46,13 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
 
@@ -92,7 +92,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
     
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
-        Properties configProperties = config.getProperties();
+        Map<? extends String,? extends String> configProperties = config.getProperties();
 
         if (   ACTION_PROFILE.equals(config.getActionName()) ||
                ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
@@ -104,24 +104,24 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             for (Object k : configProperties.keySet()) {
                 String key = (String)k;
                 
-                String value = configProperties.getProperty(key);
+                String value = configProperties.get(key);
                 if (value.contains(PROFILER_ARGS)) {
                     String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
                     value = value.replace(PROFILER_ARGS, sessionProperties.getProperty("profiler.info.jvmargs") // NOI18N
                             + " " + agentArg); // NOI18N
-                    configProperties.setProperty(key, value.trim());
+                    config.setProperty(key, value.trim());
                 }
                 if (value.contains(PROFILER_ARGS_PREFIXED)) {
                     String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
                     value = value.replace(PROFILER_ARGS_PREFIXED,
                             (sessionProperties.getProperty("profiler.info.jvmargs") + " " + agentArg).trim().replaceAll("^|(?<= +)(?! )", "-J"));
-                    configProperties.setProperty(key, value);
+                    config.setProperty(key, value);
                 }
                 if (value.contains(PROFILER_JAVA)) {
                     String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
                     value = value.replace(PROFILER_JAVA,
                             (profilerJava != null && new File(profilerJava).isFile()) ? profilerJava : "java"); // NOI18N
-                    configProperties.setProperty(key, value.trim());
+                    config.setProperty(key, value.trim());
                 }
                 if (value.contains(PROFILER_JDKHOME_OPT)) {
                     String opt = "";
@@ -133,11 +133,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                         }
                     }
                     value = value.replace(PROFILER_JDKHOME_OPT, opt);
-                    configProperties.setProperty(key, value.trim());
+                    config.setProperty(key, value.trim());
                 }
             }
-            // Set the properties back to config
-            config.setProperties(configProperties);
             
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {

@@ -49,7 +49,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,10 +71,11 @@ import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.DestDirProvider;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -192,8 +192,7 @@ public final class SuiteProject implements Project {
     public @CheckForNull NbPlatform getPlatform(boolean fallback) {
         NbPlatform p;
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
-        // XXX should really be nbplatform.active.dir, but would require changes in a bunch of places
-        String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        String destdir = getEvaluator().getProperty(ModuleList.NETBEANS_DEST_DIR);
         if (destdir != null) {
             String harnessDir = getEvaluator().getProperty("harness.dir");
             p = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(destdir), harnessDir != null ? getHelper().resolveFile(harnessDir) : null);
@@ -215,25 +214,6 @@ public final class SuiteProject implements Project {
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         providers.add(new ApisupportAntUtils.UserPropertiesFileProvider(baseEval, dir));
         baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
-        class DestDirProvider extends ApisupportAntUtils.ComputedPropertyProvider {
-            public DestDirProvider(PropertyEvaluator eval) {
-                super(eval);
-            }
-            protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
-                String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
-                if (platformS != null) {
-                    Map<String,String> m = new HashMap<String,String>();
-                    m.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}");
-                    m.put("harness.dir", "${nbplatform." + platformS + ".harness.dir}");
-                    return m;
-                } else {
-                    return Collections.emptyMap();
-                }
-            }
-            protected Set<String> inputProperties() {
-                return Collections.singleton("nbplatform.active"); // NOI18N
-            }
-        }
         providers.add(new DestDirProvider(baseEval));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
@@ -347,6 +327,10 @@ public final class SuiteProject implements Project {
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                 SuiteProject.class.getResource("resources/" + buildImplPath),// NOI18N
+                checkForProjectXmlModified);
+        genFilesHelper.refreshBuildScript(
+                "nbproject/platform.xml",
+                SuiteProject.class.getResource("resources/platform.xsl"),
                 checkForProjectXmlModified);
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_XML_PATH,

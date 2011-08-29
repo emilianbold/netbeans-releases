@@ -226,7 +226,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             return;
         }
         // open project selection
-        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
     }    
     
     private static class CloneRemoteConfig implements GitRemoteConfig {

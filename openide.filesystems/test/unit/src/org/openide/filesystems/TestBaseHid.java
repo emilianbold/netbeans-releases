@@ -179,6 +179,10 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
         assertTrue (message + " ["+ FileSystemFactoryHid.getTestClassName () + "]", condition);
     }
     
+    public final void fsAssertEquals(String msg, Object o1, Object o2) {
+        assertEquals(msg + " [" + FileSystemFactoryHid.getTestClassName() + "]", o1, o2);
+    }
+    
     public  final void fileChangedAssert  (String message, int expectedCount) {
         fileEventAssert (fileChangedL, message, expectedCount);        
     }

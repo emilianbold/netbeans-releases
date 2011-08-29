@@ -266,6 +266,11 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.css.lib</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -289,12 +294,12 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.html.parser</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.parser</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>

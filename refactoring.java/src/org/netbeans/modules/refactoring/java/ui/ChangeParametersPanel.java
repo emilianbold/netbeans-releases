@@ -557,7 +557,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             boolean b = ((Boolean) ((Vector) model.getDataVector().get(selectedRows[i] - i)).get(4)).booleanValue();
             if (!b) {
                 String title = getString("LBL_ChangeParsCannotDeleteTitle");
-                String mes = MessageFormat.format(getString("LBL_ChangeParsCannotDelete"),((Vector) model.getDataVector().get(selectedRows[i] - i)).get(0));
+                String mes = MessageFormat.format(getString("LBL_ChangeParsCannotDelete"),((Vector) model.getDataVector().get(selectedRows[i] - i)).get(1));
                 int a = new JOptionPane().showConfirmDialog(this, mes, title, JOptionPane.YES_NO_OPTION);
                 if (a==JOptionPane.YES_OPTION) {
                     model.removeRow(selectedRows[i] - i);

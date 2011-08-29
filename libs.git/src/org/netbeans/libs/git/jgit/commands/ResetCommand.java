@@ -67,6 +67,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
@@ -85,14 +86,16 @@ public class ResetCommand extends GitCommand {
     private final String revisionStr;
     private final ResetType resetType;
     private final boolean moveHead;
+    private final boolean recursively;
 
-    public ResetCommand (Repository repository, String revision, File[] roots, ProgressMonitor monitor, FileListener listener) {
+    public ResetCommand (Repository repository, String revision, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;
         this.revisionStr = revision;
         this.resetType = ResetType.MIXED;
+        this.recursively = recursively;
         moveHead = false;
     }
 
@@ -103,6 +106,7 @@ public class ResetCommand extends GitCommand {
         this.monitor = monitor;
         this.revisionStr = revision;
         this.resetType = resetType;
+        recursively = true;
         moveHead = true;
     }
 
@@ -160,26 +164,29 @@ public class ResetCommand extends GitCommand {
                                 } else {
                                     lastAddedPath = treeWalk.getPathString();
                                 }
-                                if (modeRev == FileMode.MISSING.getBits()) {
-                                    // remove from index
-                                    listener.notifyFile(path, treeWalk.getPathString());
-                                    toDelete.add(path);
-                                } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits() && !objIdCache.equals(objIdRev)
-                                        || modeCache == FileMode.MISSING.getBits()) {
-                                    // add entry
-                                    listener.notifyFile(path, treeWalk.getPathString());
-                                    DirCacheEntry e = new DirCacheEntry(treeWalk.getPathString());
-                                    AbstractTreeIterator it = treeWalk.getTree(1, AbstractTreeIterator.class);
-                                    e.setFileMode(it.getEntryFileMode());
-                                    e.setLastModified(System.currentTimeMillis());
-                                    e.setObjectId(it.getEntryObjectId());
-                                    e.smudgeRacilyClean();
-                                    builder.add(e);
-                                } else {
+                                if (!recursively && !directChild(roots, repository.getWorkTree(), path)) {
                                     DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
                                     builder.add(e);
-                                    new java.util.Date(path.lastModified()).toString();
-                                    new java.util.Date(e.getLastModified()).toString();
+                                } else {
+                                    if (modeRev == FileMode.MISSING.getBits()) {
+                                        // remove from index
+                                        listener.notifyFile(path, treeWalk.getPathString());
+                                        toDelete.add(path);
+                                    } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits() && !objIdCache.equals(objIdRev)
+                                            || modeCache == FileMode.MISSING.getBits()) {
+                                        // add entry
+                                        listener.notifyFile(path, treeWalk.getPathString());
+                                        DirCacheEntry e = new DirCacheEntry(treeWalk.getPathString());
+                                        AbstractTreeIterator it = treeWalk.getTree(1, AbstractTreeIterator.class);
+                                        e.setFileMode(it.getEntryFileMode());
+                                        e.setLastModified(System.currentTimeMillis());
+                                        e.setObjectId(it.getEntryObjectId());
+                                        e.smudgeRacilyClean();
+                                        builder.add(e);
+                                    } else {
+                                        DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
+                                        builder.add(e);
+                                    }
                                 }
                             }
                             if (!monitor.isCanceled()) {
@@ -190,7 +197,7 @@ public class ResetCommand extends GitCommand {
                                         deleteFile(file, roots.length > 0 ? roots : new File[] { repository.getWorkTree() });
                                     }
                                     try {
-                                        new CheckoutIndex(repository, cache, roots, listener, monitor, false).checkout();
+                                        new CheckoutIndex(repository, cache, roots, true, listener, monitor, false).checkout();
                                     } finally {
                                         // checkout also updates index entries and corrects timestamps, so write the cache after the checkout
                                         builder.commit();
@@ -204,7 +211,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), RefUpdate.Result.LOCK_FAILURE); //NOI18N
+                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), GitRefUpdateResult.valueOf(RefUpdate.Result.LOCK_FAILURE.name())); //NOI18N
                             }
                         }
                     } finally {
@@ -242,5 +249,17 @@ public class ResetCommand extends GitCommand {
             }
             file = file.getParentFile();
         }
+    }
+
+    private boolean directChild (File[] roots, File workTree, File path) {
+        if (roots.length == 0) {
+            roots = new File[] { workTree };
+        }
+        for (File parent : roots) {
+            if (parent.equals(path.getParentFile())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

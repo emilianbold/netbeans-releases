@@ -44,6 +44,7 @@ package org.netbeans.qa.form.gridbagcustomizer;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -95,12 +96,19 @@ public class GridBagCustomizerTest extends ExtJellyTestCase {
         log("Form Editor window opened.");
         
         FormDesignerOperator designer = new FormDesignerOperator(FILE_NAME);
-        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        
-        Node actNode = new Node(inspector.treeComponents(), "[JFrame]"); // NOI18N
-        runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
         designer.source();
         designer.design();
+        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+        designer.source();
+        designer.design();
+        
+        Node actNode = new Node(inspector.treeComponents(), "[JFrame]"); // NOI18N
+        
+        designer.source();
+        designer.design();
+        //actNode.select();
+        runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
+        
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);

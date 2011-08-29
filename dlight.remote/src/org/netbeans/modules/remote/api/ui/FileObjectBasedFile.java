@@ -277,6 +277,23 @@ public class FileObjectBasedFile extends File {
         return this;
     }
 
+    @Override
+    public long length() {
+        if (fo != null) {
+            return fo.getSize();
+        }
+        return super.length();
+    }
+
+    @Override
+    public long lastModified() {
+        if (fo != null) {
+            return fo.lastModified().getTime();
+        }
+        return super.lastModified();
+    }
+
+
     private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
     private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50);
 

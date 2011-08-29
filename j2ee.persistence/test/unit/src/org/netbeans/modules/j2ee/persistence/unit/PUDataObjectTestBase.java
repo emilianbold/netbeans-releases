@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.util.Enumerations;
@@ -63,9 +64,11 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public abstract class PUDataObjectTestBase extends NbTestCase {
 
+    private  static DummyProject project = new DummyProject();
+    
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        ((Lkp)Lookup.getDefault()).setLookups(new Object[] { new PUMimeResolver(), new Pool(), new PUFOQI() });
+        ((Lkp)Lookup.getDefault()).setLookups(new Object[] { new PUMimeResolver(), new Pool(), new PUFOQI(project) });
 
         assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
         assertEquals("The default MIMEResolver is not our resolver!", PUMimeResolver.class, Lookup.getDefault().lookup(MIMEResolver.class).getClass());
@@ -74,6 +77,7 @@ public abstract class PUDataObjectTestBase extends NbTestCase {
 
     public PUDataObjectTestBase(String name) {
         super(name);
+        project.setDirectory(FileUtil.toFileObject(getDataDir()));
     }
 
     /**
@@ -125,10 +129,11 @@ public abstract class PUDataObjectTestBase extends NbTestCase {
      */
     private static final class PUFOQI implements FileOwnerQueryImplementation {
 
-        private final Project dummyProject = new Project() {
-            public Lookup getLookup() { return Lookup.EMPTY; }
-            public FileObject getProjectDirectory() { return null; }
-        };
+        Project dummyProject;
+        
+        PUFOQI(Project dummy){
+            dummyProject = dummy;
+        }
 
         public Project getOwner(URI file) {
             return dummyProject;
@@ -137,5 +142,20 @@ public abstract class PUDataObjectTestBase extends NbTestCase {
         public Project getOwner(FileObject file) {
             return dummyProject;
         }
+    }
+    
+    private static class DummyProject implements Project{
+        private FileObject dir;
+        /**
+         * Dummy project have to have not null dir for some editor kits, for example XMLKit from xml.text module
+         * @param dir 
+         */
+        public void setDirectory(FileObject dir){
+            this.dir = dir;
+        }
+        @Override
+            public Lookup getLookup() { return Lookup.EMPTY; }
+        @Override
+            public FileObject getProjectDirectory() { return dir; }
     }
 }

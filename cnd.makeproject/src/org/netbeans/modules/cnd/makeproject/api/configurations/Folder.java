@@ -152,6 +152,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void refreshDiskFolder(boolean setModified) {
+        refreshDiskFolder(new HashSet<String>(), setModified);
+    }
+    
+    private void refreshDiskFolder(Set<String> antiLoop, boolean setModified) {
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
@@ -192,6 +196,18 @@ public class Folder implements FileChangeListener, ChangeListener {
                 removeItem(item, setModified);
             }
         }
+        try {
+            String canonicalPath = RemoteFileUtil.getCanonicalPath(folderFile);
+            if (antiLoop.contains(canonicalPath)) {
+                // It seems we have recursive link
+                log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
+                return;
+            }
+            antiLoop.add(canonicalPath);
+        } catch (IOException ex) {
+            log.log(Level.INFO, ex.getMessage(), ex);
+            return;
+        }
         // files/folders to be added
         FileObject files[] = folderFile.getChildren();
         if (files == null) {
@@ -222,11 +238,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         for (FileObject file : fileList) {
             if (file.isFolder()) {
                 try {
-                    String canPath = RemoteFileUtil.getCanonicalPath(file);
-                    String absPath = RemoteFileUtil.getAbsolutePath(file);
-                    if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                    String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
+                    if (antiLoop.contains(canonicalPath)) {
                         // It seems we have recursive link
-                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folderFile.getPath()});
+                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
                         continue;
                     }
                 } catch (IOException ex) {
@@ -257,7 +272,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Repeast for all sub folders
         List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.refreshDiskFolder(setModified);
+            f.refreshDiskFolder(antiLoop, setModified);
         }
     }
 
@@ -567,7 +582,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 myNativeFileItemSet.add(item);
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "can not add folder\'s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
+                    log.log(Level.FINE, "can not add folder's {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
                 }
             }
         }

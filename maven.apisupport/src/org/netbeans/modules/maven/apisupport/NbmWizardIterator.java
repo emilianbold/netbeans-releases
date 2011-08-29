@@ -92,17 +92,17 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.8"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.9"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.9"); //NOI18N
+        NB_APP_ARCH.setVersion("1.10"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.5"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.6"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
@@ -177,7 +177,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 //create the nbm module
                 ProjectInfo nbm = new ProjectInfo(vi.groupId, nbm_artifactId, vi.version, vi.packageName);
                 File nbm_folder = FileUtil.normalizeFile(new File(projFile, nbm_artifactId));
-                ArchetypeWizards.createFromArchetype(handle, nbm_folder, nbm, NB_MODULE_ARCH, additional, 2, true);
+                ArchetypeWizards.createFromArchetype(handle, nbm_folder, nbm, NB_MODULE_ARCH, additional, 2, false);
                 trimInheritedFromNbmProject(nbm_folder);
                 if (archetype == NB_APP_ARCH) {
                     File appDir = new File(projFile, "application"); //NOI18N

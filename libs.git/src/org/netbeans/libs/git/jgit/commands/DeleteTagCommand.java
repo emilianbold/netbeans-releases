@@ -82,7 +82,7 @@ public class DeleteTagCommand extends GitCommand {
                 case IO_FAILURE:
                 case LOCK_FAILURE:
                 case REJECTED:
-                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, deleteResult);
+                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
             }
         } catch (IOException ex) {
             throw new GitException(ex);

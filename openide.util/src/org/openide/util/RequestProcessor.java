@@ -1856,12 +1856,17 @@ outer:  do {
 
                     return proc;
                 } else {
+                    assert checkAccess(getTopLevelThreadGroup());
                     Processor proc = pool.pop();
                     proc.idle = false;
 
                     return proc;
                 }
             }
+        }
+        private static boolean checkAccess(ThreadGroup g) throws SecurityException {
+            g.checkAccess();
+            return true;
         }
 
         /** A way of returning a Processor to the inactive pool.
@@ -1980,6 +1985,8 @@ outer:  do {
                     } catch (StackOverflowError e) {
                         // recoverable too
                         doNotify(todo, e);
+                    } catch (ThreadDeath t) {
+                        // #201098: ignore
                     } catch (Throwable t) {
                         doNotify(todo, t);
                     } finally {
