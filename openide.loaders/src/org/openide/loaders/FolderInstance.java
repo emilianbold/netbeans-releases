@@ -338,16 +338,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
             }
             if (t != null) {
                 if (EventQueue.isDispatchThread()) {
-                    try {
-                        if (!t.waitFinished(1000)) {
-                            AWTTask.flush();
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
+                    if (!AWTTask.waitFor(t)) {
                         continue;
                     }
+                } else {
+                    t.waitFinished();
                 }
-                t.waitFinished();
             }
 
 
