@@ -81,19 +81,10 @@ public class Jira {
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
-//    private final JiraCorePlugin jcp;
     private JiraConnector connector;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
-//        BugtrackingRuntime.init();
-
-//        jcp = new JiraCorePlugin();
-//        try {
-//            jcp.start(null);
-//        } catch (Exception ex) {
-//            LOG.log(Level.WARNING, "Error while starting jira client", ex);
-//        }
     }
 
     public KenaiSupport getKenaiSupport() {
