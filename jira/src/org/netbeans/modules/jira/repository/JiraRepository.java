@@ -143,12 +143,6 @@ public class JiraRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        register();
-    }
-
-    final void register() {
-        // register with mylyn to force issue externalization
-        // XXX MYLYN BugtrackingRuntime.getInstance().getTaskRepositoryManager().addRepository(taskRepository);
     }
 
     @Override

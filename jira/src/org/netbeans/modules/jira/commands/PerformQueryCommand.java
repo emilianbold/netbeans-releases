@@ -79,7 +79,7 @@ public class PerformQueryCommand extends JiraCommand {
                 repository.getTaskRepository(),
                 repositoryQuery,
                 collector,
-                /* XXX MYLYN BugtrackingRuntime.getInstance().getSynchronizationSession()*/ null,
+                null,
                 new NullProgressMonitor());
     }
 
