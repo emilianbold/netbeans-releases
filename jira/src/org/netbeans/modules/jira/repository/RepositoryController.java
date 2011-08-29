@@ -218,7 +218,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             getHttpPassword());
         Jira.getInstance().addRepository(repository);
         repository.getNode().setName(newName);
-        repository.register();
     }
 
     void populate() {

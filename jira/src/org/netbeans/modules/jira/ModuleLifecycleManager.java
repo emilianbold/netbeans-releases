@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,53 +40,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.modules.ModuleInstall;
+
 
 /**
- * Perfoms a repository query
- * 
- * @author Tomas Stupka
+ * Handles module events distributed by NetBeans module
+ * framework.
+ *
+ * <p>It's registered and instantiated from module manifest.
+ *
+ * @author Tomas Stupka, Ondra Vrabec
  */
-public class PerformQueryCommand extends JiraCommand {
-
-    private final JiraRepository repository;
-    private final JiraFilter jiraFilter;
-    private final TaskDataCollector collector;
-
-    public PerformQueryCommand(JiraRepository repository, JiraFilter jiraFilter, TaskDataCollector collector) {
-        this.repository = repository;
-        this.jiraFilter = jiraFilter;
-        this.collector = collector;
-    }
-
+public final class ModuleLifecycleManager extends ModuleInstall{
+    static boolean instantiated = false;
     @Override
-    public void execute() throws CoreException, JiraException {
-        JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
-        RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query"); // NOI18N
-        JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
-        rc.performQuery(
-                repository.getTaskRepository(),
-                repositoryQuery,
-                collector,
-                null,
-                new NullProgressMonitor());
+    public void close() {
+        if(!instantiated) {
+            return;
+        }
+        Jira.getInstance().shutdown();
     }
-
 }

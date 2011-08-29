@@ -89,14 +89,6 @@ public class Bugzilla {
 
     private Bugzilla() {
 
-//        BugtrackingRuntime.init();
-
-//        bcp = new BugzillaCorePlugin();
-//        try {
-//            bcp.start(null);
-//        } catch (Exception ex) {
-//            LOG.log(Level.SEVERE, null, ex);
-//        }
         // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
         // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
         // in the BugzillaRepositoryConnector-s constructor
