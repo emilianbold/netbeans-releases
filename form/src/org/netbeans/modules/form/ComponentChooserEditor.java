@@ -169,8 +169,10 @@ public class ComponentChooserEditor implements PropertyEditor,
             String propName = radProperty.getName();
             RADComponent metacomp = radProperty.getRADComponent();
             Object instance = metacomp.getBeanInstance();
-            if ((instance instanceof javax.swing.text.JTextComponent)
-                    && ("caret".equals(propName) || "document".equals(propName))) { // NOI18N
+            if (((instance instanceof javax.swing.text.JTextComponent)
+                    && ("caret".equals(propName) || "document".equals(propName))) // NOI18N
+                    || ((instance instanceof javax.swing.AbstractButton)
+                    && "model".equals(propName))) { // NOI18N
                 include = false;
             }
         }
