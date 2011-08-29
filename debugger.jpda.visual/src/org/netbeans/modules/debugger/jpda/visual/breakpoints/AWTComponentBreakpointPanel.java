@@ -48,7 +48,9 @@
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ActionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ConditionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
@@ -56,6 +58,7 @@ import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponen
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,6 +68,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     
     private static final String         HELP_ID = "NetbeansDebuggerBreakpointComponentJPDA"; // NOI18N
     private AWTComponentBreakpoint      breakpoint;
+    private LineBreakpoint              fakeActionsBP;
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private Controller                  controller = new CBController();
@@ -120,8 +124,14 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         conditionsPanel.setHitCount(cb.getHitCountFilter());
         cPanel.add(conditionsPanel, "Center");  // NOI18N
         
-        // TODO: actionsPanel = new ActionsPanel (cb);
-        //aPanel.add (actionsPanel, "Center");  // NOI18N
+        fakeActionsBP = LineBreakpoint.create("", 0);
+        fakeActionsBP.setPrintText (
+            NbBundle.getBundle (AWTComponentBreakpointPanel.class).getString 
+                ("CTL_Component_Breakpoint_Print_Text")
+        );
+
+        actionsPanel = new ActionsPanel (fakeActionsBP);
+        aPanel.add (actionsPanel, "Center");  // NOI18N
 
         
     }
@@ -214,17 +224,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         gridBagConstraints.weightx = 1.0;
         add(sPanel, gridBagConstraints);
 
-        javax.swing.GroupLayout cPanelLayout = new javax.swing.GroupLayout(cPanel);
-        cPanel.setLayout(cPanelLayout);
-        cPanelLayout.setHorizontalGroup(
-            cPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        cPanelLayout.setVerticalGroup(
-            cPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
+        cPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -232,17 +232,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         gridBagConstraints.weightx = 1.0;
         add(cPanel, gridBagConstraints);
 
-        javax.swing.GroupLayout aPanelLayout = new javax.swing.GroupLayout(aPanel);
-        aPanel.setLayout(aPanelLayout);
-        aPanelLayout.setHorizontalGroup(
-            aPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        aPanelLayout.setVerticalGroup(
-            aPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
+        aPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -285,6 +275,9 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         @Override
         public boolean ok() {
             breakpoint.setCondition (conditionsPanel.getCondition());
+            breakpoint.setHitCountFilter(conditionsPanel.getHitCount(), conditionsPanel.getHitCountFilteringStyle());
+            breakpoint.setSuspend(fakeActionsBP.getSuspend());
+            breakpoint.setPrintText(fakeActionsBP.getPrintText());
             if (createBreakpoint)
                 DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
             return true;
