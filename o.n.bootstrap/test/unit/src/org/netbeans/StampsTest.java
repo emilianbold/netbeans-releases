@@ -48,11 +48,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
+import java.util.Locale;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Stamps.Updater;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,6 +66,8 @@ public class StampsTest extends NbTestCase {
     private File ide;
     private File platform;
     private File install;
+    private String branding;
+    private Locale locale;
     
     
     public StampsTest(String testName) {
@@ -76,6 +81,9 @@ public class StampsTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        branding = NbBundle.getBranding();
+        locale = Locale.getDefault();
+        
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
@@ -103,7 +111,8 @@ public class StampsTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
+        NbBundle.setBranding(branding);
+        Locale.setDefault(locale);
     }
     
     public void testEmpty() {
@@ -619,6 +628,51 @@ public class StampsTest extends NbTestCase {
             }
         }
     }
+    
+    public void testBrandingChecked() throws Exception {
+        Stamps s = Stamps.getModulesJARs();
+        ByteBuffer first = s.asByteBuffer("branding.cache");
+        assertNull("No cache yet", first);
+        
+        s.scheduleSave(new SaveByte(), "branding.cache", false);
+        s.waitFor(false);
+
+        Stamps.main("reset");
+        s = Stamps.getModulesJARs();
+        ByteBuffer snd = s.asByteBuffer("branding.cache");
+        assertNotNull("Cache found", snd);
+
+        Stamps.main("reset");
+        NbBundle.setBranding("my_perfect_branding");
+        
+        s = Stamps.getModulesJARs();
+        ByteBuffer third = s.asByteBuffer("branding.cache");
+        assertNull("Branding changed no cache found", third);
+    }
+
+    public void testLocaleChecked() throws Exception {
+        Locale.setDefault(Locale.US);
+        
+        Stamps s = Stamps.getModulesJARs();
+        ByteBuffer first = s.asByteBuffer("locale.cache");
+        assertNull("No cache yet", first);
+        
+        s.scheduleSave(new SaveByte(), "locale.cache", false);
+        s.waitFor(false);
+
+        Stamps.main("reset");
+        s = Stamps.getModulesJARs();
+        ByteBuffer snd = s.asByteBuffer("locale.cache");
+        assertNotNull("Cache found", snd);
+
+        
+        Stamps.main("reset");
+        Locale.setDefault(Locale.FRANCE);
+        
+        s = Stamps.getModulesJARs();
+        ByteBuffer third = s.asByteBuffer("locale.cache");
+        assertNull("Locale changed no cache found", third);
+    }
 
 
     static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {
@@ -658,4 +712,14 @@ public class StampsTest extends NbTestCase {
         jar.setLastModified(accesTime);
     }
 
+    private static final class SaveByte implements Updater {
+        @Override
+        public void flushCaches(DataOutputStream os) throws IOException {
+            os.write(1);
+        }
+
+        @Override
+        public void cacheReady() {
+        }
+    }
 }

@@ -46,6 +46,8 @@ package org.netbeans.core.startup.layers;
 
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -93,7 +95,7 @@ import org.openide.util.io.NbObjectInputStream;
  *
  * @author Petr Nejedly
  */
-final class BinaryFS extends FileSystem {
+final class BinaryFS extends FileSystem implements DataInput {
     static final Logger LOG = Logger.getLogger(BinaryFS.class.getName());
     /* Format:
      *     MAGIC
@@ -103,7 +105,7 @@ final class BinaryFS extends FileSystem {
      *     FS data
      */
 
-    static final byte[] MAGIC = "org.netbeans.core.projects.cache.BinaryV5".getBytes(); // NOI18N
+    static final byte[] MAGIC = "org.netbeans.core.projects.cache.BinaryV6".getBytes(); // NOI18N
 
     /** An empty array of SystemActions. */
     static final SystemAction[] NO_ACTIONS = new SystemAction[0];
@@ -121,6 +123,8 @@ final class BinaryFS extends FileSystem {
     private final List<String> urls;
     private final List<Long> modifications;
     private final Date lastModified = new Date();
+    private final Map<Integer,String> texts;
+    private final ByteBuffer strings;
 
     @SuppressWarnings("deprecation")
     private void _setSystemName(String s) throws PropertyVetoException {
@@ -132,10 +136,10 @@ final class BinaryFS extends FileSystem {
         try {
             _setSystemName("BinaryFS" + binaryFile.replace('/', '-').replace(File.separatorChar, '-')); // NOI18N
         } catch (PropertyVetoException ex) {
-            throw (IOException)new IOException().initCause(ex);
+            throw new IOException(ex);
         }
         
-        LayerCacheManager.err.fine("Reading " + binaryFile + " buffer: " + buff.limit());
+        LayerCacheManager.err.log(Level.FINE, "Reading {0} buffer: {1}", new Object[]{binaryFile, buff.limit()});
         
         this.binaryFile = binaryFile;
 
@@ -151,9 +155,13 @@ final class BinaryFS extends FileSystem {
         }
         LayerCacheManager.err.log(Level.FINER, "Stored Len OK: {0}", storedLen);
 
+        int strLen = buff.getInt();
+        this.texts = new HashMap<Integer, String>();
+        this.strings = buff.slice().asReadOnlyBuffer();
+        buff.position(buff.position() + strLen);
 
         // fill the modifications array
-        int stop = buff.getInt() + 8 + MAGIC.length;
+        int stop = buff.getInt() + 8 + MAGIC.length + strLen + 4;
         urls = new ArrayList<String>();
         List<Long> _modifications = new ArrayList<Long>();
         while (buff.position() < stop) {
@@ -176,6 +184,7 @@ final class BinaryFS extends FileSystem {
      *   <CODE>null</CODE> if no such file exists
      *
      */
+    @Override
     public FileObject findResource(String name) {
         if (name.length () == 0) {
             return root;
@@ -239,11 +248,104 @@ final class BinaryFS extends FileSystem {
         return true;
     }
 
-    static String getString(ByteBuffer buffer) throws IOException {
-        int len = buffer.getInt();
-        byte[] arr = new byte[len];
-        buffer.get(arr);
-        return new String(arr, "UTF-8"); //.intern();
+    final String getString(final ByteBuffer buffer) throws IOException {
+        synchronized (strings) {
+            int offset = buffer.getInt();
+            String t = texts.get(offset);
+            if (t != null) {
+                return t;
+            }
+            strings.position(offset);
+            String s = DataInputStream.readUTF(this);
+            texts.put(offset, s);
+            return s;
+        }
+    }
+    
+    @Override
+    public void readFully(byte[] b, int off, int len) throws IOException {
+        Thread.holdsLock(strings);
+        strings.get(b, off, len);
+    }
+
+    @Override
+    public int readUnsignedShort() throws IOException {
+        Thread.holdsLock(strings);
+        int ch1 = strings.get();
+        if (ch1 < 0) {
+            ch1 += 256;
+        }
+        int ch2 = strings.get();
+        if (ch2 < 0) {
+            ch2 += 256;
+        }
+        return (ch1 << 8) + ch2;
+    }
+
+    @Override
+    public void readFully(byte[] b) throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public int skipBytes(int n) throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public boolean readBoolean() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public byte readByte() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public int readUnsignedByte() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public short readShort() throws IOException {
+        throw new IOException();
+    }
+
+
+    @Override
+    public char readChar() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public int readInt() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public long readLong() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public float readFloat() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public double readDouble() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public String readLine() throws IOException {
+        throw new IOException();
+    }
+
+    @Override
+    public String readUTF() throws IOException {
+        throw new IOException();
     }
 
 
@@ -449,13 +551,13 @@ final class BinaryFS extends FileSystem {
                 if (attrCount > 0) attrs = new HashMap<String, AttrImpl>(attrCount*4/3+1);
 
                 for (int i=0; i< attrCount; i++) {  // do read attribute
-                    // attribute names are highly duplicated, intern!
-                    String attrName = getString(sub).intern();   // String attrName
+                    // attribute names are highly duplicated!
+                    String attrName = getString(sub);   // String attrName
                     byte type = sub.get();          // byte attrType
                     // values have high redundancy as well,
                     // like "true", "JSeparator", paths to orig files from
                     // shadow, ...
-                    String value = getString(sub).intern();  // String attrValue
+                    String value = getString(sub);  // String attrValue
                     attrs.put(attrName, new AttrImpl(type, value));
                 }
 

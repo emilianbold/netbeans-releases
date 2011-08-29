@@ -165,16 +165,10 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
          *  qualified name which contains variable element. 
          */
         final Object[] subject = new Object[3];
-        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                subject , false ) && !WebBeansActionHelper.
-                getContextEventInjectionAtDot( component, subject  ) &&
-                    !WebBeansActionHelper.getMethodAtDot(component, subject) && 
-                        !WebBeansActionHelper.getClassAtDot(component, subject))
-        {
+        if ( !findContext(component, subject)){
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(
-                            WebBeansActionHelper.class, 
-                    "LBL_NoCdiContext"));
+                            WebBeansActionHelper.class, "LBL_NoCdiContext"));
             return;
         }
         try {
@@ -196,6 +190,16 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
             Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
+    }
+
+    protected boolean findContext( final JTextComponent component,
+            final Object[] subject )
+    {
+        return WebBeansActionHelper.getVariableElementAtDot( component, 
+                subject , false ) || WebBeansActionHelper.
+                getContextEventInjectionAtDot( component, subject  ) ||
+                    WebBeansActionHelper.getMethodAtDot(component, subject) || 
+                        WebBeansActionHelper.getClassAtDot(component, subject);
     }
     
     private List<ModelActionStrategy> myStrategies;

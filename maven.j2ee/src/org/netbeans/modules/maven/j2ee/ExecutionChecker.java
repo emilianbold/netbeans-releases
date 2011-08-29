@@ -108,18 +108,22 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
             if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
                 //dump the nb java support's timestamp fil in output directory..
                 touchCoSTimeStamp(config, System.currentTimeMillis());
             }
-            String moduleUri = config.getProperties().getProperty(MODULEURI);
-            String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
-            boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
-            boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
-            boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
-            String openInBrowser = config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_OPEN);
+            String moduleUri = config.getProperties().get(MODULEURI);
+            String clientUrl = config.getProperties().get(CLIENTURLPART);
+            if (clientUrl == null) {
+                clientUrl = ""; // NOI18N
+            }
+            String _redeploy = config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY);
+            boolean redeploy = _redeploy != null ? Boolean.parseBoolean(_redeploy) : true;
+            boolean debugmode = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); 
+            boolean profilemode = Boolean.parseBoolean(config.getProperties().get("netbeans.deploy.profilemode")); //NOI18N
+            String openInBrowser = config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_OPEN);
             boolean showInBrowser = openInBrowser == null ? true : Boolean.parseBoolean( openInBrowser );
 
             performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, 
@@ -255,7 +259,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {

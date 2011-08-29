@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -74,8 +75,6 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
-import org.netbeans.modules.websvc.core.WsdlRetriever;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -301,10 +300,9 @@ public class JaxRpcClientCreator implements ClientCreator {
         FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");
         if (wscompileFO==null) {
             // add jax-rpc16 if webservice is not on classpath
-            ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
             Library jaxrpclib = LibraryManager.getDefault().getLibrary("jaxrpc16"); //NOI18N
-            if ((pce!=null) && (jaxrpclib != null)) {
-                pce.addLibrary(jaxrpclib);
+            if (jaxrpclib != null) {
+                ProjectClassPathModifier.addLibraries(new Library[] {jaxrpclib}, sgs[0].getRootFolder(), ClassPath.COMPILE);
             }
         }
         

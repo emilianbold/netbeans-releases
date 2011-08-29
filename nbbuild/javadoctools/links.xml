@@ -204,3 +204,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-autoupdate-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-autoupdate-ui"/>
 <link href="${javadoc.docs.org-netbeans-modules-php-project}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-php-project"/>
 <link href="${javadoc.docs.org-netbeans-api-progress-transactional}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-progress-transactional"/>
+<link href="${javadoc.docs.org-netbeans-core}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core"/>

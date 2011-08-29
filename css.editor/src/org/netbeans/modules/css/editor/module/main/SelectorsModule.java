@@ -43,6 +43,7 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,12 +52,12 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -67,13 +68,16 @@ import org.openide.util.lookup.ServiceProvider;
  * The selectors module functionality is partially implemented in the DefaultCssModule
  * from historical reasons. Newly added features are implemented here.
  *
+ * Provides pseudo classes and pseudo elements support. The items themselves are provided
+ * by the css modules resp. CssModule.getPseudoElements() and CssModule.getPseudoClasses() methods.
+ * 
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssModule.class)
 public class SelectorsModule extends CssModule {
 
     //NOI18N>>>
-    private static final String[] PSEUDO_CLASSES = new String[]{
+    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
         "link", "visited", "hover", "active", "focus", //dynamic
 
         "target",
@@ -83,14 +87,26 @@ public class SelectorsModule extends CssModule {
         "root", "nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type",
         "first-child", "last-child", "first-of-type", "last-of-type", "only-child",
         "only-of-type", "empty" //structural
-    };
-    private static final String[] PSEUDO_ELEMENTS = new String[]{
+    });
+    
+    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
         "first-line", "first-letter", "before", "after"
-    };
+    });
+    
     //<<< NOI18N
     //XXX fix CSL
     static ElementKind PSEUDO_ELEMENT_KIND = ElementKind.GLOBAL;
     static ElementKind PSEUDO_CLASS_KIND = ElementKind.GLOBAL;
+
+    @Override
+    public Collection<String> getPseudoClasses() {
+        return PSEUDO_CLASSES;
+    }
+
+    @Override
+    public Collection<String> getPseudoElements() {
+        return PSEUDO_ELEMENTS;
+    }
 
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
@@ -144,11 +160,11 @@ public class SelectorsModule extends CssModule {
     }
 
     private static List<CompletionProposal> getPseudoClasses(CompletionContext context) {
-        return Utilities.createRAWCompletionProposals(Arrays.asList(PSEUDO_CLASSES), ElementKind.FIELD, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoClasses(), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     private static List<CompletionProposal> getPseudoElements(CompletionContext context) {
-        return Utilities.createRAWCompletionProposals(Arrays.asList(PSEUDO_ELEMENTS), ElementKind.FIELD, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoElements(), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     @Override

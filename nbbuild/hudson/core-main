@@ -35,6 +35,7 @@ editor.mimelookup.impl,\
 extexecution,\
 favorites,\
 hudson,\
+hudson.git,\
 hudson.maven,\
 hudson.mercurial,\
 hudson.subversion,\

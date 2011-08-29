@@ -54,6 +54,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -66,6 +67,7 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * @author  phrebejk, Anton Chechel
@@ -82,12 +84,18 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     private ComboBoxModel platformsModel;
     private ListCellRenderer platformsCellRenderer;
+    private JavaPlatformChangeListener jpcl;
 
     public PanelOptionsVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
         platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform");
         platformsCellRenderer = PlatformUiSupport.createPlatformListCellRenderer();
         
         initComponents();
+        // copied from CustomizerLibraries
+        platformComboBox.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        jpcl = new JavaPlatformChangeListener();
+        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
+
         this.panel = panel;
         this.type = type;
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
@@ -364,7 +372,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblPlatform)
-                    .addComponent(platformComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(platformComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnManagePlatforms))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(preloaderCheckBox)
@@ -390,7 +398,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(setAsMainCheckBox)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
@@ -433,7 +441,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 }//GEN-LAST:event_btnLibFolderActionPerformed
 
 private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
-        PlatformsCustomizer.showCustomizer(getSelectedPlatform());        
+        PlatformsCustomizer.showCustomizer(getSelectedPlatform());
 }//GEN-LAST:event_btnManagePlatformsActionPerformed
 
 private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformComboBoxItemStateChanged
@@ -532,5 +540,16 @@ private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
     private void librariesLocationChanged() {
         this.panel.fireChangeEvent();
 
+    }
+    
+    private class JavaPlatformChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+//            if (evt.getPropertyName().equals(JavaFXPlatformUtils.PROPERTY_JAVA_FX)) {
+                PanelOptionsVisual.this.panel.fireChangeEvent();
+//            }
+        }
+        
     }
 }

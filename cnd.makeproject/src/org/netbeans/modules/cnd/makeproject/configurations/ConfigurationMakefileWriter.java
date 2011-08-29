@@ -781,6 +781,9 @@ public class ConfigurationMakefileWriter {
                     Item[] items = folder.getAllItemsAsArray();
                     for (int k = 0; k < items.length; k++) {
                         ItemConfiguration itemConfiguration = items[k].getItemConfiguration(conf);
+                        if (itemConfiguration == null){
+                            continue;
+                        }
                         if (itemConfiguration.getExcluded().getValue()) {
                             continue;
                         }
@@ -841,6 +844,9 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                if (itemConfiguration == null){
+                    continue;
+                }
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
@@ -1093,6 +1099,9 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                if (itemConfiguration == null){
+                    continue;
+                }
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
@@ -1318,6 +1327,9 @@ public class ConfigurationMakefileWriter {
             Item[] items = projectDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                if (itemConfiguration == null){
+                    continue;
+                }
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
@@ -1407,6 +1419,9 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[x].getPath()));
+                if (itemConfiguration == null){
+                    continue;
+                }
                 //String commandLine = ""; // NOI18N
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;

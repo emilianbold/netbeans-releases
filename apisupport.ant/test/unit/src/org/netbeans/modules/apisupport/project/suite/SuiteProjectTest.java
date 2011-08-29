@@ -58,6 +58,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -133,7 +134,7 @@ public class SuiteProjectTest extends NbTestCase {
         final SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
         PropertyEvaluator eval = suite.getEvaluator();
         assertEquals("custom", eval.getProperty("nbplatform.active"));
-        assertEquals(NbPlatform.getPlatformByID("custom").getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+        assertEquals(NbPlatform.getPlatformByID("custom").getDestDir(), suite.getHelper().resolveFile(eval.getProperty(ModuleList.NETBEANS_DEST_DIR)));
         
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception {
@@ -147,7 +148,7 @@ public class SuiteProjectTest extends NbTestCase {
         });
         
         assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
-        assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+        assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty(ModuleList.NETBEANS_DEST_DIR)));
     }
 
     public void testGetPlatformVersionedLocation() throws Exception {
@@ -156,14 +157,15 @@ public class SuiteProjectTest extends NbTestCase {
         File harnessdir = new File(getWorkDir(), "harness");
         TestFileUtils.writeZipFile(new File(harnessdir, "modules/org-netbeans-modules-apisupport-harness.jar"), "META-INF/MANIFEST.MF:OpenIDE-Module-Specification-Version: 1.23\n");
         File suitedir = new File(getWorkDir(), "suite");
-        SuiteProjectGenerator.createSuiteProject(suitedir, "special", false);
+        SuiteProjectGenerator.createSuiteProject(suitedir, "_", false);
         FileObject suitedirFO = FileUtil.toFileObject(suitedir);
         FileObject plafProps = suitedirFO.getFileObject("nbproject/platform.properties");
         EditableProperties ep = Util.loadProperties(plafProps);
         ep.setProperty("suite.dir", "${basedir}");
-        ep.setProperty("nbplatform.special.netbeans.dest.dir", "${suite.dir}/../plaf");
-        ep.setProperty("nbplatform.special.harness.dir", "${suite.dir}/../harness");
-        ep.setProperty("cluster.path", new String[] {"${nbplatform.active.dir}/platform:", "${nbplatform.special.harness.dir}"});
+        ep.remove("nbplatform.active");
+        ep.setProperty("nbplatform.active.dir", "${suite.dir}/../plaf");
+        ep.setProperty("harness.dir", "${suite.dir}/../harness");
+        ep.setProperty("cluster.path", new String[] {"${nbplatform.active.dir}/platform:", "${harness.dir}"});
         Util.storeProperties(plafProps, ep);
         SuiteProject p = (SuiteProject) ProjectManager.getDefault().findProject(suitedirFO);
         NbPlatform plaf = p.getPlatform(true);

@@ -78,11 +78,11 @@ import static org.netbeans.modules.maven.apisupport.Bundle.*;
 public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
 
     private static final String MASTER_PROPERTY = "netbeans.run.params"; // NOI18N
-    private static final String PROPERTY = "netbeans.run.params.ide"; // NOI18N
+    static final String PROPERTY = "netbeans.run.params.ide"; // NOI18N
     private static final String ADDITIONAL_ARGUMENTS = "additionalArguments"; // NOI18N
 
     public @Override boolean checkRunConfig(RunConfig config) {
-        String val = config.getProperties().getProperty(PROPERTY);
+        String val = config.getProperties().get(PROPERTY);
         if (val == null) {
             return true;
         }

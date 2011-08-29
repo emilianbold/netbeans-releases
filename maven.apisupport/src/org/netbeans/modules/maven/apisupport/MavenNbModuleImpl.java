@@ -110,6 +110,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     private DependencyAdder dependencyAdder = new DependencyAdder();
     private RequestProcessor.Task tsk = RequestProcessor.getDefault().create(dependencyAdder);
     
+    public static final String NETBEANS_REPO_ID = "netbeans";
     /**
      * the property defined by nbm-maven-plugin's run-ide goal.
      * can help finding the defined netbeans platform.
@@ -127,7 +128,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
 
     static RepositoryInfo netbeansRepo() {
-        return RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
+        return RepositoryPreferences.getInstance().getRepositoryInfoById(NETBEANS_REPO_ID);
     }
     
     private File getModuleXmlLocation() {

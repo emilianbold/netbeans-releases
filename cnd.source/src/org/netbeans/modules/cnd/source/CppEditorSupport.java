@@ -61,6 +61,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.source.spi.CndMultiViewProvider;
+import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -114,10 +115,10 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public CppEditorSupport(SourceDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
         this.ic = obj.getInstanceContent();
+        this.ic.add(obj.getNodeDelegate());
     }
-
     /** 
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified
@@ -227,6 +228,16 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     
     @Override
     protected Pane createPane() {
+
+        // if there is a CndPaneProvider, us it
+        CndPaneProvider paneProvider = Lookup.getDefault().lookup(CndPaneProvider.class);
+        if (paneProvider != null) {
+            Pane pane = paneProvider.createPane(this);
+            if (pane != null) {
+                return pane;
+            }
+        }
+        
         DataObject dataObject = getDataObject();
         if (dataObject != null && dataObject.isValid()) {
             Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
