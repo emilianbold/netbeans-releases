@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.java.preprocessorbridge</code-name-base>
+            <code-name-base>org.netbeans.modules.whitelist</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
@@ -19,7 +19,33 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.12</specification-version>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.84</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.37</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.52</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -27,7 +53,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -35,7 +61,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -43,26 +69,17 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.10</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>com.ptc.rbinfohandler</friend>
-                <friend>org.netbeans.modules.debugger.jpda.projects</friend>
-                <friend>org.netbeans.modules.debugger.jpda.ui</friend>
-                <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
-                <friend>org.netbeans.modules.java.hints</friend>
-                <friend>org.netbeans.modules.java.source</friend>
-                <friend>org.netbeans.modules.java.sourceui</friend>
-                <friend>org.netbeans.modules.javafx.source</friend>
-                <friend>org.netbeans.modules.mobility.project</friend>
-                <friend>org.netbeans.modules.scala.editing</friend>
-                <friend>org.netbeans.modules.scala.editor</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
-                <package>org.netbeans.modules.java.preprocessorbridge.api</package>
-                <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
+                <friend>org.netbeans.modules.web.project</friend>
+                <package>org.netbeans.api.whitelist</package>
+                <package>org.netbeans.spi.whitelist</package>
+                <package>org.netbeans.spi.whitelist.support</package>
             </friend-packages>
         </data>
     </configuration>
