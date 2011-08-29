@@ -261,9 +261,9 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
     private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
-        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Commit"));
+        org.openide.awt.Mnemonics.setLocalizedText(commitButton, parameters.getCommitButtonText());
+        commitButton.getAccessibleContext().setAccessibleName(parameters.getCommitButtonAccessibleName());
+        commitButton.getAccessibleContext().setAccessibleDescription(parameters.getCommitButtonAccessibleDescription());
         
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Cancel"));
@@ -470,7 +470,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         String contentTitle = Utils.getContextDisplayName(context);
         
         final DialogDescriptor dd = new DialogDescriptor(this,
-              org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
+              parameters.getCommitPanelTitle(contentTitle),
               true,
               new Object[] {commitButton, cancelButton},
               commitButton,
