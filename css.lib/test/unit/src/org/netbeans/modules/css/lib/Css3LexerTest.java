@@ -67,4 +67,131 @@ public class Css3LexerTest extends NbTestCase {
         
     }
     
+    public void testURL() {
+        ExtCss3Lexer lexer = createLexer("url('hello.png')");
+        assertANTLRToken("url('hello.png')", Css3Lexer.URI, lexer.nextToken());
+        
+        lexer = createLexer("url(hello.png)");
+        assertANTLRToken("url(hello.png)", Css3Lexer.URI, lexer.nextToken());
+//        TestUtil.dumpTokens(lexer);
+        lexer = createLexer("url(http://site.org/hello.png)");
+        assertANTLRToken("url(http://site.org/hello.png)", Css3Lexer.URI, lexer.nextToken());
+        
+    }
+    
+    public void testLexingOfUPlusWSChar() throws Exception {
+        //lexing of 'u'+' ' chars is wrong, it produces error token instead of IDENT+WS tokens
+        String source = "u ";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("u", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+   
+   public void testLexingOfImportSymbol() throws Exception {
+        String source = "@import xxx";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("xxx", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+    
+   public void testLexingOfPseudoElement() throws Exception {
+        String source = "div::before";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("div", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken("::", Css3Lexer.DCOLON, lexer.nextToken());
+        assertANTLRToken("before", Css3Lexer.IDENT, lexer.nextToken());
+    }
+   
+   public void testNumbers() throws Exception {
+        String source = "200 ";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("200", Css3Lexer.NUMBER, lexer.nextToken());
+        
+        source = "200px ";
+        
+        //now do the same with the netbeans lexer
+        charstream = new ANTLRStringStream(source);
+        lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("200px", Css3Lexer.LENGTH, lexer.nextToken());
+    }
+    
+    public void testErrorCase1() throws Exception {
+        /*
+        java.lang.ArrayIndexOutOfBoundsException: Array index out of range: 4
+	at java.util.Vector.get(Vector.java:694)
+	at org.netbeans.modules.css.lib.nblexer.NbLexerCharStream.rewind(NbLexerCharStream.java:131)
+	at org.antlr.runtime.DFA.predict(DFA.java:149)
+	at org.netbeans.modules.css.lib.Css3Lexer.mNUMBER(Css3Lexer.java:7440)
+        */
+        String source = "padding: .5em; ";
+     
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        
+        assertANTLRToken("padding", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(":", Css3Lexer.COLON, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(".5em", Css3Lexer.EMS, lexer.nextToken());
+        
+        
+    }
+    
+    public void testMediaQueriesTokens() throws Exception {
+        String source = "AND NOT ONLY 100dpi 50dpcm ";
+     
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        
+        assertANTLRToken(null ,Css3Lexer.AND, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.NOT, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.ONLY, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
+        
+    }
+    
+     /**
+    * @param expectedImage - use null if you do not want to check the image
+    */
+    private void assertANTLRToken(String expectedImage, int expectedType, org.antlr.runtime.Token token) {
+        assertNotNull(token);
+        
+        assertEquals(
+                String.format("Expected %s type, but was %s.", 
+                expectedType == Css3Lexer.EOF ? "<eof>" : Css3Parser.tokenNames[expectedType], 
+                token.getType() == Css3Lexer.EOF ? "<eof>" : Css3Parser.tokenNames[token.getType()]), expectedType, token.getType());
+        
+        if(expectedImage != null) {
+            assertEquals(expectedImage, token.getText());
+        }
+    }
+    
+    private ExtCss3Lexer createLexer(String source) {
+        CharStream charstream = new ANTLRStringStream(source);
+        return new ExtCss3Lexer(charstream);
+    }
 }

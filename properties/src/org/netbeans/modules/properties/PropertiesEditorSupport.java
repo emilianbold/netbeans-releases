@@ -44,6 +44,21 @@
 
 package org.netbeans.modules.properties;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup;
+import javax.swing.JComponent;
+import javax.swing.JToolBar;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.text.NbDocument;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.util.NbBundle.Messages;
+import org.netbeans.core.api.multiview.MultiViews;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
@@ -112,7 +127,6 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -121,6 +135,8 @@ import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import static java.util.logging.Level.FINER;
 
@@ -152,9 +168,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /** Constructor. */
     public PropertiesEditorSupport(PropertiesFileEntry entry) {
-        super(new Environment(entry),
-              org.openide.util.lookup.Lookups.singleton(entry.getDataObject()));
+        super(new Environment(entry), new ProxyLookup(Lookups.singleton(entry.getDataObject()), entry.getDataObject().getLookup()));
         this.myEntry = entry;
+    }
+    
+    @Override
+    protected Pane createPane() {
+        return (Pane) MultiViews.createCloneableMultiView(PropertiesDataLoader.PROPERTIES_MIME_TYPE, getDataObject());
     }
     
     /** Getter for the environment that was provided in the constructor.
@@ -184,15 +204,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
     }
     
-    /** 
-     * Overrides superclass method.
-     * @return the {@link CloneableEditor} for this support
-     */
-    @Override
-    protected CloneableEditor createCloneableEditor() {
-        return new PropertiesEditor(this);
-    }
-
     /** Getter of the data object that this support is associated with.
     * @return data object passed in constructor
     */
@@ -1222,8 +1233,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** Implementation of <code>EditCookie</code> interface. */
         public void edit() {
-            PropertiesEditor editor = (PropertiesEditor)PropertiesEditorSupport.super.openCloneableTopComponent();
-            editor.requestActive();
+            CloneableTopComponent ctc = PropertiesEditorSupport.super.openCloneableTopComponent();
+            ctc.requestActive();
+            
+            PropertiesEditor editor = ctc.getLookup().lookup(PropertiesEditor.class);
             
             Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
             if (item != null) {
@@ -1237,7 +1250,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 
     
     /** Cloneable top component to hold the editor kit. */
-    public static class PropertiesEditor extends CloneableEditor {
+    @Messages("CTL_SourceTabCaption=&Source")
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/properties/propertiesObject.png",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="properties.source",
+        mimeType=PropertiesDataLoader.PROPERTIES_MIME_TYPE,
+        position=1
+    )        
+    public static class PropertiesEditor extends CloneableEditor implements MultiViewElement {
         
         /** Holds the file being edited. */
         protected transient PropertiesFileEntry entry;
@@ -1247,7 +1269,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** Generated serial version UID. */
         static final long serialVersionUID =-2702087884943509637L;
+        private MultiViewElementCallback callback;
+        private transient JToolBar bar;
         
+        private transient PropertiesEditorLookup peLookup;
+        private transient Lookup originalLookup;
         
         /** Constructor for deserialization */
         public PropertiesEditor() {
@@ -1255,11 +1281,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
         
         /** Creates new editor */
-        public PropertiesEditor(PropertiesEditorSupport support) {
-            super(support);
+        public PropertiesEditor(Lookup lookup) {
+            super(lookup.lookup(PropertiesEditorSupport.class), true);
         }
 
-        
         /** Initializes object, used in construction and deserialization. */
         private void initialize(PropertiesFileEntry entry) {
             this.entry = entry;
@@ -1273,13 +1298,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             saveCookieLNode = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Node.PROP_COOKIE.equals(evt.getPropertyName()) ||
-                    DataObject.PROP_NAME.equals(evt.getPropertyName())) {
-                        PropertiesEditor.super.updateName();
+                        DataObject.PROP_NAME.equals(evt.getPropertyName())) 
+                    {
+                        updateName();
                     }
                 }
             };
-            this.entry.addPropertyChangeListener(
-            WeakListeners.propertyChange(saveCookieLNode, this.entry));
+            this.entry.addPropertyChangeListener(WeakListeners.propertyChange(saveCookieLNode, this.entry));
         }
 
         /**
@@ -1289,17 +1314,17 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          */
         @Override
         protected boolean closeLast () {
-            return super.closeLast();
+            return super.closeLast(false);
         }
 
         /** Overrides superclass method. Gets <code>Icon</code>. */
         @Override
         public Image getIcon () {
-            PropertiesDataObject propDO = (PropertiesDataObject) entry.getDataObject();
+            PropertiesDataObject propDO = (PropertiesDataObject) getDataObject();
             return ImageUtilities.loadImage(
                     propDO.isMultiLocale()
-                    ? "org/netbeans/modules/properties/propertiesLocale.gif" // NOI18N
-                    : "org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
+                    ? "org/netbeans/modules/properties/propertiesLocale.gif"    // NOI18N
+                    : "org/netbeans/modules/properties/propertiesObject.png");  // NOI18N
         }
         
         /** Overrides superclass method. Gets help context. */
@@ -1312,6 +1337,153 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         private JEditorPane getPane() {
             return pane;
         }
+
+        @Override
+        public Lookup getLookup() {
+            Lookup currentLookup = super.getLookup();
+            if (currentLookup != originalLookup) {
+                originalLookup = currentLookup;
+                if(peLookup == null) {
+                    peLookup = new PropertiesEditorLookup(Lookups.singleton(PropertiesEditor.this));
+                }
+                peLookup.updateLookups(originalLookup);
+            }
+            return peLookup;
+        }
+        
+        @Override
+        public JComponent getVisualRepresentation() {
+            return this;
+        }
+
+        @Override
+        public void componentDeactivated() {
+            super.componentDeactivated();
+        }
+
+        @Override
+        public void componentClosed() {
+            super.componentClosed();
+        }
+        
+        @Override
+        public JComponent getToolbarRepresentation() {
+            Document doc = getEditorPane().getDocument();
+            if (doc instanceof NbDocument.CustomToolbar) {
+                if (bar == null) {
+                    bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
+                }
+            }
+            if (bar == null) {
+                bar = new JToolBar();
+            }
+            return bar;
+        }
+
+        @Override
+        public void setMultiViewCallback(MultiViewElementCallback callback) {
+            this.callback = callback;
+        }
+
+        @Messages({
+            "MSG_SaveModified=File {0} is modified. Save?"
+        })
+        @Override
+        public CloseOperationState canCloseElement() {
+            final CloneableEditorSupport sup = getLookup().lookup(CloneableEditorSupport.class);
+            Enumeration en = getReference().getComponents();
+            if (en.hasMoreElements()) {
+                en.nextElement();
+                if (en.hasMoreElements()) {
+                    // at least two is OK
+                    return CloseOperationState.STATE_OK;
+                }
+            }
+            
+            PropertiesDataObject dataObject = getDataObject();
+            if (dataObject.isModified()) {
+                AbstractAction save = new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            sup.saveDocument();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                };
+                save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(FileUtil.getFileDisplayName(dataObject.getPrimaryFile())));
+                return MultiViewFactory.createUnsafeCloseState("editor", save, null);
+            } 
+            return CloseOperationState.STATE_OK;
+        }
+
+        @Override
+        public void componentActivated() {
+            super.componentActivated();
+        }
+
+        @Override
+        public void componentHidden() {
+            super.componentHidden();
+        }
+
+        @Override
+        public void componentOpened() {
+            super.componentOpened();
+        }
+
+        @Override
+        public void componentShowing() {
+            if (callback != null) {
+                updateName();
+            }
+            super.componentShowing();
+        }
+
+        @Override
+        public void requestVisible() {
+            if (callback != null) {
+                callback.requestVisible();
+            } else {
+                super.requestVisible();
+            }
+        }
+
+        @Override
+        public void requestActive() {
+            if (callback != null) {
+                callback.requestActive();
+            } else {
+                super.requestActive();
+            }
+        }
+
+        @Override
+        public void updateName() {
+            super.updateName();
+            if (callback != null) {
+                TopComponent tc = callback.getTopComponent();
+                tc.setHtmlDisplayName(getHtmlDisplayName());
+                tc.setDisplayName(getDisplayName());
+                tc.setName(getName());
+                tc.setToolTipText(getToolTipText());
+            }
+        }
+
+        @Override
+        public void open() {
+            if (callback != null) {
+                callback.requestVisible();
+            } else {
+                super.open();
+            }
+        }
+        
+        private PropertiesDataObject getDataObject() {
+            return (PropertiesDataObject) ((PropertiesEditorSupport) cloneableEditorSupport()).getDataObject();
+        }
+        
     } // End of nested class PropertiesEditor.
     
 
@@ -1480,6 +1652,18 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public boolean equals(Object obj) {
             return obj != null && getClass() == obj.getClass();
+        }
+    }
+
+    private static final class PropertiesEditorLookup extends ProxyLookup {
+        private Lookup initialLookup;
+        public PropertiesEditorLookup(Lookup lookup) {
+            super(lookup);
+            this.initialLookup = lookup;
+        }
+
+        public void updateLookups(Lookup additionalLookup) {
+            setLookups(new Lookup[] {initialLookup, additionalLookup});
         }
     }
 

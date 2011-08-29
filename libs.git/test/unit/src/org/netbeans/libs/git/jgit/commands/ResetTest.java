@@ -304,7 +304,7 @@ public class ResetTest extends AbstractGitTestCase {
         logs.next();
         RevCommit commit = logs.next();
         String revision = commit.getId().getName();
-        client.reset(new File[] { file1, file3, file4 }, revision, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.reset(new File[] { file1, file3, file4 }, revision, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         // file1: modified HEAD-INDEX
         // file2: stays modified HEAD-INDEX
@@ -318,6 +318,45 @@ public class ResetTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file3, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file4, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
         assertEquals(content, read(file1));
+    }
+    
+    public void testResetPaths_NonRecursive () throws Exception {
+        File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File file1 = new File(folder, "file1"); // index entry will be modified
+        write(file1, "blablablabla");
+        File subfolder = new File(folder, "subfolder");
+        subfolder.mkdirs();
+        File file2 = new File(subfolder, "file2"); // index entry will be left alone
+        write(file2, "blablablabla in file2");
+        File[] files = new File[] { file1, file2 };
+        add(files);
+        commit(files);
+
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        String content = "change in content";
+        write(file1, content);
+        write(file2, content);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        // children
+        client.reset(new File[] { folder }, "HEAD", false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+
+        write(file1, content);
+        // recursive
+        client.reset(new File[] { folder }, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
 
     public void testResetPathsChangeType () throws Exception {
@@ -341,13 +380,13 @@ public class ResetTest extends AbstractGitTestCase {
         logs.next();
         String revisionPrevious = logs.next().getId().getName();
 
-        client.reset(files, revisionPrevious, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.reset(files, revisionPrevious, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, file, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
 
-        client.reset(files, revisionCurrent, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.reset(files, revisionCurrent, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);

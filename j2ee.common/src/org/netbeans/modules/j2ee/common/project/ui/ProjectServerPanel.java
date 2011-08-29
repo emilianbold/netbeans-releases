@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -62,14 +64,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -405,7 +408,9 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
         ProfileItem lastSelectedJ2eeProfile = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
-        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        Map<String, String> props = new HashMap<String, String>();
+        props.put("suggested-name", (String)wizard.wizardDescriptor.getProperty(ProjectLocationWizardPanel.NAME));
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard(props);
         if (newServerInstanceID != null) {
             selectedServerInstanceID = newServerInstanceID;
             // clear the spec level selection
@@ -575,7 +580,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     }
     
     void store(WizardDescriptor d) {
-        d.putProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID, getSelectedServer());
+        String serverInstanceId = getSelectedServer();
+        d.putProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID, serverInstanceId);
         Profile j2ee = getSelectedJ2eeProfile();
         d.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, j2ee);
         d.putProperty(ProjectServerWizardPanel.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
@@ -594,6 +600,27 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         if (j2ee != null && (Profile.JAVA_EE_6_FULL.equals(j2ee) || Profile.JAVA_EE_6_WEB.equals(j2ee))) {
             sourceLevel = "1.6"; // NOI18N
         }
+        try {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+            Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
+            // make sure that chosen source level is suported by server:
+            if (!jdks.contains(sourceLevel)) {
+                if ("1.5".equals(sourceLevel) && jdks.contains("1.6")) {
+                    sourceLevel = "1.6";
+                } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
+                    sourceLevel = "1.5";
+                } else {
+                    // well, choose anything apart from 1.4:
+                    jdks.remove("1.4");
+                    if (jdks.size() > 0) {
+                        sourceLevel = (String)jdks.iterator().next();
+                    }
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
             d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
             if (j2ee != null) {
@@ -695,8 +722,10 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         boolean gfv3Found = false;
         boolean gfv3ee6Found = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
-            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            try {
+                ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+                String displayName = si.getDisplayName();
+                J2eePlatform j2eePlatform = si.getJ2eePlatform();
             if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
@@ -708,7 +737,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                     } else {
                         // preselect the best server ;)
                         // FIXME replace with PriorityQueue mechanism
-                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
+                            String shortName = si.getServerID();
                         if ("gfv3ee6".equals(shortName)) { // NOI18N
                             selectedItem = serverWrapper;
                             gfv3ee6Found = true;
@@ -724,6 +753,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                     }
                 }
                 servers.add(serverWrapper);
+            }
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         for (ServerInstanceWrapper item : servers) {

@@ -202,3 +202,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-autoupdate-ui" value="${javadoc.web.root}/org-netbeans-modules-autoupdate-ui"/>
 <property name="javadoc.docs.org-netbeans-modules-php-project" value="${javadoc.web.root}/org-netbeans-modules-php-project"/>
 <property name="javadoc.docs.org-netbeans-api-progress-transactional" value="${javadoc.web.root}/org-netbeans-api-progress-transactional"/>
+<property name="javadoc.docs.org-netbeans-core" value="${javadoc.web.root}/org-netbeans-core"/>

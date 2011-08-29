@@ -90,12 +90,18 @@ import org.openide.util.NbBundle;
  * @author lahvac
  */
 public abstract class TestBase extends NbTestCase {
-    private final Class<?> hintClass;
+    private final Set<String> hintClasses;
     protected final Logger LOG;
 
-    public TestBase(String name, Class<?> hintClass) {
+    public TestBase(String name, Class<?> hintClass, Class<?>... moreHintClasses) {
         super(name);
-        this.hintClass = hintClass;
+        this.hintClasses = new HashSet<String>();
+        this.hintClasses.add(hintClass.getName());
+
+        for (Class<?> c : moreHintClasses) {
+            this.hintClasses.add(c.getName());
+        }
+        
         LOG = Logger.getLogger("test." + name);
     }
 
@@ -170,19 +176,19 @@ public abstract class TestBase extends NbTestCase {
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
         Map<HintMetadata, Collection<HintDescription>> hints = new HashMap<HintMetadata, Collection<HintDescription>>();
-
-        ClassWrapper found = null;
+        List<ClassWrapper> found = new ArrayList<ClassWrapper>();
 
         for (ClassWrapper w : FSWrapper.listClasses()) {
-            if (w.getName().equals(hintClass.getName())) {
-                found = w;
-                break;
+            if (hintClasses.contains(w.getName())) {
+                found.add(w);
             }
         }
 
-        assertNotNull(found);
-        
-        CodeHintProviderImpl.processClass(found, hints);
+        assertFalse(found.isEmpty());
+
+        for (ClassWrapper w : found) {
+            CodeHintProviderImpl.processClass(w, hints);
+        }
 
         List<HintDescription> total = new LinkedList<HintDescription>();
 

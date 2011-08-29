@@ -61,12 +61,22 @@ import org.netbeans.modules.web.common.api.Pair;
  */
 public abstract class CssModule {
     
-    public Collection<RenderingEngine> getExtraRenderingEngines() {
+ 
+    //TODO: Pseudo classes and elements should be context/element aware.
+    public Collection<String> getPseudoClasses() {
+        return null;
+    }
+    
+    public Collection<String> getPseudoElements() {
         return null;
     }
     
     public Collection<PropertyDescriptor> getPropertyDescriptors() {
         return Collections.emptyList();
+    }
+    
+    public Collection<RenderingEngine> getExtraRenderingEngines() {
+        return null;
     }
     
     /**

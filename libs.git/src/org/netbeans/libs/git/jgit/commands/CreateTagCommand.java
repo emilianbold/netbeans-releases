@@ -55,6 +55,7 @@ import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.JGitTag;
@@ -145,9 +146,9 @@ public class CreateTagCommand extends GitCommand {
                 case FORCED:
                     return revObject instanceof RevCommit ? new JGitTag(tagName, new JGitRevisionInfo((RevCommit) revObject, repository)) : new JGitTag(tagName, revObject);
                 case LOCK_FAILURE:
-                    throw new GitException.RefUpdateException("Cannot lock ref " + refName, updateResult);
+                    throw new GitException.RefUpdateException("Cannot lock ref " + refName, GitRefUpdateResult.valueOf(updateResult.name()));
                 default:
-                    throw new GitException.RefUpdateException("Updating ref " + refName + " failed", updateResult);
+                    throw new GitException.RefUpdateException("Updating ref " + refName + " failed", GitRefUpdateResult.valueOf(updateResult.name()));
             }
 
         } finally {

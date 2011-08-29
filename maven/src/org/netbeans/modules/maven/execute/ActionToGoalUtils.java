@@ -49,7 +49,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.maven.model.Build;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
@@ -128,7 +127,6 @@ public final class ActionToGoalUtils {
                             }
                         brc.setGoals(toRet);
                         brc.setExecutionName(ProjectUtils.getInformation(project).getDisplayName());
-                        brc.setProperties(new Properties());
                         brc.setActivatedProfiles(Collections.<String>emptyList());
                         rc = brc;
                     }

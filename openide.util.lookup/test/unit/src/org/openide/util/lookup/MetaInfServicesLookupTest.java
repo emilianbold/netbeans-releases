@@ -50,7 +50,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -61,13 +60,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -75,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import junit.framework.Test;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -88,13 +85,12 @@ import org.openide.util.test.MockLookup;
  */
 public class MetaInfServicesLookupTest extends NbTestCase {
     private Logger LOG;
-    private Map<ClassLoader,Lookup> lookups = new WeakHashMap<ClassLoader,Lookup>();
     
     public MetaInfServicesLookupTest(String name) {
         super(name);
         LOG = Logger.getLogger("Test." + name);
     }
-
+    
     protected String prefix() {
         return "META-INF/services/";
     }
@@ -110,16 +106,11 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     private Lookup getTestedLookup(ClassLoader c) {
         MockServices.setServices();
-        Lookup l = lookups.get(c);
-        if (l == null) {
-            l = createLookup(c);
-            lookups.put(c, l);
-        }
-        return l;
+        return createLookup(c);
     }
 
     private URL findJar(String n) throws IOException {
-        LOG.info("Looking for " + n);
+        LOG.log(Level.INFO, "Looking for {0}", n);
         File jarDir = new File(getWorkDir(), "jars");
         jarDir.mkdirs();
         File jar = new File(jarDir, n);
@@ -209,24 +200,13 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }, c0);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        Set<Reference<Lookup>> weak = new HashSet<Reference<Lookup>>();
-        for (Lookup l : lookups.values()) {
-            weak.add(new WeakReference<Lookup>(l));
-        }
-        
-        lookups = null;
-        
-        for(Reference<Lookup> ref : weak) {
-            assertGC("Lookup can disappear", ref);
-        }
-    }
-
     public void testBasicUsage() throws Exception {
         Lookup l = getTestedLookup(c2);
         Class<?> xface = c1.loadClass("org.foo.Interface");
+        LOG.log(Level.INFO, "tested lookup: {0}", l);
+        LOG.log(Level.INFO, "search for {0}", xface);
         List<?> results = new ArrayList<Object>(l.lookupAll(xface));
+        LOG.log(Level.INFO, "results: {0}", results);
         assertEquals("Two items in result: " + results, 2, results.size());
         // Note that they have to be in order:
         assertEquals("org.foo.impl.Implementation1", results.get(0).getClass().getName());
@@ -386,7 +366,6 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         loader = null;
         no = null;
         l = null;
-        lookups.clear();
         MockLookup.setInstances();
         Thread.currentThread().setContextClassLoader(null);
         assertGC("Class can be garbage collected", ref);

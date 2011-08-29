@@ -109,6 +109,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectClassPathModifier.extenderForModifier">
+            <api name="classpath"/>
+            <summary>Added <code>ProjectClassPathModifier.extenderForModifier</code></summary>
+            <version major="1" minor="41"/>
+            <date day="22" month="8" year="2011"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Any modules still implementing <code>ProjectClassPathExtender</code> should cease to do so.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added a bridge from an old SPI to the newer, preferred SPI.
+                    Also added <code>LookupMergerSupport.createClassPathModifierMerger</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project.classpath" name="ProjectClassPathModifier"/>
+            <class package="org.netbeans.spi.java.project.support" name="LookupMergerSupport"/>
+            <issue number="196455"/>
+        </change>
         <change id="JAVA_ICON">
             <api name="general"/>
             <summary>Added <code>JavaTemplates.JAVA_ICON</code></summary>

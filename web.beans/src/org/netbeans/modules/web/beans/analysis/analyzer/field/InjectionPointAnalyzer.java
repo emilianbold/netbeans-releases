@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +52,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.Document;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
@@ -62,6 +65,7 @@ import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -83,6 +87,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
     {
         try {
             if (model.isInjectionPoint(element) ){
+                boolean isDelegate = false;
                 result.requireCdiEnabled(element, model);
                 checkInjectionPointMetadata( element, elementType , parent, model , 
                         cancel , result );
@@ -96,9 +101,29 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                     if ( AnnotationUtil.isDelegate(element, parent, model)){
                         analyzeDecoratedBeans(res, element, null, parent,  
                                 model, result );
+                        isDelegate = true;
                     }
                 }
-                
+                boolean isEvent = model.isEventInjectionPoint(element);
+                if ( isEvent ){
+                    ElementHandle<VariableElement> modelHandle = ElementHandle.create(element);
+                    EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
+                            result);
+                    helper.addEventInjectionPoint( result, 
+                            modelHandle.resolve(result.getInfo()));
+                }
+                else if ( isDelegate || AnnotationUtil.hasAnnotation(element, 
+                        AnnotationUtil.DELEGATE_FQN, model.getCompilationController()))
+                {
+                    return;
+                }
+                else {
+                    ElementHandle<VariableElement> modelHandle = ElementHandle.create(element);
+                    EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
+                            result);
+                    helper.addInjectionPoint( result, 
+                            modelHandle.resolve(result.getInfo()));
+                }
             }
         }
         catch (InjectionPointDefinitionError e) {

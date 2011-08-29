@@ -56,14 +56,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
-import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
-import org.w3c.dom.Document;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
@@ -116,15 +114,10 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     private Collection<? extends HudsonJobChangeItem> changes;
     public Collection<? extends HudsonJobChangeItem> getChanges() {
         if (changes == null || /* #171978 */changes.isEmpty()) {
-            Document changeSet = connector.getDocument(getUrl() +
-                    // XXX use ?tree (but means that each HudsonSCM must add its own pieces)
-                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet", true); // NOI18N
-            if (changeSet != null) {
-                for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
-                    changes = scm.parseChangeSet(job, changeSet.getDocumentElement());
-                    if (changes != null) {
-                        break;
-                    }
+            for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+                changes = scm.parseChangeSet(this);
+                if (changes != null) {
+                    break;
                 }
             }
             if (changes == null) {

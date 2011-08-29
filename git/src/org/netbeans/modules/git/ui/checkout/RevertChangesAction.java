@@ -52,10 +52,12 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -85,6 +87,10 @@ public class RevertChangesAction extends SingleRepositoryAction {
                 @Override
                 protected void perform () {
                     final Collection<File> notifiedFiles = new HashSet<File>();
+                    File[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
+                    if (actionRoots.length == 0) {
+                        return;
+                    }
                     try {
                         // init client
                         GitClient client = getClient();
@@ -94,24 +100,24 @@ public class RevertChangesAction extends SingleRepositoryAction {
                                 notifiedFiles.add(file);
                             }
                         });
-                        client.addNotificationListener(new DefaultFileListener(roots));
+                        client.addNotificationListener(new DefaultFileListener(actionRoots));
                         
                         // revert
                         if(revert.isRevertAll()) {
                             // XXX log                            
-                            client.checkout(roots, "HEAD", this); // XXX no constant for HEAD???
-                            logRevert("revert all", roots, repository);
+                            client.checkout(actionRoots, "HEAD", true, this); // XXX no constant for HEAD???
+                            logRevert("revert all", actionRoots, repository);
                         } else if (revert.isRevertIndex()) {
-                            client.reset(roots, "HEAD", this);
-                            logRevert("revert index", roots, repository);
+                            client.reset(actionRoots, "HEAD", true, this);
+                            logRevert("revert index", actionRoots, repository);
                         } else if (revert.isRevertWT()) {
-                            client.checkout(roots, null, this);                             
-                            logRevert("revert wt", roots, repository);
+                            client.checkout(actionRoots, null, true, this);                             
+                            logRevert("revert wt", actionRoots, repository);
                         }
                         
                         if(revert.isRemove()) {
-                            client.clean(roots, this);
-                            logRevert("clean ", roots, repository);
+                            client.clean(actionRoots, this);
+                            logRevert("clean ", actionRoots, repository);
                         }
                         
                     } catch (GitException ex) {

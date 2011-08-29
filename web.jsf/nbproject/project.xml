@@ -651,6 +651,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.web.adf.complib</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <friend>org.netbeans.modules.web.jsf.icefaces</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.web.jsf.richfaces</friend>
                 <friend>org.netbeans.modules.web.primefaces</friend>

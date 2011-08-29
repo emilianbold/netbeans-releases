@@ -626,7 +626,7 @@ public final class NbModuleProject implements Project {
     }
     
     File getPlatformFile() {
-        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        String prop = evaluator().getProperty(ModuleList.NETBEANS_DEST_DIR);
         if (prop == null) {
             return null;
         }

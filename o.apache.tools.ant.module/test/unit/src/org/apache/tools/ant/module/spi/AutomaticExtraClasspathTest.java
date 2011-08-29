@@ -116,10 +116,11 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         
         CharSequence log = Log.enable("", Level.INFO);
         Object value = fo.getAttribute("instanceCreate");
-        assertNull("no provider created: " + value, value);
-        
-        if (log.toString().indexOf("FileNotFoundException") == -1) {
-            fail("FileNotFoundException shall be thrown:\n" + log);
+        AutomaticExtraClasspathProvider auto = (AutomaticExtraClasspathProvider)value;
+        assertNotNull(auto);
+        assertEquals(0, auto.getClasspathItems().length);
+        if (log.toString().indexOf("No File found") == -1) {
+            fail("should have warned:\n" + log);
         }
     }
     

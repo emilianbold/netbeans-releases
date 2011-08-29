@@ -87,6 +87,11 @@ public final class InsertModuleAllTargets extends Task {
         checkModules = check;
     }
 
+    boolean useClusters = true;
+    public void setUseClusters(boolean b) {
+        useClusters = b;
+    }
+    
     public @Override void execute() throws BuildException {
         try {
             Project prj = getProject();
@@ -125,13 +130,15 @@ public final class InsertModuleAllTargets extends Task {
             }
             
             Map<String,String> clustersOfModules = new HashMap<String,String>();
-            for (Map.Entry<String,String> pair : props.entrySet()) {
-                String cluster = pair.getKey();
-                if (!cluster.startsWith("nb.cluster.") || cluster.endsWith(".depends") || cluster.endsWith(".dir")) {
-                    continue;
-                }
-                for (String module : pair.getValue().split(", *")) {
-                    clustersOfModules.put(module, cluster);
+            if (useClusters) {
+                for (Map.Entry<String,String> pair : props.entrySet()) {
+                    String cluster = pair.getKey();
+                    if (!cluster.startsWith("nb.cluster.") || cluster.endsWith(".depends") || cluster.endsWith(".dir")) {
+                        continue;
+                    }
+                    for (String module : pair.getValue().split(", *")) {
+                        clustersOfModules.put(module, cluster);
+                    }
                 }
             }
             ModuleListParser mlp = new ModuleListParser(props, ModuleType.NB_ORG, prj);
@@ -201,5 +208,4 @@ public final class InsertModuleAllTargets extends Task {
             throw new BuildException(e.toString(), e, getLocation());
         }
     }
-    
 }

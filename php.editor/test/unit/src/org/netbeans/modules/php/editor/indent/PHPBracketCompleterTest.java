@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -1369,6 +1368,54 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     
     public void testIssue198699_01() throws Exception {
         insertChar("a selected^ word", '"', "a \"selected\"^ word", "selected");
+    }
+    
+    public void testIssue200729_01() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /*^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_02() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /**^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /**\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_03() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /**\n"
+                + "     * ^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
+    }
+    
+    public void testIssue200729_04() throws Exception {
+        insertBreak("function foo() {\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "}", 
+                "function foo() {\n"
+                + "    /*\n"
+                + "     * \n"
+                + "     * ^\n"
+                + "     */\n"
+                + "}");
     }
     
 }

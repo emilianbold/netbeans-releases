@@ -75,6 +75,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -341,8 +342,6 @@ public final class J2SEProject implements Project {
     private Lookup createLookup(final AuxiliaryConfiguration aux,
             final J2SEActionProvider actionProvider) {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
-        @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
-            cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -366,7 +365,7 @@ public final class J2SEProject implements Project {
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
-            cpe,
+            ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
             new J2SEProjectOperations(this, actionProvider),

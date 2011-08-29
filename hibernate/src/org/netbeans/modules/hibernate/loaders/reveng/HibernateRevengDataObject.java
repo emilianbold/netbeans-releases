@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.hibernate.reveng.model.HibernateReverseEngineering;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -61,6 +63,8 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Represents the Hibernate Reverse Engineering file
@@ -70,17 +74,31 @@ import org.openide.text.DataEditorSupport;
 public class HibernateRevengDataObject extends MultiDataObject {
 
     private HibernateReverseEngineering revEngineering;
-    
+    private static final String VIEW_ID = "hibernate_reveng_multiview_id"; // NOI18N
+    private static final String ICON = "org/netbeans/modules/hibernate/resources/hibernate-reveng.png"; //NOI18N
+   
     public HibernateRevengDataObject(FileObject pf, HibernateRevengDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         cookies.add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         cookies.add(validateCookie);
     }
+    
+    @MultiViewElement.Registration(
+        mimeType=HibernateRevengDataLoader.REQUIRED_MIME,
+        iconBase=ICON,
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID=VIEW_ID,
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    @NbBundle.Messages("CTL_SourceTabCaption=Source")
+    public static MultiViewEditorElement createXmlMultiViewElement(Lookup lookup) {
+        return new MultiViewEditorElement(lookup);
+    }  
     
     /**
      * Gets the object graph representing the contents of the 
@@ -145,7 +163,8 @@ public class HibernateRevengDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
+
 }

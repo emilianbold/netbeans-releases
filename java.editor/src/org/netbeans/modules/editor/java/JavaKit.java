@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
@@ -76,6 +77,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
+import org.netbeans.modules.java.editor.imports.ClipboardHandler;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
@@ -288,6 +290,7 @@ public class JavaKit extends NbEditorKit {
 
             new GoToMarkOccurrencesAction(false),
             new GoToMarkOccurrencesAction(true),
+            new ClipboardHandler.JavaCutAction(),
         };
 
         return TextAction.augmentList(superActions, actions);
@@ -301,6 +304,12 @@ public class JavaKit extends NbEditorKit {
             }
         }
         return null;
+    }
+
+    @Override
+    public void install(JEditorPane c) {
+        super.install(c);
+        ClipboardHandler.install(c);
     }
 
     public static class JavaDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
@@ -949,5 +958,5 @@ public class JavaKit extends NbEditorKit {
         }
 
     }
-    
+
 }

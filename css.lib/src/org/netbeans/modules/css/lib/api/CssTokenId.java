@@ -49,6 +49,7 @@ import org.netbeans.modules.css.lib.nblexer.CssLanguageHierarchy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.lib.Css3Lexer;
+import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
 
 /**
  * Token ids of CSS language
@@ -56,7 +57,7 @@ import org.netbeans.modules.css.lib.Css3Lexer;
  * @author Marek Fukala
  */
 public enum CssTokenId implements TokenId {
-    
+        
      /* Defined categories:
      * -------------------
      * others
@@ -78,95 +79,119 @@ public enum CssTokenId implements TokenId {
     //see the Css3.g lexer definition to find out which of the tokens are only
     //token fragments (will not show up in the output tokens list)
 
-    EOF(Css3Lexer.EOF, "others"),
+    EOF(Css3Lexer.EOF, OTHERS),
     
-    ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, "error"),
+    ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
     
-    WS(Css3Lexer.WS, "whitespace"),
-    CHARSET_SYM(Css3Lexer.CHARSET_SYM, "keyword"),
-    STRING(Css3Lexer.STRING, "string"),
-    SEMI(Css3Lexer.SEMI, "separator"),
-    IMPORT_SYM(Css3Lexer.IMPORT_SYM, "keyword"),
-    URI(Css3Lexer.URI, "uri"),
-    COMMA(Css3Lexer.COMMA, "separator"),
-    MEDIA_SYM(Css3Lexer.MEDIA_SYM, "keyword"),
-    LBRACE(Css3Lexer.LBRACE, "brace"),
-    RBRACE(Css3Lexer.RBRACE, "brace"),
-    IDENT(Css3Lexer.IDENT, "identifier"),
-    PAGE_SYM(Css3Lexer.PAGE_SYM, "keyword"),
-    COLON(Css3Lexer.COLON, "separator"),
-    DCOLON(Css3Lexer.DCOLON, "separator"),
-    SOLIDUS(Css3Lexer.SOLIDUS, "others"),
-    PLUS(Css3Lexer.PLUS, "operator"),
-    GREATER(Css3Lexer.GREATER, "operator"),
-    TILDE(Css3Lexer.TILDE, "operator"),
-    MINUS(Css3Lexer.MINUS, "operator"),
-    STAR(Css3Lexer.STAR, "operator"),
-    HASH(Css3Lexer.HASH, "hash"),
-    DOT(Css3Lexer.DOT, "operator"),
-    LBRACKET(Css3Lexer.LBRACKET, "brace"),
-    OPEQ(Css3Lexer.OPEQ, "others"),
-    INCLUDES(Css3Lexer.INCLUDES, "operator"),
-    DASHMATCH(Css3Lexer.DASHMATCH, "operator"),
-    RBRACKET(Css3Lexer.RBRACKET, "brace"),
-    LPAREN(Css3Lexer.LPAREN, "brace"),
-    RPAREN(Css3Lexer.RPAREN, "brace"),
-    IMPORTANT_SYM(Css3Lexer.IMPORTANT_SYM, "keyword"),
-    NUMBER(Css3Lexer.NUMBER, "number"),
-    PERCENTAGE(Css3Lexer.PERCENTAGE, "number"),
-    LENGTH(Css3Lexer.LENGTH, "number"),
-    EMS(Css3Lexer.EMS, "number"),
-    EXS(Css3Lexer.EXS, "number"),
-    ANGLE(Css3Lexer.ANGLE, "number"),
-    TIME(Css3Lexer.TIME, "number"),
-    FREQ(Css3Lexer.FREQ, "number"),
-    HEXCHAR(Css3Lexer.HEXCHAR, "number"),
-    NONASCII(Css3Lexer.NONASCII, "others"),
-    UNICODE(Css3Lexer.UNICODE, "others"),
-    ESCAPE(Css3Lexer.ESCAPE, "others"),
-    NMSTART(Css3Lexer.NMSTART, "others"),
-    NMCHAR(Css3Lexer.NMCHAR, "others"),
-    NAME(Css3Lexer.NAME, "others"),
-    URL(Css3Lexer.URL, "url"),
-    A(Css3Lexer.A, "others"),
-    B(Css3Lexer.B, "others"),
-    C(Css3Lexer.C, "others"),
-    D(Css3Lexer.D, "others"),
-    E(Css3Lexer.E, "others"),
-    F(Css3Lexer.F, "others"),
-    G(Css3Lexer.G, "others"),
-    H(Css3Lexer.H, "others"),
-    I(Css3Lexer.I, "others"),
-    J(Css3Lexer.J, "others"),
-    K(Css3Lexer.K, "others"),
-    L(Css3Lexer.L, "others"),
-    M(Css3Lexer.M, "others"),
-    N(Css3Lexer.N, "others"),
-    O(Css3Lexer.O, "others"),
-    P(Css3Lexer.P, "others"),
-    Q(Css3Lexer.Q, "others"),
-    R(Css3Lexer.R, "others"),
-    S(Css3Lexer.S, "others"),
-    T(Css3Lexer.T, "others"),
-    U(Css3Lexer.U, "others"),
-    V(Css3Lexer.V, "others"),
-    W(Css3Lexer.W, "others"),
-    X(Css3Lexer.X, "others"),
-    Y(Css3Lexer.Y, "others"),
-    Z(Css3Lexer.Z, "others"),
-    COMMENT(Css3Lexer.COMMENT, "comment"),
+    AND(Css3Lexer.AND, KEYWORDS),
+    NOT(Css3Lexer.NOT, KEYWORDS),
+    ONLY(Css3Lexer.ONLY, KEYWORDS),
+    RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
+    WS(Css3Lexer.WS, WHITESPACES),
+    CHARSET_SYM(Css3Lexer.CHARSET_SYM, KEYWORDS),
+    STRING(Css3Lexer.STRING, STRINGS),
+    SEMI(Css3Lexer.SEMI, SEPARATORS),
+    IMPORT_SYM(Css3Lexer.IMPORT_SYM, KEYWORDS),
+    URI(Css3Lexer.URI, URIS),
+    COMMA(Css3Lexer.COMMA, SEPARATORS),
+    MEDIA_SYM(Css3Lexer.MEDIA_SYM, KEYWORDS),
+    LBRACE(Css3Lexer.LBRACE, BRACES),
+    RBRACE(Css3Lexer.RBRACE, BRACES),
+    IDENT(Css3Lexer.IDENT, IDENTIFIERS),
+    PAGE_SYM(Css3Lexer.PAGE_SYM, KEYWORDS),
+    COLON(Css3Lexer.COLON, SEPARATORS),
+    DCOLON(Css3Lexer.DCOLON, SEPARATORS),
+    SOLIDUS(Css3Lexer.SOLIDUS, OTHERS),
+    PLUS(Css3Lexer.PLUS, OPERATORS),
+    GREATER(Css3Lexer.GREATER, OPERATORS),
+    TILDE(Css3Lexer.TILDE, OPERATORS),
+    MINUS(Css3Lexer.MINUS, OPERATORS),
+    STAR(Css3Lexer.STAR, OPERATORS),
+    HASH(Css3Lexer.HASH, HASHES),
+    DOT(Css3Lexer.DOT, OPERATORS),
+    LBRACKET(Css3Lexer.LBRACKET, BRACES),
+    OPEQ(Css3Lexer.OPEQ, OTHERS),
+    INCLUDES(Css3Lexer.INCLUDES, OPERATORS),
+    DASHMATCH(Css3Lexer.DASHMATCH, OPERATORS),
+    RBRACKET(Css3Lexer.RBRACKET, BRACES),
+    LPAREN(Css3Lexer.LPAREN, BRACES),
+    RPAREN(Css3Lexer.RPAREN, BRACES),
+    IMPORTANT_SYM(Css3Lexer.IMPORTANT_SYM, KEYWORDS),
+    NUMBER(Css3Lexer.NUMBER, NUMBERS),
+    PERCENTAGE(Css3Lexer.PERCENTAGE, NUMBERS),
+    LENGTH(Css3Lexer.LENGTH, NUMBERS),
+    EMS(Css3Lexer.EMS, NUMBERS),
+    EXS(Css3Lexer.EXS, NUMBERS),
+    ANGLE(Css3Lexer.ANGLE, NUMBERS),
+    TIME(Css3Lexer.TIME, NUMBERS),
+    FREQ(Css3Lexer.FREQ, NUMBERS),
+    HEXCHAR(Css3Lexer.HEXCHAR, NUMBERS),
+    NONASCII(Css3Lexer.NONASCII, OTHERS),
+    UNICODE(Css3Lexer.UNICODE, OTHERS),
+    ESCAPE(Css3Lexer.ESCAPE, OTHERS),
+    NMSTART(Css3Lexer.NMSTART, OTHERS),
+    NMCHAR(Css3Lexer.NMCHAR, OTHERS),
+    NAME(Css3Lexer.NAME, OTHERS),
+    URL(Css3Lexer.URL, URIS),
+    A(Css3Lexer.A, OTHERS),
+    B(Css3Lexer.B, OTHERS),
+    C(Css3Lexer.C, OTHERS),
+    D(Css3Lexer.D, OTHERS),
+    E(Css3Lexer.E, OTHERS),
+    F(Css3Lexer.F, OTHERS),
+    G(Css3Lexer.G, OTHERS),
+    H(Css3Lexer.H, OTHERS),
+    I(Css3Lexer.I, OTHERS),
+    J(Css3Lexer.J, OTHERS),
+    K(Css3Lexer.K, OTHERS),
+    L(Css3Lexer.L, OTHERS),
+    M(Css3Lexer.M, OTHERS),
+    N(Css3Lexer.N, OTHERS),
+    O(Css3Lexer.O, OTHERS),
+    P(Css3Lexer.P, OTHERS),
+    Q(Css3Lexer.Q, OTHERS),
+    R(Css3Lexer.R, OTHERS),
+    S(Css3Lexer.S, OTHERS),
+    T(Css3Lexer.T, OTHERS),
+    U(Css3Lexer.U, OTHERS),
+    V(Css3Lexer.V, OTHERS),
+    W(Css3Lexer.W, OTHERS),
+    X(Css3Lexer.X, OTHERS),
+    Y(Css3Lexer.Y, OTHERS),
+    Z(Css3Lexer.Z, OTHERS),
+    COMMENT(Css3Lexer.COMMENT, COMMENTS),
     
     //following two should possibly not be part of the grammar at all
-    CDO(Css3Lexer.CDO, "others"), //<!--
-    CDC(Css3Lexer.CDC, "others"), // -->
+    CDO(Css3Lexer.CDO, OTHERS), //<!--
+    CDC(Css3Lexer.CDC, OTHERS), // -->
     
-    INVALID(Css3Lexer.INVALID, "others"),
-    DIMENSION(Css3Lexer.DIMENSION, "number"),
-    NL(Css3Lexer.NL, "others"), //newline
-    PIPE(Css3Lexer.PIPE, "operator"),  //NOI18N
+    INVALID(Css3Lexer.INVALID, OTHERS),
+    DIMENSION(Css3Lexer.DIMENSION, NUMBERS),
+    NL(Css3Lexer.NL, OTHERS), //newline
+    PIPE(Css3Lexer.PIPE, OPERATORS),  //NOI18N
     
-    GEN(Css3Lexer.GEN, "others"),
-    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, "keyword");
+    GEN(Css3Lexer.GEN, OTHERS),
+    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, KEYWORDS),
+    
+    TOPLEFTCORNER_SYM(Css3Lexer.TOPLEFTCORNER_SYM, KEYWORDS),
+    TOPLEFT_SYM(Css3Lexer.TOPLEFT_SYM, KEYWORDS),
+    TOPCENTER_SYM(Css3Lexer.TOPCENTER_SYM, KEYWORDS),
+    TOPRIGHT_SYM(Css3Lexer.TOPRIGHT_SYM, KEYWORDS),
+    TOPRIGHTCORNER_SYM(Css3Lexer.TOPRIGHTCORNER_SYM, KEYWORDS),
+    BOTTOMLEFTCORNER_SYM(Css3Lexer.BOTTOMLEFTCORNER_SYM, KEYWORDS),
+    BOTTOMLEFT_SYM(Css3Lexer.BOTTOMLEFT_SYM, KEYWORDS),
+    BOTTOMCENTER_SYM(Css3Lexer.BOTTOMCENTER_SYM, KEYWORDS),
+    BOTTOMRIGHT_SYM(Css3Lexer.BOTTOMRIGHT_SYM, KEYWORDS),
+    BOTTOMRIGHTCORNER_SYM(Css3Lexer.BOTTOMRIGHTCORNER_SYM, KEYWORDS),
+    LEFTTOP_SYM(Css3Lexer.LEFTTOP_SYM, KEYWORDS),
+    LEFTMIDDLE_SYM(Css3Lexer.LEFTMIDDLE_SYM, KEYWORDS),
+    LEFTBOTTOM_SYM(Css3Lexer.LEFTBOTTOM_SYM, KEYWORDS),
+    RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, KEYWORDS),
+    RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, KEYWORDS),
+    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, KEYWORDS),
+    
+    COUNTER_STYLE_SYM(Css3Lexer.COUNTER_STYLE_SYM, KEYWORDS);
+    
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {
@@ -179,12 +204,12 @@ public enum CssTokenId implements TokenId {
         return codesMap.get(tokenTypeCode);
     }
  
-    private final String primaryCategory;
+    private final CssTokenIdCategory primaryCategory;
     private final int code;
 
     private static final Language<CssTokenId> language = new CssLanguageHierarchy().language();
     
-    CssTokenId(int code, String primaryCategory) {
+    CssTokenId(int code, CssTokenIdCategory primaryCategory) {
         this.primaryCategory = primaryCategory;
         this.code = code;
     }
@@ -208,6 +233,13 @@ public enum CssTokenId implements TokenId {
      */
     @Override
     public String primaryCategory() {
+        return primaryCategory.name().toLowerCase();
+    }
+    
+    /**
+     * same as primaryCategory() but returns CssTokenIdCategory enum member
+     */
+    public CssTokenIdCategory getTokenCategory() {
         return primaryCategory;
     }
 
