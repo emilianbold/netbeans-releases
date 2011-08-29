@@ -74,6 +74,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.modules.maven.options.MavenSettings;
@@ -279,12 +280,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
-        if (localRepo != null) {
-            toRet.add("-Dmaven.repo.local=" + localRepo);
-        }
-        
-
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
             toRet.add("--offline");//NOI18N
         }
@@ -414,7 +409,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        File mavenHome = MavenSettings.getDefault().getMavenHome();
+        File mavenHome = EmbedderFactory.getMavenHome();
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
