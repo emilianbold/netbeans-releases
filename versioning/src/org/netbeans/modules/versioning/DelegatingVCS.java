@@ -70,11 +70,12 @@ public class DelegatingVCS extends VersioningSystem {
 
     private final Map<?, ?> map;
     private VersioningSystem delegate;
+    private Set<String> metadataFolderNames;
+    private final Object DELEGATE_LOCK = new Object();
     
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
     }
-    private Set<String> metadataFolderNames;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -87,16 +88,18 @@ public class DelegatingVCS extends VersioningSystem {
     }
 
     public VersioningSystem getDelegate() {
-        if(delegate == null) {
-            VersioningManager.getInstance().flushNullOwners();   
-            delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
-            if(delegate != null) {
-                Accessor.IMPL.moveChangeListeners(this, delegate);
-            } else {
-                VersioningManager.LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
+        synchronized(DELEGATE_LOCK) {
+            if(delegate == null) {
+                VersioningManager.getInstance().flushNullOwners();   
+                delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
+                if(delegate != null) {
+                    Accessor.IMPL.moveChangeListeners(this, delegate);
+                } else {
+                    VersioningManager.LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
+                }
             }
+            return delegate;
         }
-        return delegate;
     }
     
     @Override

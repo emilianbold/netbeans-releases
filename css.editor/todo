@@ -26,18 +26,18 @@ x CSS Template Layout
 * CSS Grid Positioning 
 * CSS Flexible Box Layout 
 * CSS Image Values & Replaced Content 
-CSS 2D Transformations 
-CSS 3D Transformations 
-CSS Transitions 
-CSS Animations 
+* CSS 2D Transformations 
+* CSS 3D Transformations 
+* CSS Transitions 
+* CSS Animations 
 * CSSOM View 
 x CSS Syntax 
 * CSS Lists and Counters
 x CSS Reader Media Type 
 CSS Generated & Replaced Content
 CSS Line Layout 
-CSS Hyperlink Presentation 
-CSS Presentation Levels 
+* CSS Hyperlink Presentation 
+* CSS Presentation Levels 
 
 
 
