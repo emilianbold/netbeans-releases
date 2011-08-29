@@ -67,16 +67,12 @@ public class GlobalOutputProcessor implements OutputProcessor {
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
     private static final Pattern HELP = Pattern.compile("\\[Help \\d+\\] (https?://.+)"); // NOI18N
     
-    /** Creates a new instance of GlobalOutputProcessor */
-    public GlobalOutputProcessor() {
-    }
-
-    public String[] getRegisteredOutputSequences() {
+    @Override public String[] getRegisteredOutputSequences() {
         return new String[] {SECTION_PROJECT};
     }
 
     @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
-    public void processLine(String line, OutputVisitor visitor) {
+    @Override public void processLine(String line, OutputVisitor visitor) {
         if (DOWNLOAD.matcher(line).matches()) {
             visitor.skipLine();
             return;
@@ -89,11 +85,11 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.setLine(line + '\n' + TXT_ChangeSettings());
             visitor.setColor(Color.RED);
             visitor.setOutputListener(new OutputListener() {
-                public void outputLineSelected(OutputEvent ev) {}
-                public void outputLineAction(OutputEvent ev) {
+                @Override public void outputLineSelected(OutputEvent ev) {}
+                @Override public void outputLineAction(OutputEvent ev) {
                     OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
                 }
-                public void outputLineCleared(OutputEvent ev) {}
+                @Override public void outputLineCleared(OutputEvent ev) {}
             });
             return;
         }
@@ -113,7 +109,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
         }
     }
 
-    public void sequenceStart(String sequenceId, OutputVisitor visitor) {
+    @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (sequenceId.startsWith(SECTION_PROJECT)) {
 //            visitor.setLine(sequenceId);
         } else {
@@ -122,11 +118,8 @@ public class GlobalOutputProcessor implements OutputProcessor {
         }
     }
 
-    public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
-    }
+    @Override public void sequenceEnd(String sequenceId, OutputVisitor visitor) {}
 
-    public void sequenceFail(String sequenceId, OutputVisitor visitor) {
-    }
-    
+    @Override public void sequenceFail(String sequenceId, OutputVisitor visitor) {}
     
 }
