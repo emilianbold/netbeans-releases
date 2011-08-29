@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -29,7 +29,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="paramTitle" min="-2" pref="268" max="-2" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="westPanel" pref="370" max="32767" attributes="0"/>
+              <Component id="westPanel" pref="376" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="moveDownButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
@@ -39,12 +39,19 @@
               </Group>
           </Group>
           <Component id="modifiersPanel" alignment="0" max="32767" attributes="0"/>
-          <Component id="jScrollPane1" alignment="1" pref="478" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="chkCompatible" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="392" max="32767" attributes="0"/>
+          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="chkUpdateJavadoc" min="-2" max="-2" attributes="0"/>
                   <Component id="chkGenJavadoc" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="jScrollPane1" pref="478" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -64,7 +71,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveDownButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="westPanel" pref="142" max="32767" attributes="2"/>
+                  <Component id="westPanel" pref="126" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="modifiersPanel" min="-2" max="-2" attributes="0"/>
@@ -73,9 +80,11 @@
                   <Component id="chkUpdateJavadoc" min="-2" max="-2" attributes="0"/>
                   <Component id="chkGenJavadoc" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="chkCompatible" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane1" min="-2" pref="82" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -356,5 +365,15 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JCheckBox" name="chkCompatible">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="IntroduceParameterPanel.chkIsCompatible.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkCompatibleItemStateChanged"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>
