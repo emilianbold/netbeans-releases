@@ -44,6 +44,8 @@
 
 package org.netbeans.api.java.source;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +67,6 @@ import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
@@ -80,6 +81,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.net.URISyntaxException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.util.ElementScanner6;
@@ -151,6 +153,42 @@ public class SourceUtils {
         }
         return null;
     }
+    
+    /**
+     * Find duplicates for provided expression
+     * @param info CompilationInfo
+     * @param searchingFor expression which is being searched
+     * @param scope scope for search
+     * @param cancel option to cancel find duplicates
+     * @return set of TreePaths representing duplicates
+     * @since 0.85
+     */
+    public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
+        try {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class copyFinderClass = loader.loadClass("org.netbeans.modules.java.hints.introduce.CopyFinderService");
+            Object copyFinderInstance = Lookup.getDefault().lookup(copyFinderClass);
+            if (copyFinderInstance != null) {
+                Method method = copyFinderClass.getMethod("computeDuplicates", CompilationInfo.class, TreePath.class, TreePath.class, AtomicBoolean.class);
+                if (method != null) {
+                    return (Set<TreePath>) method.invoke(copyFinderInstance, info, searchingFor, scope, cancel);
+                }
+            }
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptySet();
+    }    
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
