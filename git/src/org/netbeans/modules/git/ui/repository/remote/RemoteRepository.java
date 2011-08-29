@@ -186,7 +186,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     
     private String getURIString() {
         String uriString = (String) panel.urlComboBox.getEditor().getItem();
-        return uriString;
+        return uriString == null ? null : uriString.trim();
     }
     
     private void attachListeners () {
@@ -579,6 +579,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         protected void setEnabled (boolean enabled) {
             for (JComponent inputField : inputFields) {
                 inputField.setEnabled(enabled);
+            }
+            if (enabled) {
+                updateAuthSelection();
             }
         }
         
