@@ -50,7 +50,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -69,13 +68,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -108,7 +106,7 @@ public class OracleInstance {
     private ApplicationManager platform;
     
     /* GuardedBy(this) */
-    private List<OracleJ2EEInstance> j2eeInstances = new ArrayList<OracleJ2EEInstance>();
+    private OracleJ2EEInstance j2eeInstance;
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
           String adminURL, String instanceURL, String cloudURL, String tenantId, String serviceName, String onPremiseServerInstanceId) {
@@ -137,6 +135,11 @@ public class OracleInstance {
 
     public void setInstanceURL(String instanceURL) {
         this.instanceURL = instanceURL;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_INSTANCE_URL, getInstanceURL());
+            }
+        }
     }
 
     void setServerInstance(ServerInstance serverInstance) {
@@ -179,7 +182,7 @@ public class OracleInstance {
         this.service = serviceName;
         resetCache();
     }
-
+    
     public void setSystem(String tenantId) {
         this.system = tenantId;
         resetCache();
@@ -187,16 +190,33 @@ public class OracleInstance {
 
     public void setPassword(String tenantPassword) {
         this.password = tenantPassword;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(
+                                    InstanceProperties.PASSWORD_ATTR, tenantPassword);
+            }
+        }
         resetCache();
     }
 
     public void setUser(String tenantUserName) {
         this.user = tenantUserName;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(
+                                    InstanceProperties.USERNAME_ATTR, tenantUserName);
+            }
+        }
         resetCache();
     }
 
     public void setAdminURL(String urlEndpoint) {
         this.adminURL = urlEndpoint;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_ADMIN_URL, getAdminURL());
+            }
+        }
         resetCache();
     }
 
@@ -234,33 +254,27 @@ public class OracleInstance {
         getApplicationManager().listJobs();
     }
     
-    public List<OracleJ2EEInstance> readJ2EEServerInstances() {
+    public OracleJ2EEInstance readJ2EEServerInstance() {
         assert !SwingUtilities.isEventDispatchThread();
-        List<OracleJ2EEInstance> res = new ArrayList<OracleJ2EEInstance>();
-
-        // used to be dynamic list; keeping as list for now:
         OracleJ2EEInstance inst = new OracleJ2EEInstance(this);
-        res.add(inst);
         synchronized (this) {
-            j2eeInstances.addAll(res);
-            return res;
+            j2eeInstance = inst;
+            return j2eeInstance;
         }
     }
-
+    
     public void deregisterJ2EEServerInstances() {
-        List<OracleJ2EEInstance> instances = null;
+        OracleJ2EEInstance instance;
         synchronized (this) {
-            instances = new ArrayList<OracleJ2EEInstance>(j2eeInstances);
+            instance = j2eeInstance;
         }
-        for (OracleJ2EEInstance inst : instances) {
-            inst.deregister();
-        }
+        instance.deregister();
         String localId = getOnPremiseServerInstanceId();
         if (localId != null) {
             InstanceProperties.removeInstance(localId);
         }
     }
-
+    
     public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
                          final String tenantId, 
                          final String serviceName, 
@@ -302,7 +316,7 @@ public class OracleInstance {
 //                }
 //            }
             
-            InputOutput io = IOProvider.getDefault().getIO(tabName, false);
+            InputOutput io = IOProvider.getDefault().getIO(tabName, /*false*/true);
             ow = io.getOut();
             owe = io.getErr();
 //            if (weblogic == null) {

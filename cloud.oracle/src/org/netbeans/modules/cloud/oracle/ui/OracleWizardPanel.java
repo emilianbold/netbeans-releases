@@ -193,11 +193,9 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection exception", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong"));
             }
-            List<OracleJ2EEInstance> instances = ai.readJ2EEServerInstances();
-            for (OracleJ2EEInstance inst : instances) {
-                OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(inst, true);
-                servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
-            }
+            OracleJ2EEInstance instance = ai.readJ2EEServerInstance();
+            OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(instance, true);
+            servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
         } finally {
             getComponent().setCursor(null);
         }

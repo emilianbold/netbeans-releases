@@ -55,7 +55,7 @@ public class OracleJ2EEInstance {
     private OracleInstance oracleInstance;
     private InstanceState state;
     private ServerInstance instance;
-//    private InstanceProperties ip;
+    private InstanceProperties ip;
 
     public OracleJ2EEInstance(OracleInstance oracleInstance) {
         this.oracleInstance = oracleInstance;
@@ -78,13 +78,13 @@ public class OracleJ2EEInstance {
         this.instance = instance;
     }
 
-//    public InstanceProperties getInstanceProperties() {
-//        return ip;
-//    }
-//
-//    void setInstanceProperties(InstanceProperties ip) {
-//        this.ip = ip;
-//    }
+    public InstanceProperties getInstanceProperties() {
+        return ip;
+    }
+
+    void setInstanceProperties(InstanceProperties ip) {
+        this.ip = ip;
+    }
     
     public InstanceState getState() {
         return state;
@@ -102,8 +102,8 @@ public class OracleJ2EEInstance {
         return createURL(getOracleInstance().getName(), getOracleInstance().getSystem(), getOracleInstance().getService());
     }
     
-    public static String createURL(String cloudInstance, String tenantId, String serviceName) {
-        return OracleDeploymentFactory.ORACLE_URI+cloudInstance + "." + tenantId + "." +serviceName;
+    public static String createURL(String cloudInstance, String system, String service) {
+        return OracleDeploymentFactory.ORACLE_URI+cloudInstance + "." + system + "." +service;
     }
 
     public void deregister() {

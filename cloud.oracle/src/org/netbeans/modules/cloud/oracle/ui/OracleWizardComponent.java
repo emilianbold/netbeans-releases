@@ -92,7 +92,9 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             passwordField.setText(oi.getPassword());
             userNameTextField.setText(oi.getUser());
             tenantIdTextField.setText(oi.getSystem());
+            tenantIdTextField.setEditable(false);
             serviceNameTextField.setText(oi.getService());
+            serviceNameTextField.setEditable(false);
         } else {
             adminURLTextField.setText(ADMIN_URL); // NOI18N
             cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
