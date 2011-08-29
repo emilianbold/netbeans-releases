@@ -48,6 +48,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,6 +74,16 @@ public class GoToSourceAction extends NodeAction {
                     @Override
                     public void run() {
                         showSource(type);
+                    }
+                });
+            }
+            RemoteListener rl = n.getLookup().lookup(RemoteListener.class);
+            if (rl != null) {
+                final String clazz = rl.getListener().referenceType().name();
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        showSource(clazz);
                     }
                 });
             }

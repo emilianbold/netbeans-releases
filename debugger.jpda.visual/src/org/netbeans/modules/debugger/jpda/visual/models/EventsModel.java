@@ -58,9 +58,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -88,13 +90,16 @@ import org.openide.util.Utilities;
 @DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class })
 public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     
-    private static final String attachedListeners = "attachedListeners"; // NOI18N
+    private static final String customListeners = "customListeners"; // NOI18N
+    private static final String swingListeners = "swingListeners"; // NOI18N
     private static final String eventsLog = "eventsLog"; // NOI18N
     
     private Set<ModelListener> listeners = new CopyOnWriteArraySet<ModelListener>();
     
     private AWTComponentInfo selectedCI = null;
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
+    private List<RemoteListener> customListenersList;
+    private List<RemoteListener> swingListenersList;
     
     public EventsModel() {
         ScreenshotUIManager uiManager = ScreenshotUIManager.getActive();
@@ -139,9 +144,54 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
-            return new Object[] { attachedListeners, eventsLog };
+            AWTComponentInfo ci = selectedCI;
+            if (ci != null) {
+                String componentName = ci.getDisplayName();
+                List<RemoteListener> componentListeners;
+                try {
+                    componentListeners = RemoteServices.getAttachedListeners(ci);
+                } catch (PropertyVetoException pvex) {
+                    Exceptions.printStackTrace(pvex);
+                    return new Object[] {};
+                }
+                //Map<String, ListenerCategory> listenerCategories;
+                //customListenersMap = new TreeMap<String, ListenerCategory>();
+                //swingListenersMap = new TreeMap<String, ListenerCategory>();
+                customListenersList = new ArrayList<RemoteListener>(componentListeners.size());
+                swingListenersList = new ArrayList<RemoteListener>(componentListeners.size());
+                for (RemoteListener rl : componentListeners) {
+                    String type = rl.getListener().referenceType().name();
+                    if (JavaComponentInfo.isCustomType(type)) {
+                        //listenerCategories = customListenersMap;
+                        customListenersList.add(rl);
+                    } else {
+                        swingListenersList.add(rl);
+                        //listenerCategories = swingListenersMap;
+                    }
+                    /*
+                    ListenerCategory lc = listenerCategories.get(type);
+                    if (lc == null) {
+                        lc = new ListenerCategory(type);
+                        listenerCategories.put(type, lc);
+                    }
+                    lc.addListener(rl); */
+                }
+                
+                return new Object[] { componentName, customListeners, swingListeners, eventsLog };
+            } else {
+                customListenersList = null;
+                swingListenersList = null;
+            }
+            return new Object[] {};
         }
-        if (parent == attachedListeners) {
+        if (parent == customListeners) {
+            return customListenersList.toArray();
+        }
+        if (parent == swingListeners) {
+            return swingListenersList.toArray();
+        }
+        /*
+        if (parent == customListeners || parent == swingListeners) {
             AWTComponentInfo ci = selectedCI;
             if (ci != null) {
                 //ObjectReference component = ci.getComponent();
@@ -155,16 +205,22 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
                 Map<String, ListenerCategory> listenerCategories = new TreeMap<String, ListenerCategory>();
                 for (RemoteListener rl : componentListeners) {
                     String type = rl.getType();
-                    ListenerCategory lc = listenerCategories.get(type);
-                    if (lc == null) {
-                        lc = new ListenerCategory(type);
-                        listenerCategories.put(type, lc);
+                    if ((parent == customListeners) == JavaComponentInfo.isCustomType(type)) {
+                        ListenerCategory lc = listenerCategories.get(type);
+                        if (lc == null) {
+                            lc = new ListenerCategory(type);
+                            listenerCategories.put(type, lc);
+                        }
+                        lc.addListener(rl);
                     }
-                    lc.addListener(rl);
                 }
                 return listenerCategories.values().toArray();
             }
         }
+         */
+        /*if (parent instanceof RemoteListener) {
+            return ((RemoteListener) parent).getListener();
+        }*/
         if (parent instanceof ListenerCategory) {
             return ((ListenerCategory) parent).getListeners().toArray();
         }
@@ -181,8 +237,16 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
 
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
-        if (node == ROOT || node == attachedListeners || node == eventsLog) {
+        if (node == ROOT || node == eventsLog) {
             return false;
+        }
+        if (node == customListeners) {
+            List<RemoteListener> l = customListenersList;
+            return (l == null || l.isEmpty());
+        }
+        if (node == swingListeners) {
+            List<RemoteListener> l = swingListenersList;
+            return (l == null || l.isEmpty());
         }
         if (node instanceof RemoteListener) {
             return true;
@@ -227,8 +291,11 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
         if (node == ROOT) {
             return "Events";
         }
-        if (node == attachedListeners) {
-            return "Listeners";
+        if (node == customListeners) {
+            return "Custom Listeners";
+        }
+        if (node == swingListeners) {
+            return "Internal AWT/Swing Listeners";
         }
         if (node == eventsLog) {
             return "Event Log";
@@ -277,11 +344,14 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     @Override
     public Action[] getActions(Object node) throws UnknownTypeException {
         if (selectedCI != null) {
-            if (node == attachedListeners) {
-                return new Action[] { new AddLoggingListenerAction(null) };
+            if (node == customListeners || node == eventsLog) {
+                return new Action[] { new SetLoggingEvents() };//new AddLoggingListenerAction(null) };
             }
             if (node instanceof ListenerCategory) {
                 return new Action[] { new AddLoggingListenerAction((ListenerCategory) node) };
+            }
+            if (node instanceof RemoteListener) {
+                return new Action[] { GoToSourceAction.get(GoToSourceAction.class) };
             }
         }
         return new Action[] {};
@@ -307,6 +377,100 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
         public List<RemoteListener> getListeners() {
             return listeners;
         }
+    }
+    
+    private class SetLoggingEvents extends AbstractAction {
+        
+        public SetLoggingEvents() {}
+
+        @Override
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return "Set Logging Events...";
+            }
+            return super.getValue(key);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final AWTComponentInfo ci = selectedCI;
+            if (ci == null) return ;
+            final String[] listenerClasses;
+            listenerClasses = selectListenerClass(ci);
+            if (listenerClasses == null) {
+                return;
+            }
+            ci.getThread().getDebugger().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    boolean fire = false;
+                    for (String listenerClass : listenerClasses) {
+                        ReferenceType rt = getReferenceType(ci.getComponent().virtualMachine(), listenerClass);
+                        if (rt == null) {
+                            System.err.println("No class "+listenerClass); // TODO
+                            continue;
+                        }
+                        ObjectReference l;
+                        try {
+                            l = RemoteServices.attachLoggingListener(ci, rt.classObject(), new LoggingEventListener());
+                        } catch (PropertyVetoException pvex) {
+                            Exceptions.printStackTrace(pvex);
+                            return ;
+                        }
+                        if (l != null) {
+                            fire = true;
+                        }
+                    }
+                    if (fire) {
+                        fireNodeChanged(customListeners);
+                    }
+                }
+            });
+        }
+        
+        private ReferenceType getReferenceType(VirtualMachine vm, String name) {
+            List<ReferenceType> classList = vm.classesByName(name);
+            ReferenceType clazz = null;
+            for (ReferenceType c : classList) {
+                clazz = c;
+                if (c.classLoader() == null) {
+                    break;
+                }
+            }
+            return clazz;
+        }
+        
+        private String[] selectListenerClass(AWTComponentInfo ci) {
+            List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
+            System.err.println("Attachable Listeners = "+attachableListeners);
+            String[] listData = new String[attachableListeners.size()];
+            for (int i = 0; i < listData.length; i++) {
+                listData[i] = attachableListeners.get(i).name();
+            }
+            SelectEventsPanel sep = new SelectEventsPanel();
+            boolean[] logging = new boolean[listData.length];
+            sep.setData(listData, logging);
+            NotifyDescriptor nd = new DialogDescriptor(sep, "Select Listener", true, null);
+            Object res = DialogDisplayer.getDefault().notify(nd);
+            if (DialogDescriptor.OK_OPTION.equals(res)) {
+                boolean[] loggingData = sep.getLoggingData();
+                int n = 0;
+                for (boolean l : loggingData) {
+                    if (l) n++;
+                }
+                String[] listeners = new String[n];
+                int li = 0;
+                for (int i = 0; i < listData.length; i++) {
+                    if (loggingData[i]) {
+                        listeners[li++] = listData[i];
+                    }
+                }
+                return listeners;
+            } else {
+                return null;
+            }
+        }
+
     }
     
     private class AddLoggingListenerAction extends AbstractAction {
@@ -358,7 +522,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
                             lc.addListener(new RemoteListener(l.referenceType().name(), l));
                             fireNodeChanged(lc);
                         } else {
-                            fireNodeChanged(attachedListeners);
+                            fireNodeChanged(customListeners);
                         }
                     }
                 }
