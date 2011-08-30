@@ -51,6 +51,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -160,6 +161,7 @@ public class ReplaceBar extends JPanel {
         replaceLabel.setLabelFor(replaceComboBox);
         add(replaceLabel);
         replaceTextField = (JTextField) replaceComboBox.getEditor().getEditorComponent();
+        replaceTextField.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         // flatten the action map for the text field to allow removal
         ActionMap origActionMap = replaceTextField.getActionMap();
         ActionMap newActionMap = new ActionMap();
@@ -177,7 +179,8 @@ public class ReplaceBar extends JPanel {
                 getSearchBar().lostFocusOnTextField();
             }
         });
-        addEnterKeystrokeFindNextTo(replaceTextField);
+        addEnterKeystrokeReplaceTo(replaceTextField);
+        addShiftEnterReplaceAllTo(replaceTextField);
         add(replaceComboBox);
 
         final JToolBar.Separator leftSeparator = new JToolBar.Separator();
@@ -404,16 +407,33 @@ public class ReplaceBar extends JPanel {
         }
     }
     
-    private void addEnterKeystrokeFindNextTo(JTextField replaceTextField) {
+    private void addEnterKeystrokeReplaceTo(JTextField replaceTextField) {
         replaceTextField.getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                "incremental-find-next"); // NOI18N
-        replaceTextField.getActionMap().put("incremental-find-next", // NOI18N
+                "replace-next"); // NOI18N
+        replaceTextField.getActionMap().put("replace-next", // NOI18N
                 new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 replace();
+                if (CLOSE_ON_ENTER) {
+                    looseFocus();
+                }
+            }
+        });
+    }
+    
+    private void addShiftEnterReplaceAllTo(JTextField textField) {
+        textField.getInputMap().put(KeyStroke.getKeyStroke(
+                KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK, true),
+                "replace-all"); // NOI18N
+        textField.getActionMap().put("replace-all", // NOI18N
+                new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                replaceAll();
                 if (CLOSE_ON_ENTER) {
                     looseFocus();
                 }
