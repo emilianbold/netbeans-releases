@@ -915,18 +915,14 @@ public final class NbModuleProject implements Project {
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
-        private static final String[] PRIVILEGED_NAMES = new String[] {
+        private static final String[] PRIVILEGED_NAMES = {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newAction", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/emptyLibraryDescriptor", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newLoader", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newProject", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWindow", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWizard", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_ACTION_ID,
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_WINDOW_ID,
             //"Templates/Other/properties.properties", // NOI18N
         };
         static {

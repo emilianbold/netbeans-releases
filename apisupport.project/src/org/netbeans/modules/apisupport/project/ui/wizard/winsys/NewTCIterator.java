@@ -81,6 +81,7 @@ import org.openide.windows.WindowManager;
  */
 @TemplateRegistration(
     folder=UIUtil.TEMPLATE_FOLDER,
+    id=UIUtil.TEMPLATE_WINDOW_ID,
     position=200,
     displayName="#template_winsys",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newTC.png", 

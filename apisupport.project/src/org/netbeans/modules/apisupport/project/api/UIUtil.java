@@ -135,7 +135,21 @@ public final class UIUtil {
      * @see PrivilegedTemplates
      */
     public static final String TEMPLATE_FOLDER = "NetBeansModuleDevelopment";
-    
+
+    /**
+     * ID for a template to create a new action.
+     * @see TemplateRegistration#id
+     * @see PrivilegedTemplates
+     */
+    public static final String TEMPLATE_ACTION_ID = "newAction";
+
+    /**
+     * ID for a template to create a new action.
+     * @see TemplateRegistration#id
+     * @see PrivilegedTemplates
+     */
+    public static final String TEMPLATE_WINDOW_ID = "newWindow";
+
     public static String keyToLogicalString(KeyStroke keyStroke) {
         String keyDesc = Utilities.keyToString(keyStroke);
         int dash = keyDesc.indexOf('-');

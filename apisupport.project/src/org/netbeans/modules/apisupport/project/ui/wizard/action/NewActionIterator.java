@@ -58,7 +58,15 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Martin Krauskopf
  */
-@TemplateRegistration(folder=UIUtil.TEMPLATE_FOLDER, displayName="#template_action", iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png", position=100, description="../../resources/newAction.html", category=UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(
+    folder=UIUtil.TEMPLATE_FOLDER,
+    id=UIUtil.TEMPLATE_ACTION_ID,
+    displayName="#template_action",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png",
+    position=100,
+    description="../../resources/newAction.html",
+    category=UIUtil.TEMPLATE_CATEGORY
+)
 @Messages("template_action=Action")
 public final class NewActionIterator extends BasicWizardIterator {
 

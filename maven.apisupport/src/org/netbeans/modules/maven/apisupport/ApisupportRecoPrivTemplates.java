@@ -55,16 +55,14 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 @ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class ApisupportRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
-        private static final String[] NBM_PRIVILEGED_NAMES = new String[] {
+        private static final String[] NBM_PRIVILEGED_NAMES = {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newAction", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newLoader", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWindow", // NOI18N
-            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWizard", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_ACTION_ID,
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_WINDOW_ID,
             //"Templates/Other/properties.properties", // NOI18N
         };
         private static final String[] NBM_TYPES = {         
