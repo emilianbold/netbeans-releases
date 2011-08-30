@@ -81,7 +81,7 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=500,
     displayName="#template_loader",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLoader.png",

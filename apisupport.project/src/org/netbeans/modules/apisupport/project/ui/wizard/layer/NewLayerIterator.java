@@ -50,7 +50,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1300, displayName = "#template_label", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 1300, displayName = "#template_label", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewLayerIterator extends BasicWizardIterator {
 
     private BasicDataModel data;

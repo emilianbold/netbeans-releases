@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
  *
  * @author Radek Matous, Jesse Glick
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 900, displayName = "#Templates/NetBeansModuleDevelopment/newJavaHelp", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 900, displayName = "#Templates/NetBeansModuleDevelopment/newJavaHelp", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewJavaHelpIterator extends BasicWizardIterator {
     
     private NewJavaHelpIterator.DataModel data;

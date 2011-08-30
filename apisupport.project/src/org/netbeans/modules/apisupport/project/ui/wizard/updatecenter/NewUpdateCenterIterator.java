@@ -61,7 +61,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Jiri Rechtacek
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=600,
     displayName="#template_updatecenter",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.png",

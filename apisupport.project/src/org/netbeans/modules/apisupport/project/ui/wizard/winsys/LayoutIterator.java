@@ -80,7 +80,7 @@ import org.openide.windows.WindowManager;
  * @author Jaroslav Tulach
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=3249,
     displayName="#template_winsys_layout",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLayout.png", 

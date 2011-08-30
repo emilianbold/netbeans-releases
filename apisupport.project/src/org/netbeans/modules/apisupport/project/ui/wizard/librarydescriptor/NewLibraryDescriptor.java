@@ -64,7 +64,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Radek Matous
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1100, displayName = "#Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 1100, displayName = "#Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html", category = UIUtil.TEMPLATE_CATEGORY)
 public final class NewLibraryDescriptor extends BasicWizardIterator {
     
     NewLibraryDescriptor.DataModel data;

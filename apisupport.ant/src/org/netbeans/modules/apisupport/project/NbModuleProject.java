@@ -921,12 +921,12 @@ public final class NbModuleProject implements Project {
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newAction", // NOI18N
-            "Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newLoader", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newProject", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWindow", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWizard", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newAction", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/emptyLibraryDescriptor", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newLoader", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newProject", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWindow", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newWizard", // NOI18N
             //"Templates/Other/properties.properties", // NOI18N
         };
         static {

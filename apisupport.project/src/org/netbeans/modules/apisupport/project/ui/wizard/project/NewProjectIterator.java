@@ -81,7 +81,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Milos Kleint
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1000, displayName = "#Templates/NetBeansModuleDevelopment/newProject", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newProject.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newProject.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 1000, displayName = "#Templates/NetBeansModuleDevelopment/newProject", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newProject.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newProject.html", category = UIUtil.TEMPLATE_CATEGORY)
 public final class NewProjectIterator extends BasicWizardIterator {
     
     private NewProjectIterator.DataModel data;

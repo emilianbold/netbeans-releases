@@ -57,7 +57,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Martin Krauskopf
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 700, displayName = "#Templates/NetBeansModuleDevelopment/newModuleInstall", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/moduleinstall/module.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 700, displayName = "#Templates/NetBeansModuleDevelopment/newModuleInstall", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/moduleinstall/module.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html", category = UIUtil.TEMPLATE_CATEGORY)
 public final class NewModuleInstallIterator extends BasicWizardIterator {
 
     private DataModel data;

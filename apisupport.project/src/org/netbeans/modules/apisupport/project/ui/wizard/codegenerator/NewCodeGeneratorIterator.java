@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Max Sauer
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1200, displayName = "#Templates/NetBeansModuleDevelopment/newCodeGenerator", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 1200, displayName = "#Templates/NetBeansModuleDevelopment/newCodeGenerator", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewCodeGeneratorIterator extends BasicWizardIterator {
 
     private static final String lineSep = System.getProperty("line.separator"); // NOI18N

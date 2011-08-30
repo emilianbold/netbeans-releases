@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author Max Sauer
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=400,
     displayName="#template_options",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newOptions.png",

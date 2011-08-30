@@ -59,7 +59,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Martin Krauskopf
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=300,
     displayName="#template_wizard",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newWizard.png",

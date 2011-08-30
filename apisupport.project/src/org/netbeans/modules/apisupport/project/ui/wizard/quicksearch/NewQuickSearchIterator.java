@@ -59,7 +59,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Max Sauer
  */
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 800, displayName = "#Templates/NetBeansModuleDevelopment/newQuickSearch", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 800, displayName = "#Templates/NetBeansModuleDevelopment/newQuickSearch", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewQuickSearchIterator extends BasicWizardIterator {
 
     private static final String[] HARDCODED_IMPORTS = new String[]{
