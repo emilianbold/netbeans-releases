@@ -242,7 +242,9 @@ public class JavaFixAllImports {
             }
         }
 
-        cut = GeneratorUtilities.get(wc).addImports(cut, toImport);
+        if (!toImport.isEmpty()) {
+            cut = GeneratorUtilities.get(wc).addImports(cut, toImport);
+        }
 
         wc.rewrite(wc.getCompilationUnit(), cut);
 
