@@ -484,6 +484,7 @@ public class RemoteServices {
                             ArrayReference allDataArray = (ArrayReference) argumentValues.get(1);
                             int totalLength = allDataArray.length();
                             List<Value> dataValues = allDataArray.getValues();
+                            String[] eventProps = null;
                             for (int i = 0; i < totalLength; ) {
                                 StringReference sr = (StringReference) dataValues.get(i);
                                 String dataLengthStr = sr.value();
@@ -496,7 +497,12 @@ public class RemoteServices {
                                     data[j] = sr.value();
                                     //System.err.println("  data["+i+"] = "+data[j]);
                                 }
-                                listener.eventsData(ci, data);
+                                if (eventProps == null) {
+                                    eventProps = data;
+                                } else {
+                                    listener.eventsData(ci, eventProps, data/*stack*/);
+                                    eventProps = null;
+                                }
                             }
                         } finally {
                             event.resume();
@@ -649,7 +655,7 @@ public class RemoteServices {
     
     public static interface LoggingListenerCallBack {
         
-        public void eventsData(RemoteAWTScreenshot.AWTComponentInfo ci, String[] data);
+        public void eventsData(RemoteAWTScreenshot.AWTComponentInfo ci, String[] data, String[] stack);
         
     }
     
