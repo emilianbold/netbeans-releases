@@ -48,6 +48,7 @@ import com.sun.jdi.VirtualMachine;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
@@ -65,12 +70,15 @@ import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
@@ -87,8 +95,8 @@ import org.openide.util.Utilities;
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class })
-public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class, TreeExpansionModelFilter.class })
+public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, TreeExpansionModelFilter {
     
     private static final String customListeners = "customListeners"; // NOI18N
     private static final String swingListeners = "swingListeners"; // NOI18N
@@ -100,8 +108,10 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
     private List<RemoteListener> customListenersList;
     private List<RemoteListener> swingListenersList;
+    private JPDADebugger debugger;
     
-    public EventsModel() {
+    public EventsModel(ContextProvider contextProvider) {
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         ScreenshotUIManager uiManager = ScreenshotUIManager.getActive();
         if (uiManager != null) {
             ComponentInfo ci = uiManager.getSelectedComponent();
@@ -230,7 +240,10 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             }
         }
         if (parent instanceof RemoteEvent) {
-            return ((RemoteEvent) parent).getProperties();
+            return ((RemoteEvent) parent).getPropertiesWithStackNode();
+        }
+        if (parent instanceof Stack) {
+            return ((Stack) parent).getStackElements();
         }
         return new Object[] {};
     }
@@ -249,6 +262,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             return (l == null || l.isEmpty());
         }
         if (node instanceof RemoteListener) {
+            return true;
+        }
+        if (node instanceof Stack.Element) {
             return true;
         }
         if (node instanceof String) {
@@ -313,6 +329,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             if (end < 0) end = toString.length();
             return re.getListenerMethod()+" ("+toString.substring(0, end)+')';
         }
+        if (node instanceof Stack) {
+            return "Called From...";
+        }
+        if (node instanceof Stack.Element) {
+            Stack.Element e = (Stack.Element) node;
+            return "<html>"+e.getClassName()+".<b>"+e.getMethodName()+"</b>(<font color=\"#0000FF\">"+e.getFileName()+":"+e.getLineNumber()+"</font>)";
+        }
         return String.valueOf(node);
     }
 
@@ -339,6 +362,19 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
 
     @Override
     public void performDefaultAction(Object node) throws UnknownTypeException {
+        if (node instanceof Stack.Element) {
+            final Stack.Element e = (Stack.Element) node;
+            String type = e.getClassName();
+            type = EditorContextBridge.getRelativePath (type);
+            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(type, true);
+            if (url != null) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        EditorContextBridge.getContext().showSource(url, e.getLineNumber(), null);
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -355,6 +391,38 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             }
         }
         return new Action[] {};
+    }
+    
+    private boolean customListenersExpanded = true;
+    private boolean eventsExpanded = true;
+
+    @Override
+    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
+        if (node == customListeners) {
+            return customListenersExpanded;
+        } else if (node == eventsLog) {
+            return eventsExpanded;
+        } else {
+            return original.isExpanded(node);
+        }
+    }
+
+    @Override
+    public void nodeExpanded(Object node) {
+        if (node == customListeners) {
+            customListenersExpanded = true;
+        } else if (node == eventsLog) {
+            eventsExpanded = true;
+        }
+    }
+
+    @Override
+    public void nodeCollapsed(Object node) {
+        if (node == customListeners) {
+            customListenersExpanded = false;
+        } else if (node == eventsLog) {
+            eventsExpanded = false;
+        }
     }
     
     private static class ListenerCategory {
@@ -566,8 +634,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     private class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
 
         @Override
-        public void eventsData(AWTComponentInfo ci, String[] data) {
-            RemoteEvent re = new RemoteEvent(data);
+        public void eventsData(AWTComponentInfo ci, String[] data, String[] stack) {
+            RemoteEvent re = new RemoteEvent(data, stack);
             /*
             System.err.println("Have data about "+ci.getType()+":");//\n  "+Arrays.toString(data));
             System.err.println("  Method: "+data[0]+", event toString() = "+data[1]);
@@ -586,9 +654,11 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     private class RemoteEvent {
         
         private String[] data;
+        private Stack stack;
         
-        public RemoteEvent(String[] data) {
+        public RemoteEvent(String[] data, String[] stack) {
             this.data = data;
+            this.stack = new Stack(stack);
         }
         
         public String getListenerMethod() {
@@ -599,14 +669,88 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             return data[1];
         }
         
-        public String[] getProperties() {
-            String[] properties = new String[data.length/2 - 1];
-            for (int i = 0; i < properties.length; i++) {
+        public Object[] getPropertiesWithStackNode() {
+            int propertiesLength = data.length/2 - 1;
+            Object[] properties = new Object[propertiesLength + 1];
+            for (int i = 0; i < propertiesLength; i++) {
                 properties[i] = data[2 + 2*i] + " = "+data[3 + 2*i];
             }
+            properties[propertiesLength] = stack;
             return properties;
         }
         
+        public Stack getStack() {
+            return stack;
+        }
+        
+    }
+    
+    private static class Stack {
+        
+        private String[] stack;
+        private String listener = null;
+        private Element[] elements = null;
+        
+        public Stack(String[] stack) {
+            this.stack = stack;
+        }
+        
+        public synchronized Element[] getStackElements() {
+            if (elements == null) {
+                elements = new Element[stack.length - 1];
+                for (int i = 1; i < stack.length; i++) {
+                    elements[i - 1] = new Element(stack[i]);
+                }
+            }
+            return elements;
+        }
+        
+        static class Element {
+            
+            private String line;
+            private boolean parsed = false;
+            private String className;
+            private String methodName;
+            private String fileName;
+            private int lineNumber;
+            
+            // <class name>.<method>(<file name>:<line number>)
+            public Element(String line) {
+                this.line = line;
+            }
+            
+            private synchronized void parse() {
+                if (parsed) return;
+                int i = line.indexOf('(');
+                int mi = line.substring(0, i).lastIndexOf('.');
+                int ci = line.lastIndexOf(':');
+                className = line.substring(0, mi);
+                methodName = line.substring(mi + 1, i);
+                fileName = line.substring(i + 1, ci);
+                String lineStr = line.substring(ci + 1, line.length() - 1);
+                lineNumber = Integer.parseInt(lineStr);
+            }
+            
+            public String getClassName() {
+                parse();
+                return className;
+            }
+            
+            public String getMethodName() {
+                parse();
+                return methodName;
+            }
+            
+            public String getFileName() {
+                parse();
+                return fileName;
+            }
+            
+            public int getLineNumber() {
+                parse();
+                return lineNumber;
+            }
+        }
     }
     
 }

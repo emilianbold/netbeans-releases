@@ -172,7 +172,7 @@ public class Utils {
         // wait until server is not in transient state
         J2eeServerNode serverNode = new J2eeServerNode(DEFAULT_SERVER);
         serverNode.waitFinished();
-        new EventTool().waitNoEvent(2000);
+        new EventTool().waitNoEvent(500);
 
         /*
          * cannot be used because of this issue 71263 ('User program finished'
@@ -188,10 +188,11 @@ public class Utils {
 
     private static void waitDebuggerFinished() {
         for (int i = 0; i < 10; i++) {
-            if (!MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|Finish Debugger Session").isEnabled()) {
+            boolean enabled = MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|Finish Debugger Session").isEnabled();
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            if (!enabled) {
                 break;
             }
-            MainWindowOperator.getDefault().menuBar().closeSubmenus();
             new EventTool().waitNoEvent(300);
         }
     }

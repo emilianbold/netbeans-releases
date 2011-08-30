@@ -93,7 +93,7 @@ public class RemoteAWTService {
         RemoteAWTServiceListener.remove(c, listener);
     }
     
-    static void pushEventData(Component c, String[] data) {
+    static void pushEventData(Component c, String[] data, String[] stack) {
         synchronized (eventData) {
             List ld = (List) eventData.get(c);
             if (ld == null) {
@@ -101,6 +101,7 @@ public class RemoteAWTService {
                 eventData.put(c, ld);
             }
             ld.add(data);
+            ld.add(stack);
         }
     }
     

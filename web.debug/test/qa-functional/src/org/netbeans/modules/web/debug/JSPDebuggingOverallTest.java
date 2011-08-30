@@ -253,8 +253,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     /** Restart debugger after server stopped.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
-     * - check it is not possible to stop server
-     * - finish debugger
+     * - check proper state of actions on server node
      * - stop server
      * - start debugger again
      * - wait until debugger stops at breakpoint
@@ -272,7 +271,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         stt.waitText("index.jsp:" + line);
         stt.clear();
 
-        // check it is not possible to stop server
+        // check actions on server node are in proper state
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         assertFalse("Start action on server node should be disabled when stopped at breakpoint.", new StartAction().isEnabled(serverNode));
         assertTrue("Stop action on server node should be enabled when stopped at breakpoint.", new StopAction().isEnabled(serverNode));
@@ -280,9 +279,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         assertFalse("Start in Debug Mode action on server node should be disabled when stopped at breakpoint.", new StartDebugAction().isEnabled(serverNode));
         assertTrue("Refresh action on server node should be enabled when stopped at breakpoint.", new RefreshAction().isEnabled(serverNode));
 
-        Utils.finishDebugger();
-        verifyServerNode(serverNode);
-        J2eeServerNode.invoke(Utils.DEFAULT_SERVER).stop();
+        serverNode.stop();
         // start debugger again
         new DebugProjectAction().perform();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");

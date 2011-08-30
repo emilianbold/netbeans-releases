@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
 import java.awt.Component;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -134,7 +136,50 @@ public class RemoteAWTServiceListener implements InvocationHandler {
             data[i++] = name;
             data[i++] = value;
         }
-        RemoteAWTService.pushEventData(c, data);
+        String[] stack = retrieveStack();
+        RemoteAWTService.pushEventData(c, data, stack);
+    }
+    
+    private static final int STACK_OFFSET = 8;
+    
+    private static String[] retrieveStack() {
+        //Thread.currentThread().getStackTrace(); JDK 5 call
+        Thread t = Thread.currentThread();
+        try {
+            Method getStackTrace;
+            try {
+                getStackTrace = Thread.class.getMethod("getStackTrace", new Class[] {});
+            } catch (Exception ex) {
+                // JDK 5 methods not available
+                // new Exception().getStackTrace(); JDK 1.4 call
+                getStackTrace = Exception.class.getMethod("getStackTrace", new Class[] {});
+            }
+            Object[] stackTraceElements = (Object[]) getStackTrace.invoke(t, new Object[] {});
+            int n = stackTraceElements.length;
+            int s = Math.min(STACK_OFFSET, n);
+            String[] elements = new String[n - s];
+            for (int i = s; i < n; i++) {
+                Method getClassName = stackTraceElements[i].getClass().getMethod("getClassName", new Class[] {});
+                String className = (String) getClassName.invoke(stackTraceElements[i], new Object[] {});
+                Method getMethodName = stackTraceElements[i].getClass().getMethod("getMethodName", new Class[] {});
+                String methodName = (String) getMethodName.invoke(stackTraceElements[i], new Object[] {});
+                Method getFileName = stackTraceElements[i].getClass().getMethod("getFileName", new Class[] {});
+                String fileName = (String) getFileName.invoke(stackTraceElements[i], new Object[] {});
+                Method getLineNumber = stackTraceElements[i].getClass().getMethod("getLineNumber", new Class[] {});
+                Integer lineNumber = (Integer) getLineNumber.invoke(stackTraceElements[i], new Object[] {});
+                elements[i - s] = className + "." + methodName + "(" + fileName + ":" + lineNumber + ")";
+            }
+            return elements;
+        } catch (Exception ex) {
+        }
+        // JDK 1.3 or older
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        new Exception().printStackTrace(pw);
+        pw.close();
+        StringBuffer sb = sw.getBuffer();
+        // TODO
+        return new String[] { sb.toString() };
     }
     
 }
