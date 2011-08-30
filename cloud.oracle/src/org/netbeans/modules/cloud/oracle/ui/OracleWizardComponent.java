@@ -44,6 +44,7 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -61,7 +62,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
     private ChangeListener l;
     private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
     
-    private static final boolean SHOW_CLOUD_URLS = Boolean.getBoolean("oracle.cloud.dev");
+    private static final boolean SHOW_CLOUD_URLS = true; // XXXXXX  //Boolean.getBoolean("oracle.cloud.dev");
     
     /** Creates new form OracleWizardComponent */
     public OracleWizardComponent(OracleInstance oi) {
@@ -80,8 +81,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             userNameTextField.setText("system");
             passwordField.setText("welcome1");
             adminURLTextField.setText("http://140.84.133.191:7001/");
-            instanceURLTextField.setText("http://140.84.133.191:7001/");
-            cloudURLTextField.setText("http://140.84.133.191:7001/");
+            instanceURLTextField.setText("http://140.84.133.191:9001/");
+            cloudURLTextField.setText("http://cloud.oracle.com");
         }
         
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
@@ -96,8 +97,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             serviceNameTextField.setText(oi.getService());
             serviceNameTextField.setEditable(false);
         } else {
-            adminURLTextField.setText(ADMIN_URL); // NOI18N
-            cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
+            if (!SHOW_CLOUD_URLS) {
+                adminURLTextField.setText(ADMIN_URL); // NOI18N
+                cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
+            }
         }
         adminURLTextField.getDocument().addDocumentListener(this);
         instanceURLTextField.getDocument().addDocumentListener(this);
@@ -314,7 +317,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         if (ADMIN_URL.equals(adminURLTextField.getText()) && 
                 (e.getDocument() == serviceNameTextField.getDocument() ||
                  e.getDocument() == tenantIdTextField.getDocument())) {
-            instanceURLTextField.setText(String.format("https://{0}.{1}.java.cloud.oracle.com", getService(), getSystem()));
+            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getService(), getSystem()));
         }
     }
 }
