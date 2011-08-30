@@ -62,7 +62,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class GoToSourceAction extends NodeAction {
     
-    private RequestProcessor rp = new RequestProcessor("Go to Source");
+    static RequestProcessor RP = new RequestProcessor("Go to Source");
 
     @Override
     protected void performAction(Node[] activatedNodes) {
@@ -70,7 +70,7 @@ public class GoToSourceAction extends NodeAction {
             JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
                 final String type = ci.getType();
-                rp.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         showSource(type);
@@ -80,7 +80,7 @@ public class GoToSourceAction extends NodeAction {
             RemoteListener rl = n.getLookup().lookup(RemoteListener.class);
             if (rl != null) {
                 final String clazz = rl.getListener().referenceType().name();
-                rp.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         showSource(clazz);

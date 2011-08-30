@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda.event;
 
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.event.Event;
 import java.util.EventObject;
 import org.netbeans.api.debugger.jpda.*;
 
@@ -72,6 +73,7 @@ public final class JPDABreakpointEvent extends EventObject {
     private ReferenceType   referenceType;
     private Variable        variable;
     private boolean         resume = false;
+    private Event           event;  // The original event for special purposes
     
 
     /**

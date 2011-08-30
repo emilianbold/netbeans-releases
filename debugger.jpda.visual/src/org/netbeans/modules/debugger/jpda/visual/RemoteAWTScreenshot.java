@@ -89,6 +89,7 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToAddIntoHierarchyAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
@@ -559,11 +560,13 @@ public class RemoteAWTScreenshot {
             if (fieldInfo != null) {
                 return new SystemAction[] { GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class),
                                             GoToSourceAction.get(GoToSourceAction.class),
+                                            GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
                                             ShowListenersAction.get(ShowListenersAction.class),
                                             ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
                 
             } else {
                 return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
+                                            GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
                                             ShowListenersAction.get(ShowListenersAction.class),
                                             ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
             }

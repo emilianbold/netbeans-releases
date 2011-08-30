@@ -358,7 +358,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
                         handle.finish();
                     }
                     t.set(null);
-                    if (nbmp == null || nbmp.getMavenProject().getId().equals("error:error:pom:0")) {
+                    if (nbmp == null || NbMavenProject.isErrorPlaceholder(nbmp.getMavenProject())) {
                         setFinder(null);
                         StatusDisplayer.getDefault().setStatusText(ResumeAction_could_not_find_module());
                         return;

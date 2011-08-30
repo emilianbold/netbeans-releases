@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.nodes;
 
 import java.awt.Image;
@@ -51,29 +52,29 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
-
 
 /** A node to represent project root.
  *
  * @author Milos Kleint
  */
+@Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
 public class MavenProjectNode extends AbstractNode {
     static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
-     private static String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" //NOI18N
-            + NbBundle.getMessage(MavenProjectNode.class, "ICON_BrokenProjectBadge");//NOI18N
+    private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
      private NbMavenProjectImpl project;
      private ProjectInformation info;
@@ -155,25 +156,39 @@ public class MavenProjectNode extends AbstractNode {
         return CommonProjectActions.forType("org-netbeans-modules-maven"); // NOI18N
     }
 
-    @Override
-    public String getShortDescription() {
+    @Messages({
+        "TXT_FailedProjectLoadingDesc=This project could not be loaded by the NetBeans integration. "
+            + "That usually means something is wrong with your pom.xml, or plugins are missing. "
+            + "Select \"Show and Resolve Problems\" from the project's context menu for additional information.",
+        "DESC_Project1=Location:",
+        "DESC_Project2=GroupId:",
+        "DESC_Project3=ArtifactId:",
+        "DESC_Project4=Version:",
+        "DESC_Project5=Packaging:",
+        "DESC_Project6=Description:",
+        "DESC_Project7=Problems:"
+    })
+    @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
         String desc;
-        if (project.isErrorPom(project.getOriginalMavenProject())) {
-            desc = NbBundle.getMessage(MavenProjectNode.class, "TXT_FailedProjectLoadingDesc");
+        boolean errorPlaceholder = NbMavenProject.isErrorPlaceholder(project.getOriginalMavenProject());
+        if (errorPlaceholder) {
+            desc = TXT_FailedProjectLoadingDesc();
         } else {
+            //TODO escape the short description
             desc = project.getShortDescription();
         }
-        buf.append("<html><i>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project1")).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project2")).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project3")).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project4")).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
-        //TODO escape the short description
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project6")).append("</i> ").append(breakPerLine(desc, NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
+        buf.append("<html><i>").append(DESC_Project1()).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
+        if (!errorPlaceholder) {
+            buf.append(DESC_Project2()).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project3()).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project4()).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project5()).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
+        }
+        buf.append(DESC_Project6()).append("</i> ").append(breakPerLine(desc, DESC_Project5().length()));//NOI18N
         Collection<ProblemReport> problems = reporter.getReports();
         if (!problems.isEmpty()) {
-            buf.append("<br><b>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project7")).append("</b><br><ul>");//NOI18N
+            buf.append("<br><b>").append(DESC_Project7()).append("</b><br><ul>");//NOI18N
             for (ProblemReport elem : problems) {
                 buf.append("<li>").append(elem.getShortDescription()).append("</li>");//NOI18N
             }
