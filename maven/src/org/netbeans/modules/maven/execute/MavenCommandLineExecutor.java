@@ -305,13 +305,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.getReactorStyle() != RunConfig.ReactorStyle.NONE) {
             File basedir = config.getExecutionDirectory();
             MavenProject mp = config.getMavenProject();
-            String id = mp.getGroupId() + ':' + mp.getArtifactId();
-            File projdir = id.equals("error:error") ? basedir : mp.getBasedir();
+            File projdir = NbMavenProject.isErrorPlaceholder(mp) ? basedir : mp.getBasedir();
             String rel = basedir != null && projdir != null ? FileUtilities.relativizeFile(basedir, projdir) : null;
             if (!".".equals(rel)) {
                 toRet.add(config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE ? "--also-make" : "--also-make-dependents");
                 toRet.add("--projects");
-                toRet.add(rel != null ? rel : id);
+                toRet.add(rel != null ? rel : mp.getGroupId() + ':' + mp.getArtifactId());
             }
         }
 

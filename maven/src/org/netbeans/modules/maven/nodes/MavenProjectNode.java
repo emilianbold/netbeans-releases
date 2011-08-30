@@ -171,7 +171,7 @@ public class MavenProjectNode extends AbstractNode {
     @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
         String desc;
-        if (project.isErrorPom(project.getOriginalMavenProject())) {
+        if (NbMavenProject.isErrorPlaceholder(project.getOriginalMavenProject())) {
             desc = TXT_FailedProjectLoadingDesc();
         } else {
             //TODO escape the short description
