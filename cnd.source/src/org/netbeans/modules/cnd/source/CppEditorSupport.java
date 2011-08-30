@@ -48,9 +48,6 @@ package org.netbeans.modules.cnd.source;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
@@ -58,9 +55,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
-import org.netbeans.modules.cnd.source.spi.CndMultiViewProvider;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
@@ -249,32 +243,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                 return pane;
             }
         }
-        
-        DataObject dataObject = getDataObject();
-        if (dataObject != null && dataObject.isValid()) {
-            Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
-            if (!providers.isEmpty()) {
-                MultiViewDescription defaultOne = null;
-                List<MultiViewDescription> descriptions = new ArrayList<MultiViewDescription>();
-                descriptions.add(new StandardDescriptor());
-                for (CndMultiViewProvider provider : providers) {
-                    MultiViewDescription d = provider.addMultiViewDescriptions(dataObject, descriptions);
-                    if (d != null) {
-                        defaultOne = d;
-                    }
-                }
-                if (descriptions.size() > 1) {
-                    if (defaultOne == null && descriptions.size() > 0) {
-                        defaultOne = descriptions.get(0);
-                    }
-                    CloneableEditorSupport.Pane pane= (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
-                            descriptions.toArray(new MultiViewDescription[descriptions.size()]), defaultOne);
-                    return pane;
-                }
-            }
-        }
-//        return super.createPane();
-         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
     
     
