@@ -171,17 +171,20 @@ public class MavenProjectNode extends AbstractNode {
     @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
         String desc;
-        if (NbMavenProject.isErrorPlaceholder(project.getOriginalMavenProject())) {
+        boolean errorPlaceholder = NbMavenProject.isErrorPlaceholder(project.getOriginalMavenProject());
+        if (errorPlaceholder) {
             desc = TXT_FailedProjectLoadingDesc();
         } else {
             //TODO escape the short description
             desc = project.getShortDescription();
         }
         buf.append("<html><i>").append(DESC_Project1()).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
-        buf.append(DESC_Project2()).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
-        buf.append(DESC_Project3()).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
-        buf.append(DESC_Project4()).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
-        buf.append(DESC_Project5()).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
+        if (!errorPlaceholder) {
+            buf.append(DESC_Project2()).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project3()).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project4()).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project5()).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
+        }
         buf.append(DESC_Project6()).append("</i> ").append(breakPerLine(desc, DESC_Project5().length()));//NOI18N
         Collection<ProblemReport> problems = reporter.getReports();
         if (!problems.isEmpty()) {
