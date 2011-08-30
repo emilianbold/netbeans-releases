@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -96,7 +96,7 @@ public class GeneratingBracketCompleter {
 
     static void generateDocTags(final BaseDocument doc, final int offset, final int indent) {
         FileObject file = NavUtils.getFile(doc);
-        
+
         if (file == null) {
             return ;
         }
@@ -149,7 +149,7 @@ public class GeneratingBracketCompleter {
                     if (n instanceof MethodDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
                     }
-                    
+
                     if (n instanceof ExpressionStatement) {
                         if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
                             Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
@@ -157,12 +157,12 @@ public class GeneratingBracketCompleter {
                                 ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
                                 if (arrayAccess.getName() instanceof Variable) {
                                     Variable variable = (Variable)arrayAccess.getName();
-                                    if (variable.isDollared() 
+                                    if (variable.isDollared()
                                             && variable.getName() instanceof Identifier
                                             && "GLOBALS".equals(((Identifier)variable.getName()).getName())
                                             && arrayAccess.getIndex() instanceof Scalar) {
                                         String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
-                                        if(index.length() > 0 
+                                        if(index.length() > 0
                                                 && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
                                             index = index.substring(1, index.length() - 1);
                                         }
@@ -195,34 +195,34 @@ public class GeneratingBracketCompleter {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
     }
-    
+
     static final String TYPE_PLACEHOLDER = "type";
-    
+
     private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, ParserResult info, FunctionDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
         ScannerImpl i = new ScannerImpl(info, decl);
-        
+
         i.scan(decl);
-        
+
         addVariables(doc, toAdd, "@global", indent, i.globals);
         addVariables(doc, toAdd, "@staticvar", indent, i.staticvars);
         addVariables(doc, toAdd, "@param", indent, i.params);
-                
+
         if (i.hasReturn) {
             generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
         }
-        
+
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
-    
+
     private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<String, String>> vars) {
         for (Pair<String, String> p : vars) {
             generateDocEntry(doc, toAdd, text,indent, p.getA(), p.getB());
         }
     }
-        
+
     private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, String type) {
         toAdd.append("\n");
         toAdd.append(IndentUtils.createIndentString(doc, indent));
@@ -243,25 +243,25 @@ public class GeneratingBracketCompleter {
             toAdd.append(name);
         }
     }
-    
+
     private static void generateGlobalVariableDoc (BaseDocument doc, int offset, int indent, String indexName, String type) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
 
         generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + indexName + "']", type);
         toAdd.append("\n").append(IndentUtils.createIndentString(doc, indent));
         toAdd.append(" * ").append("@name $").append(indexName);
-        
+
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
-    
+
     private static void generateFieldDoc(BaseDocument doc, int offset, int indent, ParserResult info, FieldsDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
 
         generateDocEntry(doc, toAdd, "@var", indent, null, null);
-        
+
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
-    
+
     private static class ScannerImpl extends DefaultVisitor {
         private List<Pair<String, String>> globals = new LinkedList<Pair<String, String>>();
         private List<Pair<String, String>> staticvars = new LinkedList<Pair<String, String>>();
@@ -281,7 +281,7 @@ public class GeneratingBracketCompleter {
                     fnc = (FunctionScope) variableScope;
                     declaredVariables.addAll(fnc.getDeclaredVariables());
                 } else { fnc = null;}
-            } else { fnc = null;} 
+            } else { fnc = null;}
             this.decl = decl;
         }
 
@@ -323,7 +323,7 @@ public class GeneratingBracketCompleter {
         }
 
 
-        
+
         @Override
         public void visit(GlobalStatement node) {
             for (Variable v : node.getVariables()) {
@@ -339,7 +339,7 @@ public class GeneratingBracketCompleter {
                     }
                 }
             }
-            
+
             super.visit(node);
         }
 
@@ -369,7 +369,7 @@ public class GeneratingBracketCompleter {
                     }
                 }
             }
-            
+
             super.visit(node);
         }
 
@@ -384,9 +384,9 @@ public class GeneratingBracketCompleter {
         @Override
         public void visit(ClassDeclaration node) {
         }
-        
+
     }
-    
+
     private static final class Pair<A, B> {
         private A a;
         private B b;
@@ -403,7 +403,7 @@ public class GeneratingBracketCompleter {
         public B getB() {
             return b;
         }
-        
+
     }
 
 }
