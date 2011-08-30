@@ -133,6 +133,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         this.panel = new RemoteRepositoryPanel();
         this.urlFixed = fixedUrl;
         settingTypes = new ConnectionSettingsType[] {
+            new GitConnectionSettingsType(),
             new SSHConnectionSettingsType(),
             new FileConnectionSettingsType(),
             new DefaultConnectionSettingsType()
@@ -765,6 +766,67 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 panel.connectionSettings.removeAll();
 
                 panel.tipLabel.setText(Scheme.FILE.getTip());
+            }
+            return accepts;
+        }
+    }
+    
+    private class GitConnectionSettingsType extends ConnectionSettingsType {
+        private final JComponent[] inputFields;
+        
+        public GitConnectionSettingsType () {
+            this.inputFields = new JComponent[] {
+                panel.urlComboBox,
+                panel.directoryBrowseButton,
+                panel.proxySettingsButton,
+                panel.repositoryLabel,
+                panel.tipLabel
+            };
+        }
+        
+        @Override
+        protected void setEnabled (boolean enabled) {
+            for (JComponent inputField : inputFields) {
+                inputField.setEnabled(enabled);
+            }
+        }
+        
+        @Override
+        protected void store () {
+            GitURI guri = getURI();
+            assert guri != null;
+            if(guri == null) {
+                return;
+            }
+            
+            final ConnectionSettings settings = new ConnectionSettings(guri);
+            
+            Runnable outOfAWT = new Runnable() {
+                @Override
+                public void run() {
+                    GitModuleConfig.getDefault().insertRecentConnectionSettings(settings);
+                    recentConnectionSettings.put(settings.getUri().setUser(null).toString(), settings);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Git.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        
+        @Override
+        protected boolean acceptUri (GitURI uri) {
+            boolean accepts = false;
+            panel.tipLabel.setText(null);
+            if (uri.getScheme() != null && uri.getScheme().equals(Scheme.GIT.toString())) {
+                accepts = true;
+                panel.tipLabel.setText(Scheme.GIT.getTip());
+            }
+            if (accepts) {
+                panel.directoryBrowseButton.setVisible(false);
+                panel.proxySettingsButton.setVisible(true);
+                panel.connectionSettings.removeAll();
             }
             return accepts;
         }
