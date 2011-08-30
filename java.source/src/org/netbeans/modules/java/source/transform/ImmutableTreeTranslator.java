@@ -514,11 +514,11 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         
         importAnalysis.setCompilationUnit(tree);
         importAnalysis.setPackage(tree.getPackageName());
-        importAnalysis.setImports(translate(tree.getImports()));
+        List<? extends ImportTree> imps = translate(tree.getImports());
+        importAnalysis.setImports(imps);
         
         List<? extends AnnotationTree> annotations = translate(tree.getPackageAnnotations());
         List<? extends Tree> types = translate(tree.getTypeDecls());
-        List<? extends ImportTree> imps = tree.getImports();
         
         Set<? extends Element> newImports = importAnalysis.getImports();
         if (copy != null && newImports != null && !newImports.isEmpty()) {
