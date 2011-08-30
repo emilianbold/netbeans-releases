@@ -960,7 +960,7 @@ public final class NbMavenProjectImpl implements Project {
 
         
         @Messages({
-            "# {0} - dir basename", "LBL_misconfigured_project=<misconfigured Maven project in {0}>",
+            "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
             "TXT_Maven_project_at=Maven project at {0}"
         })
         @Override public String getDisplayName() {
