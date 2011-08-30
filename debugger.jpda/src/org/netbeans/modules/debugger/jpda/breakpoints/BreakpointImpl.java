@@ -54,6 +54,7 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.WatchpointEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
@@ -104,6 +105,7 @@ import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -457,6 +459,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 referenceType,
                 variable
             );
+        }
+        try {
+            java.lang.reflect.Field f = e.getClass().getDeclaredField("event"); // NOI18N
+            f.setAccessible(true);
+            f.set(e, event);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
         getDebugger ().fireBreakpointEvent (
             getBreakpoint (),
