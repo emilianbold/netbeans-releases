@@ -44,6 +44,7 @@ package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
@@ -53,7 +54,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -63,6 +63,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
@@ -71,7 +73,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -101,6 +102,7 @@ import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -343,21 +345,36 @@ public final class BIEditorSupport extends DataEditorSupport
         return dobj.getLookup().lookup(BIEditorSupport.class);
     }
     
-    private static final class CloseHandler implements CloseOperationHandler, Serializable {
-
-        private static final long serialVersionUID = 1L;
-        private final DataObject dataObject;
-
-        public CloseHandler(DataObject dataObject) {
-            this.dataObject = dataObject;
+    final CloseOperationState canCloseElement(TopComponent tc) {
+        // if this is not the last cloned java editor component, closing is OK
+        if (!isLastView(tc)) {
+            return CloseOperationState.STATE_OK;
         }
-        
-        public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            BIEditorSupport editor = findEditor(dataObject);
-            return editor != null ? editor.canClose() : true;
+
+        if (!isModified()) {
+            return CloseOperationState.STATE_OK;
         }
-        
+
+        AbstractAction save = new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        save.putValue(Action.LONG_DESCRIPTION, NbBundle.getMessage(BIEditorSupport.class, "MSG_MODIFIED", getDataObject().getPrimaryFile().getNameExt()));
+
+        // return a placeholder state - to be sure our CloseHandler is called
+        return MultiViewFactory.createUnsafeCloseState(
+                "ID_BEANINFO_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
     }
+    
     
     @MultiViewElement.Registration(displayName = "#LAB_JavaSourceView",
         iconBase = JavaTemplates.JAVA_ICON,
@@ -412,13 +429,10 @@ public final class BIEditorSupport extends DataEditorSupport
             editor.setTopComponent(callback.getTopComponent());
         }
 
+        @Override
         public CloseOperationState canCloseElement() {
-            return isLastView(callback.getTopComponent())
-                    ? MultiViewFactory.createUnsafeCloseState(
-                            MV_JAVA_ID,
-                            MultiViewFactory.NOOP_CLOSE_ACTION,
-                            MultiViewFactory.NOOP_CLOSE_ACTION)
-                    : CloseOperationState.STATE_OK;
+            BIEditorSupport editor = findEditor(dataObject);
+            return editor.canCloseElement(callback.getTopComponent());
         }
 
         @Override
@@ -494,7 +508,7 @@ public final class BIEditorSupport extends DataEditorSupport
             super.writeExternal(oo);
             oo.writeObject(dataObject);
         }
-        
+
     }
 
     private static final class BIGES implements GuardedEditorSupport {
