@@ -64,7 +64,7 @@ class JGitCredentialsProvider extends CredentialsProvider {
 
     @Override
     public boolean isInteractive () {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     @Override
@@ -106,7 +106,9 @@ class JGitCredentialsProvider extends CredentialsProvider {
             } else if (item instanceof CredentialItem.StringType) {
                 CredentialItem.StringType credItem = (CredentialItem.StringType) item;
                 String answer;
-                if (credItem.getPromptText().toLowerCase().contains("password for")) { //NOI18N
+                if (credItem instanceof IdentityFileItem) {
+                    answer = callback.getIdentityFile(uri, credItem.getPromptText());
+                } else if (credItem.getPromptText().toLowerCase().contains("password for")) { //NOI18N
                     char[] pwd = callback.getPassword(uri, credItem.getPromptText());
                     answer = pwd == null ? null : new String(pwd);
                 } else if (credItem.getPromptText().toLowerCase().contains("passphrase for")) { //NOI18N
@@ -127,4 +129,11 @@ class JGitCredentialsProvider extends CredentialsProvider {
         return retval;
     }
 
+    public static class IdentityFileItem extends CredentialItem.StringType {
+
+        public IdentityFileItem (String promptText, boolean maskValue) {
+            super(promptText, maskValue);
+        }
+        
+    }
 }

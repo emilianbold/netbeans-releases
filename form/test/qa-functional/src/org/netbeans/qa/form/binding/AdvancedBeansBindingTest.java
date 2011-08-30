@@ -113,12 +113,21 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         openFile(FILENAME);
         
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        designer.source();
+       designer.design();
         // select update modes for jlabels
         selectUpdateModeForJLabel(inspector, "jLabel2", BindDialogOperator.READ_ONCE_UPDATE_MODE); // NOI18N
+        designer.source();
+        designer.design();
         selectUpdateModeForJLabel(inspector, "jLabel4", BindDialogOperator.READ_ONLY_UPDATE_MODE); // NOI18N
+        designer.source();
+        designer.design();
         selectUpdateModeForJLabel(inspector, "jLabel6", BindDialogOperator.READ_ONLY_UPDATE_MODE); // NOI18N
+        designer.source();
+        designer.design();
         selectUpdateModeForJLabel(inspector, "jLabel6", BindDialogOperator.READ_WRITE_UPDATE_MODE); // NOI18N
+        
         
         // find generated code
         //findInCode("setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy.READ_ONCE)",designer); // NOI18N
@@ -127,9 +136,14 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         // test values in bind dialog
         assertTrue(getSelectedUpdateModeForJLabel(inspector, "jLabel2")
                 .contains(BindDialogOperator.READ_ONCE_UPDATE_MODE)); // NOI18N
-
-        assertTrue(getSelectedUpdateModeForJLabel(inspector, "jLabel4")
+        designer.source();
+        designer.design();
+        
+               assertTrue(getSelectedUpdateModeForJLabel(inspector, "jLabel4")
                 .contains(BindDialogOperator.READ_ONLY_UPDATE_MODE)); // NOI18N
+        
+        designer.source();
+        designer.design();
         
         assertTrue(getSelectedUpdateModeForJLabel(inspector, "jLabel6")
                 .contains(BindDialogOperator.READ_WRITE_UPDATE_MODE)); // NOI18N
@@ -243,8 +257,11 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
-        
+        designer.source();
+        designer.design();
         Action act = new ActionNoBlock(null, ACTION_PATH);
+        designer.source();
+        designer.design();
         act.performPopup(actNode);
         
         BindDialogOperator bindOp = new BindDialogOperator();
@@ -292,7 +309,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         
         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
         Action act = new ActionNoBlock(null, ACTION_PATH);
-        
+        designer.source();
+        designer.design();
 
         // set the Face2Bool converter from list
         act.perform(actNode);
@@ -342,6 +360,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         designer.source();
         designer.design();
         act = new ActionNoBlock(null, ACTION_PATH);
+        designer.source();
+        designer.design();
         act.perform(actNode);
         bindOp = new BindDialogOperator();        
         bindOp.selectAdvancedTab();        
@@ -377,7 +397,10 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     /* Get selected update mode text caption for jlabel */
     private String getSelectedUpdateModeForJLabel(ComponentInspectorOperator inspector, String jLabelName) {
         // invoke bind dialog
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]|" + jLabelName + " [JLabel]"); // NOI18N
+        designer.source();
+        designer.design();
         Action act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.hints.pom;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,13 +51,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.apache.maven.DefaultMaven;
+import org.apache.maven.Maven;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelProblem;
+import org.apache.maven.model.resolution.UnresolvableModelException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.hints.pom.spi.SelectionPOMFixProvider;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
@@ -66,7 +86,9 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -90,6 +112,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
     private static final String LAYER_POM = "pom"; //NOI18N
     private static final String LAYER_POM_SELECTION = "pom-selection"; //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("StatusProvider"); //NOI18N
+    private static final Logger LOG = Logger.getLogger(StatusProvider.class.getName());
 
     @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
@@ -139,19 +162,21 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 model.sync();
                 // model.refresh();
             } catch (IOException ex) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
+                LOG.log(Level.FINE, "Error while syncing pom model.", ex);
             }
 
             final List<ErrorDescription> err = new ArrayList<ErrorDescription>();
 
             if (!model.getState().equals(Model.State.VALID)) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
+                LOG.log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
                 return err;
             }
             if (model.getProject() == null) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model root element missing");
+                LOG.log(Level.FINE, "Pom model root element missing");
                 return err;
             }
+
+            runMavenValidation(model, err);
 
             return ProjectManager.mutex().readAccess(new Mutex.Action<List<ErrorDescription>>() {
                 public @Override List<ErrorDescription> run() {
@@ -234,7 +259,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     }
                 } catch (DataObjectNotFoundException ex) {
                     //#166011 just a minor issue, just log, but don't show to user directly
-                    Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Touched somehow invalidated FileObject", ex);
+                    LOG.log(Level.INFO, "Touched somehow invalidated FileObject", ex);
                 } finally {
                     if (!ok) {
                         HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
@@ -245,6 +270,71 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             return UpToDateStatus.UP_TO_DATE_OK;
         }
 
+    }
+
+    private static void runMavenValidation(final POMModel model, final List<ErrorDescription> err) {
+        File pom = model.getModelSource().getLookup().lookup(File.class);
+        if (pom == null) {
+            return;
+        }
+        ProjectBuildingRequest req = new DefaultProjectBuildingRequest();
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+        req.setLocalRepository(embedder.getLocalRepository());
+        // XXX make API to convert repositoryInfos to List<ArtifactRepository>; cf. NexusRepositoryIndexerImpl & MavenRefactoringElementImplementation
+        List<ArtifactRepository> remoteRepos = new ArrayList<ArtifactRepository>();
+        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            if (!info.isLocal()) {
+                remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
+            }
+        }
+        req.setRemoteRepositories(remoteRepos);
+        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(embedder.createMavenExecutionRequest()));
+        List<ModelProblem> problems;
+        try {
+            problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();
+        } catch (ProjectBuildingException x) {
+            problems = new ArrayList<ModelProblem>();
+            List<ProjectBuildingResult> results = x.getResults();
+            if (results != null) {
+                for (ProjectBuildingResult result : results) {
+                    problems.addAll(result.getProblems());
+                }
+            }
+            Throwable cause = x.getCause();
+            if (cause instanceof ModelBuildingException) {
+                problems.addAll(((ModelBuildingException) cause).getProblems());
+            }
+        }
+        for (ModelProblem problem : problems) {
+            if (!problem.getSource().equals(pom.getAbsolutePath())) {
+                LOG.log(Level.WARNING, "found problem not in {0}: {1}", new Object[] {pom, problem.getSource()});
+                continue;
+            }
+            int line = problem.getLineNumber();
+            if (line <= 0) { // probably from a parent POM
+                /* probably more irritating than helpful:
+                line = 1; // fallback
+                Parent parent = model.getProject().getPomParent();
+                if (parent != null) {
+                    Line l = NbEditorUtilities.getLine(model.getBaseDocument(), parent.findPosition(), false);
+                    if (l != null) {
+                        line = l.getLineNumber() + 1;
+                    }
+                }
+                */
+                continue;
+            }
+            if (problem.getException() instanceof UnresolvableModelException) {
+                // If a <parent> reference cannot be followed because e.g. no projects are opened (so no repos registered), just ignore it.
+                continue;
+            }
+            try {
+                err.add(ErrorDescriptionFactory.createErrorDescription(problem.getSeverity() == ModelProblem.Severity.WARNING ? Severity.WARNING : Severity.ERROR, problem.getMessage(), model.getBaseDocument(), line));
+            } catch (IndexOutOfBoundsException x) {
+                LOG.log(Level.WARNING, "improper line number: {0}", problem);
+            }
+        }
     }
 
 }

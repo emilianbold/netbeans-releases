@@ -54,13 +54,16 @@ import org.netbeans.modules.css.lib.api.Node;
 public class CompletionContext extends EditorFeatureContext {
 
     private final QueryType queryType;
-    private final int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset;
+    private final int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset, activeTokenDiff;
     private final String prefix;
     private final Node activeNode;
     private final TokenSequence<CssTokenId> tokenSequence;
     private final Node activeTokenNode;
 
-    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, TokenSequence<CssTokenId> tokenSequence, QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, int embeddedAnchorOffset, String prefix) {
+    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, 
+            TokenSequence<CssTokenId> tokenSequence, int activeTokenDiff, 
+            QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, 
+            int embeddedAnchorOffset, String prefix) {
         super(result, caretOffset);
         this.tokenSequence = tokenSequence;
         this.activeNode = activeNode;
@@ -70,6 +73,7 @@ public class CompletionContext extends EditorFeatureContext {
         this.embeddedCaretOffset = embeddedCaretOffset;
         this.embeddedAnchorOffset = embeddedAnchorOffset;
         this.prefix = prefix;
+        this.activeTokenDiff = activeTokenDiff;
     }
 
     /**
@@ -120,4 +124,9 @@ public class CompletionContext extends EditorFeatureContext {
     public QueryType getQueryType() {
         return queryType;
     }
+
+    public int getActiveTokenDiff() {
+        return activeTokenDiff;
+    }
+    
 }

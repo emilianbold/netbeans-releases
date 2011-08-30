@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
@@ -95,18 +95,22 @@ public class AddUseImportRule extends AbstractRule {
         super();
     }
 
+    @Override
     public String getId() {
         return "AddUse.Import.Rule";//NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportRuleDesc");
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportRuleDispName");
     }
 
+    @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
@@ -244,6 +248,7 @@ public class AddUseImportRule extends AbstractRule {
                     Collection<? extends UseElement> declaredUses = currentScope.getDeclaredUses();
                     List<? extends UseElement> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseElement>() {
 
+                        @Override
                         public boolean isAccepted(UseElement element) {
                             return element.getName().equalsIgnoreCase(retvalStr);
                         }
@@ -291,18 +296,22 @@ public class AddUseImportRule extends AbstractRule {
             return new OffsetRange(getOffset(), getOffset() + getGeneratedCode().length());
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportFix_Description", getGeneratedCode());
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -357,18 +366,22 @@ public class AddUseImportRule extends AbstractRule {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddUseImportRule.class, "ChangeNameFix_Description", getGeneratedCode());
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -385,7 +398,7 @@ public class AddUseImportRule extends AbstractRule {
             return node.getStartOffset();
         }
     }
-    
+
     private static boolean isClassName(ASTNode parentNode) {
         return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
                 parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||

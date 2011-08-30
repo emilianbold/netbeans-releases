@@ -69,7 +69,7 @@ import org.openide.util.HelpCtx;
  * @author petr, alexeybutenko
  */
 public class JSFConfigurationPanel extends WebModuleExtender {
-    
+
     private final JSFFrameworkProvider framework;
     private final ExtenderController controller;
     private JSFConfigurationPanelVisual component;
@@ -131,9 +131,9 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         facesMapping = "/faces/*"; //NOI18N
         getComponent();
     }
-    
+
     private boolean customizer;
-    
+
     @Override
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
@@ -141,7 +141,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
 
         return component;
     }
-    
+
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
@@ -163,7 +163,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public void update() {
         component.update();
     }
-    
+
     @Override
     public boolean isValid() {
         getComponent();
@@ -173,7 +173,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return false;
     }
-    
+
     @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
@@ -183,15 +183,15 @@ public class JSFConfigurationPanel extends WebModuleExtender {
                 preferredLang.equals(PreferredLanguage.Facelets.getName())) {
             preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
         }
-        return framework.extendImpl(webModule, component.getJsfComponentCustomizer());
+        return framework.extendImpl(webModule, component.getJsfComponentCustomizers());
     }
 
     public ExtenderController getController() {
         return controller;
     }
-    
+
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-    
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -235,31 +235,31 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         if (component !=null)
             component.setURLPattern(pattern);
     }
-    
+
     public boolean validateXML(){
         return validateXml;
     }
-    
+
     public void setValidateXML(boolean ver){
         validateXml = ver;
     }
-    
+
     public boolean verifyObjects(){
         return verifyObjects;
     }
-    
+
     public void setVerifyObjects(boolean val){
         verifyObjects = val;
     }
-    
+
     public boolean packageJars(){
         return component.packageJars();
     }
-    
+
     public String getNewLibraryName(){
         return newLibraryName;
     }
-    
+
     public void setNewLibraryName(String version){
         this.newLibraryName = version;
         fireChangeEvent();
@@ -268,7 +268,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public File getInstallFolder(){
         return installedFolder;
     }
-    
+
     public void setInstallFolder(File folder){
         installedFolder = folder;
         fireChangeEvent();
@@ -320,7 +320,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public LibraryType getLibraryType(){
         return libraryType;
     }
-    
+
     public void setLibraryType(LibraryType value){
         libraryType = value;
     }
@@ -328,7 +328,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public Library getLibrary(){
         return jsfCoreLibrary;
     }
-    
+
     protected void setLibrary(Library library){
         this.jsfCoreLibrary = library;
         fireChangeEvent();
@@ -341,12 +341,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public WebModule getWebModule() {
         return webModule;
     }
-    
+
     protected void setServerLibrary(ServerLibrary library){
         this.serverLibrary = library;
         fireChangeEvent();
     }
-    
+
     public List<? extends JsfComponentImplementation> getEnabledJsfDescriptors() {
         return component.getActivedJsfDescriptors();
     }

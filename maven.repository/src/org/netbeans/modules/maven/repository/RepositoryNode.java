@@ -39,19 +39,22 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
-
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import static org.netbeans.modules.maven.repository.Bundle.*;
 import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -64,7 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -102,22 +105,23 @@ public class RepositoryNode extends AbstractNode {
         return getIcon(arg0);
     }
 
-    @Override
-    public String getShortDescription() {
+    @Messages({
+        "LBL_REPO_ID=Repository ID:<b> {0} </b><p>",
+        "LBL_REPO_Name=Repository Name: <b> {0} </b><p>",
+        "LBL_REPO_Url=Repository URL:<b> {0} </b><p>"
+    })
+    @Override public String getShortDescription() {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("<html>");//NOI18N
 
-        buffer.append(NbBundle.getMessage(RepositoryNode.class,
-                "LBL_REPO_ID", info.getId()));//NOI18N
+        buffer.append(LBL_REPO_ID(info.getId()));
 
-        buffer.append(NbBundle.getMessage(RepositoryNode.class,
-                "LBL_REPO_Name", info.getName()));//NOI18N
+        buffer.append(LBL_REPO_Name(info.getName()));
 
         //show repo url if available
         if (info.getRepositoryUrl() != null) {
-            buffer.append(NbBundle.getMessage(RepositoryNode.class,
-                    "LBL_REPO_Url", info.getRepositoryUrl()));//NOI18N
+            buffer.append(LBL_REPO_Url(info.getRepositoryUrl()));
         }
         buffer.append("</html>");//NOI18N
 
@@ -132,7 +136,7 @@ public class RepositoryNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return !info.getId().equals("local");
+        return RepositoryPreferences.getInstance().isPersistent(info.getId());
     }
 
     @Override
@@ -146,34 +150,48 @@ public class RepositoryNode extends AbstractNode {
         };
     }
     
-    @Override
-    protected Sheet createSheet() {
+    @Messages({
+        "LBL_Id=ID",
+        "LBL_Name=Name",
+        "LBL_Repository_Type=Repository Manager Type",
+        "LBL_Local=Local",
+        "LBL_Local_repository_path=Local repository path",
+        "LBL_Remote_Index=Remote Index Downloadable",
+        "LBL_Remote_URL=Remote Repository URL",
+        "LBL_Remote_Index_URL=Remote Index URL",
+        "LBL_last_indexed=Last Indexed"
+    })
+    @Override protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set basicProps = sheet.get(Sheet.PROPERTIES);
         try {
             Node.Property<?> id = new PropertySupport.Reflection<String>(info, String.class, "getId", null); //NOI18N
-            id.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Id"));
+            id.setDisplayName(LBL_Id());
             id.setShortDescription(""); //NOI18N
             Node.Property<?> name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
-            name.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Name"));
+            name.setDisplayName(LBL_Name());
             name.setShortDescription(""); //NOI18N
             Node.Property<?> type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
-            type.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Repository_Type"));
+            type.setDisplayName(LBL_Repository_Type());
             Node.Property<?> local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
             local.setName("local"); //NOI18N
-            local.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Local"));
+            local.setDisplayName(LBL_Local());
             local.setShortDescription("");
             Node.Property<?> localRepoLocation = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryPath", null); //NOI18N
-            localRepoLocation.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Local_repository_path"));
+            localRepoLocation.setDisplayName(LBL_Local_repository_path());
             Node.Property<?> remoteDownloadable = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isRemoteDownloadable", null); //NOI18N
-            remoteDownloadable.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index"));
+            remoteDownloadable.setDisplayName(LBL_Remote_Index());
             Node.Property<?> repoURL = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryUrl", null); //NOI18N
-            repoURL.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_URL"));
+            repoURL.setDisplayName(LBL_Remote_URL());
             Node.Property<?> indexURL = new PropertySupport.Reflection<String>(info, String.class, "getIndexUpdateUrl", null); //NOI18N
-            indexURL.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index_URL"));
+            indexURL.setDisplayName(LBL_Remote_Index_URL());
+            Node.Property<?> lastIndexed = new PropertySupport.ReadOnly<Date>("lastIndexed", Date.class, LBL_last_indexed(), null) {
+                @Override public Date getValue() throws IllegalAccessException, InvocationTargetException {
+                    return RepositoryPreferences.getInstance().getLastIndexUpdate(info.getId());
+                }
+            };
             basicProps.put(new Node.Property<?>[] {
-                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL
-            
+                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();
@@ -183,9 +201,9 @@ public class RepositoryNode extends AbstractNode {
 
     public class RefreshIndexAction extends AbstractAction {
         
+        @Messages("LBL_REPO_Update_Index=Update Index")
         public RefreshIndexAction() {
-            putValue(NAME, NbBundle.getMessage(RepositoryNode.class,
-                    "LBL_REPO_Update_Index"));//NOI18N
+            putValue(NAME, LBL_REPO_Update_Index());
         }
 
         public @Override void actionPerformed(ActionEvent e) {
@@ -204,15 +222,22 @@ public class RepositoryNode extends AbstractNode {
     }
     
     private class EditAction extends AbstractAction {
-        public EditAction() {
-            putValue(NAME, NbBundle.getMessage(RepositoryNode.class, "ACT_Edit..."));
+
+        @Messages("ACT_Edit=Edit...")
+        EditAction() {
+            putValue(NAME, ACT_Edit());
         }
 
-        public @Override void actionPerformed(ActionEvent e) {
+        @Override public boolean isEnabled() {
+            return RepositoryPreferences.getInstance().isPersistent(info.getId());
+        }
+
+        @Messages("LBL_Add_Repo=Add Repository")
+        @Override public void actionPerformed(ActionEvent e) {
             final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-            rrui.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
+            rrui.getAccessibleContext().setAccessibleDescription(LBL_Add_Repo());
             rrui.modify(RepositoryNode.this.info);
-            DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
+            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Add_Repo());
             dd.setClosingOptions(new Object[]{
                         rrui.getButton(),
                         DialogDescriptor.CANCEL_OPTION

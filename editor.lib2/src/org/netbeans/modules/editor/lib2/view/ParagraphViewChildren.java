@@ -439,9 +439,11 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         } else { // Regular paint
             double startX = clipBounds.x - allocBounds.x;
             double endX = startX + clipBounds.width;
-            int startIndex = viewIndexNoWrap(pView, startX, pAlloc); // y ignored
-            int endIndex = viewIndexNoWrap(pView, endX, pAlloc) + 1; // y ignored
-            paintChildren(pView, g, pAlloc, clipBounds, startIndex, endIndex);
+            if (size() > 0) {
+                int startIndex = viewIndexNoWrap(pView, startX, pAlloc); // y ignored
+                int endIndex = viewIndexNoWrap(pView, endX, pAlloc) + 1; // y ignored
+                paintChildren(pView, g, pAlloc, clipBounds, startIndex, endIndex);
+            }
         }
     }
     

@@ -73,19 +73,23 @@ public abstract class AbstractRule implements AstRule {
         return Collections.singleton(PHPHintsProvider.DEFAULT_LINE_HINTS);
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }

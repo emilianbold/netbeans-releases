@@ -74,12 +74,16 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
+    /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
+    private static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
     private OutputWriter stdOut;
     private String currentProject;
     private String currentTag;
     Task outTask;
     private Input inp;
     private ProgressHandle handle;
+    /** {@link MavenProject#getName} of first project in reactor to fail, if any */
+    String firstFailure;
 
     CommandLineOutputHandler(ProgressHandle hand) {
         super(hand);
@@ -245,6 +249,12 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         } else {
                             // oh well..
                             processLine(line, stdOut, Level.INFO);
+                        }
+                    }
+                    if (firstFailure == null) {
+                        match = reactorFailure.matcher(line);
+                        if (match.matches()) {
+                            firstFailure = match.group(1);
                         }
                     }
                     line = readLine();

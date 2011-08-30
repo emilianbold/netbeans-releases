@@ -47,10 +47,13 @@
  */
 package org.netbeans.modules.localhistory.ui.actions;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.awt.Dialog;
+import java.awt.EventQueue;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,6 +64,8 @@ public class RevertPanel extends javax.swing.JPanel {
     /** Creates new form RevertPanel */
     public RevertPanel() {
         initComponents();
+        listScrollPane.setVisible(false);
+        titleLabel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -72,14 +77,24 @@ public class RevertPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jLabel1 = new javax.swing.JLabel();
+        listScrollPane = new javax.swing.JScrollPane();
+        titleLabel = new javax.swing.JLabel();
+        messageLabel = new javax.swing.JLabel();
 
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        jScrollPane1.setViewportView(tree);
+        listScrollPane.setViewportView(tree);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RevertPanel.class, "RevertPanel.jLabel1.text")); // NOI18N
+        titleLabel.setText(org.openide.util.NbBundle.getMessage(RevertPanel.class, "RevertPanel.titleLabel.text")); // NOI18N
+
+        initPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("List.background"));
+        initPanel.setMinimumSize(new java.awt.Dimension(380, 195));
+        initPanel.setRequestFocusEnabled(false);
+        initPanel.setLayout(new java.awt.GridBagLayout());
+
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(RevertPanel.class, "RevertPanel.messageLabel.text")); // NOI18N
+        messageLabel.setEnabled(false);
+        initPanel.add(messageLabel, new java.awt.GridBagConstraints());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -88,36 +103,67 @@ public class RevertPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                    .addComponent(jLabel1))
+                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addComponent(titleLabel)
+                    .addComponent(initPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(initPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
+    final javax.swing.JPanel initPanel = new javax.swing.JPanel();
+    private javax.swing.JScrollPane listScrollPane;
+    private javax.swing.JLabel messageLabel;
+    private javax.swing.JLabel titleLabel;
     final javax.swing.JTree tree = new javax.swing.JTree();
     // End of variables declaration//GEN-END:variables
 
 
-    void setRoot(TreeNode root) {
-        tree.setModel(new DefaultTreeModel(root));
-        for (int i = 0; i < tree.getRowCount(); i++) {
-            tree.expandRow(i);
+    void setRootNode(final TreeNode root) {
+        if(root != null) {
+            tree.setModel(new DefaultTreeModel(root));
+            for (int i = 0; i < tree.getRowCount(); i++) {
+                tree.expandRow(i);
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    listScrollPane.setVisible(true);
+                    titleLabel.setVisible(true);
+                    initPanel.setVisible(false);
+                }
+            });
+        } else {
+            messageLabel.setText(NbBundle.getMessage(RevertDeletedAction.class, "MSG_NO_FILES")); // NOI18N
         }
     }
     
-   
-    
-    
+    TreeNode getRootNode() {
+        return (TreeNode) tree.getModel().getRoot();
+    }
+
+    boolean open() {
+        final DialogDescriptor dd = 
+            new DialogDescriptor (
+                this, 
+                NbBundle.getMessage(RevertDeletedAction.class, "LBL_SELECT_FILES"), // NOI18N
+                true, 
+                DialogDescriptor.OK_CANCEL_OPTION, 
+                DialogDescriptor.OK_OPTION, 
+                null); 
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        return dd.getValue() == DialogDescriptor.OK_OPTION;
+    }
     
 }

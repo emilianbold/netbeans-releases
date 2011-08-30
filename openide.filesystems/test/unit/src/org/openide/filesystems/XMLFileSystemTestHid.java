@@ -293,8 +293,12 @@ public class XMLFileSystemTestHid extends TestBaseHid {
               
         File f2 = new File(f.getParentFile(), "sample2.txt");        
         if (!f2.exists()) {
-            Thread.sleep(3000);
             assertTrue(f2.createNewFile());
+            org.openide.util.test.TestFileUtils.touch(f2, f);
+            assertTrue(
+                "f(" + f.lastModified() +") < f2(" + f2.lastModified() +")", 
+                f.lastModified() < f2.lastModified()
+            );
         }
         xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");

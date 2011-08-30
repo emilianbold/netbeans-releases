@@ -413,7 +413,7 @@ public class ApisupportAntUtils {
         /** get properties based on the incoming properties */
         protected abstract Map<String,String> getProperties(Map<String,String> inputPropertyValues);
         /** specify interesting input properties */
-        protected abstract Set<String> inputProperties();
+        protected abstract Collection<String> inputProperties();
         public final Map<String,String> getProperties() {
             Map<String,String> vals = new HashMap<String, String>();
             for (String k : inputProperties()) {

@@ -74,6 +74,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Plugin;
@@ -87,6 +88,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -99,8 +101,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.classpath.CPExtender;
-import org.netbeans.modules.maven.classpath.CPExtenderLookupMerger;
-import org.netbeans.modules.maven.classpath.CPModifierLookupMerger;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -111,7 +111,6 @@ import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -128,6 +127,7 @@ import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -136,7 +136,6 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -153,6 +152,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -327,8 +327,8 @@ public final class NbMavenProjectImpl implements Project {
 
     //#172952 for property expression resolution we need this to include
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
-    public Properties createSystemPropsForPropertyExpressions() {
-        Properties props = cloneStaticProps();
+    public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
+        Map<String,String> props = NbCollections.checkedMapByCopy(cloneStaticProps(), String.class, String.class, true);
         props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
@@ -567,7 +567,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public FileObject getHomeDirectory() {
-        File homeFile = MavenSettingsSingleton.getInstance().getM2UserDir();
+        File homeFile = MavenCli.userMavenConfigurationHome;
 
         FileObject home = null;
         try {
@@ -578,8 +578,7 @@ public final class NbMavenProjectImpl implements Project {
         if (home == null) {
             //TODO this is a problem, probably UNC path on windows - MEVENIDE-380
             // some functionality won't work
-            ErrorManager.getDefault().log("Cannot convert home dir to FileObject, some functionality won't work. It's usually the case on Windows and UNC paths. The path is " + homeFile); //NOI18N
-
+            LOG.log(Level.WARNING, "Cannot convert home dir to FileObject, some functionality won''t work. It''s usually the case on Windows and UNC paths. The path is {0}", homeFile);
         }
         return home;
     }
@@ -795,7 +794,7 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         protected @Override void beforeLookup(Template<?> template) {
-            synchronized (NbMavenProjectImpl.this) {
+            synchronized (this) {
             if (!initialized
                     && (!(ProjectInformation.class.equals(template.getType())
                     || NbMavenProject.class.equals(template.getType())
@@ -909,8 +908,9 @@ public final class NbMavenProjectImpl implements Project {
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
-                    new CPExtenderLookupMerger(extender),
-                    new CPModifierLookupMerger(extender),
+                    ProjectClassPathModifier.extenderForModifier(this),
+                    extender,
+                    LookupMergerSupport.createClassPathModifierMerger(),
                     new BackwardCompatibilityWithMevenideChecker(),
                     new DebuggerChecker(),
                     new CosChecker(this),
@@ -1300,7 +1300,7 @@ public final class NbMavenProjectImpl implements Project {
 
                 @Override
                 public void run() {
-                    EmbedderFactory.resetProjectEmbedder();
+                    EmbedderFactory.resetCachedEmbedders();
                     for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
                         NbMavenProject.fireMavenProjectReload(prj);
                     }

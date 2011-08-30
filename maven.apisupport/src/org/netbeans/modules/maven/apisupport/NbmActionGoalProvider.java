@@ -218,7 +218,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (conf != null && hasNbm(project)) { //not for platform app anymore
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             if (mp.getMavenProject().getProperties().getProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) == null) {
-                conf.getProperties().setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
+                conf.setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
             }
         }
         return conf;

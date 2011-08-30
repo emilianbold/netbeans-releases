@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.nodes;
 
 import java.awt.BorderLayout;
@@ -77,22 +78,25 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -104,6 +108,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -111,10 +116,46 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
  * @author  mkleint
  */
 public class AddDependencyPanel extends javax.swing.JPanel {
+
+    /**
+     * Shows the Add Dependency dialog.
+     * @param prj a project to add a dependency to
+     * @param showDepMan true to show the dependency management panel
+     * @param selectedScope an initial scope selection (such as {@code compile})
+     * @return groupId + artifactId + version + scope + type + classifier, or null if canceled
+     */
+    @Messages("TIT_Add_Library=Add Library")
+    public static @CheckForNull String[] show(Project prj, boolean showDepMan, String selectedScope) {
+        NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
+        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
+        pnl.getAccessibleContext().setAccessibleDescription(TIT_Add_Library());
+        pnl.setSelectedScope(selectedScope);
+        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Add_Library());
+        dd.setClosingOptions(new Object[] {
+            pnl.getOkButton(),
+            DialogDescriptor.CANCEL_OPTION
+        });
+        dd.setOptions(new Object[] {
+            pnl.getOkButton(),
+            DialogDescriptor.CANCEL_OPTION
+        });
+        pnl.attachDialogDisplayer(dd);
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (pnl.getOkButton() == ret) {
+            return new String[] {
+                pnl.getGroupId(),
+                pnl.getArtifactId(),
+                pnl.getVersion(),
+                pnl.getScope(),
+                pnl.getType(),
+                pnl.getClassifier()
+            };
+        }
+        return null;
+    }
 
     private MavenProject project;
 
@@ -134,7 +175,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private NotificationLineSupport nls;
 
-    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
+    @Messages("BTN_OK=Add")
+    private AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
@@ -169,7 +211,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
         });
 
-        okButton = new JButton(NbBundle.getMessage(AddDependencyPanel.class, "BTN_OK"));
+        okButton = new JButton(BTN_OK());
 
         DocumentListener docList = new DocumentListener() {
 
@@ -236,23 +278,24 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    public JButton getOkButton() {
+    private JButton getOkButton() {
         return okButton;
     }
 
-    public String getGroupId() {
+    private String getGroupId() {
         return txtGroupId.getText().trim();
     }
 
-    public String getArtifactId() {
+    private String getArtifactId() {
         return txtArtifactId.getText().trim();
     }
 
-    public String getVersion() {
-        return txtVersion.getText().trim();
+    private String getVersion() {
+        String v = txtVersion.getText().trim();
+        return v.isEmpty() ? null : v;
     }
 
-    public String getScope() {
+    private String getScope() {
         String scope = comScope.getSelectedItem().toString();
         if ("compile".equals(scope)) { //NOI18N
             //compile is the default scope, no need to explicitly define.
@@ -261,10 +304,20 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         return scope;
     }
 
+    private String getType() {
+        String t = txtType.getText().trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private String getClassifier() {
+        String c = txtClassifier.getText().trim();
+        return c.isEmpty() ? null : c;
+    }
+
     /** For gaining access to DialogDisplayer instance to manage
      * warning messages
      */
-    public void attachDialogDisplayer(DialogDescriptor dd) {
+    private void attachDialogDisplayer(DialogDescriptor dd) {
         nls = dd.getNotificationLineSupport();
         if (nls == null) {
             nls = dd.createNotificationLineSupport();
@@ -277,7 +330,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         assert nls != null : " The notificationLineSupport was not attached to the panel."; //NOI18N
     }
 
-    void setSelectedScope(String type) {
+    private void setSelectedScope(String type) {
         comScope.setSelectedItem(type);
     }
 
@@ -354,6 +407,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtVersion = new javax.swing.JTextField();
         lblScope = new javax.swing.JLabel();
         comScope = new javax.swing.JComboBox();
+        lblType = new javax.swing.JLabel();
+        txtType = new javax.swing.JTextField();
+        lblClassifier = new javax.swing.JLabel();
+        txtClassifier = new javax.swing.JTextField();
         tabPane = new javax.swing.JTabbedPane();
         searchPanel = new javax.swing.JPanel();
         searchLabel = new javax.swing.JLabel();
@@ -384,6 +441,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblScope, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_Scope")); // NOI18N
 
         comScope.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "compile", "runtime", "test", "provided" }));
+
+        lblType.setLabelFor(txtType);
+        org.openide.awt.Mnemonics.setLocalizedText(lblType, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.lblType.text")); // NOI18N
+
+        lblClassifier.setLabelFor(txtClassifier);
+        org.openide.awt.Mnemonics.setLocalizedText(lblClassifier, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.lblClassifier.text")); // NOI18N
 
         searchPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -436,16 +499,16 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
-                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(chkNbOnly))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                             .addGroup(searchPanelLayout.createSequentialGroup()
                                 .addComponent(resultsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 261, Short.MAX_VALUE)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(106, 106, 106)))))
                 .addContainerGap())
@@ -465,7 +528,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(resultsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -486,7 +549,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlOpenLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlOpenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -496,7 +559,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -518,7 +581,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlDepManLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                     .addComponent(artifactsLabel))
                 .addContainerGap())
         );
@@ -528,7 +591,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(artifactsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -543,17 +606,24 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblGroupId)
                     .addComponent(lblArtifactId)
-                    .addComponent(lblVersion))
+                    .addComponent(lblVersion)
+                    .addComponent(lblType))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                        .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblScope)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblClassifier)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtClassifier, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)))
                 .addContainerGap())
             .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
         );
@@ -574,8 +644,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(txtVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblScope))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblType)
+                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblClassifier)
+                    .addComponent(txtClassifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
+                .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
         );
 
         txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
@@ -603,8 +679,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblArtifactId;
+    private javax.swing.JLabel lblClassifier;
     private javax.swing.JLabel lblGroupId;
     private javax.swing.JLabel lblScope;
+    private javax.swing.JLabel lblType;
     private javax.swing.JLabel lblVersion;
     private javax.swing.JPanel pnlDepMan;
     private javax.swing.JPanel pnlOpen;
@@ -616,7 +694,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTabbedPane tabPane;
     private javax.swing.JTextField txtArtifactId;
+    private javax.swing.JTextField txtClassifier;
     private javax.swing.JTextField txtGroupId;
+    private javax.swing.JTextField txtType;
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
@@ -729,7 +809,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         return 0;
     }
 
-    void setFields(String groupId, String artifactId, String version) {
+    private void setFields(String groupId, String artifactId, String version, String type, String classifier) {
         boolean sameGrId = false;
         if (groupId != null && groupId.equals(project.getGroupId())) {
             groupId = "${project.groupId}"; //NOI18N
@@ -741,6 +821,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             version = "${project.version}"; //NOI18N
         }
         txtVersion.setText(version);
+        txtType.setText(type != null && !type.equals("jar") ? type : null);
+        txtClassifier.setText(classifier);
     }
 
     private static Node noResultsNode, searchingNode, tooGeneralNode;
@@ -1355,7 +1437,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             if (prj != null) {
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 MavenProject m = mav.getMavenProject();
-                AddDependencyPanel.this.setFields(m.getGroupId(), m.getArtifactId(), m.getVersion());
+                AddDependencyPanel.this.setFields(m.getGroupId(), m.getArtifactId(), m.getVersion(), null, null);
                 set = true;
             }
             if (!set) {
@@ -1363,7 +1445,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 if (vi != null) {
                     //in dm panel we want to pass empty version
                     String ver = AddDependencyPanel.this.queryPanel.isVisible() ? vi.getVersion() : "";
-                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver);
+                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver, vi.getType(), vi.getClassifier());
                     set = true;
                 }
             }
@@ -1377,7 +1459,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     RP.post(this);
                 }
             } else {
-                AddDependencyPanel.this.setFields("","",""); //NOI18N
+                AddDependencyPanel.this.setFields("", "", "", "", ""); //NOI18N
                 //reset completion.
                 AddDependencyPanel.this.artifactCompleter.setValueList(Collections.<String>emptyList());
                 AddDependencyPanel.this.versionCompleter.setValueList(Collections.<String>emptyList());

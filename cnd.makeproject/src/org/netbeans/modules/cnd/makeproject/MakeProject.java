@@ -76,6 +76,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -102,8 +103,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -163,7 +162,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final MakeProjectHelper helper;
     //private final PropertyEvaluator eval;
     //private final ReferenceHelper refHelper;
-    private final NativeProjectProvider nativeProjectProvider;
+    private final NativeProject nativeProject;
     private final Lookup lookup;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private Set<String> headerExtensions = MakeProject.createExtensionSet();
@@ -191,8 +190,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
-        nativeProjectProvider = new NativeProjectProvider(this, projectDescriptorProvider);
         lookup = createLookup(aux);
+        nativeProject = lookup.lookup(NativeProject.class);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -314,7 +313,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     helper,
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
-                    nativeProjectProvider,
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
@@ -329,6 +327,19 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
         if (makeProjectCustomizer != null) {
             lookups = makeProjectCustomizer.getLookup(getProjectDirectory(), lookups);
+        }
+        boolean containsNativeProject = false;
+        for (Object object : lookups) {
+            if(object instanceof NativeProject) {
+                containsNativeProject = true;
+                break;
+            }
+        }
+        if(!containsNativeProject) {
+            ArrayList<Object> newLookups = new ArrayList<Object>();
+            newLookups.addAll(Arrays.asList(lookups));
+            newLookups.add(new NativeProjectProvider(this, projectDescriptorProvider));
+            lookups = newLookups.toArray();
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
@@ -1226,20 +1237,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
-                if (env != null && env.isRemote()) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                ConnectionManager.getInstance().connectTo(env);
-                            } catch (IOException ex) {
-
-                            } catch (CancellationException ex) {
-                                // don't log CancellationException
-                            }
-                        }
-                    });
-                }
+                ConnectionHelper.INSTANCE.ensureConnection(env);
             }            
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
@@ -1259,7 +1257,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 @Override
                 public void run() {
                     projectDescriptorProvider.getConfigurationDescriptor(true);
-                    NativeProjectRegistry.getDefault().register(nativeProjectProvider);
+                    if(nativeProject instanceof NativeProjectProvider) {
+                        NativeProjectRegistry.getDefault().register(nativeProject);
+                    }
                 }
             });
         }
@@ -1288,7 +1288,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             isOpenHookDone = false;
         }
         MakeProjectFileProviderFactory.removeSearchBase(this);
-        NativeProjectRegistry.getDefault().unregister(nativeProjectProvider);
+        if(nativeProject instanceof NativeProjectProvider) {
+            NativeProjectRegistry.getDefault().unregister(nativeProject);
+        }
     }
 
     public synchronized void save() {
