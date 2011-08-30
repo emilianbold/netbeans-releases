@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -70,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -79,10 +82,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -214,6 +219,8 @@ public class GeneratingBracketCompleter {
             generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
         }
 
+        addVariables(doc, toAdd, "@throws", indent, i.throwsExceptions);
+
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
 
@@ -266,6 +273,8 @@ public class GeneratingBracketCompleter {
         private List<Pair<String, String>> globals = new LinkedList<Pair<String, String>>();
         private List<Pair<String, String>> staticvars = new LinkedList<Pair<String, String>>();
         private List<Pair<String, String>> params = new LinkedList<Pair<String, String>>();
+        private List<Pair<String, String>> throwsExceptions = new LinkedList<Pair<String, String>>();
+        private List<String> usedThrows = new LinkedList<String>();
         final Set<VariableName> declaredVariables = new HashSet<VariableName>();
         private boolean hasReturn;
         private String returnType;
@@ -373,6 +382,51 @@ public class GeneratingBracketCompleter {
             super.visit(node);
         }
 
+        @Override
+        public void visit(ThrowStatement node) {
+            String type = getTypeFromThrowStatement(node);
+            if (!usedThrows.contains(type)) {
+                usedThrows.add(type);
+                throwsExceptions.add(new Pair<String, String>(null, type));
+            }
+            super.visit(node);
+        }
+
+        private String getTypeFromThrowStatement(ThrowStatement throwStatement) {
+            String type = null;
+            Expression expression = throwStatement.getExpression();
+            if (expression instanceof ClassInstanceCreation) {
+                ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
+                Expression name = classInstanceCreation.getClassName().getName();
+                if (name instanceof NamespaceName) {
+                    NamespaceName namespaceName = (NamespaceName) name;
+                    type = getTypeFromNamespaceName(namespaceName);
+                }
+            } else if (expression instanceof Variable) {
+                Variable v = (Variable) expression;
+                final String name = CodeUtils.extractVariableName(v);
+                for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
+                    final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
+                    type = typeNames.isEmpty() ? null : typeNames.iterator().next();
+                }
+            }
+            return type;
+        }
+
+        private String getTypeFromNamespaceName(NamespaceName namespaceName) {
+            StringBuilder sbType = new StringBuilder();
+            if (namespaceName.isGlobal()) {
+                sbType.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+            }
+            List<Identifier> segments = namespaceName.getSegments();
+            for (Iterator<Identifier> iter =  segments.iterator(); iter.hasNext();) {
+                sbType.append(iter.next().getName());
+                if (iter.hasNext()) {
+                    sbType.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+                }
+            }
+            return sbType.toString();
+        }
 
         @Override
         public void visit(FunctionDeclaration node) {
