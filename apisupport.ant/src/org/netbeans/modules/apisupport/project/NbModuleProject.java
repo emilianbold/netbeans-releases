@@ -44,12 +44,6 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import java.util.Collections;
-import java.util.HashSet;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import java.util.Set;
-import org.netbeans.modules.apisupport.project.api.ManifestManager;
-import org.netbeans.modules.apisupport.project.api.Util;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,9 +54,12 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -76,67 +73,71 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
+import static org.netbeans.modules.apisupport.project.Bundle.*;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
+import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
+import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
+import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
+import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
+import org.netbeans.modules.apisupport.project.ui.ModuleActions;
+import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
+import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
+import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
-import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
-import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
-import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
-import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
-import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
-import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
-import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
-import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
-import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
-import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
-import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
-import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
-import org.netbeans.modules.apisupport.project.ui.ModuleActions;
-import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
-import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
-import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
-import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
-import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
-import org.netbeans.spi.java.project.support.LookupMergerSupport;
-import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
-import static org.netbeans.modules.apisupport.project.Bundle.*;
+import org.w3c.dom.Element;
 
 /**
  * A NetBeans module project.
@@ -914,18 +915,14 @@ public final class NbModuleProject implements Project {
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
-        private static final String[] PRIVILEGED_NAMES = new String[] {
+        private static final String[] PRIVILEGED_NAMES = {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newAction", // NOI18N
-            "Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newLoader", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newProject", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWindow", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWizard", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_ACTION_ID,
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_WINDOW_ID,
             //"Templates/Other/properties.properties", // NOI18N
         };
         static {
@@ -933,7 +930,7 @@ public final class NbModuleProject implements Project {
                     Arrays.asList(PRIVILEGED_NAMES).subList(10, PRIVILEGED_NAMES.length);
         }
         
-        private static final String[] RECOMMENDED_TYPES = new String[] {         
+        private static final String[] RECOMMENDED_TYPES = {
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -945,7 +942,7 @@ public final class NbModuleProject implements Project {
             "ant-task",             // NOI18N
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
-            "nbm-specific",         // NOI18N
+            UIUtil.TEMPLATE_CATEGORY,
         };
         
         public String[] getPrivilegedTemplates() {

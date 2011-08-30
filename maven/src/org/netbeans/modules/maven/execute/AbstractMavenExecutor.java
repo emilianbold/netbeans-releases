@@ -419,6 +419,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         @Messages("LBL_OptionsAction=Maven Settings")
         OptionsAction() {
             super(LBL_OptionsAction(), ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/options.png", true));
+            putValue(Action.SHORT_DESCRIPTION, LBL_OptionsAction());
         }
 
         @Override public void actionPerformed(ActionEvent e) {

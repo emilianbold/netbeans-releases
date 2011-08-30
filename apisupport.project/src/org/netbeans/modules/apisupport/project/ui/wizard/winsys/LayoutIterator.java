@@ -55,19 +55,20 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.winsys.NewTCIterator.DataModel;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.apisupport.project.api.LayerHandle;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.winsys.NewTCIterator.DataModel;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -79,12 +80,12 @@ import org.openide.windows.WindowManager;
  * @author Jaroslav Tulach
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=3249,
     displayName="#template_winsys_layout",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLayout.png", 
     description="../../resources/newLayout.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_winsys_layout=Layout of Windows")
 public final class LayoutIterator extends BasicWizardIterator {
