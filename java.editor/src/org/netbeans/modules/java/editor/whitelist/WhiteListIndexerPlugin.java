@@ -45,13 +45,21 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LineMap;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -60,15 +68,27 @@ import org.openide.util.Lookup;
  */
 public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
 
-    private final WhiteListQuery.WhiteList whiteList;
+    private static final String WHITE_LIST_INDEX = "whitelist"; //NOI18N
+    private static final String MSG = "msg";    //NOI18N
+    private static final String LINE = "line";  //NOI18N
 
-    private WhiteListIndexerPlugin(final WhiteListQuery.WhiteList whiteList) {
+    private final WhiteListQuery.WhiteList whiteList;
+    private final DocumentIndex index;
+
+    private WhiteListIndexerPlugin(
+            @NonNull final WhiteListQuery.WhiteList whiteList,
+            @NonNull final DocumentIndex index) {
         assert whiteList != null;
+        assert index != null;
         this.whiteList = whiteList;
+        this.index = index;
     }
 
     @Override
-    public void process(CompilationUnitTree toProcess, Lookup services) {
+    public void process(
+            @NonNull final CompilationUnitTree toProcess,
+            @NonNull final String relativePath,
+            @NonNull final Lookup services) {
         final Trees trees = services.lookup(Trees.class);
         assert trees != null;
         final WhiteListScanner scanner = new WhiteListScanner(
@@ -83,7 +103,30 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             final int start = (int) sp.getStartPosition(toProcess, p.tree);
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
-                //Todo: report warning
+                final IndexDocument doc = IndexManager.createDocument(relativePath);
+                doc.addPair(MSG, p.description, false, true);
+                doc.addPair(LINE, Integer.toString(ln), false, true);
+                index.addDocument(doc);
+            }
+        }
+    }
+
+    @Override
+    public void delete(String toDelete) {
+        index.removeDocument(toDelete);
+    }
+
+    @Override
+    public void finish() {
+        try {
+            index.store(true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                index.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -91,9 +134,23 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     @MimeRegistration(mimeType="text/x-java",service=JavaIndexerPlugin.Factory.class)
     public static class Factory implements JavaIndexerPlugin.Factory {
         @Override
-        public JavaIndexerPlugin create(final FileObject root) {
+        public JavaIndexerPlugin create(final FileObject root, final FileObject cacheFolder) {
             final WhiteListQuery.WhiteList wl = WhiteListQuery.getWhiteList(root);
-            return wl == null ? null : new WhiteListIndexerPlugin(wl);
+            if (wl == null) {
+                return null;
+            }
+            final File cacheDir = FileUtil.toFile(cacheFolder);
+            if (cacheDir == null) {
+                return null;
+            }
+            try {
+                return new WhiteListIndexerPlugin(
+                        wl,
+                        IndexManager.createDocumentIndex(new File(cacheDir,WHITE_LIST_INDEX)));
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+                return null;
+            }
         }
     }
 
