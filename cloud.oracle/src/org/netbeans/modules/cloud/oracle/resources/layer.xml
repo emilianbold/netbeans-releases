@@ -70,7 +70,7 @@
                     etc.
                 -->
                 <file name="ModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.ModuleConfigurationFactoryImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.ModuleConfigurationFactoryImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 

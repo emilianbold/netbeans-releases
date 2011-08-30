@@ -105,26 +105,26 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
     private void refreshServersSynchronously() {
         List<ServerInstance> servers = new ArrayList<ServerInstance>();
         for (OracleInstance ai : OracleInstanceManager.getDefault().getInstances()) {
-            for (OracleJ2EEInstance inst : ai.readJ2EEServerInstances()) {
-                ServerInstance si = ServerInstanceFactory.createServerInstance(new OracleJ2EEServerInstanceImplementation(inst));
-                InstanceProperties ip = InstanceProperties.getInstanceProperties(inst.getId());
-                if (ip == null) {
-                    try {
-                        Map<String, String>props = new HashMap<String, String>();
-                        props.put(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
-                        props.put(OracleDeploymentFactory.IP_SERVICE_NAME, inst.getServiceName());
-                        props.put(OracleDeploymentFactory.IP_URL_ENDPOINT, ai.getUrlEndpoint());
-                        props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
-                        ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
-                                ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), props);
-                    } catch (InstanceCreationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            OracleJ2EEInstance inst = ai.readJ2EEServerInstance();
+            ServerInstance si = ServerInstanceFactory.createServerInstance(new OracleJ2EEServerInstanceImplementation(inst));
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(inst.getId());
+            if (ip == null) {
+                try {
+                    Map<String, String>props = new HashMap<String, String>();
+                    props.put(OracleDeploymentFactory.IP_SYSTEM, inst.getOracleInstance().getSystem());
+                    props.put(OracleDeploymentFactory.IP_SERVICE, inst.getOracleInstance().getService());
+                    props.put(OracleDeploymentFactory.IP_ADMIN_URL, ai.getAdminURL());
+                    props.put(OracleDeploymentFactory.IP_INSTANCE_URL, ai.getInstanceURL());
+                    props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
+                    ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
+                            ai.getUser(), ai.getPassword(), inst.getDisplayName(), props);
+                } catch (InstanceCreationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-//                inst.setInstanceProperties(ip);
-                inst.setInstance(si);
-                servers.add(si);
             }
+            inst.setInstanceProperties(ip);
+            inst.setInstance(si);
+            servers.add(si);
         }
         synchronized (this) {
             instances = servers;

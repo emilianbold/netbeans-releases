@@ -64,7 +64,6 @@ import javax.swing.SwingUtilities;
  */
 public class ProgressObjectImpl implements ProgressObject {
 
-    private final TargetModuleID [] moduleIDs;
     private DeploymentStatusImpl status;
     
     private static final Logger LOG = Logger.getLogger(ProgressObjectImpl.class.getSimpleName());
@@ -73,8 +72,7 @@ public class ProgressObjectImpl implements ProgressObject {
     
     private String url;
     
-    public ProgressObjectImpl(TargetModuleID[] moduleIDs, String message, boolean completed) {
-        this.moduleIDs = moduleIDs;
+    public ProgressObjectImpl(String message, boolean completed) {
         setStatus(new DeploymentStatusImpl(
             CommandType.DISTRIBUTE, completed ? StateType.COMPLETED : StateType.RUNNING, ActionType.EXECUTE, message));
     }
@@ -86,7 +84,7 @@ public class ProgressObjectImpl implements ProgressObject {
 
     private synchronized void setStatus(DeploymentStatusImpl status) {
         this.status = status;
-        LOG.log(Level.INFO, "status: "+status);
+        LOG.log(Level.INFO, "status: {0}", status);
     }
     
     @Override
@@ -153,7 +151,6 @@ public class ProgressObjectImpl implements ProgressObject {
     }
     
     private void fireChange(final DeploymentStatusImpl st) {
-        //final TargetModuleID id = moduleIDs[0];
         final List<ProgressListener> ls = new ArrayList<ProgressListener>(listeners);
         SwingUtilities.invokeLater(new Runnable() {
             @Override

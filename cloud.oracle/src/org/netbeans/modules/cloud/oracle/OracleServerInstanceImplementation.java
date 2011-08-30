@@ -88,11 +88,28 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                ai.setServiceName(panel.getServiceName());
-                ai.setTenantId(panel.getTenantId());
-                ai.setTenantPassword(panel.getPassword());
-                ai.setTenantUserName(panel.getUserName());
-                ai.setUrlEndpoint(panel.getUrl());
+                if (!panel.getService().equals(ai.getService())) {
+                    // this field is part of URL (that is server unique key) of J2EE server
+                    // corresponding to this cloud and therefore value cannot be modified
+                }
+                if (!panel.getSystem().equals(ai.getSystem())) {
+                    // see previous comment
+                }
+                if (!panel.getPassword().equals(ai.getPassword())) {
+                    ai.setPassword(panel.getPassword());
+                }
+                if (!panel.getUserName().equals(ai.getUser())) {
+                    ai.setUser(panel.getUserName());
+                }
+                if (!panel.getAdminUrl().equals(ai.getAdminURL())) {
+                    ai.setAdminURL(panel.getAdminUrl());
+                }
+                if (!panel.getInstanceUrl().equals(ai.getInstanceURL())) {
+                    ai.setInstanceURL(panel.getInstanceUrl());
+                }
+                if (!panel.getCloudUrl().equals(ai.getCloudURL())) {
+                    ai.setCloudURL(panel.getCloudUrl());
+                }
                 OracleInstanceManager.getDefault().update(ai);
             }
         });

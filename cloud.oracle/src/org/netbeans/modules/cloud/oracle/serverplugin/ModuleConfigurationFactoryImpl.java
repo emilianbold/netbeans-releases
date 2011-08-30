@@ -39,57 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.modules.cloud.oracle.serverplugin;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import oracle.nuviaq.model.xml.ApplicationDeployment;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.awt.HtmlBrowser;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import org.netbeans.modules.j2ee.weblogic9.config.WarDeploymentConfiguration;
 
 /**
  *
  */
-public class ViewApplicationAction extends NodeAction {
+public class ModuleConfigurationFactoryImpl implements ModuleConfigurationFactory2 {
 
+    public ModuleConfigurationFactoryImpl() {
+    }
+    
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
-        String appContext = app.getArchiveUrl().substring(0, app.getArchiveUrl().lastIndexOf('.'));
-        String url = inst.getOracleInstance().getInstanceURL();
-        if (appContext.startsWith("/")) {
-            appContext = appContext.substring(1);
-        }
-        url += url.endsWith("/") ? appContext : "/"+appContext;
-        try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
+        return new WarDeploymentConfiguration(j2eeModule);
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
-    }
-
-    @Override
-    public String getName() {
-        return "View";
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
+    public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
+        return new WarDeploymentConfiguration(j2eeModule);
     }
     
 }

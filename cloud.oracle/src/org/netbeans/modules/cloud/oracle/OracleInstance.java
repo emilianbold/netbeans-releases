@@ -50,7 +50,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -69,13 +68,14 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
+import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -94,11 +94,13 @@ public class OracleInstance {
     private static final Logger LOG = Logger.getLogger(OracleInstance.class.getSimpleName());
     
     private final String name;
-    private String tenantUserName;
-    private String tenantPassword;
-    private String urlEndpoint;
-    private String tenantId;
-    private String serviceName;
+    private String user;
+    private String password;
+    private String adminURL;
+    private String instanceURL;
+    private String cloudURL;
+    private String system;
+    private String service;
     private String onPremiseServerInstanceId;
     
     private ServerInstance serverInstance;
@@ -106,19 +108,41 @@ public class OracleInstance {
     private ApplicationManager platform;
     
     /* GuardedBy(this) */
-    private List<OracleJ2EEInstance> j2eeInstances = new ArrayList<OracleJ2EEInstance>();
+    private OracleJ2EEInstance j2eeInstance;
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
-          String urlEndpoint, String tenantId, String serviceName, String onPremiseServerInstanceId) {
+          String adminURL, String instanceURL, String cloudURL, String tenantId, String serviceName, String onPremiseServerInstanceId) {
         this.name = name;
-        this.tenantUserName = tenantUserName;
-        this.tenantPassword = tenantPassword;
-        this.urlEndpoint = urlEndpoint;
-        this.tenantId = tenantId;
-        this.serviceName = serviceName;
+        this.user = tenantUserName;
+        this.password = tenantPassword;
+        this.adminURL = adminURL;
+        this.instanceURL = instanceURL;
+        this.cloudURL = cloudURL;
+        this.system = tenantId;
+        this.service = serviceName;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
     }
-    
+
+    public String getCloudURL() {
+        return cloudURL;
+    }
+
+    public void setCloudURL(String cloudURL) {
+        this.cloudURL = cloudURL;
+    }
+
+    public String getInstanceURL() {
+        return instanceURL;
+    }
+
+    public void setInstanceURL(String instanceURL) {
+        this.instanceURL = instanceURL;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_INSTANCE_URL, getInstanceURL());
+            }
+        }
+    }
 
     void setServerInstance(ServerInstance serverInstance) {
         this.serverInstance = serverInstance;
@@ -132,52 +156,69 @@ public class OracleInstance {
         return name;
     }
     
-    public String getTenantPassword() {
-        return tenantPassword;
+    public String getPassword() {
+        return password;
     }
 
-    public String getTenantUserName() {
-        return tenantUserName;
+    public String getUser() {
+        return user;
     }
 
-    public String getUrlEndpoint() {
-        return urlEndpoint;
+    public String getAdminURL() {
+        return adminURL;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getService() {
+        return service;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public String getSystem() {
+        return system;
     }
 
     public void setPlatform(ApplicationManager platform) {
         this.platform = platform;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public void setService(String serviceName) {
+        this.service = serviceName;
+        resetCache();
+    }
+    
+    public void setSystem(String tenantId) {
+        this.system = tenantId;
         resetCache();
     }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+    public void setPassword(String tenantPassword) {
+        this.password = tenantPassword;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(
+                                    InstanceProperties.PASSWORD_ATTR, tenantPassword);
+            }
+        }
         resetCache();
     }
 
-    public void setTenantPassword(String tenantPassword) {
-        this.tenantPassword = tenantPassword;
+    public void setUser(String tenantUserName) {
+        this.user = tenantUserName;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(
+                                    InstanceProperties.USERNAME_ATTR, tenantUserName);
+            }
+        }
         resetCache();
     }
 
-    public void setTenantUserName(String tenantUserName) {
-        this.tenantUserName = tenantUserName;
-        resetCache();
-    }
-
-    public void setUrlEndpoint(String urlEndpoint) {
-        this.urlEndpoint = urlEndpoint;
+    public void setAdminURL(String urlEndpoint) {
+        this.adminURL = urlEndpoint;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_ADMIN_URL, getAdminURL());
+            }
+        }
         resetCache();
     }
 
@@ -191,14 +232,14 @@ public class OracleInstance {
     
     public synchronized ApplicationManager getApplicationManager() {
         if (platform == null) {
-            platform = createApplicationManager(urlEndpoint, tenantUserName, tenantPassword);
+            platform = createApplicationManager(adminURL, user, password);
         }
         return platform;
     }
     
-    public static ApplicationManager createApplicationManager(String urlEndpoint, String tenantUserName, String tenantPassword) {
+    public static ApplicationManager createApplicationManager(String adminUrl, String tenantUserName, String tenantPassword) {
         try {
-            String url = urlEndpoint;
+            String url = adminUrl;
             if (!url.endsWith("/")) {
                 url += "/";
             }
@@ -215,34 +256,28 @@ public class OracleInstance {
         getApplicationManager().listJobs();
     }
     
-    public List<OracleJ2EEInstance> readJ2EEServerInstances() {
+    public OracleJ2EEInstance readJ2EEServerInstance() {
         assert !SwingUtilities.isEventDispatchThread();
-        List<OracleJ2EEInstance> res = new ArrayList<OracleJ2EEInstance>();
-
-        // used to be dynamic list; keeping as list for now:
-        OracleJ2EEInstance inst = new OracleJ2EEInstance(this, getTenantId(), getServiceName());
-        res.add(inst);
+        OracleJ2EEInstance inst = new OracleJ2EEInstance(this);
         synchronized (this) {
-            j2eeInstances.addAll(res);
-            return res;
+            j2eeInstance = inst;
+            return j2eeInstance;
         }
     }
-
+    
     public void deregisterJ2EEServerInstances() {
-        List<OracleJ2EEInstance> instances = null;
+        OracleJ2EEInstance instance;
         synchronized (this) {
-            instances = new ArrayList<OracleJ2EEInstance>(j2eeInstances);
+            instance = j2eeInstance;
         }
-        for (OracleJ2EEInstance inst : instances) {
-            inst.deregister();
-        }
+        instance.deregister();
         String localId = getOnPremiseServerInstanceId();
         if (localId != null) {
             InstanceProperties.removeInstance(localId);
         }
     }
-
-    public static Future<DeploymentStatus> deployAsync(final String urlEndpoint, final ApplicationManager pm, final File f, 
+    
+    public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
                          final String tenantId, 
                          final String serviceName, 
                          final ProgressObjectImpl po,
@@ -252,7 +287,7 @@ public class OracleInstance {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
+                DeploymentStatus ds = deploy(instanceUrl, pm, f, tenantId, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -260,7 +295,7 @@ public class OracleInstance {
         });
     }
     
-    public static DeploymentStatus deploy(String urlEndpoint, ApplicationManager am, File f, String tenantId, String serviceName, 
+    public static DeploymentStatus deploy(String instanceURL, ApplicationManager am, File f, String tenantId, String serviceName, 
                           ProgressObjectImpl po, String[] url, String cloudInstanceName, String onPremiseServiceInstanceId) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
@@ -271,7 +306,8 @@ public class OracleInstance {
 //                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
 //            }
             String name = "";
-            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
+            FileObject fo = FileUtil.toFileObject(f);
+            Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
@@ -283,7 +319,7 @@ public class OracleInstance {
 //                }
 //            }
             
-            InputOutput io = IOProvider.getDefault().getIO(tabName, false);
+            InputOutput io = IOProvider.getDefault().getIO(tabName, /*false*/true);
             ow = io.getOut();
             owe = io.getErr();
 //            if (weblogic == null) {
@@ -293,16 +329,17 @@ public class OracleInstance {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
             }
-            String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
+            String appId = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
+            String ctx = CommandBasedDeployer.readWebContext(fo);
             ApplicationDeployment adt =new ApplicationDeployment();
             adt.setInstanceId(serviceName);
-            adt.setApplicationId(appContext);
+            adt.setApplicationId(appId);
             adt.setArchiveUrl(f.getName());
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
-                if (app.getApplicationId().equals(appContext)) {
+                if (app.getApplicationId().equals(appId)) {
                     redeploy = true;
                     adt = app;
                     break;
@@ -339,11 +376,7 @@ public class OracleInstance {
                 String jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if ("Complete".equals(jobStatus)) {
-                    
-                    // XXX: how do I get this one:
-                    
-                    url[0] = urlEndpoint+appContext+"/";
-
+                    url[0] = instanceURL+(instanceURL.endsWith("/") ? ctx.substring(1) : ctx);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
@@ -359,21 +392,18 @@ public class OracleInstance {
             }
         } catch (IOException ex) {
             if (owe != null) {
-                owe.print(ex.toString());
+                ex.printStackTrace(owe);
             }
-            Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (ManagerException ex) {
             if (owe != null) {
-                owe.print(ex.toString());
+                ex.printStackTrace(owe);
             }
-            Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (Throwable t) {
             if (owe != null) {
                 owe.print(t.toString());
             }
-            Exceptions.printStackTrace(t);
             return DeploymentStatus.UNKNOWN;
         } finally {
             if (ow != null) {
@@ -398,7 +428,8 @@ public class OracleInstance {
             try {
                 am.fetchJobLog(latestJob.getJobId(), lt.getName(), os);
             } catch (Throwable t) {
-                owe.println("Exception occured while retrieving the log:\n"+t.toString());
+                owe.println("Exception occured while retrieving the log:");
+                t.printStackTrace(owe);
                 continue;
             }
             try {
@@ -416,30 +447,27 @@ public class OracleInstance {
     
     public static synchronized <T> Future<T> runAsynchronously(Callable<T> callable, OracleInstance ai) {
         Future<T> f = ORACLE_RP.submit(callable);
-//        tasks.add(f);
         return f;
     }
     
-//    private static List<Future> tasks = new ArrayList<Future>();
-
     public List<ApplicationDeployment> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().listApplications(getTenantId(), getServiceName());
+        return getApplicationManager().listApplications(getSystem(), getService());
     }
 
     public void undeploy(ApplicationDeployment app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().undeployApplication(getTenantId(), getServiceName(), app.getApplicationId());
+        getApplicationManager().undeployApplication(getSystem(), getService(), app.getApplicationId());
     }
     
     public void start(ApplicationDeployment app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().startApplication(getTenantId(), getServiceName(), app.getApplicationId());
+        getApplicationManager().startApplication(getSystem(), getService(), app.getApplicationId());
     }
     
     public void stop(ApplicationDeployment app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().stopApplication(getTenantId(), getServiceName(), app.getApplicationId());
+        getApplicationManager().stopApplication(getSystem(), getService(), app.getApplicationId());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {

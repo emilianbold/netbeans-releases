@@ -51,6 +51,7 @@ import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,9 +60,10 @@ public class OracleDeploymentFactory implements DeploymentFactory {
 
     public static final String ORACLE_URI = "oracle:";  // NOI18N
 
-    public static final String IP_TENANT_ID = "tenant-id";  // NOI18N
-    public static final String IP_SERVICE_NAME = "service-name";  // NOI18N
-    public static final String IP_URL_ENDPOINT = "url-endpoint";  // NOI18N
+    public static final String IP_SYSTEM = "system";  // NOI18N
+    public static final String IP_SERVICE = "service";  // NOI18N
+    public static final String IP_ADMIN_URL = "admin-url";  // NOI18N
+    public static final String IP_INSTANCE_URL = "instance-url";  // NOI18N
     public static final String IP_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     @Override
@@ -73,13 +75,13 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        return new OracleDeploymentManager(props.getProperty(IP_URL_ENDPOINT), 
+        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
                 OracleInstance.createApplicationManager(
-                    props.getProperty(IP_URL_ENDPOINT), 
+                    props.getProperty(IP_ADMIN_URL), 
                     username,
                     password),
-                props.getProperty(IP_TENANT_ID),
-                props.getProperty(IP_SERVICE_NAME),
+                props.getProperty(IP_SYSTEM),
+                props.getProperty(IP_SERVICE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }
@@ -87,22 +89,22 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        return new OracleDeploymentManager(props.getProperty(IP_URL_ENDPOINT), 
+        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
                 null,
-                props.getProperty(IP_TENANT_ID),
-                props.getProperty(IP_SERVICE_NAME),
+                props.getProperty(IP_SYSTEM),
+                props.getProperty(IP_SERVICE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }
 
     @Override
     public String getDisplayName() {
-        return "Oracle Public Cloud";
+        return NbBundle.getMessage(OracleDeploymentFactory.class, "OracleDeploymentFactory.displayName");
     }
 
     @Override
     public String getProductVersion() {
-        return "1.0";
+        return "1.0"; // NOI18N
     }
     
 }

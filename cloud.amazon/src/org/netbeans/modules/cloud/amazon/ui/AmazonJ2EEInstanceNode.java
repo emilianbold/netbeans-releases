@@ -57,8 +57,6 @@ public class AmazonJ2EEInstanceNode extends AbstractNode {
     
     public static final String TOMCAT_ICON = "org/netbeans/modules/cloud/amazon/ui/resources/tomcat.png"; // NOI18N
     
-    // TODO: impl this properly
-    
     private AmazonJ2EEInstance aij;
     
     public AmazonJ2EEInstanceNode(AmazonJ2EEInstance aij) {

@@ -55,8 +55,6 @@ import org.openide.util.lookup.Lookups;
  */
 public class OracleInstanceNode extends AbstractNode {
     
-    // TODO: impl this properly
-    
     private OracleInstance ai;
     
     public OracleInstanceNode(OracleInstance ai) {
