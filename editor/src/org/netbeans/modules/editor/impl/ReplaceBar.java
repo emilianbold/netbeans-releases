@@ -106,7 +106,6 @@ public class ReplaceBar extends JPanel {
     private final JCheckBox preserveCaseCheckBox;
     private ActionListener actionListenerForPreserveCase;
     private final JCheckBox backwardsCheckBox;
-    private boolean searchBarWasVisible = false;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
     private ArrayList<JComponent> focusList = new ArrayList<JComponent>();
     private final JButton expandButton;
@@ -587,11 +586,7 @@ public class ReplaceBar extends JPanel {
         searchBar.getRegexpCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.getMatchCaseCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(null);
-        if (searchBarWasVisible) {
-            searchBar.gainFocus();
-        } else {
-            searchBar.looseFocus();
-        }
+        searchBar.looseFocus();
     }
 
     private void changeSearchBarToBePartOfReplaceBar() throws MissingResourceException {
@@ -601,11 +596,6 @@ public class ReplaceBar extends JPanel {
         this.addEscapeKeystrokeFocusBackTo(searchBar);
         if (searchBar.getActualTextComponent() != null) {
             searchBar.getActualTextComponent().addFocusListener(focusAdapterForComponent);
-        }
-        if (searchBar.isVisible()) {
-            searchBarWasVisible = true;
-        } else {
-            searchBarWasVisible = false;
         }
         searchBar.getRegexpCheckBox().addActionListener(getActionListenerForPreserveCase());
         searchBar.getMatchCaseCheckBox().addActionListener(getActionListenerForPreserveCase());
