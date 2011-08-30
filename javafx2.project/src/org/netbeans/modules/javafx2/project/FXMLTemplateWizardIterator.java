@@ -40,15 +40,14 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -84,6 +83,9 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         Set set = delegateIterator.instantiate();
         FileObject createdFO = (FileObject) set.iterator().next();
         FileObject template = Templates.getTemplate(wiz);
+        
+        FileObject[] children = template.getParent().getChildren();
+        Enumeration<? extends FileObject> children1 = template.getParent().getChildren(true);
         
         return set;
     }

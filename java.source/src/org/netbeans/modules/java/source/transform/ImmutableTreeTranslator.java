@@ -57,8 +57,11 @@ import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.QualifiedNameable;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
@@ -97,6 +100,12 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     private ElementOverlay overlay;
     private ImportAnalysis2 importAnalysis;
     private Map<Tree, Object> tree2Tag;
+    
+    private WorkingCopy copy;
+
+    public ImmutableTreeTranslator(WorkingCopy copy) {
+        this.copy = copy;
+    }
 
     public void attach(Context context, ImportAnalysis2 importAnalysis, Map<Tree, Object> tree2Tag) {
         make = TreeFactory.instance(context);
@@ -509,7 +518,12 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         
         List<? extends AnnotationTree> annotations = translate(tree.getPackageAnnotations());
         List<? extends Tree> types = translate(tree.getTypeDecls());
-        List<? extends ImportTree> imps = importAnalysis.getImports();
+        List<? extends ImportTree> imps = tree.getImports();
+        
+        Set<? extends Element> newImports = importAnalysis.getImports();
+        if (copy != null && newImports != null && !newImports.isEmpty()) {
+            imps = GeneratorUtilities.get(copy).addImports(tree, newImports).getImports();
+        }
         
 	if (!annotations.equals(tree.getPackageAnnotations()) || pid!=tree.getPackageName() || !imps.equals(tree.getImports()) ||
             !types.equals(tree.getTypeDecls())) {

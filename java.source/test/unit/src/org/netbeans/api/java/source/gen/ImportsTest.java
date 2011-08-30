@@ -1368,7 +1368,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
-    public void test166524b() throws Exception {
+    public void xtest166524b() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
             "package test;\n" +
@@ -1401,7 +1401,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    public void test166524c() throws Exception {
+    public void xtest166524c() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
             "package test;\n" +

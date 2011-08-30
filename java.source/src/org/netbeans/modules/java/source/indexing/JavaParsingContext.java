@@ -42,17 +42,37 @@
 
 package org.netbeans.modules.java.source.indexing;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTrees;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -60,6 +80,8 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 class JavaParsingContext {
 
@@ -68,9 +90,10 @@ class JavaParsingContext {
     final JavaFileFilterImplementation filter;
     final Charset encoding;
     final ClassIndexImpl uq;
-    final SourceAnalyser sa;
     final CheckSums checkSums;
     final FQN2Files fqn2Files;
+    final SourceAnalyser sa;
+    private final Iterable<? extends JavaIndexerPlugin> pluginsCache;
 
     public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
         this(context, false);
@@ -87,23 +110,68 @@ class JavaParsingContext {
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(context.getRootURI());
+        pluginsCache = createPlugins(root);
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
-        filter = JavaFileFilterQuery.getFilter(context.getRoot());
+        final FileObject root = context.getRoot();
+        filter = JavaFileFilterQuery.getFilter(root);
         cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);
-        sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
-        encoding = FileEncodingQuery.getEncoding(context.getRoot());
+        sourceLevel = SourceLevelQuery.getSourceLevel(root);
+        encoding = FileEncodingQuery.getEncoding(root);
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(context.getRootURI());
+        pluginsCache = createPlugins(root);
     }
-        
+
+    void analyze(
+            @NonNull final Iterable<? extends CompilationUnitTree> trees,
+            @NonNull final JavacTaskImpl jt,
+            @NonNull final JavaFileManager fileManager,
+            @NonNull final CompileTuple active,
+            @NonNull final Set<? super ElementHandle<TypeElement>> newTypes,
+            @NonNull /*@Out*/ final boolean[] mainMethod) throws IOException {
+        sa.analyse(trees, jt, fileManager, active, newTypes, mainMethod);
+        final Lookup pluginServices = getPluginServices(jt);
+        for (CompilationUnitTree cu : trees) {
+            for (JavaIndexerPlugin plugin : getPlugins()) {
+                plugin.process(cu, pluginServices);
+            }
+        }
+    }
+
+    @NonNull
+    private Iterable<? extends JavaIndexerPlugin> getPlugins() {
+        return pluginsCache;
+    }
+
+    private Iterable<? extends JavaIndexerPlugin> createPlugins(final FileObject root) {
+        final List<JavaIndexerPlugin> plugins = new ArrayList<JavaIndexerPlugin>();
+        for (JavaIndexerPlugin.Factory factory : MimeLookup.getLookup(
+            MimePath.parse(JavaDataLoader.JAVA_MIME_TYPE)).lookupAll(JavaIndexerPlugin.Factory.class)) {
+            final JavaIndexerPlugin plugin = factory.create(root);
+            if (plugin != null) {
+                plugins.add(plugin);
+            }
+        }
+        return plugins;
+    }
+
+    @NonNull
+    private Lookup getPluginServices(final JavacTaskImpl jt) {
+        return Lookups.fixed(
+            jt.getElements(),
+            jt.getTypes(),
+            JavacTrees.instance(jt.getContext()),
+            JavaSourceAccessor.getINSTANCE().createElementUtilities(jt));
+    }
+
     private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
         for (CompileTuple compileTuple : virtualSources) {
             ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, compileTuple.jfo);
