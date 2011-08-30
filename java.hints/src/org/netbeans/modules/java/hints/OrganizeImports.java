@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
@@ -51,6 +52,9 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Scope;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Name;
 
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -93,12 +97,14 @@ public class OrganizeImports {
                     copy.toPhase(Phase.RESOLVED);
                     Trees trees = copy.getTrees();
                     CompilationUnitTree cu = copy.getCompilationUnit();
-                    Set<Element> toImport = getUsedElements(cu, trees);
-                    if (!toImport.isEmpty() && !cu.getImports().isEmpty()) {
-                        CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
-                        CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
-                        copy.rewrite(cu, ncu);
-                        ret.add(ErrorDescriptionFactory.forTree(context, cu.getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix)); //NOI18N
+                    if (!cu.getImports().isEmpty()) {
+                        Set<Element> toImport = getUsedElements(cu, trees);
+                        if (!toImport.isEmpty()) {
+                            CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
+                            CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
+                            copy.rewrite(cu, ncu);
+                            ret.add(ErrorDescriptionFactory.forTree(context, cu.getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix)); //NOI18N
+                        }
                     }
                 }
             });
@@ -120,7 +126,8 @@ public class OrganizeImports {
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 Element element = trees.getElement(getCurrentPath());
-                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())
+                        && element.asType().getKind() != TypeKind.ERROR && isGlobal(element)) {
                     ret.add(element);
                 }
                 return null;
@@ -130,6 +137,22 @@ public class OrganizeImports {
             public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
                 scan(node.getPackageAnnotations(), p);
                 return scan(node.getTypeDecls(), p);
+            }
+            
+            private boolean isGlobal(Element element) {
+                for (Scope.Entry e = ((JCCompilationUnit)cut).namedImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
+                    if (element == e.sym)
+                        return true;
+                }
+                for (Scope.Entry e = ((JCCompilationUnit)cut).packge.members().lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
+                    if (element == e.sym)
+                        return true;
+                }
+                for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
+                    if (element == e.sym)
+                        return true;
+                }
+                return false;
             }
         }.scan(cut, null);
         return ret;
