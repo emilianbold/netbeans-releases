@@ -117,7 +117,7 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             final int end = (int) sp.getEndPosition(cu, problem.tree);
             if (start >= 0 && end >= 0) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
-                        Severity.ERROR,
+                        Severity.WARNING,
                         problem.description,
                         file,
                         start,
