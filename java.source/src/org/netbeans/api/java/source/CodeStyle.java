@@ -917,13 +917,13 @@ public final class CodeStyle {
                         this.separateStatic = true;
                         imp = imp.substring(7);
                     }
-                    info.prefix = imp + '.';                    
+                    info.prefix = imp.length() > 0 && !"*".equals(imp) ? imp + '.' : ""; //NOI18N                    
                     this.infos[i] = info;
                 }
                 Arrays.sort(this.infos, new Comparator<Info>() {
                     @Override
                     public int compare(Info o1, Info o2) {
-                        int bal = o1.prefix.length() - o2.prefix.length();
+                        int bal = o2.prefix.length() - o1.prefix.length();
                         return bal == 0 ? o1.prefix.compareTo(o2.prefix) : bal;
                     }
                 });
