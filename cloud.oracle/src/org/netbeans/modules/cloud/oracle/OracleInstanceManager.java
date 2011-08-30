@@ -148,31 +148,26 @@ public class OracleInstanceManager {
         for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
             String name = props.getString(NAME, null); // NOI18N
             assert name != null : "Instance without name";
-            String adminURL = props.getString(ADMIN_URL, null); // NOI18N
-            assert adminURL != null : "Instance without admin url";
-            String instanceURL = props.getString(INSTANCE_URL, null); // NOI18N
-            assert instanceURL != null : "Instance without instance url";
-            String cloudURL = props.getString(CLOUD_URL, null); // NOI18N
-            assert cloudURL != null : "Instance without cloud url";
+            String adminURL = props.getString(ADMIN_URL, ""); // NOI18N
+            String instanceURL = props.getString(INSTANCE_URL, ""); // NOI18N
+            String cloudURL = props.getString(CLOUD_URL, ""); // NOI18N
             
             char ch[] = Keyring.read(PREFIX+USERNAME+"."+name);
             if (ch == null) {
                 LOG.log(Level.WARNING, "no username found for "+name);
-                continue;
+                ch = new char[]{' '};
             }
             String userName = new String(ch);
             assert userName != null : "username is missing for "+name; // NOI18N
             ch = Keyring.read(PREFIX+PASSWORD+"."+name);
             if (ch == null) {
                 LOG.log(Level.WARNING, "no password found for "+name);
-                continue;
+                ch = new char[]{' '};
             }
             String password = new String(ch);
             assert password != null : "password is missing for "+name; // NOI18N
-            String tenant = props.getString(SYSTEM, null); // NOI18N
-            assert tenant != null : "Instance without tenant ID";
-            String service = props.getString(SERVICE, null); // NOI18N
-            assert service != null : "Instance without service name";
+            String tenant = props.getString(SYSTEM, "undefined"); // NOI18N
+            String service = props.getString(SERVICE, "undefined"); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
             result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise));
         }
