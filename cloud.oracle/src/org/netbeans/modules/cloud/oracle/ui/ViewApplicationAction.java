@@ -62,7 +62,10 @@ public class ViewApplicationAction extends NodeAction {
         ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
         String appContext = app.getArchiveUrl().substring(0, app.getArchiveUrl().lastIndexOf('.'));
         String url = inst.getOracleInstance().getInstanceURL();
-        url += url.endsWith("/") ? appContext.substring(1) : appContext;
+        if (appContext.startsWith("/")) {
+            appContext = appContext.substring(1);
+        }
+        url += url.endsWith("/") ? appContext : "/"+appContext;
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
         } catch (MalformedURLException ex) {
