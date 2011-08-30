@@ -173,7 +173,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             if( dataModel.getOrientation() == SlideBarDataModel.SOUTH ) {
                 setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
             } else if( dataModel.getOrientation() == SlideBarDataModel.NORTH ) {
-                setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 1));
+                setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             } else if( dataModel.getOrientation() == SlideBarDataModel.WEST ) {
                 setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 4));
             } else if( dataModel.getOrientation() == SlideBarDataModel.EAST ) {
@@ -617,10 +617,6 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         row = 0;
         col = 0;
         
-        if( Switches.isModeSlidingEnabled() && !buttons.isEmpty() ) {
-            addStrut( 4 );
-        }
-        
         for( TabData td : dataList ) {
             curButton = new SlidingButton(td, dataModel.getOrientation());
             if (blinks != null && blinks.contains(td)) {
@@ -631,6 +627,8 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             buttons.add(curButton);
         
             if( Switches.isModeSlidingEnabled() ) {
+                if( isAqua && first )
+                    addStrut(4);
                 if( null == currentMode || !currentMode.equals( modeName ) ) {
                     if( !first ) {
                         addSeparator();
@@ -653,6 +651,8 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         c.fill = GridBagConstraints.NONE;
         add( new JLabel(), c );
         commandMgr.syncWithModel();
+        if( !UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            setOpaque( !buttons.isEmpty() );
         // #46488 - add(...) is sometimes not enough for proper repaint, god knows why
         revalidate();
         //#47227 - repaint the bar when removing component from bar.
@@ -699,7 +699,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
                 pressedBorder = new VerticalBorder();
             }
             add( button, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0) );
+                    GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(2,0,2,0), 0, 0) );
             button.getModel().addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {

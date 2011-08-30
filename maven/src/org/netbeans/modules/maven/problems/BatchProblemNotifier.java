@@ -85,7 +85,7 @@ public class BatchProblemNotifier {
         pr.doBaseProblemChecks(p.getOriginalMavenProject());
         if (!pr.getMissingArtifacts().isEmpty()) {
             File basedir = p.getPOMFile().getParentFile();
-            // XXX do we need to do anything special for error:error:pom:0?
+            // XXX do we need to do anything special for NbMavenProject.isErrorPlaceholder?
             final File reactor = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
             boolean nue = false;
             synchronized (projectsByReactor) {

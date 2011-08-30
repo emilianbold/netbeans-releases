@@ -929,13 +929,6 @@ public final class NbMavenProjectImpl implements Project {
         return staticLookup;
     }
 
-    public boolean isErrorPom(MavenProject pr) {
-        if ("error".equals(pr.getArtifactId()) && "error".equals(pr.getGroupId())) {
-            return true;
-        }
-        return false;
-    }
-
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -960,12 +953,12 @@ public final class NbMavenProjectImpl implements Project {
 
         
         @Messages({
-            "# {0} - dir basename", "LBL_misconfigured_project=<misconfigured Maven project in {0}>",
+            "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
             "TXT_Maven_project_at=Maven project at {0}"
         })
         @Override public String getDisplayName() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
-            if (isErrorPom(pr)) {
+            if (NbMavenProject.isErrorPlaceholder(pr)) {
                 return LBL_misconfigured_project(getProjectDirectory().getNameExt());
             }
             String toReturn = pr.getName();
