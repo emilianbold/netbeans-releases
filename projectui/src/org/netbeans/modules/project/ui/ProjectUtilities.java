@@ -234,10 +234,10 @@ public class ProjectUtilities {
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater (new Runnable () {
             
-            final ProjectTab ptLogial = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
-            
             @Override
             public void run () {
+                final ProjectTab ptLogial = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
                 Node projNode = null;
