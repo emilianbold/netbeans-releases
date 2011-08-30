@@ -80,6 +80,18 @@
                 </file>
                 
                 <file name="Descriptor" url="nbdep.xml"/>
+                
+                <folder name="DeploymentFileNames">
+                    <folder name="EAR">
+                        <file name="META-INF\weblogic-application.xml"/>
+                    </folder>
+                    <folder name="WAR">
+                        <file name="WEB-INF\weblogic.xml"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="META-INF\weblogic-ejb-jar.xml"/>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
