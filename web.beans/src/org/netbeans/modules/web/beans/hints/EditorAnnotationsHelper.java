@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.hints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,10 +94,10 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
     {
         myDataObject = dataObject;
         myObservable = observable;
+        myModelAnnotations = new AtomicReference<List<CDIAnnotation>>(
+                Collections.<CDIAnnotation>emptyList());
         myAnnotations = new AtomicReference<List<CDIAnnotation>>(
-                new LinkedList<CDIAnnotation>());
-        myCollectedAnnotations = new AtomicReference<List<CDIAnnotation>>();
-        myCollectedAnnotations.set( new LinkedList<CDIAnnotation>());
+                Collections.<CDIAnnotation>emptyList());
         
         observable.addPropertyChangeListener(this );
     }
@@ -117,11 +118,16 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
                     @Override
                     public void run() {
                         HELPERS.remove(myDataObject);
-                        myCollectedAnnotations.set(new LinkedList<CDIAnnotation>());
-                        List<CDIAnnotation> annotations = myAnnotations.get();
+                        List<CDIAnnotation> annotations = myModelAnnotations.get();
                         for (CDIAnnotation annotation : annotations) {
                             annotation.detach();
                         }
+                        annotations = myAnnotations.get();
+                        for( CDIAnnotation annotation : annotations ){
+                            annotation.detach();
+                        }
+                        myModelAnnotations.set( Collections.<CDIAnnotation>emptyList());
+                        myAnnotations.set( Collections.<CDIAnnotation>emptyList());
                     }
                 };
                 PROCESSOR.submit(runnable);
@@ -197,34 +203,44 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
             
             @Override
             public void run() {
-                List<CDIAnnotation> annotations = myAnnotations.get();
+                AtomicReference<List<CDIAnnotation>> ref ;
+                if ( result instanceof Result ){
+                    ref = myAnnotations;
+                }
+                else if ( result.getClass() == CdiAnalysisResult.class ){
+                    ref = myModelAnnotations;
+                }
+                else {
+                    ref = null;
+                    assert false;
+                }
+                List<CDIAnnotation> annotations = ref.get();
                 for (CDIAnnotation annotation : annotations) {
                     annotation.detach();
                 }
-                List<CDIAnnotation> collected = myCollectedAnnotations.get();
-                if ( HELPERS.get( myDataObject ) == null ){
-                    collected = Collections.emptyList();
-                }
-                else {
-                    collected = myCollectedAnnotations.get();
-                }
+                List<CDIAnnotation> collected = result.getAnnotations();
                 
                 for (CDIAnnotation annotation : collected) {
                     annotation.attach( annotation.getPart() );
                 }
-                myAnnotations.set(collected);
-                myCollectedAnnotations.set(new LinkedList<CDIAnnotation>());
+                ref.set(collected);
             }
         };
         PROCESSOR.submit(runnable);
     }
     
     public List<CDIAnnotation> getAnnotations(){
-        return myAnnotations.get();
+        List<CDIAnnotation> modelAnnotations = myModelAnnotations.get();
+        List<CDIAnnotation> annotations = myAnnotations.get();
+        List<CDIAnnotation> result = new ArrayList<CDIAnnotation>( 
+                modelAnnotations.size() +annotations.size());
+        result.addAll( modelAnnotations);
+        result.addAll( annotations );
+        return result;
     }
 
     private void addAnnotation( CdiAnalysisResult result, Element element , 
-            CDIAnnotaitonType type) 
+            CDIAnnotaitonType type ) 
     {
         if ( element == null ){
             return;
@@ -246,12 +262,12 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
         Line line = NbEditorUtilities.getLine( document , start, true);
         Part part = line.createPart( NbDocument.findLineColumn((StyledDocument) document,
                 start),  position.get( 1 ) -start);
-        myCollectedAnnotations.get().add( new CDIAnnotation( type, part));
+        result.addAnnotation( new CDIAnnotation( type, part));
     }
     
     private DataObject myDataObject;
     private EditorCookie.Observable myObservable;
+    private AtomicReference<List<CDIAnnotation>> myModelAnnotations;
     private AtomicReference<List<CDIAnnotation>> myAnnotations;
-    private AtomicReference<List<CDIAnnotation>> myCollectedAnnotations;
 
 }
