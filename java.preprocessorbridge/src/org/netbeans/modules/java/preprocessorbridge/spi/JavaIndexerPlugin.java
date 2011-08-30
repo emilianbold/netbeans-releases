@@ -50,16 +50,31 @@ import org.openide.util.Lookup;
 /**
  *
  * JavaCustomIndexer plugin called during scan on fully attributed trees.
- * @since 1.20
+ * @since 1.21
  * @author Tomas Zezula
  */
 public interface JavaIndexerPlugin {
+
+
     /**
      * Process given attributed compilation unit.
      * @param toProcess the compilation unit to process
+     * @param relativePath the relative path of the source in the source root
      * @param services a {@link Lookup} containing javac services (Elements, Types, Trees)
      */
-    public void process (@NonNull CompilationUnitTree toProcess, @NonNull Lookup services);
+    public void process (@NonNull CompilationUnitTree toProcess, @NonNull String relativePath, @NonNull Lookup services);
+
+    /**
+     * Handles deletion of given source file.
+     * @param relativePath the relative path of the deleted source file inside the source root
+     */
+    public void delete (@NonNull String relativePath);
+
+    /**
+     * Called when the {@link JavaIndexerPlugin} is not more used.
+     * The implementor may do any clean up, storing of metadata.
+     */
+    public void finish ();
 
     /**
      * Factory to create JavaIndexerPlugin.
@@ -69,10 +84,11 @@ public interface JavaIndexerPlugin {
         /**
          * Creates a new instance of {@link JavaIndexerPlugin}.
          * @param root the source root for which the plugin is created
+         * @param cacheFolder used to store metadata
          * @return the new instance of {@link JavaIndexerPlugin} or null
          * if the factory does not handle given source root
          */
         @CheckForNull
-        JavaIndexerPlugin create(@NonNull FileObject root);
+        JavaIndexerPlugin create(@NonNull FileObject root, @NonNull FileObject cacheFolder);
     }
 }

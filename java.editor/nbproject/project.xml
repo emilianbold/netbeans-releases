@@ -228,7 +228,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.20</specification-version>
+                        <specification-version>1.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -282,6 +282,15 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.parsing.lucene</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>2.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

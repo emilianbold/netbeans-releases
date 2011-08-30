@@ -46,20 +46,14 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -77,6 +71,7 @@ import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
@@ -110,7 +105,7 @@ class JavaParsingContext {
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(context.getRootURI());
-        pluginsCache = createPlugins(root);
+        pluginsCache = createPlugins(root, context.getIndexFolder());
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
@@ -127,7 +122,7 @@ class JavaParsingContext {
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(context.getRootURI());
-        pluginsCache = createPlugins(root);
+        pluginsCache = createPlugins(root, context.getIndexFolder());
     }
 
     void analyze(
@@ -141,8 +136,25 @@ class JavaParsingContext {
         final Lookup pluginServices = getPluginServices(jt);
         for (CompilationUnitTree cu : trees) {
             for (JavaIndexerPlugin plugin : getPlugins()) {
-                plugin.process(cu, pluginServices);
+                plugin.process(cu, active.indexable.getRelativePath(), pluginServices);
             }
+        }
+    }
+
+    void delete(
+            @NonNull final String relPath,
+            @NonNull final List<Pair<String,String>> toDelete) throws IOException {
+        for (Pair<String,String> pair : toDelete) {
+            sa.delete(pair);
+        }
+        for (JavaIndexerPlugin plugin : getPlugins()) {
+            plugin.delete(relPath);
+        }
+    }
+
+    void finish() {
+        for (JavaIndexerPlugin plugin : getPlugins()) {
+            plugin.finish();
         }
     }
 
@@ -151,11 +163,13 @@ class JavaParsingContext {
         return pluginsCache;
     }
 
-    private Iterable<? extends JavaIndexerPlugin> createPlugins(final FileObject root) {
+    private static Iterable<? extends JavaIndexerPlugin> createPlugins(
+            @NonNull final FileObject root,
+            @NonNull final FileObject cacheFolder) {
         final List<JavaIndexerPlugin> plugins = new ArrayList<JavaIndexerPlugin>();
         for (JavaIndexerPlugin.Factory factory : MimeLookup.getLookup(
             MimePath.parse(JavaDataLoader.JAVA_MIME_TYPE)).lookupAll(JavaIndexerPlugin.Factory.class)) {
-            final JavaIndexerPlugin plugin = factory.create(root);
+            final JavaIndexerPlugin plugin = factory.create(root, cacheFolder);
             if (plugin != null) {
                 plugins.add(plugin);
             }
