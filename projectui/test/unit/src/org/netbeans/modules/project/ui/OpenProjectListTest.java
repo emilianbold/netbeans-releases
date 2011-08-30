@@ -105,7 +105,7 @@ public class OpenProjectListTest extends NbTestCase {
         super.setUp ();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir ();
-        
+
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = handler;
         
         FileObject workDir = FileUtil.toFileObject (getWorkDir ());
@@ -129,15 +129,10 @@ public class OpenProjectListTest extends NbTestCase {
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f1_1_open);
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f1_2_open);
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f2_1_open);
-        
-        // close both projects with own open files
-        OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
+
+        OpenProjectList.getDefault().close(OpenProjectList.getDefault().getOpenProjects(), false);
     }
     
-    protected @Override void tearDown() {
-        OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
-    }
-
     public void testOpen () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);
         CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);
