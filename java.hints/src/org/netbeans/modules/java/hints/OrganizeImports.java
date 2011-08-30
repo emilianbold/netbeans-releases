@@ -126,9 +126,10 @@ public class OrganizeImports {
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 Element element = trees.getElement(getCurrentPath());
-                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())
-                        && element.asType().getKind() != TypeKind.ERROR && isGlobal(element)) {
-                    ret.add(element);
+                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                    Element glob = global(element);
+                    if (glob != null)
+                        ret.add(glob);
                 }
                 return null;
             }
@@ -139,20 +140,20 @@ public class OrganizeImports {
                 return scan(node.getTypeDecls(), p);
             }
             
-            private boolean isGlobal(Element element) {
+            private Element global(Element element) {
                 for (Scope.Entry e = ((JCCompilationUnit)cut).namedImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym)
-                        return true;
+                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
+                        return e.sym;
                 }
                 for (Scope.Entry e = ((JCCompilationUnit)cut).packge.members().lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym)
-                        return true;
+                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
+                        return e.sym;
                 }
                 for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym)
-                        return true;
+                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
+                        return e.sym;
                 }
-                return false;
+                return null;
             }
         }.scan(cut, null);
         return ret;
