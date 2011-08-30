@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
     displayName="#template_options",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newOptions.png",
     description="../../resources/newOptions.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_options=Options Panel")
 public final class NewOptionsIterator extends BasicWizardIterator {

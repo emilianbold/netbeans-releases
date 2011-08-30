@@ -48,11 +48,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wiziard for creating ne Code Generators
@@ -60,6 +61,7 @@ import org.netbeans.api.templates.TemplateRegistration;
  * 
  * @author Max Sauer
  */
+@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1200, displayName = "#Templates/NetBeansModuleDevelopment/newCodeGenerator", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewCodeGeneratorIterator extends BasicWizardIterator {
 
     private static final String lineSep = System.getProperty("line.separator"); // NOI18N
@@ -161,15 +163,6 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         model.setCreatedModifiedFiles(cmf);
     }
 
-    /**
-     * layer.xml entrypoint
-     * @return instance
-     */
-    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1200, displayName = "#Templates/NetBeansModuleDevelopment/newCodeGenerator", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html", category = "nbm-specific")
-    public static NewCodeGeneratorIterator createIterator() {
-        return new NewCodeGeneratorIterator();
-    }
-    
     @Override
     protected Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewCodeGeneratorIterator.DataModel(wiz);

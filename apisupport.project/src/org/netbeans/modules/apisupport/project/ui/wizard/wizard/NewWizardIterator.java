@@ -46,10 +46,11 @@ package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
     displayName="#template_wizard",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newWizard.png",
     description="../../resources/newWizard.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_wizard=Wizard")
 public final class NewWizardIterator extends BasicWizardIterator {

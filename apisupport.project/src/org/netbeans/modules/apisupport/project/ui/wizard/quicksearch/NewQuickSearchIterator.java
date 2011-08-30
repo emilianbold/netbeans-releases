@@ -47,17 +47,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard for creating new providers for QuickSearch SPI
  *
  * @author Max Sauer
  */
+@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 800, displayName = "#Templates/NetBeansModuleDevelopment/newQuickSearch", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewQuickSearchIterator extends BasicWizardIterator {
 
     private static final String[] HARDCODED_IMPORTS = new String[]{
@@ -75,15 +77,6 @@ public class NewQuickSearchIterator extends BasicWizardIterator {
         return new BasicWizardIterator.Panel[]{
                     new QuickSearchPanel(wiz, data)
                 };
-    }
-
-    /**
-     * layer.xml entrypoint
-     * @return instance
-     */
-    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 800, displayName = "#Templates/NetBeansModuleDevelopment/newQuickSearch", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html", category = "nbm-specific")
-    public static NewQuickSearchIterator createIterator() {
-        return new NewQuickSearchIterator();
     }
 
     public Set instantiate() throws IOException {

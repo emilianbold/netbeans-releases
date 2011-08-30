@@ -93,10 +93,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.layers.SynchronousStatus;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -118,6 +120,13 @@ import static org.netbeans.modules.apisupport.project.api.Bundle.*;
 public final class UIUtil {
     
     private UIUtil() {}
+
+    /**
+     * Category to use for NBM-related templates.
+     * @see TemplateRegistration#category
+     * @see RecommendedTemplates
+     */
+    public static final String TEMPLATE_CATEGORY = "nbm-specific";
     
     public static String keyToLogicalString(KeyStroke keyStroke) {
         String keyDesc = Utilities.keyToString(keyStroke);

@@ -41,6 +41,8 @@
  */
 
 package org.netbeans.modules.maven.apisupport;
+
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -65,7 +67,7 @@ public class ApisupportRecoPrivTemplates implements RecommendedTemplates, Privil
             "Templates/NetBeansModuleDevelopment/newWizard", // NOI18N
             //"Templates/Other/properties.properties", // NOI18N
         };
-        private static final String[] NBM_TYPES = new String[] {         
+        private static final String[] NBM_TYPES = {         
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -75,7 +77,7 @@ public class ApisupportRecoPrivTemplates implements RecommendedTemplates, Privil
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
             "REST-clients",         // NOI18N
-            "nbm-specific"         // NOI18N
+            UIUtil.TEMPLATE_CATEGORY,
         };
         
     
