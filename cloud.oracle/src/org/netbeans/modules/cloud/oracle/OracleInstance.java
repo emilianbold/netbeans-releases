@@ -335,7 +335,7 @@ public class OracleInstance {
             ApplicationDeployment adt =new ApplicationDeployment();
             adt.setInstanceId(serviceName);
             adt.setApplicationId(appId);
-            adt.setArchiveUrl(ctx);
+            adt.setArchiveUrl(f.getName());
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
