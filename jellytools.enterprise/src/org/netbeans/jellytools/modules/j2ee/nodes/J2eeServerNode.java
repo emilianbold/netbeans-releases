@@ -55,6 +55,7 @@ import org.netbeans.jellytools.modules.j2ee.actions.RemoveInstanceAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StopAction;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -191,6 +192,21 @@ public class J2eeServerNode extends Node {
     /** Waits till server is stopped. */
     private void waitStopped() {
         waitServerState(STATE_STOPPED);
+        // Because ServerInstance.getState() returns STATE_STOPPED already when
+        // stopping the server, we need to wait until start action is enabled.
+        waitFor(new Waitable() {
+
+            @Override
+            public Object actionProduced(Object o) {
+                new EventTool().waitNoEvent(500);
+                return startAction.isEnabled(J2eeServerNode.this) ? true : null;
+            }
+
+            @Override
+            public String getDescription() {
+                return "start action enabled";  //NOI18N
+            }
+        });
     }
 
     public int getServerState() {
