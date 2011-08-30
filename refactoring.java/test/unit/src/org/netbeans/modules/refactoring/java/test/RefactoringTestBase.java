@@ -173,9 +173,9 @@ public class RefactoringTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         Util.allMimeTypes = new HashSet<String>();
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
-            "org/netbeans/modules/java/source/resources/layer.xml",
-            "org/netbeans/modules/java/editor/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml"}, new Object[] {
+//            "org/netbeans/modules/java/source/resources/layer.xml",
+//            "org/netbeans/modules/java/editor/resources/layer.xml", "META-INF/generated-layer.xml"
             new ClassPathProvider() {
                 public ClassPath findClassPath(FileObject file, String type) {
                     if ((src != null && (file == src || FileUtil.isParentOf(src, file)))

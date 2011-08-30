@@ -75,7 +75,7 @@ public class CopyClassTest extends RefactoringTestBase {
         
         r[0] = new SingleCopyRefactoring(Lookups.singleton(source));
         r[0].setTarget(Lookups.singleton(target));
-        r[0].setNewName(source.getName());
+        r[0].setNewName(source.getNameExt());
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
