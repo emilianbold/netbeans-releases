@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
+import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.modules.project.ui.ProjectTemplatePanel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -155,7 +156,7 @@ public class NewProject extends BasicAction {
                     if ( newObjects != null && !newObjects.isEmpty() ) {
                         // First. Open all returned projects in the GUI.
 
-                        LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
+                        final LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
                         List<Project> projectsToOpen = new LinkedList<Project>();
 
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
@@ -197,7 +198,7 @@ public class NewProject extends BasicAction {
                             }
                         }
                         
-                        Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
+                        final Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
                         
                         Project mainProject = null;
                         if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
@@ -208,15 +209,19 @@ public class NewProject extends BasicAction {
                         
                         // Show the project tab to show the user we did something
                         ProjectUtilities.makeProjectTabVisible();
-                        
-                        if (lastProject != null) {
-                            // Just select and expand the project node
-                            ProjectUtilities.selectAndExpandProject(lastProject);
-                        }
-                        // Second open the files
-                        for (DataObject d : filesToOpen) { // Open the files
-                            ProjectUtilities.openAndSelectNewObject(d);
-                        }
+
+                        ProjectTab.RP.post(new Runnable() {
+                            public @Override void run() {
+                                if (lastProject != null) {
+                                    // Just select and expand the project node
+                                    ProjectUtilities.selectAndExpandProject(lastProject);
+                                }
+                                // Second open the files
+                                for (DataObject d : filesToOpen) { // Open the files
+                                    ProjectUtilities.openAndSelectNewObject(d);
+                                }
+                            }
+                        }, 500);
                         
                     }
                     ProjectUtilities.WaitCursor.hide();
