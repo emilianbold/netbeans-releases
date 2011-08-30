@@ -127,7 +127,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class B {\n"
                 + "}"));
         verifyContent(test,
-                new File("t/BTest", "package t;\n" // XXX: Why is there no extension?
+                new File("t/BTest.java", "package t;\n"
                 + "import junit.framework.TestCase;\n"
                 + "\n"
                 + "public class BTest extends TestCase {\n"
