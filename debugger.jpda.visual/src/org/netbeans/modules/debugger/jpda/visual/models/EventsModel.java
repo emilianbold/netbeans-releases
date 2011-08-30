@@ -71,6 +71,8 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
@@ -87,8 +89,8 @@ import org.openide.util.Utilities;
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class })
-public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class, TreeExpansionModelFilter.class })
+public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, TreeExpansionModelFilter {
     
     private static final String customListeners = "customListeners"; // NOI18N
     private static final String swingListeners = "swingListeners"; // NOI18N
@@ -355,6 +357,38 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             }
         }
         return new Action[] {};
+    }
+    
+    private boolean customListenersExpanded = true;
+    private boolean eventsExpanded = true;
+
+    @Override
+    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
+        if (node == customListeners) {
+            return customListenersExpanded;
+        } else if (node == eventsLog) {
+            return eventsExpanded;
+        } else {
+            return original.isExpanded(node);
+        }
+    }
+
+    @Override
+    public void nodeExpanded(Object node) {
+        if (node == customListeners) {
+            customListenersExpanded = true;
+        } else if (node == eventsLog) {
+            eventsExpanded = true;
+        }
+    }
+
+    @Override
+    public void nodeCollapsed(Object node) {
+        if (node == customListeners) {
+            customListenersExpanded = false;
+        } else if (node == eventsLog) {
+            eventsExpanded = false;
+        }
     }
     
     private static class ListenerCategory {
