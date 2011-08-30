@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import java.awt.Image;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.PreferenceChangeEvent;
-import javax.swing.JMenuItem;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,30 +54,32 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -98,21 +95,25 @@ public class DependenciesNode extends AbstractNode {
     static final int TYPE_TEST = 1;
     static final int TYPE_RUNTIME = 2;
     private static final String SHOW_NONCLASSPATH_DEPENDENCIES = "show.nonclasspath.dependencies"; //NOI18N
-    private static final String SHOW_MANAGED_DEPENDENCIES = "show.managed.dependencies"; //NOI18N
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
     private int type;
 
+    @Messages({
+        "LBL_Libraries=Dependencies",
+        "LBL_Test_Libraries=Test Dependencies",
+        "LBL_Runtime_Libraries=Runtime Dependencies"
+    })
     DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
         super(childs, Lookups.fixed(mavproject));
         setName("Dependencies" + type); //NOI18N
         this.type = type;
         switch (type) {
-            case TYPE_COMPILE : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
-            case TYPE_TEST : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Test_Libraries")); break;
-            case TYPE_RUNTIME : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Runtime_Libraries")); break;
-            default : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
+            case TYPE_COMPILE : setDisplayName(LBL_Libraries()); break;
+            case TYPE_TEST : setDisplayName(LBL_Test_Libraries()); break;
+            case TYPE_RUNTIME : setDisplayName(LBL_Runtime_Libraries()); break;
+            default : setDisplayName(LBL_Libraries()); break;
         }
         project = mavproject;
         setIconBaseWithExtension("org/netbeans/modules/maven/defaultFolder.gif"); //NOI18N
@@ -145,7 +146,7 @@ public class DependenciesNode extends AbstractNode {
         toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         toRet.add(null);
         toRet.add(new ShowClasspathDepsAction());
-        toRet.add(new ShowManagedStateAction());
+        toRet.add(new DependencyNode.ShowManagedStateAction());
         return toRet.toArray(new Action[toRet.size()]);
     }
     
@@ -197,19 +198,15 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected void addNotify() {
-            super.addNotify();
             NbMavenProject.addPropertyChangeListener(project, this);
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.addPreferenceChangeListener(this);
+            prefs().addPreferenceChangeListener(this);
         }
         
         @Override
         protected void removeNotify() {
             setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.removePreferenceChangeListener(this);
-            super.removeNotify();
+            prefs().removePreferenceChangeListener(this);
         }
         
         int regenerateKeys() {
@@ -342,35 +339,18 @@ public class DependenciesNode extends AbstractNode {
     
     @SuppressWarnings("serial")
     private class AddDependencyAction extends AbstractAction {
-        public AddDependencyAction() {
-            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
+
+        @Messages("BTN_Add_Library=Add Dependency...")
+        AddDependencyAction() {
+            putValue(Action.NAME, BTN_Add_Library());
         }
 
-        public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), true, project);
+        @Override public void actionPerformed(ActionEvent event) {
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
-            pnl.setSelectedScope(typeString);
-        
-            pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
-            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
-            dd.setClosingOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            dd.setOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            pnl.attachDialogDisplayer(dd);
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (pnl.getOkButton() == ret) {
-                String version = pnl.getVersion();
-                if (version != null && version.trim().length() == 0) {
-                    version = null;
-                }
+            String[] data = AddDependencyPanel.show(project, true, typeString);
+            if (data != null) {
                 ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
-                       pnl.getGroupId(), pnl.getArtifactId(), version,
-                       null, pnl.getScope(), null,false);
+                       data[0], data[1], data[2], data[4], data[3], data[5], false);
                 project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
             }
         }
@@ -380,13 +360,23 @@ public class DependenciesNode extends AbstractNode {
     private static final RequestProcessor RP = new RequestProcessor(DependenciesNode.class);
     @SuppressWarnings("serial")
     private class DownloadJavadocSrcAction extends AbstractAction {
+
         private boolean javadoc;
-        public DownloadJavadocSrcAction(boolean javadoc) {
-            putValue(Action.NAME, javadoc ? org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Download_Javadoc") : org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Download__Sources"));
+        
+        @Messages({
+            "LBL_Download_Javadoc=Download Javadoc",
+            "LBL_Download__Sources=Download Sources"
+        })
+        DownloadJavadocSrcAction(boolean javadoc) {
+            putValue(Action.NAME, javadoc ? LBL_Download_Javadoc() : LBL_Download__Sources());
             this.javadoc = javadoc;
         }
         
-        public void actionPerformed(ActionEvent evnt) {
+        @Messages({
+            "Progress_Javadoc=Downloading Javadoc",
+            "Progress_Source=Downloading Sources"
+        })
+        @Override public void actionPerformed(ActionEvent evnt) {
             RP.post(new Runnable() {
                 public void run() {
                     Node[] nds = getChildren().getNodes();
@@ -394,7 +384,7 @@ public class DependenciesNode extends AbstractNode {
                     for (int i = 0; i < nds.length; i++) {
                         contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N
                     }
-                    String label = javadoc ? NbBundle.getMessage(DependenciesNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependenciesNode.class, "Progress_Source");
+                    String label = javadoc ? Progress_Javadoc() : Progress_Source();
                     AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label, 
                             contribs, ProgressTransferListener.cancellable(), null);
                     handle.start();
@@ -423,10 +413,13 @@ public class DependenciesNode extends AbstractNode {
     }  
 
     @SuppressWarnings("serial")
-    public static class ResolveDepsAction extends AbstractAction {
+    private static class ResolveDepsAction extends AbstractAction {
+
         private Project project;
-        public ResolveDepsAction(Project prj) {
-            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "LBL_Download"));
+
+        @Messages("LBL_Download=Download Declared Dependencies")
+        ResolveDepsAction(Project prj) {
+            putValue(Action.NAME, LBL_Download());
             project = prj;
         }
         
@@ -437,36 +430,20 @@ public class DependenciesNode extends AbstractNode {
     }
     
     private static boolean showNonClasspath() {
-        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-        boolean b = prefs.getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false); //NOI18N
-        return b;
+        return prefs().getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false);
     }
 
-    static boolean showManagedState() {
-        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-        boolean b = prefs.getBoolean(SHOW_MANAGED_DEPENDENCIES, false); //NOI18N
-        return b;
-    }
-    
     @SuppressWarnings("serial")
     private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
 
-        public ShowClasspathDepsAction() {
-//            String s = showNonClasspath() ?
-//                NbBundle.getMessage(DependenciesNode.class, "LBL_HideNonClasspath") :
-            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowNonClasspath");
+        @Messages("LBL_ShowNonClasspath=Always show non-classpath dependencies")
+        ShowClasspathDepsAction() {
+            String s = LBL_ShowNonClasspath();
             putValue(Action.NAME, s);
         }
 
         public void actionPerformed(ActionEvent e) {
-            boolean b = showNonClasspath();
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !b); //NOI18N
-            try {
-                prefs.flush();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            prefs().putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !showNonClasspath());
         }
 
         public JMenuItem getPopupPresenter() {
@@ -477,39 +454,6 @@ public class DependenciesNode extends AbstractNode {
         
     }
 
-    @SuppressWarnings("serial")
-    private class ShowManagedStateAction extends AbstractAction implements Presenter.Popup {
-
-        public ShowManagedStateAction() {
-            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowManagedState");
-            putValue(Action.NAME, s);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            boolean b = showManagedState();
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.putBoolean(SHOW_MANAGED_DEPENDENCIES, !b); //NOI18N
-            try {
-                prefs.flush();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            for (Node nd : getChildren().getNodes(true)) {
-                if (nd instanceof DependencyNode) {
-                    ((DependencyNode)nd).refreshNode();
-                }
-            }
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
-            mi.setSelected(showManagedState());
-            return mi;
-        }
-
-    }
-
-    
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
@@ -542,13 +486,17 @@ public class DependenciesNode extends AbstractNode {
     private static class NonCPNode extends AbstractNode {
         private DependenciesChildren parent;
         
+        @Messages({
+            "LBL_NonCPCount1=There is 1 non-classpath dependency.",
+            "LBL_NonCPCount2=There are {0} non-classpath dependencies."
+        })
         NonCPNode(int count, DependenciesChildren parent) {
             super(Children.LEAF);
             this.parent = parent;
             if (count == 1) {
-                setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount1"));
+                setDisplayName(LBL_NonCPCount1());
             } else {
-                setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount2", count));
+                setDisplayName(LBL_NonCPCount2(count));
             }
         }
 
@@ -569,9 +517,10 @@ public class DependenciesNode extends AbstractNode {
     private static class ExpandAction extends AbstractAction {
         private DependenciesChildren parent;
 
-        public ExpandAction(DependenciesChildren parent) {
+        @Messages("LBL_Expand=Expand dependencies")
+        ExpandAction(DependenciesChildren parent) {
             this.parent = parent;
-            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "LBL_Expand"));
+            putValue(Action.NAME, LBL_Expand());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -610,5 +559,8 @@ public class DependenciesNode extends AbstractNode {
         return base;
     }
     
-}
+    static Preferences prefs() {
+        return NbPreferences.root().node(PREF_DEPENDENCIES_UI);
+    }
 
+}

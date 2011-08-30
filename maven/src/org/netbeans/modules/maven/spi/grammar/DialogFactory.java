@@ -51,9 +51,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.nodes.AddDependencyPanel;
+import static org.netbeans.modules.maven.spi.grammar.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * A factory class that creates dialogs to add/edit stuff,
@@ -62,6 +63,8 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public final class DialogFactory {
+
+    private DialogFactory() {}
 
     /**
      * 
@@ -77,37 +80,14 @@ public final class DialogFactory {
      *
      */
     public static String[] showDependencyDialog(Project prj, boolean showDepMan) {
-        NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
-        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
-        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
-        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
-        dd.setClosingOptions(new Object[]{
-                    pnl.getOkButton(),
-                    DialogDescriptor.CANCEL_OPTION
-                });
-        dd.setOptions(new Object[]{
-                    pnl.getOkButton(),
-                    DialogDescriptor.CANCEL_OPTION
-                });
-        pnl.attachDialogDisplayer(dd);
-        Object ret = DialogDisplayer.getDefault().notify(dd);
-        if (pnl.getOkButton() == ret) {
-            return new String[]{
-                        pnl.getGroupId(),
-                        pnl.getArtifactId(),
-                        pnl.getVersion(),
-                        pnl.getScope(),
-                        null,
-                        null
-                    };
-        }
-        return null;
+        return AddDependencyPanel.show(prj, showDepMan, "compile");
     }
 
+    @Messages("TIT_Exclude=Add Dependency Excludes")
     public static Map<Artifact, List<Artifact>> showDependencyExcludeDialog(Project prj) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(nbproj.getMavenProject());
-        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class,"TIT_Exclude"));
+        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Exclude());
         pnl.setStatusDisplayer(dd.createNotificationLineSupport());
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {

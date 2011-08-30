@@ -93,13 +93,15 @@ made subject to such option by the copyright holder.
                     </not>
                 </condition>
             </fail>
+            <ant antfile="nbproject/platform.xml"/>
             <fail message="Cannot find NetBeans build harness.
 ${{line.separator}}Check that nbplatform.${{nbplatform.active}}.netbeans.dest.dir and nbplatform.${{nbplatform.active}}.harness.dir are defined.
 ${{line.separator}}On a developer machine these are normally defined in ${{user.properties.file}}=${{netbeans.user}}/build.properties
-${{line.separator}}but for automated builds you should pass these properties to Ant explicitly.">
+${{line.separator}}but for automated builds you should pass these properties to Ant explicitly.
+${{line.separator}}You may instead download the harness and platform: -Dbootstrap.url=.../tasks.jar -Dautoupdate.catalog.url=.../updates.xml">
                 <condition>
                     <not>
-                        <available type="dir" file="${{harness.dir}}"/>
+                        <available file="${{harness.dir}}/suite.xml"/>
                     </not>
                 </condition>
             </fail>

@@ -163,5 +163,9 @@
 	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
 	<mapID target="org.netbeans.modules.html.editor.HtmlKit" url="web/create/jsp/about_jsp_edit.html"/>
+
+        <!-- CSH : JSF from entity wizard -->
+        <mapID target="persistence_entity_selection_javaee6" url="web/framework/jsf/csh/file_jsffromentity_panel1.html"/>
+        <mapID target="framework_jsf_fromentity_setup" url="web/framework/jsf/csh/file_jsffromentity_panel2.html"/>
 </map>
 

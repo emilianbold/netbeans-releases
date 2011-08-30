@@ -50,9 +50,11 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
@@ -106,6 +108,10 @@ class SearchExecutor implements Runnable {
         final String toRevision = criteria.getTo();
         final int limitRevisions = criteria.getLimit();
         final String branchName = criteria.getBranch();
+        if (!HgBranch.DEFAULT_NAME.equals(branchName)) {
+            // only for branches other than default
+            HgModuleConfig.getDefault().setSearchOnBranchEnabled(master.getCurrentBranch(), !branchName.isEmpty());
+        }
 
         completedSearches = 0;
         for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {

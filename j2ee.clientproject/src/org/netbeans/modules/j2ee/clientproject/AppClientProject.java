@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,11 +57,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,7 +78,6 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServi
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
@@ -122,8 +122,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -137,7 +135,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -178,7 +175,6 @@ public final class AppClientProject implements Project, FileChangeListener {
     private final Car apiJar;
     private JarContainerImpl enterpriseResourceSupport;
     private FileObject libFolder;
-    private final ClassPathExtender classPathExtender;
     private final ClassPathModifier cpMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
@@ -224,7 +220,6 @@ public final class AppClientProject implements Project, FileChangeListener {
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
             getClassPathUiSupportCallback());
-        classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
     }
     
@@ -339,7 +334,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             encodingQuery,
             QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             new RecommendedTemplatesImpl(this.updateHelper),
-            classPathExtender,
+            ProjectClassPathModifier.extenderForModifier(cpMod),
             cpMod,
             libMod,
             buildExtender,
@@ -457,7 +452,7 @@ public final class AppClientProject implements Project, FileChangeListener {
         
         if (fo.getParent ().equals (libFolder)) {
             try {
-                classPathExtender.addArchiveFile(fo);
+                cpMod.addRoots(new URL[] {FileUtil.getArchiveRoot(fo.getURL())}, ProjectProperties.JAVAC_CLASSPATH);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -585,15 +580,13 @@ public final class AppClientProject implements Project, FileChangeListener {
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     libFolder = helper.resolveFileObject(libFolderName);
                         FileObject children [] = libFolder.getChildren ();
-                        List<FileObject> libs = new LinkedList<FileObject>();
+                        List<URL> libs = new LinkedList<URL>();
                         for (int i = 0; i < children.length; i++) {
                             if (FileUtil.isArchiveFile(children[i])) {
-                                libs.add(children[i]);
+                                libs.add(FileUtil.getArchiveRoot(children[i].getURL()));
                             }
                         }
-                        FileObject[] libsArray = new FileObject[libs.size()];
-                        libs.toArray(libsArray);
-                        classPathExtender.addArchiveFiles(ProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+                        cpMod.addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                         libFolder.addFileChangeListener (AppClientProject.this);
                 }
                 

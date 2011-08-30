@@ -447,6 +447,8 @@ class SplitSubModel {
                 //reuse existing split
                 if( side == Constants.BOTTOM || side == Constants.RIGHT )
                     attachIndex++;
+                if( parent.getChildren().size() ==1 )
+                    parent.setChildSplitWeight( attachNode, Constants.DROP_TO_SIDE_RATIO );
                 parent.setChildAt( attachIndex, Constants.DROP_TO_SIDE_RATIO, addingNode );
             } else {
                 //split orientation does not match, create a new sub-split

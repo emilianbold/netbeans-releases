@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <weblogic-application-client xmlns="http://xmlns.oracle.com/weblogic/weblogic-application-client"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemalocation="http://xmlns.oracle.com/weblogic/weblogic-application-client http://xmlns.oracle.com/weblogic/weblogic-application-client/1.0/weblogic-application-client.xsd">
+        xsi:schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-application-client http://xmlns.oracle.com/weblogic/weblogic-application-client/1.0/weblogic-application-client.xsd">
 </weblogic-application-client>

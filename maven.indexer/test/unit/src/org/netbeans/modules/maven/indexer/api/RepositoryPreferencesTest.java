@@ -51,7 +51,16 @@ public class RepositoryPreferencesTest extends NbTestCase {
     }
 
     public void testGetRepositoryInfos() throws Exception {
-        assertEquals("[local, central, java.net2]", RepositoryPreferences.getInstance().getRepositoryInfos().toString());
+        RepositoryPreferences rp = RepositoryPreferences.getInstance();
+        assertEquals("[local]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(1, "foo", "Foo", "http://nowhere.net/");
+        assertEquals("[local, foo]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(2, "foo.bar", "Foo Bar", "http://nowhere.net/");
+        assertEquals("[local, foo]", rp.getRepositoryInfos().toString());
+        rp.removeTransientRepositories(1);
+        assertEquals("[local, foo.bar]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(3, "foo.bar", "Foo Bar", "http://somewhere.net/");
+        assertEquals("[local, foo.bar]", rp.getRepositoryInfos().toString());
     }
 
 }

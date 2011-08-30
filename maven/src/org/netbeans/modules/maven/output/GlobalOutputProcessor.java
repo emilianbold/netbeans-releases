@@ -42,17 +42,29 @@
 package org.netbeans.modules.maven.output;
 
 import java.awt.Color;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.options.MavenOptionController;
+import static org.netbeans.modules.maven.output.Bundle.*;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -65,16 +77,27 @@ public class GlobalOutputProcessor implements OutputProcessor {
     /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
     private static final Pattern HELP = Pattern.compile("\\[Help \\d+\\] (https?://.+)"); // NOI18N
-    
-    /** Creates a new instance of GlobalOutputProcessor */
-    public GlobalOutputProcessor() {
-    }
+    /**
+     * @see org.apache.maven.model.building.ModelProblemUtils#formatLocation
+     * @see org.apache.maven.model.building.ModelBuildingException#toMessage
+     * @see org.apache.maven.DefaultMaven#collectProjects
+     */
+    static final Pattern MODEL_PROBLEM = Pattern.compile(".+ @ (?:\\S+, (.+), )?line (\\d+), column (\\d+)");
 
-    public String[] getRegisteredOutputSequences() {
+    private static final Logger LOG = Logger.getLogger(GlobalOutputProcessor.class.getName());
+
+    private final RunConfig config;
+    
+    GlobalOutputProcessor(RunConfig config) {
+        this.config = config;
+    }
+    
+    @Override public String[] getRegisteredOutputSequences() {
         return new String[] {SECTION_PROJECT};
     }
 
-    public void processLine(String line, OutputVisitor visitor) {
+    @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
+    @Override public void processLine(String line, OutputVisitor visitor) {
         if (DOWNLOAD.matcher(line).matches()) {
             visitor.skipLine();
             return;
@@ -84,14 +107,14 @@ public class GlobalOutputProcessor implements OutputProcessor {
             return;
         }
         if (LOW_MVN.matcher(line).matches()) {
-            visitor.setLine(line + NbBundle.getMessage(GlobalOutputProcessor.class, "TXT_ChangeSettings"));
+            visitor.setLine(line + '\n' + TXT_ChangeSettings());
             visitor.setColor(Color.RED);
             visitor.setOutputListener(new OutputListener() {
-                public void outputLineSelected(OutputEvent ev) {}
-                public void outputLineAction(OutputEvent ev) {
+                @Override public void outputLineSelected(OutputEvent ev) {}
+                @Override public void outputLineAction(OutputEvent ev) {
                     OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
                 }
-                public void outputLineCleared(OutputEvent ev) {}
+                @Override public void outputLineCleared(OutputEvent ev) {}
             });
             return;
         }
@@ -108,10 +131,51 @@ public class GlobalOutputProcessor implements OutputProcessor {
                 public @Override void outputLineSelected(OutputEvent ev) {}
                 public @Override void outputLineCleared(OutputEvent ev) {}
             });
+            return;
+        }
+        final Matcher m2 = MODEL_PROBLEM.matcher(line);
+        if (m2.matches()) {
+            visitor.setOutputListener(new OutputListener() {
+                public @Override void outputLineAction(OutputEvent ev) {
+                    String loc = m2.group(1);
+                    File pom;
+                    if (loc == null) {
+                        pom = new File(config.getExecutionDirectory(), "pom.xml");
+                    } else {
+                        pom = FileUtil.normalizeFile(new File(loc));
+                    }
+                    FileObject pomFO = FileUtil.toFileObject(pom);
+                    if (pomFO == null) {
+                        LOG.log(Level.WARNING, "no such file: {0}", pom);
+                        return;
+                    }
+                    int line = Integer.parseInt(m2.group(2));
+                    int column = Integer.parseInt(m2.group(3));
+                    DataObject pomDO;
+                    try {
+                        pomDO = DataObject.find(pomFO);
+                    } catch (DataObjectNotFoundException x) {
+                        LOG.log(Level.INFO, null, x);
+                        return;
+                    }
+                    LineCookie lc = pomDO.getLookup().lookup(LineCookie.class);
+                    if (lc == null) {
+                        LOG.log(Level.WARNING, "no LineCookie in {0}", pom);
+                        return;
+                    }
+                    try {
+                        lc.getLineSet().getOriginal(line - 1).show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column - 1);
+                    } catch (IndexOutOfBoundsException x) {
+                        LOG.log(Level.WARNING, "no such line {0} in {1}: {2}", new Object[] {line, pom, x});
+                    }
+                }
+                public @Override void outputLineSelected(OutputEvent ev) {}
+                public @Override void outputLineCleared(OutputEvent ev) {}
+            });
         }
     }
 
-    public void sequenceStart(String sequenceId, OutputVisitor visitor) {
+    @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (sequenceId.startsWith(SECTION_PROJECT)) {
 //            visitor.setLine(sequenceId);
         } else {
@@ -120,11 +184,8 @@ public class GlobalOutputProcessor implements OutputProcessor {
         }
     }
 
-    public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
-    }
+    @Override public void sequenceEnd(String sequenceId, OutputVisitor visitor) {}
 
-    public void sequenceFail(String sequenceId, OutputVisitor visitor) {
-    }
-    
+    @Override public void sequenceFail(String sequenceId, OutputVisitor visitor) {}
     
 }

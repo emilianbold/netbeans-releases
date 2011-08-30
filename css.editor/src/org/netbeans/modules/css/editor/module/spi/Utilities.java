@@ -53,6 +53,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
+import org.netbeans.modules.css.editor.csl.CssPropertyElement;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -113,13 +115,33 @@ public class Utilities {
     }
 
       public static  List<CompletionProposal> createRAWCompletionProposals(Collection<String> props, ElementKind kind, int anchor) {
+          return createRAWCompletionProposals(props, kind, anchor, null);
+      }
+      
+      public static  List<CompletionProposal> createRAWCompletionProposals(Collection<String> props, ElementKind kind, int anchor, String addPrefix) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (String value : props) {
+            if(addPrefix != null) {
+                value = addPrefix + value;
+            }
             CssElement handle = new CssElement(value);
             CompletionProposal proposal = CssCompletionItem.createRAWCompletionItem(handle, value, kind, anchor, false);
             proposals.add(proposal);
         }
         return proposals;
     }
-    
+ 
+    public static List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, int anchor) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (PropertyDescriptor p : props) {
+            //filter out non-public properties
+            if (!p.getName().startsWith("-")) { //NOI18N
+                CssElement handle = new CssPropertyElement(p);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
+                proposals.add(proposal);
+            }
+        }
+        return proposals;
+    }
+      
 }

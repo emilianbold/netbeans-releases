@@ -45,14 +45,17 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,6 +64,9 @@ import org.openide.nodes.Node;
  */
 final class ResultTreeModel implements TreeModel {
     
+    /** Interval of refreshing results window while searching. */
+    private static final long TREE_UI_UPDATE_INTERVAL = 250;
+
     /** */
     final ResultModel resultModel;
     /** */
@@ -75,6 +81,9 @@ final class ResultTreeModel implements TreeModel {
     private int selectedObjectsCount;
     /** */
     private List<TreeModelListener> treeModelListeners;
+    
+    /** Flag that refresh of tree UI (to show new nodes) is scheduled */
+    private boolean treeUIUpdateScheduled = false;
     
     /**
      * 
@@ -334,7 +343,7 @@ final class ResultTreeModel implements TreeModel {
             if (foundObject != null) {
                 if (foundObjectIndex != -1) {
                     objectsCount++;
-                    fireNodeAdded(foundObjectIndex, foundObject);
+                    fireNodeAdded();
                     updateRootNodeSelection(true);
                 } else {
                     /* file became invalid */
@@ -397,27 +406,37 @@ final class ResultTreeModel implements TreeModel {
         }
     }
 
-    /**
+    /** Called after a new node was added in order to refresh corresponding 
+     * tree panel.
+     * 
+     * Does not refresh the panel immediately, but schedules a refresh task, or
+     * does nothing if a refresh task is already scheduled.
+     * 
+     * Refreshing the panel for every single item caused freezing of the UI, so
+     * the actual refresh is called after multiple new nodes are added (after
+     * a timeout) 
      */
-    private void fireNodeAdded(int index, MatchingObject object) {
-        assert EventQueue.isDispatchThread();
-        assert object != null;
-        assert index >= 0;
-        
-        if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
-            return;
+    private synchronized void fireNodeAdded() {
+
+        if (!treeUIUpdateScheduled) {
+            new ScheduledTreeUpdater(TREE_UI_UPDATE_INTERVAL).start();            
+            treeUIUpdateScheduled = true;
         }
-        
-//        TreeModelEvent event = new TreeModelEvent(this,
-//                                                  rootPath,
-//                                                  new int[] { index },
-//                                                  new Object[] { object });
-        TreeModelEvent event = new TreeModelEvent(this,
-                                                  rootPath);
+    }
+
+    /** Actual refresh of the UI. 
+     * 
+     * Should be called by the refresh scheduler only, not directly.
+     */
+    private synchronized void updateTreeAfterModifications() {
+
+        assert EventQueue.isDispatchThread();
+
+        TreeModelEvent event = new TreeModelEvent(this, rootPath);
         for (TreeModelListener l : treeModelListeners) {
-//            l.treeNodesInserted(event);
             l.treeStructureChanged(event);
         }
+        treeUIUpdateScheduled = false;
     }
     
     /**
@@ -561,12 +580,40 @@ final class ResultTreeModel implements TreeModel {
             l.treeNodesChanged(event);
         }
     }
-    
+        
     /** Returns display name of the root node.
      * @return display name of the root node.
      */
     @Override
     public String toString() {
         return super.toString() + "[" + rootDisplayName + "]"; // NOI18N
+    }
+
+    private class ScheduledTreeUpdater extends Thread {
+
+        private long delay;
+
+        private ScheduledTreeUpdater(long delay) {
+            super();
+            this.delay = delay;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(delay);
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                       updateTreeAfterModifications();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {                
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }

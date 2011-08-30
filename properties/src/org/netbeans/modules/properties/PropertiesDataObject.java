@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.properties;
 
+import org.openide.util.UserCancelException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
@@ -127,8 +128,8 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     /** Initializes the object. Used by construction and deserialized. */
@@ -363,7 +364,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      */
     @Override
     protected Node createNodeDelegate () {
-        return new PropertiesDataNode(this);
+        return new PropertiesDataNode(this, getLookup());
     }
 
     Children getChildren() {

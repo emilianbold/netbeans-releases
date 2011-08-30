@@ -1222,6 +1222,29 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
+            int offset = evt.getOffset();
+            int endOffset = offset + evt.getLength();
+            if (evt.getOffset() == 0) {
+                // Insert at offset 0 the marks would stay at offset == 0
+                if (getMark() == 0) {
+                    try {
+                        selectionMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (getDot() == 0) {
+                    try {
+                        caretMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())

@@ -2598,7 +2598,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private static void issue71257Hack(Component comp) {
         Container cont = comp.getParent();
         if (cont != null) {
-            if (cont.getLayout() instanceof org.jdesktop.layout.GroupLayout) {
+            if (cont.getLayout() instanceof GroupLayout) {
                 while (cont != null && !(cont instanceof ComponentLayer)) {
                     if (cont instanceof JTabbedPane) {
                         if (!cont.isValid() && (componentValidField != null)) {
