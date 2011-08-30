@@ -76,7 +76,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.setVisible(SHOW_CLOUD_URLS);
         
         if (SHOW_CLOUD_URLS) {
-            serviceNameTextField.setText("localhost"); // NOI18N
+            serviceNameTextField.setText("c9_lab_host"); // NOI18N
             tenantIdTextField.setText("oracle"); // NOI18N
             userNameTextField.setText("system");
             passwordField.setText("welcome1");
