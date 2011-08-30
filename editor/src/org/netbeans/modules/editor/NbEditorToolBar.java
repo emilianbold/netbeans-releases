@@ -638,12 +638,13 @@ import org.openide.util.lookup.ProxyLookup;
             }
         }
 
+        Lookup componentLookup = Lookups.singleton(c);
         if (nodeLookup == null && ancestorLookup == null) {
-            return Lookups.singleton(c);
+            return componentLookup;
         } else if (nodeLookup == null) {
-            return ancestorLookup;
+            return new ProxyLookup(new Lookup[] { ancestorLookup, componentLookup });
         } else if (ancestorLookup == null) {
-            return nodeLookup;
+            return new ProxyLookup(new Lookup[] { nodeLookup, componentLookup });
         }
         assert nodeLookup != null && ancestorLookup != null;
 
@@ -652,9 +653,9 @@ import org.openide.util.lookup.ProxyLookup;
                 new Lookup.Template(Node.class)).allInstances().contains(node);
 
         if (ancestorLookupContainsNode) {
-            return ancestorLookup;
+            return new ProxyLookup(new Lookup[] { ancestorLookup, componentLookup });
         } else {
-            return new ProxyLookup(new Lookup[] { nodeLookup, ancestorLookup });
+            return new ProxyLookup(new Lookup[] { nodeLookup, ancestorLookup, componentLookup });
         }
     }
 
