@@ -259,8 +259,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             File basedir = config.getExecutionDirectory();
             try {
                 if (basedir != null && !basedir.equals(basedir.getCanonicalFile())) {
-                    toRet.add("-f");
-                    toRet.add(new File(basedir, "pom.xml").getAbsolutePath());
+                    File pom = new File(basedir, "pom.xml");
+                    if (pom.isFile()) { // #201400
+                        toRet.add("-f");
+                        toRet.add(pom.getAbsolutePath());
+                    }
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.FINE, "Could not canonicalize " + basedir, x);
