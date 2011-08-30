@@ -56,5 +56,17 @@
             </file>
 
         </folder>
+        
+        <folder name="JavaFX">
+            <file name="FXML.fxml" url="templates/FXML_fxml.template">
+                <attr name="position" intvalue="300"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="FXML2.java" url="templates/FXML_java_2.template">
+                <attr name="position" intvalue="400"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+        </folder>
+        
     </folder>  
 </filesystem>
