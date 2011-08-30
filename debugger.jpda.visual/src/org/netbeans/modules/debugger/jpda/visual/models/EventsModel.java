@@ -89,6 +89,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -308,13 +309,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return "Events";
         }
         if (node == customListeners) {
-            return "Custom Listeners";
+            return NbBundle.getMessage(EventsModel.class, "CTL_CustomListeners");
         }
         if (node == swingListeners) {
-            return "Internal AWT/Swing Listeners";
+            return NbBundle.getMessage(EventsModel.class, "CTL_InternalListeners");
         }
         if (node == eventsLog) {
-            return "Event Log";
+            return NbBundle.getMessage(EventsModel.class, "CTL_EventLog");
         }
         if (node instanceof ListenerCategory) {
             return ((ListenerCategory) node).getType();
@@ -330,11 +331,11 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return re.getListenerMethod()+" ("+toString.substring(0, end)+')';
         }
         if (node instanceof Stack) {
-            return "Called From...";
+            return NbBundle.getMessage(EventsModel.class, "CTL_CalledFrom");
         }
         if (node instanceof Stack.Element) {
             Stack.Element e = (Stack.Element) node;
-            return "<html>"+e.getClassName()+".<b>"+e.getMethodName()+"</b>(<font color=\"#0000FF\">"+e.getFileName()+":"+e.getLineNumber()+"</font>)";
+            return "<html>"+e.getClassName()+".<b>"+e.getMethodName()+"</b>(<font color=\"#0000FF\">"+e.getFileName()+":"+e.getLineNumber()+"</font>)</html>";
         }
         return String.valueOf(node);
     }
@@ -457,7 +458,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         @Override
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
-                return "Set Logging Events...";
+                return NbBundle.getMessage(EventsModel.class, "CTL_SetLoggingEvents");
             }
             return super.getValue(key);
         }
@@ -676,9 +677,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             int propertiesLength = data.length/2 - 1;
             Object[] properties = new Object[propertiesLength + 1];
             for (int i = 0; i < propertiesLength; i++) {
-                properties[i] = data[2 + 2*i] + " = "+data[3 + 2*i];
+                properties[i + 1] = data[2 + 2*i] + " = "+data[3 + 2*i];
             }
-            properties[propertiesLength] = stack;
+            properties[0] = stack;
             return properties;
         }
         
