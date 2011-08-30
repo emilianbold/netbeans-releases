@@ -60,6 +60,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -92,6 +93,8 @@ public class CdiAnalysisTask extends AbstractAnalysisTask {
             }
             analyzeType(typeElement, null );
         }
+        EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(getResult());
+        helper.publish( getResult() );
     }
     
     private void analyzeType(TypeElement typeElement , TypeElement parent )
