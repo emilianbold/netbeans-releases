@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,13 +85,14 @@ public class SmartOutputStream extends OutputStream {
     private final FileOutputStream delegate;
     private final File tempFile;
     private final Checksum checksum;
+    private boolean closed = false;
     
     private static final Logger LOG = Logger.getLogger("remote.support.logger"); // NOI18N
 
     private SmartOutputStream(FileObject fileObject, FileLock lock) throws IOException {
         this.fileObject = fileObject;
         this.lock = lock;
-        this.tempFile = File.createTempFile(fileObject.getName(), fileObject.getExt());
+        this.tempFile = File.createTempFile(fileObject.getName(), "."+fileObject.getExt());
         this.delegate = new FileOutputStream(tempFile);
         this.checksum = new Adler32();
     }
@@ -111,6 +111,9 @@ public class SmartOutputStream extends OutputStream {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
             delegate.close();
             try {
                 long oldCheckSum = calculateCheckSum(fileObject);
@@ -125,6 +128,7 @@ public class SmartOutputStream extends OutputStream {
                 LOG.log(Level.FINEST, "Exceptions occur for {0} - perform real writing", fileObject);
                 realWrite();
             } finally {
+                closed = true;
                 tempFile.delete();
             }
         }
