@@ -41,10 +41,24 @@ package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
+@ActionID(id = "org.netbeans.modules.java.hints.jackpot.impl.refactoring.ApplyPatternAction", category = "Refactoring")
+@ActionRegistration(iconInMenu = true, displayName = "#CTL_ApplyPatternAction")
+@ActionReferences({
+    @ActionReference(path = "Menu/Refactoring", position = 1850),
+    @ActionReference(path = "Projects/org-netbeans-modules-java-j2seproject/Actions", position = 2350),
+    @ActionReference(path = "Projects/org-netbeans-modules-ant-freeform/Actions", position = 1650),
+    @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 2850)
+})
+@Messages("CTL_ApplyPatternAction=Inspect And Transform...")
 public final class ApplyPatternAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
