@@ -66,15 +66,13 @@ import org.openide.util.actions.NodeAction;
  */
 public class GoToFieldDeclarationAction extends NodeAction {
     
-    private RequestProcessor rp = new RequestProcessor("Go to Source");
-
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
             final AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
             if (ci != null) {
                 final FieldInfo fieldInfo = ci.getField();
-                rp.post(new Runnable() {
+                GoToSourceAction.RP.post(new Runnable() {
                     @Override
                     public void run() {
                         org.netbeans.api.debugger.jpda.Field fieldVariable;
