@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -17,30 +17,20 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblCommandLine" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblOptions" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblLocalRepository" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblExternalVersion" alignment="0" pref="525" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="comSource" alignment="0" pref="412" max="32767" attributes="1"/>
-                                  <Component id="comJavadoc" alignment="0" pref="412" max="32767" attributes="1"/>
-                                  <Component id="comBinaries" alignment="0" pref="412" max="32767" attributes="1"/>
-                                  <Component id="txtLocalRepository" alignment="0" pref="412" max="32767" attributes="1"/>
-                                  <Component id="txtOptions" pref="412" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="txtOptions" pref="412" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="btnLocalRepository" linkSize="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnOptions" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="btnOptions" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="cbSkipTests" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
@@ -48,6 +38,15 @@
                               <EmptySpace min="-2" pref="122" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="198" pref="198" max="198" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="comSource" alignment="0" pref="412" max="32767" attributes="1"/>
+                          <Component id="comJavadoc" alignment="0" pref="412" max="32767" attributes="1"/>
+                          <Component id="comBinaries" alignment="0" pref="412" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="113" pref="113" max="113" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -69,7 +68,7 @@
                       <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -91,13 +90,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbSkipTests" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="txtLocalRepository" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnLocalRepository" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblLocalRepository" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -137,6 +130,13 @@
         </Property>
       </Properties>
     </Component>
+    <Component class="javax.swing.JComboBox" name="comMavenHome">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JLabel" name="lblExternalVersion">
     </Component>
     <Component class="javax.swing.JLabel" name="lblOptions">
@@ -168,27 +168,12 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="lblLocalRepository">
+    <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/options/Bundle.properties" key="SettingsPanel.lblLocalRepository.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/options/Bundle.properties" key="SettingsPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="txtLocalRepository">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MyJTextField();"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnLocalRepository">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/options/Bundle.properties" key="SettingsPanel.btnLocalRepository.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLocalRepositoryActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblBinaries">
       <Properties>
@@ -234,13 +219,6 @@
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel1">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/options/Bundle.properties" key="SettingsPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="btnGoals">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -274,13 +252,6 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnIndexActionPerformed"/>
       </Events>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="comMavenHome">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

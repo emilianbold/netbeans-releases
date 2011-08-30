@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
@@ -60,6 +61,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -93,18 +95,9 @@ import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
- *
- * @author mkleint
- * @author anuradha 
+ * Handle for the embedded Maven system, used to parse POMs and more.
  */
 public final class MavenEmbedder {
-
-    public static final String userHome = System.getProperty("user.home");
-    public static final File userMavenConfigurationHome = new File(userHome, ".m2");
-    public static final File defaultUserLocalRepository = new File(userMavenConfigurationHome, "repository");
-    public static final File DEFAULT_USER_SETTINGS_FILE = new File(userMavenConfigurationHome, "settings.xml");
-    public static final File DEFAULT_GLOBAL_SETTINGS_FILE =
-            new File(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
 
     private static final Logger LOG = Logger.getLogger(MavenEmbedder.class.getName());
     private final PlexusContainer plexus;
@@ -140,16 +133,9 @@ public final class MavenEmbedder {
         return embedderConfiguration.isOffline();
     }
 
-    private String getLocalRepositoryPath() {
-        if (embedderConfiguration.getLocalRepository() != null) {
-            return embedderConfiguration.getLocalRepository().getAbsolutePath();
-        }
-        return getSettings().getLocalRepository();
-    }
-
     public ArtifactRepository getLocalRepository() {
         try {
-            String localRepositoryPath = getLocalRepositoryPath();
+            String localRepositoryPath = getSettings().getLocalRepository();
             if (localRepositoryPath != null) {
                 return repositorySystem.createLocalRepository(new File(localRepositoryPath));
             }
@@ -161,7 +147,8 @@ public final class MavenEmbedder {
     }
 
     public synchronized Settings getSettings() {
-        long newSettingsTimestamp = DEFAULT_GLOBAL_SETTINGS_FILE.lastModified() ^ DEFAULT_USER_SETTINGS_FILE.lastModified();
+        File settingsXml = embedderConfiguration.getSettingsXml();
+        long newSettingsTimestamp = settingsXml.hashCode() ^ settingsXml.lastModified() ^ MavenCli.DEFAULT_USER_SETTINGS_FILE.lastModified();
         // could be included but currently constant: hashCode() of those files; getSystemProperties.hashCode()
         if (settings != null && settingsTimestamp == newSettingsTimestamp) {
             LOG.log(Level.FINER, "settings.xml cache hit for {0}", this);
@@ -169,8 +156,8 @@ public final class MavenEmbedder {
         }
         LOG.log(Level.FINE, "settings.xml cache miss for {0}", this);
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
-        req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
-        req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+        req.setGlobalSettingsFile(settingsXml);
+        req.setUserSettingsFile(MavenCli.DEFAULT_USER_SETTINGS_FILE);
         req.setSystemProperties(getSystemProperties());
         try {
             settings = settingsBuilder.build(req).getEffectiveSettings();
@@ -314,11 +301,12 @@ public final class MavenEmbedder {
         
 
         //TODO: do we need to validate settings files?
-        if(DEFAULT_GLOBAL_SETTINGS_FILE !=null && DEFAULT_GLOBAL_SETTINGS_FILE.exists()) {
-            req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+        File settingsXml = embedderConfiguration.getSettingsXml();
+        if (settingsXml !=null && settingsXml.exists()) {
+            req.setGlobalSettingsFile(settingsXml);
         }
-        if(DEFAULT_USER_SETTINGS_FILE !=null && DEFAULT_USER_SETTINGS_FILE.exists()) {
-          req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+        if (MavenCli.DEFAULT_USER_SETTINGS_FILE != null && MavenCli.DEFAULT_USER_SETTINGS_FILE.exists()) {
+          req.setUserSettingsFile(MavenCli.DEFAULT_USER_SETTINGS_FILE);
         }
         
         req.setSystemProperties(getSystemProperties());
