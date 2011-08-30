@@ -104,6 +104,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -178,11 +180,13 @@ public class Flow {
         
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, Flow.State>();
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
+        private Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private boolean inParameters;
         private Tree nearestMethod;
         private Set<VariableElement> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
         private final Set<Tree> deadBranches = new HashSet<Tree>();
+        private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
 
         public VisitorImpl(CompilationInfo info, AtomicBoolean cancel) {
             super(cancel);
@@ -191,17 +195,23 @@ public class Flow {
 
         @Override
         public Boolean scan(Tree tree, Void p) {
+            resume(tree, resumeBefore);
+            
             Boolean result = super.scan(tree, p);
 
-            Collection<Map<VariableElement, State>> toResume = resumeAfter.remove(tree);
+            resume(tree, resumeAfter);
+
+            return result;
+        }
+
+        private void resume(Tree tree, Map<Tree, Collection<Map<VariableElement, State>>> resume) {
+            Collection<Map<VariableElement, State>> toResume = resume.remove(tree);
 
             if (toResume != null) {
                 for (Map<VariableElement, State> s : toResume) {
                     variable2State = mergeOr(variable2State, s);
                 }
             }
-
-            return result;
         }
 
         @Override
@@ -482,6 +492,10 @@ public class Flow {
 
         @Override
         public Boolean visitWhileLoop(WhileLoopTree node, Void p) {
+            Map<VariableElement, State> beforeLoop = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
+            
             Boolean condValue = scan(node.getCondition(), null);
 
             if (condValue != null) {
@@ -493,10 +507,6 @@ public class Flow {
                 }
             }
             
-            Map<VariableElement, State> beforeLoop = variable2State;
-
-            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
-
             scan(node.getStatement(), null);
 
             beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
@@ -540,6 +550,11 @@ public class Flow {
         @Override
         public Boolean visitForLoop(ForLoopTree node, Void p) {
             scan(node.getInitializer(), null);
+            
+            Map<VariableElement, State> beforeLoop = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
+
             Boolean condValue = scan(node.getCondition(), null);
 
             if (condValue != null) {
@@ -550,10 +565,6 @@ public class Flow {
                     return null;
                 }
             }
-
-            Map<VariableElement, State> beforeLoop = variable2State;
-
-            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
 
             scan(node.getStatement(), null);
             scan(node.getUpdate(), null);
@@ -570,6 +581,10 @@ public class Flow {
         }
 
         public Boolean visitTry(TryTree node, Void p) {
+            if (node.getFinallyBlock() != null) {
+                pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
+            }
+            
             scan(node.getResources(), null);
 
             Map<VariableElement, State> oldVariable2State = variable2State;
@@ -591,6 +606,7 @@ public class Flow {
             }
 
             if (node.getFinallyBlock() != null) {
+                pendingFinally.remove(0);
                 variable2State = mergeOr(mergeOr(oldVariable2State, variable2State), afterBlockVariable2State);
 
                 scan(node.getFinallyBlock(), null);
@@ -602,10 +618,14 @@ public class Flow {
         public Boolean visitReturn(ReturnTree node, Void p) {
             super.visitReturn(node, p);
             variable2State = new HashMap<VariableElement, State>(variable2State);
-            //performance: limit ammount of held variables and their mapping:
-            for (VariableElement ve : currentMethodVariables) {
-                variable2State.remove(ve);
+
+            if (pendingFinally.isEmpty()) {
+                //performance: limit amount of held variables and their mapping:
+                for (VariableElement ve : currentMethodVariables) {
+                    variable2State.remove(ve);
+                }
             }
+            
             resumeAfter(nearestMethod, variable2State);
             variable2State = new HashMap<VariableElement, State>();
             return null;
@@ -668,11 +688,53 @@ public class Flow {
             return null;
         }
 
+        @Override
+        public Boolean visitAssert(AssertTree node, Void p) {
+            Map<VariableElement, State> oldVariable2State = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+
+            scan(node.getCondition(), null);
+
+            if (node.getDetail() != null) {
+                Map<VariableElement, State> beforeDetailState = new HashMap<VariableElement, Flow.State>(variable2State);
+
+                scan(node.getDetail(), null);
+
+                variable2State = mergeOr(variable2State, beforeDetailState);
+            }
+            
+            variable2State = mergeOr(variable2State, oldVariable2State);
+
+            return null;
+        }
+
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
-            Collection<Map<VariableElement, State>> r = resumeAfter.get(target);
+            for (TreePath tp : pendingFinally) {
+                boolean shouldBeRun = false;
+
+                for (Tree t : tp) {
+                    if (t == target) {
+                        shouldBeRun = true;
+                        break;
+                    }
+                }
+
+                if (shouldBeRun) {
+                    recordResume(resumeBefore, tp.getLeaf(), state);
+                } else {
+                    break;
+                }
+            }
+
+            recordResume(resumeAfter, target, state);
+        }
+
+        private static void recordResume(Map<Tree, Collection<Map<VariableElement, State>>> resume, Tree target, Map<VariableElement, State> state) {
+            Collection<Map<VariableElement, State>> r = resume.get(target);
 
             if (r == null) {
-                resumeAfter.put(target, r = new ArrayList<Map<VariableElement, State>>());
+                resume.put(target, r = new ArrayList<Map<VariableElement, State>>());
             }
 
             r.add(new HashMap<VariableElement, State>(state));
@@ -805,11 +867,6 @@ public class Flow {
 
         public Boolean visitBlock(BlockTree node, Void p) {
             super.visitBlock(node, p);
-            return null;
-        }
-
-        public Boolean visitAssert(AssertTree node, Void p) {
-            super.visitAssert(node, p);
             return null;
         }
 
