@@ -44,11 +44,7 @@
 
 package org.netbeans.swing.plaf.winvista;
 
-import java.awt.GraphicsEnvironment;
-import java.util.Locale;
-import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.FontUIResource;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
 import org.netbeans.swing.plaf.util.UIBootstrapValue;
@@ -86,6 +82,7 @@ public final class VistaLFCustoms extends LFCustoms {
     
     static final String SCROLLPANE_BORDER_COLOR = "scrollpane_border"; //NOI18N
 
+    @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE); //NOI18N
@@ -104,6 +101,7 @@ public final class VistaLFCustoms extends LFCustoms {
         return result;
     }
 
+    @Override
     public Object[] createApplicationSpecificKeysAndValues () {
         UIBootstrapValue editorTabsUI = new VistaEditorColorings (
                 "org.netbeans.swing.tabcontrol.plaf.WinVistaEditorTabDisplayerUI");
@@ -150,8 +148,12 @@ public final class VistaLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_enabled.png"),
             PROGRESS_CANCEL_BUTTON_ROLLOVER_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_over.png"),
-            PROGRESS_CANCEL_BUTTON_PRESSED_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_pressed.png")
+            PROGRESS_CANCEL_BUTTON_PRESSED_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_pressed.png"),
 
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 9,
+            "NbSlideBar.GroupSeparator.Gap.After", 3,
+            "NbSlideBar.RestoreButton.Gap", 2,
         }; //NOI18N
         
         //Workaround for JDK 1.5.0 bug 5080144 - Disabled JTextFields stay white
@@ -168,13 +170,14 @@ public final class VistaLFCustoms extends LFCustoms {
      * Takes a UIManager color key and ensures that it is stored as a 
      * ColorUIResource, not a Color. 
      */
-    private static final void convert (String key) {
+    private static void convert (String key) {
         Color c = UIManager.getColor(key);
         if (c != null && !(c instanceof ColorUIResource)) {
             UIManager.put (key, new ColorUIResource(c));
         }
     }
     
+    @Override
     protected Object[] additionalKeys() {
         Object[] kv = new VistaEditorColorings("").createKeysAndValues();
         Object[] kv2 = new VistaPropertySheetColorings().createKeysAndValues();
@@ -196,6 +199,7 @@ public final class VistaLFCustoms extends LFCustoms {
             super (name);
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
             //Tab control - XXX REPLACE WITH RelativeColor - need to figure out base
@@ -243,6 +247,7 @@ public final class VistaLFCustoms extends LFCustoms {
             super ("propertySheet");  //NOI18N
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
                 PROPSHEET_SELECTION_BACKGROUND, new Color(49,106,197),

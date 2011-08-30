@@ -44,32 +44,14 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
 
-import javax.swing.plaf.basic.BasicToggleButtonUI;
-import java.awt.geom.AffineTransform;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicGraphicsUtils;
 import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 
@@ -97,12 +79,12 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
     }    
 
     /** Install a border on the button */
+    @Override
     protected void installBorder (AbstractButton b) {
         // XXX
-        b.setBorder (//BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
-                     BorderFactory.createEmptyBorder(2, 2, 2, 2));
     }
     
+    @Override
     public void installDefaults (AbstractButton b) {
         super.installDefaults(b);
 	if(!defaults_initialized) {
@@ -114,11 +96,13 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
 	}
     }
     
+    @Override
     protected void uninstallDefaults(AbstractButton b) {
 	super.uninstallDefaults(b);
 	defaults_initialized = false;
     }   
     
+    @Override
     public void paint(Graphics g, JComponent c) {
         ColorUtil.setupAntialiasing(g);
         AbstractButton button = (AbstractButton)c;
@@ -137,6 +121,7 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
         super.paint(g, c);
     }
     
+    @Override
     protected void paintBackground(Graphics2D g, AbstractButton b) {
         if (((SlidingButton) b).isBlinkState()) {
             g.setColor(WinClassicEditorTabCellRenderer.ATTENTION_COLOR);
@@ -147,6 +132,7 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
         }
     }
     
+    @Override
     protected void paintButtonPressed(Graphics g, AbstractButton b) {    
         hiddenToggle.paint(g);
     }

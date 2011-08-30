@@ -64,6 +64,7 @@ import org.netbeans.swing.plaf.util.UIUtils;
  */
 public final class WindowsLFCustoms extends LFCustoms {
 
+    @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE); //NOI18N
@@ -83,6 +84,7 @@ public final class WindowsLFCustoms extends LFCustoms {
         };
     }
 
+    @Override
     public Object[] createApplicationSpecificKeysAndValues () {
         Object propertySheetColorings = new WinClassicPropertySheetColorings();
         Object[] result = {
@@ -141,12 +143,17 @@ public final class WindowsLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 9,
+            "NbSlideBar.GroupSeparator.Gap.After", 1,
+            "NbSlideBar.RestoreButton.Gap", 1,
         }; //NOI18N
 
         //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
         return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown( result );
     }
     
+    @Override
     public Object[] createGuaranteedKeysAndValues() {
         return new Object[] {
              "InternalFrame.activeTitleBackground",
@@ -204,6 +211,7 @@ public final class WindowsLFCustoms extends LFCustoms {
             this.collapsed = collapsed;
         }
         
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.setColor(Color.WHITE);
             g.fillRect(x, y, SIZE-1, SIZE-1);
@@ -215,10 +223,13 @@ public final class WindowsLFCustoms extends LFCustoms {
                 g.drawLine(x + HALF_SIZE, y + 2, x + HALF_SIZE, y + (SIZE - 3));
             }
         }
+        @Override
         public int getIconWidth() { return SIZE; }
+        @Override
         public int getIconHeight() { return SIZE; }
     }
 
+    @Override
     protected Object[] additionalKeys() {
         Object[] kv = new WinClassicPropertySheetColorings().createKeysAndValues();
         Object[] result = new Object[kv.length / 2];
@@ -235,6 +246,7 @@ public final class WindowsLFCustoms extends LFCustoms {
             super (null);
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
             //Property sheet settings as defined by HIE
