@@ -215,7 +215,8 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
         if (!isSelected) {
             g.drawLine(0, height - 4, isLast ? width - 1 : width, height - 4);
-        } else if( isLast ) {
+        } 
+        if( isLast ) {
             g.setColor(shadow);
             g.drawLine(width-1, 0, width-1, height - 5);
         }
