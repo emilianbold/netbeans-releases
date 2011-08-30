@@ -362,6 +362,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
 
     @Override
     public void performDefaultAction(Object node) throws UnknownTypeException {
+        if (node == eventsLog) {
+            new SetLoggingEvents().actionPerformed(null);
+        }
         if (node instanceof Stack.Element) {
             final Stack.Element e = (Stack.Element) node;
             String type = e.getClassName();

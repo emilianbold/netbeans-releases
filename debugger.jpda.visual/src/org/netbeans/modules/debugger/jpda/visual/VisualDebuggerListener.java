@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
@@ -53,29 +54,41 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.WatchpointEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
@@ -88,6 +101,11 @@ import org.openide.util.Exceptions;
 public class VisualDebuggerListener extends DebuggerManagerAdapter {
     
     private static final Logger logger = Logger.getLogger(VisualDebuggerListener.class.getName());
+    
+    private static final Map<JPDADebugger, Map<ObjectReference, Stack>> componentsAndStackTraces
+            = new WeakHashMap<JPDADebugger, Map<ObjectReference, Stack>>();
+    
+    private Breakpoint trackComponentBreakpoint;
 
     @Override
     public void engineAdded(DebuggerEngine engine) {
@@ -135,6 +153,20 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
+        }
+        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", true);
+        if (debugger != null && trackComponentChanges) {
+            FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
+            fb.setHidden(true);
+            fb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                @Override
+                public void breakpointReached(JPDABreakpointEvent event) {
+                    componentParentChanged(debugger, event);
+                    event.resume();
+                }
+            });
+            DebuggerManager.getDebuggerManager().addBreakpoint(fb);
+            trackComponentBreakpoint = fb;
         }
     }
 
@@ -199,6 +231,10 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (debugger != null) {
             stopDebuggerRemoteService(debugger);
         }
+        if (trackComponentBreakpoint != null) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(trackComponentBreakpoint);
+            trackComponentBreakpoint = null;
+        }
     }
     
     private void stopDebuggerRemoteService(JPDADebugger d) {
@@ -215,6 +251,45 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             // Ignore
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public static Stack getStackOf(JPDADebugger debugger, ObjectReference component) {
+        synchronized(componentsAndStackTraces) {
+            Map<ObjectReference, Stack> cs = componentsAndStackTraces.get(debugger);
+            if (cs != null) {
+                return cs.get(component);
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private static void componentParentChanged(JPDADebugger debugger, JPDABreakpointEvent event) {
+        ObjectReference component = null;
+        try {
+            java.lang.reflect.Field f = event.getClass().getDeclaredField("event"); // NOI18N
+            f.setAccessible(true);
+            Event jdievent = (Event) f.get(event);
+            if (jdievent instanceof WatchpointEvent) {
+                component = ((WatchpointEvent) jdievent).object();
+            }
+        } catch (Exception ex) {}
+        if (component != null) {
+            Stack stack;
+            try {
+                stack = new Stack(event.getThread().getCallStack());
+            } catch (AbsentInformationException ex) {
+                return;
+            }
+            synchronized (componentsAndStackTraces) {
+                Map<ObjectReference, Stack> componentAndStackTrace = componentsAndStackTraces.get(debugger);
+                if (componentAndStackTrace == null) {
+                    componentAndStackTrace = new HashMap<ObjectReference, Stack>();
+                    componentsAndStackTraces.put(debugger, componentAndStackTrace);
+                }
+                componentAndStackTrace.put(component, stack);
+            }
         }
     }
     

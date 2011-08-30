@@ -45,14 +45,12 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.FieldInfo;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack.Frame;
+import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -64,42 +62,84 @@ import org.openide.util.actions.NodeAction;
  * 
  * @author Martin Entlicher
  */
-public class GoToFieldDeclarationAction extends NodeAction {
+public class GoToAddIntoHierarchyAction extends NodeAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            final AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
-                final FieldInfo fieldInfo = ci.getField();
+                Stack stack = ci.getAddCallStack();
+                String type = null;
+                int line = -1;
+                if (stack != null) {
+                    Frame[] frames = stack.getFrames();
+                    for (int i = 0; i < frames.length; i++) {
+                        String className = frames[i].getClassName();
+                        String methodName = frames[i].getMethodName();
+                        if (!JavaComponentInfo.isCustomType(className) && methodName.startsWith("add")) {   // NOI18N
+                            continue;
+                        }
+                        type = className;
+                        line = frames[i].getLineNumber();
+                        break;
+                    }
+                    if (type == null) {
+                        Frame f = (frames.length > 1) ? frames[1] : frames[0];
+                        type = f.getClassName();
+                        line = f.getLineNumber();
+                    }
+                } else {
+                    return;
+                }
+                final String showType = type;
+                final int showLine = line;
                 GoToSourceAction.RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        org.netbeans.api.debugger.jpda.Field fieldVariable;
-                        JPDADebuggerImpl debugger = ci.getThread().getDebugger();
-                        Variable variable = debugger.getVariable(fieldInfo.getParent().getComponent());
-                        fieldVariable = ((ObjectVariable) variable).getField(fieldInfo.getName());
-                        SourcePath ectx = debugger.getSession().lookupFirst(null, SourcePath.class);
-                        ectx.showSource (fieldVariable);
+                        showSource(showType, showLine);
                     }
                 });
             }
         }
     }
     
+    private void showSource(String type, final int lineNumber) {
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine != null) {
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+            type = EditorContextBridge.getRelativePath (type);
+            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(type, true);
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    EditorContextBridge.getContext().showSource(url, lineNumber, null);
+                }
+            });
+        }
+    }
+
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        for (Node n : activatedNodes) {
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
+            if (ci != null) {
+                Stack stack = ci.getAddCallStack();
+                if (stack != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GoToFieldDeclarationAction.class, "CTL_GoToFieldDeclaration");
+        return NbBundle.getMessage(GoToAddIntoHierarchyAction.class, "CTL_GoToHierarchyAdditionSource");
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(GoToFieldDeclarationAction.class);
+        return new HelpCtx(GoToAddIntoHierarchyAction.class);
     }
 
     

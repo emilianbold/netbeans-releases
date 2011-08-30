@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -124,7 +126,12 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     final public ObjectReference getComponent() {
         return component;
     }
-
+    
+    /** Provide the stack information about where this component was added into the hierarchy */
+    final public Stack getAddCallStack() {
+        return VisualDebuggerListener.getStackOf(thread.getDebugger(), component);
+    }
+    
     final public String getName() {
         return name;
     }
@@ -668,6 +675,63 @@ abstract public class JavaComponentInfo implements ComponentInfo {
 
         public JavaComponentInfo getParent() {
             return parent;
+        }
+    }
+    
+    public static class Stack {
+        
+        private Frame[] frames;
+        
+        public Stack(Frame[] frames) {
+            this.frames = frames;
+        }
+        
+        public Stack(CallStackFrame[] stackFrames) {
+            int n = stackFrames.length;
+            frames = new Frame[n];
+            for (int i = 0; i < n; i++) {
+                CallStackFrame sf = stackFrames[i];
+                try {
+                    frames[i] = new Frame(sf.getClassName(), sf.getMethodName(), sf.getSourceName(null), sf.getLineNumber(null));
+                } catch (AbsentInformationException ex) {
+                    frames[i] = new Frame(sf.getClassName(), sf.getMethodName(), null, sf.getLineNumber(null));
+                }
+            }
+        }
+        
+        public Frame[] getFrames() {
+            return frames;
+        }
+        
+        public static class Frame {
+            
+            private String className;
+            private String methodName;
+            private String fileName;
+            private int lineNumber;
+            
+            public Frame(String className, String methodName, String fileName, int lineNumber) {
+                this.className = className;
+                this.methodName = methodName;
+                this.fileName = fileName;
+                this.lineNumber = lineNumber;
+            }
+
+            public String getClassName() {
+                return className;
+            }
+
+            public String getMethodName() {
+                return methodName;
+            }
+
+            public String getFileName() {
+                return fileName;
+            }
+
+            public int getLineNumber() {
+                return lineNumber;
+            }
         }
     }
     
