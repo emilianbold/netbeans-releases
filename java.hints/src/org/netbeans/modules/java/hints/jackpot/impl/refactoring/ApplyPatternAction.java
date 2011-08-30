@@ -58,7 +58,7 @@ import org.openide.windows.TopComponent;
     @ActionReference(path = "Projects/org-netbeans-modules-ant-freeform/Actions", position = 1650),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 2850)
 })
-@Messages("CTL_ApplyPatternAction=Inspect And Transform...")
+@Messages("CTL_ApplyPatternAction=Inspect and Transform...")
 public final class ApplyPatternAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
