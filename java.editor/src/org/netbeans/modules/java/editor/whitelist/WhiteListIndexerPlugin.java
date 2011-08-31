@@ -69,8 +69,9 @@ import org.openide.util.Lookup;
 public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
 
     private static final String WHITE_LIST_INDEX = "whitelist"; //NOI18N
-    private static final String MSG = "msg";    //NOI18N
-    private static final String LINE = "line";  //NOI18N
+    static final String MSG = "msg";    //NOI18N
+    static final String LINE = "line";  //NOI18N
+    private static volatile String whiteListPath;
 
     private final WhiteListQuery.WhiteList whiteList;
     private final DocumentIndex index;
@@ -131,6 +132,10 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
         }
     }
 
+    static String getWhiteListPath() {
+        return whiteListPath;
+    }
+
     @MimeRegistration(mimeType="text/x-java",service=JavaIndexerPlugin.Factory.class)
     public static class Factory implements JavaIndexerPlugin.Factory {
         @Override
@@ -139,14 +144,17 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             if (wl == null) {
                 return null;
             }
-            final File cacheDir = FileUtil.toFile(cacheFolder);
-            if (cacheDir == null) {
-                return null;
-            }
             try {
+                final FileObject whiteListFolder = FileUtil.createFolder(cacheFolder, WHITE_LIST_INDEX);
+                final File whiteListDir = FileUtil.toFile(whiteListFolder);
+                if (whiteListDir == null) {
+                    return null;
+                }
+                final FileObject indexFolder = cacheFolder.getParent().getParent();
+                whiteListPath = FileUtil.getRelativePath(indexFolder, whiteListFolder);
                 return new WhiteListIndexerPlugin(
-                        wl,
-                        IndexManager.createDocumentIndex(new File(cacheDir,WHITE_LIST_INDEX)));
+                    wl,
+                    IndexManager.createDocumentIndex(whiteListDir));
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 return null;
