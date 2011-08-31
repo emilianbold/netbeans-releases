@@ -156,7 +156,9 @@ final class ModuleListParser {
                     }
                 }
             }
-            File scanCache = new File(System.getProperty("java.io.tmpdir"), "nb-scan-cache-" + String.format("%H", root) + "-" + (doFastScan ? "standard" : "full") + ".ser");
+            String p = properties.get("netbeans.dest.dir"); // NOI18N
+            int hash = root.hashCode() * 7 + (p == null ? 1 : p.hashCode());
+            File scanCache = new File(System.getProperty("java.io.tmpdir"), "nb-scan-cache-" + String.format("%x", hash) + "-" + (doFastScan ? "standard" : "full") + ".ser");
             if (scanCache.isFile()) {
                 if (project != null) {
                     project.log("Loading module list from " + scanCache);
