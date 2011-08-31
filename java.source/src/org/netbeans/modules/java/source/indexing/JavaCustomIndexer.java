@@ -368,6 +368,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
+        final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
         final String sourceRelative = indexable.getRelativePath();
@@ -393,7 +394,6 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         for (Pair<String,URL> relURLPair : sourceRelativeURLPairs) {
-            final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
             final String ext = FileObjects.getExtension(relURLPair.first);
             final String withoutExt = FileObjects.stripExtension(relURLPair.first);
             final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
@@ -456,8 +456,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                 }
             }
-            javaContext.delete(relURLPair.first, toDelete);
         }
+        javaContext.delete(indexable, toDelete);
     }
 
     private static void markDirtyFiles(final Context context, final Iterable<? extends Indexable> files) {
