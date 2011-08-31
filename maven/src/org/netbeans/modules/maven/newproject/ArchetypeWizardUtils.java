@@ -98,11 +98,6 @@ public class ArchetypeWizardUtils {
     /** {@code Map<String,String>} of custom archetype properties to define. */
     public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
 
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
-
-    /**
-     * No instances, utility class.
-     */
     private ArchetypeWizardUtils() {
     }
 
@@ -237,20 +232,8 @@ public class ArchetypeWizardUtils {
         }
 
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
-        // setup executor now..
-        //hack - we need to setup the user.dir sys property..
-        String oldUserdir = System.getProperty(USER_DIR_PROP); //NOI18N
-        System.setProperty(USER_DIR_PROP, directory.getAbsolutePath()); //NOI18N
-        try {
-            ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
-            task.result();
-        } finally {
-            if (oldUserdir == null) {
-                System.getProperties().remove(USER_DIR_PROP); //NOI18N
-            } else {
-                System.setProperty(USER_DIR_PROP, oldUserdir); //NOI18N
-            }
-        }
+        ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
+        task.result();
     }
 
     static Map<String, String> getAdditionalProperties(Artifact art) {
