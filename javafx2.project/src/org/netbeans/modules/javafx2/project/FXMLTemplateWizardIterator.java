@@ -90,12 +90,12 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         String targetName = Templates.getTargetName(wiz);
         DataFolder df = DataFolder.findFolder(dir);
 
-        FileObject xmlTemplate = FileUtil.getConfigFile("Templates/JavaFX/FXML.fxml"); // NOI18N
+        FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
         DataObject dXMLTemplate = DataObject.find(xmlTemplate);
         DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName);
         set.add(dobj.getPrimaryFile());
         
-        FileObject javaTemplate = FileUtil.getConfigFile("Templates/JavaFX/FXML2.java"); // NOI18N
+        FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
         DataObject dJavaTemplate = DataObject.find(javaTemplate);
         DataObject dobj2 = dJavaTemplate.createFromTemplate(df, "MyGroup"); // NOI18N
         set.add(dobj2.getPrimaryFile());

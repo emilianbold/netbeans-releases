@@ -55,9 +55,6 @@
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
             </file>
 
-        </folder>
-        
-        <folder name="JavaFX">
             <file name="FXML.fxml" url="templates/FXML_fxml.template">
                 <attr name="position" intvalue="300"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
