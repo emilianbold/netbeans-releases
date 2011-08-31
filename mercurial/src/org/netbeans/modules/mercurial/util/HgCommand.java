@@ -3250,18 +3250,18 @@ public class HgCommand {
 
     private static QPatch[] parsePatches (List<String> list) {
         List<QPatch> patches = new ArrayList<QPatch>(list.size());
-        Pattern p = Pattern.compile("^(\\b\\d+)\\s([AU])\\s([^:]+?):\\s(.*)$"); //NOI18N
-        if (patches.isEmpty()) {
-            Mercurial.LOG.log(Level.INFO, "No qpatches found: {0}", list);
-            for (String line : list) {
-                Matcher m = p.matcher(line);
-                if (m.matches()) {
-                    String status = m.group(2);
-                    String id = m.group(3);
-                    String message = m.group(4);
-                    patches.add(new QPatch(id, message, "A".equals(status))); //NOI18N
-                }
+        Pattern p = Pattern.compile("^\\s*(\\b\\d+)\\s([AU])\\s([^:]+?):\\s?(.*)$"); //NOI18N
+        for (String line : list) {
+            Matcher m = p.matcher(line);
+            if (m.matches()) {
+                String status = m.group(2);
+                String id = m.group(3);
+                String message = m.group(4);
+                patches.add(new QPatch(id, message, "A".equals(status))); //NOI18N
             }
+        }
+        if (patches.isEmpty() && !list.isEmpty()) {
+            Mercurial.LOG.log(Level.INFO, "parsePatches(): No qpatches found: {0}", list);
         }
         return patches.toArray(new QPatch[patches.size()]);
     }
