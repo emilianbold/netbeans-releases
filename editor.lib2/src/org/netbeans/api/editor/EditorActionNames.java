@@ -94,5 +94,11 @@ public final class EditorActionNames {
      * @since 1.45
      */
     public static final String zoomTextOut = "zoom-text-out";
+    
+    /**
+     * Toggle between regular text selection and rectangular block selection
+     * when caret selects in a column mode.
+     */
+    public static final String toggleRectangularSelection = "toggle-rectangular-selection";
 
 }

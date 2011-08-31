@@ -93,24 +93,24 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
         Problem p = null;
         if (getterDelegate != null) {
-            p = chainProblems(p, getterDelegate.checkParameters());
+            p = JavaPluginUtils.chainProblems(p, getterDelegate.checkParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
-            p = chainProblems(p, setterDelegate.checkParameters());
+            p = JavaPluginUtils.chainProblems(p, setterDelegate.checkParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (parameterDelegate != null) {
-            p = chainProblems(p, parameterDelegate.checkParameters());
+            p = JavaPluginUtils.chainProblems(p, parameterDelegate.checkParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return p = chainProblems(p, super.checkParameters());
+        return p = JavaPluginUtils.chainProblems(p, super.checkParameters());
     }
 
     @Override
@@ -123,26 +123,26 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         Problem p = null;
         if (getterDelegate != null) {
             getterDelegate.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
-            p = chainProblems(p, getterDelegate.fastCheckParameters());
+            p = JavaPluginUtils.chainProblems(p, getterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
             setterDelegate.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
-            p = chainProblems(p, setterDelegate.fastCheckParameters());
+            p = JavaPluginUtils.chainProblems(p, setterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (parameterDelegate != null) {
             parameterDelegate.setNewName(refactoring.getNewName());
-            p = chainProblems(p, parameterDelegate.fastCheckParameters());
+            p = JavaPluginUtils.chainProblems(p, parameterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return p = chainProblems(p, super.fastCheckParameters());
+        return p = JavaPluginUtils.chainProblems(p, super.fastCheckParameters());
     }
 
     @Override
@@ -153,24 +153,24 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         initDelegates();
         Problem p = null;
         if (getterDelegate != null) {
-            p = chainProblems(p, getterDelegate.preCheck());
+            p = JavaPluginUtils.chainProblems(p, getterDelegate.preCheck());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
-            p = chainProblems(p, setterDelegate.preCheck());
+            p = JavaPluginUtils.chainProblems(p, setterDelegate.preCheck());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (parameterDelegate != null) {
-            p = chainProblems(p, parameterDelegate.preCheck());
+            p = JavaPluginUtils.chainProblems(p, parameterDelegate.preCheck());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return p = chainProblems(p, super.preCheck(javac));
+        return p = JavaPluginUtils.chainProblems(p, super.preCheck(javac));
     }
 
     @Override
@@ -182,21 +182,21 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, 3);
         Problem p = null;
         if (getterDelegate != null) {
-            p = chainProblems(p, getterDelegate.prepare(reb.getSession()));
+            p = JavaPluginUtils.chainProblems(p, getterDelegate.prepare(reb.getSession()));
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         fireProgressListenerStep();
         if (setterDelegate != null) {
-            p = chainProblems(p, setterDelegate.prepare(reb.getSession()));
+            p = JavaPluginUtils.chainProblems(p, setterDelegate.prepare(reb.getSession()));
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         fireProgressListenerStep();
         if (parameterDelegate != null) {
-            p = chainProblems(p, parameterDelegate.prepare(reb.getSession()));
+            p = JavaPluginUtils.chainProblems(p, parameterDelegate.prepare(reb.getSession()));
             if (p != null && p.isFatal()) {
                 return p;
             }
@@ -216,22 +216,6 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         return false;
     }
 
-    private static Problem chainProblems(Problem p, Problem p1) {
-        Problem problem;
-
-        if (p == null) {
-            return p1;
-        }
-        if (p1 == null) {
-            return p;
-        }
-        problem = p;
-        while (problem.getNext() != null) {
-            problem = problem.getNext();
-        }
-        problem.setNext(p1);
-        return p;
-    }
     private boolean inited = false;
 
     private void initDelegates() {

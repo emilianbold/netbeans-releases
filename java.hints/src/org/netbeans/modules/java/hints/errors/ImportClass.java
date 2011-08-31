@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -70,6 +71,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -90,7 +92,6 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -397,18 +398,16 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                             return;
                         }
                   
-                        TypeElement te = copy.getElements().getTypeElement(fqn);
+                        Element te = copy.getElements().getTypeElement(fqn);
                         
                         if (te == null) {
                             Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));
                             return ;
                         }
                         
-                        CompilationUnitTree cut = JavaFixAllImports.addImports(
+                        CompilationUnitTree cut = GeneratorUtilities.get(copy).addImports(
                             copy.getCompilationUnit(),
-                            Collections.singletonList(te.getQualifiedName().toString()),
-                            copy.getTreeMaker(),
-                            false
+                            Collections.singleton(te)
                         );
                         copy.rewrite(copy.getCompilationUnit(), cut);
                     }

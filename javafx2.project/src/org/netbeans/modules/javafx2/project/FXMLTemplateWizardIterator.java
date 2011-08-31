@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -49,6 +49,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -81,9 +83,22 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 
     @Override
     public Set instantiate() throws IOException, IllegalArgumentException {
-        Set set = delegateIterator.instantiate();
-        FileObject createdFO = (FileObject) set.iterator().next();
-        FileObject template = Templates.getTemplate(wiz);
+        Set set = new HashSet(3);
+        set.addAll(delegateIterator.instantiate());
+        
+        FileObject dir = Templates.getTargetFolder(wiz);
+        String targetName = Templates.getTargetName(wiz);
+        DataFolder df = DataFolder.findFolder(dir);
+
+        FileObject xmlTemplate = FileUtil.getConfigFile("Templates/JavaFX/FXML.fxml"); // NOI18N
+        DataObject dXMLTemplate = DataObject.find(xmlTemplate);
+        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName);
+        set.add(dobj.getPrimaryFile());
+        
+        FileObject javaTemplate = FileUtil.getConfigFile("Templates/JavaFX/FXML2.java"); // NOI18N
+        DataObject dJavaTemplate = DataObject.find(javaTemplate);
+        DataObject dobj2 = dJavaTemplate.createFromTemplate(df, "MyGroup"); // NOI18N
+        set.add(dobj2.getPrimaryFile());
         
         return set;
     }

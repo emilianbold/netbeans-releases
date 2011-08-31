@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -127,7 +129,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         data = new JTextField[] {
             textFieldAppClass,
             //textFieldParams,
-            textFieldPreloaderClass,
+            //textFieldPreloaderClass,
             textFieldVMOptions,
             textFieldWebPage,
             textFieldHeight,
@@ -137,7 +139,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         dataLabels = new JLabel[] {
             labelAppClass,
             //labelParams,
-            labelPreloaderClass,
+            //labelPreloaderClass,
             labelVMOptions,
             labelWebPage,
             labelHeight,
@@ -147,7 +149,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         keys = new String[] {
             JFXProjectProperties.MAIN_CLASS,
             //JFXProjectProperties.APPLICATION_ARGS,
-            JFXProjectProperties.PRELOADER_CLASS,
+            //JFXProjectProperties.PRELOADER_CLASS,
             JFXProjectProperties.RUN_JVM_ARGS,
             JFXProjectProperties.RUN_IN_HTMLPAGE,
             JFXProjectProperties.RUN_APP_HEIGHT,
@@ -165,8 +167,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             final String prop = keys[i];
             final JLabel label = dataLabels[i];
             field.getDocument().addDocumentListener(new DocumentListener() {
-                Font basefont = label.getFont();
-                Font emphfont = basefont.deriveFont(Font.ITALIC);
+                Font basefont = label != null ? label.getFont() : null;
+                Font emphfont = basefont != null ? basefont.deriveFont(Font.ITALIC) : null;
                 {
                     updateFont();
                 }
@@ -200,7 +202,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                         config = null;
                     }
                     String def = configs.get(null).get(prop);
-                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? emphfont : basefont);
+                    if(label != null) {
+                        label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? emphfont : basefont);
+                    }
                 }
             });
         }
@@ -252,8 +256,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         textFieldPreloader = new javax.swing.JTextField();
         buttonPreloader = new javax.swing.JButton();
         labelPreloaderClass = new javax.swing.JLabel();
-        textFieldPreloaderClass = new javax.swing.JTextField();
-        buttonPreloaderClass = new javax.swing.JButton();
+        comboBoxPreloaderClass = new javax.swing.JComboBox();
         jSeparator2 = new javax.swing.JSeparator();
         labelRunAs = new javax.swing.JLabel();
         panelRunAsChoices = new javax.swing.JPanel();
@@ -441,7 +444,11 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
         checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
-        checkBoxPreloader.setEnabled(false);
+        checkBoxPreloader.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxPreloaderActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -462,6 +469,11 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
 
         buttonPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
         buttonPreloader.setEnabled(false);
+        buttonPreloader.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonPreloaderActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 4;
@@ -478,7 +490,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         mainPanel.add(labelPreloaderClass, gridBagConstraints);
 
-        textFieldPreloaderClass.setEnabled(false);
+        comboBoxPreloaderClass.setEditable(true);
+        comboBoxPreloaderClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -487,17 +500,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        mainPanel.add(textFieldPreloaderClass, gridBagConstraints);
-
-        buttonPreloaderClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderClass.text")); // NOI18N
-        buttonPreloaderClass.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        mainPanel.add(buttonPreloaderClass, gridBagConstraints);
+        mainPanel.add(comboBoxPreloaderClass, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -907,6 +910,35 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     dialog.dispose();
 }//GEN-LAST:event_buttonParamsActionPerformed
 
+private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxPreloaderActionPerformed
+    boolean sel = checkBoxPreloader.isSelected();
+    textFieldPreloader.setEnabled(sel);
+    buttonPreloader.setEnabled(sel);
+    labelPreloaderClass.setEnabled(sel);
+    comboBoxPreloaderClass.setEnabled(sel);
+//    refreshSigningLabel(sel);
+}//GEN-LAST:event_checkBoxPreloaderActionPerformed
+
+private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderActionPerformed
+//    WizardDescriptor.Iterator iterator = new JFXPreloaderChooserWizardIterator();
+//    WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
+//    // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
+//    // {1} will be replaced by WizardDescriptor.Iterator.name()
+//    wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
+//    wizardDescriptor.setTitle("Choose Preloader Source");
+//    Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+//    dialog.setVisible(true);
+//    dialog.toFront();
+//    boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+//    if (!cancelled) {
+//    // do something
+//    }
+    JFXPreloaderChooserWizard wizard = new JFXPreloaderChooserWizard();
+    if(wizard.show()) {
+        // do something
+    }
+}//GEN-LAST:event_buttonPreloaderActionPerformed
+
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
         List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
         if(list2Copy != null ) {
@@ -1007,11 +1039,11 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JButton buttonNew;
     private javax.swing.JButton buttonParams;
     private javax.swing.JButton buttonPreloader;
-    private javax.swing.JButton buttonPreloaderClass;
     private javax.swing.JButton buttonWebBrowser;
     private javax.swing.JButton buttonWebPage;
     private javax.swing.JButton buttonWorkDir;
     private javax.swing.JCheckBox checkBoxPreloader;
+    private javax.swing.JComboBox comboBoxPreloaderClass;
     private javax.swing.JComboBox comboBoxWebBrowser;
     private javax.swing.JComboBox comboConfig;
     private javax.swing.JPanel configPanel;
@@ -1045,7 +1077,6 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JTextField textFieldHeight;
     private javax.swing.JTextField textFieldParams;
     private javax.swing.JTextField textFieldPreloader;
-    private javax.swing.JTextField textFieldPreloaderClass;
     private javax.swing.JTextField textFieldVMOptions;
     private javax.swing.JTextField textFieldWebPage;
     private javax.swing.JTextField textFieldWidth;

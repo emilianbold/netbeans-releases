@@ -104,6 +104,7 @@ public final class JFXProjectProperties {
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
     public static final String PRELOADER = "javafx.preloader.enabled"; // NOI18N
+    public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
     public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
     public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
@@ -175,6 +176,20 @@ public final class JFXProjectProperties {
     }
     public void setActiveConfig(String config) {
         activeConfig = config;
+    }
+
+    // CustomizerRun - Preloader source type
+    public enum PreloaderSourceType {
+        NONE("none"), // NOI18N
+        PROJECT("project"), // NOI18N
+        JAR("jar"); // NOI18N
+        private final String propertyValue;
+        PreloaderSourceType(String propertyValue) {
+            this.propertyValue = propertyValue;
+        }
+        public String getString() {
+            return propertyValue;
+        }
     }
 
     // CustomizerRun - Run type

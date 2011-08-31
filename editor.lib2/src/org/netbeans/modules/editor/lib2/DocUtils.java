@@ -89,15 +89,25 @@ public final class DocUtils {
                doc.getDefaultRootElement().getElementIndex(offset)).getEndOffset() - 1;
     }
     
-    /** 
-     * Return line offset (line number - 1) for some position in the document.
-     * 
-     * @param doc document to operate on
-     * @param offset position in document where to start searching
+    /**
+     * Return line index (line number - 1) for some offset in document.
+     * @throws BadLocationException in case the offset is out of document.
+     * @see {@link #getLineIndex(javax.swing.text.Document, int)} instead.
      */
     public static int getLineOffset(Document doc, int offset) throws BadLocationException {
         checkOffsetValid(offset, doc.getLength() + 1);
+        return getLineIndex(doc, offset);
+    }
 
+    /** 
+     * Return line index (line number - 1) for some offset in document.
+     * 
+     * @param doc document to operate on.
+     * @param offset offset in document.
+     * @return line index &gt;=0 since document always contains at least single '\n'.
+     *  Returns 0 if offset &lt;=0. Returns last line index if offset is beyond document's end.
+     */
+    public static int getLineIndex(Document doc, int offset) {
         Element lineRoot = doc.getDefaultRootElement();
         return lineRoot.getElementIndex(offset);
     }
@@ -107,7 +117,7 @@ public final class DocUtils {
 
         if (offset >= 0) {
             try {
-                int line = getLineOffset(doc, offset) + 1;
+                int line = getLineIndex(doc, offset) + 1;
                 int col = getVisualColumn(doc, offset) + 1;
                 ret = String.valueOf(line) + ":" + String.valueOf(col); // NOI18N
             } catch (BadLocationException e) {
@@ -181,6 +191,15 @@ public final class DocUtils {
         try {
             Method unlockMethod = doc.getClass().getMethod("atomicUnlock");
             unlockMethod.invoke(doc);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+    
+    public static void runAtomicAsUser(Document doc, Runnable r) {
+        try {
+            Method m = doc.getClass().getMethod("runAtomicAsUser", Runnable.class);
+            m.invoke(doc, r);
         } catch (Exception e) {
             LOG.log(Level.WARNING, e.getMessage(), e);
         }

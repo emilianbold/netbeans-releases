@@ -165,11 +165,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                     try {
                         JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, Boolean.TRUE.toString());
                         boolean finished = false;
-                        final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
                         CompileWorker.ParsingOutput compileResult = null;
+                        final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                         try {
                             if (context.isAllFilesIndexing()) {
                                 cleanUpResources(context.getRootURI());
@@ -218,8 +218,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             finished = true;
                         } finally {
-                            if (finished) {
-                                JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, null);
+                            try {
+                                javaContext.finish();
+                            } finally {
+                                if (finished) {
+                                    JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, null);
+                                }
                             }
                         }
                         assert compileResult != null;
@@ -326,27 +330,31 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     try {
                         final JavaParsingContext javaContext = new JavaParsingContext(context, true);
-                        if (javaContext.uq == null)
-                            return null; //IDE is exiting, indeces are already closed.
-                        if (javaContext.uq.isEmpty())
-                            return null; //No java no need to continue
-                        final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                        final Set<File> removedFiles = new HashSet<File> ();
-                        for (Indexable i : files) {
-                            clear(context, javaContext, i, removedTypes, removedFiles);
-                            ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
-                            ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                            javaContext.checkSums.remove(i.getURL());
+                        try {
+                            if (javaContext.uq == null)
+                                return null; //IDE is exiting, indeces are already closed.
+                            if (javaContext.uq.isEmpty())
+                                return null; //No java no need to continue
+                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                            final Set<File> removedFiles = new HashSet<File> ();
+                            for (Indexable i : files) {
+                                clear(context, javaContext, i, removedTypes, removedFiles);
+                                ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
+                                javaContext.checkSums.remove(i.getURL());
+                            }
+                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
+                            javaContext.checkSums.store();
+                            javaContext.fqn2Files.store();
+                            javaContext.sa.store();
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
+                            javaContext.uq.typesEvent(null, removedTypes, null);
+                            return null;
+                        } finally {
+                            javaContext.finish();
                         }
-                        for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
-                            context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                        }
-                        javaContext.checkSums.store();
-                        javaContext.fqn2Files.store();
-                        javaContext.sa.store();
-                        BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
-                        javaContext.uq.typesEvent(null, removedTypes, null);
-                        return null;
                     } catch (NoSuchAlgorithmException ex) {
                         throw new IOException(ex);
                     }
@@ -360,7 +368,6 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
-        final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
         final String sourceRelative = indexable.getRelativePath();
@@ -386,6 +393,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         for (Pair<String,URL> relURLPair : sourceRelativeURLPairs) {
+            final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
             final String ext = FileObjects.getExtension(relURLPair.first);
             final String withoutExt = FileObjects.stripExtension(relURLPair.first);
             final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
@@ -448,9 +456,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                 }
             }
-        }
-        for (Pair<String, String> pair : toDelete) {
-            javaContext.sa.delete(pair);
+            javaContext.delete(relURLPair.first, toDelete);
         }
     }
 
