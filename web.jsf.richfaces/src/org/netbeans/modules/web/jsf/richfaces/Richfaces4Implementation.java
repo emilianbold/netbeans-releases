@@ -114,24 +114,39 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     @Override
     public Set<org.openide.filesystems.FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
-        FileObject[] javaSources =  webModule.getJavaSources();
+        // Add library to webmodule classpath
         try {
             List<Library> libraries = new ArrayList<Library>(1);
             Library rfLibrary = null;
 
             // get the RF library from customizer
-            String chosenLibrary = ((Richfaces4CustomizerPanelVisual)jsfComponentCustomizer.getComponent()).getRichFacesLibrary();
-            rfLibrary = LibraryManager.getDefault().getLibrary(chosenLibrary);
+            if (jsfComponentCustomizer != null) {
+                Richfaces4CustomizerPanelVisual panel = (Richfaces4CustomizerPanelVisual) jsfComponentCustomizer.getComponent();
+                rfLibrary = LibraryManager.getDefault().getLibrary(panel.getRichFacesLibrary());
+            }
+
+            // or search for library stored in Richfaces preferences
+            if (rfLibrary == null) {
+                Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class);
+                rfLibrary = LibraryManager.getDefault().getLibrary(
+                        preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, "")); //NOI18N
+            }
 
             // otherwise search for any registered RF library in IDE
             if (rfLibrary == null) {
-                Preferences preferences = NbPreferences.forModule(Richfaces4Implementation.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
-                rfLibrary = LibraryManager.getDefault().getLibrary(preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, ""));
                 rfLibrary = Richfaces4Customizer.getRichfacesLibraries().get(0);
             }
 
-            libraries.add(rfLibrary);
-            ProjectClassPathModifier.addLibraries(libraries.toArray(new Library[1]), javaSources[0], ClassPath.COMPILE);
+            if (rfLibrary != null) {
+                libraries.add(rfLibrary);
+                FileObject[] javaSources = webModule.getJavaSources();
+                ProjectClassPathModifier.addLibraries(
+                        libraries.toArray(new Library[1]),
+                        javaSources[0],
+                        ClassPath.COMPILE);
+            } else {
+                LOGGER.log(Level.SEVERE, "No RichFaces library was found.");
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
