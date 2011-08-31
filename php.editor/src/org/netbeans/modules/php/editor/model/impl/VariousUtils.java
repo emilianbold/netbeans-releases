@@ -286,7 +286,7 @@ public class VariousUtils {
     public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
         StringBuilder retval = new StringBuilder();
         String[] fragments = semiTypeName.split("[@:]");
-        for (int i = 0; i < fragments.length; i++) {            
+        for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) continue;
             if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
@@ -346,13 +346,13 @@ public class VariousUtils {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
-        
+
         if (semiTypeName != null && semiTypeName.contains("@")) {
             String operation = null;
             String[] fragments = semiTypeName.split("[@:]");
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
-                oldRecentTypes = recentTypes;                
+                oldRecentTypes = recentTypes;
                 String frag = fragments[i].trim();
                 if (frag.length() == 0) {
                     continue;
@@ -434,7 +434,7 @@ public class VariousUtils {
                                     } else {
                                         newRecentTypes.addAll(var.getTypes(offset));
                                     }
-                                } 
+                                }
                             } finally {
                                 recursionDetection.remove(checkName);
                             }
@@ -454,7 +454,7 @@ public class VariousUtils {
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
-                        
+
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
                         VariableName var = fldVarStack.isEmpty() ? null : fldVarStack.pop();
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
@@ -801,7 +801,7 @@ public class VariousUtils {
 
 
     public enum State {
-        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, ARRAYREFERENCE, REFERENCE, 
+        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, ARRAYREFERENCE, REFERENCE,
         STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, ARRAY_FIELD, ARRAY_VARIABLE, CLASSNAME, STOP, IDX
     };
 
@@ -1053,7 +1053,7 @@ public class VariousUtils {
     private static boolean isStatic(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_STATIC);
     }
-    
+
     private static boolean isParent(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_PARENT);
     }
@@ -1150,30 +1150,30 @@ public class VariousUtils {
         namesProposals.add(name);
         return namesProposals;
     }
-    
+
     /**
-     * This method is trying to guess the full qualified name  from a name. 
+     * This method is trying to guess the full qualified name  from a name.
      * Names are resolved following these resolution rules like in the php runtime:
      *
-     * 1. Calls to fully qualified functions, classes or constants are resolved 
+     * 1. Calls to fully qualified functions, classes or constants are resolved
      * at compile-time. For instance new \A\B resolves to class A\B.
-     * 2. All unqualified and qualified names (not fully qualified names) are 
-     * translated during compilation according to current import rules. 
-     * For example, if the namespace A\B\C is imported as C, a call to C\D\e() 
+     * 2. All unqualified and qualified names (not fully qualified names) are
+     * translated during compilation according to current import rules.
+     * For example, if the namespace A\B\C is imported as C, a call to C\D\e()
      * is translated to A\B\C\D\e().
-     * 3. Inside a namespace, all qualified names not translated according to 
-     * import rules have the current namespace prepended. For example, if a call 
+     * 3. Inside a namespace, all qualified names not translated according to
+     * import rules have the current namespace prepended. For example, if a call
      * to C\D\e() is performed within namespace A\B, it is translated to A\B\C\D\e().
-     * 4. Unqualified class names are translated during compilation according 
-     * to current import rules (full name substituted for short imported name). 
-     * In example, if the namespace A\B\C is imported as C, new C() is translated 
+     * 4. Unqualified class names are translated during compilation according
+     * to current import rules (full name substituted for short imported name).
+     * In example, if the namespace A\B\C is imported as C, new C() is translated
      * to new A\B\C().
-     * 5. Inside namespace (say A\B), calls to unqualified functions are resolved 
+     * 5. Inside namespace (say A\B), calls to unqualified functions are resolved
      * at run-time. Here is how a call to function foo() is resolved:
      *      1. It looks for a function from the current namespace: A\B\foo().
      *      2. It tries to find and call the global function foo().
-     * 6. Inside namespace (say A\B), calls to unqualified or qualified class 
-     * names (not fully qualified class names) are resolved at run-time. Here is 
+     * 6. Inside namespace (say A\B), calls to unqualified or qualified class
+     * names (not fully qualified class names) are resolved at run-time. Here is
      * how a call to new C() or new D\E() is resolved. For new C():
      *      1. It looks for a class from the current namespace: A\B\C.
      *      2. It attempts to autoload A\B\C.
@@ -1182,12 +1182,12 @@ public class VariousUtils {
      *      2. It attempts to autoload A\B\D\E.
      * To reference any global class in the global namespace, its fully qualified name new \C() must be used.
      *
-     * @param name the qualified name that should be resolved according the 
+     * @param name the qualified name that should be resolved according the
      * mentioned rules.
-     * @param nameOffset Offset of the name that should be resolved. The resolving 
+     * @param nameOffset Offset of the name that should be resolved. The resolving
      * full qualified names depends on the location of imports (use declaration).
      * @param contextNamespace Namespace where is the qualified name located
-     * @return collection of full qualified names that fits the input name in the 
+     * @return collection of full qualified names that fits the input name in the
      * name space context. Usually the method returns just one, but it can return, if is not clear
      * whether the name belongs to the defined namespace or to the default one.
      */
