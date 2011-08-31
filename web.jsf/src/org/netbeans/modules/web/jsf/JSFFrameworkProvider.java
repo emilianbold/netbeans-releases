@@ -258,9 +258,19 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
             // extending for JSF component libraries
+            StringBuilder jsfSuitesSB = new StringBuilder();
             for (JsfComponentImplementation jsfComponentDescriptor : panel.getEnabledJsfDescriptors()) {
+                // extend webmodule about the JSF component library
                 result.addAll(jsfComponentDescriptor.extend(
                         webModule, jsfComponentCustomizers.get(jsfComponentDescriptor.getName())));
+
+                // track JSF suite for USG statistics
+                jsfSuitesSB.append(jsfComponentDescriptor.getName()).append("|");
+            }
+            String statsString = jsfSuitesSB.toString();
+            if (!statsString.isEmpty()) {
+                statsString = statsString.substring(0, statsString.length() - 1);
+                JSFUtils.logUsage(JSFFrameworkProvider.class, "USG_JSF_INCLUDED_SUITE", new Object[]{statsString});
             }
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
