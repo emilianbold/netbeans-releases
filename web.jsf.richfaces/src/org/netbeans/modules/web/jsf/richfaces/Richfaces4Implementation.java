@@ -127,7 +127,7 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
             // or search for library stored in Richfaces preferences
             if (rfLibrary == null) {
-                Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class);
+                Preferences preferences = getRichfacesPreferences();
                 rfLibrary = LibraryManager.getDefault().getLibrary(
                         preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, "")); //NOI18N
             }
@@ -179,6 +179,16 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
             customizer = new Richfaces4Customizer();
         }
         return customizer;
+    }
+
+    /**
+     * Gets {@link Preferences} for RichFaces4.
+     *
+     * @return {@code Preferences} of the RichFaces4
+     */
+    public static Preferences getRichfacesPreferences() {
+        return NbPreferences.forModule(Richfaces4Implementation.class).
+                node(Richfaces4Implementation.PREF_RICHFACES_NODE);
     }
 
 }

@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -73,7 +72,6 @@ import org.netbeans.modules.web.jsf.richfaces.Richfaces4Customizer;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -147,7 +145,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
     }
 
     private void setDefaultComboBoxValues() {
-        Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
+        Preferences preferences = Richfaces4Implementation.getRichfacesPreferences();
         richfacesComboBox.setSelectedItem(preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, ""));
     }
 
