@@ -268,6 +268,18 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.apache.tools.ant.module</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.insane</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.commons_net</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -287,6 +299,15 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.php.project</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
