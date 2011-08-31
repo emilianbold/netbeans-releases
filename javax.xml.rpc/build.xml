@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="javax.xml.rpc" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jaxrpc-1.1.0.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="javax.xml.rpc"/>
+                <attribute name="Bundle-Version" value="1.1.0"/>
+                <attribute name="Require-Bundle" value="org.apache.xerces;bundle-version=&quot;[2.8.0,3.0.0)&quot;;resolution:=optional"/>
+                <attribute name="Export-Package" value="javax.xml.messaging,javax.xml.rpc,javax.xml.rpc.encoding,javax.xml.rpc.handler,javax.xml.rpc.handler.soap,javax.xml.rpc.holders,javax.xml.rpc.server,javax.xml.rpc.soap"/>
+                <attribute name="Import-Package" value="javax.servlet,javax.servlet.http,javax.xml.soap"/>
+            </manifest>
+        </jar>
+    </target>
 </project>

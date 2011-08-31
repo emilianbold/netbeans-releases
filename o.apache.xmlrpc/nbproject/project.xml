@@ -24,7 +24,6 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-apache-xmlrpc.jar</runtime-relative-path>
-                <binary-origin>external/org.apache.xmlrpc-3.0.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

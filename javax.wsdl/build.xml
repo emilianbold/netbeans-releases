@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="javax.wsdl" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/wsdl4j-1.6.2.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="javax.wsdl"/>
+                <attribute name="Bundle-Version" value="1.6.2"/>
+                <attribute name="Export-Package" value="com.ibm.wsdl,com.ibm.wsdl.extensions,com.ibm.wsdl.extensions.http,com.ibm.wsdl.extensions.mime,com.ibm.wsdl.extensions.schema,com.ibm.wsdl.extensions.soap,com.ibm.wsdl.extensions.soap12,com.ibm.wsdl.factory,com.ibm.wsdl.util,com.ibm.wsdl.util.xml,com.ibm.wsdl.xml,javax.wsdl,javax.wsdl.extensions,javax.wsdl.extensions.http,javax.wsdl.extensions.mime,javax.wsdl.extensions.schema,javax.wsdl.extensions.soap,javax.wsdl.extensions.soap12,javax.wsdl.factory,javax.wsdl.xml"/>
+            </manifest>
+        </jar>
+    </target>
 </project>
