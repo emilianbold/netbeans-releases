@@ -5,7 +5,7 @@
         <folder name="MIMEResolver">
             <file name="fxml.xml" url="fxml-mime-resolver.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Services/MIMEResolver/fxml.xml"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/xml/resources/xmlObject.gif"/>
                 <attr name="position" intvalue="8739"/>
             </file>
         </folder>
@@ -59,6 +59,7 @@
                 <attr name="position" intvalue="300"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
+            
             <file name="FXML2.java" url="templates/FXML_java_2.template">
                 <attr name="position" intvalue="400"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
