@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,14 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.index;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 
 
@@ -50,7 +52,8 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Marek Fukala
  */
 public class Signature {
-        //shared array for better performance, 
+        private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
+        //shared array for better performance,
         //access is supposed from one thread so perf
         //shouldn't degrade due to synchronization
         private static int[] SHARED;
@@ -64,7 +67,7 @@ public class Signature {
         public static Signature get(String signature) {
             return new Signature(signature);
         }
-        
+
         private Signature(String signature) {
             this.signature = signature;
             this.positions = parseSignature(signature);
@@ -76,16 +79,21 @@ public class Signature {
 
             return signature.substring(positions[index], index == positions.length - 1 ? signature.length() : positions[index + 1] - 1);
         }
-        
+
         public int integer(int index) {
             String item = string(index);
             if(item != null && item.length() > 0) {
-                return Integer.parseInt(item);
+                try {
+                    return Integer.parseInt(item);
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.FINE, "Can't parse item '{0}' as integer.", item);
+                    return -1;
+                }
             } else {
                 return -1;
-            }                    
+            }
         }
-        
+
         private static int[] parseSignature(String signature) {
             synchronized(SHARED) {
                 int count = 0;
@@ -96,10 +104,10 @@ public class Signature {
                 }
                 count++; //include the first zero
                 int[] a = new int[count];
-                System.arraycopy(SHARED, 0, a, 0, count); 
+                System.arraycopy(SHARED, 0, a, 0, count);
                 return a;
             }
         }
-        
+
     }
 
