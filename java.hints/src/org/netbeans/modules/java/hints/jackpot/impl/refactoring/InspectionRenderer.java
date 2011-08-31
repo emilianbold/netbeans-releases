@@ -42,12 +42,14 @@
 package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic;
 
 /**
@@ -78,6 +80,12 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
 
         if (value != null) {
             if (value instanceof HintMetadata) {
+            if (((HintMetadata) value).options.contains(Options.QUERY)) {
+                setFont(getFont().deriveFont(Font.ITALIC));
+            } else {
+                setFont(getFont().deriveFont(Font.PLAIN));
+            }
+                
                 setText("  " + ((HintMetadata) value).displayName);
                 setEnabled(true);
             } else if (value instanceof HintsPanelLogic.HintCategory) {
@@ -87,6 +95,9 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
                 setForeground(UIManager.getColor("Label.disabledForeground"));
             }
         }
+        // #89393: GTK needs name to render cell renderer "natively"
+        setName("ComboBox.listRenderer"); // NOI18N
+        
         return this;
     }
 

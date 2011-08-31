@@ -107,6 +107,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsPanel;
+import org.netbeans.modules.java.hints.options.HintsPanelLogic;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -591,7 +592,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 pane.setContentType("text/html");  //NOI18N
                 pane.setEditable(false);
                 JScrollPane scrollPane = new JScrollPane(pane);
-                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                 scrollPane.setPreferredSize(menu.getSize());
                 Dimension size = menu.getSize();
                 Point location = menu.getLocationOnScreen();
@@ -604,7 +605,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                             Object elementAt = singleRefactoringCombo.getModel().getElementAt(context.getAccessibleIndexInParent());
                             if (elementAt instanceof HintMetadata) {
                                 HintMetadata item = (HintMetadata) elementAt;
-                                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                                pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                                 pane.setCaretPosition(0);
                             }
                         }
