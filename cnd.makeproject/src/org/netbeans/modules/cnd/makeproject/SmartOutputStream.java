@@ -89,7 +89,7 @@ public class SmartOutputStream extends OutputStream {
     
     private static final Logger LOG = Logger.getLogger("remote.support.logger"); // NOI18N
 
-    private SmartOutputStream(FileObject fileObject, FileLock lock) throws IOException {
+    private SmartOutputStream(FileObject fileObject, FileLock lock) throws IOException { // NOI18N
         this.fileObject = fileObject;
         this.lock = lock;
         this.tempFile = File.createTempFile(fileObject.getName(), "."+fileObject.getExt());
