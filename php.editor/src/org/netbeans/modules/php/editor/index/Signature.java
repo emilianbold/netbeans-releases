@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 
 
@@ -50,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Marek Fukala
  */
 public class Signature {
+        private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
         //shared array for better performance,
         //access is supposed from one thread so perf
         //shouldn't degrade due to synchronization
@@ -80,7 +83,12 @@ public class Signature {
         public int integer(int index) {
             String item = string(index);
             if(item != null && item.length() > 0) {
-                return Integer.parseInt(item);
+                try {
+                    return Integer.parseInt(item);
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.FINE, "Can't parse item '{0}' as integer.", item);
+                    return -1;
+                }
             } else {
                 return -1;
             }
