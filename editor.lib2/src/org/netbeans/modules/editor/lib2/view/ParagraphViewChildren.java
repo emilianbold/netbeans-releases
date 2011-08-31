@@ -208,8 +208,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         // so later children initialization would double that length.
         int newLength = getLength();
         if (newLength != pView.getLength()) {
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer(pView.getDumpId() + ": update length: " + // NOI18N
+            if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINER)) {
+                ViewHierarchyImpl.SPAN_LOG.finer(pView.getDumpId() + ": update length: " + // NOI18N
                         pView.getLength() + " => " + newLength + "\n"); // NOI18N
             }
             pView.setLength(newLength);
