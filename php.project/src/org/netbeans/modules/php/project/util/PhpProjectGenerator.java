@@ -124,7 +124,9 @@ public final class PhpProjectGenerator {
 
         // index file
         WizardDescriptor descriptor = projectPropertiesCopy.getDescriptor();
-        if (descriptor != null) {
+        if (descriptor == null) {
+            LOGGER.fine("Index file not used, no descriptor given");
+        } else {
             String indexFile = projectPropertiesCopy.getIndexFile();
             if (!existingSources && indexFile != null) {
                 monitor.creatingIndexFile();
