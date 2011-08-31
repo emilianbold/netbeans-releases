@@ -182,6 +182,7 @@ made subject to such option by the copyright holder.
     <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="toggle-comment" key="DS-C"/>
     <bind actionName="toggle-highlight-search" key="OS-H"/>
+    <bind actionName="toggle-rectangular-selection" key="OS-R"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
     <bind actionName="tooltip-show" key="D-P"/>
     <bind actionName="undo" key="UNDO"/>

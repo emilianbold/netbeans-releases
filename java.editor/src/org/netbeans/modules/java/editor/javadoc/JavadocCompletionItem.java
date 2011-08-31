@@ -220,7 +220,7 @@ final class JavadocCompletionItem implements CompletionItem {
             boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createExecutableItem(
-                info, e, et, startOffset, isInherited, isDeprecated, false, false, false, false);
+                info, e, et, startOffset, isInherited, isDeprecated, false, false, false, false, null);
         return new JavadocExecutableItem(delegate, e, startOffset);
     }
     
@@ -229,7 +229,7 @@ final class JavadocCompletionItem implements CompletionItem {
         
         CompletionItem delegate = JavaCompletionItem.createTypeItem(
                 info, elem, (DeclaredType) elem.asType(), startOffset,
-                displayPkgName, isDeprecated, false, false, false, false, false);
+                displayPkgName, isDeprecated, false, false, false, false, false, null);
         return new JavadocTypeItem(delegate, startOffset);
     }
     

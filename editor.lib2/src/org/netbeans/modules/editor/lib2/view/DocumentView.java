@@ -860,19 +860,19 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     void checkDocumentLockedIfLogging() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkDocumentLocked();
         }
     }
     
     void checkDocumentLocked() {
         if (!DocumentUtilities.isReadLocked(getDocument())) {
-            LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
+            ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
         }
     }
     
     void checkMutexAcquiredIfLogging() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkLocked();
         }
     }
@@ -885,7 +885,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 String msg = (mutexThread == null)
                         ? "Mutex not acquired" // NOI18N
                         : "Mutex already acquired for different thread: " + mutexThread; // NOI18N
-                LOG.log(Level.INFO, msg + " for textComponent=" + textComponent, new Exception()); // NOI18N
+                ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, msg + " for textComponent=" + textComponent, new Exception()); // NOI18N
             }
         }
     }

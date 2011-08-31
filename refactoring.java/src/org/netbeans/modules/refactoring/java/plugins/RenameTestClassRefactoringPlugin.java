@@ -92,12 +92,12 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
         Problem p = null;
         for (RenameRefactoring delegate : renameDelegates) {
-            p = chainProblems(p, delegate.checkParameters());
+            p = JavaPluginUtils.chainProblems(p, delegate.checkParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return chainProblems(p, super.checkParameters());
+        return JavaPluginUtils.chainProblems(p, super.checkParameters());
     }
 
     @Override
@@ -111,12 +111,12 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         for (RenameRefactoring delegate : renameDelegates) {
             FileObject delegateFile = delegate.getRefactoringSource().lookup(FileObject.class);
             delegate.setNewName(newName(treePathHandle.getFileObject(), delegateFile, refactoring.getNewName()));
-            p = chainProblems(p, delegate.fastCheckParameters());
+            p = JavaPluginUtils.chainProblems(p, delegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return chainProblems(p, super.fastCheckParameters());
+        return JavaPluginUtils.chainProblems(p, super.fastCheckParameters());
     }
 
     @Override
@@ -127,12 +127,12 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         initDelegates();
         Problem p = null;
         for (RenameRefactoring delegate : renameDelegates) {
-            p = chainProblems(p, delegate.preCheck());
+            p = JavaPluginUtils.chainProblems(p, delegate.preCheck());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
-        return chainProblems(p, super.preCheck(javac));
+        return JavaPluginUtils.chainProblems(p, super.preCheck(javac));
     }
 
     @Override
@@ -144,7 +144,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, renameDelegates.length);
         Problem p = null;
         for (RenameRefactoring delegate : renameDelegates) {
-            p = chainProblems(p, delegate.prepare(reb.getSession()));
+            p = JavaPluginUtils.chainProblems(p, delegate.prepare(reb.getSession()));
             if (p != null && p.isFatal()) {
                 return p;
             }
@@ -162,22 +162,6 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         return false;
     }
 
-    private static Problem chainProblems(Problem p, Problem p1) {
-        Problem problem;
-
-        if (p == null) {
-            return p1;
-        }
-        if (p1 == null) {
-            return p;
-        }
-        problem = p;
-        while (problem.getNext() != null) {
-            problem = problem.getNext();
-        }
-        problem.setNext(p1);
-        return p;
-    }
     private boolean inited = false;
 
     private void initDelegates() {
