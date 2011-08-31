@@ -352,21 +352,21 @@ public final class PhpProjectGenerator {
         }
 
         public ProjectProperties(ProjectProperties properties) {
-            setProjectDirectory(properties.projectDirectory);
-            setSourcesDirectory(properties.sourcesDirectory);
-            setName(properties.name);
-            setRunAsType(properties.runAsType);
-            setPhpVersion(properties.phpVersion);
-            setCharset(properties.charset);
-            setUrl(properties.url);
-            setIndexFile(properties.indexFile);
-            setDescriptor(properties.descriptor);
-            setCopySources(properties.copySources);
-            setCopySourcesTarget(properties.copySourcesTarget);
-            setRemoteConfiguration(properties.remoteConfiguration);
-            setRemoteDirectory(properties.remoteDirectory);
-            setUploadFiles(properties.uploadFiles);
-            setFrameworkExtenders(properties.frameworkExtenders);
+            projectDirectory = properties.projectDirectory;
+            sourcesDirectory = properties.sourcesDirectory;
+            name = properties.name;
+            runAsType = properties.runAsType;
+            phpVersion = properties.phpVersion;
+            charset = properties.charset;
+            url = properties.url;
+            indexFile = properties.indexFile;
+            descriptor = properties.descriptor;
+            copySources = properties.copySources;
+            copySourcesTarget = properties.copySourcesTarget;
+            remoteConfiguration = properties.remoteConfiguration;
+            remoteDirectory = properties.remoteDirectory;
+            uploadFiles = properties.uploadFiles;
+            frameworkExtenders = properties.frameworkExtenders;
         }
 
         public String getName() {
