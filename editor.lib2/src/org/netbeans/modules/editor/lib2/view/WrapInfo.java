@@ -294,10 +294,20 @@ final class WrapInfo extends GapList<WrapLine> {
                     if (startViewIndex == childCount) {
                         sb.append("<").append(paragraphView.getEndOffset()).append(">"); // NOI18N
                     } else {
-                        EditorView startChild = paragraphView.getEditorView(startViewIndex);
-                        EditorView lastChild = paragraphView.getEditorView(endViewIndex - 1);
-                        sb.append("<").append(startChild.getStartOffset()); // NOI18N
-                        sb.append(",").append(lastChild.getEndOffset()).append("> "); // NOI18N
+                        if (startViewIndex <= childCount) {
+                            EditorView startChild = paragraphView.getEditorView(startViewIndex);
+                            sb.append("<").append(startChild.getStartOffset()); // NOI18N
+                        } else {
+                            sb.append("<invalid-index=" + startViewIndex); // NOI18N
+                        }
+                        sb.append(",");
+                        if (endViewIndex <= childCount) {
+                            EditorView lastChild = paragraphView.getEditorView(endViewIndex - 1);
+                            sb.append(lastChild.getEndOffset()); // NOI18N
+                        } else {
+                            sb.append("invalid-index=").append(endViewIndex); // NOI18N
+                        }
+                        sb.append("> ");
                     }
                 }
             }
