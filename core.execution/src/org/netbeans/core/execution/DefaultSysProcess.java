@@ -85,12 +85,14 @@ final class DefaultSysProcess extends ExecutorTask {
         destroyed = true;
         try {
             group.interrupt();
-            group.getRunClassThread().waitForEnd(3000);
-            // Do not rush into Thread.stop, which could freeze ProcessDestroyPerformerImpl.destroy; give interrupt a chance to do its work.
-            group.stop();
-            group.getRunClassThread().waitForEnd(1000);
+            RunClassThread runClassThread = group.getRunClassThread();
+            if (runClassThread != null) {
+                runClassThread.waitForEnd(3000);
+            }
         } catch (InterruptedException e) {
             Logger.getLogger(DefaultSysProcess.class.getName()).log(Level.WARNING, null, e);
+        } finally {
+            group.setRunClassThread(null);
         }
         ExecutionEngine.closeGroup(group);
         group.kill();  // force RunClass thread get out - end of exec is fired
@@ -128,26 +130,30 @@ final class DefaultSysProcess extends ExecutorTask {
      * as it seems, since the ThreadGroup can't be destroyed from inside.
      */
     void destroyThreadGroup(ThreadGroup base) {
-        new Thread(base,
-                   new Runnable() {
-
-                       public void run() {
-                           try {
-                               while (group.activeCount() > 0) {
-                                   Thread.sleep(1000);
-                               }
-                           }
-                           catch (InterruptedException e) {
-                               Exceptions.printStackTrace(e);
-                           }
-                           if (!group.isDestroyed()) {
-                               try {
-                                   group.destroy();
-                               } catch (IllegalThreadStateException x) {
-                                   // #165302: destroyed some other way?
-                               }
-                           }
-                       }
-                   }).start();
+        new Thread(base, new Destroyer(group)).start();
     }
+    private static class Destroyer implements Runnable {
+        private final ThreadGroup group;
+        Destroyer(ThreadGroup group) {
+            this.group = group;
+        }
+        @Override public void run() {
+            try {
+                while (group.activeCount() > 0) {
+                    Thread.sleep(1000);
+                }
+            }
+            catch (InterruptedException e) {
+                Exceptions.printStackTrace(e);
+            }
+            if (!group.isDestroyed()) {
+                try {
+                    group.destroy();
+                } catch (IllegalThreadStateException x) {
+                    // #165302: destroyed some other way?
+                }
+            }
+        }
+    }
+
 }
