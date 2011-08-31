@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="NodeOperation.showCustomEditorDialog">
+        <api name="nodes"/>
+        <summary>A way to show a custom editor dialog for a property</summary>
+        <version major="7" minor="24"/>
+        <date day="31" month="8" year="2011"/>
+        <author login="tpavek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" deletion="no"/>
+        <description>
+            Added <code>NodeOperation.showCustomEditorDialog</code> method that shows a modal dialog for given property
+            just like when the [...] button in property sheet is pressed.
+        </description>
+        <class package="org.openide.nodes" name="NodeOperation"/>
+        <issue number="201223"/>
+    </change>
     <change id="Children.createLazy">
         <api name="nodes"/>
         <summary>A mechanism to provide node's children lazily.</summary>

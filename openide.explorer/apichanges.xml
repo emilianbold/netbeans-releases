@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="PropertyEnv.create">
+        <api name="explorer"/>
+        <summary>API method for creating a PropertyEnv instance</summary>
+        <version major="6" minor="39"/>
+        <date day="31" month="8" year="2011"/>
+        <author login="tpavek"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Added <a href="@TOP@/org/openide/explorer/propertysheet/PropertyEnv.html#create(java.beans.FeatureDescriptor, java.lang.Object[])">PropertyEnv.create</a>
+            method for creating an instance of PropertyEnv for given property and beans (nodes).
+            To be used when there is a need to initialize an ExPropertyEditor instance independently from
+            PropertySheet or PropertyPanel infrastructure (e.g. before the property appears in UI).
+        </description>
+        <class package="org.openide.explorer.propertysheet" name="PropertyEnv"/>
+        <issue number="201223"/>
+    </change>
     <change id="slowRename">
         <api name="explorer"/>
         <summary>In-place rename can be processed on background</summary>
