@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.hints.options;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -120,8 +121,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     //AWT only:
     private HintMetadata toSelect = null;
     
-    private Document oldDescription;
-      
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
 
     @Messages("LBL_Loading=Loading...")
@@ -161,6 +160,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
     private void init(@NullAllowed OptionsFilter filter, boolean allHints) {
         initComponents();
+        scriptScrollPane.setVisible(false);
         org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter f = null;
         if (!allHints && filter==null) {
             f = new org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter(
@@ -180,6 +180,10 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         }
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        
+        scriptTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
+        scriptTextArea.setEditable(true);
+        
 
 //        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
 //            setOpaque( false );
@@ -271,13 +275,15 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         toProblemCheckBox = new javax.swing.JCheckBox();
         customizerPanel = new javax.swing.JPanel();
         descriptionPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JEditorPane();
         descriptionLabel = new javax.swing.JLabel();
         editingButtons = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         cancelEdit = new javax.swing.JButton();
         openInEditor = new javax.swing.JButton();
+        scriptScrollPane = new javax.swing.JScrollPane();
+        scriptTextArea = new javax.swing.JEditorPane();
         buttonsPanel = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         importButton = new javax.swing.JButton();
@@ -372,7 +378,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
-        jScrollPane2.setViewportView(descriptionTextArea);
+        descriptionScrollPane.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -382,7 +388,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        descriptionPanel.add(jScrollPane2, gridBagConstraints);
+        descriptionPanel.add(descriptionScrollPane, gridBagConstraints);
 
         descriptionLabel.setLabelFor(descriptionTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border")); // NOI18N
@@ -438,6 +444,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         descriptionPanel.add(editingButtons, gridBagConstraints);
+
+        scriptTextArea.setEditable(false);
+        scriptTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
+        scriptScrollPane.setViewportView(scriptTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        descriptionPanel.add(scriptScrollPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -613,8 +633,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 }//GEN-LAST:event_newButtonActionPerformed
 
     private void editScriptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editScriptButtonActionPerformed
-        descriptionTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
-        descriptionTextArea.setEditable(true);
+        descriptionScrollPane.setVisible(false);
+        scriptScrollPane.setVisible(true);
         editScriptButton.setVisible(false);
         editingButtons.setVisible(true);
         optionsPanel.setVisible(false);
@@ -622,8 +642,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         DataObject dob = getDataObject(getSelectedHint());
         EditorCookie ec = dob.getCookie(EditorCookie.class);
         try {
-            oldDescription = descriptionTextArea.getDocument();
-            descriptionTextArea.setDocument(ec.openDocument());
+            scriptTextArea.setDocument(ec.openDocument());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -636,12 +655,12 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 }//GEN-LAST:event_editScriptButtonActionPerformed
 
     private void cancelEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelEditActionPerformed
-        descriptionTextArea.setDocument(oldDescription);
-        descriptionTextArea.setContentType("text/html");
+        descriptionScrollPane.setVisible(true);
+        scriptScrollPane.setVisible(false);
+
         optionsPanel.setVisible(true);
         editingButtons.setVisible(false);
         editScriptButton.setVisible(true);
-        descriptionTextArea.setEditable(false);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border"));
 
         newButton.setEnabled(true);
@@ -652,8 +671,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     }//GEN-LAST:event_cancelEditActionPerformed
 
     private void openInEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openInEditorActionPerformed
-        cancelEditActionPerformed(evt);
-        cancelButtonActionPerformed(evt);
+        applyChanges();
         getRootPane().getParent().getParent().setVisible(false);
         DataObject dob = getDataObject(getSelectedHint());
         EditorCookie ec = dob.getCookie(EditorCookie.class);
@@ -704,7 +722,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         logic.disconnect();
         logic = null;
     }
-           
+    
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         
         renderer.setBackground( selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor() );
@@ -720,6 +738,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         }
         else if ( data instanceof HintMetadata ) {
             HintMetadata treeRule = (HintMetadata)data;
+            if (treeRule.options.contains(Options.QUERY)) {
+                renderer.setFont(renderer.getFont().deriveFont(Font.ITALIC));
+            } else {
+                renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
+            }
             renderer.setText( treeRule.displayName );
 
             if (logic != null) {
@@ -765,6 +788,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JPanel descriptionPanel;
+    private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JEditorPane descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JButton editScriptButton;
@@ -773,13 +797,14 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private javax.swing.JButton exportButton;
     private javax.swing.JButton importButton;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton newButton;
     private javax.swing.JButton openInEditor;
     private javax.swing.JPanel optionsPanel;
     private javax.swing.JLabel refactoringsLabel;
     private javax.swing.JButton saveButton;
+    private javax.swing.JScrollPane scriptScrollPane;
+    private javax.swing.JEditorPane scriptTextArea;
     private javax.swing.JLabel searchLabel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTextField searchTextField;
