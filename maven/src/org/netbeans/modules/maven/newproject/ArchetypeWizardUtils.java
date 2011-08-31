@@ -98,6 +98,8 @@ public class ArchetypeWizardUtils {
     /** {@code Map<String,String>} of custom archetype properties to define. */
     public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
 
+    private static final Logger LOG = Logger.getLogger(ArchetypeWizardUtils.class.getName());
+
     private ArchetypeWizardUtils() {
     }
 
@@ -214,8 +216,8 @@ public class ArchetypeWizardUtils {
         config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
 
         if (additional != null) {
-            for (String key : additional.keySet()) {
-                config.setProperty(key, additional.get(key));
+            for (Map.Entry<String,String> entry : additional.entrySet()) {
+                config.setProperty(entry.getKey(), entry.getValue());
             }
         }
         config.setActivatedProfiles(Collections.<String>emptyList());
@@ -262,10 +264,10 @@ public class ArchetypeWizardUtils {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
             //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
         } catch (SAXException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         } finally {
             if (jf != null) {
                 try {
@@ -313,7 +315,8 @@ public class ArchetypeWizardUtils {
                             (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter, false); //NOI18N
                     progressCounter += 3;
                 }
-                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
+                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
+                progressCounter++;
                 Set<FileObject> projects = openProjects(rootFile, earFile);
                 handle.progress(++progressCounter);
                 return projects;
@@ -346,10 +349,15 @@ public class ArchetypeWizardUtils {
         handle.progress(++progressCounter);
 
         final File parent = projDir.getParentFile();
+        if (parent == null) {
+            throw new IOException("no parent of " + projDir);
+        }
         if (updateLastUsedProjectDir && parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        parent.mkdirs();
+        if (!parent.isDirectory() && !parent.mkdirs()) {
+            throw new IOException("could not create " + parent);
+        }
         handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), ++progressCounter);
 
         runArchetype(parent, vi, arch, additional);
@@ -402,7 +410,7 @@ public class ArchetypeWizardUtils {
         }
     }
 
-    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {
+    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi) {
         FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
         if (earDirFO == null) {
             return;
@@ -418,7 +426,6 @@ public class ArchetypeWizardUtils {
         }
 
         Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
-        progressCounter++;
     }
 
     public static class AddDependencyOperation implements ModelOperation<POMModel> {
