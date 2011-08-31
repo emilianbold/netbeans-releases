@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
+import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
@@ -533,6 +534,40 @@ public class RemoteServices {
             }
         }, ServiceType.AWT);
         return listenerPtr[0];
+    }
+    
+    public static boolean detachLoggingListener(final RemoteAWTScreenshot.AWTComponentInfo ci,
+                                                final ClassObjectReference listenerClass,
+                                                final ObjectReference listener) throws PropertyVetoException {
+        final JPDAThreadImpl thread = ci.getThread();
+        final boolean[] retPtr = new boolean[] { false };
+        runOnStoppedThread(thread, new Runnable() {
+            @Override
+            public void run() {
+                ObjectReference component = ci.getComponent();
+                ThreadReference t = thread.getThreadReference();
+                ClassObjectReference serviceClassObject;
+                synchronized (remoteServiceClasses) {
+                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
+                }
+                ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();
+                Method removeLoggingListener = serviceClass.concreteMethodByName("removeLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;Ljava/lang/Object;)Z");
+                try {
+                    BooleanValue success = (BooleanValue)
+                            serviceClass.invokeMethod(t, removeLoggingListener, Arrays.asList(component, listenerClass, listener), ObjectReference.INVOKE_SINGLE_THREADED);
+                    retPtr[0] = success.value();
+                } catch (InvalidTypeException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ClassNotLoadedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IncompatibleThreadStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }, ServiceType.AWT);
+        return retPtr[0];
     }
     
     public static ClassObjectReference getServiceClass(JPDADebugger debugger) {
