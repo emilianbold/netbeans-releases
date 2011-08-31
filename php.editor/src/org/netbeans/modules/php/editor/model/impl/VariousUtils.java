@@ -271,6 +271,9 @@ public class VariousUtils {
                 if (stringValue.equals("false") || stringValue.equals("true")) { //NOI18N
                     return "boolean";//NOI18N
                 }
+                if (stringValue.equals("null")) { //NOI18N
+                    return "null"; //NOI18N
+                }
             }
             return scalarType.toString().toLowerCase();
         } else if (expression instanceof InfixExpression) {

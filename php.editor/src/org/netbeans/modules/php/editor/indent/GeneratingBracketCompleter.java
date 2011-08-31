@@ -356,9 +356,14 @@ public class GeneratingBracketCompleter {
         public void visit(ReturnStatement node) {
             hasReturn = true;
             Collection<? extends String> typeNames = fnc.getReturnTypeNames();
-            String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-            if (type != null && type.contains("@")) {
-                type = null;
+            String type = null;
+            String item = null;
+            for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext(); ) {
+                item = i.next();
+                if (item != null && item.contains("@")) { // NOI18N
+                    break;
+                }
+                type = type == null ? item : type + "|" + item; //NOI18N
             }
             returnType = type;
         }

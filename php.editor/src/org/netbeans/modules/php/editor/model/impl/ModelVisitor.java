@@ -259,6 +259,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         typeName = VariousUtils.replaceVarNames(typeName, var2Type);
                     }
                 }
+            } else if (expression instanceof Scalar) {
+                typeName = VariousUtils.extractVariableTypeFromExpression(expression, null);
             }
 
             if (typeName != null) {
