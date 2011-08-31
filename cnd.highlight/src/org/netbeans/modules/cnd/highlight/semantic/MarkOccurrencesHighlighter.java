@@ -47,8 +47,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -88,7 +90,7 @@ import org.openide.util.NbBundle;
  */
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
-    private static AttributeSet defaultColors;
+    private static Map<String,AttributeSet> defaultColors = new HashMap<String, AttributeSet>();
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -214,7 +216,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             } else {
                 OffsetsBag obag = new OffsetsBag(doc);
                 obag.clear();
-
+                String mimeType = fo.getMIMEType();
                 for (CsmReference csmReference : out) {
                     int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
                     if (usages != null) {
@@ -222,14 +224,14 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                             int startOffset = usages[i][0];
                             int endOffset = usages[i][1];
                             if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                                obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                                obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors.get(mimeType));
                             }
                         }
                     } else {
                         int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
                         int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
                         if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                            obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                            obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors.get(mimeType));
                         }
                     }
                 }
@@ -282,7 +284,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
     @Override
     protected void updateFontColors(FontColorProvider provider) {
-        defaultColors = provider.getColor(FontColorProvider.Entity.MARK_OCCURENCES);
+        defaultColors.put(provider.getMimeType(), provider.getColor(FontColorProvider.Entity.MARK_OCCURENCES));
     }
 
     private static boolean isPreprocessorConditionalBlock(AbstractDocument doc, int offset) {
