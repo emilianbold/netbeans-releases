@@ -161,16 +161,23 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public String getHtmlDisplayName() {
-        String ret;
+        String ret = getHtmlDisplayName2();
         ExecutionEnvironment env = provider.getProject().getRemoteFileSystemHost();
         if (env != null && env.isRemote()) {
-            ret = NbBundle.getMessage(MakeLogicalViewProvider.class, "ProjectHtmlDisplayName", getName(), env.getDisplayName()); // NOI18N
-        } else {
-            if (brokenLinks) {
+            if (ret == null) {
                 ret = getName();
-            } else {
-                ret = super.getHtmlDisplayName();
             }
+            ret = ret + " <font color=''!controlShadow''>[" + env.getDisplayName() + "]"; // NOI18N
+        }
+        return ret;
+    }
+    
+    private String getHtmlDisplayName2() {
+        String ret;
+        if (brokenLinks) {
+            ret = getName();
+        } else {
+            ret = super.getHtmlDisplayName();
         }
         if (brokenLinks) {
             try {
