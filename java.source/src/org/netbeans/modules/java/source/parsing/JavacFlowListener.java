@@ -42,17 +42,16 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.FlowListener;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -60,7 +59,7 @@ import org.openide.util.Exceptions;
  */
 class JavacFlowListener extends FlowListener {
         
-        private final Set<URL> flowCompleted = new HashSet<URL>();
+        private final Set<URI> flowCompleted = new HashSet<URI>();
         
         public static JavacFlowListener instance (final Context context) {
             final FlowListener flowListener = FlowListener.instance(context);
@@ -77,8 +76,8 @@ class JavacFlowListener extends FlowListener {
             }
             else {
                 try {
-                    return this.flowCompleted.contains(fo.getURL());
-                } catch (FileStateInvalidException e) {
+                    return this.flowCompleted.contains(fo.getURL().toURI());
+                } catch (Exception e) {
                     return false;
                 }
             }
@@ -87,12 +86,7 @@ class JavacFlowListener extends FlowListener {
         @Override
         public void flowFinished (final Env<AttrContext> env) {
             if (env.toplevel != null && env.toplevel.sourcefile != null) {
-                try {
-                    this.flowCompleted.add (env.toplevel.sourcefile.toUri().toURL());
-                } catch (MalformedURLException e) {
-                    //never thrown
-                    Exceptions.printStackTrace(e);
-                }
+                this.flowCompleted.add (env.toplevel.sourcefile.toUri());
             }
         }
     }

@@ -53,9 +53,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TryTree;
-import com.sun.source.tree.VariableTree;
 import java.awt.Rectangle;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.prefs.Preferences;
@@ -69,28 +67,25 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.editor.ActionFactory.CollapseAllFolds;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -578,6 +573,8 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     }
 
     private static final class ImportsCategorySupport extends CategorySupport {
+        
+        private Source source = null;
 
         private ImportsCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "imports", panel, NbBundle.getMessage(FmtImports.class, "SAMPLE_Imports")); //NOI18N
@@ -617,27 +614,25 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
 
         @Override
         public void refreshPreview() {
-            JEditorPane jep = (JEditorPane) getPreviewComponent();
+            final JEditorPane jep = (JEditorPane) getPreviewComponent();
             try {
                 Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
             } catch (ClassNotFoundException cnfe) {
                 // ignore
             }
 
-            CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
+            final CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
             jep.setIgnoreRepaint(true);
             try {
-                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("org.netbeans.samples.ClassA", "java");
-                FileLock lock = fo.lock();
-                OutputStream out = fo.getOutputStream(lock);
-                try {
-                    out.write(previewText.getBytes());
-                } finally {
-                    out.close();
-                    lock.releaseLock();
+                if (source == null) {
+                    FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("org.netbeans.samples.ClassA", "java"); //NOI18N
+                    source = Source.create(fo);
                 }
-                Source source = Source.create(fo);
-                Document doc = source.getDocument(true);
+                final Document doc = source.getDocument(true);
+                if (doc.getLength() > 0) {
+                    doc.remove(0, doc.getLength());
+                }
+                doc.insertString(0, previewText, null);
                 doc.putProperty(CodeStyle.class, codeStyle);
                 jep.setDocument(doc);
                 ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
@@ -664,47 +659,50 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                         et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
                         stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
                         et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "getLogger"), Collections.<ExpressionTree>emptyList()); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree)et, treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.MemberSelect(treeMaker.QualIdent("org.netbeans.samples.ClassA"), "class"), "getName"), Collections.<ExpressionTree>emptyList())); //NOI18N
+                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.MemberSelect(treeMaker.QualIdent("org.netbeans.samples.ClassA"), "class"), "getName"), Collections.<ExpressionTree>emptyList())); //NOI18N
                         et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(et, "log"), Collections.<ExpressionTree>emptyList()); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree)et, treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "SEVERE")); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree)et, treeMaker.Literal(null));
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree)et, treeMaker.Identifier("ex")); //NOI18N
+                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "SEVERE")); //NOI18N
+                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Literal(null));
+                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Identifier("ex")); //NOI18N
                         BlockTree catchBlock = treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false);
-                        stmt = treeMaker.addTryCatch((TryTree)stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
+                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
                         tryBlock = treeMaker.addBlockStatement(tryBlock, stmt);
                         et = treeMaker.MemberSelect(treeMaker.Identifier("is"), "close"); //NOI18N
                         et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
                         stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
-                        stmt = treeMaker.addTryCatch((TryTree)stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
+                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
                         stmt = treeMaker.Try(tryBlock, Collections.<CatchTree>emptyList(), treeMaker.Block(Collections.singletonList(stmt), false));
-                        stmt = treeMaker.addTryCatch((TryTree)stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.FileNotFoundException"), null), catchBlock)); //NOI18N
+                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.FileNotFoundException"), null), catchBlock)); //NOI18N
                         bt = treeMaker.addBlockStatement(bt, stmt);
                         copy.rewrite(mt.getBody(), bt);
                     }
                 });
                 result.commit();
-                Reformat reformat = Reformat.get(doc);
+                final Reformat reformat = Reformat.get(doc);
                 reformat.lock();
-                 try {
-                     if (doc instanceof BaseDocument)
-                         ((BaseDocument)doc).atomicLock();
-                     try {
-                         reformat.reformat(0, doc.getLength());
-                     } finally {
-                     if (doc instanceof BaseDocument)
-                         ((BaseDocument)doc).atomicUnlock();
-                     }
-                 } finally {
-                     reformat.unlock();
-                 }
-                 DataObject dataObject = DataObject.find(fo);
-                 EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-                 ec.saveDocument();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                try {
+                    if (doc instanceof BaseDocument) {
+                        ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    reformat.reformat(0, doc.getLength());
+                                } catch (BadLocationException ble) {}
+                            }
+                        });
+                    } else {
+                        reformat.reformat(0, doc.getLength());
+                    }
+                } finally {
+                    reformat.unlock();
+                }
+                DataObject dataObject = DataObject.find(source.getFileObject());
+                SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
+                if (sc != null)
+                    sc.save();
+            } catch (Exception ex) {}
             jep.setIgnoreRepaint(false);
-            jep.scrollRectToVisible(new Rectangle(0,0,10,10));
+            jep.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
             jep.repaint(100);
         }
     }
