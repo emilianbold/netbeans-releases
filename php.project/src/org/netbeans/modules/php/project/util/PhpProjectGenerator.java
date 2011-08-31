@@ -120,27 +120,30 @@ public final class PhpProjectGenerator {
         logUsage(helper.getProjectDirectory(), sourceDir, projectPropertiesCopy.getRunAsType(), projectPropertiesCopy.isCopySources(), projectPropertiesCopy.getFrameworkExtenders());
 
         // index file
-        String indexFile = projectPropertiesCopy.getIndexFile();
-        if (!existingSources && indexFile != null) {
-            monitor.creatingIndexFile();
+        WizardDescriptor descriptor = projectPropertiesCopy.getDescriptor();
+        if (descriptor != null) {
+            String indexFile = projectPropertiesCopy.getIndexFile();
+            if (!existingSources && indexFile != null) {
+                monitor.creatingIndexFile();
 
-            FileObject template = null;
-            RunAsType runAsType = projectPropertiesCopy.getRunAsType();
-            if (runAsType == null) {
-                // run configuration panel not shown at all
-                template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
-            } else {
-                switch (runAsType) {
-                    case SCRIPT:
-                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP.php"); // NOI18N
-                        break;
-                    default:
-                        template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
-                        break;
+                FileObject template = null;
+                RunAsType runAsType = projectPropertiesCopy.getRunAsType();
+                if (runAsType == null) {
+                    // run configuration panel not shown at all
+                    template = Templates.getTemplate(descriptor);
+                } else {
+                    switch (runAsType) {
+                        case SCRIPT:
+                            template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP.php"); // NOI18N
+                            break;
+                        default:
+                            template = Templates.getTemplate(descriptor);
+                            break;
+                    }
                 }
+                assert template != null : "Template for Index PHP file cannot be null";
+                createIndexFile(template, sourceDir, indexFile);
             }
-            assert template != null : "Template for Index PHP file cannot be null";
-            createIndexFile(template, sourceDir, indexFile);
         }
 
         monitor.finishing();
@@ -494,6 +497,9 @@ public final class PhpProjectGenerator {
             return this;
         }
 
+        /**
+         * @return needed for template, can be {@code null} if template is not needed
+         */
         public WizardDescriptor getDescriptor() {
             return descriptor;
         }
