@@ -82,10 +82,13 @@ public final class PhpProjectGenerator {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectGenerator.class.getName());
 
     public static final Monitor DEV_NULL = new Monitor() {
+        @Override
         public void starting() {
         }
+        @Override
         public void creatingIndexFile() {
         }
+        @Override
         public void finishing() {
         }
     };
