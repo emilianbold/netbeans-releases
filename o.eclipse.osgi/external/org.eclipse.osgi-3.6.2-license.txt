@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.3.1
+Name: Eclipse OSGI library
+Version: 3.6.2
 License: EPL-v10
-OSR: 10108
-Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+OSR: 5854
+Origin: http://www.eclipse.org/
+Description: Eclipse OSGI library
 
 Eclipse Public License - v 1.0
 

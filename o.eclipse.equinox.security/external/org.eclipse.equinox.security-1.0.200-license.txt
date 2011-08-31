@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.6.0
+Name: Eclipse Equinox Security library
+Version: 1.0.200
 License: EPL-v10
-OSR: 10108
-Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+OSR: 5854
+Origin: http://www.eclipse.org/
+Description: Eclipse Equinox Security library
 
 Eclipse Public License - v 1.0
 

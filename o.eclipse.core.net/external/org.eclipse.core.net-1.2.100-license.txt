@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.6.0
+Name: Eclipse Core Net library
+Version: 1.2.100
 License: EPL-v10
-OSR: 10108
-Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+OSR: 5856
+Origin: http://www.eclipse.org/
+Description: Eclipse Core Net library
 
 Eclipse Public License - v 1.0
 

@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.6.0
+Name: Jira  Connector
+Version: 3.0.0
 License: EPL-v10
-OSR: 10108
-Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+OSR: 11720
+Origin: http://confluence.atlassian.com/display/IDEPLUGIN/
+Description: Java connector to Jira issue tracking system
 
 Eclipse Public License - v 1.0
 

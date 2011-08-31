@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.6.0
+Name: Eclipse Equinox Preferences library
+Version: 3.3.0
 License: EPL-v10
-OSR: 10108
-Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+OSR: 5854
+Origin: http://www.eclipse.org/
+Description: Eclipse Equinox Preferences library
 
 Eclipse Public License - v 1.0
 

@@ -1,9 +1,9 @@
-Name: Mylyn Tasks Core library
-Version: 3.6.0
+Name: Mylyn Commons SOAP library
+Version: 3.4.0
 License: EPL-v10
-OSR: 10108
+OSR: 5852
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Tasks Core library
+Description: Mylyn Commons SOAP library
 
 Eclipse Public License - v 1.0
 
