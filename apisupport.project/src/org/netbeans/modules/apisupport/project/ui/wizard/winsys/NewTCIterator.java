@@ -57,17 +57,20 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
@@ -77,12 +80,13 @@ import org.openide.windows.WindowManager;
  * @author Milos Kleint
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
+    id=UIUtil.TEMPLATE_WINDOW_ID,
     position=200,
     displayName="#template_winsys",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newTC.png", 
     description="../../resources/newTC.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_winsys=Window")
 public final class NewTCIterator extends BasicWizardIterator {
@@ -427,8 +431,15 @@ public final class NewTCIterator extends BasicWizardIterator {
         final Map<String, String> newModes = model.getNewModes();
         if (newModes != null) {
             Set<String> files = new HashSet<String>();
+            FileObject parent;
+            try {
+                parent = moduleInfo.getEffectiveSystemFilesystem().findResource("Windows2/Modes");
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+                parent = null;
+            }
             for (String wsmode : newModes.keySet()) {
-                files.add(wsmode + ".wsmode");
+                files.add(LayerUtils.findGeneratedName(parent, wsmode + ".wsmode"));
             }
             
             fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {

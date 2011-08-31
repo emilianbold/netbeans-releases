@@ -2,33 +2,49 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Templates">
-       <folder name="JFX">
+        <folder name="JFX">
             <attr name="position" intvalue="0"/>
-            <file name="jfx-impl.xml" url="jfx-impl.xml_"/>
-       </folder>
-       <folder name="Project">
+            <file name="jfx-impl.xml" url="templates/jfx-impl.xml_"/>
+        </folder>
+        
+        <folder name="Project">
             <folder name="Standard">
                 <file name="javafxApp.xml">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javafx2.project.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/Standard/javafxApp.xml"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
                     <attr name="position" intvalue="105"/>
                     <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/JavaFXApp.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXApp.html"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator"/>
                 </file>
             </folder>
         </folder>
-   <folder name="Classes">
-        <file name="FXMain.java" url="FXMain.template">
-            <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-            <attr name="position" intvalue="930"/>
-            <attr name="templateCategory" stringvalue="java-main-class"/>
-            <attr name="template" boolvalue="true"/>
-            <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/FXMain.html"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javafx2.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
-        </file>
-    </folder>
-  </folder>  
+
+        <folder name="javafx">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx"/>
+            <attr name="position" intvalue="909"/>
+
+            <file name="FXMain.java" url="templates/FXMain.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXMain.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXMain.html"/>
+                <attr name="templateCategory" stringvalue="java-main-class"/>
+            </file>
+
+            <file name="FXML.java" url="templates/FXML_java_1.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXML.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
+            </file>
+
+        </folder>
+    </folder>  
 </filesystem>

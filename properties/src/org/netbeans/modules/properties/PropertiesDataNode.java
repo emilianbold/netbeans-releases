@@ -65,6 +65,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -89,8 +90,8 @@ public class PropertiesDataNode extends DataNode {
     
     private boolean multiLocale;
 
-    PropertiesDataNode(PropertiesDataObject propDO) {
-        this(propDO, createChildren(propDO));
+    PropertiesDataNode(PropertiesDataObject propDO, Lookup lookup) {
+        this(propDO, createChildren(propDO), lookup);
         multiLocale = propDO.isMultiLocale();
     }
 
@@ -99,8 +100,8 @@ public class PropertiesDataNode extends DataNode {
      * @param dataObject  object to work with
      * @param children container for the node
      */
-    public PropertiesDataNode(DataObject dataObject, Children children) {
-        super(dataObject, children);
+    public PropertiesDataNode(DataObject dataObject, Children children, Lookup lookup) {
+        super(dataObject, children, lookup);
         setIconBaseWithExtension("org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
         dataObjectListener = new NameUpdater();
         dataObject.addPropertyChangeListener(

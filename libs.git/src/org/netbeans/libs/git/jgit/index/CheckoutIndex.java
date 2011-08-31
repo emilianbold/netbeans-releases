@@ -45,7 +45,6 @@ package org.netbeans.libs.git.jgit.index;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.logging.Logger;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
@@ -73,14 +72,16 @@ public class CheckoutIndex {
     private final FileListener listener;
     private final ProgressMonitor monitor;
     private final boolean checkContent;
+    private final boolean recursively;
 
-    public CheckoutIndex (Repository repository, DirCache cache, File[] roots, FileListener listener, ProgressMonitor monitor, boolean checkContent) {
+    public CheckoutIndex (Repository repository, DirCache cache, File[] roots, boolean recursively, FileListener listener, ProgressMonitor monitor, boolean checkContent) {
         this.repository = repository;
         this.cache = cache;
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;
         this.checkContent = checkContent;
+        this.recursively = recursively;
     }
 
     public void checkout () throws IOException, GitException {
@@ -104,7 +105,7 @@ public class CheckoutIndex {
             }
             DirCacheIterator dit = treeWalk.getTree(0, DirCacheIterator.class);
             FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
-            if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
+            if (dit != null && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
                 checkoutEntry(repository, path, dit.getDirCacheEntry());
@@ -149,5 +150,17 @@ public class CheckoutIndex {
             monitor.notifyWarning(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_ReplacingFile", predecessor.getAbsolutePath())); //NOI18N
         }
         return parentFolder.mkdirs() || parentFolder.exists();
+    }
+
+    private boolean directChild (File[] roots, File workTree, File path) {
+        if (roots.length == 0) {
+            roots = new File[] { workTree };
+        }
+        for (File parent : roots) {
+            if (parent.equals(path.getParentFile())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

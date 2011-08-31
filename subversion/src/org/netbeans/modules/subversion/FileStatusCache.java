@@ -48,7 +48,9 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
+import java.util.Map.Entry;
 import java.util.regex.*;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -152,6 +154,7 @@ public class FileStatusCache {
     private final FileLabelCache labelsCache;
 
     private long refreshedFilesCount;
+    private static final boolean EXCLUDE_SYMLINKS = "true".equals(System.getProperty("versioning.subversion.doNotFollowSymlinks", "false")); //NOI18N
 
     FileStatusCache() {
         this.svn = Subversion.getInstance();
@@ -554,11 +557,15 @@ public class FileStatusCache {
             current = files.get(file);
 
             ISVNStatus status = null;
+            boolean symlink = false;
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
-                status = client.getSingleStatus(file);
-                if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
-                    status = null;
+                symlink = isSymlink(file);
+                if (!symlink) {
+                    SvnClient client = Subversion.getInstance().getClient(false);
+                    status = client.getSingleStatus(file);
+                    if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                        status = null;
+                    }
                 }
             } catch (SVNClientException e) {
                 // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
@@ -573,7 +580,11 @@ public class FileStatusCache {
                 }
             }
 
-            fi = createFileInformation(file, status, repositoryStatus);
+            if (symlink) {
+                fi = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+            } else {
+                fi = createFileInformation(file, status, repositoryStatus);
+            }
             if (equivalent(fi, current)) {
                 refreshDone = true;
             }
@@ -1099,6 +1110,33 @@ public class FileStatusCache {
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         getLabelsCache().remove(file); // remove info from label cache, it could change
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
+    }
+
+    private final LinkedHashMap<File, Boolean> symlinks = new LinkedHashMap<File, Boolean>() {
+        @Override
+        protected boolean removeEldestEntry (Entry<File, Boolean> eldest) {
+            return size() >= 500;
+        }
+    };
+    private boolean isSymlink (File file) {
+        boolean symlink = false;
+        if (EXCLUDE_SYMLINKS) {
+            Boolean cached = symlinks.get(file);
+            if (cached == null) {
+                try {
+                    symlink = !file.equals(file.getCanonicalFile());
+                } catch (IOException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+                if (symlink && LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.INFO, "isSymlink(): File {0} will be treated as a symlink", file); //NOI18N
+                }
+                symlinks.put(file, symlink);
+            } else {
+                symlink = cached;
+            }
+        }
+        return symlink;
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {

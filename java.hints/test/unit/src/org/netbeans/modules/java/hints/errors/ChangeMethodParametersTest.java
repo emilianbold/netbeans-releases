@@ -80,6 +80,13 @@ public class ChangeMethodParametersTest extends HintsTestBase {
         )));
     }
     
+    public void test201360() throws Exception { // NullPointerException at org.netbeans.modules.java.hints.errors.ChangeMethodParameters.analyze
+        performTestAnalysisTest("org.netbeans.test.java.hints.Test201360",
+                    205,  new HashSet<String>(Arrays.asList(
+                "Change Method Signature from getColor(int number) to getColor()", "Change Method Signature from getColor(int number, java.awt.Color failedColor) to getColor()"
+        )));
+    }
+    
     public void testReorderParameter() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.ReorderParameter",
                     312,  new HashSet<String>(Arrays.asList(

@@ -73,9 +73,10 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
-import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.netbeans.modules.apisupport.project.universe.DestDirProvider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -249,7 +250,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     }
     
     public @Override void propertyChange(PropertyChangeEvent evt) {
-        if ("netbeans.dest.dir".equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
+        if (ModuleList.NETBEANS_DEST_DIR.equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
             // Module list may have changed.
             reset();
         } else {
@@ -312,7 +313,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
             File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
-            stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
+            stock.put(ModuleList.NETBEANS_DEST_DIR, destDir.getAbsolutePath());
             stock.put("nb.build.dir", "${nb_all}/nbbuild/build"); // #199286
             stock.put("nbantext.jar", "${nb.build.dir}/nbantext.jar");
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
@@ -379,26 +380,6 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
             providers.add(new ApisupportAntUtils.UserPropertiesFileProvider(baseEval, dir));
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
-            class DestDirProvider extends ApisupportAntUtils.ComputedPropertyProvider {
-                public DestDirProvider(PropertyEvaluator eval) {
-                    super(eval);
-                }
-                protected @Override Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
-                    String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
-                    if (platformS != null) {
-                        Map<String,String> m = new HashMap<String,String>();
-                        // XXX should really be nbplatform.active.dir, but would require changes in a bunch of places
-                        m.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}");
-                        m.put("harness.dir", "${nbplatform." + platformS + ".harness.dir}");
-                        return m;
-                    } else {
-                        return Collections.emptyMap();
-                    }
-                }
-                protected @Override Set<String> inputProperties() {
-                    return Collections.singleton("nbplatform.active"); // NOI18N
-                }
-            }
             providers.add(new DestDirProvider(baseEval));
         }
         if (type == NbModuleType.NETBEANS_ORG) {

@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,16 +27,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.web.debug;
 
@@ -53,13 +49,13 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.Random;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -71,21 +67,23 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.util.Exceptions;
 
-/** Utility methods useful for testing of debugging.
- * @author Jiri..Skrivanek@sun.com
+/**
+ * Utility methods useful for testing of debugging.
+ *
+ * @author Jiri Skrivanek
  */
 public class Utils {
 
-    /** Default value for Sun App Server. If we test Tomcat, it is 
-     * overridden in setTomcatProperties() method. */
+    /**
+     * Default value for Sun App Server. If we test Tomcat, it is overridden
+     * in setTomcatProperties() method.
+     */
     private static int socketPort = 9009;
     public static final String SUN_APP_SERVER = "GlassFish";
     public static final String TOMCAT = "Tomcat";
@@ -174,25 +172,27 @@ public class Utils {
         // wait until server is not in transient state
         J2eeServerNode serverNode = new J2eeServerNode(DEFAULT_SERVER);
         serverNode.waitFinished();
-        new EventTool().waitNoEvent(2000);
+        new EventTool().waitNoEvent(500);
 
-    /* cannot be used because of this issue 71263 ('User program finished' not printed to output)
-    MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
-    // start to track Main Window status bar
-    stt.start();
-    new FinishDebuggerAction().perform();
-    String programFinishedLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
-    stt.waitText(programFinishedLabel);
-    stt.stop();
-     */
+        /*
+         * cannot be used because of this issue 71263 ('User program finished'
+         * not printed to output) MainWindowOperator.StatusTextTracer stt =
+         * MainWindowOperator.getDefault().getStatusTextTracer(); // start to
+         * track Main Window status bar stt.start(); new
+         * FinishDebuggerAction().perform(); String programFinishedLabel =
+         * Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle",
+         * "CTL_Debugger_finished"); stt.waitText(programFinishedLabel);
+         * stt.stop();
+         */
     }
 
-    private static void waitDebuggerFinished(){
+    private static void waitDebuggerFinished() {
         for (int i = 0; i < 10; i++) {
-            if(!MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|Finish Debugger Session").isEnabled()) {
+            boolean enabled = MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|Finish Debugger Session").isEnabled();
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            if (!enabled) {
                 break;
             }
-            MainWindowOperator.getDefault().menuBar().closeSubmenus();
             new EventTool().waitNoEvent(300);
         }
     }
@@ -206,15 +206,21 @@ public class Utils {
     }
 
     public static class ToolTipChooser implements ComponentChooser {
+
         private String tooltip;
+
         public ToolTipChooser(String tooltip) {
             this.tooltip = tooltip;
         }
+
+        @Override
         public boolean checkComponent(Component comp) {
-            return tooltip.equals(((JComponent)comp).getToolTipText());
+            return tooltip.equals(((JComponent) comp).getToolTipText());
         }
+
+        @Override
         public String getDescription() {
-            return("ToolTip equals to "+tooltip);
+            return ("ToolTip equals to " + tooltip);
         }
     }
 
@@ -230,17 +236,21 @@ public class Utils {
         new ToggleBreakpointAction().perform(eo.txtEditorPane());
         // wait breakpoint established
         new Waiter(new Waitable() {
+
+            @Override
             public Object actionProduced(Object editorOper) {
-                Object[] annotations = ((EditorOperator)editorOper).getAnnotations(line);
+                Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
                 for (int i = 0; i < annotations.length; i++) {
-                    if("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                    if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
                         return Boolean.TRUE;
                     }
                 }
                 return null;
             }
+
+            @Override
             public String getDescription() {
-                return("Wait breakpoint established on line "+line); // NOI18N
+                return ("Wait breakpoint established on line " + line); // NOI18N
             }
         }).waitAction(eo);
         return line;
@@ -248,7 +258,7 @@ public class Utils {
 
     /** Gets URL of default server. */
     public static String getDefaultUrl() {
-        if(DEFAULT_SERVER.equals(SUN_APP_SERVER)) {
+        if (DEFAULT_SERVER.equals(SUN_APP_SERVER)) {
             return "http://localhost:8080/";
         } else {
             return "http://localhost:8084/";
@@ -260,9 +270,11 @@ public class Utils {
      */
     public static void reloadPage(final String urlSuffix) {
         new Thread(new Runnable() {
+
+            @Override
             public void run() {
                 try {
-                    new URI(getDefaultUrl()+urlSuffix).toURL().openStream();
+                    new URI(getDefaultUrl() + urlSuffix).toURL().openStream();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -278,16 +290,18 @@ public class Utils {
      */
     public static void waitText(final String urlSuffix, final long timeout, final String text) {
         Waitable waitable = new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 InputStream is = null;
                 try {
-                    URLConnection connection = new URI(getDefaultUrl()+urlSuffix).toURL().openConnection();
+                    URLConnection connection = new URI(getDefaultUrl() + urlSuffix).toURL().openConnection();
                     connection.setReadTimeout(Long.valueOf(timeout).intValue());
                     is = connection.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));
                     String line = br.readLine();
-                    while(line != null) {
-                        if(line.indexOf(text) > -1) {
+                    while (line != null) {
+                        if (line.indexOf(text) > -1) {
                             return Boolean.TRUE;
                         }
                         line = br.readLine();
@@ -297,7 +311,7 @@ public class Utils {
                     e.printStackTrace();
                     return null;
                 } finally {
-                    if(is != null) {
+                    if (is != null) {
                         try {
                             is.close();
                         } catch (IOException e) {
@@ -307,8 +321,10 @@ public class Utils {
                 }
                 return null;
             }
+
+            @Override
             public String getDescription() {
-                return("Text \""+text+"\" at "+getDefaultUrl()+urlSuffix);
+                return ("Text \"" + text + "\" at " + getDefaultUrl() + urlSuffix);
             }
         };
         Waiter waiter = new Waiter(waitable);
@@ -330,7 +346,7 @@ public class Utils {
         try {
             // increase time to wait to 240 second (it fails on slower machines)
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-            MainWindowOperator.getDefault().waitStatusText("Finished building "+projectName+" ("+target+").");
+            MainWindowOperator.getDefault().waitStatusText("Finished building " + projectName + " (" + target + ").");
         } finally {
             // start status text tracer again because we use it further
             MainWindowOperator.getDefault().getStatusTextTracer().start();
@@ -342,45 +358,19 @@ public class Utils {
         }
     }
 
-    /** Set longer time for timeout and confirm Information dialog */
-    public static void confirmInformationMessage() {
-        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
-        // increase time to wait to 240 second
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        // confirm dialog
-        new NbDialogOperator(infTitle).ok();
-        // restore default timeout
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
-    }
-
-    /** Confirming message about Client Side Debugging and setting don't show this message again. */
-    public static void confirmClientSideDebuggingMeassage(String appName) {
-        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
-        // increase time to wait to 240 second
-        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String title = "Debug Project - "+appName;
-        long time = System.currentTimeMillis();
-        JDialog dialog = null;
-        while ((System.currentTimeMillis() - 5000 < time) && dialog == null) {
-            dialog = NbDialogOperator.findJDialog(title, true, true);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (dialog != null) {
-            // wait for dialog
-            NbDialogOperator dialogOperator = new NbDialogOperator(dialog);
-            //NbDialogOperator nbd = new NbDialogOperator(title;)
-            // choose don't display this message again
-            String doNotShowTitle = "Do not show this again";
-            new JCheckBoxOperator(dialogOperator, doNotShowTitle).setSelected(true);
-            JButtonOperator jbo = new JButtonOperator(dialogOperator, "Debug");
-            jbo.clickMouse();
-        }
-        // restore default timeout
-        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
+    /** Opens project properties and sets to not display browser on run. */
+    public static void suppressBrowserOnRun(String projectName) {
+        // not display browser on run
+        // open project properties
+        ProjectsTabOperator.invoke().getProjectRootNode(projectName).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        // confirm properties dialog
+        propertiesDialogOper.ok();
     }
 }

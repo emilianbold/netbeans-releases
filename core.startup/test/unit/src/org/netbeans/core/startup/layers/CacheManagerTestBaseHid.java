@@ -108,6 +108,10 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         clearWorkDir();
     }
     
+    protected URL loadResource(String name) throws IOException {
+        return new URL(new URL(getDataDir().toURI().toURL(), "layers/"), name);
+    }
+    
     public void testCacheManager() throws Exception {
         ManagerFactory mf = (ManagerFactory)this;
         
@@ -115,8 +119,8 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         LayerCacheManager m = mf.createManager();
         // layer2.xml should override layer1.xml where necessary:
         List<URL> urls = Arrays.asList(
-            CacheManagerTestBaseHid.class.getResource("data/layer2.xml"),
-            CacheManagerTestBaseHid.class.getResource("data/layer1.xml"));
+            loadResource("data/layer2.xml"),
+            loadResource("data/layer1.xml"));
         FileSystem f = BinaryCacheManagerTest.store(m, urls);
         // Initial run.
         checkStruct(f);
@@ -134,7 +138,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertNotNull (file + " found", obj);
         
         long time = obj.lastModified ().getTime ();
-        URL url = CacheManagerTestBaseHid.class.getResource(resource);
+        URL url = loadResource(resource);
         long resourceTime = url.openConnection ().getLastModified ();
         
         if (initTime < resourceTime) {

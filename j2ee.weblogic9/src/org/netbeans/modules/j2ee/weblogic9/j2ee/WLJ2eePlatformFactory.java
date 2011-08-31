@@ -54,14 +54,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -69,7 +65,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -85,37 +80,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
-import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
-import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
-import org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation;
-import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
-import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
@@ -130,7 +109,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * A sub-class of the J2eePlatformFactory that is set up to return the 
  * plugin-specific J2eePlatform.
  * 
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
@@ -144,9 +123,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile(
             "^.*javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
-    // _2.0 is for javax.persistence.dwp_2.0.jar
     private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile(
-            "^.*javax\\.persistence.*((_2-\\d+-\\d+)|(_2.0))\\.jar$");
+            "^.*javax\\.persistence.*(_2-\\d+(-\\d+)?)\\.jar$");
     
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
     
@@ -220,7 +198,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
 
-            addPersistenceLibrary(list, mwHome, j2eePlatform);
+            addPersistenceLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
             list.add(fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
@@ -304,8 +282,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
     // method checks whether there is already persistence API present in the list
-    private static void addPersistenceLibrary(List<URL> list, @NullAllowed File middleware,
-            @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
+    private static void addPersistenceLibrary(List<URL> list, @NonNull File serverRoot,
+            @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
         boolean foundJpa2 = false;
         boolean foundJpa1 = false;
@@ -317,7 +295,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     break;
                 } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
                     foundJpa1 = true;
-                    break;
+                    // we still may found jpa2
                 }
             }
         }  
@@ -334,12 +312,29 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
-                    }
-                });
+                FilenameFilter filter = null;
+                Version serverVersion = null;
+                if (j2eePlatform != null) {
+                    serverVersion = j2eePlatform.dm.getServerVersion();
+                } else {
+                    serverVersion = WLPluginProperties.getServerVersion(serverRoot);
+                }
+                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                    filter = new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JAVAX_PERSISTENCE_2_PATTERN.matcher(name).matches();
+                        }
+                    };
+                } else {
+                    filter = new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
+                        }
+                    };
+                }
+                File[] persistenceCandidates = modules.listFiles(filter);
                 if (persistenceCandidates.length > 0) {
                     for (File candidate : persistenceCandidates) {
                         list.add(fileToUrl(candidate));

@@ -376,7 +376,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel.add(jLabelVMOptionsExample, gridBagConstraints);
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
 
-        customizeOptionsButton.setText("Customize");
+        org.openide.awt.Mnemonics.setLocalizedText(customizeOptionsButton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_JButton")); // NOI18N
         customizeOptionsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 customizeVMOptionsByDialog(evt);
@@ -386,10 +386,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         mainPanel.add(customizeOptionsButton, gridBagConstraints);
-        customizeOptionsButton.getAccessibleContext().setAccessibleDescription("Customize set of VM Options"); // NOI18N
+        customizeOptionsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AN_CustomizeRun_Run_VM_Options_JButton")); // NOI18N
+        customizeOptionsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_CustomizeRun_Run_VM_Options_Customize")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -481,8 +483,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
         NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"),
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));
+                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"), // NOI18N
+                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title")); // NOI18N
         if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
             return;
         }
@@ -491,14 +493,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         if (config.trim().length() == 0) {
             //#143764
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config),
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config), // NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
             
         }
         if (configs.get(config) != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config), // NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
@@ -531,7 +533,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             workDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
         }
         chooser.setSelectedFile(new File(workDir));
-        chooser.setDialogTitle(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse_Title"));
+        chooser.setDialogTitle(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse_Title")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             jTextWorkingDirectory.setText(file.getAbsolutePath());
@@ -544,7 +546,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             String result = OptionsDialog.showCustomizer(SwingUtilities.getWindowAncestor(this), origin);
             jTextVMOptions.setText(result);
         } catch (Exception e) {
-            log.log(Level.WARNING, "Cannot parse vm options.", e);
+            log.log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
         }
 
     }//GEN-LAST:event_customizeVMOptionsByDialog
@@ -633,8 +635,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         MainClassListener( SourceRoots sourceRoots, JTextField mainClassTextField ) {            
             this.sourceRoots = sourceRoots;
             this.mainClassTextField = mainClassTextField;
-            this.okButton  = new JButton (NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_OK"));
-            this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
+            this.okButton  = new JButton (NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_OK")); // NOI18N
+            this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK")); // NOI18N
         }
         
         // Implementation of ActionListener ------------------------------------
@@ -663,7 +665,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             okButton.setEnabled (false);
             DialogDescriptor desc = new DialogDescriptor (
                 panel,
-                NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_Title" ),
+                NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_Title" ), // NOI18N
                 true, 
                 options, 
                 options[0], 
@@ -698,12 +700,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 label = null;
             } else if (config.length() > 0) {
                 Map<String,String> m = configs.get(config);
-                label = m != null ? m.get("$label") : /* temporary? */ null;
+                label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
                 if (label == null) {
                     label = config;
                 }
             } else {
-                label = NbBundle.getBundle("org.netbeans.modules.java.j2seproject.Bundle").getString("J2SEConfigurationProvider.default.label");
+                label = NbBundle.getBundle("org.netbeans.modules.java.j2seproject.Bundle").getString("J2SEConfigurationProvider.default.label"); // NOI18N
             }
             setText(label);
             

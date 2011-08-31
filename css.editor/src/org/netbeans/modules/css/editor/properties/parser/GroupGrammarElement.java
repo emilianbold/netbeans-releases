@@ -49,8 +49,22 @@ import java.util.List;
  * @author marekfukala
  */
 public class GroupGrammarElement extends GrammarElement {
+
     int index;
     String referenceName = null;
+
+    public enum Type {
+
+//        /** All of the group members need to be present in arbitrary order */
+//        ALL,
+//        
+        SET,
+        
+        /** any of the elements can be present in the value otherwise just one of them */
+        LIST,
+        
+        SEQUENCE;
+    }
 
     GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
         this(parent, index);
@@ -60,27 +74,18 @@ public class GroupGrammarElement extends GrammarElement {
     GroupGrammarElement(GroupGrammarElement parent, int index) {
         super(parent);
         this.index = index;
+        this.type = Type.SEQUENCE; //default type
+    }
+    private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
+    private Type type;
+    
+
+    public Type getType() {
+        return type;
     }
     
-    private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
-    boolean list = false;
-    boolean sequence = false;
-
-    /** if true any of the elements can be present in the value otherwise just one of them */
-    public boolean isList() {
-        return list;
-    }
-
-    public boolean isSequence() {
-        return this.sequence;
-    }
-
-    void setIsList(boolean isList) {
-        this.list = isList;
-    }
-
-    void setIsSequence(boolean isSequence) {
-        this.sequence = isSequence;
+    void setType(Type type) {
+        this.type = type;
     }
 
     public List<GrammarElement> elements() {
@@ -93,7 +98,7 @@ public class GroupGrammarElement extends GrammarElement {
 
     public List<GrammarElement> getAllPossibleValues() {
         List<GrammarElement> all = new ArrayList<GrammarElement>(10);
-        if (isSequence()) {
+        if (getType() == Type.SEQUENCE) {
             //sequence
             GrammarElement e = elements.get(0); //first element
             if (e instanceof GroupGrammarElement) {
@@ -121,15 +126,9 @@ public class GroupGrammarElement extends GrammarElement {
         if (referenceName != null) {
             sb.append("(").append(referenceName).append(") "); //NOI18N
         }
-        if (sequence) {
-            sb.append("SEQUENCE"); //NOI18N
-        } else {
-            if (list) {
-                sb.append("ANY: "); //NOI18N
-            } else {
-                sb.append("ONE: "); //NOI18N
-            }
-        }
+        
+        sb.append(getType());
+        
         sb.append('\n');
         for (GrammarElement e : elements()) {
             sb.append(e.toString2(level + 1));
@@ -145,5 +144,4 @@ public class GroupGrammarElement extends GrammarElement {
     public String toString() {
         return "[G" + index + "]"; //NOI18N
     }
-    
 }

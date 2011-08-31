@@ -44,15 +44,24 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
@@ -86,7 +95,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             FileSystem fs = new BinaryFS(cacheLocation(), bb);
             return fs;
         } catch (BufferUnderflowException ex) {
-            throw (IOException)new IOException().initCause(ex);
+            throw new IOException(ex);
         }
     }
 
@@ -95,6 +104,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         return cacheLocation;
     }
 
+    @Override
     protected boolean openURLs() {
         return false;
     }
@@ -103,10 +113,11 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
     protected void store(FileSystem fs, final MemFolder root, OutputStream os) throws IOException {
         try {
             sizes = new HashMap<MemFileOrFolder,Integer>(1000);
-            int fsSize = computeSize(root);
-            LayerCacheManager.err.fine("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheLocation());
+            Map<String,int[]> strings = new HashMap<String, int[]>();
+            int fsSize = computeSize(root, strings);
+            LayerCacheManager.err.log(Level.FINE, "Writing binary layer cache of length {0} to {1}", new Object[]{fsSize + BinaryFS.MAGIC.length, cacheLocation()});
             os.write(BinaryFS.MAGIC);
-            BinaryWriter bw = new BinaryWriter (os, root, fsSize);
+            BinaryWriter bw = new BinaryWriter (os, root, fsSize, strings);
             writeFolder(bw, root, true);
         } finally {
             sizes = null; // free the cache
@@ -135,7 +146,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             int baseOffset = bw.getPosition();
             for (Iterator it = folder.children.iterator(); it.hasNext(); ) {
                 MemFileOrFolder item = (MemFileOrFolder)it.next(); 
-                baseOffset += computeHeaderSize(item);
+                baseOffset += computeHeaderSize(item, null);
             }
             // baseOffset now contains the offset of the first file content
 
@@ -146,7 +157,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
                 bw.writeByte((item instanceof MemFile) ? (byte)0 : (byte)1); //boolean isFolder
                 bw.writeInt(baseOffset); //  int contentRef
 
-                baseOffset += computeSize(item);
+                baseOffset += computeSize(item, null);
                 // baseOffset now contains the offset of the next file content
             }
 
@@ -236,7 +247,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
     // this map is actually valid only during BFS regeneration, null otherwise
     private HashMap<MemFileOrFolder,Integer> sizes;
     
-    private int computeSize(MemFileOrFolder mf) {
+    private int computeSize(MemFileOrFolder mf, Map<String,int[]> text) {
         Integer i = sizes.get(mf);
         if (i != null) return i;
 
@@ -246,7 +257,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         size += 4; // int attrCount
         if (mf.attrs != null) {
             for (Iterator it = mf.attrs.iterator(); it.hasNext(); ) {
-                size += computeSize((MemAttr)it.next()); // Attribute[attrCount] attrs
+                size += computeSize((MemAttr)it.next(), text); // Attribute[attrCount] attrs
             }
         }
 
@@ -254,7 +265,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
              MemFile file = (MemFile)mf;
              size += 4; //    int contentLength
              if (file.ref != null) {
-                 size += computeSize(file.ref.toString()); // String uri
+                 size += computeSize(file.ref.toString(), text); // String uri
              } else if (file.contents != null) {
                  size += file.contents.length;
              } // else size += 0; // no content, no uri
@@ -263,8 +274,8 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             size += 4; // int fileCount
             if (folder.children != null) {
                 for (MemFileOrFolder item : folder.children) {
-                    size += computeHeaderSize(item); // File[fileCount] references    
-                    size += computeSize(item); // File/FolderContent[fileCount] contents
+                    size += computeHeaderSize(item, text); // File[fileCount] references    
+                    size += computeSize(item, text); // File/FolderContent[fileCount] contents
                 }
             }
         }
@@ -272,31 +283,38 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         return size;
     }
     
-    private int computeHeaderSize(MemFileOrFolder mof) {
+    private int computeHeaderSize(MemFileOrFolder mof, Map<String,int[]> text) {
         // String name, boolean isFolder, int contentRef
-        return computeSize(mof.name) + 1 + 4;
+        return computeSize(mof.name, text) + 1 + 4;
     }
 
-    private static int computeSize(String s) { // int len, byte[len] utf8
-        try {
-            return 4 + s.getBytes("UTF-8").length; // NOI18N
-        } catch (UnsupportedEncodingException e) {
-            throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
+    private static int computeSize(String s, Map<String,int[]> text) { // int len, byte[len] utf8
+        if (text != null) {
+            int[] count = text.get(s);
+            if (count == null) {
+                count = new int[1];
+                text.put(s, count);
+            }
+            count[0]++;
         }
+        return 4;
     }
     
-    private int computeSize(MemAttr attr) { //String name, byte type, String value
-        return computeSize(attr.name) + 1 + computeSize(attr.data);
+    private int computeSize(MemAttr attr, Map<String,int[]> text) { //String name, byte type, String value
+        return computeSize(attr.name, text) + 1 + computeSize(attr.data, text);
     }
 
     private static final class BinaryWriter {
         private OutputStream os;
         private int position;
         /** map from base URL to int[1] value */
-        private java.util.Map urls;
-        BinaryWriter(OutputStream os, MemFolder root, int fsSize) throws IOException {
+        private final Map urls;
+        private final Map<String,Integer> strings;
+        BinaryWriter(OutputStream os, MemFolder root, int fsSize, Map<String,int[]> strings) throws IOException {
             this.os = os;
-            urls = writeBaseUrls (root, fsSize);
+            HashMap<String, Integer> map = new HashMap<String, Integer>();
+            this.strings = Collections.unmodifiableMap(map);
+            urls = writeBaseUrls (root, fsSize, strings, map);
             position = 0;
         }
         
@@ -324,15 +342,9 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         }
         
         void writeString(String str) throws IOException {
-            byte[] data;
-            try {
-                data =  str.getBytes("UTF-8"); // NOI18N
-            } catch (UnsupportedEncodingException e) {
-                throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
-            }
-            
-            writeInt(data.length);
-            writeBytes(data);
+            Integer offset = strings.get(str);
+            assert offset != null : "Found " + str;
+            writeInt(offset);
         }
         
         void writeBaseURL (java.net.URL url) throws IOException {
@@ -348,7 +360,9 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             writeInt (index);
         }
         
-        private java.util.Map writeBaseUrls (MemFileOrFolder root, int fsSize) throws IOException {
+        private java.util.Map writeBaseUrls(
+            MemFileOrFolder root, int fsSize, Map<String,int[]> texts, Map<String,Integer> fillIn
+        ) throws IOException {
             java.util.LinkedHashMap<URL,Object> map = new java.util.LinkedHashMap<URL,Object> ();
             int[] counter = new int[1];
             
@@ -362,10 +376,23 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
                 
                 assert ((int[])entry.getValue ())[0] == i : i + "th key should be it " + ((int[])entry.getValue ())[0];
                 
-                size += computeSize (u.toExternalForm ());
+                size += computeSize (u.toExternalForm (), texts);
             }
             
-            writeInt(BinaryFS.MAGIC.length + 4 + 4 + size + fsSize); // size of the whole image
+            ByteArrayOutputStream arr = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(arr);
+            for (String txt : sort(texts.entrySet())) {
+                fillIn.put(txt, dos.size());
+                dos.writeUTF(txt);
+            }
+            dos.flush();
+            
+            int textSize = dos.size();
+            writeInt(BinaryFS.MAGIC.length + 4 + 4 + textSize + 4 + size + fsSize); // size of the whole image
+            
+            writeInt(textSize);
+            os.write(arr.toByteArray());
+            
             writeInt (size); // the size of urls part
             
             it = map.entrySet ().iterator ();
@@ -393,6 +420,23 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
                     collectBaseUrls ((MemFileOrFolder)it.next (), map, counter);
                 }
             }
+        }
+
+    private List<String> sort(Set<Entry<String, int[]>> entrySet) {
+            List<Entry<String, int[]>> lst = new ArrayList<Entry<String, int[]>>(entrySet);
+            class C implements Comparator<Entry<String, int[]>> {
+                @Override
+                public int compare(Entry<String, int[]> o1, Entry<String, int[]> o2) {
+                    return o2.getValue()[0] - o1.getValue()[0];
+                }
+            }
+            Collections.sort(lst, new C());
+            List<String> res = new ArrayList<String>();
+            for (Entry<String, int[]> entry : lst) {
+                res.add(entry.getKey());
+            }
+            return res;
+            
         }
     }
 }

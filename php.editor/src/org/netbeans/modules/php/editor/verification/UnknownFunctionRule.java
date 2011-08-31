@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Co pyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -70,14 +70,14 @@ public class UnknownFunctionRule extends PHPRule{
     @Override
     public void visit(FunctionInvocation functionInvocation) {
         ASTNode parent = context.path.get(0);
-        
-        if (!(parent instanceof MethodInvocation 
+
+        if (!(parent instanceof MethodInvocation
                 || parent instanceof StaticMethodInvocation)){
-            
+
             String fname = CodeUtils.extractFunctionName(functionInvocation);
-            
+
             if (fname != null && !IGNORED.contains(fname.toLowerCase())) {
-                Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(fname));                
+                Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(fname));
                 if (functions.size() == 0) {
                     FunctionName funcName = functionInvocation.getFunctionName();
                     OffsetRange range = new OffsetRange(funcName.getStartOffset(), funcName.getEndOffset());
@@ -87,24 +87,28 @@ public class UnknownFunctionRule extends PHPRule{
 
                     addResult(hint);
                 }
-            }    
+            }
         }
-        
+
         super.visit(functionInvocation);
     }
-    
+
+    @Override
     public String getId() {
         return "unknown.function";
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDesc");
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDispName");
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }

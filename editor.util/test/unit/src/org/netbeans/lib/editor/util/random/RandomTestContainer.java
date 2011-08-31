@@ -190,7 +190,7 @@ public final class RandomTestContainer extends PropertyProvider {
         }
         this.seed = seed;
         random.setSeed(this.seed);
-        LOG.log(Level.INFO, "{0} with SEED={1,number,#}L - useful for RandomTestContainer.run(seed)\n", // NOI18N
+        LOG.log(Level.INFO, "{0} with SEED={1,number,#}L - use container.run({1,number,#}L) for same test\n", // NOI18N
                 new Object[]{name(), this.seed});
 
         if (name2Op.isEmpty()) {
@@ -226,6 +226,12 @@ public final class RandomTestContainer extends PropertyProvider {
 
     public void addCheck(Check check) {
         checks.add(check);
+    }
+    
+    public void runChecks(Context context) throws Exception {
+        for (Check check : context.container().checks) {
+            check.check(context);
+        }
     }
 
     public Random random() {
@@ -360,9 +366,7 @@ public final class RandomTestContainer extends PropertyProvider {
                 while (context.continueRun(totalOpCount)) {
                     Op op = findOp(context, opRatioSum);
                     op.run(context); // Run the fetched random operation
-                    for (Check check : context.container().checks) {
-                        check.check(context);
-                    }
+                    container.runChecks(context);
                     context.incrementOpCount();
                 }
                 LOG.info(container.name() + " finished successfully.");
@@ -502,14 +506,9 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         void runOps(int opCount) throws Exception {
-            if (opCount == 0) { // Till end
-                stopOpCount = container.totalOpCount;
-            } else {
-                stopOpCount += opCount;
-            }
-
+            stopOpCount = (opCount == 0) ? container.totalOpCount : (stopOpCount + opCount);
             while (continueRun()) {
-                currentRound.run(this);
+                currentRound.run(this); // Run the test round
                 if (continueRun() && roundIterator.hasNext()) {
                     setCurrentRound(roundIterator.next());
                 } else {

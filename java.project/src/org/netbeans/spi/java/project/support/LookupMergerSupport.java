@@ -42,6 +42,7 @@
 
 package org.netbeans.spi.java.project.support;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,7 +55,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.project.classpath.ClassPathModifierLookupMerger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
@@ -106,7 +109,20 @@ public final class LookupMergerSupport {
     public static LookupMerger<ClassPathProvider> createClassPathProviderMerger(ClassPathProvider defaultProvider) {
         return new ClassPathProviderMerger(defaultProvider);
     }    
-    
+
+    /**
+     * Creates a merger of class path modifiers.
+     * All supported source groups and classpath types are unified.
+     * The first modifier implementation to return true (or throw {@link IOException}) is accepted.
+     * False is returned if all of the implementations do so.
+     * {@link UnsupportedOperationException} is thrown only if all of the implementations do so.
+     * @return a merger
+     * @since 1.41
+     */
+    public static LookupMerger<ProjectClassPathModifierImplementation> createClassPathModifierMerger() {
+        return new ClassPathModifierLookupMerger();
+    }
+
     private static class SFBLookupMerger implements LookupMerger<SourceForBinaryQueryImplementation> {
 
         public Class<SourceForBinaryQueryImplementation> getMergeableClass() {

@@ -612,7 +612,7 @@ public final class DtraceDataCollector
 
         if (followForks) {
             if (pattern != null && !pattern.trim().isEmpty()) {
-                forkFollowCondition = "strstr(execname, \"".concat(pattern).concat("\") != NULL/"); // NOI18N
+                forkFollowCondition = "strstr(execname, \"".concat(pattern).concat("\") != NULL"); // NOI18N
             } else {
                 forkFollowCondition = "1"; // NOI18N
             }

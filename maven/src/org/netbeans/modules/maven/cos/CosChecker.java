@@ -261,7 +261,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
-                String proppath = config.getProperties().getProperty("exec.workingdir"); //NOI18N
+                String proppath = config.getProperties().get("exec.workingdir"); //NOI18N
                 if (proppath != null) {
                     params.put(JavaRunner.PROP_WORK_DIR, FileUtil.normalizeFile(new File(proppath)));
                 } else {
@@ -284,7 +284,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, createRuntimeClassPath(config.getMavenProject(), false));
                 }
                 //exec:exec property
-                String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
+                String exargs = config.getProperties().get("exec.args"); //NOI18N
                 if (exargs != null) {
                     String[] args = RunJarPanel.splitAll(exargs);
                     if (params.get(JavaRunner.PROP_EXECUTE_FILE) == null) {
@@ -349,7 +349,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
             }
             Map<String, Object> params = new HashMap<String, Object>();
-            String test = config.getProperties().getProperty("test"); //NOI18N
+            String test = config.getProperties().get("test"); //NOI18N
             if (test == null) {
                 //user somehow configured mapping in unknown way.
                 return true;
@@ -488,7 +488,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             } else {
                 // jvm args from the argLine exec property,
                 //add and for debugging, remove the debugging ones..
-                argLine = config.getProperties().getProperty("argLine");
+                argLine = config.getProperties().get("argLine");
                 if (argLine != null) {
                     try {
                         jvmProps.addAll(extractDebugJVMOptions(argLine));

@@ -49,6 +49,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -63,6 +65,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -94,6 +97,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "A11Y_BrowserName")); //NOI18N
         btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "A11Y_BrowserDescription")); //NOI18N
         manager = new ExplorerManager();
+        manager.setRootContext(new AbstractNode(Children.create(new RootNodes(), true)));
         ActionMap map = getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
@@ -251,7 +255,6 @@ private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             return;
         }
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
-        manager.setRootContext(createRootNode());
         RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RepositoryIndexer.indexRepo(info);
@@ -321,27 +324,6 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     }
 
     @Override
-    public void componentOpened() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                final Node root = createRootNode();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        manager.setRootContext(root);
-                    }
-                });
-            }
-
-        });
-        manager.setRootContext(new AbstractNode(Children.LEAF));
-    }
-
-    @Override
-    public void componentClosed() {
-        manager.setRootContext(new AbstractNode(Children.LEAF));
-    }
-
-    @Override
     protected void componentActivated() {
         ExplorerUtils.activateActions(manager, true);
     }
@@ -376,20 +358,24 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         return PREFERRED_ID;
     }
 
-    private Node createRootNode() {
-        // XXX replace with ChildFactory<RepositoryInfo>
-        Children.Array array = new Children.Array();
-        List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
-        for (RepositoryInfo ri : infos) {
-            if (ri.isRemoteDownloadable() || ri.isLocal()) {
-             array.add(new Node[]{new RepositoryNode(ri)});
-            }
+    private static class RootNodes extends ChildFactory.Detachable<RepositoryInfo> implements ChangeListener {
+        @Override protected boolean createKeys(List<RepositoryInfo> toPopulate) {
+            toPopulate.addAll(RepositoryPreferences.getInstance().getRepositoryInfos());
+            return true;
         }
-
-        return new AbstractNode(array);
+        @Override protected Node createNodeForKey(RepositoryInfo key) {
+            return new RepositoryNode(key);
+        }
+        @Override protected void addNotify() {
+            RepositoryPreferences.getInstance().addChangeListener(this);
+        }
+        @Override protected void removeNotify() {
+            RepositoryPreferences.getInstance().removeChangeListener(this);
+        }
+        @Override public void stateChanged(ChangeEvent e) {
+            refresh(false);
+        }
     }
-
-
 
     final static class ResolvableHelper implements Serializable {
 

@@ -77,9 +77,15 @@ final class LayoutWarningPanel extends BasicWizardIterator.Panel {
         data.setIgnorePreviousRun(ignore.isSelected());
     }
     
+    @NbBundle.Messages({
+        "MSG_UnsupportedWizard=This wizard can be used only with NetBeans Platform 7.1 and newer!"
+    })
     @Override
     protected void readFromDataModel() {
         ignore.setSelected(data.isIgnorePreviousRun());
+        if (!DesignSupport.isDesignModeSupported(data.getModuleInfo())) {
+            setInfo(Bundle.MSG_UnsupportedWizard(), false);
+        }
     }
 
     @Override

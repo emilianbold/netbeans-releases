@@ -82,11 +82,11 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     }
 
     public void performCvsAction(Node[] nodes) {
-        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes));
-        openHistory(getContext(nodes), title);
+        openHistory(getContext(nodes), getContextDisplayName(nodes));
     }
 
-    private void openHistory(final Context context, final String title) {
+    public static void openHistory(final Context context, String contextName) {
+        final String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", contextName);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);

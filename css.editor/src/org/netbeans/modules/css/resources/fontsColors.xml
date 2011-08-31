@@ -67,18 +67,17 @@ made subject to such option by the copyright holder.
      -->
     
     <fontcolor name="others" default="default"/>
-    <fontcolor name="brace" default="separator"/>
-    <fontcolor name="separator" default="separator"/>
-    <fontcolor name="hash" default="number"/>
-    <fontcolor name="operator" default="operator"/>
-    <fontcolor name="string" default="string"/>
-    <fontcolor name="url" default="string"/>
-    <fontcolor name="keyword" default="keyword"/>
-    <fontcolor name="number" default="number"/>
-    <fontcolor name="identifier" default="identifier"/>
-    <fontcolor name="unknown" default="error"/>
-    <fontcolor  name="whitespace" default="default"/>
-    <fontcolor  name="comment" default="comment"/>
+    <fontcolor name="braces" default="separator"/>
+    <fontcolor name="separators" default="separator"/>
+    <fontcolor name="hashes" default="number"/>
+    <fontcolor name="operators" default="operator"/>
+    <fontcolor name="strings" default="string"/>
+    <fontcolor name="uris" default="string"/>
+    <fontcolor name="keywords" default="keyword"/>
+    <fontcolor name="numbers" default="number"/>
+    <fontcolor name="identifiers" default="identifier"/>
+    <fontcolor  name="whitespaces" default="default"/>
+    <fontcolor  name="comments" default="comment"/>
 
     <!-- GSF colors - taken from ruby editor -->
     <!--"semantic" highlighting:-->

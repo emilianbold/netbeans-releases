@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -56,6 +57,7 @@ public final class PhpModuleProperties {
     private final FileObject webRoot;
     private final FileObject indexFile;
     private final String url;
+    private final List<String> includePath;
 
     public PhpModuleProperties() {
         this(new PhpModulePropertiesData());
@@ -66,6 +68,7 @@ public final class PhpModuleProperties {
         webRoot = data.webRoot;
         indexFile = data.indexFile;
         url = data.url;
+        includePath = data.includePath;
     }
 
     /**
@@ -158,11 +161,39 @@ public final class PhpModuleProperties {
         return new PhpModuleProperties(new PhpModulePropertiesData(this).setUrl(url));
     }
 
+    /**
+     * Get project Include path.
+     * @return project Include path
+     * @since 1.50
+     */
+    public List<String> getIncludePath() {
+        return includePath;
+    }
+
+    /**
+     * Return properties with configured Include path. It is responsibility of caller
+     * to provide valid Include path (relative paths to the {@link PhpModule#getProjectDirectory() project directory}, absolute paths).
+     * <p>
+     * <b>Warning:</b> The Include path is expected to be in the proper form (properly encoded, relativized etc.).
+     * <p>
+     * All other properties of the returned properties are inherited from
+     * <code>this</code>.
+     *
+     * @param includePath Include path
+     * @return new properties with configured Include path
+     * @since 1.50
+     */
+    public PhpModuleProperties setIncludePath(List<String> includePath) {
+        Parameters.notNull("includePath", includePath);
+        return new PhpModuleProperties(new PhpModulePropertiesData(this).setIncludePath(includePath));
+    }
+
     private static final class PhpModulePropertiesData {
         FileObject tests;
         FileObject webRoot;
         FileObject indexFile;
         String url;
+        List<String> includePath;
 
         PhpModulePropertiesData() {
         }
@@ -172,6 +203,7 @@ public final class PhpModuleProperties {
             webRoot = properties.getWebRoot();
             indexFile = properties.getIndexFile();
             url = properties.getUrl();
+            includePath = properties.getIncludePath();
         }
 
         PhpModulePropertiesData setTests(FileObject tests) {
@@ -193,5 +225,12 @@ public final class PhpModuleProperties {
             this.url = url;
             return this;
         }
+
+        PhpModulePropertiesData setIncludePath(List<String> includePath) {
+            this.includePath = includePath;
+            return this;
+        }
+
     }
+
 }
