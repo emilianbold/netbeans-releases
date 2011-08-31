@@ -45,26 +45,29 @@ import java.awt.Component;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.openide.WizardDescriptor;
 
 public final class JFXPreloaderChooserWizardIterator implements WizardDescriptor.Iterator {
 
     private int index;
-    private WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {null, null, null};
-    String[] steps = new String[2];
+    private WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {null, null};
+    String[] steps = new String[] {null, null};
 
     private WizardDescriptor.Panel getPanel(int index) {
-        assert 0 <= index && index < 3;
+        assert 0 <= index && index <= 1;
         if(panels[index] == null) {
             WizardDescriptor.Panel panel = null;
             switch(index) {
-                case 0 : panel = new JFXPreloaderChooserWizardPanel1(); break;
-                case 1 : panel = new JFXPreloaderChooserWizardPanel2Project(); break;
-                case 2 : panel = new JFXPreloaderChooserWizardPanel3JAR(); break;
+                case 0 : 
+                    panel = new JFXPreloaderChooserWizardPanel1(); break;
+                case 1 : 
+                    JFXPreloaderChooserVisualPanel1 c = (JFXPreloaderChooserVisualPanel1)panels[0].getComponent();
+                    panel = new JFXPreloaderChooserWizardPanel2(c.getSelectedType()); 
+                    break;
             }
             panels[index] = panel;
-            Component c = panels[index].getComponent();
+            Component c = panel.getComponent();
+            steps[index] = c.getName();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
@@ -81,7 +84,6 @@ public final class JFXPreloaderChooserWizardIterator implements WizardDescriptor
             }        
         }
         assert panels[index] != null;
-        steps[index == 0 ? 0 : 1] = panels[index].getComponent().getName();
         return panels[index];
     }
         
@@ -93,7 +95,7 @@ public final class JFXPreloaderChooserWizardIterator implements WizardDescriptor
 //        if (panels == null) {
 //            panels = new WizardDescriptor.Panel[]{
 //                new JFXPreloaderChooserWizardPanel1(),
-//                new JFXPreloaderChooserWizardPanel2Project(),
+//                new JFXPreloaderChooserWizardPanel2(),
 //                new JFXPreloaderChooserWizardPanel3JAR()
 //            };
 //            String[] steps = new String[panels.length];
@@ -122,15 +124,17 @@ public final class JFXPreloaderChooserWizardIterator implements WizardDescriptor
 
     @Override
     public WizardDescriptor.Panel current() {
-        WizardDescriptor.Panel panel = null;
-        if(index == 0) {
-            panel = getPanel(0);
-        } else {
-            JFXProjectProperties.PreloaderSourceType selectedType=((JFXPreloaderChooserVisualPanel1)getPanel(0).getComponent()).getSelectedType();
-            panel = selectedType == JFXProjectProperties.PreloaderSourceType.PROJECT ? getPanel(1) : getPanel(2) ;
-        }
-        assert panel != null;
-        return panel;
+//        WizardDescriptor.Panel panel = null;
+//        if(index == 0) {
+//            panel = getPanel(0);
+//        } else {
+//            JFXProjectProperties.PreloaderSourceType selectedType=((JFXPreloaderChooserVisualPanel1)getPanel(0).getComponent()).getSelectedType();
+//            panel = selectedType == JFXProjectProperties.PreloaderSourceType.PROJECT ? getPanel(1) : getPanel(2) ;
+//        }
+//        assert panel != null;
+//        return panel;
+        assert 0 <= index && index <= 1;
+        return getPanel(index);
     }
 
     @Override
@@ -154,6 +158,11 @@ public final class JFXPreloaderChooserWizardIterator implements WizardDescriptor
             throw new NoSuchElementException();
         }
         index++;
+        if(index == 1 && panels[index] != null) {
+            JFXPreloaderChooserWizardPanel2 panel = (JFXPreloaderChooserWizardPanel2)panels[index];
+            JFXPreloaderChooserVisualPanel1 c = (JFXPreloaderChooserVisualPanel1)panels[0].getComponent();
+            panel.setSourceType(c.getSelectedType());
+        }
     }
 
     @Override

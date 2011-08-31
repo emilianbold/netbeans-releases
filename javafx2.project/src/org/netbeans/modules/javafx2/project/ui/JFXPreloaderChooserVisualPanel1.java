@@ -62,7 +62,15 @@ public final class JFXPreloaderChooserVisualPanel1 extends JPanel {
         }
         return JFXProjectProperties.PreloaderSourceType.JAR;
     }
-    
+
+    public void setSelectedType(JFXProjectProperties.PreloaderSourceType selectedType) {
+        if(selectedType == JFXProjectProperties.PreloaderSourceType.PROJECT) {
+            radioButtonProject.setSelected(true);
+        } else {
+            radioButtonJAR.setSelected(true);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

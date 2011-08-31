@@ -47,7 +47,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class JFXPreloaderChooserWizardPanel1 implements WizardDescriptor.Panel {
+public class JFXPreloaderChooserWizardPanel1 implements WizardDescriptor.Panel<JFXPreloaderChooserWizard> {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -123,10 +123,14 @@ public class JFXPreloaderChooserWizardPanel1 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(Object settings) {
+    public void readSettings(JFXPreloaderChooserWizard settings) {
+        JFXPreloaderChooserVisualPanel1 c = (JFXPreloaderChooserVisualPanel1)getComponent();
+        c.setSelectedType(settings.getSourceType());
     }
 
     @Override
-    public void storeSettings(Object settings) {
+    public void storeSettings(JFXPreloaderChooserWizard settings) {
+        JFXPreloaderChooserVisualPanel1 c = (JFXPreloaderChooserVisualPanel1)getComponent();
+        settings.setSourceType(c.getSelectedType());
     }
 }

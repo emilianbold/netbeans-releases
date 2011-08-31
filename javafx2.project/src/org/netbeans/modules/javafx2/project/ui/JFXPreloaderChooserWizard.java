@@ -58,7 +58,7 @@ public class JFXPreloaderChooserWizard extends WizardDescriptor {
     
     JFXPreloaderChooserWizardIterator wizardIterator;
     
-    private JFXProjectProperties.PreloaderSourceType sourceType;
+    private JFXProjectProperties.PreloaderSourceType sourceType = JFXProjectProperties.PreloaderSourceType.PROJECT;
     private File selectedSource;
 
     private java.awt.Dialog dialog;
@@ -96,26 +96,29 @@ public class JFXPreloaderChooserWizard extends WizardDescriptor {
 
     // -------
 
-    void stepToNext() {
-        if (wizardIterator.hasNext()) {
-            wizardIterator.nextPanel();
-            updateState();
-        }
+//    public void stepToNext() {
+//        if (wizardIterator.hasNext()) {
+//            wizardIterator.nextPanel();
+//            updateState();
+//        }
+//    }
+    public void update() {
+        this.updateState();
     }
 
-    void setSourceType(JFXProjectProperties.PreloaderSourceType sourceType) {
+    public void setSourceType(JFXProjectProperties.PreloaderSourceType sourceType) {
         this.sourceType = sourceType;
     }
 
-    JFXProjectProperties.PreloaderSourceType getSourceType() {
+    public JFXProjectProperties.PreloaderSourceType getSourceType() {
         return sourceType;
     }
 
-    void setSelectedSource(File selectedSource) {
+    public void setSelectedSource(File selectedSource) {
         this.selectedSource = selectedSource;
     }
 
-    File getSelectedSource() {
+    public File getSelectedSource() {
         return selectedSource;
     }
 
