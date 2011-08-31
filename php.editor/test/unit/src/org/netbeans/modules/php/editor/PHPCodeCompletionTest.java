@@ -838,6 +838,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue196714.php", "$mm->^", false);
     }
 
+    public void testIssue200178() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue200178.php", "/**/foo^", false);
+    }
+
+    public void testIssue200178_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue200178.php", "/**/bar^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

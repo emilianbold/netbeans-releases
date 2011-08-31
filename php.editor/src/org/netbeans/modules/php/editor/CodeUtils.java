@@ -70,6 +70,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
@@ -366,9 +368,16 @@ public class CodeUtils {
     public static String getParamDefaultValue(FormalParameter param) {
         Expression expr = param.getDefaultValue();
         //TODO: can be improved
+        Operator operator = null;
+        if (expr instanceof UnaryOperation) {
+            UnaryOperation unaryExpr = (UnaryOperation) expr;
+            operator = unaryExpr.getOperator();
+            expr = unaryExpr.getExpression();
+        }
         if (expr instanceof Scalar) {
             Scalar scalar = (Scalar) expr;
-                return scalar.getStringValue();
+            String returnValue = scalar.getStringValue();
+            return Operator.MINUS.equals(operator) ? "-" + returnValue : returnValue; // NOI18N
         } else if (expr instanceof ArrayCreation) {
             return "array()";//NOI18N
         } else if (expr instanceof StaticConstantAccess) {
