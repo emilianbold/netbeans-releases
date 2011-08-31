@@ -166,17 +166,17 @@ final class WrapInfo extends GapList<WrapLine> {
     }
 
     public void checkIntegrity(ParagraphView paragraphView) {
-        if (LOG.isLoggable(Level.FINER)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             String err = findIntegrityError(paragraphView);
             if (err != null) {
                 String msg = "WrapInfo INTEGRITY ERROR! - " + err; // NOI18N
-                LOG.finer(msg + "\n"); // NOI18N
-                LOG.finer(toString(paragraphView)); // toString() impl should append newline
+                ViewHierarchyImpl.CHECK_LOG.finer(msg + "\n"); // NOI18N
+                ViewHierarchyImpl.CHECK_LOG.finer(toString(paragraphView)); // toString() impl should append newline
                 // For finest level stop throw real ISE otherwise just log the stack
-                if (LOG.isLoggable(Level.FINEST)) {
+                if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINEST)) {
                     throw new IllegalStateException(msg);
                 } else {
-                    LOG.log(Level.INFO, msg, new Exception());
+                    ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, msg, new Exception());
                 }
             }
         }

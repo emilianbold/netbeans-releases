@@ -42,9 +42,30 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.SearchKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.openide.filesystems.FileObject;
 
 /**
  * Utility class for JavaFX 2.0 Project
@@ -53,6 +74,9 @@ import java.util.Map;
  */
 public final class JFXProjectUtils {
 
+    private static Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
+    private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
+    
     /**
      * Returns list of JavaFX 2.0 JavaScript callback entries.
      * In future should read the list from the current platform
@@ -90,4 +114,74 @@ public final class JFXProjectUtils {
         return m;
     }
     
+    /**
+     * Returns all classpaths relevant for given project. To be used in
+     * main class searches.
+     * 
+     * @param project
+     * @return map of classpaths of all project files
+     */
+    public static Map<FileObject,List<ClassPath>> getClassPathMap(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        final Map<FileObject,List<ClassPath>> classpathMap = new HashMap<FileObject,List<ClassPath>>();
+
+        for (SourceGroup srcGroup : srcGroups) {
+            FileObject srcRoot = srcGroup.getRootFolder();
+            ClassPath bootCP = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
+            ClassPath executeCP = ClassPath.getClassPath(srcRoot, ClassPath.EXECUTE);
+            ClassPath sourceCP = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
+            List<ClassPath> cpList = new ArrayList<ClassPath>();
+            if (bootCP != null) {
+                cpList.add(bootCP);
+            }
+            if (executeCP != null) {
+                cpList.add(executeCP);
+            }
+            if (sourceCP != null) {
+                cpList.add(sourceCP);
+            }
+            if (cpList.size() == 3) {
+                classpathMap.put(srcRoot, cpList);
+            }
+        }
+        return classpathMap;
+    }
+    
+    /**
+     * Returns set of names of classes of the classType type.
+     * 
+     * @param map of classpaths of all project files
+     * @return set of class names
+     */
+    public static Set<String> getAppClassNames(Map<FileObject,List<ClassPath>> classpathMap, final String classType) {
+        final Set<String> appClassNames = new HashSet<String>();
+        for (FileObject fo : classpathMap.keySet()) {
+            List<ClassPath> paths = classpathMap.get(fo);
+            ClasspathInfo cpInfo = ClasspathInfo.create(paths.get(0), paths.get(1), paths.get(2));
+            final ClassIndex classIndex = cpInfo.getClassIndex();
+            final JavaSource js = JavaSource.create(cpInfo);
+            try { 
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
+                    public void run(CompilationController controller) throws Exception {
+                        Elements elems = controller.getElements();
+                        TypeElement fxAppElement = elems.getTypeElement(classType);
+                        ElementHandle<TypeElement> appHandle = ElementHandle.create(fxAppElement);
+                        Set<ElementHandle<TypeElement>> appHandles = classIndex.getElements(appHandle, kinds, scopes);
+                        for (ElementHandle<TypeElement> elemHandle : appHandles) {
+                            appClassNames.add(elemHandle.getQualifiedName());
+                        }
+                    }
+                    @Override
+                    public void cancel() {
+
+                    }
+                }, true);
+            } catch (Exception e) {
+
+            }
+        }
+        return appClassNames;
+    }
 }

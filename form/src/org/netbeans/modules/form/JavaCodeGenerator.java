@@ -73,6 +73,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.Lookup;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -284,7 +285,10 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new GenerateFQNProperty());
             propList.add(new GenerateMnemonicsCodeProperty());
             propList.add(new ListenerGenerationStyleProperty());
-            propList.add(new LayoutCodeTargetProperty());
+            FormServices services = Lookup.getDefault().lookup(FormServices.class);
+            if (services.isLayoutExtensionsLibrarySupported()) {
+                propList.add(new LayoutCodeTargetProperty());
+            }
         } else if (component != formModel.getTopRADComponent()) {
             
             propList.add(createBeanClassNameProperty(component));

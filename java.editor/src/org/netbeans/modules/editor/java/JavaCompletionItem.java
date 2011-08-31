@@ -3207,9 +3207,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.fieldHandles.add(ElementHandle.create(ve));
                 this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
             }
-            this.superConstructorHandle = ElementHandle.create(superConstructor);
-            for (VariableElement ve : superConstructor.getParameters()) {
-                this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));                
+            if (superConstructor != null) {
+                this.superConstructorHandle = ElementHandle.create(superConstructor);
+                for (VariableElement ve : superConstructor.getParameters()) {
+                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));                
+                }
+            } else {
+                this.superConstructorHandle = null;
             }
             this.simpleName = parent.getSimpleName().toString();
         }
@@ -3305,7 +3309,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
-                            ExecutableElement superConstructor = superConstructorHandle.resolve(copy);
+                            ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
                             
                             TreeMaker make = copy.getTreeMaker();
                             ClassTree clazz = (ClassTree) tp.getLeaf();

@@ -3832,10 +3832,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 Map<ExecutableElement, boolean[]> ctors2generate = new LinkedHashMap<ExecutableElement, boolean[]>();
                 GeneratorUtils.scanForFieldsAndConstructors(controller, clsPath, initializedFields, uninitializedFields, constructors);
-                for (ExecutableElement ctor : ElementFilter.constructorsIn(((DeclaredType)te.getSuperclass()).asElement().getEnclosedElements())) {
-                    if (!ctor.getModifiers().contains(Modifier.PRIVATE)) {
-                        ctors2generate.put(ctor, new boolean[] {true, !uninitializedFields.isEmpty()});
+                if (cls.getKind() != Tree.Kind.ENUM) {
+                    for (ExecutableElement ctor : ElementFilter.constructorsIn(((DeclaredType)te.getSuperclass()).asElement().getEnclosedElements())) {
+                        if (!ctor.getModifiers().contains(Modifier.PRIVATE)) {
+                            ctors2generate.put(ctor, new boolean[] {true, !uninitializedFields.isEmpty()});
+                        }
                     }
+                } else {
+                    ctors2generate.put(null, new boolean[] {true, !uninitializedFields.isEmpty()});
                 }
                 for (ExecutableElement ee : constructors) {
                     if (!controller.getElementUtilities().isSynthetic(ee)) {

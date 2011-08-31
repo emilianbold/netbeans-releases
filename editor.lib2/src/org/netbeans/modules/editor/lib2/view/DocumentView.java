@@ -306,10 +306,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public View getView(int index) {
-        if (LOG.isLoggable(Level.FINE)) {
-            checkDocumentLockedIfLogging();
-            checkMutexAcquiredIfLogging();
-        }
+        checkDocumentLockedIfLogging();
+        checkMutexAcquiredIfLogging();
         return (children != null) ? children.get(index) : null;
     }
 

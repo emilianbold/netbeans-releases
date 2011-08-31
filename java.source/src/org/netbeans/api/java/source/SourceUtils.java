@@ -346,13 +346,11 @@ public class SourceUtils {
             Element element = null;
             if ((element = info.getElements().getTypeElement(qName)) != null) {
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
-                if (cs.useSingleClassImport()) {
-                    if (toImport == null || !cs.importInnerClasses()) {
-                        toImport = element;
-                        if (sqName.length() > 0)
-                            sqName.insert(0, '.');
-                        sqName.insert(0, simple);
-                    }
+                if (sqName.length() > 0)
+                    sqName.insert(0, '.');
+                sqName.insert(0, simple);
+                if (cs.useSingleClassImport() && toImport == null) {
+                    toImport = element;
                 }
                 boolean matchFound = false;
                 for(Element e : eu.getLocalMembersAndVars(scope, acceptor)) {
@@ -380,6 +378,8 @@ public class SourceUtils {
                         }
                     }
                 }
+                if (cs.importInnerClasses())
+                    break;
             } else if ((element = info.getElements().getPackageElement(qName)) != null) {
                 if (toImport == null || checkPackagesForStarImport(qName, cs))
                     toImport = element;

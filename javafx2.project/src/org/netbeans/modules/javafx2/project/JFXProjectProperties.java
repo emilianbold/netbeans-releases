@@ -54,10 +54,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -73,6 +77,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class JFXProjectProperties {
@@ -103,10 +109,9 @@ public final class JFXProjectProperties {
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
-    public static final String PRELOADER = "javafx.preloader.enabled"; // NOI18N
+    public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
+    public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N
     public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
-    public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
-    public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
     public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
@@ -190,6 +195,11 @@ public final class JFXProjectProperties {
         public String getString() {
             return propertyValue;
         }
+    }
+    
+    PreloaderClassComboBoxModel preloaderClassModel;
+    public PreloaderClassComboBoxModel getPreloaderClassModel() {
+        return preloaderClassModel;
     }
 
     // CustomizerRun - Run type
@@ -363,6 +373,7 @@ public final class JFXProjectProperties {
             RUN_CONFIGS = readRunConfigs();
             APP_PARAMS = readAppParams();
             activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
+            preloaderClassModel = new PreloaderClassComboBoxModel();
             
             initSigning(evaluator);
             initResources(evaluator, project);
@@ -459,7 +470,7 @@ public final class JFXProjectProperties {
         } catch (IOException ex) {
             // can be ignored
         }
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
@@ -647,7 +658,7 @@ public final class JFXProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
@@ -1041,4 +1052,34 @@ public final class JFXProjectProperties {
         }
     }
 
+    public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
+              
+        public PreloaderClassComboBoxModel() {
+            removeAllElements();
+            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+        }
+        
+        public void fillFromProject(Project project) {
+            final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
+                    removeAllElements();
+                    if(appClassNames.isEmpty()) {
+                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                    } else {
+                        addElements(appClassNames);
+                    }
+                }
+            });            
+        }
+
+        private void addElements(Set<String> elems) {
+            for (String elem : elems) {
+                addElement(elem);
+            }
+        }
+        
+    }
 }
