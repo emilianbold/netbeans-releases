@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.java.editor.whitelist;
 
-import com.sun.istack.internal.NotNull;
+//import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexFolder;
+//import org.netbeans.modules.parsing.spi.indexing.support.IndexFolder;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -217,7 +217,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     }
 
     private static synchronized void updateErrorsInRoot(
-            @NotNull final Callback callback,
+            /*@NotNull*/ final Callback callback,
             @NonNull final FileObject root) {
         Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
         Set<FileObject> fixedFiles = new HashSet<FileObject>(filesWithErrors);
