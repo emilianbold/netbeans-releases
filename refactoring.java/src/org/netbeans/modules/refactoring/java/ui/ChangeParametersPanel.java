@@ -101,7 +101,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final String MIME_JAVA = "text/x-java"; // NOI18N
     private static final String UPDATEJAVADOC = "updateJavadoc.changeParameters"; // NOI18N
     private static final String GENJAVADOC = "generateJavadoc.changeParameters"; // NOI18N
-    private static final String COMPATIBLE = "compatible.changeParameters"; // NOI18N
+    private static final String OVERLOADMETHOD = "overloadmethod.changeParameters"; // NOI18N
 
     TreePathHandle refactoredObj;
     private int[] parameterSpan;
@@ -324,6 +324,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        bgOverloadMethod = new javax.swing.ButtonGroup();
         modifiersPanel = new javax.swing.JPanel();
         modifiersLabel = new javax.swing.JLabel();
         modifiersCombo = new javax.swing.JComboBox();
@@ -343,7 +344,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         moveDownButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         previewChange = new javax.swing.JLabel();
-        chkCompatible = new javax.swing.JCheckBox();
+        rbUpdateMethod = new javax.swing.JRadioButton();
+        rbOverloadMethod = new javax.swing.JRadioButton();
+        lblCodeGeneration = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setAutoscrolls(true);
@@ -382,7 +385,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 .addGap(18, 18, 18)
                 .addGroup(modifiersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(modifiersPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1))
                     .addComponent(jLabel1))
@@ -391,7 +394,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     .addGroup(modifiersPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addContainerGap())
-                    .addComponent(methodNameText, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)))
+                    .addComponent(methodNameText, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)))
         );
         modifiersPanelLayout.setVerticalGroup(
             modifiersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -491,38 +494,54 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         previewChange.setOpaque(true);
         jScrollPane1.setViewportView(previewChange);
 
-        org.openide.awt.Mnemonics.setLocalizedText(chkCompatible, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "IntroduceParameterPanel.chkIsCompatible.text")); // NOI18N
-        chkCompatible.addItemListener(new java.awt.event.ItemListener() {
+        bgOverloadMethod.add(rbUpdateMethod);
+        rbUpdateMethod.setSelected(!((Boolean) RefactoringModule.getOption(OVERLOADMETHOD, Boolean.FALSE)).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(rbUpdateMethod, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.rbUpdateMethod.text")); // NOI18N
+
+        bgOverloadMethod.add(rbOverloadMethod);
+        rbOverloadMethod.setSelected(((Boolean) RefactoringModule.getOption(OVERLOADMETHOD, Boolean.FALSE)).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(rbOverloadMethod, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.rbOverloadMethod.text")); // NOI18N
+        rbOverloadMethod.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                chkCompatibleItemStateChanged(evt);
+                rbOverloadMethodItemStateChanged(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblCodeGeneration, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.lblCodeGeneration.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(paramTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(paramTitle)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(moveDownButton)
-                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
                     .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(moveUpButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addComponent(modifiersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(chkCompatible)
-                .addContainerGap(392, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chkUpdateJavadoc)
                     .addComponent(chkGenJavadoc))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lblCodeGeneration)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rbUpdateMethod)
+                .addContainerGap(434, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rbOverloadMethod)
+                .addContainerGap(207, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, moveDownButton, moveUpButton, removeButton});
@@ -530,6 +549,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(paramTitle)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -541,17 +561,21 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         .addComponent(moveUpButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(moveDownButton))
-                    .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE))
+                    .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(modifiersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chkUpdateJavadoc)
                     .addComponent(chkGenJavadoc))
+                .addGap(18, 18, 18)
+                .addComponent(lblCodeGeneration)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkCompatible)
+                .addComponent(rbUpdateMethod)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 82, Short.MAX_VALUE)
+                .addComponent(rbOverloadMethod)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -615,15 +639,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         updatePreview();
     }//GEN-LAST:event_chkGenJavadocItemStateChanged
 
-    private void chkCompatibleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkCompatibleItemStateChanged
+    private void rbOverloadMethodItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbOverloadMethodItemStateChanged
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption(COMPATIBLE, b);
+        RefactoringModule.setOption(OVERLOADMETHOD, b);
         updatePreview();
-    }//GEN-LAST:event_chkCompatibleItemStateChanged
+    }//GEN-LAST:event_rbOverloadMethodItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JCheckBox chkCompatible;
+    private javax.swing.ButtonGroup bgOverloadMethod;
     private javax.swing.JCheckBox chkGenJavadoc;
     private javax.swing.JCheckBox chkUpdateJavadoc;
     private javax.swing.JButton jButton1;
@@ -631,6 +655,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblCodeGeneration;
     private javax.swing.JTextField methodNameText;
     private javax.swing.JComboBox modifiersCombo;
     private javax.swing.JLabel modifiersLabel;
@@ -640,13 +665,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private javax.swing.JTable paramTable;
     private javax.swing.JLabel paramTitle;
     private javax.swing.JLabel previewChange;
+    private javax.swing.JRadioButton rbOverloadMethod;
+    private javax.swing.JRadioButton rbUpdateMethod;
     private javax.swing.JButton removeButton;
     private javax.swing.JScrollPane westPanel;
     // End of variables declaration//GEN-END:variables
 
     
     protected boolean isCompatible() {
-        return chkCompatible.isSelected();
+        return rbOverloadMethod.isSelected();
     }
     
     private ListSelectionListener getListener1() {
