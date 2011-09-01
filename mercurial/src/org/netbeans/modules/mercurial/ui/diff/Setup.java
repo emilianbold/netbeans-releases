@@ -211,7 +211,11 @@ public final class Setup extends AbstractDiffSetup {
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         this.info = info;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision.getRevisionNumber());
+        File firstSourceBaseFile = baseFile;
+        if (info != null && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
+            firstSourceBaseFile = info.getStatus(null).getOriginalFile();
+        }
+        firstSource = new DiffStreamSource(firstSourceBaseFile, firstRevision, firstRevision.getRevisionNumber());
         // XXX delete when UndoAction works correctly
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.getRevisionNumber()) {
             @Override

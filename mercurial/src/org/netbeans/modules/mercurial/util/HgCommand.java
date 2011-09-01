@@ -358,7 +358,7 @@ public class HgCommand {
     public static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
-    private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
+    private static final String HG_LOG_ONLY_FILE_COPIES_CHANGESET_NAME = "log-only-file-copies-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_BASIC_CHANGESET_NAME = "log-no-files-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_CHANGESET_GENERAL_NAME = "changeset.tmpl"; //NOI18N
     private static final String HG_LOG_STYLE_NAME = "log.style";        //NOI18N
@@ -1317,7 +1317,7 @@ public class HgCommand {
         List<String> list = null;
         File tempFolder = Utils.getTempFolder(false);
         try {
-            command.add(prepareLogTemplate(tempFolder, HG_LOG_ONLY_FILES_CHANGESET_NAME));
+            command.add(prepareLogTemplate(tempFolder, HG_LOG_ONLY_FILE_COPIES_CHANGESET_NAME));
             command.add(file.getAbsolutePath());
             list = exec(command);
             if (list.isEmpty() || isErrorAbort(list.get(0))) {
@@ -1334,10 +1334,10 @@ public class HgCommand {
             Utils.deleteRecursively(tempFolder);
         }
         String[] fileNames = list.get(0).split("\t");
-        for (int j = fileNames.length -1 ; j > 0; j--) {
-            File name = new File(repository, fileNames[j]);
+        for (int j = 0; j < fileNames.length / 2; ++j) {
+            File name = new File(repository, fileNames[2 * j]);
             if (name.equals(file)) {
-               return new File(repository, fileNames[j-1]);
+               return new File(repository, fileNames[2 * j + 1]);
             }
         }
         return null;
@@ -1771,7 +1771,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCat(File repository, File file, File outFile, OutputLogger logger) throws HgException {
-        doCat(repository, file, outFile, null, false, logger); //NOI18N
+        doCat(repository, file, outFile, null, true, logger); //NOI18N
     }
 
     /**
@@ -1826,11 +1826,20 @@ public class HgCommand {
              }
         }
         if (outFile.length() == 0 && retry) {
-            // Perhaps the file has changed its name
-            String newRevision = Integer.toString(Integer.parseInt(revision)+1);
-            File prevFile = getPreviousName(repository, file, newRevision);
-            if (prevFile != null) {
-                doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+            if (revision == null) {
+                // maybe the file is copied?
+                FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null).get(file);
+                if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0
+                        && fi.getStatus(null) != null && fi.getStatus(null).getOriginalFile() != null) {
+                    doCat(repository, fi.getStatus(null).getOriginalFile(), outFile, revision, false, logger);
+                }
+            } else {
+                // Perhaps the file has changed its name
+                String newRevision = Integer.toString(Integer.parseInt(revision)+1);
+                File prevFile = getPreviousName(repository, file, newRevision);
+                if (prevFile != null) {
+                    doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+                }
             }
         }
     }
@@ -2980,8 +2989,9 @@ public class HgCommand {
                 if (statusLine.charAt(0) == ' ') {
                     // Locally Added but Copied
                     if (file != null && (prev_info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) {
+                        File original = getFileFromStatusLine(statusLine, repository);
                         prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
-                                new FileStatus(file, true), false);
+                                new FileStatus(file, original), false);
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
                     } else if (file == null) {
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
@@ -2999,14 +3009,7 @@ public class HgCommand {
             }else{
                 if(info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
             }
-            StringBuilder sb = new StringBuilder(statusLine);
-            sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
-            if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
-                file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
-            } else {
-                file = new File(repository, sb.toString());
-            }
-            file = FileUtil.normalizeFile(file);
+            file = getFileFromStatusLine(statusLine, repository);
 
             // Handle Conflict Status
             // TODO: remove this if Hg status supports Conflict marker
@@ -3034,6 +3037,19 @@ public class HgCommand {
             Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags for {0} lasted {1}", new Object[]{dirs, System.currentTimeMillis() - startTime}); //NOI18N
         }
         return repositoryFiles;
+    }
+
+    private static File getFileFromStatusLine (String statusLine, File repository) {
+        File file;
+        StringBuilder sb = new StringBuilder(statusLine);
+        sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
+        if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
+            file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
+        } else {
+            file = new File(repository, sb.toString());
+        }
+        file = FileUtil.normalizeFile(file);
+        return file;
     }
 
     /**

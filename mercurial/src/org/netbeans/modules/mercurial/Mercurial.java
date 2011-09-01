@@ -408,7 +408,16 @@ public class Mercurial {
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+        // original file only for diffable status
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
+            if ((info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
+                // for copied files cat the original file
+                workingCopy = info.getStatus(null).getOriginalFile();
+            } else {
+                // for others noop
+                return;
+            }
+        }
 
         // We can get status returned as UptoDate instead of LocallyNew
         // because refreshing of status after creation has been scheduled
