@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -70,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Support for optimal checking of time stamps of certain files in
@@ -345,7 +347,9 @@ public final class Stamps {
             stampForCluster(user, result, newestFile, new HashSet<File>(), false, false, crc);
             sb.append(user).append('=').append(result.longValue()).append('\n');
             sb.append("crc=").append(crc.intValue()).append('\n');
-            
+            sb.append("locale=").append(Locale.getDefault()).append('\n');
+            sb.append("branding=").append(NbBundle.getBranding()).append('\n');
+                    
             File checkSum = new File(Places.getCacheDirectory(), "lastModified/all-checksum.txt");
             if (!compareAndUpdateFile(checkSum, sb.toString(), result)) {
                 discardCachesImpl(result);

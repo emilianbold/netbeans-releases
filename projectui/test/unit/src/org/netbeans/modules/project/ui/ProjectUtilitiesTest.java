@@ -143,7 +143,13 @@ public class ProjectUtilitiesTest extends NbTestCase {
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
 
         RestrictThreadCreation.permitStandard();
-        RestrictThreadCreation.permit(OpenProjectList.class.getName() + "$LoadOpenProjects.waitFinished");
+        RestrictThreadCreation.permit(OpenProjectList.class.getName() + "$LoadOpenProjects.waitFinished",
+                OpenProjectList.class.getName() + "$LoadOpenProjects.resultChanged",
+                "org.openide.text.CloneableEditorSupport.prepareDocument",
+                "org.openide.text.CloneableEditor.initialize",
+                "org.openide.util.lookup.MetaInfServicesLookup.beforeLookup",
+                "org.netbeans.modules.project.ui.OpenProjectList.close",
+                "org.netbeans.modules.project.ui.OpenProjectList.doOpenProject");
         RestrictThreadCreation.forbidNewThreads(false);
     }
     

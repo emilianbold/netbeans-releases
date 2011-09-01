@@ -457,6 +457,14 @@ final class ViewBuilder {
             localReplace = null;
         }
 
+        // Check whether firstReplace replaces all views in the paragraph view with no added views.
+        // In such case remove whole pView since it would otherwise stay empty which would be wrong.
+        if (firstReplace != null && firstReplace.isMakingViewEmpty()) {
+            // Remove whole pView
+            docReplace.index--;
+            docReplace.removeCount++;
+        }
+
         if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
             if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINEST)) {
                 // Log original docView state

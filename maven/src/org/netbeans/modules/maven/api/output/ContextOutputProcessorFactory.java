@@ -51,6 +51,6 @@ import org.netbeans.api.project.Project;
  */
 public interface ContextOutputProcessorFactory extends OutputProcessorFactory {
 
-    public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config);
+    Set<? extends OutputProcessor> createProcessorsSet(Project project, RunConfig config);
 
 }

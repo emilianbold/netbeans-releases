@@ -73,6 +73,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -153,6 +154,10 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
         }
         catch (IOException e) {
             LOG.log( Level.INFO , null , e);
+        }
+        finally {
+            EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(getResult());
+            helper.publish( getResult() );
         }
     }
     

@@ -62,11 +62,17 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
 
     @Override
     protected Task performAction (final File repository, final File[] roots, final VCSContext context) {
+        openSearch(repository, roots, Utils.getContextDisplayName(context));
+        return null;
+    }
+    
+    public static void openSearch(final File repository, final File[] roots, final String contextName) {
+        final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, roots);
-                tc.setDisplayName(NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", Utils.getContextDisplayName(context)));
+                tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
                 if (roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
@@ -74,7 +80,6 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 }
             }
         });
-        return null;
     }
 
 }

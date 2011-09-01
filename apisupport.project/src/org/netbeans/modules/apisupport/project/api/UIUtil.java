@@ -93,10 +93,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.layers.SynchronousStatus;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -118,7 +121,35 @@ import static org.netbeans.modules.apisupport.project.api.Bundle.*;
 public final class UIUtil {
     
     private UIUtil() {}
-    
+
+    /**
+     * Category to use for NBM-related templates.
+     * @see TemplateRegistration#category
+     * @see RecommendedTemplates
+     */
+    public static final String TEMPLATE_CATEGORY = "nbm-specific";
+
+    /**
+     * Folder to use for NBM-related templates.
+     * @see TemplateRegistration#folder
+     * @see PrivilegedTemplates
+     */
+    public static final String TEMPLATE_FOLDER = "NetBeansModuleDevelopment";
+
+    /**
+     * ID for a template to create a new action.
+     * @see TemplateRegistration#id
+     * @see PrivilegedTemplates
+     */
+    public static final String TEMPLATE_ACTION_ID = "newAction";
+
+    /**
+     * ID for a template to create a new action.
+     * @see TemplateRegistration#id
+     * @see PrivilegedTemplates
+     */
+    public static final String TEMPLATE_WINDOW_ID = "newWindow";
+
     public static String keyToLogicalString(KeyStroke keyStroke) {
         String keyDesc = Utilities.keyToString(keyStroke);
         int dash = keyDesc.indexOf('-');

@@ -48,9 +48,10 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import static org.netbeans.modules.maven.output.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -132,10 +133,11 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
         public void outputLineSelected(OutputEvent arg0) {
         }
         
+        @Messages("MSG_Dependency=Dependency {0} added to project''s POM.")
         public void outputLineAction(OutputEvent arg0) {
             ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                     group, artifact, version, type, scope, null,false);
-            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(DependencyAnalyzeOutputProcessor.class, "MSG_Dependency", group + ":" + artifact));
+            NotifyDescriptor nd = new NotifyDescriptor.Message(MSG_Dependency(group + ":" + artifact));
             DialogDisplayer.getDefault().notify(nd);
         }
         

@@ -72,18 +72,22 @@ import org.openide.util.NbBundle;
 public class VarDocHint extends AbstractRule {
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
+    @Override
     public String getId() {
         return "Var.Doc.Hint";//NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(VarDocHint.class, "VarDocHintDesc");//NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(VarDocHint.class, "VarDocHintDispName");//NOI18N
     }
 
+    @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         final BaseDocument doc = context.doc;
         final int caretOffset = context.caretOffset;
@@ -131,10 +135,12 @@ public class VarDocHint extends AbstractRule {
             this.vName = vName;
         }
 
+        @Override
         public String getDescription() {
             return VarDocHint.this.getDescription();
         }
 
+        @Override
         public void implement() throws Exception {
             final BaseDocument doc = context.doc;
             final int caretOffset = getOffset(doc);
@@ -160,10 +166,12 @@ public class VarDocHint extends AbstractRule {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
@@ -190,6 +198,7 @@ public class VarDocHint extends AbstractRule {
         private void scheduleShowingCompletion() {
             service.schedule(new Runnable() {
 
+                @Override
                 public void run() {
                     Completion.get().showCompletion();
                 }

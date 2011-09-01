@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 
 /**
@@ -98,7 +99,7 @@ public final class PatchStorage {
     }
 
     private static File getStorageLocation () {
-        String userDir = System.getProperty("netbeans.user"); //NOI18N
+        File userDir = Places.getUserDirectory();
         return new File(new File(new File(userDir, "config"), "Versioning"), "patch-storage"); //NOI18N
     }
 

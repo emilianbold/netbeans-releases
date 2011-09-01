@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git.ui.push;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -53,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPushResult;
@@ -72,8 +75,11 @@ import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -120,6 +126,7 @@ public class PushAction extends SingleRepositoryAction {
                     }
                     // push
                     GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, this);
+                    reportRemoteConflicts(result.getRemoteRepositoryUpdates());
                     logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
                     logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N
                     if (isCanceled()) {
@@ -290,6 +297,40 @@ public class PushAction extends SingleRepositoryAction {
                     }
                 }
                 return list;
+            }
+
+            private void reportRemoteConflicts (Map<String, GitTransportUpdate> updates) {
+                List<GitTransportUpdate> errors = new LinkedList<GitTransportUpdate>();
+                List<GitTransportUpdate> conflicts = new LinkedList<GitTransportUpdate>();
+                for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
+                    GitTransportUpdate update = e.getValue();
+                    switch (update.getResult()){
+                        case OK:
+                        case UP_TO_DATE:
+                            break;
+                        case REJECTED_NONFASTFORWARD:
+                            conflicts.add(update);
+                            break;
+                        default:
+                            errors.add(update);
+                    }
+                }
+                String message = null;
+                if (!errors.isEmpty()) {
+                    message = NbBundle.getMessage(PushAction.class, "MSG_PushAction.report.errors"); //NOI18N
+                } else if (!conflicts.isEmpty()) {
+                    message = NbBundle.getMessage(PushAction.class, "MSG_PushAction.report.conflicts"); //NOI18N
+                }
+                if (message != null) {
+                    JButton outputBtn = new JButton();
+                    Mnemonics.setLocalizedText(outputBtn, NbBundle.getMessage(PushAction.class, "CTL_PushAction.report.outputButton.text")); //NOI18N
+                    outputBtn.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PushAction.class, "CTL_PushAction.report.outputButton.desc")); //NOI18N
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(message, NbBundle.getMessage(PushAction.class, "LBL_PushAction.report.error.title"), //NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] { outputBtn, NotifyDescriptor.CANCEL_OPTION }, outputBtn));
+                    if (o == outputBtn) {
+                        getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(PushAction.this, ActionEvent.ACTION_PERFORMED, null));
+                    }
+                }
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PushAction.class, "LBL_PushAction.progressName")); //NOI18N

@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -778,7 +779,7 @@ public final class DocumentViewOp
     /*private*/ void updateDefaultFontAndColors() {
         // This should be called with mutex acquired
         // Called only with textComponent != null
-        JTextComponent textComponent = docView.getTextComponent();
+        final JTextComponent textComponent = docView.getTextComponent();
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
         Color backColor = textComponent.getBackground();
@@ -806,7 +807,11 @@ public final class DocumentViewOp
         defaultBackground = backColor;
 
         if (!isAnyStatusBit(CUSTOM_FONT) && textComponent != null) {
-            textComponent.setFont(defaultFont);
+            EventQueue.invokeLater(new Runnable() {
+                @Override public void run() {
+                    textComponent.setFont(defaultFont);
+                }
+            });
         }
         if (!isAnyStatusBit(CUSTOM_FOREGROUND) && textComponent != null) {
             textComponent.setForeground(defaultForeground);

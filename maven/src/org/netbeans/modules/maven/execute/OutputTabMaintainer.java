@@ -43,9 +43,6 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Action;
@@ -55,16 +52,28 @@ import org.openide.windows.InputOutput;
 /**
  * an output tab manager. 
  * @author mkleint
+ * @param <TabContext> custom information to store associated with a tab
  */
-public abstract class OutputTabMaintainer {
+public abstract class OutputTabMaintainer<TabContext> {
+
+    private static class AllContext<TabContext> {
+        final String name;
+        final Class<TabContext> tabContextType;
+        final TabContext tabContext;
+        AllContext(String name, Class<TabContext> tabContextType, TabContext tabContext) {
+            this.name = name;
+            this.tabContextType = tabContextType;
+            this.tabContext = tabContext;
+        }
+    }
+
+    protected abstract Class<TabContext> tabContextType();
 
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
-     * Map from tab to tab display name.
      */
-    protected static final Map<InputOutput, Collection<String>> freeTabs =
-            new WeakHashMap<InputOutput, Collection<String>>();
+    private static final Map<InputOutput,AllContext<?>> freeTabs = new WeakHashMap<InputOutput,AllContext<?>>();
     
     protected InputOutput io;
     private final String name;
@@ -78,20 +87,13 @@ public abstract class OutputTabMaintainer {
     protected final void markFreeTab() {
         synchronized (freeTabs) {
             assert io != null;
-            freeTabs.put(io, createContext());
+            freeTabs.put(io, new AllContext<TabContext>(name, tabContextType(), createContext()));
         }
     }
     
-    protected void reassignAdditionalContext(Iterator it) {
-        
-    }
+    protected abstract void reassignAdditionalContext(TabContext tabContext);
     
-    protected Collection<String> createContext() {
-        Collection<String> toRet = new ArrayList<String>();
-        toRet.add(name);
-        toRet.add(this.getClass().getName());
-        return toRet;
-    }
+    protected abstract TabContext createContext();
     
     protected Action[] createNewTabActions() {
         return new Action[0];
@@ -106,15 +108,13 @@ public abstract class OutputTabMaintainer {
     
     protected final InputOutput createInputOutput() {
         synchronized (freeTabs) {
-            for (Map.Entry<InputOutput, Collection<String>> entry : freeTabs.entrySet()) {
+            for (Map.Entry<InputOutput,AllContext<?>> entry : freeTabs.entrySet()) {
                 InputOutput free = entry.getKey();
-                Iterator<String> vals = entry.getValue().iterator();
-                String freeName = vals.next();
-                String type = vals.next();
-                if (io == null && freeName.equals(name) && type.equals(this.getClass().getName())) {
+                AllContext<?> allContext = entry.getValue();
+                if (io == null && allContext.name.equals(name) && allContext.tabContextType == tabContextType()) {
                     // Reuse it.
                     io = free;
-                    reassignAdditionalContext(vals);
+                    reassignAdditionalContext(tabContextType().cast(allContext.tabContext));
                     try {
                         io.getOut().reset();
                     } catch (IOException ex) {

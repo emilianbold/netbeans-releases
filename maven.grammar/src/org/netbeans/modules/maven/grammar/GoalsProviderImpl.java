@@ -46,27 +46,17 @@ import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import java.util.Collections;
 import java.util.HashSet;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author mkleint
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.grammar.GoalsProvider.class)
+@ServiceProvider(service=GoalsProvider.class)
 public class GoalsProviderImpl implements GoalsProvider {
     
-    /** Creates a new instance of GoalsProviderImpl */
-    public GoalsProviderImpl() {
-    }
-    
-    
-    public Set<String> getAvailableGoals() {
-        //TODO we should have a "resolved instance here with defaults injected correctly
-        @SuppressWarnings("unchecked")
-        List<String> groups = MavenSettingsSingleton.getInstance().getSettings().getPluginGroups();
+    @Override public Set<String> getAvailableGoals() {
+        List<String> groups = EmbedderFactory.getProjectEmbedder().getSettings().getPluginGroups();
         Set<String> grps = new HashSet<String>(groups);
         grps.add("org.apache.maven.plugins"); //NOI18N
         grps.add("org.codehaus.mojo"); //NOI18N

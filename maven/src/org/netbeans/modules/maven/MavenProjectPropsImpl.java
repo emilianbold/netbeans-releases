@@ -71,15 +71,15 @@ import org.w3c.dom.NodeList;
  */
 public class MavenProjectPropsImpl {
 
-    public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
-    static String ROOT = "properties"; //NOI18N
+    private static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
+    private static final String ROOT = "properties"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(MavenProjectPropsImpl.class.getName());
 
     private boolean transaction = false;
     private TreeMap<String, String> transPropsShared;
     private TreeMap<String, String> transPropsPrivate;
-    private AuxiliaryConfiguration aux;
+    private final AuxiliaryConfiguration aux;
     private boolean sharedChanged;
     private final NbMavenProjectImpl nbprji;
 
@@ -93,13 +93,10 @@ public class MavenProjectPropsImpl {
     }
 
     public String get(String key, boolean shared) {
-        synchronized (nbprji) {
-            return get(key, shared, true);
-        }
+        return get(key, shared, true);
     }
 
-    public String get(String key, boolean shared, boolean usePom) {
-        synchronized (nbprji) {
+    public synchronized String get(String key, boolean shared, boolean usePom) {
             if (transaction) {
                 if (shared && transPropsShared.containsKey(key)) {
                     return transPropsShared.get(key);
@@ -122,11 +119,9 @@ public class MavenProjectPropsImpl {
                 }
             }
             return null;
-        }
     }
 
-    public void put(String key, String value, boolean shared) {
-        synchronized (nbprji) {
+    public synchronized void put(String key, String value, boolean shared) {
             if (shared) {
                 //TODO put props to project.. shall we actually do it here?
             }
@@ -139,11 +134,9 @@ public class MavenProjectPropsImpl {
             } else {
                 writeAuxiliaryData(getAuxConf(), key, value, shared);
             }
-        }
     }
 
-    public Iterable<String> listKeys(boolean shared) {
-        synchronized (nbprji) {
+    public synchronized Iterable<String> listKeys(boolean shared) {
             TreeMap<String, String> props = readProperties(getAuxConf(), shared);
             if (shared) {
                 Properties mvnprops =  nbprji.getOriginalMavenProject().getProperties();
@@ -152,7 +145,6 @@ public class MavenProjectPropsImpl {
                 }
             }
             return props.keySet();
-        }
     }
 
     private void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value, boolean shared) {
@@ -246,23 +238,18 @@ public class MavenProjectPropsImpl {
         return props;
     }
 
-    public TreeMap<String, String> getRawProperties(boolean shared) {
-        synchronized (nbprji) {
-            return readProperties(getAuxConf(), shared);
-        }
+    public synchronized TreeMap<String, String> getRawProperties(boolean shared) {
+        return readProperties(getAuxConf(), shared);
     }
 
-    public void startTransaction() {
-        synchronized (nbprji) {
+    public synchronized void startTransaction() {
             transaction = true;
             transPropsShared = getRawProperties(true);
             transPropsPrivate = getRawProperties(false);
             sharedChanged = false;
-        }
     }
 
-    public void commitTransaction() {
-        synchronized (nbprji) {
+    public synchronized void commitTransaction() {
             transaction = false;
             if (transPropsShared == null) {
                 LOG.warning("Committing a transaction that was canceled.");
@@ -274,15 +261,12 @@ public class MavenProjectPropsImpl {
             writeAuxiliaryData(getAuxConf(), transPropsPrivate, false);
             transPropsPrivate = null;
             transPropsShared = null;
-        }
     }
 
-    public void cancelTransaction() {
-        synchronized (nbprji) {
+    public synchronized void cancelTransaction() {
             transaction = false;
             transPropsPrivate = null;
             transPropsShared = null;
-        }
     }
 
     static class Merger implements LookupMerger<AuxiliaryProperties> {

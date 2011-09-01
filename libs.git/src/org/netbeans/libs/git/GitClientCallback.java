@@ -56,6 +56,8 @@ public interface GitClientCallback {
     
     char[] getPassphrase (String uri, String prompt);
     
+    String getIdentityFile (String uri, String prompt);
+    
     Boolean askYesNoQuestion (String uri, String prompt);
 
 }

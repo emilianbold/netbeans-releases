@@ -75,6 +75,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
@@ -410,7 +411,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
         Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
-        if (prj != null && "error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId())) { //NOI18N
+        if (prj != null && NbMavenProject.isErrorPlaceholder(prj)) {
             setPaneText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "Err_CannotLoad"), false);
         }
         final Project nbProj = getLookup().lookup(Project.class);

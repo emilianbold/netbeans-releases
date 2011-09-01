@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
+import javax.swing.undo.UndoManager;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -61,6 +62,25 @@ public class PlainDocumentTest extends NbTestCase {
         super(name);
     }
     
+    public void testBehaviour() throws Exception {
+        Document doc = new PlainDocument();
+        doc.insertString(0, "test hello world", null);
+        UndoManager undo = new UndoManager();
+        doc.addUndoableEditListener(undo);
+        Position pos = doc.createPosition(2);
+        doc.remove(0, 3);
+        assert (pos.getOffset() == 0);
+        undo.undo();
+        assert (pos.getOffset() == 2);
+        
+        Position pos2 = doc.createPosition(5);
+        doc.remove(4, 2);
+        Position pos3 = doc.createPosition(4);
+        assertSame(pos2, pos3);
+        undo.undo();
+        assert (pos3.getOffset() == 5);
+    }
+
     public void testCuriosities() throws Exception {
         // Test position at offset 0 does not move after insert
         Document doc = new PlainDocument();

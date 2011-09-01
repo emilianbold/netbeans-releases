@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.localhistory.ui.actions;
 
-import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -70,9 +69,6 @@ import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,30 +90,48 @@ public class RevertDeletedAction extends NodeAction {
     
     @Override
     protected void performAction(final Node[] activatedNodes) {
-                               
+        final RevertPanel p = new RevertPanel();
+        p.tree.setCellRenderer(new DeletedListRenderer());
+        FileNodeListener l = new FileNodeListener();
+        p.tree.addMouseListener(l);
+        p.tree.addKeyListener(l);
+        
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                VCSContext ctx = VCSContext.forNodes(activatedNodes);
-                Set<File> rootSet = ctx.getRootFiles();        
-                if(rootSet == null || rootSet.size() < 1) { 
-                    return;
-                }                                        
-                DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-                for (File root : rootSet) {            
-                    PlainFileNode rfn = new PlainFileNode(root);
-                    populateNode(rfn, root, !VersioningSupport.isFlat(root));
-                    if(rfn.getChildCount() > 0) {
-                        rootNode.add(rfn);
-                    }
-                }
-                if(rootNode.getChildCount() > 0) {
-                    revert(rootNode);
-                } else {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(RevertDeletedAction.class, "MSG_NO_FILES")));
-                }
+                retrieveDeletedFiles(activatedNodes, p);
             }                                       
-        });
+        });                
+        if(!p.open()) {
+            return;
+        }
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                revert(p.getRootNode());        
+            }
+        });                
+    }
+
+    private void retrieveDeletedFiles(final Node[] activatedNodes, final RevertPanel p) {
+        VCSContext ctx = VCSContext.forNodes(activatedNodes);
+        Set<File> rootSet = ctx.getRootFiles();        
+        if(rootSet == null || rootSet.size() < 1) { 
+            return;
+        }                                        
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+        for (File root : rootSet) {            
+            PlainFileNode rfn = new PlainFileNode(root);
+            populateNode(rfn, root, !VersioningSupport.isFlat(root));
+            if(rfn.getChildCount() > 0) {
+                rootNode.add(rfn);
+            }
+        }
+        if(rootNode.getChildCount() > 0) {
+            p.setRootNode(rootNode);
+        } else {
+            p.setRootNode(null);
+        }
     }
 
     private List<StoreEntryNode> getDeletedEntries(File file) {
@@ -136,30 +150,7 @@ public class RevertDeletedAction extends NodeAction {
         return l;                
     }
     
-    private void revert(DefaultMutableTreeNode rootNode) {
-        
-        RevertPanel p = new RevertPanel();
-        p.tree.setCellRenderer(new DeletedListRenderer());
-        FileNodeListener l = new FileNodeListener();
-        p.tree.addMouseListener(l);
-        p.tree.addKeyListener(l);
-                                
-        p.setRoot(rootNode);
-        DialogDescriptor dd = 
-            new DialogDescriptor (
-                p, 
-                NbBundle.getMessage(RevertDeletedAction.class, "LBL_SELECT_FILES"), // NOI18N
-                true, 
-                DialogDescriptor.OK_CANCEL_OPTION, 
-                DialogDescriptor.OK_OPTION, 
-                null); 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-
-        if(dd.getValue() != DialogDescriptor.OK_OPTION) {
-            return;
-        }
-
+    private void revert(TreeNode rootNode) {
         List<StoreEntryNode> nodes = getSelectedNodes(rootNode);
 
         for(StoreEntryNode sen : nodes) {

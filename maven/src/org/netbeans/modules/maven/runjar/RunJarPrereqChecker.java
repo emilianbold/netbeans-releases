@@ -85,18 +85,16 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
 
     @Override public boolean checkRunConfig(RunConfig config) {
         String actionName = config.getActionName();
-        Set<Map.Entry<Object, Object>> entries = config.getProperties().entrySet();
-        for (Map.Entry<Object, Object> str : entries) {
-            if ("exec.executable".equals(str.getKey())) { //NOI18N
+        for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
+            if ("exec.executable".equals(entry.getKey())) { //NOI18N
                 // check for "java" and replace it with absolute path to
                 // project j2seplaform's java.exe
-                String val = (String) str.getValue();
-                if ("java".equals(val)) { //NOI18N
+                if ("java".equals(entry.getValue())) { //NOI18N
                     //TODO somehow use the config.getMavenProject() call rather than looking up the
                     // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                     ActiveJ2SEPlatformProvider plat = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
                     assert plat != null;
-                    FileObject fo = plat.getJavaPlatform().findTool(val);
+                    FileObject fo = plat.getJavaPlatform().findTool(entry.getValue());
                     if (fo != null) {
                         File fl = FileUtil.toFile(fo);
                         config.setProperty("exec.executable", fl.getAbsolutePath()); //NOI18N
@@ -110,9 +108,8 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 ActionProvider.COMMAND_DEBUG.equals(actionName) ||
                 "profile".equals(actionName))) {
             String mc = null;
-            for (Map.Entry<Object, Object> str : entries) {
-                String val = (String) str.getValue();
-                if (val.contains("${packageClassName}")) { //NOI18N
+            for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
+                if (entry.getValue().contains("${packageClassName}")) { //NOI18N
                     //show dialog to choose main class.
                     if (mc == null) {
                         mc = eventuallyShowDialog(config.getProject(), actionName);
@@ -120,8 +117,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                     if (mc == null) {
                         return false;
                     }
-                    val = val.replace("${packageClassName}", mc); //NOI18N
-                    config.setProperty((String) str.getKey(), val);
+                    config.setProperty(entry.getKey(), entry.getValue().replace("${packageClassName}", mc)); // NOI18N
                 }
             }
         }

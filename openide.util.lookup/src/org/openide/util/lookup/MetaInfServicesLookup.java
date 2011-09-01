@@ -51,6 +51,7 @@ import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.net.UnknownServiceException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -293,10 +294,21 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             remove = true;
                             line = line.substring(2);
                         }
-
                         Class<?> inst = null;
-
                         try {
+                            Object ldr = url.getContent(new Class[] { ClassLoader.class });
+                            if (ldr instanceof ClassLoader) {
+                                inst = Class.forName(line, false, (ClassLoader)ldr);
+                            }
+                        } catch (LinkageError err) {
+                            // go on
+                        } catch (ClassNotFoundException ex) {
+                            LOGGER.log(Level.FINER, "No class found in " + url, ex);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.FINER, "URL does not support classloader protocol " + url, ex);
+                        }
+                        
+                        if (inst == null) try {
                             // Most lines are fully-qualified class names.
                             inst = Class.forName(line, false, loader);
                         } catch (LinkageError err) {

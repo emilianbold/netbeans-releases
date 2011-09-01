@@ -56,6 +56,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -453,6 +454,100 @@ public class ProjectClassPathModifier {
             return label;
         }
 
+    }
+
+    /**
+     * Translates the new SPI into an instance of the old SPI.
+     * Useful to place in project lookup so that you need not bother implementing the old SPI.
+     * (Since there was not previously a matching API, old clients may directly look for the old SPI
+     * interface in a project's lookup.)
+     * Corresponding methods are called using the first reported source group (if any) and extensible classpath type (if any).
+     * @param pcpmi the new SPI
+     * @return a proxy fitting the old SPI
+     * @see #extenderForModifier(Project)
+     * @since 1.41
+     */
+    @SuppressWarnings("deprecation") // XXX seems ineffective against return type
+    public static org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extenderForModifier(final ProjectClassPathModifierImplementation pcpmi) {
+        return new org.netbeans.spi.java.project.classpath.ProjectClassPathExtender() {
+            @Override public boolean addLibrary(Library library) throws IOException {
+                SourceGroup[] sgs = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleSourceGroups(pcpmi);
+                if (sgs.length == 0) {
+                    return false;
+                }
+                String[] types = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleClassPathTypes(pcpmi, sgs[0]);
+                if (types.length == 0) {
+                    return false;
+                }
+                try {
+                    return ProjectClassPathModifierAccessor.INSTANCE.addLibraries(new Library[] {library}, pcpmi, sgs[0], types[0]);
+                } catch (UnsupportedOperationException x) {
+                    return false;
+                }
+            }
+            @Override public boolean addArchiveFile(FileObject archiveFile) throws IOException {
+                SourceGroup[] sgs = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleSourceGroups(pcpmi);
+                if (sgs.length == 0) {
+                    return false;
+                }
+                String[] types = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleClassPathTypes(pcpmi, sgs[0]);
+                if (types.length == 0) {
+                    return false;
+                }
+                URL r = archiveFile.getURL();
+                if (FileUtil.isArchiveFile(r)) { // ought to always be true, but Javadoc is vague
+                    r = FileUtil.getArchiveRoot(r);
+                }
+                try {
+                    return ProjectClassPathModifierAccessor.INSTANCE.addRoots(new URL[] {r}, pcpmi, sgs[0], types[0]);
+                } catch (UnsupportedOperationException x) {
+                    return false;
+                }
+            }
+            @Override public boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException {
+                SourceGroup[] sgs = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleSourceGroups(pcpmi);
+                if (sgs.length == 0) {
+                    return false;
+                }
+                String[] types = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleClassPathTypes(pcpmi, sgs[0]);
+                if (types.length == 0) {
+                    return false;
+                }
+                try {
+                    return ProjectClassPathModifierAccessor.INSTANCE.addAntArtifacts(new AntArtifact[] {artifact}, new URI[] {artifactElement}, pcpmi, sgs[0], types[0]);
+                } catch (UnsupportedOperationException x) {
+                    return false;
+                }
+            }
+
+        };
+    }
+
+    /**
+     * Similar to {@link #extenderForModifier(ProjectClassPathModifierImplementation)} but permits the new SPI to be created lazily.
+     * This is useful if the project is using {@link LookupMergerSupport#createClassPathModifierMerger} and it is thus impossible to get the final SPI instance
+     * during construction of the project's lookup.
+     * The new SPI is located at runtime on each call; if not present, false is returned from all methods.
+     * @param p a project whose lookup may contain a {@link ProjectClassPathModifierImplementation}
+     * @return an SPI equivalent
+     * @since 1.41
+     */
+    @SuppressWarnings("deprecation")
+    public static org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extenderForModifier(final Project p) {
+        return new org.netbeans.spi.java.project.classpath.ProjectClassPathExtender() {
+            @Override public boolean addLibrary(Library library) throws IOException {
+                ProjectClassPathModifierImplementation pcpmi = p.getLookup().lookup(ProjectClassPathModifierImplementation.class);
+                return pcpmi != null ? extenderForModifier(pcpmi).addLibrary(library) : false;
+            }
+            @Override public boolean addArchiveFile(FileObject archiveFile) throws IOException {
+                ProjectClassPathModifierImplementation pcpmi = p.getLookup().lookup(ProjectClassPathModifierImplementation.class);
+                return pcpmi != null ? extenderForModifier(pcpmi).addArchiveFile(archiveFile) : false;
+            }
+            @Override public boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException {
+                ProjectClassPathModifierImplementation pcpmi = p.getLookup().lookup(ProjectClassPathModifierImplementation.class);
+                return pcpmi != null ? extenderForModifier(pcpmi).addAntArtifact(artifact, artifactElement) : false;
+            }
+        };
     }
 
 }

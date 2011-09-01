@@ -101,17 +101,21 @@ public class ConnectTest extends AbstractGitTestCase {
         waitForInit(repository);
         RemoteRepositoryPanel panel = getPanel(repository);
         panel.urlComboBox.getEditor().setItem(URL);
-        panel.userTextField.setText("user");
-        panel.userPasswordField.setText("heslo");
-        panel.savePasswordCheckBox.setSelected(false);
+        UserPasswordPanel p = getPanel(panel);
+        p.userTextField.setText("user");
+        p.userPasswordField.setText("heslo");
+        p.savePasswordCheckBox.setSelected(false);
         
-        assertUris(Collections.<GitURI>emptyList());
+        assertSettings(Collections.<ConnectionSettings>emptyList());
         repository.store();
-        assertUris(Arrays.asList(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").setPass("heslo")));
+        ConnectionSettings conn = new ConnectionSettings(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user"));
+        conn.setPassword("heslo".toCharArray());
+        conn.setSaveCredentials(false);
+        assertSettings(Arrays.asList(conn));
         
         // command passes?
         client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertEquals(Arrays.asList(toPrefsString(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo"), false)), Utils.getStringList(prefs, RECENT_GURI));
+        assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertNull(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").toString()));
     }
     
@@ -120,17 +124,21 @@ public class ConnectTest extends AbstractGitTestCase {
         waitForInit(repository);
         RemoteRepositoryPanel panel = getPanel(repository);
         panel.urlComboBox.getEditor().setItem(URL);
-        panel.userTextField.setText("user");
-        panel.userPasswordField.setText("heslo");
-        panel.savePasswordCheckBox.setSelected(true);
+        UserPasswordPanel p = getPanel(panel);
+        p.userTextField.setText("user");
+        p.userPasswordField.setText("heslo");
+        p.savePasswordCheckBox.setSelected(true);
         
-        assertUris(Collections.<GitURI>emptyList());
+        assertSettings(Collections.<ConnectionSettings>emptyList());
         repository.store();
-        assertUris(Arrays.asList(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").setPass("heslo")));
+        ConnectionSettings conn = new ConnectionSettings(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user"));
+        conn.setSaveCredentials(true);
+        conn.setPassword("heslo".toCharArray());
+        assertSettings(Arrays.asList(conn));
         
         // command passes?
         client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertEquals(Arrays.asList(toPrefsString(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user"), true)), Utils.getStringList(prefs, RECENT_GURI));
+        assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertEquals("heslo", new String(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").toString())));
     }
     
@@ -139,17 +147,20 @@ public class ConnectTest extends AbstractGitTestCase {
         waitForInit(repository);
         RemoteRepositoryPanel panel = getPanel(repository);
         panel.urlComboBox.getEditor().setItem(URL);
-        panel.userTextField.setText("user2");
-        panel.userPasswordField.setText("");
-        panel.savePasswordCheckBox.setSelected(false);
+        UserPasswordPanel p = getPanel(panel);
+        p.userTextField.setText("user2");
+        p.userPasswordField.setText("");
+        p.savePasswordCheckBox.setSelected(false);
         
-        assertUris(Collections.<GitURI>emptyList());
+        assertSettings(Collections.<ConnectionSettings>emptyList());
         repository.store();
-        assertUris(Arrays.asList(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").setPass("")));
+        ConnectionSettings conn = new ConnectionSettings(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2"));
+        conn.setPassword("".toCharArray());
+        assertSettings(Arrays.asList(conn));
         
         // command passes?
         client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertEquals(Arrays.asList(toPrefsString(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo"), false)), Utils.getStringList(prefs, RECENT_GURI));
+        assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertNull(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").toString()));
     }
     
@@ -158,17 +169,21 @@ public class ConnectTest extends AbstractGitTestCase {
         waitForInit(repository);
         RemoteRepositoryPanel panel = getPanel(repository);
         panel.urlComboBox.getEditor().setItem(URL);
-        panel.userTextField.setText("user2");
-        panel.userPasswordField.setText("");
-        panel.savePasswordCheckBox.setSelected(true);
+        UserPasswordPanel p = getPanel(panel);
+        p.userTextField.setText("user2");
+        p.userPasswordField.setText("");
+        p.savePasswordCheckBox.setSelected(true);
         
-        assertUris(Collections.<GitURI>emptyList());
+        assertSettings(Collections.<ConnectionSettings>emptyList());
         repository.store();
-        assertUris(Arrays.asList(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").setPass("")));
+        ConnectionSettings conn = new ConnectionSettings(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2"));
+        conn.setPassword("".toCharArray());
+        conn.setSaveCredentials(true);
+        assertSettings(Arrays.asList(conn));
         
         // command passes?
         client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertEquals(Arrays.asList(toPrefsString(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2"), true)), Utils.getStringList(prefs, RECENT_GURI));
+        assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertEquals("", new String(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").toString())));
     }
     
@@ -199,23 +214,35 @@ public class ConnectTest extends AbstractGitTestCase {
         return (RemoteRepositoryPanel) f.get(repository);
     }
 
-    private void assertUris (List<GitURI> expectedUris) {
-        List<GitURI> uris = GitModuleConfig.getDefault().getRecentUrls();
-        assertEquals(expectedUris.size(), uris.size());
-        for (GitURI expected : expectedUris) {
+    private UserPasswordPanel getPanel (RemoteRepositoryPanel parentPanel) throws Exception {
+        return (UserPasswordPanel) parentPanel.connectionSettings.getComponent(0);
+    }
+
+    private void assertSettings (List<ConnectionSettings> expectedSettings) {
+        List<ConnectionSettings> settings = GitModuleConfig.getDefault().getRecentConnectionSettings();
+        assertEquals(expectedSettings.size(), settings.size());
+        for (ConnectionSettings expected : expectedSettings) {
             boolean ok = false;
-            for (ListIterator<GitURI> it = uris.listIterator(); it.hasNext(); ) {
-                GitURI uri = it.next();
-                if (expected.setUser(null).setPass(null).toString().equals(uri.setUser(null).setPass(null).toString())
-                        && (expected.getUser() == null && uri.getUser() == null || expected.getUser() != null && expected.getUser().equals(uri.getUser()))
-                        && (expected.getPass() == null && uri.getPass() == null || expected.getPass() != null && expected.getPass().equals(uri.getPass()))) {
+            for (ListIterator<ConnectionSettings> it = settings.listIterator(); it.hasNext(); ) {
+                ConnectionSettings sett = it.next();
+                String expectedUriString = expected.getUri().setUser(null).setPass(null).toString();
+                String uriString = sett.getUri().setUser(null).setPass(null).toString();
+                String expectedUser = expected.getUser();
+                String user = sett.getUser();
+                String expectedPassword = expected.getPassword() == null ? "" : new String(expected.getPassword());
+                String expectedPasshrase = expected.getPassphrase() == null ? "" : new String(expected.getPassphrase());
+                String password = sett.getPassword() == null ? "" : new String(sett.getPassword());
+                String passhrase = sett.getPassphrase() == null ? "" : new String(sett.getPassphrase());
+                
+                if (expectedUriString.equals(uriString) && user.equals(expectedUser) && password.equals(expectedPassword) && passhrase.equals(expectedPasshrase)
+                        && expected.isPrivateKeyAuth() == sett.isPrivateKeyAuth() && expected.isSaveCredentials() == sett.isSaveCredentials()) {
                     it.remove();
                     ok = true;
                     break;
                 }
             }
             if (!ok) {
-                fail(expected.toString());
+                fail(expected.getUri().toString());
             }
         }
     }
@@ -241,13 +268,17 @@ public class ConnectTest extends AbstractGitTestCase {
         }
     }
     
-    private String toPrefsString (GitURI uri, boolean saveCreds) {
+    private String toPrefsString (ConnectionSettings conn) {
         StringBuilder sb = new StringBuilder();
-        sb.append(uri.setUser(null).setPass(null).toString());
+        sb.append(conn.getUri().setUser(null).toString());
         sb.append(DELIMITER);
-        sb.append(saveCreds ? uri.getUser() : ""); //NOI18N
+        sb.append(conn.getUser());
         sb.append(DELIMITER);
-        sb.append(saveCreds);
+        sb.append(conn.isSaveCredentials() ? "1" : "0"); //NOI18N
+        sb.append(DELIMITER);
+        sb.append(conn.isPrivateKeyAuth() ? "1" : "0"); //NOI18N
+        sb.append(DELIMITER);
+        sb.append(conn.getIdentityFile());
         return sb.toString();
     }
 }
