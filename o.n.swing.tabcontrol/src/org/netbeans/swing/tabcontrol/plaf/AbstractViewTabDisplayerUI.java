@@ -722,11 +722,16 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
          * @return True if the point is in the control buttons panel.
          */
         public boolean inControlButtonsRect( Point p ) {
+            boolean res = false;
             if( null != controlButtons ) {
                 Point p2 = SwingUtilities.convertPoint(displayer, p, controlButtons);
-                return controlButtons.contains(p2);
+                res |= controlButtons.contains(p2);
             }
-            return false;
+            if( null != btnMinimizeMode ) {
+                Point p2 = SwingUtilities.convertPoint(displayer, p, btnMinimizeMode);
+                res |= btnMinimizeMode.contains(p2);
+            }
+            return res;
         }
 
         @Override
