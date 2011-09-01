@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
 import javax.swing.JComponent;
+import org.netbeans.modules.cloud.oracle.ui.CustomizerInstanceGeneral;
 import org.netbeans.modules.cloud.oracle.ui.OracleJ2EEInstanceNode;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -79,7 +80,7 @@ public class OracleJ2EEServerInstanceImplementation implements ServerInstanceImp
 
     @Override
     public JComponent getCustomizer() {
-        return null;
+        return new CustomizerInstanceGeneral(aij);
     }
 
     @Override

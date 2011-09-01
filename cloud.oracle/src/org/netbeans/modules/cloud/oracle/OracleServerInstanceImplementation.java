@@ -45,6 +45,7 @@ import java.awt.event.ComponentListener;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cloud.oracle.ui.CustomizerCloudGeneral;
 import org.netbeans.modules.cloud.oracle.ui.OracleInstanceNode;
 import org.netbeans.modules.cloud.oracle.ui.OracleWizardComponent;
 import org.netbeans.spi.server.ServerInstanceImplementation;
@@ -83,37 +84,38 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 
     @Override
     public JComponent getCustomizer() {
-        final OracleWizardComponent panel = new OracleWizardComponent(ai);
-        panel.attachSingleListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (!panel.getService().equals(ai.getService())) {
-                    // this field is part of URL (that is server unique key) of J2EE server
-                    // corresponding to this cloud and therefore value cannot be modified
-                }
-                if (!panel.getSystem().equals(ai.getSystem())) {
-                    // see previous comment
-                }
-                if (!panel.getPassword().equals(ai.getPassword())) {
-                    ai.setPassword(panel.getPassword());
-                }
-                if (!panel.getUserName().equals(ai.getUser())) {
-                    ai.setUser(panel.getUserName());
-                }
-                if (!panel.getAdminUrl().equals(ai.getAdminURL())) {
-                    ai.setAdminURL(panel.getAdminUrl());
-                }
-                if (!panel.getInstanceUrl().equals(ai.getInstanceURL())) {
-                    ai.setInstanceURL(panel.getInstanceUrl());
-                }
-                if (!panel.getCloudUrl().equals(ai.getCloudURL())) {
-                    ai.setCloudURL(panel.getCloudUrl());
-                }
-                OracleInstanceManager.getDefault().update(ai);
-            }
-        });
-        return panel;
+        return new CustomizerCloudGeneral(ai);
+//        final OracleWizardComponent panel = new OracleWizardComponent(ai);
+//        panel.attachSingleListener(new ChangeListener() {
+//
+//            @Override
+//            public void stateChanged(ChangeEvent e) {
+//                if (!panel.getService().equals(ai.getService())) {
+//                    // this field is part of URL (that is server unique key) of J2EE server
+//                    // corresponding to this cloud and therefore value cannot be modified
+//                }
+//                if (!panel.getSystem().equals(ai.getSystem())) {
+//                    // see previous comment
+//                }
+//                if (!panel.getPassword().equals(ai.getPassword())) {
+//                    ai.setPassword(panel.getPassword());
+//                }
+//                if (!panel.getUserName().equals(ai.getUser())) {
+//                    ai.setUser(panel.getUserName());
+//                }
+//                if (!panel.getAdminUrl().equals(ai.getAdminURL())) {
+//                    ai.setAdminURL(panel.getAdminUrl());
+//                }
+//                if (!panel.getInstanceUrl().equals(ai.getInstanceURL())) {
+//                    ai.setInstanceURL(panel.getInstanceUrl());
+//                }
+//                if (!panel.getCloudUrl().equals(ai.getCloudURL())) {
+//                    ai.setCloudURL(panel.getCloudUrl());
+//                }
+//                OracleInstanceManager.getDefault().update(ai);
+//            }
+//        });
+//        return panel;
     }
 
     @Override

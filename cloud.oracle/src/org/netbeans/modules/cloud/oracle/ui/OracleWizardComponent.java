@@ -49,7 +49,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -65,7 +64,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
     private static final boolean SHOW_CLOUD_URLS = true; // XXXXXX  //Boolean.getBoolean("oracle.cloud.dev");
     
     /** Creates new form OracleWizardComponent */
-    public OracleWizardComponent(OracleInstance oi) {
+    public OracleWizardComponent() {
         initComponents();
         
         // no SDK for now:
@@ -90,21 +89,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         }
         
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
-        if (oi != null) {
-            adminURLTextField.setText(oi.getAdminURL());
-            instanceURLTextField.setText(oi.getInstanceURL());
-            cloudURLTextField.setText(oi.getCloudURL());
-            passwordField.setText(oi.getPassword());
-            userNameTextField.setText(oi.getUser());
-            tenantIdTextField.setText(oi.getSystem());
-            tenantIdTextField.setEditable(false);
-            serviceNameTextField.setText(oi.getService());
-            serviceNameTextField.setEditable(false);
-        } else {
-            if (!SHOW_CLOUD_URLS) {
-                adminURLTextField.setText(ADMIN_URL); // NOI18N
-                cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
-            }
+
+        if (!SHOW_CLOUD_URLS) {
+            adminURLTextField.setText(ADMIN_URL); // NOI18N
+            cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
         }
         adminURLTextField.getDocument().addDocumentListener(this);
         instanceURLTextField.getDocument().addDocumentListener(this);

@@ -90,7 +90,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new OracleWizardComponent(null);
+            component = new OracleWizardComponent();
             component.attachSingleListener(this);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, OracleWizardIterator.getPanelContentData());
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));

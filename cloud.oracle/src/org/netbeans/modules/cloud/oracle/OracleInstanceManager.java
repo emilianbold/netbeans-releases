@@ -49,7 +49,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.util.ChangeSupport;
 
 /**

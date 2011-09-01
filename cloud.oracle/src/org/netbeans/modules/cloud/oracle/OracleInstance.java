@@ -270,7 +270,9 @@ public class OracleInstance {
         synchronized (this) {
             instance = j2eeInstance;
         }
-        instance.deregister();
+        if (instance != null) {
+            instance.deregister();
+        }
         String localId = getOnPremiseServerInstanceId();
         if (localId != null) {
             InstanceProperties.removeInstance(localId);
