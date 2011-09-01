@@ -42,15 +42,17 @@
 package org.netbeans.modules.java.preprocessorbridge.spi;
 
 import com.sun.source.tree.CompilationUnitTree;
+import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
  *
  * JavaCustomIndexer plugin called during scan on fully attributed trees.
- * @since 1.21
+ * @since 1.22
  * @author Tomas Zezula
  */
 public interface JavaIndexerPlugin {
@@ -59,16 +61,16 @@ public interface JavaIndexerPlugin {
     /**
      * Process given attributed compilation unit.
      * @param toProcess the compilation unit to process
-     * @param relativePath the relative path of the source in the source root
+     * @param indexable the file being indexed
      * @param services a {@link Lookup} containing javac services (Elements, Types, Trees)
      */
-    public void process (@NonNull CompilationUnitTree toProcess, @NonNull String relativePath, @NonNull Lookup services);
+    public void process (@NonNull CompilationUnitTree toProcess, @NonNull Indexable indexable, @NonNull Lookup services);
 
     /**
      * Handles deletion of given source file.
-     * @param relativePath the relative path of the deleted source file inside the source root
+     * @param indexable the deleted file
      */
-    public void delete (@NonNull String relativePath);
+    public void delete (@NonNull Indexable indexable);
 
     /**
      * Called when the {@link JavaIndexerPlugin} is not more used.
@@ -83,12 +85,13 @@ public interface JavaIndexerPlugin {
     public interface Factory {
         /**
          * Creates a new instance of {@link JavaIndexerPlugin}.
-         * @param root the source root for which the plugin is created
+         * @param root the source root for which the plugin is created,
+         * may not exist (if the root was deleted).
          * @param cacheFolder used to store metadata
          * @return the new instance of {@link JavaIndexerPlugin} or null
          * if the factory does not handle given source root
          */
         @CheckForNull
-        JavaIndexerPlugin create(@NonNull FileObject root, @NonNull FileObject cacheFolder);
+        JavaIndexerPlugin create(@NonNull URL root, @NonNull FileObject cacheFolder);
     }
 }

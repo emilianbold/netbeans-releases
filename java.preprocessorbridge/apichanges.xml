@@ -78,8 +78,8 @@ made subject to such option by the copyright holder.
         <change id="JavaIndexerPlugin">
             <api name="general"/>
             <summary>Added a possibility to plug into Java source indexing</summary>
-            <version major="1" minor="21"/>
-            <date day="30" month="8" year="2011"/>
+            <version major="1" minor="22"/>
+            <date day="31" month="8" year="2011"/>
             <author login="tzezula"/>
             <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
             <description>
