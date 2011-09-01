@@ -8,7 +8,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-apache-commons-logging.jar</runtime-relative-path>
-                <binary-origin>external/org.apache.commons.logging-1.1.0.jar</binary-origin>
+                <binary-origin>external/commons-logging-1.1.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

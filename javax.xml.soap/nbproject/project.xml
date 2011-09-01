@@ -9,7 +9,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>javax-xml-soap.jar</runtime-relative-path>
-                <binary-origin>external/javax.xml.soap-1.2.0.jar</binary-origin>
+                <binary-origin>external/saaj-1.2.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

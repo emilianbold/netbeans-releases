@@ -14,7 +14,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>javax-xml-rpc.jar</runtime-relative-path>
-                <binary-origin>external/javax.xml.rpc-1.1.0.jar</binary-origin>
+                <binary-origin>external/jaxrpc-1.1.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

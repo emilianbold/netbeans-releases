@@ -8,7 +8,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-apache-ws-commons-util.jar</runtime-relative-path>
-                <binary-origin>external/org.apache.ws.commons.util-1.0.1.jar</binary-origin>
+                <binary-origin>external/ws-commons-util-1.0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -9,7 +9,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>javax-wsdl.jar</runtime-relative-path>
-                <binary-origin>external/javax.wsdl-1.6.2.jar</binary-origin>
+                <binary-origin>external/wsdl4j-1.6.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

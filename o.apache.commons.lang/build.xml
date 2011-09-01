@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="o.apache.commons.lang" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/commons-lang-2.4.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.apache.commons.lang"/>
+                <attribute name="Bundle-Version" value="2.4.0"/>
+                <attribute name="Export-Package" value="org.apache.commons.lang;version=&quot;2.4.0&quot;,org.apache.commons.lang.builder;version=&quot;2.4.0&quot;,org.apache.commons.lang.enum;version=&quot;2.4.0&quot;,org.apache.commons.lang.enums;version=&quot;2.4.0&quot;,org.apache.commons.lang.exception;version=&quot;2.4.0&quot;,org.apache.commons.lang.math;version=&quot;2.4.0&quot;,org.apache.commons.lang.mutable;version=&quot;2.4.0&quot;,org.apache.commons.lang.text;version=&quot;2.4.0&quot;,org.apache.commons.lang.time;version=&quot;2.4.0&quot;"/>
+            </manifest>
+        </jar>
+    </target>
 </project>
