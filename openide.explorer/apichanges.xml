@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
         <author login="tpavek"/>
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
         <description>
-            Added <a href="@TOP@/org/openide/explorer/propertysheet/PropertyEnv.html#create(java.beans.FeatureDescriptor, java.lang.Object[])">PropertyEnv.create</a>
+            Added <a href="@TOP@/org/openide/explorer/propertysheet/PropertyEnv.html#create(java.beans.FeatureDescriptor,%20java.lang.Object...)">PropertyEnv.create</a>
             method for creating an instance of PropertyEnv for given property and beans (nodes).
             To be used when there is a need to initialize an ExPropertyEditor instance independently from
             PropertySheet or PropertyPanel infrastructure (e.g. before the property appears in UI).
