@@ -158,11 +158,10 @@ public final class Nodes {
         @Override
         protected Node copyNode(final Node originalNode) {
             FileObject file = originalNode.getLookup().lookup(FileObject.class);
-            Node nodeCopy = super.copyNode(originalNode);
             if (file.isFolder()) {
-                return new DummyNode(nodeCopy, new DummyChildren(nodeCopy, filter));
+                return new DummyNode(originalNode, new DummyChildren(originalNode, filter));
             }
-            return new DummyNode(nodeCopy);
+            return new DummyNode(originalNode);
         }
     }
 }
