@@ -173,6 +173,9 @@ public class WebBeansActionHelper {
             return false;
         }
         Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            return false;
+        }
         boolean hasJsr330 = hasJsr330(project);
         if ( !hasJsr330 ){
             return false;
