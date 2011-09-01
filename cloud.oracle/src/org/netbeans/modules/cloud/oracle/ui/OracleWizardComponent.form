@@ -32,7 +32,7 @@
                   <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="sdkLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="instanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cloudLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -41,7 +41,7 @@
                   <Component id="cloudURLTextField" alignment="0" pref="184" max="32767" attributes="0"/>
                   <Component id="instanceURLTextField" alignment="0" pref="184" max="32767" attributes="0"/>
                   <Component id="adminURLTextField" alignment="0" pref="184" max="32767" attributes="0"/>
-                  <Component id="jComboBox1" alignment="0" pref="184" max="32767" attributes="0"/>
+                  <Component id="sdkComboBox" alignment="0" pref="184" max="32767" attributes="0"/>
                   <Component id="passwordField" alignment="0" pref="184" max="32767" attributes="0"/>
                   <Component id="userNameTextField" alignment="0" pref="184" max="32767" attributes="0"/>
                   <Component id="tenantIdTextField" alignment="0" pref="184" max="32767" attributes="0"/>
@@ -78,8 +78,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jComboBox1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sdkComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sdkLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -135,14 +135,14 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel6">
+    <Component class="javax.swing.JLabel" name="sdkLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.jLabel6.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.sdkLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="jComboBox1">
+    <Component class="javax.swing.JComboBox" name="sdkComboBox">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="3">

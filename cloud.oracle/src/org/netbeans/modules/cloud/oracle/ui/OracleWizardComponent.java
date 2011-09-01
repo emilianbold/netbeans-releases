@@ -68,6 +68,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
     public OracleWizardComponent(OracleInstance oi) {
         initComponents();
         
+        // no SDK for now:
+        sdkLabel.setVisible(false);
+        sdkComboBox.setVisible(false);
+        
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
         instanceLabel.setVisible(SHOW_CLOUD_URLS);
@@ -132,8 +136,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         userNameTextField = new javax.swing.JTextField();
         passwordField = new javax.swing.JPasswordField();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        sdkLabel = new javax.swing.JLabel();
+        sdkComboBox = new javax.swing.JComboBox();
         serviceNameTextField = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         tenantIdTextField = new javax.swing.JTextField();
@@ -153,9 +157,9 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel5.text")); // NOI18N
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel6.text")); // NOI18N
+        sdkLabel.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkLabel.text")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "TBD", "Version 1.0 [Bundled with IDE]", "Add a new one ..." }));
+        sdkComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "TBD", "Version 1.0 [Bundled with IDE]", "Add a new one ..." }));
 
         jLabel7.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel7.text")); // NOI18N
 
@@ -183,7 +187,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel7)
                     .addComponent(jLabel2)
                     .addComponent(jLabel4)
-                    .addComponent(jLabel6)
+                    .addComponent(sdkLabel)
                     .addComponent(instanceLabel)
                     .addComponent(cloudLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -191,7 +195,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                     .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                     .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(jComboBox1, 0, 184, Short.MAX_VALUE)
+                    .addComponent(sdkComboBox, 0, 184, Short.MAX_VALUE)
                     .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                     .addComponent(tenantIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
@@ -221,8 +225,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
+                    .addComponent(sdkComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sdkLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminLabel)
@@ -253,15 +257,15 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JTextField cloudURLTextField;
     private javax.swing.JLabel instanceLabel;
     private javax.swing.JTextField instanceURLTextField;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPasswordField passwordField;
+    private javax.swing.JComboBox sdkComboBox;
+    private javax.swing.JLabel sdkLabel;
     private javax.swing.JTextField serviceNameTextField;
     private javax.swing.JTextField tenantIdTextField;
     private javax.swing.JTextField userNameTextField;
