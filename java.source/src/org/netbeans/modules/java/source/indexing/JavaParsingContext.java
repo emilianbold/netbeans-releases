@@ -46,6 +46,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -96,21 +98,23 @@ class JavaParsingContext {
     
     JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
         final FileObject root = context.getRoot();
+        final URL rootURL = context.getRootURI();
         final boolean rootNotNeeded = allowNonExistentRoot && root == null;
         cpInfo = rootNotNeeded ? null : ClasspathInfo.create(root);
         sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(root);
         filter = rootNotNeeded ? null : JavaFileFilterQuery.getFilter(root);
         encoding = rootNotNeeded ? null : FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+        uq = ClassIndexManager.getDefault().createUsagesQuery(rootURL, true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
-        fqn2Files = FQN2Files.forRoot(context.getRootURI());
-        pluginsCache = createPlugins(root, context.getIndexFolder());
+        fqn2Files = FQN2Files.forRoot(rootURL);
+        pluginsCache = createPlugins(rootURL, context.getIndexFolder());
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
         final FileObject root = context.getRoot();
+        final URL rootURL = context.getRootURI();
         filter = JavaFileFilterQuery.getFilter(root);
         cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
@@ -118,11 +122,11 @@ class JavaParsingContext {
         registerVirtualSources(cpInfo, virtualSources);
         sourceLevel = SourceLevelQuery.getSourceLevel(root);
         encoding = FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+        uq = ClassIndexManager.getDefault().createUsagesQuery(rootURL, true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
-        fqn2Files = FQN2Files.forRoot(context.getRootURI());
-        pluginsCache = createPlugins(root, context.getIndexFolder());
+        fqn2Files = FQN2Files.forRoot(rootURL);
+        pluginsCache = createPlugins(rootURL, context.getIndexFolder());
     }
 
     void analyze(
@@ -136,19 +140,19 @@ class JavaParsingContext {
         final Lookup pluginServices = getPluginServices(jt);
         for (CompilationUnitTree cu : trees) {
             for (JavaIndexerPlugin plugin : getPlugins()) {
-                plugin.process(cu, active.indexable.getRelativePath(), pluginServices);
+                plugin.process(cu, active.indexable, pluginServices);
             }
         }
     }
 
     void delete(
-            @NonNull final String relPath,
+            @NonNull final Indexable indexable,
             @NonNull final List<Pair<String,String>> toDelete) throws IOException {
         for (Pair<String,String> pair : toDelete) {
             sa.delete(pair);
         }
         for (JavaIndexerPlugin plugin : getPlugins()) {
-            plugin.delete(relPath);
+            plugin.delete(indexable);
         }
     }
 
@@ -164,7 +168,7 @@ class JavaParsingContext {
     }
 
     private static Iterable<? extends JavaIndexerPlugin> createPlugins(
-            @NonNull final FileObject root,
+            @NonNull final URL root,
             @NonNull final FileObject cacheFolder) {
         final List<JavaIndexerPlugin> plugins = new ArrayList<JavaIndexerPlugin>();
         for (JavaIndexerPlugin.Factory factory : MimeLookup.getLookup(

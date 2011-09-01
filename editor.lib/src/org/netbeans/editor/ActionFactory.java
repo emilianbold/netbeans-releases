@@ -1225,7 +1225,7 @@ public class ActionFactory {
 
         public ToggleRectangularSelectionAction() {
             super(EditorActionNames.toggleRectangularSelection);
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_rectangular_selection_16.png", false)); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/rect_select_16x16.png", false)); //NOI18N
             putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         }
         

@@ -110,7 +110,7 @@ public class IntroduceParameterUI implements RefactoringUI {
     }
     
     public String getName() {
-        return NbBundle.getMessage(ChangeParametersUI.class, "LBL_IntroduceParameter");
+        return NbBundle.getMessage(IntroduceParameterUI.class, "LBL_IntroduceParameter");
     }
     
     public Problem checkParameters() {
@@ -126,6 +126,6 @@ public class IntroduceParameterUI implements RefactoringUI {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx(IntroduceParameterUI.class);
     }
 }
