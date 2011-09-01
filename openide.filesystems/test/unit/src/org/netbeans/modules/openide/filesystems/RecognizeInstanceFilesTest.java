@@ -250,4 +250,35 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest {
         assertNull(FileUtil.getConfigFile("nonexistent"));
     }
 
+    public interface Doable extends Runnable {}
+    public static final class Do implements Doable {
+        @Override public void run() {}
+        @Override public String toString() {
+            return "Do";
+        }
+    }
+    public void testInstanceOf() throws Exception {
+        FileObject i1 = FileUtil.createData(FileUtil.getConfigRoot(), "d/one.instance");
+        i1.setAttribute("instanceOf", Runnable.class.getName());
+        i1.setAttribute("instanceClass", Do.class.getName());
+        FileObject i2 = FileUtil.createData(FileUtil.getConfigRoot(), "d/two.instance");
+        i2.setAttribute("instanceOf", Runnable.class.getName() + ',' + Doable.class.getName());
+        i2.setAttribute("instanceClass", Do.class.getName());
+        FileObject i3 = FileUtil.createData(FileUtil.getConfigRoot(), "d/three.instance");
+        i3.setAttribute("instanceOf", Runnable.class.getName() + ',' + Doable.class.getName() + ',' + Do.class.getName());
+        i3.setAttribute("instanceClass", Do.class.getName());
+        assertEquals("[Do]", Lookups.forPath("d").lookupAll(Do.class).toString());
+        assertEquals("[Do, Do]", Lookups.forPath("d").lookupAll(Doable.class).toString());
+        assertEquals("[Do, Do, Do]", Lookups.forPath("d").lookupAll(Runnable.class).toString());
+    }
+
+    public void testAvoidStackTracesForMissingInstanceOf() throws Exception {
+        FileObject i = FileUtil.createData(FileUtil.getConfigRoot(), "d/meaningless-name.instance");
+        i.setAttribute("instanceOf", "nonexistent.Interface");
+        i.setAttribute("instanceClass", "nonexistent.Class");
+        CharSequence log = Log.enable(RecognizeInstanceFiles.class.getName(), Level.INFO);
+        assertEquals(null, Lookups.forPath("d").lookup(Runnable.class));
+        assertEquals("", log.toString());
+    }
+
 }

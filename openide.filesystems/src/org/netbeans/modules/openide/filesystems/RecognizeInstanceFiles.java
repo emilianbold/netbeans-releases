@@ -215,7 +215,22 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             if (r != null) {
                 return c.isInstance(r);
             } else {
-                return c.isAssignableFrom(getType());
+                String instanceOf = (String) fo.getAttribute("instanceOf");
+                if (instanceOf != null) {
+                    for (String xface : instanceOf.split(",")) {
+                        try {
+                            if (c.isAssignableFrom(Class.forName(xface, false, loader()))) {
+                                return true;
+                            }
+                        } catch (ClassNotFoundException x) {
+                            // Not necessarily a problem, e.g. from org-netbeans-lib-commons_net-antlibrary.instance
+                            LOG.log(Level.FINE, "could not load " + xface + " for " + fo.getPath(), x);
+                        }
+                    }
+                    return false;
+                } else {
+                    return c.isAssignableFrom(getType());
+                }
             }
         }
 
@@ -258,12 +273,8 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
 
         private static Class<? extends Object> findTypeFor(FileObject f) {
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = FOItem.class.getClassLoader();
-            }
             try {
-                return Class.forName(getClassName(f), false, l);
+                return Class.forName(getClassName(f), false, loader());
             } catch (ClassNotFoundException ex) {
                 LOG.log(Level.INFO, ex.getMessage(), ex);
                 return Object.class;
@@ -348,6 +359,14 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             hash = 11 * hash + (this.fo != null ? this.fo.hashCode()
                                                 : 0);
             return hash;
+        }
+
+        private static ClassLoader loader() {
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = FOItem.class.getClassLoader();
+            }
+            return l;
         }
 
     } // end of FOItem
