@@ -86,7 +86,7 @@ public class Signature {
                 try {
                     return Integer.parseInt(item);
                 } catch (NumberFormatException ex) {
-                    LOGGER.log(Level.FINE, "Can't parse item '{0}' as integer.", item);
+                    LOGGER.log(Level.WARNING, "Can't parse item '{0}' as integer.", item);
                     return -1;
                 }
             } else {
