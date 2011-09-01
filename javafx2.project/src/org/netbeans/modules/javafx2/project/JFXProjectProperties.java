@@ -354,6 +354,9 @@ public final class JFXProjectProperties {
             
             // Packaging
             binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS);
+            if(evaluator.getProperty(JAVAFX_BINARY_ENCODE_CSS) == null) {
+                binaryEncodeCSS.setSelected(true); // default is true
+            }
 
             // Deployment
             allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE);
