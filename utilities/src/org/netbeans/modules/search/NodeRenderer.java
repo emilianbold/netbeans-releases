@@ -159,11 +159,15 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
                 final Node node = dataObj.getNodeDelegate();
                 FileObject fileFolder = dataObj.getPrimaryFile().getParent();
                 String folderPath = FileUtil.getFileDisplayName(fileFolder);
+                int matchesCount = matchingObj.getMatchesCount();
                 try {
                     text = matchingObj.getHtmlDisplayName();
                     isHtml = true;
                     if (text == null) {
                         text = XMLUtil.toElementContent(node.getDisplayName());
+                    }
+                    if (matchesCount > 0) {
+                        text = text + getMatchesCountString(matchesCount);
                     }
                     text = text
                        + " <font color='!" + getFilePathColor() + "'>"  //NOI18N
@@ -249,15 +253,38 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
         if (filePathColorName == null) {
             UIDefaults uiDefaults = UIManager.getDefaults();
             if (uiDefaults.getColor("Tree.selectionBackground").equals( //NOI18N
-                    uiDefaults.getColor("controlShadow"))) {            //NOI18N
+                    uiDefaults.getColor("controlDkShadow"))) {            //NOI18N
                 filePathColorName = "Tree.selectionBorderColor";        //NOI18N
             } else {
-                filePathColorName = "controlShadow";                    //NOI18N
+                filePathColorName = "controlDkShadow";                    //NOI18N
             }
         }
         return filePathColorName;
     }
     
+    /** Color of "count of matches" string */
+    private String matchesCountRGB = null;
+
+    /** Get HTML formatted string for count of matches */
+    private String getMatchesCountString(int matchesCount)
+            throws CharConversionException {
+
+        if (matchesCountRGB == null) {
+            Color color = UIManager.getDefaults().getColor("controlDkShadow");
+            if (color == null || Color.WHITE.equals(color)) {
+                color = Color.DARK_GRAY;
+            }
+            color = color.darker();
+            String rgb = Integer.toHexString(color.getRGB());
+            matchesCountRGB = rgb.substring(2, rgb.length()).toUpperCase();
+        }
+        
+        String msg = NbBundle.getMessage(NodeRenderer.class,
+                "TEXT_NUM_MATCHES_IN_NODE", matchesCount);
+        String xmlMsg = XMLUtil.toElementContent(msg);
+        return "<font color='#" + matchesCountRGB + "'> " + xmlMsg + " </font>";
+    }
+
     @Override
     public void paint(Graphics g) {
         Dimension checkDim = checkBox.getSize();

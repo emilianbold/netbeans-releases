@@ -179,7 +179,10 @@ METHOD     Recommendations()               [PUBLIC]   html.php
 METHOD     Signatures()                    [PUBLIC]   html.php
 METHOD     WorkAdjustment()                [PUBLIC]   html.php
 METHOD     WorkHistory()                   [PUBLIC]   html.php
+METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
+METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
 METHOD     bar()                           [PUBLIC]   issue141999.php
+METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
 METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
 METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
@@ -203,6 +206,8 @@ METHOD     fncH()                          [PUBLIC]   typeinference.php
 METHOD     fncI()                          [PUBLIC]   typeinference.php
 METHOD     fnc_b()                         [PUBLIC]   insideClass2.php
 METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php
+METHOD     foo($x = -5)                    [PUBLIC]   issue200178.php
+METHOD     foo()                           [PUBLIC]   issue200178.php
 METHOD     foo_TestCCOnMethods()           [PUBLIC]   test_cc_on_methods.php
 METHOD     getBook()                       [PUBLIC]   mixedtypes.php
 METHOD     getBook()                       [PUBLIC]   mixedtypes_1.php

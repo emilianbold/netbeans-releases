@@ -44,11 +44,15 @@
 package org.netbeans.qa.form.issues;
 
 import java.io.IOException;
+import java.awt.Point;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -76,21 +80,51 @@ public class CutAndPasteTest extends ExtJellyTestCase {
 
     
     /** Cut and paste test. */
-    public void testCutAndPaste() throws IOException {
+    public void testCutAndPaste() throws IOException, InterruptedException {
         openDataProjects(_testProjectName);
         String frameName = createJFrameFile();
-        FormDesignerOperator designer = new FormDesignerOperator(frameName);
+       FormDesignerOperator designer = new FormDesignerOperator(frameName);
+        designer.source();
+        designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        
-        Node actNode = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
-        
+        //designer.source();
+        //designer.design();
+        Thread.sleep(2000);
+        Node actNode = new Node(inspector.treeComponents(), "[JFrame]"); // NOI18N
+        Thread.sleep(2000);
+        //designer.source();
+        //designer.design();
+        //actNode.select();
+        //Thread.sleep(10000);
+        actNode.expand();
+        //actNode.callPopup();
+        runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
+        Thread.sleep(2000);
         runPopupOverNode("Add From Palette|Swing Containers|Panel", actNode); // NOI18N
-        runPopupOverNode("Add From Palette|Swing Controls|Button", actNode); // NOI18N
+        //runPopupOverNode("Add From Palette|Swing Controls|Button", actNode); // NOI18N
+        //designer.source(); 
+        //designer.design();
+        inspector = new ComponentInspectorOperator();
         
         actNode = new Node(inspector.treeComponents(), "[JFrame]|jButton1 [JButton]"); // NOI18N
-        runPopupOverNode("Cut", actNode); // NOI18N
+        Thread.sleep(2000);
+        new FormDesignerOperator(null).makeComponentVisible();
+        JTreeOperator treeOper = inspector.getTree();
+        // do not use Node.performPopup() because it changes context of navigator
+        Node node = actNode;
+        TreePath treePath = node.getTreePath();
+        treeOper.expandPath(treePath.getParentPath());
+        treeOper.scrollToPath(treePath);
+        Point point = treeOper.getPointToClick(treePath);
+        new JPopupMenuOperator(JPopupMenuOperator.callPopup(treeOper, (int) point.getX(), (int) point.getY(), ComponentInspectorOperator.getPopupMouseButton())).pushMenu("Cut");
+        
+        inspector = new ComponentInspectorOperator();
+        
+        //inspector.restore();
         
         actNode = new Node(inspector.treeComponents(), "[JFrame]|jPanel1 [JPanel]"); // NOI18N
+        Thread.sleep(2000);
+        actNode.expand();
         runPopupOverNode("Paste", actNode); // NOI18N
         
         findInCode("javax.swing.JButton jButton1", designer); // NOI18N

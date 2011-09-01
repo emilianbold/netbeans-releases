@@ -175,6 +175,7 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals(0, list.newCount);
     }
 
+    @RandomlyFails // locally, in 2nd check of f1_1_open
     public void testClose () throws Exception {
         testOpen ();
         

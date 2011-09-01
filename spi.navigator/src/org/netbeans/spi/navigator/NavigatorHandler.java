@@ -44,7 +44,9 @@
 
 package org.netbeans.spi.navigator;
 
+import org.netbeans.modules.navigator.NavigatorController;
 import org.netbeans.modules.navigator.NavigatorTC;
+import org.openide.util.Lookup;
 
 /**
  * Set of methods for driving navigator behaviour.
@@ -52,7 +54,9 @@ import org.netbeans.modules.navigator.NavigatorTC;
  * @author Dafe Simonek
  */
 public final class NavigatorHandler {
-    
+
+    private static NavigatorController controller;
+
     /** No external instantiation allowed.
      */
     private NavigatorHandler () {
@@ -74,7 +78,34 @@ public final class NavigatorHandler {
      * @throws IllegalArgumentException if given panel is not available 
      */ 
     public static void activatePanel (NavigatorPanel panel) {
-        NavigatorTC.getInstance().getController().activatePanel(panel);
+        getController().activatePanel(panel);
     }
-    
+
+    /**
+     * If there is a custom NavigatorDisplayer implementation, it should call
+     * this method just before its UI shows up (before the enclosing
+     * TopComponent is opened) to actually initialize the navigator. From this
+     * point the navigator observes the TopComponent and once it is opened, it
+     * starts collecting panels from the providers and passing them to the
+     * displayer.
+     * <p>
+     * If there is no custom NavigatorDisplayer registered, the navigator's own
+     * (default) TopComponent will be used and it also takes care of
+     * initializing the navigator automatically. No need to call this method then.
+     */
+    public static void activateNavigator() {
+        getController();
+    }
+
+    private static NavigatorController getController() {
+        if (controller == null) {
+            NavigatorDisplayer display = Lookup.getDefault().lookup(NavigatorDisplayer.class);
+            if (display != null) {
+                controller = new NavigatorController(display);
+            } else { // use the navigator's own TopComponent
+                controller = NavigatorTC.getInstance().getController();
+            }
+        }
+        return controller;
+    }
 }

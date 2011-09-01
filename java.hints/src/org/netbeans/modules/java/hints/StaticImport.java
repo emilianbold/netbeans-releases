@@ -33,22 +33,15 @@ package org.netbeans.modules.java.hints;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -58,6 +51,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -65,9 +59,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.imports.ComputeImports;
-import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
-import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -109,7 +100,7 @@ public class StaticImport extends AbstractHint {
         }
         cancel.set(false);
         TreePath mitp = treePath.getParentPath();
-        if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
+        if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION || ((MethodInvocationTree)mitp.getLeaf()).getMethodSelect() != treePath.getLeaf()) {
             return null;
         }
         List<? extends Tree> typeArgs = ((MethodInvocationTree) mitp.getLeaf()).getTypeArguments();
@@ -128,36 +119,23 @@ public class StaticImport extends AbstractHint {
             return null;
         }
         String sn = e.getSimpleName().toString();
-        List<Fix> fixes;
-        if (!isValidStaticMethod(info, getElementName(enclosingEl, true).toString(), sn)) {
-            // XXX: handling errors, see tracker for patch with handling in hints.errors
-            Collection<String> fqns = guessCandidates(info, ((MemberSelectTree)treePath.getLeaf()).getExpression().toString(), sn);
-            if (fqns.isEmpty()) {
-                return null;
-            }
-            fixes = new ArrayList<Fix>();
-            for (String fqn : fqns) {
-                fixes.add(new FixImpl(TreePathHandle.create(treePath, info), fqn, sn));
-            }
-        } else {
-            TreePath cc = getContainingClass(treePath);
-            if (cc == null){
-                return null;
-            }
-            Element klass = info.getTrees().getElement(cc);
-            if (klass.getKind() != ElementKind.CLASS) {
-                return null;
-            }
-            String fqn = null;
-            String fqn1 = getMethodFqn(e);
-            if (!isSubTypeOrInnerOfSubType(info, klass, enclosingEl) && !isStaticallyImported(info, fqn1)) {
-                if (hasMethodNameClash(info, klass, sn) || hasStaticImportSimpleNameClash(info, sn)) {
-                    return null;
-                }
-                fqn = fqn1;
-            }
-            fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, info), fqn, sn));
+        TreePath cc = getContainingClass(treePath);
+        if (cc == null){
+            return null;
         }
+        Element klass = info.getTrees().getElement(cc);
+        if (klass.getKind() != ElementKind.CLASS) {
+            return null;
+        }
+        String fqn = null;
+        String fqn1 = getMethodFqn(e);
+        if (!isSubTypeOrInnerOfSubType(info, klass, enclosingEl) && !isStaticallyImported(info, fqn1)) {
+            if (hasMethodNameClash(info, klass, sn) || hasStaticImportSimpleNameClash(info, sn)) {
+                return null;
+            }
+            fqn = fqn1;
+        }
+        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, info), fqn, sn));
         String desc = NbBundle.getMessage(StaticImport.class, "ERR_StaticImport");
         int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), treePath.getLeaf());
         int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), treePath.getLeaf());
@@ -178,14 +156,6 @@ public class StaticImport extends AbstractHint {
 
     public void cancel() {
         cancel.set(true);
-    }
-
-    /**
-     * @param info
-     * @return true if the source level supports the static import language feature
-     */
-    public static boolean supportsStaticImports(CompilationInfo info) {
-        return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
 
     public static final class FixImpl implements EnhancedFix, Task<WorkingCopy> {
@@ -241,7 +211,7 @@ public class StaticImport extends AbstractHint {
                 return;
             }
             CompilationUnitTree cut = copy.getCompilationUnit();
-            CompilationUnitTree nue = JavaFixAllImports.addImports(cut, Collections.singletonList(fqn), make, true);
+            CompilationUnitTree nue = GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e));
             copy.rewrite(cut, nue);
         }
 
@@ -249,6 +219,14 @@ public class StaticImport extends AbstractHint {
         public CharSequence getSortText() {
             return "\uFFFFa";
         }
+    }
+
+    /**
+     * @param info
+     * @return true if the source level supports the static import language feature
+     */
+    private static boolean supportsStaticImports(CompilationInfo info) {
+        return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
 
     // returns true if a METHOD is enclosed in element with simple name sn
@@ -272,7 +250,7 @@ public class StaticImport extends AbstractHint {
      * @return true if a static import exists with the same simple name.
      * Caveat, expect false positives on protected and default visibility methods from wildcard static imports.
      */
-    public static boolean hasStaticImportSimpleNameClash(CompilationInfo info, String simpleName) {
+    private static boolean hasStaticImportSimpleNameClash(CompilationInfo info, String simpleName) {
         for (ImportTree i : info.getCompilationUnit().getImports()) {
             if (!i.isStatic()) {
                 continue;
@@ -327,7 +305,7 @@ public class StaticImport extends AbstractHint {
      * @return true if member has a simple name which would clash with local or inherited
      * methods in klass (which may be an inner or static class).
      */
-    public static boolean hasMethodNameClash(CompilationInfo info, Element klass, String simpleName) {
+    private static boolean hasMethodNameClash(CompilationInfo info, Element klass, String simpleName) {
         assert klass != null;
         assert klass.getKind() == ElementKind.CLASS;
 
@@ -343,7 +321,7 @@ public class StaticImport extends AbstractHint {
      * @param e
      * @return the FQN for a METHOD Element
      */
-    public static String getMethodFqn(Element e) {
+    private static String getMethodFqn(Element e) {
         // XXX or alternatively, upgrade getElementName to handle METHOD
         assert e.getKind() == ElementKind.METHOD;
         return getElementName(e.getEnclosingElement(), true) + "." + e.getSimpleName();
@@ -353,7 +331,7 @@ public class StaticImport extends AbstractHint {
      * @param tp
      * @return the first path which is a CLASS or null if none found
      */
-    public static TreePath getContainingClass(TreePath tp) {
+    private static TreePath getContainingClass(TreePath tp) {
         while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             tp = tp.getParentPath();
         }
@@ -375,53 +353,5 @@ public class StaticImport extends AbstractHint {
             }
         }
         return false;
-    }
-
-    /**
-     * @param info
-     * @param fqn of the containing class
-     * @param simpleName of the method
-     * @return true if {@code fqn.simpleName} represents a valid static method
-     */
-    public static boolean isValidStaticMethod(CompilationInfo info, String fqn, String simpleName) {
-        TypeElement ie = info.getElements().getTypeElement(fqn);
-        if (ie == null) {
-            return false;
-        }
-        for (Element enclosed : ie.getEnclosedElements()) {
-            Set<Modifier> modifiers = enclosed.getModifiers();
-            if (enclosed.getKind() != ElementKind.METHOD || !modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE)) {
-                continue;
-            }
-            String sn1 = enclosed.getSimpleName().toString();
-            if (simpleName.equals(sn1)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // XXX workaround for errors, but very inefficient and probably full of bugs
-    private Collection<String> guessCandidates(CompilationInfo info, String klass, String sn) {
-        Logger.getLogger(StaticImport.class.getName()).log(Level.FINE, "GUESS {0}.{1}", new Object[] {klass, sn});
-        Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(info);
-        Set<String> fqns = new HashSet<String>();
-        if (candidates == null || candidates.a == null) {
-            return fqns;
-        }
-        for (String k : candidates.a.keySet()) {
-            if (!klass.equals(k)) {
-                continue;
-            }
-            for (TypeElement klazz : candidates.a.get(k)) {
-                String klazzFqn = klazz.getQualifiedName().toString();
-                String fqn = klazzFqn + "." + sn; // NOI18N
-                System.out.println(fqn);
-                if (!fqns.contains(fqn) && isValidStaticMethod(info, klazzFqn, sn)) {
-                    fqns.add(fqn);
-                }
-            }
-        }
-        return fqns;
     }
 }

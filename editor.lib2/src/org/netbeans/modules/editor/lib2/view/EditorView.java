@@ -403,7 +403,7 @@ public abstract class EditorView extends View {
     }
 
     public void checkIntegrityIfLoggable() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkIntegrity(); // NOI18N
         }
     }
@@ -416,10 +416,10 @@ public abstract class EditorView extends View {
             sb.append("\nErrorneous view hierarchy:\n");
             appendViewInfo(sb, 0, -2); // -2 means detailed info
             // For finest level stop throw real ISE otherwise just log the stack
-            if (LOG.isLoggable(Level.FINEST)) {
+            if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINEST)) {
                 throw new IllegalStateException(sb.toString());
             } else {
-                LOG.log(Level.INFO, sb.toString(), new Exception());
+                ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, sb.toString(), new Exception());
             }
         }
     }

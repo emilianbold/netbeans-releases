@@ -157,6 +157,14 @@ public class ElementOverlay {
 
         return el;
     }
+    
+    public Element getOriginal(Element e) {
+        if (e instanceof TypeElementWrapper)
+            return ((TypeElementWrapper)e).delegateTo;
+        if (e instanceof PackageElementWrapper)
+            return ((PackageElementWrapper)e).delegateTo;
+        return e;
+    }
 
     public Element resolve(ASTService ast, Elements elements, String what) {
         Element result = null;
@@ -532,7 +540,7 @@ public class ElementOverlay {
 
         @Override
         public TypeMirror asType() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return delegateTo.asType();
         }
 
         @Override
@@ -670,7 +678,7 @@ public class ElementOverlay {
 
         @Override
         public TypeMirror asType() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return delegateTo.asType();
         }
 
         @Override

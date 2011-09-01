@@ -48,7 +48,6 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
@@ -75,9 +74,16 @@ public class ViewHierarchyRandomTesting {
         EditorPaneTesting.initContainer(container, kit);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
+        container.addCheck(new ViewHierarchyCheck());
         JEditorPane pane = EditorPaneTesting.getEditorPane(container);
         pane.putClientProperty("text-line-wrap", "words"); // SimpleValueNames.TEXT_LINE_WRAP
         return container;
+    }
+    
+    public static String viewHierarchyToString(RandomTestContainer.Context context) {
+        JEditorPane pane = EditorPaneTesting.getEditorPane(context);
+        DocumentView docView = DocumentView.get(pane);
+        return docView.toStringDetail();
     }
     
     public static void disableHighlighting(RandomTestContainer container) throws Exception {
@@ -92,7 +98,6 @@ public class ViewHierarchyRandomTesting {
 
     public static void initRandomText(RandomTestContainer container) throws Exception {
 //        container.addOp(new Op());
-        container.addCheck(new ViewHierarchyCheck());
         RandomText randomText = RandomText.join(
                 RandomText.lowerCaseAZ(3),
                 RandomText.spaceTabNewline(1),
@@ -153,7 +158,9 @@ public class ViewHierarchyRandomTesting {
                 public void run() {
                     JEditorPane pane = EditorPaneTesting.getEditorPane(context);
                     DocumentView docView = DocumentView.get(pane);
-                    docView.checkIntegrityIfLoggable();
+                    docView.checkIntegrity();
+                    
+                    
                     // View hierarchy dump
 //                    System.err.println("\nView Hierarchy Dump:\n" + docView.toStringDetail() + "\n");
                 }

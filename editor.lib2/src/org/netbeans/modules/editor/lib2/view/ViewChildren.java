@@ -267,7 +267,7 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
     }
 
     void checkVisualGapIfLoggable() {
-        if (gapStorage != null && LOG.isLoggable(Level.FINE)) {
+        if (gapStorage != null && ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             String error = null;
             int visualGapIndex = gapStorage.visualGapIndex;
             for (int i = 0; i < size(); i++) {
@@ -304,7 +304,7 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
     }
 
     void checkIntegrityIfLoggable(EditorView parent) {
-        if (gapStorage != null && LOG.isLoggable(Level.FINE)) {
+        if (gapStorage != null && ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             String err = findIntegrityError(parent);
             if (err != null) {
                 throw new IllegalStateException("ViewChildren ERROR!!!\n" + err);

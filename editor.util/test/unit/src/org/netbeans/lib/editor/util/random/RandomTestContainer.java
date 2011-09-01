@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -138,8 +139,6 @@ public final class RandomTestContainer extends PropertyProvider {
 
     private final List<Round> rounds;
 
-    private Map<Object,Object> properties;
-
     private Random random;
 
     int totalOpCount;
@@ -149,12 +148,13 @@ public final class RandomTestContainer extends PropertyProvider {
     private Context runContext; // Context for running of random test
 
     private long seed;
-
+    
     public RandomTestContainer() {
         name2Op = new HashMap<String, Op>();
         checks = new ArrayList<Check>(3);
         rounds = new ArrayList<Round>(3);
-        properties = new HashMap<Object,Object>();
+        // By default log operations
+        setLogOp(true);
     }
 
     public String name() {
@@ -181,11 +181,11 @@ public final class RandomTestContainer extends PropertyProvider {
     /**
      * Initialize for random test running. Next one or more calls to runOps() should follow.
      *
-     * @param seed
+     * @param seed specific seed or 0L for random seed generation.
      */
     public void runInit(long seed) {
         this.random = new Random();
-        if (seed == 0) { // Use currentTimeMillis() (btw nanoTime() in 1.5 instead)
+        if (seed == 0L) { // Use currentTimeMillis() (btw nanoTime() in 1.5 instead)
             seed = System.currentTimeMillis();
         }
         this.seed = seed;
@@ -201,14 +201,27 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         // Use a fresh run context
-        runContext = new Context(this);
+        runContext = new Context(this, context().propertiesCopy());
         runContext.runInit(rounds);
     }
 
+    /**
+     * Run random operations.
+     *
+     * @param opCount Number of operations to run or 0 to run all remaining operations till end of test.
+     * @throws Exception 
+     */
     public void runOps(int opCount) throws Exception {
         runContext.runOps(opCount);
     }
 
+    /**
+     * Get context for last test run (or null if no test was run yet).
+     * <br/>
+     * Initial properties of run context are copy of properties from {@link #context()}.
+     *
+     * @return context or null.
+     */
     public Context runContext() {
         return runContext;
     }
@@ -266,12 +279,12 @@ public final class RandomTestContainer extends PropertyProvider {
 
     @Override
     public Object getPropertyOrNull(Object key) {
-        return properties.get(key);
+        return context().getPropertyOrNull(key);
     }
 
     @Override
     public void putProperty(Object key, Object value) {
-        properties.put(key, value);
+        context().putProperty(key, value);
     }
 
     /**
@@ -283,7 +296,7 @@ public final class RandomTestContainer extends PropertyProvider {
      */
     public Context context() {
         if (context == null) {
-            context = new Context(this);
+            context = new Context(this, new HashMap<Object,Object>());
         }
         return context;
     }
@@ -299,7 +312,7 @@ public final class RandomTestContainer extends PropertyProvider {
     public void setLogOp(boolean logOp) {
         putProperty(LOG_OP, logOp);
     }
-
+    
     /**
      * Random operation that can be registered for random testing container
      * and that can be triggered with certain probability.
@@ -365,8 +378,14 @@ public final class RandomTestContainer extends PropertyProvider {
                 double opRatioSum = computeOpRatioSum();
                 while (context.continueRun(totalOpCount)) {
                     Op op = findOp(context, opRatioSum);
-                    op.run(context); // Run the fetched random operation
-                    container.runChecks(context);
+                    boolean opSuccess = false;
+                    try {
+                        op.run(context); // Run the fetched random operation
+                        container.runChecks(context);
+                        opSuccess = true;
+                    } finally {
+                        context.finishLogOp(opSuccess);
+                    }
                     context.incrementOpCount();
                 }
                 LOG.info(container.name() + " finished successfully.");
@@ -421,6 +440,9 @@ public final class RandomTestContainer extends PropertyProvider {
                         if (op == null) {
                             throw new IllegalStateException("No op for name=" + entry.getKey()); // NOI18N
                         }
+                        if (context.isLogOp()) { // Possibly log operation number
+                            context.logOpBuilder().append("\nTESTOP[").append(context.opCount()).append("]: ");
+                        }
                         return op;
                     }
                 }
@@ -447,9 +469,21 @@ public final class RandomTestContainer extends PropertyProvider {
         private int opCount;
 
         private int stopOpCount;
+        
+        private StringBuilder logOpBuilder = new StringBuilder(256);
 
-        Context(RandomTestContainer container) {
+        private int maxOpsLogged = 3;
+
+        private final Map<Object,Object> properties;
+
+        /**
+         * List of logs for each operation performed.
+         */
+        final LinkedList<String> opLogs = new LinkedList<String>();
+
+        Context(RandomTestContainer container, Map<Object,Object> properties) {
             this.container = container;
+            this.properties = properties;
         }
 
         public RandomTestContainer container() {
@@ -474,30 +508,34 @@ public final class RandomTestContainer extends PropertyProvider {
             return opCount;
         }
 
+        /**
+         * Get string builder for logging operation description.
+         *
+         * @return non-null string builder.
+         */
         public StringBuilder logOpBuilder() {
-            StringBuilder sb = new StringBuilder(100);;
-            if (isLogOp()) {
-                sb.append("TESTOP[").append(opCount()).append("]: ");
-            }
-            return sb;
+            return logOpBuilder;
         }
 
+        /**
+         * Calling of this method is only necessary when (sb != logOpBuilder()).
+         *
+         * @param sb non-null string builder.
+         */
         public void logOp(StringBuilder sb) {
-            container().logger().info(sb.toString());
+            if (sb != logOpBuilder) { // Only when not already appended to logOpBuilder
+                logOpBuilder.append(sb);
+            }
         }
 
         @Override
         public Object getPropertyOrNull(Object key) {
-            return propertyProvider().getPropertyOrNull(key);
+            return properties.get(key);
         }
 
         @Override
         public void putProperty(Object key, Object value) {
-            propertyProvider().putProperty(key, value);
-        }
-
-        private PropertyProvider propertyProvider() {
-            return (round() != null) ? round() : container;
+            properties.put(key, value);
         }
 
         void runInit(List<Round> rounds) {
@@ -516,6 +554,10 @@ public final class RandomTestContainer extends PropertyProvider {
                 }
             }
         }
+        
+        Map<Object,Object> propertiesCopy() {
+            return new HashMap<Object,Object>(properties);
+        }
 
         boolean continueRun(int roundTotalOpCount) {
             return (continueRun() && roundOpCount < roundTotalOpCount);
@@ -532,7 +574,37 @@ public final class RandomTestContainer extends PropertyProvider {
                 LOG.info(container.name() + ": " + opCount + " operations finished.\n"); // NOI18N
             }
         }
+        
+        void finishLogOp(boolean opSuccess) {
+            if (logOpBuilder.length() > 0) {
+                logOpBuilder.append("\n-------------------\n\n\n");
+                String opLog = logOpBuilder.toString();
+                logOpBuilder.setLength(0);
+                addOpLog(opLog);
+            }
+            if (!opSuccess) { // Dump the logs to logger
+                StringBuilder sb = new StringBuilder(1024);
+                while (!opLogs.isEmpty()) {
+                    sb.append(opLogs.removeFirst());
+                }
+                LOG.info(sb.toString());
+            }
+        }
 
+        /**
+         * Set maximum number of last operations logged (older logs will be discarded).
+         */
+        public void setMaxOpsLogged(int maxOpsLogged) {
+            this.maxOpsLogged = maxOpsLogged;
+        }
+
+        void addOpLog(String logString) {
+            opLogs.add(logString);
+            if (opLogs.size() > maxOpsLogged) {
+                opLogs.removeFirst();
+            }
+        }
+    
     }
 
 }

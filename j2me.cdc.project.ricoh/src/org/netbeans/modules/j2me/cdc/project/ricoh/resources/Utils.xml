@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.ricoh/modules/ext/org-netbeans-modules-j2me-cdc-project-ricoh.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.ricoh/modules/ext/RicohAntTasks-2.0.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.ricoh/modules/ext/commons-httpclient-3.0.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.apache.commons.logging/modules/org-apache-commons-logging.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.ricoh/modules/ext/commons-codec-1.3.jar!/</resource>
     </volume>
     <volume>

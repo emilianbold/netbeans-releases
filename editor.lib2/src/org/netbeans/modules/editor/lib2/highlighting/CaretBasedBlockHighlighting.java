@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -55,7 +56,9 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -64,9 +67,14 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.BlockCompare;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.DocUtils;
+import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -126,12 +134,21 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         // Calculate the current line position
         updateLineInfo(false);
     }
-
+    
+    protected final JTextComponent component() {
+        return component;
+    }
+    
+    protected final Caret caret() {
+        return caret;
+    }
+    
     // ------------------------------------------------
     // AbstractHighlightsContainer implementation
     // ------------------------------------------------
     
-    public final HighlightsSequence getHighlights(int startOffset, int endOffset) {
+    @Override
+    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         if (!inited) {
             inited = true;
             init();
@@ -161,7 +178,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     // PropertyChangeListener implementation
     // ------------------------------------------------
     
-    public final void propertyChange(PropertyChangeEvent evt) {
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == null || "caret".equals(evt.getPropertyName())) { //NOI18N
             if (caret != null) {
                 caret.removeChangeListener(caretListener);
@@ -183,11 +201,12 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     // ChangeListener implementation
     // ------------------------------------------------
     
-    public final void stateChanged(ChangeEvent e) {
+    @Override
+    public void stateChanged(ChangeEvent e) {
         updateLineInfo(true);
     }
 
-    protected abstract Position [] getCurrentBlockPositions(Document document, Caret caret);
+    protected abstract Position [] getCurrentBlockPositions(Document document);
     
     // ------------------------------------------------
     // private implementation
@@ -200,7 +219,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             Position newEnd;
             Position changeStart;
             Position changeEnd;
-            Position[] newBlock = getCurrentBlockPositions(component.getDocument(), caret);
+            Position[] newBlock = getCurrentBlockPositions(component.getDocument());
             if (newBlock != null) {
                 newStart = newBlock[0];
                 newEnd = newBlock[1];
@@ -265,7 +284,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         }
     }
     
-    private AttributeSet getAttribs() {
+    protected final AttributeSet getAttribs() {
         if (lookupListener == null) {
             lookupListener = new LookupListener() {
                 @Override
@@ -320,6 +339,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             this.attribs = attribs;
         }
 
+        @Override
         public boolean moveNext() {
             if (!end) {
                 end = true;
@@ -329,14 +349,17 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             }
         }
 
+        @Override
         public int getStartOffset() {
             return startOffset;
         }
 
+        @Override
         public int getEndOffset() {
             return endOffset;
         }
 
+        @Override
         public AttributeSet getAttributes() {
             return attribs;
         }
@@ -350,7 +373,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             super(component, FontColorNames.CARET_ROW_COLORING, true, false);
         }
         
-        protected Position[] getCurrentBlockPositions(Document document, Caret caret) {
+        protected Position[] getCurrentBlockPositions(Document document) {
+            Caret caret = caret();
             if (document != null && caret != null) {
                 int caretOffset = caret.getDot();
                 try {
@@ -373,15 +397,24 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         }
     } // End of CaretRowHighlighting class
     
-    public static final class TextSelectionHighlighting extends CaretBasedBlockHighlighting {
+    public static final class TextSelectionHighlighting extends CaretBasedBlockHighlighting
+    implements HighlightsChangeListener {
         
         public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSelectionHighlighting"; //NOI18N
-    
+        
+        private int hlChangeStartOffset = -1;
+        
+        private int hlChangeEndOffset;
+        
+        private PositionsBag rectangularSelectionBag;
+
         public TextSelectionHighlighting(JTextComponent component) {
             super(component, FontColorNames.SELECTION_COLORING, true, true);
         }
     
-        protected Position[] getCurrentBlockPositions(Document document, Caret caret) {
+        @Override
+        protected Position[] getCurrentBlockPositions(Document document) {
+            Caret caret = caret();
             if (document != null && caret != null) {
                 int caretOffset = caret.getDot();
                 int markOffset = caret.getMark();
@@ -400,5 +433,64 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             
             return null;
         }
+
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            if (!RectangularSelectionUtils.isRectangularSelection(component())) { // regular selection
+                return super.getHighlights(startOffset, endOffset);
+            } else { // rectangular selection
+                return (rectangularSelectionBag != null)
+                        ? (rectangularSelectionBag.getHighlights(startOffset, endOffset))
+                        : HighlightsSequence.EMPTY;
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            super.propertyChange(evt);
+            if (RectangularSelectionUtils.getRectangularSelectionProperty().equals(evt.getPropertyName())) {
+                fireHighlightsChange(0, component().getDocument().getLength());
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent evt) {
+            super.stateChanged(evt);
+            Document doc;
+            JTextComponent c = component();
+            if (RectangularSelectionUtils.isRectangularSelection(c) && (doc = c.getDocument()) != null) {
+                if (rectangularSelectionBag == null) {
+                    // Btw the document is not used by PositionsBag at all
+                    rectangularSelectionBag = new PositionsBag(doc);
+                    rectangularSelectionBag.addHighlightsChangeListener(this);
+                }
+                List<Position> regions = RectangularSelectionUtils.regionsCopy(c);
+                AttributeSet attrs = getAttribs();
+                rectangularSelectionBag.clear();
+                int size = regions.size();
+                for (int i = 0; i < size;) {
+                    Position startPos = regions.get(i++);
+                    Position endPos = regions.get(i++);
+                    rectangularSelectionBag.addHighlight(startPos, endPos, attrs);
+                }
+                // Fire change at once
+                if (hlChangeStartOffset != -1) {
+                    fireHighlightsChange(hlChangeStartOffset, hlChangeEndOffset);
+                    hlChangeStartOffset = -1;
+                }
+            }
+        }
+
+        @Override
+        public void highlightChanged(HighlightsChangeEvent evt) {
+            if (hlChangeStartOffset == -1) {
+                hlChangeStartOffset = evt.getStartOffset();
+                hlChangeEndOffset = evt.getEndOffset();
+            } else {
+                hlChangeStartOffset = Math.min(hlChangeStartOffset, evt.getStartOffset());
+                hlChangeEndOffset = Math.max(hlChangeEndOffset, evt.getEndOffset());
+            }
+        }
+        
     } // End of TextSelectionHighlighting class
 }

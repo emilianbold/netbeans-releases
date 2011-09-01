@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -202,9 +204,15 @@ public class SrcNode extends FilterNode {
         @Override
         protected Node copyNode(final Node originalNode) {
             FileObject fo = originalNode.getLookup().lookup(FileObject.class);
-            return (fo.isFolder())
-                    ? new PackageNode(project, originalNode, isTest)
-                    : new ObjectNode(originalNode, isTest);
+            if (fo == null) {
+                // #201301 - what to do now?
+                Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, "No fileobject found for node: {0}", originalNode);
+                return super.copyNode(originalNode);
+            }
+            if (fo.isFolder()) {
+                return new PackageNode(project, originalNode, isTest);
+            }
+            return new ObjectNode(originalNode, isTest);
         }
     }
 
@@ -323,6 +331,7 @@ public class SrcNode extends FilterNode {
             if (fileObject != null) {
                 return fileObject;
             }
+            // just fallback, should not happen
             DataObject dataObject = originalNode.getLookup().lookup(DataObject.class);
             assert dataObject != null;
             fileObject = dataObject.getPrimaryFile();

@@ -50,15 +50,9 @@ package org.netbeans.modules.javafx2.project.ui;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
@@ -68,23 +62,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.SearchKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.MouseUtils;
 import org.openide.util.NbBundle;
@@ -100,9 +83,6 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     private final PropertyEvaluator evaluator;
     private final Project project;
     private ChangeListener changeListener;
-
-    private Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
-    private Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
 
     /** Creates new form JFXApplicationClassChooser */
     public JFXApplicationClassChooser(final @NonNull Project p, final @NonNull PropertyEvaluator pe) {
@@ -225,62 +205,14 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     
     private void initClassesModel() {
         
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        final Map<FileObject,List<ClassPath>> classpathMap = new HashMap<FileObject,List<ClassPath>>();
-
-        for (SourceGroup srcGroup : srcGroups) {
-            FileObject srcRoot = srcGroup.getRootFolder();
-            ClassPath bootCP = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
-            ClassPath executeCP = ClassPath.getClassPath(srcRoot, ClassPath.EXECUTE);
-            ClassPath sourceCP = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
-            List<ClassPath> cpList = new ArrayList<ClassPath>();
-            if (bootCP != null) {
-                cpList.add(bootCP);
-            }
-            if (executeCP != null) {
-                cpList.add(executeCP);
-            }
-            if (sourceCP != null) {
-                cpList.add(sourceCP);
-            }
-            if (cpList.size() == 3) {
-                classpathMap.put(srcRoot, cpList);
-            }
-        }
-
-        final Set<String> appClassNames = new HashSet<String>();
+        final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                for (FileObject fo : classpathMap.keySet()) {
-                    List<ClassPath> paths = classpathMap.get(fo);
-                    ClasspathInfo cpInfo = ClasspathInfo.create(paths.get(0), paths.get(1), paths.get(2));
-                    final ClassIndex classIndex = cpInfo.getClassIndex();
-                    final JavaSource js = JavaSource.create(cpInfo);
-                    try { 
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            @Override
-                            public void run(CompilationController controller) throws Exception {
-                                Elements elems = controller.getElements();
-                                TypeElement fxAppElement = elems.getTypeElement("javafx.application.Application"); // NOI18N
-                                ElementHandle<TypeElement> appHandle = ElementHandle.create(fxAppElement);
-                                Set<ElementHandle<TypeElement>> appHandles = classIndex.getElements(appHandle, kinds, scopes);
-                                for (ElementHandle<TypeElement> elemHandle : appHandles) {
-                                    appClassNames.add(elemHandle.getQualifiedName());
-                                }
-                            }
-                            @Override
-                            public void cancel() {
 
-                            }
-                        }, true);
-                    } catch (Exception e) {
-
-                    }
-
-                }
+                final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

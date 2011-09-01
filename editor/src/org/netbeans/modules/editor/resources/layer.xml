@@ -306,6 +306,9 @@ made subject to such option by the copyright holder.
                 <file name="toggle-highlight-search">
                     <attr name="position" intvalue="9000"/>
                 </file>
+                <file name="toggle-rectangular-selection">
+                    <attr name="position" intvalue="9500"/>
+                </file>
                 <file name="Separator-after-toggle-highlight-search.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="10000"/>

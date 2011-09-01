@@ -57,7 +57,7 @@ public class NonNegativeInteger implements CssPropertyValueAcceptor {
     @Override
     public boolean accepts(String token) {
         try {
-            int i = Integer.parseInt(token);
+            int i = java.lang.Integer.parseInt(token);
             return i >= 0;
         } catch (NumberFormatException nfe) {
             return false;

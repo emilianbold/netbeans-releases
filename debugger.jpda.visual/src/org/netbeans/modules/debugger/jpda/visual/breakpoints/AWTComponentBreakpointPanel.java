@@ -274,6 +274,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
 
         @Override
         public boolean ok() {
+            int type =
+                    (addRemoveCheckBox.isSelected() ? (AWTComponentBreakpoint.TYPE_ADD | AWTComponentBreakpoint.TYPE_REMOVE) : 0) |
+                    (showHideCheckBox.isSelected() ? (AWTComponentBreakpoint.TYPE_SHOW | AWTComponentBreakpoint.TYPE_HIDE) : 0) |
+                    (repaintCheckBox.isSelected() ? AWTComponentBreakpoint.TYPE_REPAINT : 0);
+            breakpoint.setType(type);
             breakpoint.setCondition (conditionsPanel.getCondition());
             breakpoint.setHitCountFilter(conditionsPanel.getHitCount(), conditionsPanel.getHitCountFilteringStyle());
             breakpoint.setSuspend(fakeActionsBP.getSuspend());

@@ -54,7 +54,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.api.doc.PhpDocs;
@@ -89,7 +88,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -122,12 +120,11 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         Node[] children = root.getChildren().getNodes(true);
         for (Node node : children) {
             if (target instanceof DataObject || target instanceof FileObject) {
-                DataObject d = node.getLookup().lookup(DataObject.class);
-                if (d == null) {
+                FileObject kidFO = node.getLookup().lookup(FileObject.class);
+                if (kidFO == null) {
                     continue;
                 }
                 // Copied from org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
-                FileObject kidFO = d.getPrimaryFile();
                 FileObject targetFO = null;
                 if (target instanceof DataObject) {
                     targetFO = ((DataObject) target).getPrimaryFile();
@@ -189,23 +186,25 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         if (obj == null) {
             return false;
         }
-        DataObject dataObject = node.getLookup().lookup(DataObject.class);
-        if (dataObject == null) {
+        FileObject fileObject = node.getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
             return false;
         }
         if (obj instanceof DataObject) {
+            DataObject dataObject = node.getLookup().lookup(DataObject.class);
+            if (dataObject == null) {
+                return false;
+            }
             if (dataObject.equals(obj)) {
                 return true;
             }
-            FileObject fileObject = ((DataObject) obj).getPrimaryFile();
-            return hasObject(node, fileObject);
+            return hasObject(node, ((DataObject) obj).getPrimaryFile());
         } else if (obj instanceof FileObject) {
-            FileObject fileObject = dataObject.getPrimaryFile();
             return obj.equals(fileObject);
-        } else {
-            return false;
         }
+        return false;
     }
+
     private static class PhpLogicalViewRootNode extends AbstractNode {
 
         final PhpProject project;
@@ -400,7 +399,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             putValue(NAME, name);
             putValue(SHORT_DESCRIPTION, name);
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);

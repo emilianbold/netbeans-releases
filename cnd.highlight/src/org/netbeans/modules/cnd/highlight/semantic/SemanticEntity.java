@@ -57,5 +57,5 @@ public interface SemanticEntity extends NamedEntity {
     List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
     ReferenceCollector getCollector();
     void updateFontColors(FontColorProvider provider);
-    public AttributeSet getAttributes(CsmOffsetable obj);
+    public AttributeSet getAttributes(CsmOffsetable obj, String mimeType);
 }

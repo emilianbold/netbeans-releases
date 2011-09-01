@@ -234,11 +234,22 @@ public final class EmbedderFactory {
         }
     }
 
+    private static void rethrowThreadDeath(Throwable t) { // #201098
+        if (t instanceof ThreadDeath) {
+            throw (ThreadDeath) t;
+        }
+        Throwable t2 = t.getCause();
+        if (t2 != null) {
+            rethrowThreadDeath(t2);
+        }
+    }
+
     public synchronized static @NonNull MavenEmbedder getProjectEmbedder() {
         if (project == null) {
             try {
                 project = createProjectLikeEmbedder();
             } catch (PlexusContainerException ex) {
+                rethrowThreadDeath(ex);
                 throw new IllegalStateException(ex);
             }
         }
@@ -250,6 +261,7 @@ public final class EmbedderFactory {
             try {
                 online = createOnlineEmbedder();
             } catch (PlexusContainerException ex) {
+                rethrowThreadDeath(ex);
                 throw new IllegalStateException(ex);
             }
         }

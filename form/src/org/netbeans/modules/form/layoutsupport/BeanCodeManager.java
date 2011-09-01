@@ -284,6 +284,11 @@ final class BeanCodeManager
         if (newCreator != null) {
             if (newCreator != currentCreator) { // creator has changed
                 currentCreator = newCreator;
+                // The variable (if present) is disconnected from
+                // beanExpression by setOrigin call. So, we remove
+                // also the corresponding (old) statement.
+                // New statement is added below by setVariable() if needed.
+                unsetVariable();
                 beanExpression.setOrigin(newCreator.getCodeOrigin(
                                                         creationExpressions));
             }
@@ -307,17 +312,26 @@ final class BeanCodeManager
         }
 
         if (anyPropertyStatement) {
-            if (!isVariableSet) {
-                CodeVariable var =
-                    codeStructure.createVariableForExpression(
-                                      beanExpression, variableType, null);
-                if (beanCode != null) {
-                    beanCode.addStatement(0, var.getAssignment(beanExpression));
-                }
-                isVariableSet = true;
-            }
+            setVariable();
+        } else {
+            unsetVariable();
         }
-        else if (isVariableSet) {
+    }
+
+    private void setVariable() {
+        if (!isVariableSet) {
+            CodeVariable var =
+                codeStructure.createVariableForExpression(
+                                  beanExpression, variableType, null);
+            if (beanCode != null) {
+                beanCode.addStatement(0, var.getAssignment(beanExpression));
+            }
+            isVariableSet = true;
+        }
+    }
+
+    private void unsetVariable() {
+        if (isVariableSet) {
             CodeVariable var = beanExpression.getVariable();
             if (var != null) {
                 if (beanCode != null)
