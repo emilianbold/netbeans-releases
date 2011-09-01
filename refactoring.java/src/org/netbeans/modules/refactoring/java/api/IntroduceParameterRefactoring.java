@@ -214,7 +214,7 @@ public final class IntroduceParameterRefactoring extends AbstractRefactoring {
      * @param parameterName a non empty String to use as the parameter name
      */
     public void setParameterName(@NonNull String parameterName) {
-        Parameters.notEmpty("paramterName", parameterName);
+        Parameters.notNull("parameterName", parameterName);
         this.parameterName = parameterName;
     }
 }
