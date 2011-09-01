@@ -91,10 +91,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.cloud.CloudDomainDetector;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
-import org.netbeans.modules.libs.oracle.cloud.api.WhiteListQuerySupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -722,9 +720,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             List content = new ArrayList();
             Collections.addAll(content, new File(getPlatformRoot()), new JpaSupportImpl(this),
                 new JsxWsPoliciesSupportImpl(this), new JaxRsStackSupportImpl(this));
-            if (CloudDomainDetector.isCloudDomain(dm.getInstanceProperties())) {
-                content.add(WhiteListQuerySupport.createCloud9WhiteListQueryImpl());
-            }
             Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }

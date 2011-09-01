@@ -41,29 +41,19 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.cloud.DomainGenerator;
-import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport.WLDomain;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,7 +71,6 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
     private WizardDescriptor wizard;
     private OracleWizardPanel panel;
     private CloudResourcesWizardPanel panel2;
-    private LocalInstancePanel panel3;
     private int count = 0;
 
     public OracleWizardIterator() {
@@ -109,99 +98,14 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         String service = (String)wizard.getProperty(OracleWizardPanel.SERVICE);
         assert service != null;
         
-        String serverDir = (String)wizard.getProperty(LocalInstancePanel.LOCAL_SERVER);
-        String localServerInstanceId = null;
-        if (serverDir != null && serverDir.trim().length() > 0) {
-            File jarFo = InstalledFileLocator.getDefault().locate(
-                    "modules/ext/cloud_10.3.6.0.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
-            if (jarFo == null) {
-                throw new IOException("Could not find domain template");
-            }
-            FileObject configRoot = FileUtil.getConfigRoot();
-            FileObject domainDirParent = FileUtil.createFolder(
-                    configRoot, LOCAL_DOMAIN_DIR);
-
-            FileObject domainDir = null;
-            int i = 0;
-            while (domainDir == null) {
-                i++;
-                String domainName = FileUtil.findFreeFolderName(domainDirParent,
-                        "Cloud9Domain"); // NOI18N
-                try {
-                    domainDir = domainDirParent.createFolder(domainName);
-                } catch (IOException ex) {
-                    if (i > 10) {
-                        throw ex;
-                    }
-                }
-            }
-            try {
-                File domainFile = FileUtil.toFile(domainDir);
-                DomainGenerator.generateDomain(new File(serverDir),
-                        jarFo, domainFile);
-                localServerInstanceId = registerLocalInstance(serverDir, domainFile.getAbsolutePath(), name);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                throw new IOException(ex.getCause());
-            }
-        }
-        
+        Collection<WLDomain> localInstances = CloudSupport.getCloudUsableInstances();
         OracleInstance instance = new OracleInstance(name, username, pwd, adminURL, 
-                instanceURL, cloudURL, tenant, service, localServerInstanceId);
+                instanceURL, cloudURL, tenant, service,
+                localInstances.isEmpty() ? null : localInstances.iterator().next().getUrl());
         OracleInstanceManager.getDefault().add(instance);
         
         
         return Collections.singleton(instance.getServerInstance());
-    }
-
-    private String registerLocalInstance(String serverPath,
-            String domainPath, String cloudDisplayName) throws IOException {
-
-        Properties properties = WLPluginProperties.getDomainProperties(domainPath);
-        if (properties.isEmpty()) {
-            // TODO should we emit some warning ?
-            return null;
-        }
-
-        String displayName = cloudDisplayName + " " // NOI18N
-                + NbBundle.getMessage(OracleWizardIterator.class, "LBL_Name_Local_Suffix");
-        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
-        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
-        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
-        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
-
-        if ((name != null) && (!name.equals(""))) { // NOI18N
-            // address and port have minOccurs=0 and are missing in 90
-            // examples server
-            port = (port == null || port.equals("")) // NOI18N
-            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                    : port;
-            host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                    : host;
-
-            WLInstantiatingIterator iterator = new WLInstantiatingIterator();
-            String url = getUrl(serverPath, domainPath, host, port);
-            iterator.setUrl(url);
-            iterator.setHost(host);
-            iterator.setPort(port);
-            iterator.setServerRoot(serverPath);
-            iterator.setDomainRoot(domainPath);
-            iterator.setDomainName(domainName);
-            iterator.setUsername(LOCAL_DOMAIN_USERNAME);
-            iterator.setPassword(LOCAL_DOMAIN_PASSWORD);
-
-            iterator.instantiateCloud(displayName);
-            return url;
-        }
-        return null;
-    }
-
-    //FIXME copied from ServerPropertieVisual of j2ee.weblogic9
-    private String getUrl(String serverPath, String domainPath, String host, String port) {
-        return WLDeploymentFactory.URI_PREFIX + host
-                + ":" + port + ":" + serverPath // NOI18N;
-                + ":" + domainPath; // NOI18N;
     }
 
     @Override
@@ -213,7 +117,6 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
     public void uninitialize(WizardDescriptor wizard) {
         panel = null;
         panel2 = null;
-        panel3 = null;
     }
 
     @Override
@@ -224,24 +127,18 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
                     panel = new OracleWizardPanel();
                 }
                 return panel;
-            case 1:
+            default:
                 if (panel2 == null) {
                     panel2 = new CloudResourcesWizardPanel(getPanelContentData(), 1);
                 }
                 return panel2;
-            default:
-                if (panel3 == null) {
-                    panel3 = new LocalInstancePanel();
-                }
-                return panel3;
         }
     }
 
     static String[] getPanelContentData() {
         return new String[] {
                 NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Oracle"),
-                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources"),
-                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Local"),
+                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources")
             };
     }
     
@@ -252,7 +149,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
 
     @Override
     public boolean hasNext() {
-        return count < 2;
+        return count < 1;
     }
 
     @Override

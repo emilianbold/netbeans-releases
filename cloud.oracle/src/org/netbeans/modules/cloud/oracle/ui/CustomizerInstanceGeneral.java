@@ -47,7 +47,10 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
+import java.util.Collection;
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
 
 /**
  *
@@ -58,6 +61,20 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
     /** Creates new form CustomizerInstanceGeneral */
     public CustomizerInstanceGeneral(OracleJ2EEInstance aij) {
         initComponents();
+        
+        Collection<CloudSupport.WLDomain> domains = CloudSupport.getCloudUsableInstances();
+        CloudSupport.WLDomain selected = null;
+        for (CloudSupport.WLDomain domain : domains) {
+            if (domain.getUrl().equals(aij.getOracleInstance().getOnPremiseServerInstanceId())) {
+                selected = domain;
+                break;
+            }
+        }
+        
+        classpathComboBox.setModel(new DefaultComboBoxModel(CloudSupport.getCloudUsableInstances().toArray()));
+        if (selected != null) {
+            classpathComboBox.setSelectedItem(selected);
+        }
     }
 
     /** This method is called from within the constructor to

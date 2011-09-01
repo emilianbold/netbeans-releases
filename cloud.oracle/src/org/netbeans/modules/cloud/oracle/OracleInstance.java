@@ -273,10 +273,6 @@ public class OracleInstance {
         if (instance != null) {
             instance.deregister();
         }
-        String localId = getOnPremiseServerInstanceId();
-        if (localId != null) {
-            InstanceProperties.removeInstance(localId);
-        }
     }
     
     public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
