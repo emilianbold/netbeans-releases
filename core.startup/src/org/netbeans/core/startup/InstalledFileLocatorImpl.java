@@ -66,7 +66,6 @@ import java.util.regex.Pattern;
 import org.netbeans.Util;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.Places;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -83,7 +82,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private final File[] dirs;
     public InstalledFileLocatorImpl() {
         List<File> _dirs = new ArrayList<File>();
-        addDir(_dirs, System.getProperty(Places.USER_DIR_PROP));
+        addDir(_dirs, System.getProperty("netbeans.user")); // NOI18N
         String nbdirs = System.getProperty("netbeans.dirs"); // #27151
         if (nbdirs != null) {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
