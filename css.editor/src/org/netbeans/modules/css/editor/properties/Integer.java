@@ -47,18 +47,18 @@ package org.netbeans.modules.css.editor.properties;
  *
  * @author marekfukala
  */
-public class NonNegativeInteger implements CssPropertyValueAcceptor {
+public class Integer implements CssPropertyValueAcceptor {
 
     @Override
     public String id() {
-        return "non-negative-integer"; //NOI18N
+        return "number"; //NOI18N
     }
 
     @Override
     public boolean accepts(String token) {
         try {
-            int i = java.lang.Integer.parseInt(token);
-            return i >= 0;
+            java.lang.Integer.parseInt(token);
+            return true;
         } catch (NumberFormatException nfe) {
             return false;
         }

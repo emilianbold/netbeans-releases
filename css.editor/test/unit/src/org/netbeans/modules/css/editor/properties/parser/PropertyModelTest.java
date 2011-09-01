@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.util.Set;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -522,8 +524,8 @@ public class PropertyModelTest extends TestBase {
         text = "20px / ";
         csspv = new PropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(1, csspv.visibleAlternatives().size());
-        assertEquals("normal", csspv.visibleAlternatives().iterator().next().toString());
+        
+        assertAlternatives(csspv, false, "normal");
 
         text = "20px / 5pt";
         csspv = new PropertyValue(p, text);
@@ -536,7 +538,40 @@ public class PropertyModelTest extends TestBase {
         assertEquals(0, csspv.visibleAlternatives().size()); //only comma should be alternative
 
     }
-
+    
+    public void assertAlternatives(PropertyValue val, boolean origins, String... alternatives) {
+        Set<String> altNamesSet = new HashSet<String>();
+        altNamesSet.addAll(Arrays.asList(alternatives));
+        Collection<String> existingAltNames = new ArrayList<String>();
+        for(GrammarElement ge : val.visibleAlternatives()) {
+            String geName = !origins && ge instanceof ValueGrammarElement 
+                    ? ((ValueGrammarElement)ge).value()
+                    : ge.origin();
+            altNamesSet.remove(geName);
+            existingAltNames.add(geName);
+        }
+    
+        if(!altNamesSet.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for(String alt : altNamesSet) {
+                sb.append('"');
+                sb.append(alt);
+                sb.append('"');
+                sb.append(' ');
+            }
+            
+            StringBuilder sb2 = new StringBuilder();
+            for(String alt : existingAltNames) {
+                sb2.append('"');
+                sb2.append(alt);
+                sb2.append('"');
+                sb2.append(' ');
+            }
+            
+            assertTrue(String.format("Missing expected alternatives: %s, found alternatives: %s ", sb.toString(), sb2.toString()), false);
+        }
+    }
+    
     public void testFontThoroughly2() {
         PropertyModel p = CssModuleSupport.getProperty("font");
         String text = "italic";
@@ -575,8 +610,9 @@ public class PropertyModelTest extends TestBase {
         text = "italic large /";
         csspv = new PropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(1, csspv.visibleAlternatives().size());
-
+        
+        assertAlternatives(csspv, true, "line-height");
+        
         alt1 = csspv.alternatives().iterator().next();
         assertNotNull(alt1);
         assertEquals("line-height", alt1.origin());

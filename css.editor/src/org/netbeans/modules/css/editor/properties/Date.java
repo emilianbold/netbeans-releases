@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,26 +39,28 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.properties;
+
+import java.text.DateFormat;
+import java.text.ParseException;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class NonNegativeInteger implements CssPropertyValueAcceptor {
+public class Date implements CssPropertyValueAcceptor {
 
     @Override
     public String id() {
-        return "non-negative-integer"; //NOI18N
+        return "date"; //NOI18N
     }
 
     @Override
     public boolean accepts(String token) {
         try {
-            int i = java.lang.Integer.parseInt(token);
-            return i >= 0;
-        } catch (NumberFormatException nfe) {
+            DateFormat.getDateInstance().parse(token);
+            return true;
+        } catch (ParseException ex) {
             return false;
         }
     }
