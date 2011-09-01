@@ -98,11 +98,8 @@ public class ArchetypeWizardUtils {
     /** {@code Map<String,String>} of custom archetype properties to define. */
     public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
 
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(ArchetypeWizardUtils.class.getName());
 
-    /**
-     * No instances, utility class.
-     */
     private ArchetypeWizardUtils() {
     }
 
@@ -219,8 +216,8 @@ public class ArchetypeWizardUtils {
         config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
 
         if (additional != null) {
-            for (String key : additional.keySet()) {
-                config.setProperty(key, additional.get(key));
+            for (Map.Entry<String,String> entry : additional.entrySet()) {
+                config.setProperty(entry.getKey(), entry.getValue());
             }
         }
         config.setActivatedProfiles(Collections.<String>emptyList());
@@ -237,20 +234,8 @@ public class ArchetypeWizardUtils {
         }
 
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
-        // setup executor now..
-        //hack - we need to setup the user.dir sys property..
-        String oldUserdir = System.getProperty(USER_DIR_PROP); //NOI18N
-        System.setProperty(USER_DIR_PROP, directory.getAbsolutePath()); //NOI18N
-        try {
-            ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
-            task.result();
-        } finally {
-            if (oldUserdir == null) {
-                System.getProperties().remove(USER_DIR_PROP); //NOI18N
-            } else {
-                System.setProperty(USER_DIR_PROP, oldUserdir); //NOI18N
-            }
-        }
+        ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
+        task.result();
     }
 
     static Map<String, String> getAdditionalProperties(Artifact art) {
@@ -279,10 +264,10 @@ public class ArchetypeWizardUtils {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
             //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
         } catch (SAXException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         } finally {
             if (jf != null) {
                 try {
@@ -330,7 +315,8 @@ public class ArchetypeWizardUtils {
                             (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter, false); //NOI18N
                     progressCounter += 3;
                 }
-                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
+                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
+                progressCounter++;
                 Set<FileObject> projects = openProjects(rootFile, earFile);
                 handle.progress(++progressCounter);
                 return projects;
@@ -363,10 +349,15 @@ public class ArchetypeWizardUtils {
         handle.progress(++progressCounter);
 
         final File parent = projDir.getParentFile();
+        if (parent == null) {
+            throw new IOException("no parent of " + projDir);
+        }
         if (updateLastUsedProjectDir && parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        parent.mkdirs();
+        if (!parent.isDirectory() && !parent.mkdirs()) {
+            throw new IOException("could not create " + parent);
+        }
         handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), ++progressCounter);
 
         runArchetype(parent, vi, arch, additional);
@@ -419,7 +410,7 @@ public class ArchetypeWizardUtils {
         }
     }
 
-    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {
+    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi) {
         FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
         if (earDirFO == null) {
             return;
@@ -435,7 +426,6 @@ public class ArchetypeWizardUtils {
         }
 
         Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
-        progressCounter++;
     }
 
     public static class AddDependencyOperation implements ModelOperation<POMModel> {
