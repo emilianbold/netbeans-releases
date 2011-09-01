@@ -43,6 +43,10 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -51,6 +55,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.sonatype.aether.artifact.Artifact;
 
@@ -81,7 +86,39 @@ public class NbArtifactFixer implements ArtifactFixer {
                 return mavenProject.getPOMFile();
             }
         }
-        return null;
+        try {
+            return createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+            return null;
+        }
+    }
+
+    public static final String FALLBACK_NAME = "F@LLB@CK";
+    private static Map<String,File> fallbackPOMs = new HashMap<String,File>();
+    private static synchronized File createFallbackPOM(String groupId, String artifactId, String version) throws IOException {
+        String k = groupId + ':' + artifactId + ':' + version;
+        File fallbackPOM = fallbackPOMs.get(k);
+        if (fallbackPOM == null) {
+            fallbackPOM = File.createTempFile("fallback", ".pom");
+            fallbackPOM.deleteOnExit();
+            PrintWriter w = new PrintWriter(fallbackPOM);
+            try {
+                w.println("<project>");
+                w.println("<modelVersion>4.0.0</modelVersion>");
+                w.println("<groupId>" + groupId + "</groupId>");
+                w.println("<artifactId>" + artifactId + "</artifactId>");
+                w.println("<packaging>pom</packaging>");
+                w.println("<version>" + version + "</version>");
+                w.println("<name>" + FALLBACK_NAME + "</name>");
+                w.println("</project>");
+                w.flush();
+            } finally {
+                w.close();
+            }
+            fallbackPOMs.put(k, fallbackPOM);
+        }
+        return fallbackPOM;
     }
 
 }
