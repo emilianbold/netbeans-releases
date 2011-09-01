@@ -167,7 +167,7 @@ public class DefaultScriptProvider implements DebugScript.Provider {
 
         @Override
         public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Lookup.EMPTY;
         }
     }
 }
