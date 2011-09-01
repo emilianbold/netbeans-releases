@@ -746,7 +746,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private void initTableData(CompilationController info) {
-        ExecutableElement method = (ExecutableElement) refactoredObj.resolveElement(info);
+        TreePath path = refactoredObj.resolve(info);
+        ExecutableElement method = (ExecutableElement) info.getTrees().getElement(path);
         MethodTree tree = info.getTrees().getTree(method);
         
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
@@ -769,7 +770,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     typeRepresentation = getTypeStringRepresentation(parTree);
                 }
                 LocalVarScanner scan = new LocalVarScanner(info, null);
-                scan.scan(info.getTrees().getPath(method), par);
+                scan.scan(path, par);
                 Boolean removable = !scan.hasRefernces();
                 if (model.getRowCount()<=originalIndex) {
                     Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
