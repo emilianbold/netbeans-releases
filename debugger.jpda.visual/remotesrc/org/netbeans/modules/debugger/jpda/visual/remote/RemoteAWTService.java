@@ -89,8 +89,8 @@ public class RemoteAWTService {
         return RemoteAWTServiceListener.add(c, listener);
     }
     
-    static void removeLoggingListener(Component c, Object listener) {
-        RemoteAWTServiceListener.remove(c, listener);
+    static boolean removeLoggingListener(Component c, Class listenerClass, Object listener) {
+        return RemoteAWTServiceListener.remove(c, listenerClass, listener);
     }
     
     static void pushEventData(Component c, String[] data, String[] stack) {

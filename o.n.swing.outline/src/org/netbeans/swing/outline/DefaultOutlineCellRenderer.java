@@ -49,6 +49,10 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.CellRendererPane;
 import javax.swing.Icon;
@@ -60,9 +64,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreePath;
-import org.openide.awt.HtmlRenderer;
 
 /** An outline-aware TableCellRenderer which knows how to paint expansion
  * handles and indent child nodes an appropriate amount. 
@@ -82,8 +86,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private Reference<RenderDataProvider> lastRendererRef = new WeakReference<RenderDataProvider>(null); // Used by lazy tooltip
     private Reference<Object> lastRenderedValueRef = new WeakReference<Object>(null);                    // Used by lazy tooltip
     private static final Border expansionBorder = new ExpansionHandleBorder();
-    private static final boolean swingRendering = Boolean.getBoolean("nb.useSwingHtmlRendering"); //NOI18N
-    private HtmlRenderer.Renderer htmlRenderer = (swingRendering) ? null : HtmlRenderer.createRenderer();
+    private static final boolean useSwingRendering = Boolean.getBoolean("nb.useSwingHtmlRendering") || !HtmlRenderer.canUse(); //NOI18N
+    private final HtmlRenderer.Renderer htmlRenderer = (useSwingRendering) ? null : HtmlRenderer.createRenderer();
+    private final boolean swingRendering = htmlRenderer == null;
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
@@ -451,5 +456,87 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 chBox.paint(gch);
             }
         }
+    }
+    
+    /**
+     * Use reflection to access org.openide.awt.HtmlRenderer class
+     * so that we do not have to have a dependency on org.openide.awt module.
+     */
+    private static final class HtmlRenderer {
+        
+        static boolean canUse() {
+            try {
+                ClassLoader.getSystemClassLoader().loadClass("org.openide.util.Lookup");    // NOI18N
+                return true;
+            } catch (ClassNotFoundException ex) {
+                return false;
+            }
+        }
+
+        private static Renderer createRenderer() {
+            try {
+                // We are searching for org.openide.awt.HtmlRenderer class.
+                // However, we can not find it directly from the system class loader.
+                // We need to find it via Lookup
+                Class lookupClass = ClassLoader.getSystemClassLoader().loadClass("org.openide.util.Lookup");    // NOI18N
+                try {
+                    Object defaultLookup = lookupClass.getMethod("getDefault").invoke(null);    // NOI18N
+                    ClassLoader systemClassLoader = (ClassLoader) lookupClass.getMethod("lookup", Class.class).invoke(defaultLookup, ClassLoader.class);    // NOI18N
+                    Class htmlRendererClass = systemClassLoader.loadClass("org.openide.awt.HtmlRenderer");  // NOI18N
+                    Method createRenderer = htmlRendererClass.getMethod("createRenderer");                  // NOI18N
+                    return new Renderer(createRenderer.invoke(null));
+                } catch (NoSuchMethodException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                } catch (SecurityException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
+            } catch (ClassNotFoundException ex) {
+                return null;
+            }
+        }
+
+        private static class Renderer {
+            
+            private Object renderer;
+            private Method getTableCellRendererComponent;
+
+            private Renderer(Object renderer) throws NoSuchMethodException {
+                this.renderer = renderer;
+                this.getTableCellRendererComponent = TableCellRenderer.class.getMethod(
+                        "getTableCellRendererComponent",                                        // NOI18N
+                        JTable.class, Object.class, Boolean.TYPE, Boolean.TYPE, Integer.TYPE, Integer.TYPE);
+            }
+            
+            public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean selected, boolean leadSelection, int row, int column
+            ) {
+                try {
+                    return (Component) getTableCellRendererComponent.invoke(
+                            renderer,
+                            table, value, selected, leadSelection, row, column);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new IllegalStateException(ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new IllegalStateException(ex);
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+        
     }
 }

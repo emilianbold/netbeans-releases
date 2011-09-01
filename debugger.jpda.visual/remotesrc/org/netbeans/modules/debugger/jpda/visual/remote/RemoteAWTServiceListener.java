@@ -61,7 +61,11 @@ public class RemoteAWTServiceListener implements InvocationHandler {
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        logEventData(method.getName(), args.length > 0 ? args[0] : null);
+        String methodName = method.getName();
+        if ("equals".equals(methodName) && args.length == 1) {
+            return (proxy == args[0]) ? Boolean.TRUE : Boolean.FALSE;
+        }
+        logEventData(methodName, args.length > 0 ? args[0] : null);
         return null;
     }
     
@@ -89,12 +93,30 @@ public class RemoteAWTServiceListener implements InvocationHandler {
         return listener;
     }
     
-    public static void remove(Component c, Object listener) {
-        // TODO
+    public static boolean remove(Component c, Class listenerClass, Object listener) {
+        String removeName = "remove"+listenerClass.getSimpleName();
+        Method removeListenerMethod;
+        try {
+            removeListenerMethod = c.getClass().getMethod(removeName, new Class[] { listenerClass });
+        } catch (NoSuchMethodException ex) {
+            return false;
+        } catch (SecurityException ex) {
+            return false;
+        }
+        try {
+            Object removed = removeListenerMethod.invoke(c, new Object[] { listener });
+            if (removed instanceof Boolean) {
+                return ((Boolean) removed).booleanValue();
+            } else {
+                return true;
+            }
+        } catch (Exception ex) {
+            return false;
+        }
     }
     
     private void logEventData(String methodName, Object event) {
-        System.err.println("RemoteServiceListener.logEventData("+methodName+", "+event+")");
+        //System.err.println("RemoteServiceListener.logEventData("+methodName+", "+event+")");
         String toString = String.valueOf(event);
         Map properties = new HashMap();
         if (event != null) {

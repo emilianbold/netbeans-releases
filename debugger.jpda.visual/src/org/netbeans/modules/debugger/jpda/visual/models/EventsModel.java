@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.visual.models;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
@@ -50,6 +51,8 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -109,6 +113,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     private List<RemoteListener> customListenersList;
     private List<RemoteListener> swingListenersList;
     private JPDADebugger debugger;
+    private final Map<ObjectReference, Set<LoggingEventListener>> loggingListeners =
+            new HashMap<ObjectReference, Set<LoggingEventListener>>();
     
     public EventsModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -164,13 +170,33 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                     Exceptions.printStackTrace(pvex);
                     return new Object[] {};
                 }
+                Set<LoggingEventListener> lls = null;
+                synchronized (loggingListeners) {
+                    lls = loggingListeners.get(ci.getComponent());
+                    if (lls != null) {
+                        lls = new HashSet<LoggingEventListener>(lls);
+                    }
+                }
                 //Map<String, ListenerCategory> listenerCategories;
                 //customListenersMap = new TreeMap<String, ListenerCategory>();
                 //swingListenersMap = new TreeMap<String, ListenerCategory>();
                 customListenersList = new ArrayList<RemoteListener>(componentListeners.size());
                 swingListenersList = new ArrayList<RemoteListener>(componentListeners.size());
                 for (RemoteListener rl : componentListeners) {
-                    String type = rl.getListener().referenceType().name();
+                    ObjectReference listener = rl.getListener();
+                    if (lls != null) {
+                        boolean isLogging = false;
+                        for (LoggingEventListener ll : lls) {
+                            if (listener.equals(ll.getListenerObject())) {
+                                isLogging = true;
+                                break;
+                            }
+                        }
+                        if (isLogging) {
+                            continue; // Ignore the logging listener.
+                        }
+                    }
+                    String type = listener.referenceType().name();
                     if (JavaComponentInfo.isCustomType(type)) {
                         //listenerCategories = customListenersMap;
                         customListenersList.add(rl);
@@ -308,13 +334,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return "Events";
         }
         if (node == customListeners) {
-            return "Custom Listeners";
+            return NbBundle.getMessage(EventsModel.class, "CTL_CustomListeners");
         }
         if (node == swingListeners) {
-            return "Internal AWT/Swing Listeners";
+            return NbBundle.getMessage(EventsModel.class, "CTL_InternalListeners");
         }
         if (node == eventsLog) {
-            return "Event Log";
+            return NbBundle.getMessage(EventsModel.class, "CTL_EventLog");
         }
         if (node instanceof ListenerCategory) {
             return ((ListenerCategory) node).getType();
@@ -330,11 +356,11 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return re.getListenerMethod()+" ("+toString.substring(0, end)+')';
         }
         if (node instanceof Stack) {
-            return "Called From...";
+            return NbBundle.getMessage(EventsModel.class, "CTL_CalledFrom");
         }
         if (node instanceof Stack.Element) {
             Stack.Element e = (Stack.Element) node;
-            return "<html>"+e.getClassName()+".<b>"+e.getMethodName()+"</b>(<font color=\"#0000FF\">"+e.getFileName()+":"+e.getLineNumber()+"</font>)";
+            return "<html>"+e.getClassName()+".<b>"+e.getMethodName()+"</b>(<font color=\"#0000FF\">"+e.getFileName()+":"+e.getLineNumber()+"</font>)</html>";
         }
         return String.valueOf(node);
     }
@@ -457,7 +483,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         @Override
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
-                return "Set Logging Events...";
+                return NbBundle.getMessage(EventsModel.class, "CTL_SetLoggingEvents");
             }
             return super.getValue(key);
         }
@@ -466,8 +492,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         public void actionPerformed(ActionEvent e) {
             final AWTComponentInfo ci = selectedCI;
             if (ci == null) return ;
-            final String[] listenerClasses;
-            listenerClasses = selectListenerClass(ci);
+            final ReferenceType[] listenerClasses;
+            final List<LoggingEventListener> listenersToRemove = new ArrayList<LoggingEventListener>();
+            listenerClasses = selectListenerClass(ci, listenersToRemove);
             if (listenerClasses == null) {
                 return;
             }
@@ -475,21 +502,43 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                 @Override
                 public void run() {
                     boolean fire = false;
-                    for (String listenerClass : listenerClasses) {
-                        ReferenceType rt = getReferenceType(ci.getComponent().virtualMachine(), listenerClass);
-                        if (rt == null) {
-                            System.err.println("No class "+listenerClass); // TODO
-                            continue;
-                        }
+                    for (ReferenceType rt : listenerClasses) {
                         ObjectReference l;
                         try {
-                            l = RemoteServices.attachLoggingListener(ci, rt.classObject(), new LoggingEventListener());
+                            LoggingEventListener listener = new LoggingEventListener();
+                            l = RemoteServices.attachLoggingListener(ci, rt.classObject(), listener);
+                            listener.setListenerObject(l, rt.classObject());
+                            synchronized (loggingListeners) {
+                                Set<LoggingEventListener> listeners = loggingListeners.get(ci.getComponent());
+                                if (listeners == null) {
+                                    listeners = new HashSet<LoggingEventListener>();
+                                    loggingListeners.put(ci.getComponent(), listeners);
+                                }
+                                listeners.add(listener);
+                            }
                         } catch (PropertyVetoException pvex) {
                             Exceptions.printStackTrace(pvex);
                             return ;
                         }
                         if (l != null) {
                             fire = true;
+                        }
+                    }
+                    for (LoggingEventListener ll : listenersToRemove) {
+                        try {
+                            boolean detached = RemoteServices.detachLoggingListener(ci, ll.getListenerClass(), ll.getListenerObject());
+                            synchronized (loggingListeners) {
+                                Set<LoggingEventListener> listeners = loggingListeners.get(ci.getComponent());
+                                if (listeners != null) {
+                                    listeners.remove(ll);
+                                    if (listeners.isEmpty()) {
+                                        loggingListeners.remove(ci.getComponent());
+                                    }
+                                }
+                            }
+                        } catch (PropertyVetoException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return;
                         }
                     }
                     if (fire) {
@@ -511,32 +560,56 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return clazz;
         }
         
-        private String[] selectListenerClass(AWTComponentInfo ci) {
+        private ReferenceType[] selectListenerClass(AWTComponentInfo ci, Collection<LoggingEventListener> listenersToRemove) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
             System.err.println("Attachable Listeners = "+attachableListeners);
+            Set<LoggingEventListener> currentLoggingListeners = null;
+            synchronized (loggingListeners) {
+                Set<LoggingEventListener> listeners = loggingListeners.get(ci.getComponent());
+                if (listeners != null) {
+                    currentLoggingListeners = new HashSet<LoggingEventListener>(listeners);
+                }
+            }
             String[] listData = new String[attachableListeners.size()];
+            boolean[] logging = new boolean[listData.length];
+            LoggingEventListener[] loggingListeners = null;
+            if (currentLoggingListeners != null) {
+                loggingListeners = new LoggingEventListener[listData.length];
+            }
             for (int i = 0; i < listData.length; i++) {
-                listData[i] = attachableListeners.get(i).name();
+                ReferenceType rt = attachableListeners.get(i);
+                listData[i] = rt.name();
+                if (currentLoggingListeners != null) {
+                    for (LoggingEventListener ll : currentLoggingListeners) {
+                        if (rt.equals(ll.getListenerClass().reflectedType())) {
+                            logging[i] = true;
+                            loggingListeners[i] = ll;
+                        }
+                    }
+                }
             }
             SelectEventsPanel sep = new SelectEventsPanel();
-            boolean[] logging = new boolean[listData.length];
             sep.setData(listData, logging);
             NotifyDescriptor nd = new DialogDescriptor(sep, "Select Listener", true, null);
             Object res = DialogDisplayer.getDefault().notify(nd);
             if (DialogDescriptor.OK_OPTION.equals(res)) {
                 boolean[] loggingData = sep.getLoggingData();
-                int n = 0;
-                for (boolean l : loggingData) {
-                    if (l) n++;
+                int na = 0;
+                for (int i = 0; i < loggingData.length; i++) {
+                    if (loggingData[i] && !logging[i]) na++;
+                    //if (!loggingData[i] && logging[i]) nr++;
                 }
-                String[] listeners = new String[n];
-                int li = 0;
+                ReferenceType[] listenersToAdd = new ReferenceType[na];
+                int lai = 0;
                 for (int i = 0; i < listData.length; i++) {
-                    if (loggingData[i]) {
-                        listeners[li++] = listData[i];
+                    if (loggingData[i] && !logging[i]) {
+                        listenersToAdd[lai++] = attachableListeners.get(i);
+                    }
+                    if (!loggingData[i] && logging[i]) {
+                        listenersToRemove.add(loggingListeners[i]);
                     }
                 }
-                return listeners;
+                return listenersToAdd;
             } else {
                 return null;
             }
@@ -635,6 +708,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     }
     
     private class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
+        
+        private ObjectReference listener;
+        private ClassObjectReference listenerClass;
 
         @Override
         public void eventsData(AWTComponentInfo ci, String[] data, String[] stack) {
@@ -652,6 +728,19 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             fireNodeChanged(eventsLog);
         }
         
+        private void setListenerObject(ObjectReference listener, ClassObjectReference listenerClass) {
+            this.listener = listener;
+            this.listenerClass = listenerClass;
+        }
+        
+        public ObjectReference getListenerObject() {
+            return listener;
+        }
+        
+        public ClassObjectReference getListenerClass() {
+            return listenerClass;
+        }
+
     }
     
     private class RemoteEvent {
@@ -676,9 +765,9 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             int propertiesLength = data.length/2 - 1;
             Object[] properties = new Object[propertiesLength + 1];
             for (int i = 0; i < propertiesLength; i++) {
-                properties[i] = data[2 + 2*i] + " = "+data[3 + 2*i];
+                properties[i + 1] = data[2 + 2*i] + " = "+data[3 + 2*i];
             }
-            properties[propertiesLength] = stack;
+            properties[0] = stack;
             return properties;
         }
         

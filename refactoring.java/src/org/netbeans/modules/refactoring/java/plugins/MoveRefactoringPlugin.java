@@ -347,22 +347,9 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
         Problem prob = createAndAddElements(a, task, elements, refactoring);
         fireProgressListenerStop();
-        return prob != null ? prob : chainProblems(p, t.getProblem());
+        return prob != null ? prob : JavaPluginUtils.chainProblems(p, t.getProblem());
     }
     
-    private static Problem chainProblems(Problem p,Problem p1) {
-        Problem problem;
-        
-        if (p==null) return p1;
-        if (p1==null) return p;
-        problem=p;
-        while(problem.getNext()!=null) {
-            problem=problem.getNext();
-        }
-        problem.setNext(p1);
-        return p;
-    }
-
     String getNewPackageName() {
         if (isRenameRefactoring) {
             return ((RenameRefactoring) refactoring).getNewName();

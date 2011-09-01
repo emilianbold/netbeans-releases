@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -67,7 +68,10 @@ import org.openide.util.NbBundle;
  * @author Martin Fousek
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
-    public static final String SMARTY_AVAILABLE = "smarty-framework"; // NOI18N
+
+    /** Preferences property if the given {@link PhpModule} contains Smarty framework or not. */
+    public static final String PROP_SMARTY_AVAILABLE = "smarty-framework"; // NOI18N
+
     private static final String ICON_PATH = "org/netbeans/modules/php/smarty/resources/smarty-badge-8.png"; // NOI18N
     private static final SmartyPhpFrameworkProvider INSTANCE = new SmartyPhpFrameworkProvider();
 
@@ -146,31 +150,47 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         // get php files within the module
         long time = System.currentTimeMillis();
         try {
-            final FoundSmarty fs = new FoundSmarty();
+            final AtomicBoolean isSmartyFound = new AtomicBoolean(false);
+            final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
 
-            if (phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).get(SMARTY_AVAILABLE, "0").equals("1")) {
-                fs.setFound(true);
-            }
+            // TODO - can be removed one release after NB71
+            updateSmartyAvailableProperty(preferences);
 
-            if (fs.isFound()) {
+            if (preferences.getBoolean(PROP_SMARTY_AVAILABLE, false)) {
                 return true;
-            } else {
-                ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        FileObject sourceDirectory = phpModule.getSourceDirectory();
-                        if (locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0)) {
-                            phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).put(SMARTY_AVAILABLE, "1");
-                            fs.setFound(true);
-                        }
-                    }
-                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"),  // NOI18N
-                   new AtomicBoolean(false), false, 1000, 10000);
             }
-            return fs.isFound();
+
+            // search for appropriate MIME types inside source directory
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    FileObject sourceDirectory = phpModule.getSourceDirectory();
+                    if (locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0)) {
+                        isSmartyFound.set(true);
+                    }
+                }
+            }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"),  // NOI18N
+               new AtomicBoolean(false), false, 1000, 10000);
+
+            if (isSmartyFound.get()) {
+                preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
+            }
+
+            return isSmartyFound.get();
         } finally {
             Logger.getLogger(SmartyPhpFrameworkProvider.class.getName()).log(
-                    Level.INFO, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time));
+                    Level.INFO, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
+        }
+    }
+
+    /**
+     * Temporary method for updating Smarty php module preferences to use
+     * boolean value instead of flag for {@code #PROP_SMARTY_AVAILABLE).
+     */
+    private void updateSmartyAvailableProperty(Preferences preferences) {
+        if (preferences.get(PROP_SMARTY_AVAILABLE, "0").equals("1")) { //NOI18N
+            preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
         }
     }
 
@@ -246,22 +266,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
         public boolean isFoundSmarty() {
             return foundSmarty;
-        }
-    }
-
-    private static class FoundSmarty {
-        private boolean isFound;
-
-        public FoundSmarty() {
-            setFound(false);
-        }
-
-        public final synchronized void setFound(boolean isFound) {
-            this.isFound = isFound;
-        }
-
-        public final synchronized boolean isFound() {
-            return this.isFound;
         }
     }
 }

@@ -463,6 +463,7 @@ final class ViewBuilder {
             // Remove whole pView
             docReplace.index--;
             docReplace.removeCount++;
+            firstReplace = null;
         }
 
         if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {

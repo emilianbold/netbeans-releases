@@ -430,6 +430,63 @@ public class FlowTest extends NbTestCase {
                     "<null>");
     }
 
+    public void testAssert() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        boolean bb = false;\n" +
+                    "        assert bb = true;\n" +
+                    "        System.err.println(b`b);\n" +
+                    "    }\n" +
+                    "}\n",
+                    false,
+                    "false",
+                    "true");
+    }
+
+    public void testTryFinallyAndReturn() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        boolean bb = false;\n" +
+                    "        try {\n" +
+                    "            bb = true;\n" +
+                    "            return ;\n" +
+                    "        } finally {\n" +
+                    "            System.err.println(b`b);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "false",
+                    "true");
+    }
+
+    public void testWhileWriteInCondition() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 1;\n" +
+                    "        while (i`i-- > 0);\n" +
+                    "        System.err.println(ii);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "ii--");
+    }
+
+    public void testForWriteInCondition() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 1;\n" +
+                    "        for (;i`i-- > 0;);\n" +
+                    "        System.err.println(ii);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "ii--");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

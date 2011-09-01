@@ -75,6 +75,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     private Set<Modifier> modifiers;
     private String methodName;
     private String returnType;
+    private boolean overloadMethod;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -155,6 +156,58 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      */
     public void setReturnType(@NullAllowed String returnType) {
         this.returnType = returnType;
+    }
+    
+    /**
+     * Create a new overloading method with the new parameter and let the existing
+     * method delegate to it:
+     * e.g.
+     * <pre>
+     * int foo() {
+     *   return 1+1;
+     * }
+     * </pre>
+     * if "1+1" is selected, the code is converted to 
+     * <pre>
+     * int foo() {
+     *    return foo(1+1);
+     * }
+     * 
+     * int foo(int newparam) {
+     *    return newparam;
+     * }
+     * </pre>
+     * 
+     * @return true if a new overloading method will be created, false otherwise
+     */
+    public boolean isOverloadMethod() {
+        return overloadMethod;
+    }
+
+    /**
+     * Create a new overloading method with the new parameter and let the existing
+     * method delegate to it:
+     * e.g.
+     * <pre>
+     * int foo() {
+     *   return 1+1;
+     * }
+     * </pre>
+     * if "1+1" is selected, the code is converted to 
+     * <pre>
+     * int foo() {
+     *    return foo(1+1);
+     * }
+     * 
+     * int foo(int newparam) {
+     *    return newparam;
+     * }
+     * </pre>
+     * 
+     * @param overloadMethod true if you want to create a new overloading method
+     */
+    public void setOverloadMethod(boolean overloadMethod) {
+        this.overloadMethod = overloadMethod;
     }
     
     ////////////////////////////////////////////////////////////////////////////

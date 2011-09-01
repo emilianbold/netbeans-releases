@@ -63,7 +63,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -190,6 +193,7 @@ public class RenameTransformer extends RefactoringVisitor {
         
         if (el.equals(elementToFind) || isMethodMatch(el)) {
             String useThis = null;
+            String useSuper = null;
 
             if (elementToFind!=null && elementToFind.getKind().isField()) {
                 Scope scope = workingCopy.getTrees().getScope(path);
@@ -208,11 +212,38 @@ public class RenameTransformer extends RefactoringVisitor {
                             useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this."; // NOI18N
                         break;
                     }
-                } 
+                }
+            }
+            if (elementToFind!=null && elementToFind.getKind().isField() || elementToFind.getKind().equals(ElementKind.METHOD)) {
+                Scope scope = workingCopy.getTrees().getScope(path);
+                TypeElement enclosingTypeElement = scope.getEnclosingClass();
+                TypeMirror superclass = enclosingTypeElement.getSuperclass();
+                Types types = workingCopy.getTypes();
+                
+                if(!types.isSameType(types.getNoType(TypeKind.NONE), superclass) &&
+                    types.isSubtype(elementToFind.getEnclosingElement().asType(), superclass)) {
+                    for (Element ele : enclosingTypeElement.getEnclosedElements()) {
+                        if ((ele.getKind() == ElementKind.METHOD || ele.getKind().isField()) && ele.getSimpleName().toString().equals(newName)) {
+                            if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                String isSuper = ((MemberSelectTree) tree).getExpression().toString();
+                                if (isSuper.equals("super") || isSuper.endsWith(".super")) { // NOI18N
+                                    break;
+                                }
+                            }
+                            if (types.isSubtype(enclosingTypeElement.asType(), elementToFind.getEnclosingElement().asType()))
+                                useSuper = "super."; // NOI18N
+                            else 
+                                useSuper = elementToFind.getEnclosingElement().getSimpleName() + ".super."; // NOI18N
+                            break;
+                        }
+                    }
+                }
             }
             Tree nju;
             if (useThis!=null) {
                 nju = make.setLabel(tree, useThis + newName);
+            } else if (useSuper !=null) {
+                nju = make.setLabel(tree, useSuper + newName);
             } else {
                 nju = make.setLabel(tree, newName);
             }

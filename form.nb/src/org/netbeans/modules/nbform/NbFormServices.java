@@ -118,5 +118,10 @@ public class NbFormServices implements FormServices {
     public Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
     }
+
+    @Override
+    public boolean isLayoutExtensionsLibrarySupported() {
+        return true;
+    }
     
 }

@@ -691,6 +691,7 @@ websvc.wsitmodelext = webservices/code
 websvc.wsstackapi = webservices/code
 websvc.wsstack.jaxws = webservices/jax-ws
 welcome = ide/welcome
+whitelist = java/project
 wsdlextensions.file = xml/wsdl tools
 wsdlextensions.ftp = xml/wsdl tools
 wsdlextensions.jms = xml/wsdl tools

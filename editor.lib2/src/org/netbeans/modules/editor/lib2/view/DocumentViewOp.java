@@ -430,13 +430,9 @@ public final class DocumentViewOp
         }
 
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
-            String msg = "NOTIFY-REPAINT x0,y0,x1,y1: [" + x0 + "," + y0 + "," + x1 + "," + y1 + "] => [" // NOI18N
-                     + repaintX0 + "," + repaintY0 + "," + repaintX1 + "," + repaintY1 + "]\n"; // NOI18N
-            if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
-                ViewHierarchyImpl.REPAINT_LOG.log(Level.INFO, "Stack of " + msg, new Exception());
-            } else {
-                ViewHierarchyImpl.REPAINT_LOG.fine(msg);
-            }
+            String msg = "NOTIFY-REPAINT [x0,y0][x1,y1]: [" + x0 + "," + y0 + "][" + x1 + "," + y1 + "] => [" // NOI18N
+                     + repaintX0 + "," + repaintY0 + "][" + repaintX1 + "," + repaintY1 + "]\n"; // NOI18N
+            ViewUtils.log(ViewHierarchyImpl.REPAINT_LOG, msg);
         }
     }
     
@@ -457,8 +453,9 @@ public final class DocumentViewOp
                 public void run() {
                     JTextComponent textComponent = docView.getTextComponent();
                     if (textComponent != null) {
-                        if (LOG.isLoggable(Level.FINER)) {
-                            LOG.finer("REPAINT x0,y0,x1,y1: [" + x0 + "," + y0 + "," + x1 + "," + y1 + "]\n"); // NOI18N
+                        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
+                            ViewHierarchyImpl.REPAINT_LOG.finer("REPAINT [x0,y0][x1,y1]: [" +
+                                    x0 + "," + y0 + "][" + x1 + "," + y1 + "]\n"); // NOI18N
                         }
                         textComponent.repaint(x0, y0, x1 - x0, y1 - y0);
                     }
@@ -823,8 +820,8 @@ public final class DocumentViewOp
             updateCharMetrics(); // Update metrics with just updated font
             releaseChildrenUnlocked();
         }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(docView.getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
+        if (ViewHierarchyImpl.SETTINGS_LOG.isLoggable(Level.FINE)) {
+            ViewHierarchyImpl.SETTINGS_LOG.fine(docView.getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
                     ", bg=" + ViewUtils.toString(defaultBackground) + '\n'); // NOI18N
         }
@@ -853,7 +850,7 @@ public final class DocumentViewOp
             updateTextLimitLine(docView.getDocument());
             clearStatusBits(AVAILABLE_WIDTH_VALID);
 
-            LOG.fine("updateCharMetrics(): FontRenderContext: AA=" + frc.isAntiAliased() + // NOI18N
+            ViewHierarchyImpl.SETTINGS_LOG.fine("updateCharMetrics(): FontRenderContext: AA=" + frc.isAntiAliased() + // NOI18N
                     ", AATransformed=" + frc.isTransformed() + // NOI18N
                     ", AAFractMetrics=" + frc.usesFractionalMetrics() + // NOI18N
                     ", AAHint=" + frc.getAntiAliasingHint() + "\n"); // NOI18N

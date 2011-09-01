@@ -66,7 +66,7 @@ public class PHPNewLineIndenter {
     private static final Collection<PHPTokenId> CONTROL_STATEMENT_TOKENS = Arrays.asList(
             PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR,
             PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE);
-    
+
     private Collection<ScopeDelimiter> scopeDelimiters = null;
     private int indentSize;
     private int continuationSize;
@@ -114,7 +114,7 @@ public class PHPNewLineIndenter {
                     ts.moveNext();
 
                     boolean indentStartComment = false;
-                    
+
 
                    boolean movePrevious = false;
                    if (ts.token() == null) {
@@ -176,7 +176,7 @@ public class PHPNewLineIndenter {
 
                         insideString = true;
                     }
-                    
+
                     int bracketBalance = 0;
 
                     while (!insideString && ts.movePrevious()) {
@@ -269,7 +269,7 @@ public class PHPNewLineIndenter {
                                     int rememberOffset = ts.offset();
                                     ts.move(startExpression);
                                     ts.moveNext();
-                                    if (ts.token().id() != PHPTokenId.PHP_IF 
+                                    if (ts.token().id() != PHPTokenId.PHP_IF
                                             && ts.token().id() != PHPTokenId.PHP_WHILE
                                             && ts.token().id() != PHPTokenId.PHP_FOR
                                             && ts.token().id() != PHPTokenId.PHP_FOREACH) {
@@ -279,7 +279,7 @@ public class PHPNewLineIndenter {
                                         ts.move(rememberOffset);
                                         ts.moveNext();
                                     }
-                                    
+
                                 }
                             }
                         }
@@ -567,18 +567,18 @@ public class PHPNewLineIndenter {
 
         ts.move(origOffset);
         ts.moveNext();
-        
+
         return retunValue;
     }
 
     private boolean semicolonProceededByBreak(TokenSequence ts){
                 boolean retunValue = false;
-                
+
         if (ts.token().id() == PHPTokenId.PHP_BREAK){
             retunValue = true;
         } else if (ts.token().id() == PHPTokenId.PHP_NUMBER){
             int origOffset = ts.offset();
-            
+
             if (ts.movePrevious()){
                 if (ts.token().id() == PHPTokenId.WHITESPACE){
                     if (ts.movePrevious()){
@@ -592,7 +592,7 @@ public class PHPNewLineIndenter {
             ts.move(origOffset);
             ts.moveNext();
         }
-        
+
         return retunValue;
     }
 
@@ -634,9 +634,9 @@ public class PHPNewLineIndenter {
                 return false;
             }
 
-            if (tokenContent != null 
+            if (tokenContent != null
                     && TokenUtilities.equals(token.text(), tokenContent)){
-                
+
                 return false;
             }
 

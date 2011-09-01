@@ -75,7 +75,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         super(wizardPanel);
 
         initComponents();
-        projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
+        projectFolderPanel.add(BorderLayout.CENTER, projectFolderComponent);
         init();
     }
 

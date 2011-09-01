@@ -93,6 +93,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
+    private static final String SUPPORTS_DEFAULT_PLATFORM =
+        "supportsDefaultPlatform";  //NOI18N
 
     static final int CLASSPATH = 0;
     static final int SOURCES = 1;
@@ -112,6 +114,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Sources"), createPathTab(SOURCES));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Javadoc"), createPathTab(JAVADOC));
         final Lookup lkp = Lookups.forPath(CUSTOMIZERS_PATH);
+        final boolean isDefaultPlatform = platform instanceof DefaultPlatformImpl;
         for (Lookup.Item<? extends Customizer> li : lkp.lookupResult(Customizer.class).allItems()) {
             final Customizer c = li.getInstance();
             if (!(c instanceof Component)) {
@@ -124,6 +127,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     name = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.<FileObject>singleton(fo));
                 } catch (FileStateInvalidException ex) {
                     name = fo.getName();
+                }
+                if (isDefaultPlatform &&
+                    fo.getAttribute(SUPPORTS_DEFAULT_PLATFORM) == Boolean.FALSE) {
+                    continue;
                 }
             }
             c.setObject(platform);
