@@ -80,8 +80,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
     public <T> T lookupObject(String path, Class<T> type) {
         FileObject fo = FileUtil.getConfigFile(path);
         if (fo != null && fo.isData()) {
-            Object res = FOItem.createInstanceFor(fo, Object.class);
-            return type.isInstance(res) ? type.cast(res) : null;
+            return FOItem.createInstanceFor(fo, type);
         }
         return null;
     }        
