@@ -276,9 +276,33 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest {
         FileObject i = FileUtil.createData(FileUtil.getConfigRoot(), "d/meaningless-name.instance");
         i.setAttribute("instanceOf", "nonexistent.Interface");
         i.setAttribute("instanceClass", "nonexistent.Class");
+        doTestAvoidStackTraces(false);
+    }
+
+    public void testAvoidStackTracesForUnloadableInstanceCreate() throws Exception {
+        FileObject i = FileUtil.createData(FileUtil.getConfigRoot(), "d/meaningless-name.instance");
+        // simulate a methodvalue that cannot be loaded:
+        i.setAttribute("instanceCreate", "temp"); // make sure MemoryFileSystem.writeAttribute puts attr name in key set
+        i.setAttribute("instanceCreate", null); // but then set the value to null (current impl does not remove entry)
+        doTestAvoidStackTraces(true);
+    }
+
+    private void doTestAvoidStackTraces(boolean assumeItem) throws Exception {
         CharSequence log = Log.enable(RecognizeInstanceFiles.class.getName(), Level.INFO);
-        assertEquals(null, Lookups.forPath("d").lookup(Runnable.class));
+        Lookup lkp = Lookups.forPath("d");
+        assertEquals(null, lkp.lookup(Runnable.class));
+        Collection<? extends Lookup.Item<Object>> items = lkp.lookupResult(Object.class).allItems();
+        if (assumeItem) {
+            assertEquals(1, items.size());
+            Lookup.Item<Object> item = items.iterator().next();
+            assertEquals(Void.class, item.getType());
+            assertEquals(null, item.getInstance());
+        } else {
+            assertEquals(0, items.size());
+        }
         assertEquals("", log.toString());
+        // this ignores instanceOf (probably OK) and does print a CNFE stack (also probably OK):
+        assertEquals(null, FileUtil.getConfigObject("d/meaningless-name.instance", Object.class));
     }
 
 }
