@@ -1,0 +1,202 @@
+<?xml version="1.1" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="instanceUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="adminUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cloudUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="usernameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="systemLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="cloudUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Component id="adminUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Component id="instanceUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
+                      <Component id="usernameField" alignment="0" pref="104" max="32767" attributes="1"/>
+                  </Group>
+                  <Component id="serviceField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Component id="systemField" alignment="0" pref="267" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="systemLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="systemField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="adminUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="adminUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="instanceUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="instanceUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cloudUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cloudUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="usernameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="usernameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="adminUrlLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="adminUrlField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.adminUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="adminUrlField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="instanceUrlLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="instanceUrlField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.instanceUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="instanceUrlField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="cloudUrlLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cloudUrlField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.cloudUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="cloudUrlField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="usernameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="usernameField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.usernameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="usernameField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="passwordField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.passwordLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="passwordField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="serviceLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="serviceField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.serviceLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="serviceField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="systemLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="systemField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.systemLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="systemField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+  </SubComponents>
+</Form>

@@ -145,7 +145,7 @@ public class ServerLocationVisual extends JPanel {
         return true;
     }
 
-    private File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {
+    public static File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {
         if (WLPluginProperties.isGoodServerLocation(candidate)) {
             return candidate;
         }
