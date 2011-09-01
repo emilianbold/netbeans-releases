@@ -73,7 +73,7 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final TransferFilesChangeListener transferFilesChangeListener;
 
-    private TransferFilesChooserPanel transferPanel;
+    private volatile TransferFilesChooserPanel transferPanel;
     private State state = null;
 
     public RemoteConfirmationPanelVisual(RemoteConfirmationPanel wizardPanel, WizardDescriptor descriptor) {
@@ -147,7 +147,6 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     public Set<TransferFile> getRemoteFiles() {
-        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
         if (transferPanel == null) {
             return Collections.emptySet();
         }
