@@ -74,8 +74,9 @@ public class SanityBuildAction extends AbstractAction {
         config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
         config.setReactorStyle(ReactorStyle.ALSO_MAKE);
         config.setProject(nbproject);
-        config.setExecutionName("install"); // NOI18N
-        config.setTaskDisplayName(ACT_validate());
+        String label = build_label(nbproject.getProjectDirectory().getNameExt());
+        config.setExecutionName(label);
+        config.setTaskDisplayName(label);
         RunUtils.run(config);
     }
 

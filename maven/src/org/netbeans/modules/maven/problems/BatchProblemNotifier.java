@@ -117,7 +117,10 @@ public class BatchProblemNotifier {
         }
     }
 
-    @Messages({"dialog_title=Run Priming Build", "build_label=Priming Build"})
+    @Messages({
+        "dialog_title=Run Priming Build",
+        "# {0} - directory name of reactor", "build_label=Priming {0}"
+    })
     private static void showUI(File reactor) {
         Set<String> projects;
         synchronized (projectsByReactor) {
@@ -125,8 +128,9 @@ public class BatchProblemNotifier {
         }
         RunGoalsPanel pnl = new RunGoalsPanel();
         BeanRunConfig cfg = new BeanRunConfig();
-        cfg.setExecutionName(dialog_title());
-        cfg.setTaskDisplayName(dialog_title());
+        String label = build_label(reactor.getName());
+        cfg.setExecutionName(label);
+        cfg.setTaskDisplayName(label);
         cfg.setExecutionDirectory(reactor);
         try {
             FileObject reactorFO = FileUtil.toFileObject(reactor);
