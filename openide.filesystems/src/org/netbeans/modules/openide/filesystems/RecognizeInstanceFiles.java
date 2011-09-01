@@ -38,6 +38,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -254,6 +255,9 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             if (r == null) {
                 try {
                     Class<?> type = findTypeFor(f);
+                    if (type == null) {
+                        return null;
+                    }
                     if (SharedClassObject.class.isAssignableFrom(type)) {
                         r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
                     } else {
@@ -269,15 +273,20 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
 
         public Class<? extends Object> getType() {
-            return findTypeFor(fo);
+            Class<? extends Object> type = findTypeFor(fo);
+            return type != null ? type : Void.class;
         }
 
         private static Class<? extends Object> findTypeFor(FileObject f) {
+            String clazz = getClassName(f);
+            if (clazz == null) {
+                return null;
+            }
             try {
-                return Class.forName(getClassName(f), false, loader());
+                return Class.forName(clazz, false, loader());
             } catch (ClassNotFoundException ex) {
                 LOG.log(Level.INFO, ex.getMessage(), ex);
-                return Object.class;
+                return null;
             }
         }
 
@@ -313,6 +322,14 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             attr = fo.getAttribute("instanceCreate");
             if (attr != null) {
                 return attr.getClass().getName();
+            } else {
+                Enumeration<String> attributes = fo.getAttributes();
+                while (attributes.hasMoreElements()) {
+                    if (attributes.nextElement().equals("instanceCreate")) {
+                        // It was specified, just unloadable (usually a methodvalue).
+                        return null;
+                    }
+                }
             }
 
             // otherwise extract the name from the filename
