@@ -301,6 +301,9 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished);
     }
     
+    /**
+     * Used in qnew panel, provides files modified in cache
+     */
     private static final class ModifiedNodesProvider implements NodesProvider {
 
         @Override
@@ -354,6 +357,9 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         
     }
 
+    /**
+     * Used in qrefresh panel, provides also files that are already part of a patch
+     */
     private static final class QDiffNodesProvider implements NodesProvider {
         private final HgRevision parent;
 
@@ -375,10 +381,16 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
                     ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(statuses.size());
                     for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
-                        QFileNode node = new QFileNode(repository, e.getKey(), e.getValue());
+                        File f = e.getKey();
+                        FileInformation fi = e.getValue();
+                        if ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0 && HgUtils.isIgnored(f)) {
+                            // do not include not sharable files
+                            continue;
+                        }
+                        QFileNode node = new QFileNode(repository, f, fi);
                         nodesList.add(node);
                     }
-                    return nodesList.toArray(new QFileNode[statuses.size()]);
+                    return nodesList.toArray(new QFileNode[nodesList.size()]);
                 }
             } catch (HgException.HgCommandCanceledException ex) {
                 //
