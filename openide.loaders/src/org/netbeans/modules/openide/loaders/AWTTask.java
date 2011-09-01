@@ -92,6 +92,26 @@ public final class AWTTask extends org.openide.util.Task {
             super.waitFinished ();
         }
     }
+
+    @Override
+    public boolean waitFinished(long milliseconds) throws InterruptedException {
+        if (EventQueue.isDispatchThread()) {
+            run();
+            return true;
+        } else {
+            WAKE_UP.wakeUp();
+            synchronized (this) {
+                if (isFinished()) {
+                    return true;
+                }
+                wait(milliseconds);
+                return isFinished();
+            }
+        }
+    }
+    
+    
+    
     public static boolean waitFor(Task t) {
         assert EventQueue.isDispatchThread();
         if (!PENDING.isEmpty()) {
