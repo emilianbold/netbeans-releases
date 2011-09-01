@@ -75,7 +75,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.libs.oracle.cloud</code-name-base>
+                    <code-name-base>org.netbeans.libs.oracle.cloud</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

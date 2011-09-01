@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.oracle.cloud;
+package org.netbeans.libs.oracle.cloud;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,12 +54,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

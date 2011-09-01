@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.oracle.cloud;
+package org.netbeans.libs.oracle.cloud;
 
 
 import org.xml.sax.Attributes;

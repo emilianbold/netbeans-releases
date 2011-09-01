@@ -39,47 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.oracle.cloud;
+package org.netbeans.libs.oracle.cloud;
 
+
+import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
-/**
- *
- * @author Tomas Zezula
- */
-class WhiteListSystemPackageHandler extends DefaultHandler2 {
+public class WhiteListPackageImportHandler extends DefaultHandler2 {
 
-    private static final String SYS_PKG_TAG = "SystemPackage";  //NOI18N
+    private String startElement = null;
+    private String fileName;
+    private String pkg;
+    private List<String> otherFiles;
 
-    private StringBuilder pkg;
-
-    public WhiteListSystemPackageHandler() {
+    public WhiteListPackageImportHandler(List<String> otherFiles) {
+        this.otherFiles = otherFiles;
+    }
+    
+    public void endDocument() throws SAXException {
     }
 
-    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (SYS_PKG_TAG.equals(qName)) {
-            pkg = new StringBuilder();
+        startElement = qName;
+        if ("Import".equals(qName)) {
+            fileName = "";
+        }
+        if ("Package".equals(qName)) {
+            pkg = "";
         }
     }
 
-    @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if (pkg != null) {
-            pkg.append(ch, start, length);
+        String value = new String(ch, start, length);
+        if ("Import".equals(startElement)) {
+            fileName += value;
+        }
+        if ("Package".equals(startElement)) {
+            pkg += value;
         }
     }
 
-    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (SYS_PKG_TAG.equals(qName)) {
-            WhiteListConfigReader.getBuilder().addCheckedPackage(pkg.toString());
-            pkg = null;
+        startElement = null;
+        if ("Import".equals(qName)) {
+            otherFiles.add(fileName);
+        }
+        if ("Package".equals(qName)) {
+            WhiteListConfigReader.getBuilder().addCheckedPackage(pkg.toString().replace('\\', '.'));
         }
     }
-
-
-
 }

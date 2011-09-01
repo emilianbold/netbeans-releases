@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.libs.oracle.cloud
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/libs/oracle/cloud/Bundle.properties
+OpenIDE-Module: org.netbeans.libs.oracle.cloud
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/oracle/cloud/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

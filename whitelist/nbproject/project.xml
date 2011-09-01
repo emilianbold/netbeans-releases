@@ -77,7 +77,7 @@
                 <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
-                <friend>org.netbeans.modules.libs.oracle.cloud</friend>
+                <friend>org.netbeans.libs.oracle.cloud</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.api.whitelist</package>
                 <package>org.netbeans.spi.whitelist</package>
