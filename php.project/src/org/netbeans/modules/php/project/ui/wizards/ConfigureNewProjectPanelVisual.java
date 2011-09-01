@@ -77,7 +77,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton, new BrowseSources(),
                 NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
-        projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
+        projectFolderPanel.add(BorderLayout.CENTER, projectFolderComponent);
         init(wizardPanel.getWizardType());
     }
 
