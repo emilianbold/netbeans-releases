@@ -61,7 +61,9 @@ public class NbArtifactFixerTest extends NbTestCase {
         MavenFileOwnerQueryImpl.getInstance().registerCoordinates("g", "a", getWorkDir().toURI().toURL());
         assertEquals(pom, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:0")));
         assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:jar:0")));
-        assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:1")));
+        File fallback = new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:1"));
+        assertNotNull(fallback);
+        assertFalse(fallback.equals(pom));
         assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:stuff:0")));
     }
 

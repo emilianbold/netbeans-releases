@@ -449,6 +449,7 @@ public final class NbMavenProjectImpl implements Project {
                     ModelBuildingException mbe = (ModelBuildingException) e.getCause();
                     for (ModelProblem mp : mbe.getProblems()) {
                         if (mp.getException() instanceof UnresolvableModelException) {
+                            // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
                             UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
                             problemReporter.addMissingArtifact(getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
                         } else if (mp.getException() instanceof PluginResolutionException) {

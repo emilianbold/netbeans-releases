@@ -66,6 +66,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -391,7 +392,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
 
-    // XXX does this still do anything? ProblemReporterImplTest.testMissingParent suggests not
     @Messages({
         "ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.",
         "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. "
@@ -405,25 +405,17 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         } catch (IllegalStateException x) { // #197994
             parentDecl = null;
         }
+        if (parentDecl == null) {
+            return null;
+        }
         Artifact art = project.getParentArtifact();
-        if (art != null ) {
-            
-            if (parentDecl != null) {
-                File parent = parentDecl.getFile();
-                if (parent != null && parent.exists()) {
-                    return parentDecl;
-                }
-            }
-           
-            
-            if (art.getFile() != null && !art.getFile().exists()) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        ERR_NoParent(),
-                        MSG_NoParent(art.getId()),
-                        new SanityBuildAction(nbproject));
-                addReport(report);
-            }
-
+        if (art != null && NbArtifactFixer.FALLBACK_NAME.equals(parentDecl.getName())) {
+            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                    ERR_NoParent(),
+                    MSG_NoParent(art.getId()),
+                    new SanityBuildAction(nbproject));
+            addReport(report);
+            addMissingArtifact(art);
         }
         return parentDecl;
     }
