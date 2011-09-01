@@ -323,6 +323,7 @@ public class SrcNode extends FilterNode {
             if (fileObject != null) {
                 return fileObject;
             }
+            // just fallback, should not happen
             DataObject dataObject = originalNode.getLookup().lookup(DataObject.class);
             assert dataObject != null;
             fileObject = dataObject.getPrimaryFile();

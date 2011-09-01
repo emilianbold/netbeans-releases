@@ -46,7 +46,6 @@ import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.ChildFactory;
@@ -143,26 +142,27 @@ public final class Nodes {
     }
 
     public static class DummyChildren extends FilterNode.Children {
-        private final DataFilter filter;
+        private final PhpSourcesFilter filter;
 
-        DummyChildren(final Node originalNode, DataFilter filter) {
+        DummyChildren(final Node originalNode, PhpSourcesFilter filter) {
             super(originalNode);
             this.filter = filter;
         }
 
         @Override
         protected Node[] createNodes(Node key) {
-            DataObject dobj = key.getLookup().lookup(DataObject.class);
-            return dobj != null && filter.acceptDataObject(dobj) ? super.createNodes(key) : new Node[0];
+            FileObject file = key.getLookup().lookup(FileObject.class);
+            return file != null && filter.acceptFileObject(file) ? super.createNodes(key) : new Node[0];
         }
 
         @Override
         protected Node copyNode(final Node originalNode) {
-            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            if (dobj instanceof DataFolder) {
-                return new DummyNode(dobj.getNodeDelegate(), new DummyChildren(originalNode, filter));
+            FileObject file = originalNode.getLookup().lookup(FileObject.class);
+            Node nodeCopy = super.copyNode(originalNode);
+            if (file.isFolder()) {
+                return new DummyNode(nodeCopy, new DummyChildren(nodeCopy, filter));
             }
-            return new DummyNode(dobj.getNodeDelegate());
+            return new DummyNode(nodeCopy);
         }
     }
 }
