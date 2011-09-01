@@ -528,7 +528,7 @@ public final class NbMavenProject {
      * @since 2.24
      */
     public static boolean isErrorPlaceholder(@NonNull MavenProject project) {
-        return project.getId().equals("error:error:pom:0"); // see fallback_pom.xml
+        return project.getId().equals("error:error:pom:0"); // see NbMavenProjectImpl.getFallbackProject
     }
 
     @Override public String toString() {

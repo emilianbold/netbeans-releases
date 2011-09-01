@@ -145,7 +145,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -413,17 +412,11 @@ public final class NbMavenProjectImpl implements Project {
         "LBL_Incomplete_Project_Desc=Partially loaded Maven project; try building it."
     })
     private MavenProject getFallbackProject() throws AssertionError {
-        MavenProject newproject;
-        File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N //NOI18N
-        if (fallback != null) {
-            try {
-                newproject = getEmbedder().readProject(fallback);
-            } catch (Exception x) {
-                throw new AssertionError(x);
-            }
-        } else { // from a unit test
-            newproject = new MavenProject();
-        }
+        MavenProject newproject = new MavenProject();
+        newproject.setGroupId("error");
+        newproject.setArtifactId("error");
+        newproject.setVersion("0");
+        newproject.setPackaging("pom");
         newproject.setName(LBL_Incomplete_Project_Name());
         newproject.setDescription(LBL_Incomplete_Project_Desc());
         newproject.setFile(projectFile);
