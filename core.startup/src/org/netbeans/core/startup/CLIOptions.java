@@ -291,7 +291,7 @@ public class CLIOptions extends CLIHandler {
 
     /** Getter for user home directory. */
     public static String getUserDir () {
-        if (userDir == null) {
+        if (userDir == null || !userDir.equals(System.getProperty("netbeans.user"))) {
             userDir = System.getProperty ("netbeans.user");
             
             if ("memory".equals (userDir)) { // NOI18N
