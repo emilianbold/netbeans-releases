@@ -47,6 +47,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,8 +58,10 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -88,7 +91,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     @Override
     public void process(
             @NonNull final CompilationUnitTree toProcess,
-            @NonNull final String relativePath,
+            @NonNull final Indexable indexable,
             @NonNull final Lookup services) {
         final Trees trees = services.lookup(Trees.class);
         assert trees != null;
@@ -104,7 +107,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             final int start = (int) sp.getStartPosition(toProcess, p.tree);
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
-                final IndexDocument doc = IndexManager.createDocument(relativePath);
+                final IndexDocument doc = IndexManager.createDocument(indexable.getRelativePath());
                 doc.addPair(MSG, p.description, false, true);
                 doc.addPair(LINE, Integer.toString(ln), false, true);
                 index.addDocument(doc);
@@ -113,8 +116,8 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     }
 
     @Override
-    public void delete(String toDelete) {
-        index.removeDocument(toDelete);
+    public void delete(@NonNull final Indexable indexable) {
+        index.removeDocument(indexable.getRelativePath());
     }
 
     @Override
@@ -139,8 +142,13 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     @MimeRegistration(mimeType="text/x-java",service=JavaIndexerPlugin.Factory.class)
     public static class Factory implements JavaIndexerPlugin.Factory {
         @Override
-        public JavaIndexerPlugin create(final FileObject root, final FileObject cacheFolder) {
-            final WhiteListQuery.WhiteList wl = WhiteListQuery.getWhiteList(root);
+        public JavaIndexerPlugin create(final URL root, final FileObject cacheFolder) {
+            final FileObject rootFo = URLMapper.findFileObject(root);
+            if (rootFo == null) {
+                //TODO: clean up cache
+                return null;
+            }
+            final WhiteListQuery.WhiteList wl = WhiteListQuery.getWhiteList(rootFo);
             if (wl == null) {
                 return null;
             }
