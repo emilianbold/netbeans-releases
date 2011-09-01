@@ -252,7 +252,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     @Override
     public HelpCtx getHelp () {
-        return new HelpCtx(SelectUriPanel.class);
+        return new HelpCtx(SelectUriStep.class);
     }
 
     public String getSelectedUri () {
