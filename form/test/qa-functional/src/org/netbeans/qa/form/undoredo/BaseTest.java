@@ -175,12 +175,13 @@ public class BaseTest extends ExtJellyTestCase {
         designer.design();
         //init property sheet and select the proper "tab"
         PropertySheetOperator pso = cio.properties();
- 
+        inspector.performAction(new Action(null, "Add From Palette|Swing Containers|Panel"), "[JFrame]");
         // selectPropertiesTab(pso);
-        new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
+        //new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
 
         // selectPropertiesTab(pso);
-        new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
+        inspector.performAction(new Action(null, "Add From Palette|Swing Containers|Panel"), "[JFrame]");
+        //new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
 
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
@@ -195,14 +196,18 @@ public class BaseTest extends ExtJellyTestCase {
         new ColorProperty(new PropertySheetOperator("jPanel2 [JPanel] - Properties"), "background").setRGBValue(252, 34, 3);
 
         // add JButton1 to JPanel1
-        new Action(null, "Add From Palette|Swing Controls|Button").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel1 [JPanel]"));
+        inspector.performAction(new Action(null, "Add From Palette|Swing Controls|Button"),"[JFrame]|JPanel1 [JPanel]");
+       // new Action(null, "Add From Palette|Swing Controls|Button").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel1 [JPanel]"));
 
         // add JButton2 to JPanel2
-        new Action(null, "Add From Palette|Swing Controls|Button").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
+        inspector.performAction(new Action(null, "Add From Palette|Swing Controls|Button"),"[JFrame]|JPanel2 [JPanel]");
+        //new Action(null, "Add From Palette|Swing Controls|Button").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
 
         // cut-paste JButton1 from JPanel1 to JPanel2
-        new Action(null, "Cut").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]"));
-        new Action(null, "Paste").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
+        inspector.performAction(new Action(null, "Cut"), "[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]");
+        //new Action(null, "Cut").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]"));
+        inspector.performAction(new Action(null, "Paste"), "[JFrame]|JPanel2 [JPanel]");
+       // new Action(null, "Paste").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
 
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
@@ -210,13 +215,14 @@ public class BaseTest extends ExtJellyTestCase {
         new Property(pso, "text").setValue("<html><font color='red' size='+3'>QA</font> test");
 
         // change order
-        formnode.select();
-        formnode.performPopupAction("Open");
-        designer=new FormDesignerOperator(FILE_NAME);
-        designer.source();
-        designer.design();
-        inspector=new ComponentInspectorOperator();
-        new ActionNoBlock(null, "Change Order...").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
+        //formnode.select();
+        //formnode.performPopupAction("Open");
+        //designer=new FormDesignerOperator(FILE_NAME);
+       // designer.source();
+        //designer.design();
+        //inspector=new ComponentInspectorOperator();
+        inspector.performAction(new ActionNoBlock(null, "Change Order..."), "[JFrame]|JPanel2 [JPanel]");
+        //new ActionNoBlock(null, "Change Order...").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
         NbDialogOperator changeOrder = new NbDialogOperator("Change Order");
         new JListOperator(changeOrder).selectItem(1);
         new JButtonOperator(changeOrder, "Move up").doClick();
