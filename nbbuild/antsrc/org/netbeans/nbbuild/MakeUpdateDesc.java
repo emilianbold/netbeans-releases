@@ -658,7 +658,8 @@ public class MakeUpdateDesc extends MatchingTask {
         String requireBundle = attr.getValue("Require-Bundle");
         if (requireBundle != null) {
             StringBuilder b = new StringBuilder();
-            for (String dep : requireBundle.split(", ")) {
+            // http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+            for (String dep : requireBundle.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
                 Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
                 if (!m.matches()) {
                     throw new BuildException("Could not parse dependency: " + dep + " in " + whereFrom);
@@ -673,6 +674,11 @@ public class MakeUpdateDesc extends MatchingTask {
                         continue;
                     }
                     String val = m2.group(2);
+                    if (val.matches("[0-9]+([.][0-9]+)*")) {
+                        // non-range dep occasionally used in OSGi; no exact equivalent in NB
+                        b.append(" > ").append(val);
+                        continue;
+                    }
                     Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
                     if (!m3.matches()) {
                         throw new BuildException("Could not parse version range: " + val + " in " + whereFrom);
