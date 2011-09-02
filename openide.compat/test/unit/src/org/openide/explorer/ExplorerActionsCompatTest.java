@@ -63,9 +63,9 @@ import org.openide.nodes.AbstractNode;
  *
  * @author Jaroslav Tulach
  */
-public class ExplorerActionsImplTest extends ExplorerPanelTest {
+public class ExplorerActionsCompatTest extends ExplorerPanelTest {
     
-    public ExplorerActionsImplTest(java.lang.String testName) {
+    public ExplorerActionsCompatTest(java.lang.String testName) {
         super(testName);
     }
     

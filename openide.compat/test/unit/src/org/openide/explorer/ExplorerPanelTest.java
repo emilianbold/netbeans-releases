@@ -293,8 +293,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
         java.awt.datatransfer.StringSelection ss = new java.awt.datatransfer.StringSelection ("Hi");
         ec.setContents(ss, ss);
-        
-        assertTranferables (ss, enabledNode.lastTransferable);
+        assertTranferables (ss, enabledNode.getLastTransferable(ss));
         
         stopActions (manager);
 
@@ -303,18 +302,16 @@ public class ExplorerPanelTest extends NbTestCase {
         
         java.awt.datatransfer.StringSelection ns = new java.awt.datatransfer.StringSelection ("New Selection");
         ec.setContents(ns, ns);
-
-        assertTranferables (ss, enabledNode.lastTransferable);
+        assertTranferables (ss, enabledNode.getLastTransferable(ss));
         
         startActions (manager);
         
         assertFalse ("The selected node is the disabled one, so now we are disabled", paste.isEnabled ());
-        assertTranferables (ns, disabledNode.lastTransferable);
-        
+        assertTranferables (ns, disabledNode.getLastTransferable(ns));
         
         ns = new java.awt.datatransfer.StringSelection("Another Selection");
         ec.setContents(ns, ns);
-        assertTranferables (ns, disabledNode.lastTransferable);
+        assertTranferables (ns, disabledNode.getLastTransferable(ns));
     }
     
     public void skipForNowtestSelectedNodesInDeserializedPanel () throws Exception {
@@ -397,7 +394,7 @@ public class ExplorerPanelTest extends NbTestCase {
         public boolean canDelete;
         private boolean customDelete;
         public PasteType[] types = new PasteType[0];
-        public java.awt.datatransfer.Transferable lastTransferable;
+        private java.awt.datatransfer.Transferable lastTransferable;
         
         public int countCopy;
         public int countCut;
@@ -450,9 +447,10 @@ public class ExplorerPanelTest extends NbTestCase {
             return retValue;
         }
         
-        protected void createPasteTypes(java.awt.datatransfer.Transferable t, java.util.List s) {
+        protected synchronized void createPasteTypes(java.awt.datatransfer.Transferable t, java.util.List s) {
             this.lastTransferable = t;
             s.addAll (Arrays.asList (types));
+            notifyAll();
         }
 
         public Object getValue(String attributeName) {
@@ -460,6 +458,32 @@ public class ExplorerPanelTest extends NbTestCase {
                 return Boolean.TRUE;
             }
             return super.getValue(attributeName);
+        }
+
+        public synchronized Transferable getLastTransferable(Transferable waitFor) throws Exception {
+            WAIT: for (int loop = 0; loop < 60; loop++) {
+                if (loop > 0) {
+                    wait(500);
+                }
+                if (lastTransferable != null) {
+                    java.awt.datatransfer.DataFlavor[] arr1 = lastTransferable.getTransferDataFlavors();
+                    java.awt.datatransfer.DataFlavor[] arr2 = waitFor.getTransferDataFlavors();
+
+                    if (Arrays.asList(arr1).equals(Arrays.asList(arr2))) {
+                        for (int i = 0; i < arr1.length; i++) {
+                            Object f1 = convert(lastTransferable.getTransferData(arr1[i]));
+                            Object f2 = convert(waitFor.getTransferData(arr1[i]));
+
+                            if (!f1.equals(f2)) {
+                                continue WAIT;
+                            }
+                        }
+                        
+                        return lastTransferable;
+                    }
+                }
+            }
+            return null;
         }
         
     }
