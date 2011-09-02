@@ -47,8 +47,13 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
 
@@ -59,7 +64,7 @@ import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
 public class CustomizerInstanceGeneral extends javax.swing.JPanel {
 
     /** Creates new form CustomizerInstanceGeneral */
-    public CustomizerInstanceGeneral(OracleJ2EEInstance aij) {
+    public CustomizerInstanceGeneral(final OracleJ2EEInstance aij) {
         initComponents();
         
         Collection<CloudSupport.WLDomain> domains = CloudSupport.getCloudUsableInstances();
@@ -70,11 +75,45 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
                 break;
             }
         }
+        List<CloudSupport.WLDomain> weblogics = new ArrayList<CloudSupport.WLDomain>(CloudSupport.getCloudUsableInstances());
+        boolean noServers = weblogics.isEmpty();
+        if (selected == null) {
+            if (aij.getOracleInstance().getOnPremiseServerInstanceId() != null) {
+                aij.getOracleInstance().setOnPremiseServerInstanceId(null);
+                OracleInstanceManager.getDefault().update(aij.getOracleInstance());
+            }
+            weblogics.add(0, null);
+        }
         
-        classpathComboBox.setModel(new DefaultComboBoxModel(CloudSupport.getCloudUsableInstances().toArray()));
+        classpathComboBox.setModel(new DefaultComboBoxModel(weblogics.toArray()));
         if (selected != null) {
             classpathComboBox.setSelectedItem(selected);
         }
+        
+        classpathComboBox.getModel().addListDataListener(new ListDataListener() {
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                final CloudSupport.WLDomain domain = (CloudSupport.WLDomain)classpathComboBox.getSelectedItem();
+                String url = null;
+                if (domain != null) {
+                    url = domain.getUrl();
+                }
+                aij.getOracleInstance().setOnPremiseServerInstanceId(url);
+                OracleInstanceManager.getDefault().update(aij.getOracleInstance());
+                return;
+            }
+        });
+        
+        warningLabel.setVisible(noServers);
     }
 
     /** This method is called from within the constructor to
@@ -88,33 +127,43 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
 
         classpathLabel = new javax.swing.JLabel();
         classpathComboBox = new javax.swing.JComboBox();
+        warningLabel = new javax.swing.JLabel();
 
         classpathLabel.setLabelFor(classpathComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, org.openide.util.NbBundle.getMessage(CustomizerInstanceGeneral.class, "CustomizerInstanceGeneral.classpathLabel.text")); // NOI18N
+
+        warningLabel.setFont(warningLabel.getFont().deriveFont(warningLabel.getFont().getSize()-2f));
+        warningLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerInstanceGeneral.class, "CustomizerInstanceGeneral.warningLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addComponent(classpathLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(classpathComboBox, 0, 288, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(warningLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addComponent(classpathComboBox, 0, 245, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(classpathLabel)
                     .addComponent(classpathComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(warningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(55, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox classpathComboBox;
     private javax.swing.JLabel classpathLabel;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 }

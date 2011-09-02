@@ -130,6 +130,11 @@ public class OracleInstanceManager {
                 props.putString(CLOUD_URL, ai.getCloudURL());
                 props.putString(SYSTEM, ai.getSystem());
                 props.putString(SERVICE, ai.getService());
+                if (ai.getOnPremiseServerInstanceId() == null) {
+                    props.removeKey(ON_PREMISE_SERVICE_INSTANCE_ID);
+                } else {
+                    props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
+                }
                 saveUsernameAndPassword(ai);
                 notifyChange();
                 break;

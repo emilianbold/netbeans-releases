@@ -62,8 +62,8 @@ public final class CloudSupport {
 
     private static final Logger LOGGER = Logger.getLogger(CloudSupport.class.getName());
 
-    private static final Version MINIMAL_WL_VERSION =
-            Version.fromJsr277OrDottedNotationWithFallback("10.3.6"); // NOI18N
+//    private static final Version MINIMAL_WL_VERSION =
+//            Version.fromJsr277OrDottedNotationWithFallback("10.3.6"); // NOI18N
 
     private CloudSupport() {
         super();
@@ -74,11 +74,11 @@ public final class CloudSupport {
         for (String url : Deployment.getDefault().getInstancesOfServer(WLDeploymentFactory.SERVER_ID)) {
             try {
                 WLDeploymentManager dm = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDisconnectedDeploymentManager(url);
-                if (MINIMAL_WL_VERSION.isBelowOrEqual(dm.getDomainVersion())) {
+//                if (MINIMAL_WL_VERSION.isBelowOrEqual(dm.getDomainVersion())) {
                     ServerInstance inst = Deployment.getDefault().getServerInstance(url);
                     domains.add(new WLDomain(inst.getDisplayName(),
                             url, dm.getDomainVersion()));
-                }
+//                }
             } catch (DeploymentManagerCreationException ex) {
                 // noop ignore
                 LOGGER.log(Level.FINE, null, ex);

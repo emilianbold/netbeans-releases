@@ -226,6 +226,16 @@ public class OracleInstance {
         return onPremiseServerInstanceId;
     }
 
+    public void setOnPremiseServerInstanceId(String onPremiseServerInstanceId) {
+        this.onPremiseServerInstanceId = onPremiseServerInstanceId;
+        synchronized (this) {
+            if (j2eeInstance != null) {
+                j2eeInstance.getInstanceProperties().setProperty(
+                        OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, onPremiseServerInstanceId);
+            }
+        }
+    }
+    
     private synchronized void resetCache() {
         platform = null;
     }
