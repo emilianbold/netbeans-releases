@@ -222,7 +222,7 @@ class PolicyManager {
         if ( moduleProvider != null ){
             String id = moduleProvider.getServerInstanceID();
             support= findPolicySupport(id);
-            if ( !hasServicePolicies(wsdl, 
+            if ( support != null && !hasServicePolicies(wsdl, 
                     Collections.singletonList( support.getLookup(wsdl))))
             {
                 support = null;
