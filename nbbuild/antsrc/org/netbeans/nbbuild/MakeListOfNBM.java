@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -106,7 +107,7 @@ public class MakeListOfNBM extends Task {
         }
     }
 
-    public ArrayList getLocales () {
+    public List<String> getLocales () {
         return this.locales;
     }
 
@@ -119,7 +120,7 @@ public class MakeListOfNBM extends Task {
         }
     }
 
-    public ArrayList getBrandings () {
+    public List<String> getBrandings () {
         return this.brandings;
     }
 
