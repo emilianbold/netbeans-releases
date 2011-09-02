@@ -215,50 +215,6 @@ public class JiraIssueTest extends NbTestCase {
         }
     }
 
-    public void testSyncSession() throws Throwable {
-        try {
-
-            // create
-            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
-            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
-
-            String taskId = rr.getTaskId();
-
-            TaskRepositoryManager trm = new TaskRepositoryManager();
-            trm.addRepository(JiraTestUtil.getTaskRepository());
-            trm.addRepositoryConnector(getRepositoryConnector());
-            TaskDataStore tds = new TaskDataStore(trm);
-
-            TaskList tl = new TaskList();
-            TaskActivityManager tam = new TaskActivityManager(trm, tl);
-            TaskDataManager tdm = new TaskDataManager(tds, trm, tl, tam);
-            tdm.setDataPath("/tmp/dilino");
-            SynchronizationSession ss = new SynchronizationSession(tdm);
-
-            // list
-            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
-            long t = System.currentTimeMillis();
-            List<TaskData> l = list(ss);
-            long n = System.currentTimeMillis();
-            System.out.println(" +++ " + (n - t));
-            for (TaskData taskData : l) {
-                tdm.putUpdatedTaskData(
-                    new TaskTask(JiraTestUtil.getTaskRepository().getConnectorKind(), JiraTestUtil.getTaskRepository().getUrl(), taskData.getTaskId()),
-                    taskData,
-                    true);
-            }
-            t = System.currentTimeMillis();
-            l = list(ss);
-            n = System.currentTimeMillis();
-            System.out.println(" +++ " + (n - t));
-            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
-
-        } catch (Exception exception) {
-            JiraTestUtil.handleException(exception);
-        }
-    }
-
     public void testJiraIssueWorklog() throws Throwable {
         try {
 
