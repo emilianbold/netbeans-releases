@@ -66,8 +66,10 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
@@ -77,7 +79,6 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.BeanInfoWorker;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -98,8 +99,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -382,10 +385,111 @@ public final class BIEditorSupport extends DataEditorSupport
         preferredID = MV_JAVA_ID,
         mimeType = MIME_BEAN_INFO,
         position = 10)
-    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-        return new MultiViewEditorElement(context);
-    }
+ 
+    public static final class JavaElement extends CloneableEditor implements MultiViewElement, Externalizable {
+        
+        private static final long serialVersionUID = 1L;
+        private MultiViewElementCallback callback;
+        private DataObject dataObject;
 
+        public JavaElement(Lookup context) {
+            super(context.lookup(DataEditorSupport.class));
+            this.dataObject = context.lookup(DataObject.class);
+        }
+
+        /**
+         * serialization stuff; do not use
+         */
+        private JavaElement() {
+        }
+
+        public JComponent getVisualRepresentation() {
+            return this;
+        }
+
+        public JComponent getToolbarRepresentation() {
+            JComponent toolbar = null;
+            JEditorPane jepane = getEditorPane();
+            if (jepane != null) {
+                Document doc = jepane.getDocument();
+                if (doc instanceof NbDocument.CustomToolbar) {
+                    toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(jepane);
+                }
+            }
+            return toolbar;
+        }
+
+        public void setMultiViewCallback(MultiViewElementCallback callback) {
+            this.callback = callback;
+            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
+            editor.setTopComponent(callback.getTopComponent());
+        }
+
+        public CloseOperationState canCloseElement() {
+            BIEditorSupport editor = findEditor(dataObject);
+            return editor.canCloseElement(callback.getTopComponent());
+        }
+
+        @Override
+        public void componentActivated() {
+            super.componentActivated();
+            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
+            if (editor.worker != null && editor.worker.isModelModified()) {
+                editor.worker.generateSources();
+            }
+        }
+
+        @Override
+        public void componentDeactivated() {
+            super.componentDeactivated();
+        }
+
+        @Override
+        public void componentHidden() {
+            super.componentHidden();
+        }
+
+        @Override
+        public void componentShowing() {
+            super.componentShowing();
+        }
+
+        @Override
+        public void componentClosed() {
+            // XXX copied from form module see issue 55818
+            super.canClose(null, true);
+            super.componentClosed();
+        }
+        
+        @Override
+        protected boolean closeLast() {
+            return true;
+        }
+
+        @Override
+        public void componentOpened() {
+            super.componentOpened();
+        }
+
+        @Override
+        public void updateName() {
+            super.updateName();
+            if (callback != null) {
+                callback.updateTitle(getDisplayName());
+            }
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            super.readExternal(in);
+        }
+
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            super.writeExternal(out);
+        }
+        
+    }
             
     @MultiViewElement.Registration (
         displayName="#LAB_BeanInfoEditorView",
