@@ -279,6 +279,7 @@ public class CommentsPanel extends JPanel {
 
         // Stack-traces
         textPane.setText(comment);
+        HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
         HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);

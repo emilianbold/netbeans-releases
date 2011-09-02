@@ -52,17 +52,19 @@ import junit.framework.Assert;
 public class IsDirCntSecurityManager extends SecurityManager {
 
     private static int cnt;
+    private static StringBuffer sb;
 
     public static void initialize() {
         if (!(System.getSecurityManager() instanceof IsDirCntSecurityManager)) {
             System.setSecurityManager(new IsDirCntSecurityManager());
         }
         cnt = 0;
+        sb = new StringBuffer();
     }
 
     public static void assertCounts(String msg, int minCount, int maxCount) {
-        StringBuilder sb = new StringBuilder(msg);
-        sb.append(" limits = <").append(minCount).append(',');
+        sb.insert(0, msg);
+        sb.append("\n\n\nlimits = <").append(minCount).append(',');
         sb.append(maxCount).append('>').append("; count# = ");
         sb.append(cnt).append(".");
         Assert.assertTrue(sb.toString(), cnt >= minCount && cnt <= maxCount);
@@ -71,6 +73,11 @@ public class IsDirCntSecurityManager extends SecurityManager {
 
     @Override
     public void checkRead(String file) {
+        String java = System.getProperty("java.home");
+        if (file.startsWith(java)) {
+            return;
+        }
+        
         super.checkRead(file);
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (int i = 0; i < stack.length - 1; i++) {
@@ -81,6 +88,7 @@ public class IsDirCntSecurityManager extends SecurityManager {
                 ) {
                     // File.isDirectory() has been called? If so, count it in.
                     cnt++;
+                    sb.append('\n').append("touch ").append(file);
                     break;
                 }
             }

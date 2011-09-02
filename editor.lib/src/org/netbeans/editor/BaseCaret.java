@@ -70,6 +70,8 @@ import java.awt.event.InputEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -85,6 +87,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import javax.swing.event.ChangeListener;
@@ -94,6 +97,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.fold.Fold;
@@ -109,9 +113,12 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.DocUtils;
+import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -140,6 +147,12 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** @since 1.23 */
     public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+
+    /** Boolean property defining whether selection is being rectangular in a particular text component. */
+    private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
+
+    /** List of positions (with even size) defining regions of rectangular selection. Maintained by BaseCaret. */
+    private static final String RECTANGULAR_SELECTION_REGIONS_PROPERTY = "rectangular-selection-regions"; // NOI18N
 
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
@@ -303,6 +316,14 @@ AtomicLockListener, FoldHierarchyListener {
     
     private int minSelectionEndOffset;
     
+    private boolean rectangularSelection;
+    
+    /**
+     * List of start-pos and end-pos pairs that denote rectangular selection
+     * on the selected lines.
+     */
+    private List<Position> rectangularSelectionRegions;
+    
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
     }
@@ -325,7 +346,7 @@ AtomicLockListener, FoldHierarchyListener {
                 newWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
             }
 
-            FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
+            FontColorSettings fcs = MimeLookup.getLookup(DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
             if (fcs != null) {
                 if (overwriteMode) {
                     AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE); //NOI18N
@@ -372,7 +393,7 @@ AtomicLockListener, FoldHierarchyListener {
                         offset = doc.getLength();
                     }
                     if (doc != null) {
-                        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
+                        CharSequence docText = DocumentUtilities.getText(doc);
                         dotChar[0] = docText.charAt(offset);
                     }
                     Rectangle newCaretBounds;
@@ -499,7 +520,7 @@ AtomicLockListener, FoldHierarchyListener {
             // ideally the oldDoc param shouldn't exist and only listenDoc should be used
             assert (oldDoc == listenDoc);
 
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.removeDocumentListener(
+            DocumentUtilities.removeDocumentListener(
                     oldDoc, this, DocumentListenerPriority.CARET_UPDATE);
             oldDoc.removeAtomicLockListener(this);
 
@@ -519,7 +540,7 @@ AtomicLockListener, FoldHierarchyListener {
 
         if (newDoc != null) {
 
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.addDocumentListener(
+            DocumentUtilities.addDocumentListener(
                     newDoc, this, DocumentListenerPriority.CARET_UPDATE);
             listenDoc = newDoc;
             newDoc.addAtomicLockListener(this);
@@ -533,7 +554,7 @@ AtomicLockListener, FoldHierarchyListener {
                 Utilities.annotateLoggable(e);
             }
 
-            prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
+            prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
             if (prefs != null) {
                 weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
                 prefs.addPreferenceChangeListener(weakPrefsListener);
@@ -793,6 +814,75 @@ AtomicLockListener, FoldHierarchyListener {
         return component.getToolkit().getSystemSelection();
     }
     
+    private void updateRectangularSelection() {
+        JTextComponent c = component;
+        if (rectangularSelection) {
+            if (listenDoc != null) {
+                listenDoc.readLock();
+                try {
+                    if (rectangularSelectionRegions == null) {
+                        rectangularSelectionRegions = new ArrayList<Position>();
+                        c.putClientProperty(RECTANGULAR_SELECTION_REGIONS_PROPERTY, rectangularSelectionRegions);
+                    }
+                    Document doc = listenDoc;
+                    int caretOffset = getDot();
+                    int markOffset = getMark();
+                    int startOffset = Math.min(caretOffset, markOffset);
+                    int endOffset = Math.max(caretOffset, markOffset);
+                    int col0 = DocUtils.getVisualColumn(doc, startOffset);
+                    int col1 = DocUtils.getVisualColumn(doc, endOffset);
+                    int startCol = Math.min(col0, col1);
+                    int endCol = Math.max(col0, col1);
+                    Element lineRoot = doc.getDefaultRootElement();
+                    int lineIndex = DocUtils.getLineIndex(doc, startOffset);
+        //                        int lineCount = lineRoot.getElementCount();
+                    Integer tabSize = (Integer) doc.getProperty(PlainDocument.tabSizeAttribute);
+                    if (tabSize == null || tabSize <= 0) {
+                        tabSize = 8;
+                    }
+                    CharSequence docText = DocumentUtilities.getText(doc);
+                    synchronized (rectangularSelectionRegions) {
+                        rectangularSelectionRegions.clear();
+                        while (true) {
+                            Element line = lineRoot.getElement(lineIndex);
+                            int offset = line.getStartOffset();
+                            int col = 0;
+                            int lineNewlineOffset = line.getEndOffset() - 1;
+                            while (col < startCol && offset < lineNewlineOffset) {
+                                switch (docText.charAt(offset++)) {
+                                    case '\t':
+                                        col = (col + tabSize) / tabSize * tabSize;
+                                        break;
+                                    default:
+                                        col++;
+                                }
+                            }
+                            rectangularSelectionRegions.add(doc.createPosition(offset)); // start position
+                            while (col < endCol && offset < lineNewlineOffset) {
+                                switch (docText.charAt(offset++)) {
+                                    case '\t':
+                                        col = (col + tabSize) / tabSize * tabSize;
+                                        break;
+                                    default:
+                                        col++;
+                                }
+                            }
+                            rectangularSelectionRegions.add(doc.createPosition(offset));
+                            if (lineNewlineOffset >= endOffset) {
+                                break;
+                            }
+                            lineIndex++;
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    listenDoc.readUnlock();
+                }
+            }
+        }
+    }
+
     /**
      * Redefine to Object.equals() to prevent defaulting to Rectangle.equals()
      * which would cause incorrect firing
@@ -1128,6 +1218,7 @@ AtomicLockListener, FoldHierarchyListener {
                         } finally {
                             hierarchy.unlock();
                         }
+                        updateRectangularSelection();
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
@@ -1197,6 +1288,7 @@ AtomicLockListener, FoldHierarchyListener {
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (doc != null && offset >= 0 && offset <= doc.getLength()) {
+                doc.readLock();
                 try {
                     int oldCaretPos = getDot();
                     if (offset == oldCaretPos) { // no change
@@ -1205,12 +1297,15 @@ AtomicLockListener, FoldHierarchyListener {
                     Utilities.moveMark(doc, caretMark, offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
-                        }
+                    }
+                    updateRectangularSelection();
                 } catch (BadLocationException e) {
                     throw new IllegalStateException(e.toString());
                     // position is incorrect
                 } catch (InvalidMarkException e) {
                     throw new IllegalStateException(e.toString());
+                } finally {
+                    doc.readUnlock();
                 }
             }
             fireStateChanged();
@@ -1222,12 +1317,34 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
+            int offset = evt.getOffset();
+            int endOffset = offset + evt.getLength();
+            if (evt.getOffset() == 0) {
+                // Insert at offset 0 the marks would stay at offset == 0
+                if (getMark() == 0) {
+                    try {
+                        selectionMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (getDot() == 0) {
+                    try {
+                        caretMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                     && component == Utilities.getLastActiveComponent()
-                    && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.getEventProperty(evt, "caretIgnore"))
+                    && !Boolean.TRUE.equals(DocumentUtilities.getEventProperty(evt, "caretIgnore"))
                ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset() + evt.getLength();
@@ -1237,8 +1354,7 @@ AtomicLockListener, FoldHierarchyListener {
                 typingModification = true;
             } else {
                 undoOffset = -1;
-                typingModification = org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.isTypingModification(component.getDocument());
+                typingModification = DocumentUtilities.isTypingModification(component.getDocument());
             }
 
             modified = true;
@@ -1255,8 +1371,7 @@ AtomicLockListener, FoldHierarchyListener {
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                 && c == Utilities.getLastActiveComponent()
-                && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
-                    DocumentUtilities.getEventProperty(evt, "caretIgnore"))
+                && !Boolean.TRUE.equals(DocumentUtilities.getEventProperty(evt, "caretIgnore"))
             ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset();
@@ -1266,8 +1381,7 @@ AtomicLockListener, FoldHierarchyListener {
                 typingModification = true;
             } else { // Not undo or redo
                 undoOffset = -1;
-                typingModification = org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.isTypingModification(component.getDocument());
+                typingModification = DocumentUtilities.isTypingModification(component.getDocument());
 
             }
 
@@ -1284,6 +1398,15 @@ AtomicLockListener, FoldHierarchyListener {
                 if (undoOffset >= 0) { // last modification was undo => set the dot to undoOffset
                     setDot(undoOffset);
                 } else { // last modification was not undo
+                    BaseDocument doc = listenDoc;
+                    if (doc != null) {
+                        doc.readLock();
+                        try {
+                            updateRectangularSelection();
+                        } finally {
+                            doc.readUnlock();
+                        }
+                    }
                     fireStateChanged();
                     // Scroll to caret only for component with focus
                     dispatchUpdate(c.hasFocus() && typingModification);
@@ -1689,7 +1812,7 @@ AtomicLockListener, FoldHierarchyListener {
                     }
                 }
             }
-        } else if("enabled".equals(evt.getPropertyName())) {
+        } else if ("enabled".equals(propName)) {
             Boolean enabled = (Boolean) evt.getNewValue();
             if(component.isFocusOwner()) {
                 if(enabled == Boolean.TRUE) {
@@ -1701,6 +1824,18 @@ AtomicLockListener, FoldHierarchyListener {
                     setVisible(false);
                     setSelectionVisible(false);
                 }
+            }
+        } else if (RECTANGULAR_SELECTION_PROPERTY.equals(propName)) {
+            boolean origRectangularSelection = rectangularSelection;
+            rectangularSelection = Boolean.TRUE.equals(component.getClientProperty(RECTANGULAR_SELECTION_PROPERTY));
+            if (rectangularSelection) {
+                RectangularSelectionTransferHandler.install(component);
+            } else {
+                RectangularSelectionTransferHandler.uninstall(component);
+            }
+            if (rectangularSelection != origRectangularSelection) {
+                updateRectangularSelection();
+                fireStateChanged();
             }
         }
     }

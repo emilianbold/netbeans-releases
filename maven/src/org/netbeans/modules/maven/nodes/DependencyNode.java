@@ -54,29 +54,28 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.apache.maven.model.Profile;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.CommonArtifactActions;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
-import org.codehaus.plexus.util.FileUtils;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Profile;
+import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -86,15 +85,21 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
-import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -123,15 +128,17 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
  * node representing a dependency
  * @author  Milos Kleint 
  */
-public class DependencyNode extends AbstractNode {
+public class DependencyNode extends AbstractNode implements PreferenceChangeListener {
     private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
     private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
     private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
@@ -189,6 +196,7 @@ public class DependencyNode extends AbstractNode {
             MavenFileOwnerQueryImpl.getInstance().addChangeListener(
                     WeakListeners.change(listener2,
                     MavenFileOwnerQueryImpl.getInstance()));
+            DependenciesNode.prefs().addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, DependenciesNode.prefs()));
         }
         setDisplayName(createName());
         setIconBase(false);
@@ -244,15 +252,27 @@ public class DependencyNode extends AbstractNode {
         }
     }
 
-    @Override
-    public String getShortDescription() {
+    @Messages({
+        "DESC_Dep1=GroupId:",
+        "DESC_Dep2=ArtifactId:",
+        "DESC_Dep3=Version:",
+        "DESC_Dep4=Type:",
+        "DESC_Dep5=Classifier:",
+        "DESC_via=Via:"
+    })
+    @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
-        buf.append("<html><i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep1")).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep2")).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep3")).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
-        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep4")).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
+        buf.append("<html><i>").append(DESC_Dep1()).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
+        buf.append(DESC_Dep2()).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep3()).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep4()).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
         if (art.getClassifier() != null) {
-            buf.append("<i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep5")).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+            buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+        }
+        List<String> trail = art.getDependencyTrail();
+        for (int i = trail.size() - 2; i > 0 && /* just to be safe */ i < trail.size(); i--) {
+            String[] id = trail.get(i).split(":"); // g:a:t[:c]:v
+            buf.append("<i>").append(DESC_via()).append("</i> ").append(id[1]).append("<br>");
         }
         // it seems that with ending </html> tag the icon descriptions are not added.
 //        buf.append("</html>");//NOI18N
@@ -277,7 +297,7 @@ public class DependencyNode extends AbstractNode {
     }
 
     
-    public void refreshNode() {
+    private void refreshNode() {
         setDisplayName(createName());
         setIconBase(longLiving);
         fireIconChange();
@@ -480,7 +500,7 @@ public class DependencyNode extends AbstractNode {
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
             }
-            if (DependenciesNode.showManagedState() && isManaged()) {
+            if (showManagedState() && isManaged()) {
                 Image ann = ImageUtilities.loadImage(MANAGED_BADGE_ICON); //NOI18N
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipManaged);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 0, 8);//NOI18N
@@ -624,6 +644,38 @@ public class DependencyNode extends AbstractNode {
                 }
             });
         }
+    }
+
+    private static final String SHOW_MANAGED_DEPENDENCIES = "show.managed.dependencies";
+
+    private static boolean showManagedState() {
+        return DependenciesNode.prefs().getBoolean(SHOW_MANAGED_DEPENDENCIES, false);
+    }
+
+    @Override public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().equals(SHOW_MANAGED_DEPENDENCIES)) {
+            refreshNode();
+        }
+    }
+
+    static class ShowManagedStateAction extends AbstractAction implements Presenter.Popup {
+
+        @NbBundle.Messages("LBL_ShowManagedState=Show Managed State for dependencies")
+        ShowManagedStateAction() {
+            String s = LBL_ShowManagedState();
+            putValue(Action.NAME, s);
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            DependenciesNode.prefs().putBoolean(SHOW_MANAGED_DEPENDENCIES, !showManagedState());
+        }
+
+        @Override public JMenuItem getPopupPresenter() {
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
+            mi.setSelected(showManagedState());
+            return mi;
+        }
+
     }
 
     private class ExcludeTransitiveAction extends AbstractAction {

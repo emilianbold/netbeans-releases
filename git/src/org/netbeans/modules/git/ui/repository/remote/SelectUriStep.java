@@ -219,7 +219,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                             remoteTags = client.listRemoteTags(uri, this);
                         }
                     } catch (GitException ex) {
-                        GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
+                        if (panel.rbCreateNew.isSelected()) {
+                            GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
+                        }
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
                         message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
                     }
@@ -233,6 +235,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run () {
+                    if (message[0] != null) {
+                        setValid(true, message[0]);
+                    }
                     setEnabled(true);
                     enableFields();
                 }
@@ -247,7 +252,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     @Override
     public HelpCtx getHelp () {
-        return new HelpCtx(SelectUriPanel.class);
+        return new HelpCtx(SelectUriStep.class);
     }
 
     public String getSelectedUri () {

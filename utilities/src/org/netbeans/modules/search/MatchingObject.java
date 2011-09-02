@@ -758,4 +758,8 @@ final class MatchingObject
         return hash;
     }
 
+    /** Get number of matches in this matching object.  */
+    int getMatchesCount() {
+        return resultModel.getDetailsCount(this);
+    }
 }

@@ -55,6 +55,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +72,8 @@ import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.swing.text.Document;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -88,7 +91,7 @@ public class ImportAnalysis2 {
 
     private Elements elements;
     private TreeFactory make;
-    private List<ImportTree> imports;
+    private Set<Element> imports;
     private Set<Element> imported;
     private Stack<Set<Element>> visibleThroughClasses;
     private Map<String, Element> simpleNames2Elements;
@@ -100,9 +103,16 @@ public class ImportAnalysis2 {
     private Map<String, Element> usedImplicitlyImportedClassesCache;
     private Set<String> implicitlyImportedClassNames;
     private Element javaLang;
+    private CodeStyle cs;
 
     public ImportAnalysis2(CompilationInfo info) {
         this(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
+        try {
+            Document doc = info.getDocument();
+            if (doc == null || (cs = (CodeStyle)doc.getProperty(CodeStyle.class)) == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
+        } catch (IOException ioe) {}
     }
 
     public ImportAnalysis2(Context env) {
@@ -135,14 +145,14 @@ public class ImportAnalysis2 {
      * setPackage must be called before this method!
      */
     public void setImports(List<? extends ImportTree> importsToAdd) {
-        imports = new ArrayList<ImportTree>();
+        imports = new HashSet<Element>();
         imported = new HashSet<Element>();
         simpleNames2Elements = new HashMap<String, Element>();
         visibleThroughClasses = new Stack<Set<Element>>();
         usedImplicitlyImportedClassesCache = null;
 
         for (ImportTree imp : importsToAdd) {
-            addImport(imp, false);
+            addImport(imp);
         }
         
         implicitlyImportedClassNames = new HashSet<String>();
@@ -161,7 +171,7 @@ public class ImportAnalysis2 {
         }
     }
     
-    public List<? extends ImportTree> getImports() {
+    public Set<? extends Element> getImports() {
         return imports;
     }
 
@@ -207,7 +217,7 @@ public class ImportAnalysis2 {
         return result.toString();
     }
 
-    private void addImport(ImportTree imp, boolean sort) {
+    private void addImport(ImportTree imp) {
         String fqn = getFQN(imp);
 
         if (!imp.isStatic()) {
@@ -246,6 +256,7 @@ public class ImportAnalysis2 {
                 Element resolved = overlay.resolve(model, elements, className);
 
                 if (resolved != null) {
+                    boolean added = false;
                     for (Element e : resolved.getEnclosedElements()) {
                         if (!e.getModifiers().contains(Modifier.STATIC)) {
                             continue;
@@ -262,32 +273,12 @@ public class ImportAnalysis2 {
                 //no dot?
             }
         }
-
-        if (!sort) {
-            imports.add(imp);
-        } else {
-            //not very efficient to compute FQNs again and again:
-            int point = -1;
-
-            for (int cntr = 0; cntr < imports.size(); cntr++) {
-                String currentFQN = getFQN(imports.get(cntr));
-
-                if (currentFQN.compareTo(fqn) < 0) {
-                    point = cntr;
-                } else {
-                    //== 0 should never happen
-                    break;
-                }
-            }
-
-            imports.add(point + 1, imp);
-        }
     }
 
     //Note: this method should return either "orig" or a IdentifierTree or MemberSelectTree
     //no other tree type is not allowed - see ImmutableTreeTranslator.translateStable(Tree)
     public ExpressionTree resolveImport(MemberSelectTree orig, Element element) {
-        if (visibleThroughClasses == null || element == null) {
+        if (visibleThroughClasses == null || element == null || cs != null && cs.useFQNs()) {
             //may happen for package clause
             return orig;
         }
@@ -385,9 +376,29 @@ public class ImportAnalysis2 {
         }
 
         Tree imp = make.Identifier(((QualifiedNameable) element).getQualifiedName());
-        addImport(make.Import(imp, false), true);
+        addImport(make.Import(imp, false));
+        
+        Element original = overlay.getOriginal(element);
+        if (original.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+            if (!cs.useSingleClassImport() || checkPackagesForStarImport(((PackageElement)original.getEnclosingElement()).getQualifiedName().toString(), cs))
+                original = original.getEnclosingElement();
+        }
+        imports.add(original);
 
         return make.Identifier(element.getSimpleName());
+    }
+
+    private boolean checkPackagesForStarImport(String pkgName, CodeStyle cs) {
+        for (String s : cs.getPackagesForStarImport()) {
+            if (s.endsWith(".*")) { //NOI18N
+                s = s.substring(0, s.length() - 2);
+                if (pkgName.startsWith(s))
+                    return true;
+            } else if (pkgName.equals(s)) {
+                return true;
+            }           
+        }
+        return false;
     }
 
     private PackageElement getPackageOf(Element el) {

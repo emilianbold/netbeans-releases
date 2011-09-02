@@ -56,6 +56,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
+import org.netbeans.modules.editor.lib2.document.LineElement;
 
 /**
  * Undoable edit that fixes syntax state infos
@@ -102,11 +103,11 @@ final class FixLineSyntaxState {
 
 
     static void invalidateAllSyntaxStateInfos(BaseDocument doc) {
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         int elemCount = lineRoot.getElementCount();
         for (int i = elemCount - 1; i >= 0; i--) {
-            LineElement line = (LineElement)lineRoot.getElement(i);
-            line.clearSyntaxStateInfo();
+            LineElement line = (LineElement) lineRoot.getElement(i);
+            line.legacySetAttributesObject(null);
         }
     }
     
@@ -139,7 +140,7 @@ final class FixLineSyntaxState {
         }
 
         // Find line element that covers the reqPos
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         int reqPosLineIndex = lineRoot.getElementIndex(reqPos);
         Element reqPosLineElem = lineRoot.getElement(reqPosLineIndex);
         Syntax.StateInfo stateInfo = getValidSyntaxStateInfo(doc, reqPosLineIndex);
@@ -200,17 +201,17 @@ final class FixLineSyntaxState {
             return null;
         }
 
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         LineElement lineElem = (LineElement)lineRoot.getElement(lineIndex);
-        Syntax.StateInfo stateInfo = lineElem.getSyntaxStateInfo();
+        Syntax.StateInfo stateInfo = (Syntax.StateInfo) lineElem.legacyGetAttributesObject();
 
         if (lineIndex > 0 && stateInfo == null) { // need to update
             // Find the last line with the valid state info
             int validLineIndex = lineIndex - 1; // is >= 0
             LineElement validLineElem = null;
             while (validLineIndex > 0) {
-                validLineElem = (LineElement)lineRoot.getElement(validLineIndex);
-                stateInfo = validLineElem.getSyntaxStateInfo() ;
+                validLineElem = (LineElement) lineRoot.getElement(validLineIndex);
+                stateInfo = (Syntax.StateInfo) validLineElem.legacyGetAttributesObject();
                 if (stateInfo != null) {
                     break;
                 }
@@ -269,7 +270,8 @@ final class FixLineSyntaxState {
                         // ignore returned tokens
                     }
 
-                    validLineElem.updateSyntaxStateInfo(syntax);
+                    
+                    updateSyntaxStateInfo(syntax, validLineElem);
 
                 } while (validLineIndex != lineIndex);
 
@@ -278,7 +280,17 @@ final class FixLineSyntaxState {
             }
         }
         
-        return lineElem.getSyntaxStateInfo();
+        return (Syntax.StateInfo) lineElem.legacyGetAttributesObject();
+    }
+    
+    static void updateSyntaxStateInfo(Syntax syntax, LineElement lineElement) {
+        Syntax.StateInfo syntaxStateInfo = (Syntax.StateInfo) lineElement.legacyGetAttributesObject();
+        if (syntaxStateInfo == null) {
+            syntaxStateInfo = syntax.createStateInfo();
+            assert (syntaxStateInfo != null);
+            lineElement.legacySetAttributesObject(syntaxStateInfo);
+        }
+        syntax.storeState(syntaxStateInfo);
     }
 
     void update(boolean undo) {
@@ -310,7 +322,7 @@ final class FixLineSyntaxState {
         }
 
         BaseDocument doc = (BaseDocument)evt.getDocument();
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         int lineCount = lineRoot.getElementCount();
         DocumentEvent.ElementChange lineChange = evt.getChange(lineRoot);
         int lineIndex;
@@ -361,8 +373,12 @@ final class FixLineSyntaxState {
                 LineElement nextLineElem = (LineElement)lineRoot.getElement(lineIndex); // should be valid
                 int nextLineStartOffset = nextLineElem.getStartOffset();
 
-                doc.getText(lineStartOffset - preScan,
-                    (nextLineStartOffset - lineStartOffset) + preScan, text);
+                int len = (nextLineStartOffset - lineStartOffset) + preScan;
+                if (len < 0) {
+                    throw new IndexOutOfBoundsException("len=" + len + " < 0: nextLineStartOffset=" + // NOI18N
+                            nextLineStartOffset + ", lineStartOffset=" + lineStartOffset + ", preScan=" + preScan); // NOI18N
+                }
+                doc.getText(lineStartOffset - preScan, len, text);
 
                 text.offset += preScan;
                 text.count -= preScan;
@@ -402,7 +418,7 @@ final class FixLineSyntaxState {
                         tokenID = syntax.nextToken();
                     }
 
-                    stateInfo = nextLineElem.getSyntaxStateInfo(); // original state info
+                    stateInfo = (Syntax.StateInfo) nextLineElem.legacyGetAttributesObject(); // original state info
                     if (lineIndex >= maybeMatchLineIndex) {
                         if (stateInfo != null 
                             && syntax.compareState(stateInfo) == Syntax.EQUAL_STATE
@@ -421,11 +437,11 @@ final class FixLineSyntaxState {
                         }
                     }
                     
-                    nextLineElem.updateSyntaxStateInfo(syntax);
+                    updateSyntaxStateInfo(syntax, nextLineElem);
                     if (debug) {
                         /*DEBUG*/System.err.println("fixSyntaxStateInfos(): Updated info at line "
                             + lineIndex + " from " + stateInfo // NOI18N
-                            + " to " + nextLineElem.getSyntaxStateInfo()); // NOI18N
+                            + " to " + (Syntax.StateInfo) nextLineElem.legacyGetAttributesObject()); // NOI18N
                     }
                     
                     lineIndex++;
@@ -522,7 +538,7 @@ final class FixLineSyntaxState {
         }
 
         try {
-            LineRootElement lineRoot = getLineRoot(doc);
+            Element lineRoot = getLineRoot(doc);
             int lineIndex = lineRoot.getElementIndex(offset);
             Element lineElem = lineRoot.getElement(lineIndex);
             int lineStartOffset = lineElem.getStartOffset();
@@ -550,28 +566,29 @@ final class FixLineSyntaxState {
         return doc.getLength();
     }
     
-    private static LineRootElement getLineRoot(Document doc) {
-        return (LineRootElement)doc.getDefaultRootElement();
+    private static Element getLineRoot(Document doc) {
+        return doc.getDefaultRootElement();
     }
 
     private static void checkConsistency(Document doc) {
         // Check whether all syntax state infos (except for the first line) are non-null
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         int lineCount = lineRoot.getElementCount();
         for (int i = 1; i < lineCount; i++) { // skip the very first line
             LineElement elem = (LineElement)lineRoot.getElement(i);
-            assert (elem.getSyntaxStateInfo() != null) : "Syntax state null at line " + i + " of " + lineCount; // NOI18N
+            assert ((Syntax.StateInfo) elem.legacyGetAttributesObject() != null) :
+                    "Syntax state null at line " + i + " of " + lineCount; // NOI18N
         }
     }
     
     public static String lineInfosToString(Document doc) {
         StringBuffer sb = new StringBuffer();
-        LineRootElement lineRoot = getLineRoot(doc);
+        Element lineRoot = getLineRoot(doc);
         int lineCount = lineRoot.getElementCount();
         for (int i = 0; i < lineCount; i++) {
             LineElement elem = (LineElement)lineRoot.getElement(i);
             sb.append("[" + i + "]: lineStartOffset=" + elem.getStartOffset() // NOI18N
-                + ", info: " + elem.getSyntaxStateInfo() + "\n"); // NOI18N
+                + ", info: " + (Syntax.StateInfo) elem.legacyGetAttributesObject() + "\n"); // NOI18N
         }
         return sb.toString();
     }

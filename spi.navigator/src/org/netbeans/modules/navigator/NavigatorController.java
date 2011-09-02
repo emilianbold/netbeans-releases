@@ -47,7 +47,6 @@ package org.netbeans.modules.navigator;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -65,11 +64,10 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.spi.navigator.NavigatorDisplayer;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
-import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
@@ -99,7 +97,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-public final class NavigatorController implements LookupListener, ActionListener,
+public final class NavigatorController implements LookupListener,
                                                     PropertyChangeListener, NodeListener, Runnable {
 
     /** Time in ms to wait before propagating current node changes further
@@ -108,7 +106,9 @@ public final class NavigatorController implements LookupListener, ActionListener
     static final int COALESCE_TIME = 100;
 
     /** Asociation with navigator UI, which we control */
-    private NavigatorTC navigatorTC;
+    private NavigatorDisplayer navigatorTC;
+
+    private List<NavigatorPanel> currentPanels;
 
     /** holds currently scheduled/running task for set data context of selected node */
     private RequestProcessor.Task nodeSetterTask;
@@ -151,22 +151,26 @@ public final class NavigatorController implements LookupListener, ActionListener
     private static final Logger LOG = Logger.getLogger(NavigatorController.class.getName());
 
     /** Creates a new instance of NavigatorController */
-    public NavigatorController(NavigatorTC navigatorTC) {
+    public NavigatorController(NavigatorDisplayer navigatorTC) {
         this.navigatorTC = navigatorTC;
         clientsLookup = new ClientsLookup();
         panelLookup = Lookups.proxy(new PanelLookupWrapper());
         panelLookupListener = new PanelLookupListener();
+        navigatorTC.addPropertyChangeListener(this);
+        TopComponent.getRegistry().addPropertyChangeListener(this);
+        installActions();
     }
 
     /** Starts listening to selected nodes and active component */
-    public void navigatorTCOpened() {
+    private void navigatorTCOpened() {
+        if (panelLookupNodesResult != null) {
+            return;
+        }
         LOG.fine("Entering navigatorTCOpened");
         curNodesRes = Utilities.actionsGlobalContext().lookup(CUR_NODES);
         curNodesRes.addLookupListener(this);
         curHintsRes = Utilities.actionsGlobalContext().lookup(CUR_HINTS);
         curHintsRes.addLookupListener(this);
-        navigatorTC.getPanelSelector().addActionListener(this);
-        TopComponent.getRegistry().addPropertyChangeListener(this);
         panelLookupNodesResult = panelLookup.lookup(CUR_NODES);
         panelLookupNodesResult.addLookupListener(panelLookupListener);
 
@@ -174,12 +178,13 @@ public final class NavigatorController implements LookupListener, ActionListener
     }
 
     /** Stops listening to selected nodes and active component */
-    public void navigatorTCClosed() {
+    private void navigatorTCClosed() {
+        if (panelLookupNodesResult == null) {
+            return;
+        }
         LOG.fine("Entering navigatorTCClosed");
         curNodesRes.removeLookupListener(this);
         curHintsRes.removeLookupListener(this);
-        navigatorTC.getPanelSelector().removeActionListener(this);
-        TopComponent.getRegistry().removePropertyChangeListener(this);
         panelLookupNodesResult.removeLookupListener(panelLookupListener);
         curNodesRes = null;
         curHintsRes = null;
@@ -195,12 +200,13 @@ public final class NavigatorController implements LookupListener, ActionListener
             selPanel.panelDeactivated();
         }
         lastActivatedRef = null;
+        currentPanels = null;
         navigatorTC.setPanels(null, null);
         panelLookupNodesResult = null;
-        LOG.fine("navigatorTCClosed: activated nodes: " + navigatorTC.getActivatedNodes());
-        if (navigatorTC.getActivatedNodes() != null) {
+        LOG.fine("navigatorTCClosed: activated nodes: " + navigatorTC.getTopComponent().getActivatedNodes());
+        if (navigatorTC.getTopComponent().getActivatedNodes() != null) {
             LOG.fine("navigatorTCClosed: clearing act nodes...");
-            navigatorTC.setActivatedNodes(new Node[0]);
+            navigatorTC.getTopComponent().setActivatedNodes(new Node[0]);
         }
     }
 
@@ -211,24 +217,11 @@ public final class NavigatorController implements LookupListener, ActionListener
         return panelLookup;
     }
 
-    /** Reacts on user selecting some new Navigator panel in panel selector
-     * combo box - shows the panel user has selected.
-     */
-    public void actionPerformed (ActionEvent e) {
-        int index = navigatorTC.getPanelSelector().getSelectedIndex();
-        if (index == -1) {
-            // combo box cleared, nothing to activate
-            return;
-        }
-        NavigatorPanel newPanel = navigatorTC.getPanels().get(index);
-        activatePanel(newPanel);
-    }
-
     /** Activates given panel. Throws IllegalArgumentException if panel is
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
-        if (!navigatorTC.getPanels().contains(panel)) {
+        if (currentPanels == null || !currentPanels.contains(panel)) {
             throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
@@ -248,18 +241,23 @@ public final class NavigatorController implements LookupListener, ActionListener
      * current navigator hints change,
      * performs coalescing of fast coming changes.
      */
+    @Override
     public void resultChanged(LookupEvent ev) {
-        if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())
+        if (!navigatorTC.getTopComponent().equals(WindowManager.getDefault().getRegistry().getActivated())
                 // #117089: allow node change when we are empty
                 || (curNodes == null || curNodes.isEmpty())) {
             ActNodeSetter nodeSetter = new ActNodeSetter();
-            synchronized (NODE_SETTER_LOCK) {
-                if (nodeSetterTask != null) {
-                    nodeSetterTask.cancel();
+            if (navigatorTC.allowAsyncUpdate()) {
+                synchronized (NODE_SETTER_LOCK) {
+                    if (nodeSetterTask != null) {
+                        nodeSetterTask.cancel();
+                    }
+                    // wait some time before propagating the change further
+                    nodeSetterTask = RequestProcessor.getDefault().post(nodeSetter, COALESCE_TIME);
+                    nodeSetterTask.addTaskListener(nodeSetter);
                 }
-                // wait some time before propagating the change further
-                nodeSetterTask = RequestProcessor.getDefault().post(nodeSetter, COALESCE_TIME);
-                nodeSetterTask.addTaskListener(nodeSetter);
+            } else {
+                nodeSetter.run();
             }
         }
     }
@@ -269,8 +267,9 @@ public final class NavigatorController implements LookupListener, ActionListener
      * in lookup.
      */
     private boolean shouldUpdate () {
-        return TopComponent.getRegistry().getCurrentNodes() != null ||
-               Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class) != null;
+        Node[] nodes = TopComponent.getRegistry().getCurrentNodes();
+        return (nodes != null && nodes.length > 0)
+               || Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class) != null;
     }
 
     private void updateContext () {
@@ -292,10 +291,10 @@ public final class NavigatorController implements LookupListener, ActionListener
         }
         inUpdate = true;
 
+        try {
         // #67599,108066: Some updates runs delayed, so it's possible that
         // navigator was already closed, that's why the check
         if (curNodesRes == null) {
-            inUpdate = false;
             LOG.fine("Exit because curNodesRes is null, force: " + force);
             return;
         }
@@ -304,7 +303,6 @@ public final class NavigatorController implements LookupListener, ActionListener
         // which don't define activated nodes
         Collection<? extends Node> nodes = curNodesRes.allInstances();
         if (nodes.isEmpty() && !shouldUpdate() && !force) {
-            inUpdate = false;
             LOG.fine("Exit because act nodes empty, force: " + force);
             return;
         }
@@ -332,13 +330,12 @@ public final class NavigatorController implements LookupListener, ActionListener
         }
 
         List<NavigatorPanel> providers = obtainProviders(nodes);
-        List oldProviders = navigatorTC.getPanels();
+        List oldProviders = currentPanels;
 
         final boolean areNewProviders = providers != null && !providers.isEmpty();
 
         // navigator remains empty, do nothing
         if (oldProviders == null && providers == null) {
-            inUpdate = false;
             LOG.fine("Exit because nav remain empty, force: " + force);
             return;
         }
@@ -354,25 +351,20 @@ public final class NavigatorController implements LookupListener, ActionListener
             clientsLookup.lookup(Node.class);
             // #93123: refresh providers list if needed
             if (!oldProviders.equals(providers)) {
-                // we must disable combo-box listener to not receive unwanted events
-                // during combo box content change
-                navigatorTC.getPanelSelector().removeActionListener(this);
+                currentPanels = providers;
                 navigatorTC.setPanels(providers, null);
                 navigatorTC.setSelectedPanel(selPanel);
-                navigatorTC.getPanelSelector().addActionListener(this);
             }
             // #100122: update activated nodes of Navigator TC
             updateActNodesAndTitle();
 
             LOG.fine("Exit because same provider and panel, notified. Force: " + force);
-            inUpdate = false;
             return;
         }
 
         if (selPanel != null) {
             // #61334: don't deactivate previous providers if there are no new ones
             if (!areNewProviders && !force && null != providers) {
-                inUpdate = false;
                 LOG.fine("Exit because no new providers, force: " + force);
                 return;
             }
@@ -390,18 +382,17 @@ public final class NavigatorController implements LookupListener, ActionListener
             }
             newSel.panelActivated(clientsLookup);
         }
-        // we must disable combo-box listener to not receive unwanted events
-        // during combo box content change
-        navigatorTC.getPanelSelector().removeActionListener(this);
+        currentPanels = providers;
         navigatorTC.setPanels(providers, newSel);
         // selected panel changed, update selPanelLookup to listen correctly
         panelLookup.lookup(Object.class);
-        navigatorTC.getPanelSelector().addActionListener(this);
 
         updateActNodesAndTitle();
 
         LOG.fine("Normal exit, change to new provider, force: " + force);
+        } finally {
         inUpdate = false;
+        }
     }
 
     /** Updates activated nodes of Navigator TopComponent and updates its
@@ -409,7 +400,6 @@ public final class NavigatorController implements LookupListener, ActionListener
     private void updateActNodesAndTitle () {
         LOG.fine("updateActNodesAndTitle called...");
         Node[] actNodes = obtainActivatedNodes();
-        navigatorTC.setActivatedNodes(actNodes);
         updateTCTitle(actNodes);
     }
 
@@ -522,24 +512,13 @@ public final class NavigatorController implements LookupListener, ActionListener
         }
     }
 
-    /** Retrieves and returns UndoRedo support from selected panel if panel
-     * offers UndoRedo (implements NavigatorPanelWithUndo).
-     */
-    UndoRedo getUndoRedo () {
-        NavigatorPanel panel = navigatorTC.getSelectedPanel();
-        if (panel == null || !(panel instanceof NavigatorPanelWithUndo)) {
-            return UndoRedo.NONE;
-        }
-        return ((NavigatorPanelWithUndo)panel).getUndoRedo();
-    }
-
     /** Installs user actions handling for NavigatorTC top component */
     public void installActions () {
         // ESC key handling - return focus to previous focus owner
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
         //JComponent contentArea = navigatorTC.getContentArea();
-        navigatorTC.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
-        navigatorTC.getActionMap().put("return", new ESCHandler()); //NOI18N
+        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
+        navigatorTC.getTopComponent().getActionMap().put("return", new ESCHandler()); //NOI18N
     }
 
     /***** PropertyChangeListener implementation *******/
@@ -555,18 +534,28 @@ public final class NavigatorController implements LookupListener, ActionListener
             if (tc != null && tc != navigatorTC) {
                 lastActivatedRef = new WeakReference<TopComponent>(tc);
             }
-        } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-            // force update context if some tc was closed
-            // invokeLater to let node change perform before calling update
-            LOG.fine("Component closed, invoking update through invokeLater...");
-            // #124061 - force navigator cleanup in special situation
-            TopComponent tc = TopComponent.getRegistry().getActivated();
-            if (tc == navigatorTC) {
-                LOG.fine("navigator active, clearing its activated nodes");
-                navigatorTC.setActivatedNodes(new Node[0]);
+        } else if (TopComponent.Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+            if (evt.getNewValue() == navigatorTC.getTopComponent()) {
+                navigatorTCOpened();
             }
+        } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+            if (evt.getNewValue() == navigatorTC.getTopComponent()) {
+                navigatorTCClosed();
+            } else if (panelLookupNodesResult != null) {
+                // force update context if some tc was closed
+                // invokeLater to let node change perform before calling update
+                LOG.fine("Component closed, invoking update through invokeLater...");
+                // #124061 - force navigator cleanup in special situation
+                TopComponent tc = TopComponent.getRegistry().getActivated();
+                if (tc == navigatorTC.getTopComponent()) {
+                    LOG.fine("navigator active, clearing its activated nodes");
+                    navigatorTC.getTopComponent().setActivatedNodes(new Node[0]);
+                }
 
-            EventQueue.invokeLater(this);
+                EventQueue.invokeLater(this);
+            }
+        } else if (NavigatorDisplayer.PROP_PANEL_SELECTION.equals(evt.getPropertyName())) {
+            activatePanel((NavigatorPanel) evt.getNewValue());
         }
     }
 
@@ -575,7 +564,7 @@ public final class NavigatorController implements LookupListener, ActionListener
     public void nodeDestroyed(NodeEvent ev) {
         LOG.fine("Node destroyed reaction...");
         // #121944: don't react on node destroy when we are active
-        if (navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
+        if (navigatorTC.getTopComponent().equals(WindowManager.getDefault().getRegistry().getActivated())) {
             LOG.fine("NavigatorTC active, skipping node destroyed reaction.");
             return;
         }
@@ -657,7 +646,7 @@ public final class NavigatorController implements LookupListener, ActionListener
             // but not combo box to preserve its ESC functionality
             if (lastActivatedRef == null ||
                 focusOwner == null ||
-                !SwingUtilities.isDescendingFrom(focusOwner, navigatorTC) ||
+                !SwingUtilities.isDescendingFrom(focusOwner, navigatorTC.getTopComponent()) ||
                 focusOwner instanceof JComboBox) {
                 return;
             }

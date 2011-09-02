@@ -53,6 +53,7 @@ import java.util.jar.Manifest;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.Stamps;
 import org.openide.modules.Places;
+import org.openide.modules.api.PlacesTestUtils;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -67,7 +68,7 @@ public class NbInstallerTest9 extends SetupHid {
     /** Test #26786/#28755: manifest caching can be buggy.
      */
     public void testManifestCaching() throws Exception {
-        Places.setUserDirectory(getWorkDir());
+        PlacesTestUtils.setUserDirectory(getWorkDir());
         ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
         File littleJar = new File(jars, "little-manifest.jar");
         //inst.loadManifest(littleJar).write(System.out);

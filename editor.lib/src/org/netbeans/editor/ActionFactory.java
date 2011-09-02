@@ -53,6 +53,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -65,10 +67,11 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
@@ -84,6 +87,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.fold.Fold;
@@ -95,9 +99,12 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -1205,6 +1212,80 @@ public class ActionFactory {
             }
         }
     }
+
+    // Cannot easily use EditorActionRegistration yet for toggle buttons
+    public static class ToggleRectangularSelectionAction extends LocalBaseAction
+    implements Presenter.Toolbar, ContextAwareAction, PropertyChangeListener {
+
+        static final long serialVersionUID = 0L;
+        
+        private JEditorPane pane;
+        
+        private JToggleButton toggleButton;
+
+        public ToggleRectangularSelectionAction() {
+            super(EditorActionNames.toggleRectangularSelection);
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/rect_select_16x16.png", false)); //NOI18N
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        }
+        
+        void setPane(JEditorPane pane) {
+            assert (pane != null);
+            this.pane = pane;
+            pane.addPropertyChangeListener(this);
+            updateState();
+        }
+        
+        void updateState() {
+            if (pane != null) {
+                boolean rectangleSelection = RectangularSelectionUtils.isRectangularSelection(pane);
+                if (toggleButton != null) {
+                    toggleButton.setSelected(rectangleSelection);
+                    toggleButton.setContentAreaFilled(rectangleSelection);
+                    toggleButton.setBorderPainted(rectangleSelection);
+                }
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                boolean newRectSel = !RectangularSelectionUtils.isRectangularSelection(target);
+                RectangularSelectionUtils.setRectangularSelection(target, newRectSel);
+            }
+        }
+
+        @Override
+        public Component getToolbarPresenter() {
+            toggleButton = new JToggleButton();
+            toggleButton.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
+            toggleButton.setIcon((Icon) getValue(SMALL_ICON));
+            toggleButton.setAction(this); // this will make hard ref to button => check GC
+            return toggleButton;
+        }
+
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            JEditorPane pane = actionContext.lookup(JEditorPane.class);
+            if (pane != null) {
+                ToggleRectangularSelectionAction action = new ToggleRectangularSelectionAction();
+                action.setPane(pane);
+                return action;
+            }
+            return this;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (pane == evt.getSource()) { // Event from pane
+                if (RectangularSelectionUtils.getRectangularSelectionProperty().equals(evt.getPropertyName())) {
+                    updateState();
+                }
+            }
+        }
+        
+        
+    }    
 
 // suspending the use of EditorActionRegistration due to #167063
 //    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,

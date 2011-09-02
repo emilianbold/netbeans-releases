@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  * @author Petr Somol
  * @author Tomas Zezula
  */
-@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=400)
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=450)
 public final class JFXRunCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_RUN = "Run"; // NOI18N

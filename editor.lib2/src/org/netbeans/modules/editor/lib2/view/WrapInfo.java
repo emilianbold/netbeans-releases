@@ -166,17 +166,17 @@ final class WrapInfo extends GapList<WrapLine> {
     }
 
     public void checkIntegrity(ParagraphView paragraphView) {
-        if (LOG.isLoggable(Level.FINER)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             String err = findIntegrityError(paragraphView);
             if (err != null) {
                 String msg = "WrapInfo INTEGRITY ERROR! - " + err; // NOI18N
-                LOG.finer(msg + "\n"); // NOI18N
-                LOG.finer(toString(paragraphView)); // toString() impl should append newline
+                ViewHierarchyImpl.CHECK_LOG.finer(msg + "\n"); // NOI18N
+                ViewHierarchyImpl.CHECK_LOG.finer(toString(paragraphView)); // toString() impl should append newline
                 // For finest level stop throw real ISE otherwise just log the stack
-                if (LOG.isLoggable(Level.FINEST)) {
+                if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINEST)) {
                     throw new IllegalStateException(msg);
                 } else {
-                    LOG.log(Level.INFO, msg, new Exception());
+                    ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, msg, new Exception());
                 }
             }
         }
@@ -294,10 +294,20 @@ final class WrapInfo extends GapList<WrapLine> {
                     if (startViewIndex == childCount) {
                         sb.append("<").append(paragraphView.getEndOffset()).append(">"); // NOI18N
                     } else {
-                        EditorView startChild = paragraphView.getEditorView(startViewIndex);
-                        EditorView lastChild = paragraphView.getEditorView(endViewIndex - 1);
-                        sb.append("<").append(startChild.getStartOffset()); // NOI18N
-                        sb.append(",").append(lastChild.getEndOffset()).append("> "); // NOI18N
+                        if (startViewIndex <= childCount) {
+                            EditorView startChild = paragraphView.getEditorView(startViewIndex);
+                            sb.append("<").append(startChild.getStartOffset()); // NOI18N
+                        } else {
+                            sb.append("<invalid-index=" + startViewIndex); // NOI18N
+                        }
+                        sb.append(",");
+                        if (endViewIndex <= childCount) {
+                            EditorView lastChild = paragraphView.getEditorView(endViewIndex - 1);
+                            sb.append(lastChild.getEndOffset()); // NOI18N
+                        } else {
+                            sb.append("invalid-index=").append(endViewIndex); // NOI18N
+                        }
+                        sb.append("> ");
                     }
                 }
             }

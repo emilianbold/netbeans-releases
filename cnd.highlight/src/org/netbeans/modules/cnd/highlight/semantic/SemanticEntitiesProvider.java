@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -150,26 +152,26 @@ public final class SemanticEntitiesProvider {
             }
 
             @Override
-            public AttributeSet getAttributes(CsmOffsetable obj) {
+            public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
                 CsmReference ref = (CsmReference) obj;
                 CsmFunction fun = (CsmFunction) ref.getReferencedObject();
                 if (fun == null) {
-                    return color;
+                    return getColor(mimePath);
                 }
                 // check if we are in the function declaration
                 if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
-                    return color;
+                    return getColor(mimePath);
                 } else {
-                    return funUsageColors;
+                    return funUsageColors.get(mimePath);
                 }
             }
 
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
+                funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
             }
-            private AttributeSet funUsageColors;
+            private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
         };
     }
     private SemanticEntity getFunctions(){
@@ -188,26 +190,26 @@ public final class SemanticEntitiesProvider {
             }
 
             @Override
-            public AttributeSet getAttributes(CsmOffsetable obj) {
+            public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
                 CsmReference ref = (CsmReference) obj;
                 CsmFunction fun = (CsmFunction) ref.getReferencedObject();
                 if (fun == null) {
-                    return color;
+                    return getColor(mimePath);
                 }
                 // check if we are in the function declaration
                 if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
-                    return color;
+                    return getColor(mimePath);
                 } else {
-                    return funUsageColors;
+                    return funUsageColors.get(mimePath);
                 }
             }
 
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
+                funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
             }
-            private AttributeSet funUsageColors;
+            private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
         };
     }
 
@@ -222,31 +224,31 @@ public final class SemanticEntitiesProvider {
                 return ModelUtils.getMacroBlocks(csmFile);
             }
             @Override
-            public AttributeSet getAttributes(CsmOffsetable obj) {
+            public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
                 CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
                 if (macro == null){
-                    return color;
+                    return getColor(mimePath);
                 }
                 switch(macro.getKind()){
                     case USER_SPECIFIED:
-                        return userMacroColors;
+                        return userMacroColors.get(mimePath);
                     case COMPILER_PREDEFINED:
                     case POSITION_PREDEFINED:
-                        return sysMacroColors;
+                        return sysMacroColors.get(mimePath);
                     case DEFINED:
-                        return color;
+                        return getColor(mimePath);
                     default:
                         throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
                 }
             }
-            private AttributeSet sysMacroColors;
-            private AttributeSet userMacroColors;
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO);
-                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO);
+                sysMacroColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO));
+                userMacroColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.USER_MACRO));
             }
+            private Map<String, AttributeSet> sysMacroColors= new HashMap<String, AttributeSet>();
+            private Map<String, AttributeSet> userMacroColors= new HashMap<String, AttributeSet>();
         };
     }
 
@@ -284,11 +286,18 @@ public final class SemanticEntitiesProvider {
             public ReferenceCollector getCollector() {
                 return new ModelUtils.UnusedVariableCollector();
             }
+
+            @Override
+            protected AttributeSet getColor(String mimeType) {
+                return unusedToolTipColors.get(mimeType);
+            }
+            
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                color = AttributesUtilities.createComposite(UNUSED_TOOLTIP, color);
+                unusedToolTipColors.put(provider.getMimeType(), AttributesUtilities.createComposite(UNUSED_TOOLTIP, super.getColor(provider.getMimeType())));
             }
+            private Map<String, AttributeSet> unusedToolTipColors= new HashMap<String, AttributeSet>();
         };
     }
     
@@ -316,7 +325,7 @@ public final class SemanticEntitiesProvider {
     
     private static abstract class AbstractSemanticEntity implements SemanticEntity {
 
-        protected AttributeSet color;
+        private Map<String, AttributeSet> color = new HashMap<String, AttributeSet>();
         private final FontColorProvider.Entity entity;
         private static final AttributeSet cleanUp = AttributesUtilities.createImmutable(
                 StyleConstants.Underline, null,
@@ -333,10 +342,14 @@ public final class SemanticEntitiesProvider {
             this.entity = entity;
         }
 
+        protected AttributeSet getColor(String mimeType) {
+            return color.get(mimeType);
+        }
+        
         @Override
         public void updateFontColors(FontColorProvider provider) {
             assert entity != null;
-            color = getFontColor(provider, entity);
+            color.put(provider.getMimeType(), getFontColor(provider, entity));
         }
 
         protected static AttributeSet getFontColor(FontColorProvider provider, FontColorProvider.Entity entity) {
@@ -345,8 +358,8 @@ public final class SemanticEntitiesProvider {
         }
 
         @Override
-        public AttributeSet getAttributes(CsmOffsetable obj) {
-            return color;
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimeType) {
+            return color.get(mimeType);
         }
 
         @Override

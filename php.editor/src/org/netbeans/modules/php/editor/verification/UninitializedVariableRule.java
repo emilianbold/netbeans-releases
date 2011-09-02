@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -62,14 +62,17 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class UninitializedVariableRule  extends PHPRule implements VarStackReadingRule {
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public String getId() {
         return "unitialized.variable"; //NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDesc");
     }
@@ -77,32 +80,32 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
     @Override
     public void visit(Variable variable) {
         ASTNode parent = context.path.get(0);
-        
+
         if (parent instanceof Assignment) {
             Assignment assignment = (Assignment) parent;
-            
+
             if (assignment.getLeftHandSide() == variable){
-                // variable is just being initialized, do not check it 
+                // variable is just being initialized, do not check it
                 return;
             }
-        } else if (parent instanceof FunctionName 
+        } else if (parent instanceof FunctionName
                 || parent instanceof SingleFieldDeclaration
                 || parent instanceof FieldAccess
                 || parent instanceof StaticFieldAccess){
-            
+
             return;
         }
-        
+
         if (parent instanceof ForEachStatement) {
             ForEachStatement forEachStatement = (ForEachStatement) parent;
-            
+
             if (forEachStatement.getExpression() != variable){
                 return;
             }
         } else if (parent instanceof ArrayAccess) {
             if (context.path.size() > 1) {
                 ASTNode grandpa = context.path.get(1);
-                
+
                 if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess
                         // issue #157823
                         || grandpa instanceof ArrayAccess) {
@@ -110,7 +113,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
                 }
             }
         }
-        
+
         check(variable);
     }
 
@@ -118,7 +121,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
         if (var.getName() instanceof Identifier) {
             Identifier identifier = (Identifier) var.getName();
             String varName = identifier.getName();
-            
+
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
                 // check the globals from included files
 //                Collection<IndexedVariable> topLevelVars = context.getIndex().getTopLevelVariables((PHPParseResult) context.parserResult,
@@ -143,10 +146,11 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
         }
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDispName");
     }
-    
+
     @Override
     public boolean getDefaultEnabled() {
         return false;

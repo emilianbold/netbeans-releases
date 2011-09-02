@@ -168,12 +168,12 @@ public class ExportDiffTest extends AbstractGitTestCase {
         exportDiff(files, patchFile, GitClient.DiffMode.INDEX_VS_WORKINGTREE);
         assertFile(patchFile, getGoldenFile("diffChanges-index-wt-delete.patch"));
         // head vs index
-        getClient(workDir).reset(files, "HEAD", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).reset(files, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         remove(true, files);
         exportDiff(files, patchFile, GitClient.DiffMode.HEAD_VS_INDEX);
         assertFile(patchFile, getGoldenFile("diffChanges-index-wt-delete.patch"));
         // head vs wt
-        getClient(workDir).reset(files, "HEAD", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).reset(files, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         file.delete();
         exportDiff(files, patchFile, GitClient.DiffMode.HEAD_VS_WORKINGTREE);
         assertFile(patchFile, getGoldenFile("diffChanges-head-wt-delete.patch"));

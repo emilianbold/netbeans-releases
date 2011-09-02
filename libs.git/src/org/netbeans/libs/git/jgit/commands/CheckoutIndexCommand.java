@@ -59,12 +59,14 @@ public class CheckoutIndexCommand extends GitCommand {
     private final File[] roots;
     private final FileListener listener;
     private final ProgressMonitor monitor;
+    private final boolean recursively;
 
-    public CheckoutIndexCommand (Repository repository, File[] roots, ProgressMonitor monitor, FileListener listener) {
+    public CheckoutIndexCommand (Repository repository, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;
+        this.recursively = recursively;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class CheckoutIndexCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             DirCache cache = repository.readDirCache();
-            new CheckoutIndex(repository, cache, roots, listener, monitor, true).checkout();
+            new CheckoutIndex(repository, cache, roots, recursively, listener, monitor, true).checkout();
         } catch (IOException ex) {
             throw new GitException(ex);
         }

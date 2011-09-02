@@ -181,22 +181,23 @@ public final class MIMEResolverImpl {
      * it resides in userdir/config/Servicer/MIMEResolver.
      * @param mimeToExtensions mapping of MIME type to set of extensions like
      * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
+     * @return true, if first user defined resolver was created
      */
-    public static void storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
+    public static boolean storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
         Parameters.notNull("mimeToExtensions", mimeToExtensions);  //NOI18N
-        FileObject userDefinedResolverFO = getUserDefinedResolver();
+        final FileObject userDefinedResolverFO = getUserDefinedResolver();
         if (userDefinedResolverFO != null) {
             try {
                 // delete previous resolver because we need to refresh MIMEResolvers
                 userDefinedResolverFO.delete();
             } catch (IOException e) {
                 ERR.log(Level.SEVERE, "Cannot delete resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-                return;
+                return false;
             }
         }
         if (mimeToExtensions.isEmpty()) {
             // nothing to write
-            return;
+            return false;
         }
         FileUtil.runAtomicAction(new Runnable() {
 
@@ -222,30 +223,31 @@ public final class MIMEResolverImpl {
                     return;
                 }
                 OutputStream os = null;
-                FileObject userDefinedResolverFO = null;
+                FileObject newUserDefinedFO = null;
                 try {
                     FileObject resolversFolder = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
                     if (resolversFolder == null) {
                         resolversFolder = FileUtil.createFolder(FileUtil.getConfigRoot(), MIME_RESOLVERS_PATH);
                     }
-                    userDefinedResolverFO = resolversFolder.createData(USER_DEFINED_MIME_RESOLVER, "xml");  //NOI18N
-                    userDefinedResolverFO.setAttribute(USER_DEFINED_MIME_RESOLVER, Boolean.TRUE);
-                    userDefinedResolverFO.setAttribute("position", USER_DEFINED_MIME_RESOLVER_POSITION);  //NOI18N
-                    os = userDefinedResolverFO.getOutputStream();
+                    newUserDefinedFO = resolversFolder.createData(USER_DEFINED_MIME_RESOLVER, "xml");  //NOI18N
+                    newUserDefinedFO.setAttribute(USER_DEFINED_MIME_RESOLVER, Boolean.TRUE);
+                    newUserDefinedFO.setAttribute("position", USER_DEFINED_MIME_RESOLVER_POSITION);  //NOI18N
+                    os = newUserDefinedFO.getOutputStream();
                     XMLUtil.write(document, os, "UTF-8"); //NOI18N
                 } catch (IOException e) {
-                    ERR.log(Level.SEVERE, "Cannot write resolver " + (userDefinedResolverFO == null ? "" : FileUtil.toFile(userDefinedResolverFO)), e);  //NOI18N
+                    ERR.log(Level.SEVERE, "Cannot write resolver " + (newUserDefinedFO == null ? "" : FileUtil.toFile(newUserDefinedFO)), e);  //NOI18N
                 } finally {
                     if (os != null) {
                         try {
                             os.close();
                         } catch (IOException e) {
-                            ERR.log(Level.SEVERE, "Cannot close OutputStream of file " + (userDefinedResolverFO == null ? "" : FileUtil.toFile(userDefinedResolverFO)), e);  //NOI18N
+                            ERR.log(Level.SEVERE, "Cannot close OutputStream of file " + (newUserDefinedFO == null ? "" : FileUtil.toFile(newUserDefinedFO)), e);  //NOI18N
                         }
                     }
                 }
             }
         });
+        return userDefinedResolverFO == null;
     }
 
     /** Lists registered MIMEResolver instances in reverse order,

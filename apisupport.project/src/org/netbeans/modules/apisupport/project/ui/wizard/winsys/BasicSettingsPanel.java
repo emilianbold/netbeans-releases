@@ -179,6 +179,9 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         setComModeSelectedItem();
         windowPosChanged(null);
         checkValidity();
+        if (!DesignSupport.isDesignModeSupported(data.getModuleInfo())) {
+            redefine.setEnabled(false);
+        }
     }
 
     private void setComModeSelectedItem() {

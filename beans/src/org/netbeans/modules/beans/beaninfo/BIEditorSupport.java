@@ -44,20 +44,16 @@ package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.beans.BeanInfo;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -67,25 +63,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.core.spi.multiview.CloseOperationHandler;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.BeanInfoWorker;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -101,14 +98,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Task;
@@ -121,11 +114,12 @@ import org.openide.windows.TopComponent;
  *
  * @author Jan Pokorsky
  */
-final class BIEditorSupport extends DataEditorSupport
+public final class BIEditorSupport extends DataEditorSupport
         implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
     
     private static final String MV_JAVA_ID = "java"; // NOI18N
     private static final String MV_BEANINFO_ID = "beaninfo"; // NOI18N
+    private static final String MIME_BEAN_INFO = "text/x-java-beaninfo"; //NOI18N
     private BIGES guardedEditor;
     private GuardedSectionsProvider guardedProvider;
     private GenerateBeanInfoAction.BeanInfoWorker worker;
@@ -243,12 +237,7 @@ final class BIEditorSupport extends DataEditorSupport
         if (dobj == null || !dobj.isValid()) {
             return super.createPane();
         }
-        MultiViewDescription[] descs = {
-            new JavaView(dobj),
-            new BeanInfoView(dobj),
-        };
-        return (Pane) MultiViewFactory.createCloneableMultiView(
-                descs, descs[0], new CloseHandler(dobj));
+        return (Pane) MultiViews.createCloneableMultiView(MIME_BEAN_INFO, getDataObject());
     }
     
     /** This is called by the multiview elements whenever they are created
@@ -356,228 +345,57 @@ final class BIEditorSupport extends DataEditorSupport
         return dobj.getLookup().lookup(BIEditorSupport.class);
     }
     
-    private static final class CloseHandler implements CloseOperationHandler, Serializable {
-
-        private static final long serialVersionUID = 1L;
-        private final DataObject dataObject;
-
-        public CloseHandler(DataObject dataObject) {
-            this.dataObject = dataObject;
-        }
-        
-        public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            BIEditorSupport editor = findEditor(dataObject);
-            return editor != null ? editor.canClose() : true;
-        }
-        
-    }
-    
-    private static final class JavaView implements MultiViewDescription, Serializable {
-        
-        private static final long serialVersionUID = 1L;
-        private static final String FIELD_DATAOBJECT = "dataObject"; // NOI18N
-        private DataObject dataObject;
-
-        public JavaView(DataObject dataObject) {
-            this.dataObject = dataObject;
+    final CloseOperationState canCloseElement(TopComponent tc) {
+        // if this is not the last cloned java editor component, closing is OK
+        if (!isLastView(tc)) {
+            return CloseOperationState.STATE_OK;
         }
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
+        if (!isModified()) {
+            return CloseOperationState.STATE_OK;
         }
 
-        public String getDisplayName() {
-            return NbBundle.getMessage(JavaView.class, "LAB_JavaSourceView");
-        }
+        AbstractAction save = new AbstractAction() {
 
-        public Image getIcon() {
-            return dataObject.isValid()
-                    ? dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)
-                    : ImageUtilities.loadImage("org/netbeans/modules/beans/resources/warning.gif"); // NOI18N
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        public String preferredID() {
-            return MV_JAVA_ID;
-        }
-
-        public MultiViewElement createElement() {
-            BIEditorSupport support = findEditor(dataObject);
-            JavaElement javaElement = new JavaElement(support);
-            // #133931: another multiview trap
-            Node[] nodes = javaElement.getActivatedNodes();
-            if ((nodes == null) || (nodes.length == 0)) {
-                javaElement.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
-            }
-            return javaElement;
-        }
-        
-        private void writeObject(ObjectOutputStream out) throws IOException {
-            out.putFields().put(FIELD_DATAOBJECT, dataObject);
-            out.writeFields();
-        }
-        
-        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            this.dataObject = (DataObject) in.readFields().get(FIELD_DATAOBJECT, in);
-        }
-    }
-    
-    private static final class BeanInfoView implements MultiViewDescription, Serializable {
-        
-        private static final long serialVersionUID = 1L;
-        private static final String FIELD_DATAOBJECT = "dataObject"; // NOI18N
-        private DataObject dataObject;
-
-        public BeanInfoView(DataObject dataObject) {
-            this.dataObject = dataObject;
-        }
-
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
-        }
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(BeanInfoView.class, "LAB_BeanInfoEditorView");
-        }
-
-        public Image getIcon() {
-            return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        public String preferredID() {
-            return MV_BEANINFO_ID;
-        }
-
-        public MultiViewElement createElement() {
-            return new BeanInfoElement(dataObject);
-        }
-        
-        private void writeObject(ObjectOutputStream out) throws IOException {
-            out.putFields().put(FIELD_DATAOBJECT, dataObject);
-            out.writeFields();
-        }
-        
-        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            this.dataObject = (DataObject) in.readFields().get(FIELD_DATAOBJECT, in);
-        }
-        
-    }
-    
-    private static final class JavaElement extends CloneableEditor implements MultiViewElement, Externalizable {
-        
-        private static final long serialVersionUID = 1L;
-        private MultiViewElementCallback callback;
-
-        public JavaElement(CloneableEditorSupport support) {
-            super(support);
-        }
-
-        /**
-         * serialization stuff; do not use
-         */
-        private JavaElement() {
-        }
-
-        public JComponent getVisualRepresentation() {
-            return this;
-        }
-
-        public JComponent getToolbarRepresentation() {
-            JComponent toolbar = null;
-            JEditorPane jepane = getEditorPane();
-            if (jepane != null) {
-                Document doc = jepane.getDocument();
-                if (doc instanceof NbDocument.CustomToolbar) {
-                    toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(jepane);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
-            return toolbar;
-        }
+        };
+        save.putValue(Action.LONG_DESCRIPTION, NbBundle.getMessage(BIEditorSupport.class, "MSG_MODIFIED", getDataObject().getPrimaryFile().getNameExt()));
 
-        public void setMultiViewCallback(MultiViewElementCallback callback) {
-            this.callback = callback;
-            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
-            editor.setTopComponent(callback.getTopComponent());
-        }
-
-        public CloseOperationState canCloseElement() {
-            return isLastView(callback.getTopComponent())
-                    ? MultiViewFactory.createUnsafeCloseState(
-                            MV_JAVA_ID,
-                            MultiViewFactory.NOOP_CLOSE_ACTION,
-                            MultiViewFactory.NOOP_CLOSE_ACTION)
-                    : CloseOperationState.STATE_OK;
-        }
-
-        @Override
-        public void componentActivated() {
-            super.componentActivated();
-            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
-            if (editor.worker != null && editor.worker.isModelModified()) {
-                editor.worker.generateSources();
-            }
-        }
-
-        @Override
-        public void componentDeactivated() {
-            super.componentDeactivated();
-        }
-
-        @Override
-        public void componentHidden() {
-            super.componentHidden();
-        }
-
-        @Override
-        public void componentShowing() {
-            super.componentShowing();
-        }
-
-        @Override
-        public void componentClosed() {
-            // XXX copied from form module see issue 55818
-            super.canClose(null, true);
-            super.componentClosed();
-        }
-        
-        @Override
-        protected boolean closeLast() {
-            return true;
-        }
-
-        @Override
-        public void componentOpened() {
-            super.componentOpened();
-        }
-
-        @Override
-        public void updateName() {
-            super.updateName();
-            if (callback != null) {
-                callback.updateTitle(getDisplayName());
-            }
-        }
-
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-        }
-
-        @Override
-        public void writeExternal(ObjectOutput out) throws IOException {
-            super.writeExternal(out);
-        }
-        
+        // return a placeholder state - to be sure our CloseHandler is called
+        return MultiViewFactory.createUnsafeCloseState(
+                "ID_BEANINFO_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
     }
     
-    private static final class BeanInfoElement extends CloneableTopComponent implements MultiViewElement, Externalizable {
+    
+    @MultiViewElement.Registration(displayName = "#LAB_JavaSourceView",
+        iconBase = JavaTemplates.JAVA_ICON,
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = MV_JAVA_ID,
+        mimeType = MIME_BEAN_INFO,
+        position = 10)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
+            
+    @MultiViewElement.Registration (
+        displayName="#LAB_BeanInfoEditorView",
+        iconBase=JavaTemplates.JAVA_ICON,
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID=MV_BEANINFO_ID,
+        mimeType=MIME_BEAN_INFO,
+        position=1000
+    )
+    public static final class BeanInfoElement extends CloneableTopComponent implements MultiViewElement, Externalizable {
         
         private static final long serialVersionUID = 1L;
         private MultiViewElementCallback callback;
@@ -586,8 +404,8 @@ final class BIEditorSupport extends DataEditorSupport
         private final JPanel emptyToolbar = new JPanel();
         private BiPanel biPanel;
         
-        public BeanInfoElement(DataObject dataObject) {
-            this.dataObject = dataObject;
+        public BeanInfoElement(Lookup lookup) {
+            this.dataObject = lookup.lookup(DataObject.class);
             setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
         }
 
@@ -600,7 +418,7 @@ final class BIEditorSupport extends DataEditorSupport
         public JComponent getVisualRepresentation() {
             return this;
         }
-
+        
         public JComponent getToolbarRepresentation() {
             return emptyToolbar;
         }
@@ -611,13 +429,10 @@ final class BIEditorSupport extends DataEditorSupport
             editor.setTopComponent(callback.getTopComponent());
         }
 
+        @Override
         public CloseOperationState canCloseElement() {
-            return isLastView(callback.getTopComponent())
-                    ? MultiViewFactory.createUnsafeCloseState(
-                            MV_JAVA_ID,
-                            MultiViewFactory.NOOP_CLOSE_ACTION,
-                            MultiViewFactory.NOOP_CLOSE_ACTION)
-                    : CloseOperationState.STATE_OK;
+            BIEditorSupport editor = findEditor(dataObject);
+            return editor.canCloseElement(callback.getTopComponent());
         }
 
         @Override
@@ -693,7 +508,7 @@ final class BIEditorSupport extends DataEditorSupport
             super.writeExternal(oo);
             oo.writeObject(dataObject);
         }
-        
+
     }
 
     private static final class BIGES implements GuardedEditorSupport {

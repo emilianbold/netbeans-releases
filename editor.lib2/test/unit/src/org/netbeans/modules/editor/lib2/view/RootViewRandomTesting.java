@@ -123,6 +123,11 @@ public class RootViewRandomTesting {
                 throw new IllegalStateException("VH(" + rootView.id() + ") integrity ERROR:\n" +
                         err + rootView.documentView().toStringDetailUnlocked());
             }
+            if (context.isLogOp()) {
+                context.logOpBuilder().append("\nVH(").append(rootView.id()).append("):\n").
+                        append(rootView).append("\n");
+            }
+
         }
     }
 

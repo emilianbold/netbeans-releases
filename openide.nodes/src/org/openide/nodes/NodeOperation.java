@@ -106,6 +106,20 @@ public abstract class NodeOperation {
      */
     public abstract void showProperties(Node[] n);
 
+    /**
+     * Shows a modal dialog with the custom editor of given property, just like
+     * it would be invoked when clicking the [...] button next to a property in
+     * the property sheet. The property value is updated if the dialog is
+     * successfully closed via the OK button.
+     * @param property The property to be edited (its property editor to be used).
+     * @param beans The objects the property belongs to. Typically one item
+     *   array with the Node of the property. The meaning is the same as in
+     *   {@link org.openide.explorer.propertysheet.PropertyEnv#getBeans()}.
+     */
+    public void showCustomEditorDialog(Node.Property<?> property, Object... beans) {
+        throw new UnsupportedOperationException();
+    }
+
     /** Open a modal Explorer on a root node, permitting a node selection to be returned.
      * <p>The acceptor
      * should be asked each time the set of selected nodes changes, whether to accept or

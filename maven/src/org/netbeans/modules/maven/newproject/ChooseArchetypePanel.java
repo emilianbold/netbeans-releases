@@ -39,12 +39,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.newproject;
 
-import org.codehaus.plexus.util.FileUtils;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
@@ -60,15 +57,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.tree.TreeSelectionModel;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.repository.RepositorySystem;
+import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,7 +86,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import static org.netbeans.modules.maven.newproject.Bundle.*;
 
 /**
  *
@@ -95,7 +96,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
     private static final RequestProcessor RP = new RequestProcessor(ChooseArchetypePanel.class.getName(),5);
 
     private static File getLocalCatalogFile() {
-        return new File(MavenEmbedder.userMavenConfigurationHome, "archetype-catalog.xml"); // NOI18N
+        return new File(RepositorySystem.userMavenConfigurationHome, "archetype-catalog.xml"); // NOI18N
     }
 
     private static URL getDefaultCatalogFile() throws IOException {

@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 
 /**
@@ -128,34 +129,17 @@ class SimpleSearchIterator implements Iterator<FileObject> {
             if (childrenEnum.hasMoreElements()) {
                 FileObject file = childrenEnum.nextElement();
                 if (file.isFolder()) {
-                    if (!recursive) {
-                        continue;
+                    if (recursive) {
+                        processFolder(file);
                     }
-                    
-                    if (filters != null) {
-                        final List<FileObjectFilter> subfolderFilters = checkFolderFilters(file);
-                        if (subfolderFilters == null) {
-                            continue;
-                        }
-                        
-                        filterLists.add(filters);
-                        if (subfolderFilters.size() != filters.size()) {
-                            filters = (!subfolderFilters.isEmpty())
-                                      ? subfolderFilters
-                                      : null;
-                        }
-                    } else {
-                        filterLists.add(null);
-                    }
-                    enums.add(childrenEnum);
-                    childrenEnum = file.getChildren(false);
                 } else {
-                    if ((filters != null) && !checkFileFilters(file)) {
-                        continue;
+                    if (FileUtil.isArchiveFile(file) && recursive) {
+                        processFolder(FileUtil.getArchiveRoot(file));
                     }
-                    
-                    nextObject = file;
-                    break;
+                    if ((filters == null) || checkFileFilters(file)) {
+                        nextObject = file;
+                        break;
+                    }
                 }
             } else {
                 assert enums.isEmpty() == filterLists.isEmpty();
@@ -182,6 +166,27 @@ class SimpleSearchIterator implements Iterator<FileObject> {
         upToDate = true;
     }
     
+    private void processFolder(FileObject folder) {
+        
+        if (filters != null) {
+            final List<FileObjectFilter> subfolderFilters = 
+                    checkFolderFilters(folder);
+            if (subfolderFilters == null) {
+                return;
+            }
+            filterLists.add(filters);
+            if (subfolderFilters.size() != filters.size()) {
+                filters = (!subfolderFilters.isEmpty())
+                        ? subfolderFilters
+                        : null;
+            }
+        } else {
+            filterLists.add(null);
+        }
+        enums.add(childrenEnum);
+        childrenEnum = folder.getChildren(false);
+    }
+
     /**
      * Computes a list of filters to be applied on the folder's children.
      * The current list of filters is used as a base and then each filter

@@ -109,6 +109,7 @@ import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.EditorActionsProvider;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
+import org.netbeans.modules.editor.impl.SearchAndReplaceBarHandler;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
@@ -207,8 +208,9 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new GenerateFoldPopupAction(),
                                        new NavigationHistoryBackAction(),
                                        new NavigationHistoryForwardAction(),
-                                       new SearchBar.IncrementalSearchForwardAction(),
-                                       new SearchBar.IncrementalSearchBackwardAction(),
+                                       new SearchAndReplaceBarHandler.IncrementalSearchForwardAction(),
+                                       new SearchAndReplaceBarHandler.IncrementalSearchBackwardAction(),
+                                       new SearchAndReplaceBarHandler.ReplaceAction(),
 //                                       new ToggleToolbarAction(),
 //                                       new NbToggleLineNumbersAction(),
                                        new NbGenerateGoToPopupAction(),
@@ -241,8 +243,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         addSystemActionMapping(deleteNextCharAction, org.openide.actions.DeleteAction.class);
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
-        addSystemActionMapping(SearchBar.INCREMENTAL_SEARCH_FORWARD, org.openide.actions.FindAction.class);
-        addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);
+        addSystemActionMapping(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD, org.openide.actions.FindAction.class);
+        addSystemActionMapping(SearchAndReplaceBarHandler.REPLACE_ACTION, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
 
         addSystemActionMapping(undoAction, org.openide.actions.UndoAction.class);

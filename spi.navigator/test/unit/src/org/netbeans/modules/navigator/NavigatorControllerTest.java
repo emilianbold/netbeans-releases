@@ -98,7 +98,6 @@ public class NavigatorControllerTest extends TestCase {
         URL url = NavigatorControllerTest.class.getResource("resources/sample_folder/subfolder1/subfolder2");
         assertNotNull("url not found.", url);
 
-        FileUtil.setMIMEType("my_extension", "NavigatorControllerTest/TestMimeType");
         FileObject fo = URLMapper.findFileObject(url);
         FileObject[] fos = fo.getChildren();
         fo = fo.getFileObject("Nic.my_extension");
@@ -115,7 +114,7 @@ public class NavigatorControllerTest extends TestCase {
         System.out.println("Testing DataShadow resolvement...");
         // not really valid, uses impl fact that during obtainProviders,
         // NavigatorTC parameter will not be needed.
-        NavigatorController nc = new NavigatorController(null);
+        NavigatorController nc = NavigatorTC.getInstance().getController();
         ArrayList<Node> shadow1Node = new ArrayList<Node>(1);
         shadow1Node.add(shadow1.getNodeDelegate());
         List result = nc.obtainProviders(shadow1Node);

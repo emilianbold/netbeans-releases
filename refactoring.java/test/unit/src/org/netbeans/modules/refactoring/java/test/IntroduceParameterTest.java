@@ -53,11 +53,13 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
+import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
+ * @author Ralph Ruijs
  */
 public class IntroduceParameterTest extends RefactoringTestBase {
 
@@ -71,13 +73,15 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 new File("t/A.java", source = "package t;\n"
                 + "public class A {\n"
                 + "public int add(int a, int b) {\n"
+                + "    System.out.println(a+b);\n"
                 + "    return a*(a+b);\n"
                 + "}\n"
                 + "public void m() {\n"
                 + "    System.out.println(add(1,1));\n"
                 + "}\n"
-                + "}\n"
-                + "class F extends A {\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
                 + "    public int add(int a, int b) {\n"
                 + "        return super.add(a, b);\n"
                 + "    }\n"
@@ -85,43 +89,281 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        System.out.println(add(1,add(23,1)) + 1);\n"
                 + "    }\n"
                 + "}\n"));
-
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("a+b") );
+        performIntroduce(src.getFileObject("t/A.java"), source.lastIndexOf("a+b"), Javadoc.NONE, false, false );
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
                 + "public int add(int a, int b, int introduced) {\n"
-                + "    return a* introduced;\n"
+                + "    System.out.println(a+b);\n"
+                + "    return a*introduced;\n"
                 + "}\n"
                 + "public void m() {\n"
                 + "    System.out.println(add(1,1, 1 + 1));\n"
                 + "}\n"
-                + "}\n"
-                + "class F extends A {\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
                 + "    public int add(int a, int b, int introduced) {\n"
                 + "        return super.add(a, b, introduced);\n"
                 + "    }\n"
                 + "    public void bar() {\n"
-                + "        System.out.println(add(1,add(23,1, 23 + 1), 1 + add(23,1, 23 + 1)) + 1);\n"
+                + "        System.out.println(add(1,add(23,1, 23 + 1), 1 + add(23, 1, 23 + 1)) + 1);\n"
                 + "    }\n"
                 + "}\n"));
-
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                + "public class A {\n"
+                + "public int length() {\n"
+                + "    String introduced = \"Hello World!\";\n"
+                + "    return introduced.length();\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int length() {\n"
+                + "        return super.length();\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(length());\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("introduced"), Javadoc.NONE, false, false );
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "public int length(String introduced) {\n"
+                + "    return introduced.length();\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int length(String introduced) {\n"
+                + "        return super.length(introduced);\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(length(\"Hello World!\"));\n"
+                + "    }\n"
+                + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                + "public class A {\n"
+                + "public int add(int a, int b) {\n"
+                + "    return a*(a+b);\n"
+                + "}\n"
+                + "public void m() {\n"
+                + "    System.out.println(add(1,1));\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int add(int a, int b) {\n"
+                + "        return super.add(a, b);\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(add(1,add(23,1)) + 1);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.lastIndexOf("a+b"), Javadoc.NONE, true, false );
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "public int add(int a, int b) {\n"
+                + "    return add(a, b, a + b);\n"
+                + "}\n"
+                + "public int add(int a, int b, int introduced) {\n"
+                + "    return a * introduced;\n"
+                + "}\n"
+                + "public void m() {\n"
+                + "    System.out.println(add(1,1));\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int add(int a, int b) {\n"
+                + "        return super.add(a, b);\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(add(1,add(23,1)) + 1);\n"
+                + "    }\n"
+                + "}\n"));
     }
+    
+    public void testConstructor() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public A() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public A(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A(2);\n"
+                + "    }\n"
+                + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public A() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public A(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingConstructor"));
+    }
+    
+    public void testExistingMethod() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
 
-    private void performIntroduce(FileObject source, final int position, Problem... expectedProblems) throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A extends B{\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B {\n"
+                + "    public void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
+    }
+    
+    public void testJavadoc() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.GENERATE, false, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param introduced the value of introduced\n"
+                + "     */\n"
+                + "    public static void testMethod(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.UPDATE, false, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     * \n"
+                + "     * @param introduced the value of introduced\n"
+                + "     */\n"
+                + "    public static void testMethod(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void testReplaceAll() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.GENERATE, false, true);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param introduced the value of introduced\n"
+                + "     */\n"
+                + "    public static void testMethod(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+
+    private void performIntroduce(FileObject source, final int position, final Javadoc javadoc, final boolean compatible, final boolean replaceall, Problem... expectedProblems) throws Exception {
         final IntroduceParameterRefactoring[] r = new IntroduceParameterRefactoring[1];
 
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(JavaSource.Phase.RESOLVED);
-                CompilationUnitTree cut = parameter.getCompilationUnit();
+            public void run(CompilationController javac) throws Exception {
+                javac.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = javac.getCompilationUnit();
 
-                TreePath tp = parameter.getTreeUtilities().pathFor(position);
+                TreePath tp = javac.getTreeUtilities().pathFor(position);
 
-                r[0] = new IntroduceParameterRefactoring(TreePathHandle.create(tp, parameter));
+                r[0] = new IntroduceParameterRefactoring(TreePathHandle.create(tp, javac));
+                r[0].getContext().add(javadoc);
                 r[0].setParameterName("introduced");
+                r[0].setReplaceAll(replaceall);
+                r[0].setOverloadMethod(compatible);
+                r[0].setFinal(false);
             }
         }, true);
 

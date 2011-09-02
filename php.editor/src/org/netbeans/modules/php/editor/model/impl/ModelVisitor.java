@@ -164,7 +164,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         this.info = info;
         this.baseElements = new ArrayList<PhpBaseElement>();
     }
-   
+
     public ParserResult getCompilationInfo() {
         return this.info;
     }
@@ -224,14 +224,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         ScopeImpl currentScope = modelBuilder.getCurrentScope();
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
-        } 
+        }
     }
 
     @Override
     public void visit(ReturnStatement node) {
         super.visit(node);
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
-        markerBuilder.prepare(node,currentScope);        
+        markerBuilder.prepare(node,currentScope);
         String typeName = null;
 
         if (currentScope instanceof FunctionScope) {
@@ -259,8 +259,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         typeName = VariousUtils.replaceVarNames(typeName, var2Type);
                     }
                 }
+            } else if (expression instanceof Scalar) {
+                typeName = VariousUtils.extractVariableTypeFromExpression(expression, null);
             }
-            
+
             if (typeName != null) {
                 Set<String> types = new HashSet<String>();
                 if (functionScope.returnType != null) {
@@ -268,7 +270,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     for (String tp : split) {
                         types.add(tp);
                     }
-                }                
+                }
                 String tp = QualifiedName.create(typeName).toString();
                 if (types.isEmpty()) {
                     functionScope.returnType = tp;
@@ -276,7 +278,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     functionScope.returnType += "|" + tp;//NOI18N
                 }
             }
-        }        
+        }
     }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
@@ -482,7 +484,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
             }
         }
-        
+
         super.visit(node);
     }
 
@@ -638,7 +640,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FunctionName node) {
-        //intentionally ommited - if deleted, golden tests will fail and will show the reason 
+        //intentionally ommited - if deleted, golden tests will fail and will show the reason
         //super.visit(node);
     }
 
@@ -786,7 +788,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varArray != null && varValue != null) {
                 varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
                 Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
-                for (String tpName : typeNames) {                    
+                for (String tpName : typeNames) {
                     new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope),
                             new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
                 }
@@ -1009,7 +1011,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                                 false, variableScope.getBlockRange(), varN.getNameRange(), typeName));
                     }
                 }
-            } 
+            }
         }
 
         occurencesBuilder.prepare(node, currentScope);
@@ -1109,7 +1111,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (map == null) {
             map = new HashMap<String, VariableNameImpl>();
             vars.put(varContainer, map);
-        } 
+        }
         String name = VariableNameImpl.toName(node);
         VariableNameImpl retval = map.get(name);
         if (retval == null) {
@@ -1319,7 +1321,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     }
                     if (varInstance != null) {
                         ASTNode conditionalNode = findConditionalStatement(getPath());
-                        VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance, 
+                        VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance,
                                 (Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
                         varInstance.addElement(vAssignment);
                     }
@@ -1340,10 +1342,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
     }
-    
+
     void scanNoLazy(ASTNode node, Scope inScope) {
         // Remember the old scope. It can happen that will be needed scanned constructor
-        // in non lazy mode as well. 
+        // in non lazy mode as well.
         Scope originalScope = modelBuilder.getCurrentScope();
         modelBuilder.prepareForScope(inScope);
         lazyScan = false;

@@ -68,6 +68,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 public final class CppSwitchAction extends BaseAction {
 
@@ -92,42 +93,43 @@ public final class CppSwitchAction extends BaseAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {
-        final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
-
-        FileObject res = findToggleFile(activatedNodes);
-        boolean isToggled = false;
-        if (res != null) {
-            doToggle(res);
-            isToggled = true;
-        } else {
-            CsmFile target = getTarget(activatedNodes);
-            if (target != null) {
-                DataObject dob = CsmUtilities.getDataObject(target);
-                if (dob != null) {
-                    doToggle(dob);
-                    isToggled = true;
+        DataObject activatedDataObject = getActivatedDataObject();
+        if (activatedDataObject != null) {
+            FileObject res = findToggleFile(activatedDataObject);
+            boolean isToggled = false;
+            if (res != null) {
+                doToggle(res);
+                isToggled = true;
+            } else {
+                CsmFile target = getTarget(activatedDataObject);
+                if (target != null) {
+                    DataObject dob = CsmUtilities.getDataObject(target);
+                    if (dob != null) {
+                        doToggle(dob);
+                        isToggled = true;
+                    }
                 }
             }
-        }
-        if (!isToggled) {
-            String status;
-            switch (getTargetNodeKind(TopComponent.getRegistry().getActivatedNodes())) {
-                case HEADER:
-                    status = getMessage("cpp-switch-source-not-found"); //NOI18N
-                    break;
-                case SOURCE:
-                    status = getMessage("cpp-switch-header-not-found"); //NOI18N
-                    break;
-                default:
-                    status = getMessage("cpp-switch-file-not-found");
+            if (!isToggled) {
+                String status;
+                switch (getTargetNodeKind(activatedDataObject)) {
+                    case HEADER:
+                        status = getMessage("cpp-switch-source-not-found"); //NOI18N
+                        break;
+                    case SOURCE:
+                        status = getMessage("cpp-switch-header-not-found"); //NOI18N
+                        break;
+                    default:
+                        status = getMessage("cpp-switch-file-not-found");
+                }
+                StatusDisplayer.getDefault().setStatusText(status); // NOI18N
             }
-            StatusDisplayer.getDefault().setStatusText(status); // NOI18N
         }
     }
 
     public @Override String getPopupMenuText(JTextComponent target) {
         String trimmedNameKey = "goto-cpp-switch-file"; //NOI18N
-        switch (getTargetNodeKind(TopComponent.getRegistry().getActivatedNodes())) {
+        switch (getTargetNodeKind(getActivatedDataObject())) {
             case HEADER:
                 trimmedNameKey = "goto-cpp-header-file"; //NOI18N
                 break;
@@ -149,9 +151,23 @@ public final class CppSwitchAction extends BaseAction {
         HEADER, SOURCE, UNKNOWN
     }
 
-    private static NodeKind getTargetNodeKind(Node[] activatedNodes) {
+    private DataObject getActivatedDataObject(){
+        DataObject dob = null;
+        Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         if (activatedNodes != null && activatedNodes.length == 1) {
-            DataObject dobj = activatedNodes[0].getLookup().lookup(DataObject.class);
+            dob = activatedNodes[0].getLookup().lookup(DataObject.class);
+        }
+        if (dob == null) {
+            TopComponent activated = TopComponent.getRegistry().getActivated();
+            if (activated != null && WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
+                dob = activated.getLookup().lookup(DataObject.class);
+            }
+        }
+        return dob;
+    }
+
+    private static NodeKind getTargetNodeKind(DataObject dobj) {
+        if (dobj != null) {
             FileObject fo = (dobj == null) ? null : dobj.getPrimaryFile();
             String mime = (fo == null) ? "" : fo.getMIMEType();
             if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
@@ -163,8 +179,8 @@ public final class CppSwitchAction extends BaseAction {
         return NodeKind.UNKNOWN;
     }
 
-    private static CsmFile getTarget(Node[] activatedNodes) {
-        CsmFile f = CsmUtilities.getCsmFile(activatedNodes[0], false);
+    private static CsmFile getTarget(DataObject dobj) {
+        CsmFile f = CsmUtilities.getCsmFile(dobj, false, false);
         CsmFile target = null;
         if (f != null) {
             if (f.isHeaderFile()) {
@@ -261,10 +277,9 @@ public final class CppSwitchAction extends BaseAction {
         }
     }
 
-    private static FileObject findToggleFile(final Node[] activatedNodes) {
+    private static FileObject findToggleFile(DataObject dob) {
         FileObject res = null;
         // check whether current file is C++ Source file
-        DataObject dob = activatedNodes[0].getLookup().lookup(DataObject.class);
         FileObject fo = dob.getPrimaryFile();
         if (fo != null) {
             String mimeType = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE);

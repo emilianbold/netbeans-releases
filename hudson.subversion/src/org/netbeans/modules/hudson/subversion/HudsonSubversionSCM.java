@@ -47,10 +47,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
@@ -60,6 +63,7 @@ import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Configurat
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -149,7 +153,14 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public @Override List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
+    public @Override List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[kind,items[user,msg,paths[file,editType],revision],revisions[module]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {build, x});
+            return Collections.emptyList();
+        }
         if (!"svn".equals(Utilities.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
@@ -201,7 +212,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         default:
                             throw new AssertionError();
                         }
-                        return new SubversionHyperlink(module, path, startRev, endRev, job);
+                        return new SubversionHyperlink(module, path, startRev, endRev, build.getJob());
                     }
                 }
                 List<SubversionFile> files = new ArrayList<SubversionFile>();

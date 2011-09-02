@@ -1404,7 +1404,7 @@ public class MultiDataObject extends DataObject {
     }
 
     final void updateNodeInCookieSet() {
-        if (associateLookup() >= 1) {
+        if (isValid() && associateLookup() >= 1) {
             CookieSet set = getCookieSet(false);
             if (set != null) {
                 set.assign(Node.class, getNodeDelegate());

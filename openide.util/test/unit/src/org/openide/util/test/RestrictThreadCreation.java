@@ -106,7 +106,7 @@ public class RestrictThreadCreation {
                     String id = line.getClassName() + "." + line.getMethodName();
                     if (currentlyPermitted.contains(id)) {
                         return;
-                    } else if (id.equals("java.lang.Thread.init")) {
+                    } else if (id.equals("java.lang.Thread.init") || id.equals("org.openide.util.RequestProcessor$Processor.checkAccess")) {
                         inThreadInit = true;
                     }
                 }

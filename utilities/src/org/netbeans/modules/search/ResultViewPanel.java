@@ -201,6 +201,7 @@ class ResultViewPanel extends JPanel{
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
         treeView.setBorder(BorderFactory.createEmptyBorder());
+        ResultTreeScrollController.register(treeView, tree);
 
         resultsPanel = new JPanel(resultViewCards = new CardLayout());
 

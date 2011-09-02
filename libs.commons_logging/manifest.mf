@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.libs.commons_logging/1
-OpenIDE-Module-Implementation-Version: 11
-OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/commons_logging/Bundle.properties
-
