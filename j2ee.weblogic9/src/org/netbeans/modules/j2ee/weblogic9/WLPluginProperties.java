@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -120,7 +121,7 @@ public final class WLPluginProperties {
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
     public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
     public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
-    
+
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
     public static final String MEM_OPTS = "mem_opts";               // NOI18N
@@ -170,6 +171,9 @@ public final class WLPluginProperties {
     
     private static final  Pattern SERVER_PATTERN = 
         Pattern.compile("(?:[a-z]+\\:)?server");                    // NOI18N
+    
+    private static final  Pattern ADMIN_SERVER_PATTERN = 
+        Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
     
     // TODO read from domain-registry.xml instead?
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
@@ -392,6 +396,8 @@ public final class WLPluginProperties {
             // get the child nodes
             NodeList children = root.getChildNodes();
 
+            String adminServer = null;
+            LinkedHashMap<String, ServerDescriptor> servers = new LinkedHashMap<String, ServerDescriptor>();
             // for each child
             for (int j = 0; j < children.getLength(); j++) {
                 Node child = children.item(j);
@@ -404,12 +410,11 @@ public final class WLPluginProperties {
                 } else if ("production-mode-enabled".equals(child.getNodeName())) {
                     String isEnabled = child.getFirstChild().getNodeValue();
                     properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
-                    
-                }
+                } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
+                    adminServer = child.getFirstChild().getNodeValue();
                 // if the child's name equals 'server' get its children
                 // and iterate over them
-                else if (SERVER_PATTERN.matcher(child.getNodeName()).matches())
-                {
+                } else if (SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
                     NodeList nl = child.getChildNodes();
 
                     // declare the server's name/host/port
@@ -460,12 +465,22 @@ public final class WLPluginProperties {
                                 : port;
                         host = (host == null || host.equals("")) ? "localhost" // NOI18N
                                 : host;
-                        properties.put(PORT_ATTR,
-                                port);
-                        properties.put(HOST_ATTR, host);
-                        properties.put(ADMIN_SERVER_NAME, name);
+                        
+                        servers.put(name, new ServerDescriptor(host, port, name));
                     }
                 }
+            }
+            ServerDescriptor admin = null;
+            if (adminServer != null) {
+                admin = servers.get(adminServer);
+            }
+            if (admin == null && !servers.isEmpty()) {
+                admin = servers.entrySet().iterator().next().getValue();
+            }
+            if (admin != null) {
+                properties.put(PORT_ATTR, admin.getPort());
+                properties.put(HOST_ATTR, admin.getHost());
+                properties.put(ADMIN_SERVER_NAME, admin.getName());
             }
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.INFO, null, e);
@@ -487,7 +502,7 @@ public final class WLPluginProperties {
         return properties;
     }
     
-    
+    @CheckForNull
     public static String getDefaultPlatformHome() {
         Collection<FileObject> instFolders = JavaPlatformManager.getDefault().
                 getDefaultPlatform().getInstallFolders();
@@ -838,6 +853,33 @@ public final class WLPluginProperties {
                 return DEFAULT;
             }
             return new JvmVendor(value, value);
+        }
+    }
+    
+    private static class ServerDescriptor {
+        
+        private final String host;
+        
+        private final String port;
+        
+        private final String name;
+
+        public ServerDescriptor(String host, String port, String name) {
+            this.host = host;
+            this.port = port;
+            this.name = name;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPort() {
+            return port;
         }
     }
 }
