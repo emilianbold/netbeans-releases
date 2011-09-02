@@ -55,6 +55,8 @@ import org.openide.windows.TopComponent;
  * implementing this interface and registering it in META-INF/services. The
  * methods of the interface get call by the navigator module based on what it
  * needs at the moment.
+ * <p>
+ * @since 1.19
  *
  * @author Tomas Pavek
  */
