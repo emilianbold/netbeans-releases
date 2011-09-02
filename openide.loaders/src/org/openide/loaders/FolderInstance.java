@@ -338,16 +338,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
             }
             if (t != null) {
                 if (EventQueue.isDispatchThread()) {
-                    try {
-                        if (!t.waitFinished(1000)) {
-                            AWTTask.flush();
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
+                    if (!AWTTask.waitFor(t)) {
                         continue;
                     }
+                } else {
+                    t.waitFinished();
                 }
-                t.waitFinished();
             }
 
 
@@ -747,6 +743,26 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
                     postCreationTask.waitFinished();
                 }
             }
+
+            @Override
+            public boolean waitFinished(long milliseconds) throws InterruptedException {
+                long waitBy = System.currentTimeMillis() - milliseconds;
+                if (instancesTask != null) {
+                    if (!instancesTask.waitFinished(milliseconds)) {
+                        return false;
+                    }
+                }
+                if (postCreationTask != null) {
+                    long wait = waitBy - System.currentTimeMillis();
+                    if (wait < 1) {
+                        wait = 1;
+                    }
+                    return postCreationTask.waitFinished(wait);
+                }
+                return true;
+            }
+            
+            
         }
         R process = new R();
         process.sequence = ++creationSequence;

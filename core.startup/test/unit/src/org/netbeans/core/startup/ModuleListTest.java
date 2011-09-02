@@ -72,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
+import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.test.MockLookup;
 
 /** Test the functions of the module list, i.e. finding modules on
@@ -110,7 +111,7 @@ public class ModuleListTest extends SetupHid {
         MockLookup.setInstances(new IFL());
 
         File ud = new File(getWorkDir(), "ud");
-        Places.setUserDirectory(ud);
+        PlacesTestUtils.setUserDirectory(ud);
         
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();

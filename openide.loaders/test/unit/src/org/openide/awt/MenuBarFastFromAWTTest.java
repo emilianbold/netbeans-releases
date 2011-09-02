@@ -42,68 +42,81 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.autoupdate;
+package org.openide.awt;
 
-import java.net.URL;
-import java.util.List;
-import org.netbeans.junit.MockServices;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.util.logging.Level;
+import javax.swing.JMenu;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.services.UpdateUnitFactoryTest;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.openide.actions.OpenAction;
+import org.openide.loaders.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
+/** Test whether menu can be quickly obtained from event dispatch thread.
  *
- * @author Jiri Rechtacek
+ * @author Jaroslav Tulach
  */
-public class UpdateProviderFactoryTest extends NbTestCase {
+public class MenuBarFastFromAWTTest extends NbTestCase {
+    private DataFolder df;
+    private MenuBar mb;
     
-    public UpdateProviderFactoryTest (String testName) {
-        super (testName);
+    private int add;
+    private int remove;
+    
+    public MenuBarFastFromAWTTest(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void setUp () throws Exception {
-        clearWorkDir();
-        System.setProperty("netbeans.user", getWorkDirPath());
-        MockServices.setServices (MyProvider.class, MyProvider2.class);
+    protected Level logLevel() {
+        return Level.WARNING;
     }
     
     @Override
-    protected void tearDown () throws  Exception {
+    protected void setUp() throws Exception {
+        FileObject fo = FileUtil.createFolder(
+            FileUtil.getConfigRoot(),
+            "Folder" + getName()
+        );
+        df = DataFolder.findFolder(fo);
+        
+        FileObject fileMenu = df.getPrimaryFile().createFolder("File");
+        DataFolder fileM = DataFolder.findFolder(fileMenu);
+        InstanceDataObject.create(fileM, null, OpenAction.class);
+        
+        mb = new MenuBar(df);
+        mb.waitFinished();
     }
 
-    public void testGetUpdatesProviders () {
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-        
-        assertFalse ("Providers found in lookup.", result.isEmpty ());
-        assertEquals ("Two providers found.", 2, result.size ());
-    }
-
-    public void testSetEnable () {
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-
-        UpdateUnitProvider provider = result.get (1);
-        boolean state = false;
-        provider.setEnable (state);
-        
-        assertEquals ("New state stored.", state, provider.isEnabled ());
-
-        List<UpdateUnitProvider> resultOnlyEnabled = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true);
-        
-        assertFalse ("Providers still found in lookup.", resultOnlyEnabled.isEmpty ());
-        assertEquals ("Only one enable provider found.", 1, resultOnlyEnabled.size ());
-        assertTrue ("Provider in only enabled must be enabled.", resultOnlyEnabled.get (0).isEnabled ());
-    }
-
-    public static class MyProvider extends AutoupdateCatalogProvider {
-        public MyProvider () {
-            super ("test-updates-provider", "test-updates-provider", UpdateUnitFactoryTest.class.getResource ("data/catalog.xml"));
-        }
+    @Override
+    protected void tearDown() throws Exception {
     }
     
-    public static class MyProvider2 extends AutoupdateCatalogProvider {
-        public MyProvider2 () {
-            super ("test-updates-provider-2", "test-updates-provider-2", UpdateUnitFactoryTest.class.getResource ("data/catalog.xml"));
+    public void testInAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                doTestInAwt();
+            }
+        });
+    }
+
+    final void doTestInAwt() {
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu m = mb.getMenu(0);
+        assertEquals("named file", "File", m.getText());
+
+        long before = System.currentTimeMillis();
+        MenuBarTest.simulateExpansionOfMenu(m);
+        Component[] arr = m.getMenuComponents();
+        assertEquals("One menu item", 1, arr.length);
+        long after = System.currentTimeMillis();
+        
+        long took = after - before;
+        if (took > 5000) {
+            fail("Too long time to compute menu items (" + took + " ms), probably time out somewhere!");
         }
     }
 }
