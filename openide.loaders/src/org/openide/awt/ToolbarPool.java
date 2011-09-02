@@ -199,6 +199,15 @@ public final class ToolbarPool extends JComponent implements Accessible {
     public final void waitFinished () {
         instance.waitFinished();
     }
+    
+    /** Check whether all data needed for the toolbar are read from disk.
+     * 
+     * @return true if {@link #waitFinished} and other getters will return immediately
+     * @since 7.30
+     */
+    public final boolean isFinished() {
+        return instance.isFinished();
+    }
 
     /** Initialization of new values.
      * @param toolbars map (String, Toolbar) of toolbars
