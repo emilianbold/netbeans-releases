@@ -133,6 +133,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)"; //NOI18N
         params[3] = "REST FROM ENTITY"; //NOI18N
         LogUtils.logWsWizard(params);
+        
+        RestUtils.configRestPackages(project, resourcePackage );
 
         progressDialog.open();   
         return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));
