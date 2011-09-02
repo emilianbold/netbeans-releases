@@ -784,20 +784,22 @@ public class AntDebugger extends ActionsProviderSupport {
             }
             AntProjectCookie ant = (AntProjectCookie) dob.getCookie 
                 (AntProjectCookie.class);
-            Element proj = ant.getProjectElement();
-            if (proj != null) {
-                String projName = proj.getAttribute("name");
-                projectNamesByFiles.put(file, projName);
-            }
-            try {
-                Set targets = TargetLister.getTargets (ant);
-                Iterator it = targets.iterator ();
-                while (it.hasNext ()) {
-                    TargetLister.Target t = (TargetLister.Target) it.next ();
-                    nameToTarget.put (t.getName (), t);
+            if (ant != null) {
+                Element proj = ant.getProjectElement();
+                if (proj != null) {
+                    String projName = proj.getAttribute("name");
+                    projectNamesByFiles.put(file, projName);
                 }
-            } catch (IOException ioex) {
-                // Ignore - we'll have an empty map
+                try {
+                    Set targets = TargetLister.getTargets (ant);
+                    Iterator it = targets.iterator ();
+                    while (it.hasNext ()) {
+                        TargetLister.Target t = (TargetLister.Target) it.next ();
+                        nameToTarget.put (t.getName (), t);
+                    }
+                } catch (IOException ioex) {
+                    // Ignore - we'll have an empty map
+                }
             }
             nameToTargetByFiles.put(file, nameToTarget);
         }
