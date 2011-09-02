@@ -66,6 +66,8 @@ import java.util.Collection;
  * element name starting with at-sign (@) denotes an artificial property which can be referred 
  * by other elements but will not be exposed to the editor (completion, error checks etc..)
  * 
+ * One may use Utilities.parsePropertyDefinitionFile(pathToTheProperiesFile) to obtain the list of 
+ * PropertyDescriptor-s from a properties file.
  * 
  * @author mfukala@netbeans.org
  */
