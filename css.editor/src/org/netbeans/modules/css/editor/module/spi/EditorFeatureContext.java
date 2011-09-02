@@ -45,8 +45,9 @@ import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 
 /**
+ * Context for editor based features
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class EditorFeatureContext extends FeatureContext {
 
@@ -58,13 +59,15 @@ public class EditorFeatureContext extends FeatureContext {
     }
     
     /**
-     * The editor's caret offset relative to the edited document.
-     * 
+     * @return The editor's caret offset relative to the edited document.
      */
     public int getCaretOffset() {
         return caretOffset;
     }
     
+    /**
+     * @return instance of the edited document
+     */
     public Document getDocument() {
         return getSnapshot().getSource().getDocument(false);
     }

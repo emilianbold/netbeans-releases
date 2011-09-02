@@ -49,32 +49,53 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
+ * An instance of this class or its subclass is typically passed to the
+ * CssModule.getXXX() methods.
+ * 
  * @author mfukala@netbeans.org
  */
 public class FeatureContext {
 
     private CssParserResult result;
 
+    /**
+     * @todo do not allow to instantiate
+     */
     public FeatureContext(CssParserResult result) {
         this.result = result;
     }
     
+    /**
+     * @return a parsing.api result
+     */
     public CssParserResult getParserResult() {
         return result;
     }
     
+    /**
+     * @return the root node of the css parse tree
+     */
     public Node getParseTreeRoot() {
         return getParserResult().getParseTree();
     }
     
+    /**
+     * @return snapshot of the source
+     */
     public Snapshot getSnapshot() {
         return result.getSnapshot();
     }
     
+    /**
+     * @return the parsing.api's source
+     */
     public Source getSource() {
         return getSnapshot().getSource();
     }
         
+    /**
+     * @return token sequence created from the snapshot.
+     */
     public TokenSequence<CssTokenId> getTokenSequence() {
         return getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
     }
