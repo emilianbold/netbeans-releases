@@ -50,6 +50,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.lang.model.element.AnnotationMirror;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -97,6 +100,19 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
             restSupport.ensureRestDevelopmentReady();
+        }
+    }
+    
+    public static void configRestPackages(Project project, String... packs) throws IOException {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                restSupport.configRestPackages(packs);
+            }
+            catch(IOException e ){
+                Logger.getLogger( RestUtils.class.getName() ).log( Level.WARNING, 
+                        null, e );
+            }
         }
     }
     

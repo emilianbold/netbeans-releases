@@ -62,7 +62,6 @@ import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.awt.HtmlRenderer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -157,8 +156,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
             final boolean valid = matchingObj.isObjectValid();
             if (valid) {
                 final Node node = dataObj.getNodeDelegate();
-                FileObject fileFolder = dataObj.getPrimaryFile().getParent();
-                String folderPath = FileUtil.getFileDisplayName(fileFolder);
+                String folderPath = matchingObj.getRelativeSearchPath();
                 int matchesCount = matchingObj.getMatchesCount();
                 try {
                     text = matchingObj.getHtmlDisplayName();

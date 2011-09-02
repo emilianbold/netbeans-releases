@@ -357,6 +357,11 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$cl^ass = 'StdClass';", true);
     }
     
+    public void testIssue201429_01() throws Exception {
+        checkOccurrences(getTestPath(), "protected static function test($keyC^losure)", true);
+    }
+    
+    
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

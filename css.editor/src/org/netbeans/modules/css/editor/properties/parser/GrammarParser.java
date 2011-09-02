@@ -118,15 +118,12 @@ public class GrammarParser {
                     //group end
                     return;
 
-                case '\'': //'ref' style
-                case '<': // <ref> style
+                case '<':
                     //reference
-                    boolean newStyle = c == '<';
-
                     StringBuilder buf = new StringBuilder();
                     for (;;) {
                         c = input.read();
-                        if (c == '\'' || newStyle && c == '>') {
+                        if (c == '>') {
                             break;
                         } else {
                             buf.append(c);

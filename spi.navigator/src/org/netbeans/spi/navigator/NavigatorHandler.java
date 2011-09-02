@@ -92,6 +92,8 @@ public final class NavigatorHandler {
      * If there is no custom NavigatorDisplayer registered, the navigator's own
      * (default) TopComponent will be used and it also takes care of
      * initializing the navigator automatically. No need to call this method then.
+     * <p>
+     * @since 1.19
      */
     public static void activateNavigator() {
         getController();

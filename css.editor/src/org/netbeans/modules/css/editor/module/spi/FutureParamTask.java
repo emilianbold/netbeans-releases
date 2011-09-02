@@ -42,8 +42,9 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 /**
+ * A modification of Runnable allowing to pass params and return a value.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public interface FutureParamTask<T, P> {
     

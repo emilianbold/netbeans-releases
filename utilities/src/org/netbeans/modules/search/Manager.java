@@ -605,8 +605,10 @@ final class Manager {
         if (pendingTasks.remove(sTask)){
             notifySearchCancelled(sTask);
         } else if (currentTasks.contains(sTask)){
-            stoppingTasks.add(sTask);
-            sTask.stop();
+            if (!stoppingTasks.contains(sTask)) {
+                stoppingTasks.add(sTask);
+                sTask.stop();
+            }
         }
     }
 

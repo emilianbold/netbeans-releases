@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
@@ -256,10 +257,29 @@ public class FindInFilesAction extends CallableSystemAction
             return;
         }
         
+        if (EventQueue.isDispatchThread()) {
+            updateStateOrRemoveChangeListener();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    updateStateOrRemoveChangeListener();
+                }
+            });
+        }
+    }
+
+    /** If toolbar presenter exists, update state, else remove the change
+     * listener.
+     */
+    private void updateStateOrRemoveChangeListener() {
+        assert EventQueue.isDispatchThread();
         if (checkToolbarPresenterExists()) {
             updateState();
         } else {
-            SearchScopeRegistry.getDefault().removeChangeListener(this);
+            SearchScopeRegistry.getDefault().removeChangeListener(
+                    FindInFilesAction.this);
             putProperty(VAR_LISTENING, null);
             putProperty(VAR_TOOLBAR_COMP_REF, null);
         }

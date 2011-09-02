@@ -44,7 +44,25 @@ package org.netbeans.modules.css.editor.module.spi;
 import java.util.Collection;
 
 /**
- *
+ * Described a CSS property.
+ * 
+ * Description of the grammar defining the property values:
+ * (the grammar is *almost* the same as used for the property values definitions in the w3c.org specifications)
+ * 
+ * [ ]              denotes a group of elements
+ * <ref>            represents a reference to another element named ref or -ref
+ * *,+,?,{min,max}  multiplicity of elements or groups
+ * e1 | e2          e1 or e2
+ * e1 || e2         e1 or e2 or both
+ * e1 e2            e1 followed by e2
+ * !unit            represents a unit recognized by a CssPropertyValueAcceptor
+ * 
+ * Example: 
+ * <uri> [ , <uri>]*            list of URIs separated by comma
+ * [ right | left ] || center   
+ * [ !length | !percentage ] !identifier
+ * !identifier{1,4}
+ * 
  * @author mfukala@netbeans.org
  */
 public class PropertyDescriptor {
@@ -65,28 +83,28 @@ public class PropertyDescriptor {
     }
     
     /**
-     * The property name.
+     * @return The property name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Definition of the value in a form of semi-grammar.
+     * @return  Definition of the value in a form of semi-grammar.
      */
     public String getValueGrammar() {
         return valueGrammar;
     }
     
     /**
-     * Initial value of the property.
+     * @return Initial value of the property.
      */
     public String getInitialValue() {
         return initialValue;
     }
     
     /**
-     * A text description of to what elements this property applies to.
+     * @return  A text description of to what elements this property applies to.
      */
     public String getAppliedTo() {
         return appliedTo;
@@ -102,13 +120,16 @@ public class PropertyDescriptor {
 //    public URL getHelpURL();
     
     /**
-     * List of medias where this property can be used.
+     * @return List of medias where this property can be used.
      */
     //TODO: media queries
     public Collection<String> getMedias() {
         return supportedMedias;
     }
     
+    /**
+     * @return a collection of RenderingEngine-s which suppors the property
+     */
     public Collection<RenderingEngine> getRenderingEnginesWithPropertySupport() {
         return engines;
     }

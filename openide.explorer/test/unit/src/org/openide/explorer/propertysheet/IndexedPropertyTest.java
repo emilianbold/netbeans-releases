@@ -107,7 +107,8 @@ public class IndexedPropertyTest extends ExtTestCase {
         try {
             // Wait for the initialization
             for (int i = 0; i < 10; i++) {
-                if (te.getAsText().equals("null")) {
+                final String asText = te.getAsText();
+                if (asText == null || asText.equals("null")) {
                     //System.out.println("null");
                     Thread.sleep(1000);
                 } else break;
