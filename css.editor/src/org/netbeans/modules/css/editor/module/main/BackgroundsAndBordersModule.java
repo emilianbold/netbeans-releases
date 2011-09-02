@@ -44,6 +44,7 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -59,7 +60,7 @@ public class BackgroundsAndBordersModule extends CssModule {
       @Override
     public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
         if(propertyDescriptors == null) {
-            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
         }
         return propertyDescriptors;
     }

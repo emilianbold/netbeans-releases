@@ -45,8 +45,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -60,6 +63,7 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -142,6 +146,73 @@ public class Utilities {
             }
         }
         return proposals;
+    }
+    
+    /**
+     * Utility method which creates a collection of PropertyDescriptor-s for 
+     * a properties file defining the css properties
+     * 
+     * the syntax of the file:
+     * 
+     * propertyName=valueGrammar
+     * 
+     * Example:
+     * 
+     * outline-style=auto | <border-style>
+     * 
+     * @param sourcePath - an absolute path to the resource properties file relative to the module base
+     */
+    public static Collection<PropertyDescriptor> parsePropertyDefinitionFile(String sourcePath) {
+        Collection<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+        ResourceBundle bundle = NbBundle.getBundle(sourcePath);
+
+        Enumeration<String> keys = bundle.getKeys();
+        while (keys.hasMoreElements()) {
+            String name = keys.nextElement();
+            String value = bundle.getString(name);
+
+            //parse the value - delimiter is semicolon
+            StringTokenizer st = new StringTokenizer(value, ";"); //NOI18N
+            if(!st.hasMoreTokens()) {
+                throw new IllegalArgumentException("Error parsing property " + name);
+            }
+            String values = st.nextToken();
+
+            //following tokens are not mandatory
+            String initialValue = getNextToken(st);
+            String appliedTo = getNextToken(st);
+            boolean inherited = Boolean.parseBoolean(getNextToken(st));
+            String percentages = getNextToken(st);
+
+            //parse media groups list
+            String mediaGroups = getNextToken(st);
+            ArrayList<String> mediaGroupsList = new ArrayList<String>();
+            if (mediaGroups != null) {
+                StringTokenizer st3 = new StringTokenizer(mediaGroups, ","); //NOI18N
+                while (st3.hasMoreTokens()) {
+                    mediaGroupsList.add(st3.nextToken());
+                }
+            }
+
+            //parse bundle key - there might be more properties separated by semicolons
+            StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
+
+            while (nameTokenizer.hasMoreTokens()) {
+                String parsed_name = nameTokenizer.nextToken().trim();
+
+                PropertyDescriptor prop = new PropertyDescriptor(parsed_name, values, initialValue,
+                        appliedTo, inherited, mediaGroupsList, RenderingEngine.ALL);
+
+                properties.add(prop);
+            }
+
+        }
+
+        return properties;
+    }
+
+    private static String getNextToken(StringTokenizer st) {
+        return st.hasMoreTokens() ? st.nextToken().trim() : null;
     }
       
 }

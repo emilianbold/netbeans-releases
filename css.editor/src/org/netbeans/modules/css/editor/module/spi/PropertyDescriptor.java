@@ -63,6 +63,10 @@ import java.util.Collection;
  * [ !length | !percentage ] !identifier
  * !identifier{1,4}
  * 
+ * element name starting with at-sign (@) denotes an artificial property which can be referred 
+ * by other elements but will not be exposed to the editor (completion, error checks etc..)
+ * 
+ * 
  * @author mfukala@netbeans.org
  */
 public class PropertyDescriptor {

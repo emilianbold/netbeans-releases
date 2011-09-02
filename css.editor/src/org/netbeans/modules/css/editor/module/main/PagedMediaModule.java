@@ -63,7 +63,6 @@ import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
@@ -101,7 +100,7 @@ public class PagedMediaModule extends CssModule {
     @Override
     public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
         }
         return propertyDescriptors;
     }
