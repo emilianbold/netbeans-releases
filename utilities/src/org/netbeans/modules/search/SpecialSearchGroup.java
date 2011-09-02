@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openidex.search.DataObjectSearchGroup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
@@ -209,12 +211,22 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
         return searchScope;
     }
 
+    @Override
+    protected void onStopSearch() {
+        try {
+            basicCriteria.terminateCurrentSearches();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
     /** Class for holding a updating common search root of searched files. */
     static class CommonSearchRoot {
 
         /** Minimal number of folders shown in relative path to a matching file.
          */
-        private int minRelPathLen = 6;
+        private int minRelPathLen = 4;
         private boolean exists = true;
         private List<FileObject> path;
         private FileObject file = null;
@@ -285,16 +297,12 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
         private void initCommonPath(FileObject fo) {
 
             for (FileObject p = fo.getParent(); p != null; p = p.getParent()) {
-                String name = p.getName();
-                if ((name.equals("src") || name.equals("nbproject"))) {
-                    FileObject projectDir = p.getParent();
-                    if (projectDir != null) {
-                        FileObject projectParent = projectDir.getParent();
-                        if (projectParent != null) {
-                            file = projectParent;
-                            path = filePathAsList(projectParent);
-                            return;
-                        }
+                if (isLikeProjectFolder(p)) {
+                    FileObject projectParent = p.getParent();
+                    if (projectParent != null) {
+                        file = projectParent;
+                        path = filePathAsList(projectParent);
+                        return;
                     }
                 }
             }
@@ -304,6 +312,17 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
                 file = path.get(path.size() - 1);
             } else {
                 exists = false;
+            }
+        }
+
+        /** Return true if folder seems to be a project folder */
+        private boolean isLikeProjectFolder(FileObject folder) {
+            if (folder.getFileObject("src") != null) {
+                return true;
+            } else if (folder.getFileObject("nbproject") != null) {
+                return true;
+            } else {
+                return false;
             }
         }
 

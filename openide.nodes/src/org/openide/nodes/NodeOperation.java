@@ -115,6 +115,7 @@ public abstract class NodeOperation {
      * @param beans The objects the property belongs to. Typically one item
      *   array with the Node of the property. The meaning is the same as in
      *   {@link org.openide.explorer.propertysheet.PropertyEnv#getBeans()}.
+     * @since 7.24
      */
     public void showCustomEditorDialog(Node.Property<?> property, Object... beans) {
         throw new UnsupportedOperationException();

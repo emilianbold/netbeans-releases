@@ -540,7 +540,7 @@ public class MakeUpdateDesc extends MatchingTask {
                             Manifest jarmani = jar.getManifest();
                             if (jarmani != null && jarmani.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
                                 // #181025: treat OSGi bundles specially.
-                                m.xml = fakeOSGiInfoXml(jar);
+                                m.xml = fakeOSGiInfoXml(jar, n_file);
                                 modules.add(m);
                                 continue;
                             }
@@ -625,7 +625,7 @@ public class MakeUpdateDesc extends MatchingTask {
      * @return a {@code <module ...><manifest .../></module>} valid according to
      *         <a href="http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd">DTD</a>
      */
-    private Element fakeOSGiInfoXml(JarFile jar) throws IOException {
+    private Element fakeOSGiInfoXml(JarFile jar, File whereFrom) throws IOException {
         Attributes attr = jar.getManifest().getMainAttributes();
         Properties localized = new Properties();
         String bundleLocalization = attr.getValue("Bundle-Localization");
@@ -637,9 +637,9 @@ public class MakeUpdateDesc extends MatchingTask {
                 is.close();
             }
         }
-        return fakeOSGiInfoXml(attr, localized);
+        return fakeOSGiInfoXml(attr, localized, whereFrom);
     }
-    static Element fakeOSGiInfoXml(Attributes attr, Properties localized) {
+    static Element fakeOSGiInfoXml(Attributes attr, Properties localized, File whereFrom) {
         Document doc = XMLUtil.createDocument("module");
         Element module = doc.getDocumentElement();
         String cnb = attr.getValue("Bundle-SymbolicName");
@@ -661,7 +661,7 @@ public class MakeUpdateDesc extends MatchingTask {
             for (String dep : requireBundle.split(", ")) {
                 Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
                 if (!m.matches()) {
-                    throw new BuildException("Could not parse dependency: " + dep);
+                    throw new BuildException("Could not parse dependency: " + dep + " in " + whereFrom);
                 }
                 if (b.length() > 0) {
                     b.append(", ");
@@ -675,7 +675,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     String val = m2.group(2);
                     Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
                     if (!m3.matches()) {
-                        throw new BuildException("Could not parse version range: " + val);
+                        throw new BuildException("Could not parse version range: " + val + " in " + whereFrom);
                     }
                     int major = Integer.parseInt(m3.group(1));
                     String rest = m3.group(2);

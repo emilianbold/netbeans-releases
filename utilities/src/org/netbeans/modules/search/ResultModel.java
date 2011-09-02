@@ -75,15 +75,19 @@ public final class ResultModel {
                             DETAILS_COUNT_LIMIT);
 
         private final String bundleKey;
-        private final Integer msgParam;
+        private final Integer value;
 
         private Limit(String bundleKey, Integer limit) {
             this.bundleKey = bundleKey;
-            this.msgParam = limit;
+            this.value = limit;
         }
 
         String getDisplayName() {
-            return NbBundle.getMessage(Limit.class, bundleKey, msgParam);
+            return NbBundle.getMessage(Limit.class, bundleKey, value);
+        }
+
+        public Integer getValue() {
+            return this.value;
         }
     }
 
