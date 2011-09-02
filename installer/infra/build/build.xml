@@ -793,7 +793,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javafx-mod nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
@@ -1095,6 +1095,14 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
+
+    <target name="build-nb-javafx-mod">
+    <!-- empty product for adding JavaFX row in the download page -->
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javafx-mod"/>
+        </antcall>
+    </target>
+
 
     <target name="build-glassfish">        
 	<antcall target="build-runtime-product">
