@@ -250,6 +250,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
+        BatchProblemNotifier.closed(project);
         CopyResourcesOnSave.closed();
         RepositoryPreferences.getInstance().removeTransientRepositories(this);
     }
