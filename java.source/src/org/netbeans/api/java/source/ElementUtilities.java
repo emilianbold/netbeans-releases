@@ -258,6 +258,7 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
+                case UNION:
                     TypeElement te = (TypeElement)((DeclaredType)type).asElement();
                     for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {

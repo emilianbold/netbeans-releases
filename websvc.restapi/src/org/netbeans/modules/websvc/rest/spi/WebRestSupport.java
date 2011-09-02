@@ -47,8 +47,13 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -405,6 +410,78 @@ public abstract class WebRestSupport extends RestSupport {
      */
     protected void logResourceCreation(Project prj) {
     }
+    
+    @Override
+    public void configRestPackages( String... packs ) throws IOException {
+        try {
+            FileObject ddFO = getWebXml();
+            WebApp webApp = getWebApp();
+            if (webApp == null) {
+                return;
+            }
+            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE) {
+                return;
+            }
+            if (!hasSpringSupport()) {
+                return;
+            }
+            boolean needsSave = false;
+            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            if (adaptorServlet == null) {
+                adaptorServlet = (Servlet) webApp.createBean("Servlet"); // NOI18N
+                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
+                adaptorServlet
+                        .setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                InitParam initParam = createSpringInitParam(adaptorServlet,
+                        packs);
+                adaptorServlet.addInitParam(initParam);
+                webApp.addServlet(adaptorServlet);
+                needsSave = true;
+            }
+            else {
+                InitParam[] initParams = adaptorServlet.getInitParam();
+                boolean initParamFound = false;
+                for (InitParam initParam : initParams) {
+                    if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
+                        initParamFound = true;
+                        String paramValue = initParam.getParamValue();
+                        if (paramValue != null) {
+                            paramValue = paramValue.trim();
+                        }
+                        else {
+                            paramValue = "";
+                        }
+                        if (paramValue.length() == 0 || paramValue.equals("."))
+                        { // NOI18N
+                            initParam.setParamValue(getPackagesList(packs));
+                            needsSave = true;
+                        }
+                        else {
+                            String[] existed = paramValue.split(";");
+                            LinkedHashSet<String> set = new LinkedHashSet<String>();
+                            set.addAll(Arrays.asList(existed));
+                            set.addAll(Arrays.asList(packs));
+                            initParam.setParamValue(getPackagesList(set));
+                            needsSave = existed.length != set.size();
+                        }
+                    }
+                }
+                if (!initParamFound) {
+                    InitParam initParam = createSpringInitParam(adaptorServlet,
+                            packs);
+                    adaptorServlet.addInitParam(initParam);
+                    needsSave = true;
+                }
+            }
+            if (needsSave) {
+                webApp.write(ddFO);
+                logResourceCreation(project);
+            }
+        }
+        catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 
     public List<RestApplication> getRestApplications() {
         RestApplicationModel applicationModel = getRestApplicationsModel();
@@ -497,6 +574,37 @@ public abstract class WebRestSupport extends RestSupport {
     @Override
     public int getProjectType() {
         return PROJECT_TYPE_WEB;
+    }
+    
+    private String getPackagesList( Iterable<String> packs ) {
+        StringBuilder builder = new StringBuilder();
+        for (String pack : packs) {
+            builder.append( pack);
+            builder.append(';');
+        }
+        String packages ;
+        if ( builder.length() >0 ){
+            packages  = builder.substring( 0 ,  builder.length() -1 );
+        }
+        else{
+            packages = builder.toString();
+        }
+        return packages;
+    }
+    
+    private String getPackagesList( String[] packs ) {
+        return getPackagesList( Arrays.asList( packs));
+    }
+    
+    private InitParam createSpringInitParam( Servlet adaptorServlet,
+            String... packs ) throws ClassNotFoundException
+    {
+        InitParam initParam = (InitParam) adaptorServlet
+                .createBean("InitParam"); // NOI18N
+        initParam.setParamName(JERSEY_PROP_PACKAGES);
+        initParam.setParamValue(getPackagesList(packs));
+        initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+        return initParam;
     }
 
     public static enum RestConfig {

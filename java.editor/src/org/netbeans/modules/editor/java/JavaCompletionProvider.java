@@ -1631,6 +1631,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             type = controller.getTypes().capture(type);
                         case ARRAY:
                         case DECLARED:
+                        case UNION:
                         case BOOLEAN:
                         case BYTE:
                         case CHAR:

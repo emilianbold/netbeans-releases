@@ -441,11 +441,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
             for (HintMetadata hint:config.getHints()) {
-                for (HintDescription desc: RulesManager.getInstance().allHints.get(hint)) {
-                    if (desc.getTrigger() instanceof PatternDescription) {
-                        hintsToApply.add(desc);
-                    }
-                }
+                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
