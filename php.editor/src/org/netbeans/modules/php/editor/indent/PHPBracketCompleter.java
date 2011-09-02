@@ -1588,7 +1588,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                             finished = true;
                         }
                     }
-                } else if ((LexUtilities.textEquals(token.text(), ']')) || (LexUtilities.textEquals(token.text(), ']'))) {
+                } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
                     if (LexUtilities.textEquals(token.text(), bracket)) {
                         bracketBalance--;
                     }
@@ -1609,7 +1609,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 token = ts.token();
             }
 
-            if (bracketBalance != 0) { // not found matching bracket
+            if (bracketBalance > 0) { // not found matching bracket
                                        // Remove the typed bracket as it's unmatched
                 skipClosingBracket = true;
             } else { // the bracket is matched
@@ -1619,7 +1619,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                      // and search for the same bracket to the right in the text
                      // The search would stop on an extra right brace if found
                 braceBalance = 0;
-                bracketBalance = 1; // simulate one extra left bracket
+                bracketBalance = 0; // simulate one extra left bracket
 
                 //token = lastRBracket.getNext();
                 TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
@@ -1627,7 +1627,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 int ofs = lastRBracket.offset(th);
 
                 ts.move(ofs);
-                ts.moveNext();
+                ts.movePrevious();
                 token = ts.token();
                 finished = false;
 

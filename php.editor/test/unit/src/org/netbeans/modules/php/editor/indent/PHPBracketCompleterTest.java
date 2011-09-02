@@ -1418,4 +1418,20 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 + "}");
     }
 
+    public void testIssue198708_01() throws Exception {
+        insertChar("if ($a=($i+1^)", ')', "if ($a=($i+1)^)");
+    }
+
+    public void testIssue198708_02() throws Exception {
+        insertChar("if (($a=($i+1^))", ')', "if (($a=($i+1)^))");
+    }
+
+    public void testIssue198708_03() throws Exception {
+        insertChar("if ($a=($i+1^))", ')', "if ($a=($i+1)^)");
+    }
+
+    public void testIssue198708_04() throws Exception {
+        insertChar("if (($a=($i+1^)))", ')', "if (($a=($i+1)^))");
+    }
+
 }
