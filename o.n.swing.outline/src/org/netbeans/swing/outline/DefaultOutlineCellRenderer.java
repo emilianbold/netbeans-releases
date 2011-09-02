@@ -86,8 +86,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private Reference<RenderDataProvider> lastRendererRef = new WeakReference<RenderDataProvider>(null); // Used by lazy tooltip
     private Reference<Object> lastRenderedValueRef = new WeakReference<Object>(null);                    // Used by lazy tooltip
     private static final Border expansionBorder = new ExpansionHandleBorder();
-    private static final boolean useSwingRendering = Boolean.getBoolean("nb.useSwingHtmlRendering") || !HtmlRenderer.canUse(); //NOI18N
-    private final HtmlRenderer.Renderer htmlRenderer = (useSwingRendering) ? null : HtmlRenderer.createRenderer();
+    private static final Class htmlRendererClass = Boolean.getBoolean("nb.useSwingHtmlRendering") ? null : HtmlRenderer.getDelegate();  // NOI18N
+    private final HtmlRenderer.Renderer htmlRenderer = (htmlRendererClass != null) ? HtmlRenderer.createRenderer(htmlRendererClass) : null;
     private final boolean swingRendering = htmlRenderer == null;
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
@@ -464,44 +464,67 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
      */
     private static final class HtmlRenderer {
         
-        static boolean canUse() {
+        private static final String HTML_RENDERER_CLASS = "org.openide.awt.HtmlRenderer";   // NOI18N
+        
+        static Class getDelegate() {
+            Class delegate;
             try {
-                ClassLoader.getSystemClassLoader().loadClass("org.openide.util.Lookup");    // NOI18N
-                return true;
+                delegate = ClassLoader.getSystemClassLoader().loadClass(HTML_RENDERER_CLASS);
             } catch (ClassNotFoundException ex) {
-                return false;
+                try {
+                    delegate = Thread.currentThread().getContextClassLoader().loadClass(HTML_RENDERER_CLASS);
+                } catch (ClassNotFoundException ex2) {
+                    // We are searching for org.openide.awt.HtmlRenderer class.
+                    // However, we can not find it directly from the system class loader.
+                    // We need to find it via Lookup
+                    try {
+                        Class lookupClass = ClassLoader.getSystemClassLoader().loadClass("org.openide.util.Lookup");    // NOI18N
+                        try {
+                            Object defaultLookup = lookupClass.getMethod("getDefault").invoke(null);    // NOI18N
+                            ClassLoader systemClassLoader = (ClassLoader) lookupClass.getMethod("lookup", Class.class).invoke(defaultLookup, ClassLoader.class);    // NOI18N
+                            delegate = systemClassLoader.loadClass(HTML_RENDERER_CLASS);
+                        } catch (NoSuchMethodException mex) {
+                            Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        } catch (SecurityException mex) {
+                            Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        } catch (IllegalAccessException mex) {
+                            Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        } catch (IllegalArgumentException mex) {
+                            Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        } catch (InvocationTargetException mex) {
+                            Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        }
+                    } catch (ClassNotFoundException ex3) {
+                        return null;
+                    }
+                }
             }
+            return delegate;
         }
 
-        private static Renderer createRenderer() {
+        private static Renderer createRenderer(Class htmlRendererClass) {
             try {
-                // We are searching for org.openide.awt.HtmlRenderer class.
-                // However, we can not find it directly from the system class loader.
-                // We need to find it via Lookup
-                Class lookupClass = ClassLoader.getSystemClassLoader().loadClass("org.openide.util.Lookup");    // NOI18N
-                try {
-                    Object defaultLookup = lookupClass.getMethod("getDefault").invoke(null);    // NOI18N
-                    ClassLoader systemClassLoader = (ClassLoader) lookupClass.getMethod("lookup", Class.class).invoke(defaultLookup, ClassLoader.class);    // NOI18N
-                    Class htmlRendererClass = systemClassLoader.loadClass("org.openide.awt.HtmlRenderer");  // NOI18N
-                    Method createRenderer = htmlRendererClass.getMethod("createRenderer");                  // NOI18N
-                    return new Renderer(createRenderer.invoke(null));
-                } catch (NoSuchMethodException ex) {
-                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                } catch (SecurityException ex) {
-                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                } catch (IllegalAccessException ex) {
-                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                } catch (InvocationTargetException ex) {
-                    Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                }
-            } catch (ClassNotFoundException ex) {
+                Method createRenderer = htmlRendererClass.getMethod("createRenderer");                  // NOI18N
+                return new Renderer(createRenderer.invoke(null));
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            } catch (SecurityException ex) {
+                Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
         }
