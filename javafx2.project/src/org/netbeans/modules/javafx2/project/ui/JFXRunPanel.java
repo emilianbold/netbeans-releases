@@ -67,6 +67,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -75,6 +76,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableModel;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -114,6 +116,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private JFXProjectProperties jfxProps;
     private File lastHtmlFolder = null;
     private static String appParamsColumnNames[];
+    private boolean requestWebComboRefresh = false;
 
     /**
      * Creates new form JFXRunPanel
@@ -215,7 +218,12 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
-        updateWebBrowsers();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateWebBrowsers();
+            }
+        });
     }
 
     void setEmphasized(JLabel label, boolean emphasized) {
@@ -719,6 +727,12 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
+
+        comboBoxWebBrowser.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                comboBoxWebBrowserMouseEntered(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
@@ -730,7 +744,11 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(comboBoxWebBrowser, gridBagConstraints);
 
         buttonWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
-        buttonWebBrowser.setEnabled(false);
+        buttonWebBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonWebBrowserActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 14;
@@ -943,6 +961,26 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 }//GEN-LAST:event_buttonPreloaderActionPerformed
+
+private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebBrowserActionPerformed
+    if(OptionsDisplayer.getDefault().open("General")) { //NOI18N
+        requestWebComboRefresh = true;
+    }
+}//GEN-LAST:event_buttonWebBrowserActionPerformed
+
+private void comboBoxWebBrowserMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboBoxWebBrowserMouseEntered
+    // hack to refresh list of browsers that might have been changed
+    // in Options dialog - for which no listener can be registered from here
+    if(requestWebComboRefresh) {
+        requestWebComboRefresh = false;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateWebBrowsers();
+            }
+        });
+    }
+}//GEN-LAST:event_comboBoxWebBrowserMouseEntered
 
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
         List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
