@@ -37,7 +37,6 @@
  */
 package org.netbeans.modules.java.hints;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,11 +49,13 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Name;
+import org.netbeans.api.java.source.CompilationInfo;
 
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -64,12 +65,12 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
@@ -83,10 +84,8 @@ import org.openide.util.NbBundle;
 public class OrganizeImports {
 
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
-    public static List<ErrorDescription> checkImports(final HintContext context) {
+    public static ErrorDescription checkImports(final HintContext context) {
         Source source = context.getInfo().getSnapshot().getSource();
-        final List<ErrorDescription> ret = new ArrayList<ErrorDescription>();
-        final OrganizeImportsFix fix = new OrganizeImportsFix();
         ModificationResult result = null;
         try {
             result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
@@ -95,17 +94,7 @@ public class OrganizeImports {
                 public void run(ResultIterator resultIterator) throws Exception {
                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                     copy.toPhase(Phase.RESOLVED);
-                    Trees trees = copy.getTrees();
-                    CompilationUnitTree cu = copy.getCompilationUnit();
-                    if (!cu.getImports().isEmpty()) {
-                        Set<Element> toImport = getUsedElements(cu, trees);
-                        if (!toImport.isEmpty()) {
-                            CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
-                            CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
-                            copy.rewrite(cu, ncu);
-                            ret.add(ErrorDescriptionFactory.forTree(context, cu.getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix)); //NOI18N
-                        }
-                    }
+                    doOrganizeImports(copy);
                 }
             });
         } catch (ParseException ex) {
@@ -113,10 +102,24 @@ public class OrganizeImports {
         }
         List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
         if (diffs != null && !diffs.isEmpty()) {
-            fix.result = result;
-            return ret;
+            Fix fix = JavaFix.toEditorFix(new OrganizeImportsFix(context.getInfo(), context.getPath()));
+            return ErrorDescriptionFactory.forTree(context, context.getInfo().getCompilationUnit().getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix); //NOI18N
         }
         return null;
+    }
+
+
+    private static void doOrganizeImports(WorkingCopy copy) throws IllegalStateException {
+        Trees trees = copy.getTrees();
+        CompilationUnitTree cu = copy.getCompilationUnit();
+        if (!cu.getImports().isEmpty()) {
+            Set<Element> toImport = getUsedElements(cu, trees);
+            if (!toImport.isEmpty()) {
+                CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
+                CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
+                copy.rewrite(cu, ncu);
+            }
+        }
     }
 
     private static Set<Element> getUsedElements(final CompilationUnitTree cut, final Trees trees) {
@@ -160,9 +163,11 @@ public class OrganizeImports {
     }
 
 
-    private static final class OrganizeImportsFix implements Fix {
+    private static final class OrganizeImportsFix extends JavaFix {
 
-        private ModificationResult result = null;
+        public OrganizeImportsFix(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
 
         @Override
         public String getText() {
@@ -170,11 +175,8 @@ public class OrganizeImports {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            if (result != null) {
-                result.commit();
-            }
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            doOrganizeImports(wc);
         }
     }
 }
