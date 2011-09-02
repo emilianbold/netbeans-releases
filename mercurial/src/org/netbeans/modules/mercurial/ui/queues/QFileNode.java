@@ -48,12 +48,15 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class QFileNode extends VCSFileNode<FileInformation> {
+    public static final VCSCommitOptions INCLUDE = new VCSCommitOptions.Commit(NbBundle.getMessage(QFileNode.class, "IncludeOption.name")); //NOI18N
+    public static final VCSCommitOptions EXCLUDE = new VCSCommitOptions.Commit(NbBundle.getMessage(QFileNode.class, "ExcludeOption.name")); //NOI18N
     private final FileInformation fi;
 
     public QFileNode(File root, File file) {
@@ -73,16 +76,14 @@ public class QFileNode extends VCSFileNode<FileInformation> {
     @Override
     public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
         if (withExclusions && HgModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
-            return VCSCommitOptions.EXCLUDE;
+            return EXCLUDE;
         } else {
             if ((getInformation().getStatus() & (FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
                 return VCSCommitOptions.COMMIT_REMOVE;
             } else if ((getInformation().getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                return HgModuleConfig.getDefault().getExludeNewFiles() ? 
-                                    VCSCommitOptions.EXCLUDE : 
-                                    VCSCommitOptions.COMMIT;
+                return HgModuleConfig.getDefault().getExludeNewFiles() ? EXCLUDE : INCLUDE;
             } else {
-                return VCSCommitOptions.COMMIT;
+                return INCLUDE;
             }
         }
     }

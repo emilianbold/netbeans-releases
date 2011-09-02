@@ -197,34 +197,6 @@ public abstract class VCSCommitParameters {
                                               JPanel parent) {
         return VCSCommitPanel.makeHorizontalStrut(compA, compB, relatedUnrelated, parent);
     }
-
-    /**
-     * Override if you wish to modify the commit button's title
-     */
-    protected String getCommitButtonText () {
-        return org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Commit"); //NOI18N
-    }
-
-    /**
-     * Override if you wish to modify the commit button's accessible name
-     */
-    protected String getCommitButtonAccessibleName () {
-        return org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Commit"); //NOI18N
-    }
-
-    /**
-     * Override if you wish to modify the commit button's accessible description
-     */
-    protected String getCommitButtonAccessibleDescription () {
-        return org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Commit"); //NOI18N
-    }
-
-    /**
-     * Override if you wish to modify the commit dialog's title
-     */
-    protected String getCommitPanelTitle (String contentTitle) {
-        return org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Title", contentTitle); //NOI18N
-    }
     
     public static class DefaultCommitParameters extends VCSCommitParameters {
         private JPanel panel;

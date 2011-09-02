@@ -77,6 +77,7 @@ import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
@@ -111,29 +112,29 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
     public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage) {
         Preferences preferences = HgModuleConfig.getDefault().getPreferences();
         
-        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, "create"); //NOI18N
+        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null); //NOI18N
         
         Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, null);
         
         DiffProvider diffProvider = new DiffProvider();
-        
-        return new QCommitPanel(new QCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider());
+        VCSCommitPanelModifier modifier = RefreshPanelModifier.getDefault("create"); //NOI18N
+        return new QCommitPanel(new QCommitTable(modifier), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider());
     }
 
     public static QCommitPanel createRefreshPanel (final File[] roots, final File repository, String commitMessage, QPatch patch, HgRevision parentRevision) {
         Preferences preferences = HgModuleConfig.getDefault().getPreferences();
         
-        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, "refresh"); //NOI18N
+        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch); //NOI18N
         
         Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, patch.getId());
         
         // own diff provider, displays qdiff instead of regular diff
         DiffProvider diffProvider = new QDiffProvider(parentRevision);
-        
+        VCSCommitPanelModifier msgProvider = RefreshPanelModifier.getDefault("refresh"); //NOI18N
         // own node computer, displays files not modified in cache but files returned by qdiff
-        return new QCommitPanel(new QCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QDiffNodesProvider(parentRevision));
+        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QDiffNodesProvider(parentRevision));
     }
     
     @Override

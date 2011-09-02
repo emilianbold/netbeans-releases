@@ -144,7 +144,7 @@ abstract class CollapsiblePanel extends JPanel {
             super(master, DEFAULT_DISPLAY_FILES);
             this.filters = filters;
             
-            Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
+            Mnemonics.setLocalizedText(sectionButton, master.getModifier().getMessage(VCSCommitPanelModifier.BundleMessage.FILE_PANEL_TITLE));
             master.getCommitTable().labelFor(filesLabel);
             
             JComponent table = master.getCommitTable().getComponent();

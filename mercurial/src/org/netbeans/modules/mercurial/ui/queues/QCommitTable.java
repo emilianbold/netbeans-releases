@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.ui.queues;
 
 import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
@@ -57,12 +58,8 @@ public class QCommitTable extends VCSCommitTable<QFileNode> {
 
     private String errroMessage;
     
-    public QCommitTable() {
-        this(true);
-    }
-
-    public QCommitTable (boolean editable) {
-        super(new VCSCommitTableModel(), editable);
+    public QCommitTable (VCSCommitPanelModifier modifier) {
+        super(new VCSCommitTableModel(modifier), true);
     }
 
     @Override
@@ -72,7 +69,7 @@ public class QCommitTable extends VCSCommitTable<QFileNode> {
         errroMessage = null;
         for(QFileNode fileNode : list) {                        
             VCSCommitOptions co = fileNode.getCommitOptions();
-            if(co == VCSCommitOptions.EXCLUDE) {
+            if(co == QFileNode.EXCLUDE) {
                 continue;
             }
             FileInformation info = fileNode.getInformation();

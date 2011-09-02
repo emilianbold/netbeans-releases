@@ -66,6 +66,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.openide.DialogDisplayer;
@@ -121,7 +122,8 @@ abstract class CreateRefreshAction extends ContextAction {
     
     private void performAction (final File root, final File[] roots, final QCommitPanel panel, final VCSContext ctx) {
         VCSCommitTable<QFileNode> table = panel.getCommitTable();
-        boolean ok = panel.open(ctx, new HelpCtx(CreateRefreshAction.class));
+        String contentTitle = Utils.getContextDisplayName(ctx);
+        boolean ok = panel.open(ctx, new HelpCtx(CreateRefreshAction.class), NbBundle.getMessage(CreateRefreshAction.class, "CTL_RefreshPatchDialog_Title." + bundleKeyPostfix, contentTitle)); //NOI18N
 
         if (ok) {
             final List<QFileNode> commitFiles = table.getCommitFiles();
@@ -143,7 +145,7 @@ abstract class CreateRefreshAction extends ContextAction {
                             return;
                         }
                         VCSCommitOptions option = node.getCommitOptions();
-                        if (option != VCSCommitOptions.EXCLUDE) {
+                        if (option != QFileNode.EXCLUDE) {
                             int status = cache.getStatus(node.getFile()).getStatus();
                             if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
                                 addCandidates.add(node.getFile());

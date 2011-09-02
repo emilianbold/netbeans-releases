@@ -63,13 +63,11 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
     private String commitMessage;
     private QPatch patch;
     private String errorMessage;
-    private final String bundleKey;
 
-    public QCreatePatchParameters (Preferences preferences, String commitMessage, QPatch patch, String bundleKeyPostfix) {
+    public QCreatePatchParameters (Preferences preferences, String commitMessage, QPatch patch) {
         super(preferences);
         this.commitMessage = commitMessage;
         this.patch = patch;
-        this.bundleKey = bundleKeyPostfix;
     }
 
     @Override
@@ -156,26 +154,6 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
     @Override
     public void changedUpdate(DocumentEvent e) {
         fireChange();
-    }
-
-    @Override
-    protected String getCommitButtonText () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_Commit_Action_CreatePatch." + bundleKey); //NOI18N
-    }
-
-    @Override
-    protected String getCommitButtonAccessibleName () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSN_Commit_Action_CreatePatch." + bundleKey); //NOI18N
-    }
-
-    @Override
-    protected String getCommitButtonAccessibleDescription () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSD_Commit_Action_CreatePatch." + bundleKey); //NOI18N
-    }
-
-    @Override
-    protected String getCommitPanelTitle (String contentTitle) {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_CommitDialog_CreatePatch_Title." + bundleKey, contentTitle); //NOI18N
     }
 
 }
