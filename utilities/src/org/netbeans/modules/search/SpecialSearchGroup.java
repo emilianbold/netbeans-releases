@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openidex.search.DataObjectSearchGroup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
@@ -207,6 +209,16 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
 
     SearchScope getSearchScope(){
         return searchScope;
+    }
+
+    @Override
+    protected void onStopSearch() {
+        try {
+            basicCriteria.terminateCurrentSearches();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new RuntimeException(ex);
+        }
     }
 
     /** Class for holding a updating common search root of searched files. */
