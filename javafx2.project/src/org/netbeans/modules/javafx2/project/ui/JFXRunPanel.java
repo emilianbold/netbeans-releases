@@ -103,11 +103,13 @@ import org.openide.util.Utilities;
  *
  * @author Petr Somol
  */
-public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider, LookupListener {
 
     /** web browser selection related constants */
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
     private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
+    
+    private Lookup.Result<org.openide.awt.HtmlBrowser.Factory> lookupResult = null;
 
     private Project project;
     private PropertyEvaluator evaluator;
@@ -1111,6 +1113,20 @@ private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//
         return new HelpCtx( JFXRunPanel.class );
     }
 
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        final ArrayList<String> list = new ArrayList<String> (6);
+        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: lookupResult.allItems()) {
+            list.add(i.getDisplayName());
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                fillWebBrowsersCombo(list);
+            }
+        });
+    }
+
      // Innerclasses -------------------------------------------------------------
      
      private class MainClassListener implements ActionListener /*, DocumentListener */ {
@@ -1246,35 +1262,9 @@ private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private void setupWebBrowsersCombo() {
         //TODO - incomplete, now produces plain text list only without any functionality
-
-        final Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
-        final ArrayList<String> list = new ArrayList<String> (6);
-        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
-            list.add(i.getDisplayName());
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                fillWebBrowsersCombo(list);
-            }
-        });
-        r.addLookupListener(new LookupListener(){  
-            @Override
-            public void resultChanged(LookupEvent e){
-                final ArrayList<String> list = new ArrayList<String> (6);
-                for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
-                    list.add(i.getDisplayName());
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        fillWebBrowsersCombo(list);
-                    }
-                });
-                
-            }}
-        );
-
+        lookupResult = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        resultChanged(null);
+        lookupResult.addLookupListener(this);
     }
 
     private void fillWebBrowsersCombo(List<String> list) {
