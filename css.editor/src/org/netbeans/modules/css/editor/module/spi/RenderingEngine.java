@@ -45,9 +45,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * todo: make it enum?
+ * Represents a rendering engine or its usage in a browser.
+ * So more then GECKO or WEBKIT this should describe
+ * Mozilla 5.0 or Safari 3.0 or IE9
+ * 
+ * @todo clarify the usage more
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public abstract class RenderingEngine {
 
