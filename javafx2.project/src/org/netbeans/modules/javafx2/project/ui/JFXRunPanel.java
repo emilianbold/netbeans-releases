@@ -94,6 +94,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -116,7 +118,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private JFXProjectProperties jfxProps;
     private File lastHtmlFolder = null;
     private static String appParamsColumnNames[];
-    private boolean requestWebComboRefresh = false;
 
     /**
      * Creates new form JFXRunPanel
@@ -218,12 +219,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateWebBrowsers();
-            }
-        });
+        setupWebBrowsersCombo();
     }
 
     void setEmphasized(JLabel label, boolean emphasized) {
@@ -727,12 +723,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
-
-        comboBoxWebBrowser.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                comboBoxWebBrowserMouseEntered(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
@@ -941,46 +931,36 @@ private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {/
 private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderActionPerformed
     JFXPreloaderChooserWizard wizard = new JFXPreloaderChooserWizard();
     if(wizard.show()) {
-        textFieldPreloader.setText(wizard.getSelectedSource().getPath());
-        if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
-            File file = wizard.getSelectedSource();
-            if (file != null) {
-                FileObject projectDir = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                if (projectDir != null) {
+        File file = wizard.getSelectedSource();
+        if (file != null) {
+            textFieldPreloader.setText(file.getPath());
+            FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fileObj != null) {
+                if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
                     try {
                         Project foundProject = ProjectManager.getDefault()
-                                                   .findProject(projectDir);
+                                                   .findProject(fileObj);
                         if (foundProject != null) { // it is a project directory
                             jfxProps.getPreloaderClassModel().fillFromProject(foundProject);
                         }
                     }
                     catch (IOException ex) {} // ignore
+                } else {
+                    if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
+                        //try {
+                            jfxProps.getPreloaderClassModel().fillFromJAR(fileObj);
+                        //}
+                        //catch (IOException ex) {} // ignore
+                    }
                 }
-                
             }
         }
     }
 }//GEN-LAST:event_buttonPreloaderActionPerformed
 
 private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebBrowserActionPerformed
-    if(OptionsDisplayer.getDefault().open("General")) { //NOI18N
-        requestWebComboRefresh = true;
-    }
+    OptionsDisplayer.getDefault().open("General"); //NOI18N
 }//GEN-LAST:event_buttonWebBrowserActionPerformed
-
-private void comboBoxWebBrowserMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboBoxWebBrowserMouseEntered
-    // hack to refresh list of browsers that might have been changed
-    // in Options dialog - for which no listener can be registered from here
-    if(requestWebComboRefresh) {
-        requestWebComboRefresh = false;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateWebBrowsers();
-            }
-        });
-    }
-}//GEN-LAST:event_comboBoxWebBrowserMouseEntered
 
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
         List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
@@ -1264,15 +1244,41 @@ private void comboBoxWebBrowserMouseEntered(java.awt.event.MouseEvent evt) {//GE
 
     }
 
-    private void updateWebBrowsers() {
+    private void setupWebBrowsersCombo() {
         //TODO - incomplete, now produces plain text list only without any functionality
-        comboBoxWebBrowser.removeAllItems ();
 
-        ArrayList<String> list = new ArrayList<String> (6);
-        Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        final Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        final ArrayList<String> list = new ArrayList<String> (6);
         for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
             list.add(i.getDisplayName());
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                fillWebBrowsersCombo(list);
+            }
+        });
+        r.addLookupListener(new LookupListener(){  
+            @Override
+            public void resultChanged(LookupEvent e){
+                final ArrayList<String> list = new ArrayList<String> (6);
+                for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
+                    list.add(i.getDisplayName());
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        fillWebBrowsersCombo(list);
+                    }
+                });
+                
+            }}
+        );
+
+    }
+
+    private void fillWebBrowsersCombo(List<String> list) {
+        //TODO - incomplete, now produces plain text list only without any functionality
 
         // PENDING need to get rid of this filtering
         FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
@@ -1296,6 +1302,7 @@ private void comboBoxWebBrowserMouseEntered(java.awt.event.MouseEvent evt) {//GE
         }
         String[] tags = new String[list.size ()];
         list.toArray (tags);
+        comboBoxWebBrowser.removeAllItems ();
         if (tags.length > 0) {
             for (String tag : tags) {
                 comboBoxWebBrowser.addItem(tag);
