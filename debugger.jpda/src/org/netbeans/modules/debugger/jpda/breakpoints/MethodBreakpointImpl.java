@@ -308,6 +308,18 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 Location location = MethodWrapper.location(method);
                                 BreakpointRequest br = EventRequestManagerWrapper.
                                     createBreakpointRequest (getEventRequestManager (), location);
+                                JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+                                if (threadFilters != null && threadFilters.length > 0) {
+                                    for (JPDAThread t : threadFilters) {
+                                        BreakpointRequestWrapper.addThreadFilter(br, ((JPDAThreadImpl) t).getThreadReference());
+                                    }
+                                }
+                                ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+                                if (varFilters != null && varFilters.length > 0) {
+                                    for (ObjectVariable v : varFilters) {
+                                        BreakpointRequestWrapper.addInstanceFilter(br, (ObjectReference) ((JDIVariable) v).getJDIValue());
+                                    }
+                                }
                                 addEventRequest (br);
                                 locationEntry = true;
                             } else {
