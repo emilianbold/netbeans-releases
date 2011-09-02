@@ -67,11 +67,11 @@ public class AutomaticRegistration {
 
     public static final String JAVAFX_SDK_AUTOREGISTERED_INSTANCE = "javafx_sdk_autoregistered_instance"; // NOI18N
 
-    private static final String CONFIG = "JavaFX/Instances"; // NOI18N
-    private static final String SDK_ATTR = "javafxSDK"; // NOI18N
-    private static final String RUNTIME_ATTR = "javafxRuntime"; // NOI18N
+    static final String CONFIG = "JavaFX/Instances"; // NOI18N
+    static final String SDK_ATTR = "javafxSDK"; // NOI18N
+    static final String RUNTIME_ATTR = "javafxRuntime"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(AutomaticRegistration.class.getName());
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     /**
      * Performs registration.

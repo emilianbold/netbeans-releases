@@ -44,10 +44,8 @@ package org.netbeans.modules.javafx2.platform;
 
 import java.beans.Customizer;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -446,7 +444,7 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
     private void saveProperties() {
-        Map<String, String> map = new HashMap<String, String>(1);
+        Map<String, String> map = new HashMap<String, String>(3);
         boolean propertiesChanged = false;
 
         String sdkPath = sdkTextField.getText();

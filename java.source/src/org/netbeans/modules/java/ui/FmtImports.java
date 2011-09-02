@@ -188,8 +188,12 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         starImportTresholdLabel.setLabelFor(starImportTresholdSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(starImportTresholdLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_importTreshold")); // NOI18N
 
+        starImportTresholdSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+
         starStaticImportTrasholdLabel.setLabelFor(startStaticImportTresholdSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(starStaticImportTrasholdLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_staticImportTreshold")); // NOI18N
+
+        startStaticImportTresholdSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
 
         starImportPackagesLabel.setLabelFor(starImportPackagesTable);
         org.openide.awt.Mnemonics.setLocalizedText(starImportPackagesLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_starImportPackages")); // NOI18N

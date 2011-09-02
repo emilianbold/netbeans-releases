@@ -59,6 +59,8 @@ import org.openide.util.NbPreferences;
  */
 public class ConfigurationsManager {
     private static final String RULE_PREFIX = "rule_config_";
+    private static final String KEY_CONFIGURATIONS_VERSION = "configurations.version";
+    private static final int CURRENT_CONFIGURATIONS_VERSION = 1;
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -107,6 +109,7 @@ public class ConfigurationsManager {
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
+        int configurationsVersion = prefs.getInt(KEY_CONFIGURATIONS_VERSION, 0);
         if (configs.isEmpty()) {
             create("default", "default");
             Configuration jdk7 = create("jdk7", NbBundle.getMessage(ConfigurationsManager.class, "DN_ConvertToJDK7"));
@@ -117,6 +120,19 @@ public class ConfigurationsManager {
             jdk7.enable("org.netbeans.modules.java.hints.jdk.UseSpecificCatch");
             //jdk7.enable("java.util.Objects");
         }
+        if (configurationsVersion < 1 && !configurationExists("organizeImports")) {
+            Configuration organizeImports = create("organizeImports", NbBundle.getMessage(ConfigurationsManager.class, "DN_OrganizeImports"));
+            organizeImports.enable("org.netbeans.modules.java.hints.OrganizeImports");
+        }
+        prefs.putInt(KEY_CONFIGURATIONS_VERSION, CURRENT_CONFIGURATIONS_VERSION);
+    }
+
+    private boolean configurationExists(String id) {
+        for (Configuration c : configs) {
+            if (id.equals(c.id())) return true;
+        }
+
+        return false;
     }
     
     public Configuration create(String id, String displayName) {

@@ -1078,6 +1078,21 @@ public final class JFXProjectProperties {
             });            
         }
 
+        public void fillFromJAR(final FileObject jarFile) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                    removeAllElements();
+                    if(appClassNames.isEmpty()) {
+                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                    } else {
+                        addElements(appClassNames);
+                    }
+                }
+            });            
+        }
+
         private void addElements(Set<String> elems) {
             for (String elem : elems) {
                 addElement(elem);

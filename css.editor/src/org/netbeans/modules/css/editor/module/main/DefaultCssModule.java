@@ -65,6 +65,7 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -119,7 +120,7 @@ public class DefaultCssModule extends CssModule {
             propertyDescriptors = new ArrayList<PropertyDescriptor>();
             for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + fileName;
-                propertyDescriptors.addAll(DefaultProperties.parseSource(path));
+                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path));
             }
 
         }

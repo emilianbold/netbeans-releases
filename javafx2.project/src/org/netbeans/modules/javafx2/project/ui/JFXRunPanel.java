@@ -67,6 +67,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -75,6 +76,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableModel;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -92,6 +94,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -99,11 +103,13 @@ import org.openide.util.Utilities;
  *
  * @author Petr Somol
  */
-public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider, LookupListener {
 
     /** web browser selection related constants */
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
     private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
+    
+    private Lookup.Result<org.openide.awt.HtmlBrowser.Factory> lookupResult = null;
 
     private Project project;
     private PropertyEvaluator evaluator;
@@ -215,7 +221,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         };
         
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
-        updateWebBrowsers();
+        setupWebBrowsersCombo();
     }
 
     void setEmphasized(JLabel label, boolean emphasized) {
@@ -730,7 +736,11 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         mainPanel.add(comboBoxWebBrowser, gridBagConstraints);
 
         buttonWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
-        buttonWebBrowser.setEnabled(false);
+        buttonWebBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonWebBrowserActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 14;
@@ -923,26 +933,36 @@ private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {/
 private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderActionPerformed
     JFXPreloaderChooserWizard wizard = new JFXPreloaderChooserWizard();
     if(wizard.show()) {
-        textFieldPreloader.setText(wizard.getSelectedSource().getPath());
-        if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
-            File file = wizard.getSelectedSource();
-            if (file != null) {
-                FileObject projectDir = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                if (projectDir != null) {
+        File file = wizard.getSelectedSource();
+        if (file != null) {
+            textFieldPreloader.setText(file.getPath());
+            FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fileObj != null) {
+                if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
                     try {
                         Project foundProject = ProjectManager.getDefault()
-                                                   .findProject(projectDir);
+                                                   .findProject(fileObj);
                         if (foundProject != null) { // it is a project directory
                             jfxProps.getPreloaderClassModel().fillFromProject(foundProject);
                         }
                     }
                     catch (IOException ex) {} // ignore
+                } else {
+                    if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
+                        //try {
+                            jfxProps.getPreloaderClassModel().fillFromJAR(fileObj);
+                        //}
+                        //catch (IOException ex) {} // ignore
+                    }
                 }
-                
             }
         }
     }
 }//GEN-LAST:event_buttonPreloaderActionPerformed
+
+private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebBrowserActionPerformed
+    OptionsDisplayer.getDefault().open("General"); //NOI18N
+}//GEN-LAST:event_buttonWebBrowserActionPerformed
 
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
         List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
@@ -1093,6 +1113,20 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
         return new HelpCtx( JFXRunPanel.class );
     }
 
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        final ArrayList<String> list = new ArrayList<String> (6);
+        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: lookupResult.allItems()) {
+            list.add(i.getDisplayName());
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                fillWebBrowsersCombo(list);
+            }
+        });
+    }
+
      // Innerclasses -------------------------------------------------------------
      
      private class MainClassListener implements ActionListener /*, DocumentListener */ {
@@ -1226,15 +1260,15 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     }
 
-    private void updateWebBrowsers() {
+    private void setupWebBrowsersCombo() {
         //TODO - incomplete, now produces plain text list only without any functionality
-        comboBoxWebBrowser.removeAllItems ();
+        lookupResult = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        resultChanged(null);
+        lookupResult.addLookupListener(this);
+    }
 
-        ArrayList<String> list = new ArrayList<String> (6);
-        Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
-        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
-            list.add(i.getDisplayName());
-        }
+    private void fillWebBrowsersCombo(List<String> list) {
+        //TODO - incomplete, now produces plain text list only without any functionality
 
         // PENDING need to get rid of this filtering
         FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
@@ -1258,6 +1292,7 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         String[] tags = new String[list.size ()];
         list.toArray (tags);
+        comboBoxWebBrowser.removeAllItems ();
         if (tags.length > 0) {
             for (String tag : tags) {
                 comboBoxWebBrowser.addItem(tag);

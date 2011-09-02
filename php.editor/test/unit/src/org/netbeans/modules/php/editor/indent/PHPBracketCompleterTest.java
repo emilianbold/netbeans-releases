@@ -72,12 +72,12 @@ import org.openide.filesystems.FileObject;
  *   // - entering incomplete output
  *   // automatic reindentation of "end", "else" etc.
  *
- * 
- * 
+ *
+ *
  * @author Tor Norbye
  */
 public class PHPBracketCompleterTest extends PHPTestBase {
-    
+
     public PHPBracketCompleterTest(String testName) {
         super(testName);
     }
@@ -105,10 +105,10 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     }
 
     private static String wrapAsPhp(String s) {
-        // XXX: remove \n 
+        // XXX: remove \n
         return "<?\n" + s + "\n?>";
     }
-    
+
     @Override
     public void insertBreak(String original, String expected) throws Exception {
         super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
@@ -366,7 +366,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("x = \"\nf^\n\"", '(', "x = \"\nf(^\n\"");
         insertChar("x = '\nf^\n'", '"', "x = '\nf\"^\n'");
     }
-    
+
     public void testSingleQuotes1() throws Exception {
         insertChar("x = ^", '\'', "x = '^'");
     }
@@ -402,7 +402,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testDobuleQuotes4() throws Exception {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
-    
+
     public void testDobuleQuotes5() throws Exception {
         insertChar("x = \"\\\"^", '"', "x = \"\\\"\"^");
     }
@@ -443,7 +443,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    }
 
 // XXX: currently failing, but should be fixed
-//    
+//
 //    public void testInsertEnd1() throws Exception {
 //        insertBreak("x^", "x\n^");
 //    }
@@ -451,7 +451,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testInsertEnd2() throws Exception {
 //        insertBreak("class Foo {^", "class Foo {\n  ^\n}");
 //    }
-//    
+//
 //    public void testInsertEnd3() throws Exception {
 //        insertBreak("class Foo {^\n}", "class Foo {\n  ^\n}");
 //    }
@@ -463,12 +463,12 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testInsertEnd5() throws Exception {
 //        insertBreak("if ($something) {^", "if ($something) {\n  ^\n}");
 //    }
-//    
+//
 //    public void testInsertEnd6() throws Exception {
 //        insertBreak("if ($something) {\n  \n} else {^", "if ($something) {\n  \n} else {\n  ^\n}");
 //    }
-//    
-//    
+//
+//
 //    public void testInsertIf1() throws Exception {
 //        insertBreak("if ($something)^", "if ($something)\n  ^");
 //    }
@@ -499,7 +499,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // "[]" and "[]=" are valid method names!
         insertChar("def [^]", ']', "def []^");
     }
-    
+
     public void testBrackets3() throws Exception {
         insertChar("x = [^]", 'a', "x = [a^]");
     }
@@ -551,7 +551,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testRegexp3() throws Exception {
 //        insertChar("x = /^/", 'a', "x = /a^/");
 //    }
-//    
+//
 //    public void testRegexp4() throws Exception {
 //        insertChar("x = /\\^/", '/', "x = /\\/^/");
 //    }
@@ -577,11 +577,11 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testRegexp9() throws Exception {
 //        insertChar("x = /^/\n", 'a', "x = /a^/\n");
 //    }
-//    
+//
 //    public void testRegexp10() throws Exception {
 //        insertChar("x = /\\^/\n", '/', "x = /\\/^/\n");
 //    }
-//    
+//
 //    public void testRegexp11() throws Exception {
 //        insertChar("/foo^", '/',
 //                "/foo/^");
@@ -613,8 +613,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testRegexpPercent2() throws Exception {
 //        insertChar("x = %r(^)", ')', "x = %r()^");
 //    }
-//    
-//    
+//
+//
 //    public void testSinglePercent1() throws Exception {
 //        insertChar("x = %q^", '(', "x = %q(^)");
 //    }
@@ -622,7 +622,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testSinglePercent2() throws Exception {
 //        insertChar("x = %q(^)", ')', "x = %q()^");
 //    }
-//    
+//
 //    // Broken!!
 //    // I've gotta handle proper parenthesis nesting here... e.g.
 //    // %q(())
@@ -638,7 +638,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testSinglePercent5() throws Exception {
 //        insertChar("x = %q((^))", 'a', "x = %q((a^))");
 //    }
-//    
+//
 //    public void testSinglePercent6() throws Exception {
 //        insertChar("x = %q^", '-', "x = %q-^-");
 //    }
@@ -646,7 +646,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testSinglePercent7() throws Exception {
 //        insertChar("x = %q-^-", '-', "x = %q--^");
 //    }
-//    
+//
 //    public void testSinglePercent8() throws Exception {
 //        insertChar("x = %q^", ' ', "x = %q ^ ");
 //    }
@@ -655,7 +655,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 ////    public void testSinglePercent9() throws Exception {
 ////        insertChar("x = %q ^ ", ' ', "x = %q  ^");
 ////    }
-//    
+//
 //    public void testSinglePercent10() throws Exception {
 //        insertChar("x = %q ^ ", 'x', "x = %q x^ ");
 //    }
@@ -672,12 +672,12 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testHeredoc2() throws Exception {
 //        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
 //    }
-    
+
 // XXX: ruby specific, we don't support this kind of markings; perhaps should be part of mark occurences
 //    public void testFindMatching1() throws Exception {
 //        match("^if true\n^end");
 //    }
-//    
+//
 //    public void testFindMatching4() throws Exception {
 //        match("^def foo\nif true\nend\n^end\nend");
 //    }
@@ -696,7 +696,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        // Test heredocs
 //        match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
 //    }
-    
+
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }
@@ -704,11 +704,11 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testBackspace2() throws Exception {
         deleteChar("x^y", "^y");
     }
-    
+
     public void testBackspace3() throws Exception {
         deleteChar("xy^z", "x^z");
     }
-    
+
     public void testBackspace4() throws Exception {
         deleteChar("xy^z", "x^z");
     }
@@ -716,11 +716,11 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testBackspace5() throws Exception {
         deleteChar("x=\"^\"", "x=^");
     }
-    
+
     public void testBackspace6() throws Exception {
         deleteChar("x='^'", "x=^");
     }
-    
+
     public void testBackspace7() throws Exception {
         deleteChar("x=(^)", "x=^");
     }
@@ -733,7 +733,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // See bug 111534
         deleteChar("x={^}", "x=^");
     }
-    
+
 
 // XXX: ruby specific; BUT maybe there is an equivalent in PHP, see {$ } syntax in quoted strings
 //    public void testPercentBackspace() throws Exception {
@@ -747,7 +747,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testPercentBackspace3() throws Exception {
 //        deleteChar("x=\"a#{^}b\"", "x=\"a#^b\"");
 //    }
-//    
+//
 //    public void testPercentBackspace4() throws Exception {
 //        deleteChar("x=/#{^}/", "x=/#^/");
 //    }
@@ -759,7 +759,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testPercentBackspace6() throws Exception {
 //        deleteChar("x=/a#{^}b/", "x=/a#^b/");
 //    }
-    
+
     public void testContComment() throws Exception {
         if (PHPBracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
@@ -767,7 +767,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
             insertBreak("// ^", "// \n^");
         }
     }
-    
+
 // XXX: currently failing, but should be fixed
 //    public void testContComment4() throws Exception {
 //        insertBreak("// foo\n^", "// foo\n\n^");
@@ -781,20 +781,20 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //            insertBreak("      // ^", "      // \n      ^");
 //        }
 //    }
-//    
+//
 //    public void testContComment6() throws Exception {
 //        insertBreak("   // foo^bar", "   // foo\n   // ^bar");
 //    }
-//    
+//
 //    public void testContComment7() throws Exception {
 //        insertBreak("   // foo^\n   // bar", "   // foo\n   // ^\n   // bar");
 //    }
-//    
+//
 //    public void testContComment8() throws Exception {
 //        insertBreak("   // foo^bar", "   // foo\n   // ^bar");
 //    }
 //
-//    
+//
 //    public void testContComment9() throws Exception {
 //        insertBreak("^// foobar", "\n^// foobar");
 //    }
@@ -810,7 +810,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testContComment12() throws Exception {
 //        insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
 //    }
-//    
+//
 //    public void testContComment14() throws Exception {
 //        insertBreak("def foo\n  code\n^// foobar\nend\n", "def foo\n  code\n\n  ^// foobar\nend\n");
 //    }
@@ -826,7 +826,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testContComment17() throws Exception {
 //        insertBreak("def foo\n  // cmnt1\n^  // cmnt2\nend\n", "def foo\n  // cmnt1\n  // ^\n  // cmnt2\nend\n");
 //    }
-//    
+//
 //    public void testNoContComment() throws Exception {
 //        // No auto-// on new lines
 //        insertBreak("foo // ^", "foo // \n^");
@@ -836,12 +836,12 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        deleteChar("// ^", "^");
 //        deleteChar("\n// ^", "\n^");
 //    }
-//    
+//
 //    public void testDeleteContComment2() throws Exception {
 //        deleteChar("// ^  ", "^  ");
 //        deleteChar("\n// ^  ", "\n^  ");
 //    }
-//    
+//
 //    public void testNoDeleteContComment() throws Exception {
 //        deleteChar("//  ^", "// ^");
 //        deleteChar("//^", "^");
@@ -853,7 +853,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
 //        deleteChar(before, after);
 //    }
-//    
+//
 
 // XXX: ruby specific
 //    public void testInsertPercentInString() throws Exception {
@@ -888,7 +888,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testNoInsertPercentElsewhere() throws Exception {
 //        insertChar("x = ^", '#', "x = #^");
 //    }
-//    
+//
 //    public void testInsertPercentInRegexp() throws Exception {
 //        insertChar("x = /foo ^/", '#', "x = /foo #{^}/");
 //    }
@@ -925,7 +925,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testReplaceSelection2() throws Exception {
 //        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
 //    }
-//    
+//
 //    public void testReplaceSelection5() throws Exception {
 //        insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
 //    }
@@ -938,7 +938,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testReplaceSelection3() throws Exception {
 //        insertChar("x = \"foo^bar\"", '#', "x = \"#{foo}^bar\"", "foo");
 //    }
-    
+
     public void testReplaceSelectionChangeType1() throws Exception {
         insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
     }
@@ -950,12 +950,12 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
-    
+
     // Functionality works but test is broken
     //public void testReplaceSelectionNotInTemplateMode2() throws Exception {
     //    insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
     //}
-    
+
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");
     }
@@ -977,7 +977,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // No replacement if it's not one of the three chars
         insertChar("# foo^", 'x', "# x^", "foo");
     }
-    
+
     public void testDeleteWord() throws Exception {
         deleteWord("$foo_bar_baz^", "$foo_bar_^");
     }
@@ -1000,7 +1000,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testDeleteWord3() throws Exception {
 //        deleteWord("FooBarBaz^", "FooBar^");
 //    }
-//    
+//
 //    public void testDeleteWord4_110998() throws Exception {
 //        deleteWord("Blah::Set^Foo", "Blah::^Foo");
 //    }
@@ -1019,7 +1019,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        String after = "  ^\n";
 //        deleteWord(before, after);
 //    }
-//    
+//
 //    public void testDeleteWord4_110998b() throws Exception {
 //        String before = "" +
 //"  snark(%w(a b c))\n" +
@@ -1035,7 +1035,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //"  snark(%w(a b c))\n";
 //        deleteWord(before, after);
 //    }
-    
+
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
         PHPBracketCompleter bc = new PHPBracketCompleter();
@@ -1051,14 +1051,14 @@ public class PHPBracketCompleterTest extends PHPTestBase {
             if (begin == -1) {
                 begin = Utilities.getPreviousWord(ta, dot);
             }
-            
+
             assert begin != -1 && begin < i;
         }
     }
-    
+
     public void test108889() throws Exception {
         // Reproduce 108889: AIOOBE and AE during editing
-        // NOTE: While the test currently throws an exception, when the 
+        // NOTE: While the test currently throws an exception, when the
         // exception is fixed the test won't actually pass; that's an expected
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
@@ -1243,7 +1243,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        assertLogicalRange(code, true, next);
 //        assertLogicalRange(next, false, code);
 //    }
-//    
+//
 //    public void testLogicalRangeStrings1() throws Exception {
 //        String code = "x = 'foo b^ar baz', y = \"whatever\"";
 //        String next = "x = %<%'foo b^ar baz'%>%, y = \"whatever\"";
@@ -1302,11 +1302,11 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testPipes2() throws Exception {
 //        insertChar("5.each { ^}", '|', "5.each { |^|}");
 //    }
-//    
+//
 //    public void testPipes3() throws Exception {
 //        insertChar("5.each { |^|}", '|', "5.each { ||^}");
 //    }
-//    
+//
 //    public void testPipes4() throws Exception {
 //        insertChar("5.each { |foo^|}", '|', "5.each { |foo|^}");
 //    }
@@ -1350,7 +1350,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testBackspacePipes2() throws Exception {
 //        deleteChar("x=|^x", "x=^x");
 //    }
-//    
+//
 //    public void testBackspacePipes3() throws Exception {
 //        deleteChar("x=|^", "x=^");
 //    }
@@ -1358,45 +1358,45 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testAlternativeSyntaxFor_01()throws Exception {
         testIndentInFile("testfiles/indent/switch_09.php");
     }
-    
+
     public void testIsseu191443() throws Exception {
         String testString = "$test = (string^) ahoj;";
         String result  = "$test = (string)^ ahoj;";
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         insertChar(testString, ')', result, null, false, options);
     }
-    
+
     public void testIssue198699_01() throws Exception {
         insertChar("a selected^ word", '"', "a \"selected\"^ word", "selected");
     }
-    
+
     public void testIssue200729_01() throws Exception {
         insertBreak("function foo() {\n"
                 + "    /*^\n"
-                + "}", 
+                + "}",
                 "function foo() {\n"
                 + "    /*\n"
                 + "     * ^\n"
                 + "     */\n"
                 + "}");
     }
-    
+
     public void testIssue200729_02() throws Exception {
         insertBreak("function foo() {\n"
                 + "    /**^\n"
-                + "}", 
+                + "}",
                 "function foo() {\n"
                 + "    /**\n"
                 + "     * ^\n"
                 + "     */\n"
                 + "}");
     }
-    
+
     public void testIssue200729_03() throws Exception {
         insertBreak("function foo() {\n"
                 + "    /**\n"
                 + "     * ^\n"
-                + "}", 
+                + "}",
                 "function foo() {\n"
                 + "    /**\n"
                 + "     * \n"
@@ -1404,12 +1404,12 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 + "     */\n"
                 + "}");
     }
-    
+
     public void testIssue200729_04() throws Exception {
         insertBreak("function foo() {\n"
                 + "    /*\n"
                 + "     * ^\n"
-                + "}", 
+                + "}",
                 "function foo() {\n"
                 + "    /*\n"
                 + "     * \n"
@@ -1417,5 +1417,21 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 + "     */\n"
                 + "}");
     }
-    
+
+    public void testIssue198708_01() throws Exception {
+        insertChar("if ($a=($i+1^)", ')', "if ($a=($i+1)^)");
+    }
+
+    public void testIssue198708_02() throws Exception {
+        insertChar("if (($a=($i+1^))", ')', "if (($a=($i+1)^))");
+    }
+
+    public void testIssue198708_03() throws Exception {
+        insertChar("if ($a=($i+1^))", ')', "if ($a=($i+1)^)");
+    }
+
+    public void testIssue198708_04() throws Exception {
+        insertChar("if (($a=($i+1^)))", ')', "if (($a=($i+1)^))");
+    }
+
 }

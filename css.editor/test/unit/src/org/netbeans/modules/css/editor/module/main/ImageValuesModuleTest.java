@@ -62,20 +62,20 @@ public class ImageValuesModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("background-image:url(picture.png)");
         assertPropertyDeclaration("background: linear-gradient(white, gray);");
 
-        assertPropertyDeclaration("-radial-gradient: radial-gradient(circle, #006, #00a 90%, #0000af 100%, white 100%)");
+        assertPropertyDeclaration("@radial-gradient: radial-gradient(circle, #006, #00a 90%, #0000af 100%, white 100%)");
         
-        assertPropertyDeclaration("-image: linear-gradient(yellow, blue);");
-        assertPropertyDeclaration("-image: linear-gradient(top, yellow 0%, blue 100%);");
-        assertPropertyDeclaration("-image: linear-gradient(-45deg, blue, yellow);");
-        assertPropertyDeclaration("-image: radial-gradient(50% 50%, farthest-corner, yellow, green);");
-        assertPropertyDeclaration("-radial-gradient: radial-gradient(yellow, green);");
-        assertPropertyDeclaration("-radial-gradient: radial-gradient(center, ellipse cover, yellow 0%, green 100%);");
-        assertPropertyDeclaration("-radial-gradient: radial-gradient(50% 50%, farthest-corner, yellow, green);");
-//        assertPropertyDeclaration("-radial-gradient: radial-gradient(bottom left, farthest-side, red, yellow 50px, green);");
-        assertPropertyDeclaration("-radial-gradient: radial-gradient(20px 30px, 20px 20px, red, yellow, green);");
+        assertPropertyDeclaration("@image: linear-gradient(yellow, blue);");
+        assertPropertyDeclaration("@image: linear-gradient(top, yellow 0%, blue 100%);");
+        assertPropertyDeclaration("@image: linear-gradient(-45deg, blue, yellow);");
+        assertPropertyDeclaration("@image: radial-gradient(50% 50%, farthest-corner, yellow, green);");
+        assertPropertyDeclaration("@radial-gradient: radial-gradient(yellow, green);");
+        assertPropertyDeclaration("@radial-gradient: radial-gradient(center, ellipse cover, yellow 0%, green 100%);");
+        assertPropertyDeclaration("@radial-gradient: radial-gradient(50% 50%, farthest-corner, yellow, green);");
+//        assertPropertyDeclaration("@radial-gradient: radial-gradient(bottom left, farthest-side, red, yellow 50px, green);");
+        assertPropertyDeclaration("@radial-gradient: radial-gradient(20px 30px, 20px 20px, red, yellow, green);");
         
-        assertPropertyDeclaration("-repeating-radial-gradient:repeating-radial-gradient(20px 30px, circle contain, red, yellow, green 100%, yellow 150%, red 200%)");
-        assertPropertyDeclaration("-repeating-radial-gradient:repeating-radial-gradient(red, blue 20px, red 40px)");
+        assertPropertyDeclaration("@repeating-radial-gradient:repeating-radial-gradient(20px 30px, circle contain, red, yellow, green 100%, yellow 150%, red 200%)");
+        assertPropertyDeclaration("@repeating-radial-gradient:repeating-radial-gradient(red, blue 20px, red 40px)");
      
         
         

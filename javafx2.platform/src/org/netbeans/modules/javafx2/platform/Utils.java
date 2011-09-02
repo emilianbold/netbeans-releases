@@ -43,6 +43,7 @@ package org.netbeans.modules.javafx2.platform;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.openide.util.Parameters;
 
 /**
  * Utility class for platform properties manipulation
@@ -66,6 +67,7 @@ public final class Utils {
      * @return key for JavaFX SDK location
      */
     public static String getSDKPropertyKey(JavaPlatform platform) {
+        Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
     }
@@ -77,6 +79,7 @@ public final class Utils {
      * @return key for JavaFX Runtime location
      */
     public static String getRuntimePropertyKey(JavaPlatform platform) {
+        Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
     }
@@ -108,6 +111,7 @@ public final class Utils {
      * @return key for JavaFX Javadoc location
      */
     public static String getJavadocPropertyKey(JavaPlatform platform) {
+        Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
     }
@@ -119,6 +123,7 @@ public final class Utils {
      * @return key for JavaFX Sources location
      */
     public static String getSourcesPropertyKey(JavaPlatform platform) {
+        Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N
     }

@@ -672,6 +672,17 @@ public final class Utilities {
                 return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
         }
+
+        @Override
+        public StringBuilder visitUnion(UnionType t, Boolean p) {
+            Iterator<? extends TypeMirror> it = t.getAlternatives().iterator();
+            while(it.hasNext()) {
+                visit(it.next(), p);
+                if (it.hasNext())
+                    DEFAULT_VALUE.append(" | "); //NOI18N
+            }
+            return DEFAULT_VALUE;
+        }
                         
         @Override
         public StringBuilder visitArray(ArrayType t, Boolean p) {
