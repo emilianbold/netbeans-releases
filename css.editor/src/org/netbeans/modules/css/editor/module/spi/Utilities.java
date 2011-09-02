@@ -54,7 +54,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;

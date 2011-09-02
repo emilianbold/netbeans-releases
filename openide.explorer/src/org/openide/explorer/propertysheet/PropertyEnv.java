@@ -182,6 +182,7 @@ public class PropertyEnv {
      * @param fd Feature descritor that describes the property.
      * @param beans Objects that the edited property belongs to (typically its node).
      * @return the created PropertyEnv instance
+     * @since 6.39
      */
     public static PropertyEnv create(FeatureDescriptor fd, Object... beans) {
         PropertyEnv env = new PropertyEnv();

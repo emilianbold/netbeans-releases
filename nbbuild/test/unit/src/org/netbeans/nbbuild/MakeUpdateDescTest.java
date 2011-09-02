@@ -70,7 +70,7 @@ public class MakeUpdateDescTest extends NbTestCase {
         localization.setProperty("OpenIDE-Module-Name", "My Bundle");
         localization.setProperty("OpenIDE-Module-Display-Category", "hello");
         localization.setProperty("OpenIDE-Module-Short-Description", "Hello there!");
-        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization);
+        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(e, baos);
         assertEquals("<module codenamebase='bundle' distribution='' downloadsize='0'> <manifest " +

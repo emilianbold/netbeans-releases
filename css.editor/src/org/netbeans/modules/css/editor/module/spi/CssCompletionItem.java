@@ -67,6 +67,11 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
 
 /**
+ * Represents a CSS completion proposal. Various predefined item types can be used
+ * or the client of the SPI may override some of the defaults.
+ * 
+ * For more info see the CompletionProposal from csl.api
+ * 
  * @todo support for more completion type providers - like colors => subclass this class, remove the kind field, it's just temp. hack
  *
  */
