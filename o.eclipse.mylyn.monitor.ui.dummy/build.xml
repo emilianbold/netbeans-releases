@@ -4,7 +4,7 @@
     <target name="jar">
         <jar jarfile="${cluster}/${module.jar}">
             <manifest>
-                <attribute name="Bundle-SymbolicName" value="org.eclipse.mylyn.monitor.ui;singleton:=true"/>
+                <attribute name="Bundle-SymbolicName" value="org.eclipse.mylyn.monitor.ui.dummy;singleton:=true"/>
                 <attribute name="Bundle-Version" value="3.4.0"/>
                 <attribute name="Export-Package" value="org.eclipse.mylyn.internal.monitor.ui;x-internal:=true,org.eclipse.mylyn.monitor.ui"/>
             </manifest>
