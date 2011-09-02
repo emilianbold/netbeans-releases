@@ -97,8 +97,8 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
     private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SelfSamplerAction.class.getName());
     private final AtomicReference<Sampler> RUNNING = new AtomicReference<Sampler>();
-    private Boolean debugMode;
-    private String lastReason;
+    private static Boolean debugMode;
+    private static String lastReason;
     private static Class defaultDataObject;
     static {
         try {
@@ -181,7 +181,7 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
         return c == RUNNING.get();
     }
     
-    private synchronized boolean isDebugged() {
+    private static synchronized boolean isDebugged() {
         if (debugMode == null) {
             debugMode = Boolean.FALSE;
 
@@ -195,7 +195,7 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
         return debugMode.booleanValue();
     }
 
-    private boolean isRunMode() {
+    private static boolean isRunMode() {
         boolean runMode = true;
         String reason = null;
 
@@ -212,7 +212,7 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
             } catch (ClassNotFoundException ex) {
             }
         }
-        if (!runMode && reason != lastReason) {
+        if (!runMode && !reason.equals(lastReason)) {
             LOGGER.log(Level.INFO, "Slowness detector disabled - {0}", reason); // NOI18N
         }
         lastReason = reason;
