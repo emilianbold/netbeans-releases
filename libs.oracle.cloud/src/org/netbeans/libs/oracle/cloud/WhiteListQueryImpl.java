@@ -42,7 +42,6 @@
 package org.netbeans.libs.oracle.cloud;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
@@ -54,7 +53,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.whitelist.WhiteListQuery.Operation;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
-import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -73,13 +71,6 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
         assert icc != null;
     }
     
-    
-
-//    @Override
-//    public WhiteListImplementation getWhiteList(FileObject file) {
-//        return WhiteListConfigReader.getDefault();
-//    }
-
     public WhiteListImplementation getWhiteList(FileObject file) {
         return new WhiteListImpl(icc);
     }
@@ -179,37 +170,6 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
         public void removeChangeListener(ChangeListener listener) {
             //Imutable - nop
         }
-    }
-
-    @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
-        path="org-netbeans-api-java/whitelists/")
-    public static class TestingWhitelist implements WhiteListQueryImplementation.UserSelectable {
-
-        private WhiteListImplementation test;
-
-        public TestingWhitelist() {
-            test = WhiteListImplementationBuilder.create().
-                    addCheckedPackage("java.rmi").
-                    addInvocableClass("java/rmi/Naming").
-                    setDisplayName("Testing Whitelist").
-                    build();
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return "Testing Whitelist (allows java.rmi.Naming)";
-        }
-
-        @Override
-        public String getId() {
-            return "test-whitelist";
-        }
-
-        @Override
-        public WhiteListImplementation getWhiteList(FileObject file) {
-            return test;
-        }
-        
     }
     
 }
