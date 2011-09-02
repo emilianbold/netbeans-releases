@@ -642,6 +642,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(FunctionName node) {
         //intentionally ommited - if deleted, golden tests will fail and will show the reason
         //super.visit(node);
+        if (node.getName() instanceof Variable) {
+            occurencesBuilder.prepare((Variable)node.getName(), modelBuilder.getCurrentScope());
+        }
     }
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
