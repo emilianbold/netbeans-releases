@@ -45,6 +45,7 @@ package org.netbeans.modules.javacard.project;
 
 import java.awt.Image;
 import java.io.IOException;
+import java.util.Enumeration;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
