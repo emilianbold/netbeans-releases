@@ -51,6 +51,15 @@ import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
  * @author mfukala
  */
 public class GrammarParser {
+    
+    public static final char ARTIFICIAL_ELEMENT_PREFIX = '@';
+    
+    public static boolean isArtificialElementName(CharSequence name) {
+        if(name.length() == 0) {
+            return false;
+        }
+        return name.charAt(0) == ARTIFICIAL_ELEMENT_PREFIX;
+    }
 
     public static GroupGrammarElement parse(String expresssion) {
         return parse(expresssion, null);
@@ -133,27 +142,19 @@ public class GrammarParser {
                     //resolve reference
                     String referredElementName = buf.toString();
 
-                    //first try to resolve the refered element name with the dash prefix so
+                    //first try to resolve the refered element name with the at-sign prefix so
                     //the property appearance may contain link to appearance, which in fact
-                    //will be resolved as the -appearance property:
+                    //will be resolved as the @appearance property:
                     //
                     //appearance=<appearance> |normal
-                    //-appearance=...
+                    //@appearance=...
                     //
 
-
-                    PropertyDescriptor p = null;
-                    if (referredElementName.charAt(0) == '-') {
-                        //referred with the dash prefix
+                    //without explicit at-sign prefix, first try to resolve
+                    //with the prefix, if not found without prefix
+                    PropertyDescriptor p = CssModuleSupport.getPropertyDescriptors().get("@" + referredElementName);
+                    if (p == null) {
                         p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
-                    } else {
-                        //without explicit dash prefix, first try to resolve
-                        //with the prefix, if not found without prefix
-                        p = CssModuleSupport.getPropertyDescriptors().get("-" + referredElementName);
-                        if (p == null) {
-                            p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
-                        }
-
                     }
 
                     if (p == null) {

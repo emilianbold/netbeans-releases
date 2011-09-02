@@ -60,7 +60,7 @@ public class BasicUsetInterfaceModuleTest extends CssModuleTestBase {
         
         assertPropertyValues("cursor", "auto", "url(icon.png) 10 10, auto", "url(icon.png), copy");
         
-        assertPropertyValues("-system-font", "status-bar");
+        assertPropertyValues("@system-font", "status-bar");
         assertPropertyValues("font", "status-bar");
  
         assertPropertyValues("nav-right", "auto", "auto root");
