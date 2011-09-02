@@ -226,7 +226,7 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
 
         /** Minimal number of folders shown in relative path to a matching file.
          */
-        private int minRelPathLen = 6;
+        private int minRelPathLen = 4;
         private boolean exists = true;
         private List<FileObject> path;
         private FileObject file = null;
@@ -297,16 +297,12 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
         private void initCommonPath(FileObject fo) {
 
             for (FileObject p = fo.getParent(); p != null; p = p.getParent()) {
-                String name = p.getName();
-                if ((name.equals("src") || name.equals("nbproject"))) {
-                    FileObject projectDir = p.getParent();
-                    if (projectDir != null) {
-                        FileObject projectParent = projectDir.getParent();
-                        if (projectParent != null) {
-                            file = projectParent;
-                            path = filePathAsList(projectParent);
-                            return;
-                        }
+                if (isLikeProjectFolder(p)) {
+                    FileObject projectParent = p.getParent();
+                    if (projectParent != null) {
+                        file = projectParent;
+                        path = filePathAsList(projectParent);
+                        return;
                     }
                 }
             }
@@ -316,6 +312,17 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
                 file = path.get(path.size() - 1);
             } else {
                 exists = false;
+            }
+        }
+
+        /** Return true if folder seems to be a project folder */
+        private boolean isLikeProjectFolder(FileObject folder) {
+            if (folder.getFileObject("src") != null) {
+                return true;
+            } else if (folder.getFileObject("nbproject") != null) {
+                return true;
+            } else {
+                return false;
             }
         }
 
