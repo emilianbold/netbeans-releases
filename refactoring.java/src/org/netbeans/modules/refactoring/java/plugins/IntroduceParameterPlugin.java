@@ -7,33 +7,29 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  *
  * Contributor(s):
  *
@@ -42,19 +38,19 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.SourceUtils;
@@ -62,19 +58,29 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author  Jan Becicka
+ * @author Jan Becicka
+ * @author Ralph Ruijs
  */
 public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
     private IntroduceParameterRefactoring refactoring;
     private TreePathHandle treePathHandle;
+    private Set<ElementHandle<ExecutableElement>> allMethods;
+    private ChangeParametersRefactoring.ParameterInfo[] paramTable;
+    private int index;
+    private TreePathHandle methodHandle;
 
     /**
      * Creates a new instance of introduce parameter refactoring plugin.
@@ -87,21 +93,79 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
-    public Problem checkParameters() {
-        //TODO:
-        return null;
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        Problem p = null;
+        return p;
     }
 
     @Override
-    public Problem fastCheckParameters(CompilationController javac) throws IOException {
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        Problem p = null;
+        p = initDelegate(javac);
+        TreePath resolved = treePathHandle.resolve(javac);
+        final Element variableElement = javac.getTrees().getElement(resolved);
+        ChangeParametersPlugin.Checks check = new ChangeParametersPlugin.Checks(javac) {
 
-        return null;
-    }
+            @Override
+            Problem duplicateLocalName(Problem p, ParameterInfo[] paramTable, int index, ExecutableElement method) throws MissingResourceException {
+                String name = paramTable[index].getName();
+                int originalIndex = paramTable[index].getOriginalIndex();
+                final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
+                TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
 
-    private static String getString(String key) {
-        return NbBundle.getMessage(IntroduceParameterPlugin.class, key);
+                    @Override
+                    public Boolean visitVariable(VariableTree vt, String p) {
+                        super.visitVariable(vt, p);
+                        TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
+                        Element element = javac.getTrees().getElement(path);
+                        boolean sameName = vt.getName().contentEquals(p) && !element.equals(parameterElement);
+
+                        return sameName && element != variableElement;
+                    }
+
+                    @Override
+                    public Boolean reduce(Boolean left, Boolean right) {
+                        return (left == null ? false : left) || (right == null ? false : right);
+                    }
+                };
+
+                if (scanner.scan(javac.getTrees().getTree(method), name)) {
+                    if (!isParameterBeingRemoved(method, name, paramTable)) {
+                        p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
+                    }
+                }
+                return p;
+            }
+        };
+
+        TreePath methodPath = JavaPluginUtils.findMethod(resolved);
+        final ExecutableElement method = (ExecutableElement) javac.getTrees().getElement(methodPath);
+
+        boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
+
+        TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
+        List<? extends Element> allMembers = javac.getElements().getAllMembers(enclosingTypeElement);
+
+        if (!isConstructor) {
+            p = check.duplicateSignature(p, paramTable, method, enclosingTypeElement, allMembers);
+        } else {
+            p = check.duplicateConstructor(p, paramTable, method, enclosingTypeElement, allMembers);
+        }
+        for (int i = 0; i < paramTable.length; i++) {
+            ChangeParametersRefactoring.ParameterInfo parameterInfo = paramTable[i];
+
+            p = check.checkParameterName(p, parameterInfo.getName());
+            if (parameterInfo.getOriginalIndex() == -1) {
+                p = check.defaultValue(p, parameterInfo.getDefaultValue());
+            }
+            p = check.duplicateParamName(p, paramTable, i);
+            p = check.duplicateLocalName(p, paramTable, i, method);
+            p = check.parameterType(p, paramTable, i, method, enclosingTypeElement);
+        }
+        return p;
     }
-    private Set<ElementHandle<ExecutableElement>> allMethods;
 
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
@@ -143,15 +207,23 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         return set;
     }
-    private ChangeParametersRefactoring.ParameterInfo[] paramTable;
 
-    public Problem prepare(RefactoringElementsBag elements) {
-        if (refactoring.isCompatible()) {
-            fireProgressListenerStart(ProgressEvent.START, 1);
+    @Override
+    public Problem prepare(final RefactoringElementsBag elements) {
+        Set<FileObject> a = getRelevantFiles();
+
+        initDelegate();
+        Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
+        final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods);
+        
+        fireProgressListenerStart(ProgressEvent.START, a.size());
+        Problem p = null;
+        if (!a.isEmpty()) {
+        
             CancellableTask<WorkingCopy> t = new CancellableTask<WorkingCopy>() {
 
                 @Override
@@ -159,288 +231,165 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 }
 
                 @Override
-                public void run(WorkingCopy parameter) throws Exception {
-                    parameter.toPhase(JavaSource.Phase.RESOLVED);
-                    
-                        TreePath resolved = treePathHandle.resolve(parameter);
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
 
-                        if (resolved == null) {
-                            return; //TODO...
-                        }
+                    if(workingCopy.getFileObject().equals(treePathHandle.getFileObject())) {
+                        TreePath resolved = treePathHandle.resolve(workingCopy);
+                        TreePath meth = JavaPluginUtils.findMethod(resolved);
+                        methodHandle = TreePathHandle.create(meth, workingCopy);
 
-                        TypeMirror tm = parameter.getTrees().getTypeMirror(resolved);
-
-                        if (tm == null) {
-                            return; //TODO...
-                        }
-
-                        //tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
-
-                        Tree original = resolved.getLeaf();
-                        boolean variableRewrite = original.getKind() == Kind.VARIABLE;
-                        ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
-                        final TreeMaker make = parameter.getTreeMaker();
+                        final TreeMaker make = workingCopy.getTreeMaker();
 
                         boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT;
-
-                        TreePath meth = findMethod(resolved);
-
-                        if (meth == null) {
-                            return; //TODO...
-                        }
+                        boolean variableRewrite = resolved.getLeaf().getKind() == Tree.Kind.VARIABLE;
 
                         BlockTree sttmts;
-                        int index2;
 
-                        if (refactoring.isReplaceAll()) {
-                            Set<TreePath> candidates = new HashSet<TreePath>();//CopyFinder.computeDuplicates(parameter, resolved, meth, new AtomicBoolean(), null).keySet();
+                        if (refactoring.isReplaceAll() || variableRewrite) {
+                            Set<TreePath> candidates = computeDuplicates(workingCopy, resolved, meth);
                             for (TreePath p : candidates) {
                                 Tree leaf = p.getLeaf();
 
-                                parameter.rewrite(leaf, make.Identifier(refactoring.getParameterName()));
+                                workingCopy.rewrite(leaf, make.Identifier(refactoring.getParameterName()));
                             }
-
-                            int[] out = new int[1];
-                            sttmts = findAddPosition(parameter, resolved, candidates, out);
-
-                            if (sttmts == null) {
-                                return;
-                            }
-
-                            index2 = out[0];
+                            sttmts = findAddPosition(workingCopy, resolved, candidates);
                         } else {
-                            int[] out = new int[1];
-                            sttmts = findAddPosition(parameter, resolved, Collections.<TreePath>emptySet(), out);
-
-                            if (sttmts == null) {
-                                return;
-                            }
-
-                            index2 = out[0];
+                            sttmts = findAddPosition(workingCopy, resolved, Collections.<TreePath>emptySet());
+                        }
+                        if (sttmts == null) {
+                            return;
                         }
 
                         List<StatementTree> nueStatements2 = new LinkedList<StatementTree>(sttmts.getStatements());
 
-                        ExecutableElement currentMethod = (ExecutableElement) parameter.getTrees().getElement(meth);
-                        TreeMaker treeMaker = parameter.getTreeMaker();
-                        ReturnTree ret = treeMaker.Return(treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.Identifier(currentMethod), toArgs(((MethodTree) meth.getLeaf()).getParameters(), treeMaker, expression)));
-                        MethodTree newm = treeMaker.Method(currentMethod, treeMaker.Block(Collections.<StatementTree>singletonList(ret), false));
-                        
-                        ClassTree clazz = (ClassTree) meth.getParentPath().getLeaf();
-                        parameter.rewrite(clazz, treeMaker.addClassMember(clazz, newm));
-
                         if (expressionStatement) {
                             nueStatements2.remove(resolved.getParentPath().getLeaf());
                         }
+                        if (variableRewrite) {
+                            nueStatements2.remove(resolved.getLeaf());
+                        }
 
                         BlockTree nueBlock2 = make.Block(nueStatements2, false);
+                        workingCopy.rewrite(sttmts, nueBlock2);
 
-                        parameter.rewrite(sttmts, nueBlock2);
-                        
-                        VariableTree var = treeMaker.Variable(treeMaker.Modifiers(refactoring.isFinal() ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class)), refactoring.getParameterName(), make.Identifier(tm.toString()) , null);
+                        if (!variableRewrite) {
+                            Tree origParent = resolved.getParentPath().getLeaf();
+                            Tree newParent = workingCopy.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(refactoring.getParameterName())));
+                            workingCopy.rewrite(origParent, newParent);
+                        }
+                    }
+                    
+                    try {
+                        try {
+                            changeParamsTransformer.setWorkingCopy(workingCopy);
+                        } catch (ToPhaseException e) {
+                            return;
+                        }
+                        CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                        if (cu == null) {
+                            ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + workingCopy); // NOI18N
+                            return;
+                        }
+                        Element el = null;
+                        if (methodHandle != null) {
+                            el = methodHandle.resolveElement(workingCopy);
+                            if (el == null) {
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve " + methodHandle + "in " + workingCopy.getFileObject().getPath());
+                                return;
+                            }
+                        }
 
-                        parameter.rewrite(meth.getLeaf(),treeMaker.addMethodParameter((MethodTree) meth.getLeaf(), var));
+                        changeParamsTransformer.scan(workingCopy.getCompilationUnit(), el);
                         
-                        Tree origParent = resolved.getParentPath().getLeaf();
-                        Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(refactoring.getParameterName())));
-                        parameter.rewrite(origParent, newParent);
                         
+                    } finally {
+                        fireProgressListenerStep();
+                    }
                 }
             };
-            createAndAddElements(Collections.singleton(treePathHandle.getFileObject()), t, elements, refactoring);
-            
-        } else {
-            Set<FileObject> a = getRelevantFiles();
-            fireProgressListenerStart(ProgressEvent.START, a.size());
-            if (!a.isEmpty()) {
-                CancellableTask<WorkingCopy> t = new CancellableTask<WorkingCopy>() {
+            JavaPluginUtils.chainProblems(p, createAndAddElements(a, t, elements, refactoring));
+        }
 
-                    @Override
-                    public void cancel() {
-                    }
+        fireProgressListenerStop();
+        return p;
+    }
 
-                    @Override
-                    public void run(WorkingCopy parameter) throws Exception {
-                        parameter.toPhase(JavaSource.Phase.RESOLVED);
-                        TreePath resolved = treePathHandle.resolve(parameter);
+    private Set<TreePath> computeDuplicates(final WorkingCopy workingCopy, TreePath resolved, TreePath meth) {
+        Set<TreePath> ret = SourceUtils.computeDuplicates(workingCopy, resolved, meth, new AtomicBoolean());
+//        final Set<TreePath> ret = new HashSet<TreePath>();
+//        TreePathScanner<Void, Element> scanner = new TreePathScanner<Void, Element>() {
+//
+//            @Override
+//            public Void visitIdentifier(IdentifierTree node, Element p) {
+//                Element el = workingCopy.getTrees().getElement(getCurrentPath());
+//                if (el.equals(p)) {
+//                    ret.add(getCurrentPath());
+//                }
+//                return super.visitIdentifier(node, p);
+//            }
+//        };
+//        scanner.scan(meth, workingCopy.getTrees().getElement(resolved));
+        return ret;
+    }
 
-                        if (resolved == null) {
-                            return; //TODO...
-                        }
-
-                        TypeMirror tm = parameter.getTrees().getTypeMirror(resolved);
-
-                        if (tm == null) {
-                            return; //TODO...
-                        }
-
-                        //tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
-
-                        Tree original = resolved.getLeaf();
-                        boolean variableRewrite = original.getKind() == Kind.VARIABLE;
-                        ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
-                        final TreeMaker make = parameter.getTreeMaker();
-
-                        boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT;
-
-                        TreePath meth = findMethod(resolved);
-
-                        if (meth == null) {
-                            return; //TODO...
-                        }
-
-                        BlockTree sttmts;
-                        int index2;
-
-                        if (refactoring.isReplaceAll()) {
-                            Set<TreePath> candidates = new HashSet<TreePath>();//CopyFinder.computeDuplicates(parameter, resolved, meth, new AtomicBoolean(), null).keySet();
-                            for (TreePath p : candidates) {
-                                Tree leaf = p.getLeaf();
-
-                                parameter.rewrite(leaf, make.Identifier(refactoring.getParameterName()));
-                            }
-
-                            int[] out = new int[1];
-                            sttmts = findAddPosition(parameter, resolved, candidates, out);
-
-                            if (sttmts == null) {
-                                return;
-                            }
-
-                            index2 = out[0];
-                        } else {
-                            int[] out = new int[1];
-                            sttmts = findAddPosition(parameter, resolved, Collections.<TreePath>emptySet(), out);
-
-                            if (sttmts == null) {
-                                return;
-                            }
-
-                            index2 = out[0];
-                        }
-
-                        List<StatementTree> nueStatements2 = new LinkedList<StatementTree>(sttmts.getStatements());
-
-                        ExecutableElement currentMethod = (ExecutableElement) parameter.getTrees().getElement(meth);
-
-                        int originalIndex = 0;
-                        List<? extends VariableElement> pars = currentMethod.getParameters();
-                        paramTable = new ChangeParametersRefactoring.ParameterInfo[pars.size() + 1];
-                        for (VariableElement par : pars) {
-                            TypeMirror desc = par.asType();
-                            String typeRepresentation;
-                            if (currentMethod.isVarArgs() && originalIndex == pars.size() - 1) {
-                                typeRepresentation = ((ArrayType) desc).getComponentType().toString() + " ..."; // NOI18N
-                            } else {
-                                typeRepresentation = desc.toString();
-                            }
-                            paramTable[originalIndex] = new ChangeParametersRefactoring.ParameterInfo(originalIndex, par.toString(), typeRepresentation, null);
-                            originalIndex++;
-                        }
-
-
-
-                        paramTable[originalIndex] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), tm.toString(), expression.toString());
-
-
-                        if (expressionStatement) {
-                            nueStatements2.remove(resolved.getParentPath().getLeaf());
-                        }
-
-                        BlockTree nueBlock2 = make.Block(nueStatements2, false);
-
-                        parameter.rewrite(sttmts, nueBlock2);
-
-                        Tree origParent = resolved.getParentPath().getLeaf();
-                        Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(refactoring.getParameterName())));
-                        parameter.rewrite(origParent, newParent);
-
-                    }
-                };
-
-                createAndAddElements(Collections.singleton(treePathHandle.getFileObject()), t, elements, refactoring);
-
-                ChangeParametersRefactoring chgRef = new ChangeParametersRefactoring(treePathHandle);
-                chgRef.setModifiers(null);
-                chgRef.setParameterInfo(paramTable);
-                TransformTask transform = new TransformTask(new ChangeParamsTransformer(chgRef, allMethods), treePathHandle);
-                Problem p = createAndAddElements(a, transform, elements, refactoring);
-                if (p != null) {
-                    fireProgressListenerStop();
-                    return p;
-                }
-
-            }
-            fireProgressListenerStop();
+    protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
+        switch (p) {
+            case CHECKPARAMETERS:
+            case FASTCHECKPARAMETERS:
+            case PRECHECK:
+                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+                return JavaSource.create(cpInfo, treePathHandle.getFileObject());
         }
         return null;
     }
 
-    private static List<? extends ExpressionTree> toArgs(List<? extends VariableTree> pars, TreeMaker make, ExpressionTree exp) {
-        List<ExpressionTree> args = new LinkedList<ExpressionTree>();
-        
-        for(VariableTree par:pars) {
-            args.add(make.Identifier(par.getName()));
+    /**
+     * Returns list of problems. For the change method signature, there are two
+     * possible warnings - if the method is overriden or if it overrides
+     * another method.
+     * @return  overrides or overriden problem or both
+     */
+    @Override
+    protected Problem preCheck(CompilationController info) throws IOException {
+        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        Problem preCheckProblem = null;
+        info.toPhase(JavaSource.Phase.RESOLVED);
+
+        TreePath tp = treePathHandle.resolve(info);
+        TreePath method = JavaPluginUtils.findMethod(tp);
+        if (method == null) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType")); //NOI18N
+            return preCheckProblem;
         }
-        args.add(exp);
-        return args;
-    }
-    
-    private static boolean isParentOf(TreePath parent, TreePath path) {
-        Tree parentLeaf = parent.getLeaf();
 
-        while (path != null && path.getLeaf() != parentLeaf) {
-            path = path.getParentPath();
+        Element el = info.getTrees().getElement(method);
+        if (el == null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType")); //NOI18N
+            return preCheckProblem;
         }
 
-        return path != null;
-    }
+        preCheckProblem = JavaPluginUtils.isSourceElement(el, info);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
 
-    private static boolean isParentOf(TreePath parent, List<? extends TreePath> candidates) {
-        for (TreePath tp : candidates) {
-            if (!isParentOf(parent, tp)) {
-                return false;
+        if (info.getElementUtilities().enclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
+            preCheckProblem = new Problem(true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_MethodsInAnnotationsNotSupported")); //NOI18N
+            return preCheckProblem;
+        }
+
+        for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
+            if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) {
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_CannnotRefactorLibrary", el)); //NOI18N
             }
         }
 
-        return true;
+        fireProgressListenerStop();
+        return preCheckProblem;
     }
 
-    private static TreePath findStatement(TreePath statementPath) {
-        while (statementPath != null
-                && (!StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface())
-                || (statementPath.getParentPath() != null
-                && statementPath.getParentPath().getLeaf().getKind() != Kind.BLOCK))) {
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind())) {
-                return null;
-            }
-
-            statementPath = statementPath.getParentPath();
-        }
-
-        return statementPath;
-    }
-
-    private static TreePath findMethod(TreePath path) {
-        while (path != null) {
-            if (path.getLeaf().getKind() == Kind.METHOD) {
-                return path;
-            }
-
-            if (path.getLeaf().getKind() == Kind.BLOCK
-                    && path.getParentPath() != null
-                    && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
-                //initializer:
-                return path;
-            }
-
-            path = path.getParentPath();
-        }
-
-        return null;
-    }
-
-    private static BlockTree findAddPosition(CompilationInfo info, TreePath original, Set<? extends TreePath> candidates, int[] outPosition) {
+    private static BlockTree findAddPosition(CompilationInfo info, TreePath original, Set<? extends TreePath> candidates) {
         //find least common block holding all the candidates:
         TreePath statement = original;
 
@@ -459,14 +408,14 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         allCandidates.add(original);
         allCandidates.addAll(candidates);
 
-        statement = findStatement(statement);
+        statement = JavaPluginUtils.findStatement(statement);
 
         if (statement == null) {
             //XXX: well....
             return null;
         }
 
-        while (statement.getParentPath() != null && !isParentOf(statement.getParentPath(), allCandidates)) {
+        while (statement.getParentPath() != null && !JavaPluginUtils.isParentOf(statement.getParentPath(), allCandidates)) {
             statement = statement.getParentPath();
         }
 
@@ -487,81 +436,86 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
             //really strange...
             return null;
         }
-
-        outPosition[0] = index;
-
         return statements;
     }
 
-    protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
-        switch (p) {
-            case CHECKPARAMETERS:
-            case FASTCHECKPARAMETERS:
-            case PRECHECK:
-                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-                return JavaSource.create(cpInfo, treePathHandle.getFileObject());
-        }
-        return null;
-    }
+    private Problem initDelegate() throws IllegalArgumentException {
+        final Problem[] p = new Problem[1];
+        if (paramTable == null) {
+            try {
+                JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
 
-    /**
-     * Returns list of problems. For the change method signature, there are two
-     * possible warnings - if the method is overriden or if it overrides
-     * another method.
-     *
-     * @return  overrides or overriden problem or both
-     */
-    @Override
-    public Problem preCheck(CompilationController info) throws IOException {
-        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        Problem preCheckProblem = null;
-        info.toPhase(JavaSource.Phase.RESOLVED);
-        preCheckProblem = isElementAvail(treePathHandle, info);
-        if (preCheckProblem != null) {
-            return preCheckProblem;
-        }
-        
-        TreePath tp = treePathHandle.resolve(info);
-        TreePath method = getMethod(tp);
-        if (method==null) {
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType"));
-            return preCheckProblem;
-        }
-        
-        Element el = info.getTrees().getElement(method);
-        if (el==null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType"));
-            return preCheckProblem;
-        }
+                    public void run(org.netbeans.api.java.source.CompilationController info) {
+                        p[0] = initDelegate(info);
+                    }
 
-        preCheckProblem = JavaPluginUtils.isSourceElement(el, info);
-        if (preCheckProblem != null) {
-            return preCheckProblem;
-        }
-
-        if (info.getElementUtilities().enclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
-            return preCheckProblem;
-        }
-
-        for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
-            if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) { //NOI18N
-                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_CannnotRefactorLibrary", el));
+                    public void cancel() {
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
+        } else {
+            paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), paramTable[index].getType(), paramTable[index].getDefaultValue());
         }
+        return p[0];
+    }
+    
+    private Problem initDelegate(CompilationController info) throws IllegalArgumentException {
+        Problem p = null;
+        if (paramTable == null) {
+            try {
+                info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreePath path = treePathHandle.resolve(info);
+                TreePath methodPath = JavaPluginUtils.findMethod(path);
 
-        fireProgressListenerStop();
-        return preCheckProblem;
-    }
-    
-    private TreePath getMethod(TreePath treePath) {
-        while (treePath!=null && treePath.getLeaf().getKind()!=Tree.Kind.METHOD) {
-            treePath = treePath.getParentPath();
+                ExecutableElement method = (ExecutableElement) info.getTrees().getElement(methodPath);
+                List<? extends VariableElement> parameters = method.getParameters();
+                paramTable = new ChangeParametersRefactoring.ParameterInfo[parameters.size() + 1];
+                for (int i = 0; i < parameters.size(); i++) {
+                    VariableElement param = parameters.get(i);
+                    paramTable[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.getSimpleName().toString(), param.asType().toString(), null);
+                }
+                index = paramTable.length - 1;
+                if (method.isVarArgs()) {
+                    paramTable[index] = paramTable[--index];
+                }
+
+                TypeMirror tm = info.getTrees().getTypeMirror(path);
+                tm = JavaPluginUtils.convertIfAnonymous(JavaPluginUtils.resolveCapturedType(info, tm));
+
+                if (tm == null) {
+                    p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_canNotResolve", path.getLeaf().toString())));
+                }
+
+                String type = info.getTypeUtilities().getTypeName(tm).toString();
+
+                Tree original = path.getLeaf();
+                boolean variableRewrite = original.getKind() == Kind.VARIABLE;
+                ExpressionTree expression = !variableRewrite ? (ExpressionTree) original : ((VariableTree) original).getInitializer();
+
+                if (expression.getKind() == Kind.PARENTHESIZED) { // If parenthesis are necessary, they will be added again later.
+                    ParenthesizedTree parents = (ParenthesizedTree) expression;
+                    expression = parents.getExpression();
+                }
+
+                paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), (refactoring.isFinal() ? "final " : "") + type, expression.toString());
+                
+                TreePath resolved = treePathHandle.resolve(info);
+                TreePath meth = JavaPluginUtils.findMethod(resolved);
+                methodHandle = TreePathHandle.create(meth, info);
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), paramTable[index].getType(), paramTable[index].getDefaultValue());
         }
-        return treePath;
+        return p;
     }
-    
+
     private ExecutableElement getMethodElement(TreePathHandle handle, CompilationInfo info) {
-        return (ExecutableElement) info.getTrees().getElement(getMethod(handle.resolve(info)));
+        return (ExecutableElement) info.getTrees().getElement(JavaPluginUtils.findMethod(handle.resolve(info)));
     }
 }

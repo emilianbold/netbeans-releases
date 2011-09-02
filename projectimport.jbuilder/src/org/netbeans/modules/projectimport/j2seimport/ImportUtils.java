@@ -46,6 +46,7 @@ package org.netbeans.modules.projectimport.j2seimport;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,9 +55,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -68,7 +71,6 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -317,13 +319,12 @@ public final class ImportUtils {
     
     public  void addDependency(final J2SEProject nbProject,
             final J2SEProject nbSubProject) throws IOException {
-        ProjectClassPathExtender nbClsPath = (ProjectClassPathExtender)
-        nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-        
         AntArtifact[] artifact = AntArtifactQuery.findArtifactsByType(nbSubProject,
                 JavaProjectConstants.ARTIFACT_TYPE_JAR);
-        
-        nbClsPath.addAntArtifact(artifact[0], artifact[0].getArtifactLocations()[0]);
+        FileObject[] roots = nbProject.getSourceRoots().getRoots();
+        if (roots.length > 0) {
+            ProjectClassPathModifier.addAntArtifacts(artifact, new URI[] {artifact[0].getArtifactLocations()[0]}, roots[0], ClassPath.COMPILE);
+        }
     }
     
     private WarningContainer/*<String> warnings*/ addSourceRoots(final ProjectModel projectDefinition,
@@ -361,14 +362,12 @@ public final class ImportUtils {
         
         for (Iterator it = projectDefinition.getUserLibraries().iterator(); it.hasNext();) {
             ProjectModel.UserLibrary userLibrary = (ProjectModel.UserLibrary)it.next();
-            ProjectClassPathExtender nbClsPath = (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-            assert nbClsPath != null;
             List allLibs = getAllLibraries(null, userLibrary);
             
             for (Iterator itUL = allLibs.iterator(); itUL.hasNext();) {
                 ProjectModel.Library lEntry = (ProjectModel.Library)itUL.next();
                 try {
-                    warnings.addAll(addLibrary(nbClsPath, lEntry, projectDefinition));
+                    warnings.addAll(addLibrary(nbProject, lEntry, projectDefinition));
                 } catch(IOException iex) {
                     ImportUtils.addWarning(warnings,iex.getLocalizedMessage());
                 }
@@ -394,13 +393,10 @@ public final class ImportUtils {
             final J2SEProject nbProject) throws IOException {
         
         WarningContainer warnings = new WarningContainer();
-        ProjectClassPathExtender nbClsPath = (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-        assert nbClsPath != null;
-        
         for (Iterator it = projectDefinition.getLibraries().iterator(); it.hasNext();) {
             ProjectModel.Library lEntry = (ProjectModel.Library)it.next();
             try {
-                warnings.addAll(addLibrary(nbClsPath, lEntry, projectDefinition));
+                warnings.addAll(addLibrary(nbProject, lEntry, projectDefinition));
             } catch(IOException iex) {
                 ImportUtils.addWarning(warnings,iex.getLocalizedMessage());
             }
@@ -410,12 +406,14 @@ public final class ImportUtils {
     }
     
     
-    private WarningContainer  addLibrary(final ProjectClassPathExtender nbClsPath,
+    private WarningContainer  addLibrary(final J2SEProject nbProject,
             final ProjectModel.Library lEntry, final ProjectModel projectDefinition) throws IOException {
         WarningContainer warnings = new WarningContainer();
         FileObject archiv = FileUtil.toFileObject(lEntry.getArchiv());
-        
-        nbClsPath.addArchiveFile(archiv);
+        FileObject[] roots = nbProject.getSourceRoots().getRoots();
+        if (roots.length == 0 || !ProjectClassPathModifier.addRoots(new URL[] {FileUtil.getArchiveRoot(archiv.getURL())}, roots[0], ClassPath.COMPILE)) {
+            addWarning(warnings, "No Java source roots in: " + FileUtil.getFileDisplayName(nbProject.getProjectDirectory())); // XXX I18N
+        }
         return warnings;
     }
     

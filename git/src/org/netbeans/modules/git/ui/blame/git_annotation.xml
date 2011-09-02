@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
           "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type name="org-netbeans-modules-git-Annotation"
       description_key="git_annotation"
-      localizing_bundle="org.netbeans.modules.git.resources.Bundle"
+      localizing_bundle="org.netbeans.modules.git.ui.blame.Bundle"
       visible="true"
       severity="ok"
       custom_sidebar_color="0x5890BE"

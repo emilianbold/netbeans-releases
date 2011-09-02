@@ -47,9 +47,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -281,7 +283,11 @@ public final class GitUtils {
         addNotSharable(topFile, notSharableFile.getAbsolutePath());
         // ignore only folders
         if (notSharableFile.isDirectory()) {
-            SystemAction.get(IgnoreAction.class).ignoreFolders(topFile, new File[] { notSharableFile });
+            for (File f : Git.getInstance().getCreatedFolders()) {
+                if (Utils.isAncestorOrEqual(f, notSharableFile)) {
+                    SystemAction.get(IgnoreAction.class).ignoreFolders(topFile, new File[] { notSharableFile });
+                }
+            }
         }
     }
 
@@ -452,6 +458,26 @@ public final class GitUtils {
         }
 
         return ret.toArray(new File[ret.size()]);
+    }
+
+    /**
+     * Returns non-flat folders from the given file array plus a set of direct file descendants of flat-folders from the file array that have the given status in the cache.
+     * <strong>Does not return up-to-date files</strong>
+     */
+    public static File[] listFiles (File[] roots, EnumSet<Status> includedStatuses) {
+        File[][] split = Utils.splitFlatOthers(roots);
+        List<File> fileList = new ArrayList<File>();
+        for (int c = 0; c < split.length; c++) {
+            File[] splitRoots = split[c];
+            if (c == 1) {
+                // recursive
+                fileList.addAll(Arrays.asList(splitRoots));
+            } else {
+                // not recursive, list only direct descendants
+                fileList.addAll(Arrays.asList(GitUtils.flatten(splitRoots, includedStatuses)));
+            }
+        }
+        return fileList.toArray(new File[fileList.size()]);
     }
 
     /**

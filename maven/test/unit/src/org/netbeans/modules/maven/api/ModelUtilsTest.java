@@ -119,7 +119,7 @@ public class ModelUtilsTest extends TestCase {
         result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
-        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result.getRepoRoot());
+        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/", result.getRepoRoot());
         assertEquals("org.eclipse.persistence", result.getGroupId());
         assertEquals("javax.persistence", result.getArtifactId());
         assertEquals("2.0.0-M12", result.getVersion());
@@ -133,6 +133,14 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("glassfish-embedded-all", result.getArtifactId());
         assertEquals("3.0", result.getVersion());
         
+        pom = new URL("http://download.eclipse.org/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.3.0/eclipselink-2.3.0.pom");
+        result = ModelUtils.checkLibrary(pom);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://download.eclipse.org/rt/eclipselink/maven.repo/", result.getRepoRoot());
+        assertEquals("org.eclipse.persistence", result.getGroupId());
+        assertEquals("eclipselink", result.getArtifactId());
+        assertEquals("2.3.0", result.getVersion());
     }
     
 }

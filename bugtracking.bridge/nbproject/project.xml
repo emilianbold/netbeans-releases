@@ -125,9 +125,9 @@
             </module-dependencies>
             <test-dependencies>
                 <test-type>
-                    <name>unit</name>
+                    <name>unit</name>        
                     <test-dependency>
-                        <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
+                        <code-name-base>org.eclipse.equinox.common</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

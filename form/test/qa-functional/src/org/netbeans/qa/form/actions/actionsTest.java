@@ -46,8 +46,6 @@ package org.netbeans.qa.form.actions;
 import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -57,7 +55,6 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.jellytools.modules.form.actions.InspectorAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.properties.DimensionProperty;
@@ -293,7 +290,7 @@ public class actionsTest extends ExtJellyTestCase {
     public void testResizing() throws InterruptedException {
         createForm("JFrame Form", "MyJFrame");
 
-        inspector = new NavigatorOperator();
+        inspector = new ComponentInspectorOperator();
 
         Node inspectorRootNode = new Node(inspector.getTree(), FRAME_ROOT);
         inspectorRootNode.select();
@@ -323,9 +320,13 @@ public class actionsTest extends ExtJellyTestCase {
         btn2Node.addSelectionPath();
 
         Thread.sleep(2000);
+        opDesigner.source();
         opDesigner.design();
         
+        btn1Node = new Node(panelNode, "jButton1 [JButton]");
+        btn2Node = new Node(panelNode, "jButton2 [JButton]");
         Node[] nodes = {btn1Node, btn2Node};
+        
         new Action(null, "Same Size|Same Width").performPopup(nodes);
 
         Thread.sleep(2000);

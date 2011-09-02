@@ -61,6 +61,7 @@ public abstract class Variable {
 
     protected boolean isLeaf = true;
     protected boolean isPtr = false;
+    protected boolean literal = false;
     private boolean isExpanded = false;
     protected boolean waitingForDebugger;
     protected Variable[] children = null;
@@ -124,7 +125,7 @@ public abstract class Variable {
     }
     
     public boolean isEditable() {
-        return isLeaf() || isPtr();
+        return (isLeaf() && !literal) || isPtr();
     }
 
     /**
@@ -207,6 +208,14 @@ public abstract class Variable {
 	}
 	this.isLeaf = isLeaf;
 	update();
+    }
+
+    public void setLiteral(boolean lit) {
+	literal = lit;
+    }
+    
+    public boolean isLiteral() {
+	return literal;
     }
 
 

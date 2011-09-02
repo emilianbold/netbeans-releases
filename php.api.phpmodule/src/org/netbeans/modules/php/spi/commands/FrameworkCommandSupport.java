@@ -42,15 +42,24 @@
 
 package org.netbeans.modules.php.spi.commands;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -70,14 +79,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
- * @author Tomas Mysik
+ * Support for running framework commands.
  */
 public abstract class FrameworkCommandSupport {
 
+    private static final Logger LOGGER = Logger.getLogger(FrameworkCommandSupport.class.getName());
     // @GuardedBy(COMMANDS_CACHE)
-    //                      php module     fw name            commands
     private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
 
     private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
@@ -86,6 +96,7 @@ public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(this)
     private PluginListener pluginListener;
+
 
     protected FrameworkCommandSupport(PhpModule phpModule) {
         assert phpModule != null;
@@ -104,7 +115,6 @@ public abstract class FrameworkCommandSupport {
      * @param commandDescriptor descriptor for the selected framework command
      * @since 1.8
      * @see #runCommand()
-     * @see RunCommand
      * @see CommandDescriptor
      */
     public abstract void runCommand(CommandDescriptor commandDescriptor);
@@ -160,7 +170,7 @@ public abstract class FrameworkCommandSupport {
      * @return {@link PhpModule PHP module} for which this framework command support is created, never <code>null</code>.
      * @since 1.8
      */
-    public PhpModule getPhpModule() {
+    public final PhpModule getPhpModule() {
         return phpModule;
     }
 
@@ -168,7 +178,7 @@ public abstract class FrameworkCommandSupport {
      * Get framework commands, can be empty or <code>null</code> if not known already.
      * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
-    public List<FrameworkCommand> getFrameworkCommands() {
+    public final List<FrameworkCommand> getFrameworkCommands() {
         List<FrameworkCommand> frameworkCommands = null;
         synchronized (COMMANDS_CACHE) {
             Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
@@ -337,7 +347,7 @@ public abstract class FrameworkCommandSupport {
      * @since 1.8
      * @see #runCommand(CommandDescriptor)
      */
-    public void runCommand() {
+    public final void runCommand() {
         FrameworkCommandChooser.open(this);
     }
 
@@ -353,6 +363,54 @@ public abstract class FrameworkCommandSupport {
             processBuilder = processBuilder.addArgument(arg);
         }
         return processBuilder;
+    }
+
+    /**
+     * {@link #createSilentCommand(String, String[]) Silently} run the given command
+     * and redirect its output to a temporary file. This file is deleted on JVM exit.
+     * <p>
+     * Please notice that the file can be {@code null}, incomplete or even empty
+     * if any error occurs during command running or if the command is cancelled.
+     * @param comand command to be run
+     * @param arguments arguments of the given command
+     * @return file with command output or {@code null} if the command can't be run
+     * @see #getProcessBuilder(boolean)
+     * @since 1.51
+     */
+    protected final File redirectScriptOutput(String command, String... arguments) {
+        ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
+        if (processBuilder == null) {
+            return null;
+        }
+
+        File output = null;
+        try {
+            final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
+            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
+                    new ExecutionDescriptor.InputProcessorFactory() {
+                        @Override
+                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                            return inputProcessor;
+                        }
+                    }
+            );
+            ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "output redirect for: " + getOutputTitle(command, arguments)); // NOI18N
+            Future<Integer> task = service.run();
+            try {
+                if (task.get().intValue() == 0) {
+                    output = inputProcessor.getOutputFile();
+                }
+            } catch (CancellationException ex) {
+                // cancelled
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                UiUtils.processExecutionException(ex);
+            }
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
+        }
+        return output;
     }
 
     /**
@@ -452,18 +510,53 @@ public abstract class FrameworkCommandSupport {
         }
     }
 
-    /**
-     * Command that is run when a command is invoked.
-     * @since 1.8
-     */
-    public static interface RunCommand {
+    private static class RedirectOutputProcessor implements InputProcessor {
 
-        /**
-         * Called when a command is to be run.
-         * <p>
-         * This method is run in AWT thread.
-         * @param commandDescriptor {@link CommandDescriptor descriptor} of a command to be run.
-         */
-        void runCommand(CommandDescriptor commandDescriptor);
+        private static final Logger LOGGER = Logger.getLogger(RedirectOutputProcessor.class.getName());
+
+        private final File outputFile;
+        private final FileOutputStream fos;
+        private final BufferedOutputStream bos;
+
+
+        RedirectOutputProcessor() throws IOException {
+            outputFile = File.createTempFile("nb-framework-output-", ".tmp"); // NOI18N
+            fos = new FileOutputStream(outputFile);
+            bos = new BufferedOutputStream(fos);
+
+            outputFile.deleteOnExit();
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            for (char c : chars) {
+                bos.write((byte) c);
+            }
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void close() {
+            try {
+                bos.close();
+            } catch (IOException exc) {
+                LOGGER.log(Level.WARNING, null, exc);
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException exc) {
+                    LOGGER.log(Level.WARNING, null, exc);
+                }
+            }
+        }
+
+        public File getOutputFile() {
+            return outputFile;
+        }
+
     }
+
 }

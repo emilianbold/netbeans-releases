@@ -91,7 +91,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         this.sourcesFolderProvider = sourcesFolderProvider;
         initComponents();
         copyFilesVisual = new CopyFilesVisual(sourcesFolderProvider);
-        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+        copyFilesPanel.add(BorderLayout.CENTER, copyFilesVisual);
 
         labels = new JLabel[] {
             urlLabel,

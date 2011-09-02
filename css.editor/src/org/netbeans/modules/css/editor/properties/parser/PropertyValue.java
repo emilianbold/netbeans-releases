@@ -94,7 +94,7 @@ public class PropertyValue {
     public PropertyValue(PropertyModel property, String textOfTheValue) {
         this.groupGrammarElement = property.values();
         this.text = filterComments(textOfTheValue);
-        this.propertyDefinition = null;
+        this.propertyDefinition = property.getPropertyDescriptor().getValueGrammar();
         consume();
     }
 
@@ -240,7 +240,7 @@ public class PropertyValue {
                 //group GrammarElement is resolved, adjust the behavior according to 
                 //the group type
                 GroupGrammarElement ge = (GroupGrammarElement) GrammarElement;
-                if (!ge.isList() && !ge.isSequence()) {
+                if (ge.getType() == GroupGrammarElement.Type.SET) {
                     //SET GROUP - just one of the GrammarElements can be resolved
                     for (GrammarElement e : ge.elements()) {
                         ResolveContext rt = resolveGrammarElement(e, resolved);
@@ -269,7 +269,7 @@ public class PropertyValue {
                         }
                     }
 
-                } else if (ge.isList()) {
+                } else if (ge.getType() == GroupGrammarElement.Type.LIST) {
                     //LIST GROUP - all alternatives may be resolved
                     for (GrammarElement e : ge.elements()) {
                         ResolveContext rt = resolveGrammarElement(e, resolved);
@@ -290,7 +290,7 @@ public class PropertyValue {
                         }
                     }
                     
-                } else if (ge.isSequence()) {
+                } else if (ge.getType() == GroupGrammarElement.Type.SEQUENCE) {
                     log("<S> " + ge.path() + "\n");//NOI18N
                     //sequence - alternatives are all GrammarElements after last resolved GrammarElement
                     GrammarElement firstUnresolved = null;
@@ -542,8 +542,8 @@ public class PropertyValue {
                         isResolved = resolve(member, input, consumed);
                         if (isResolved) {
                             itemResolved = true;
-                            if (!ge.isSequence()) {
-                                if (!ge.isList()) {
+                            if (ge.getType() != GroupGrammarElement.Type.SEQUENCE) {
+                                if (ge.getType() != GroupGrammarElement.Type.LIST) {
                                     //if we are set break the whole main loop
                                     break loop;
                                 } else {
@@ -559,14 +559,14 @@ public class PropertyValue {
                             }
                         } else {
                             //sequence logic
-                            if (ge.isSequence() && member.getMinimumOccurances() > 0) {
+                            if (ge.getType() == GroupGrammarElement.Type.SEQUENCE && member.getMinimumOccurances() > 0) {
                                 //we didn't resolve the next GrammarElement in row so quit if the GrammarElement was mandatory (min occurences >0)
                                 break;
                             }
 
                         }
                     }
-                } while (!input.isEmpty() && isResolved && !GrammarElementsToProcess.isEmpty() && ge.isList()); //of course just for lists
+                } while (!input.isEmpty() && isResolved && !GrammarElementsToProcess.isEmpty() && ge.getType() == GroupGrammarElement.Type.LIST); //of course just for lists
 
                 if (!isResolved || input.isEmpty()) {
                     break;

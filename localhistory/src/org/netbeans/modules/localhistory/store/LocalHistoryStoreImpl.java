@@ -1185,6 +1185,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because executable", new Object[]{source});
             return null;
         }
+        if("true".equals(System.getProperty("netbeans.localhistory.storeChangesSynchronously"))) {
+            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because netbeans.localhistory.storeChangesSynchronously is set", new Object[]{source});
+            return null;
+        }
+        
         int i = 0;        
         while(true) {
             try {

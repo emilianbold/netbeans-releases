@@ -116,6 +116,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+       <change id="nonPersistentServer">
+    	    <api name="j2eeserver"/>
+            <summary>
+                Adds helper method to create server instance which is not persistent.
+            </summary>
+            <version major="1" minor="83"/>
+            <date day="24" month="8" year="2011"/>
+            <author login="dkonecny"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Adds helper method to create server instance which is not persistent.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+        </change>
        <change id="allowInstanceSpecificModuleConfiguration">
     	    <api name="plugins"/>
             <summary>

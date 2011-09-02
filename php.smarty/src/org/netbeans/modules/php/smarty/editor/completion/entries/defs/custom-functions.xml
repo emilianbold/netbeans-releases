@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : custom-functions.xml
+    Created on : Jun 10, 2010, 13:00 AM
+    Author     : Martin Fousek
+    Description:
+        Purpose of the document is storage for Smarty code completion keywords - custom functions.
+-->
+
+<entries>
+    <entry name="assign">
+        <description>{assign} is used for assigning template variables during the execution of a template. </description>
+        <attributes>
+            <attribute name="var">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the variable being assigned</description>
+            </attribute>
+            <attribute name="value">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The value being assigned</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.custom.functions.php#language.function.assign</url>
+    </entry>
+
+    <entry name="counter">
+        <description> {counter} is used to print out a count. {counter} will remember the count on each iteration. You can adjust the number, the interval and the direction of the count, as well as determine whether or not to print the value. You can run multiple counters concurrently by supplying a unique name for each one. If you do not supply a name, the name "default" will be used. &lt;br&gt;&lt;br&gt; If you supply the assign attribute, the output of the {counter} function will be assigned to this template variable instead of being output to the template. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>no</required>
+                <default>default</default>
+                <description>The name of the counter</description>
+            </attribute>
+            <attribute name="start">
+                <type>number</type>
+                <required>no</required>
+                <default>1</default>
+                <description>The initial number to start counting from</description>
+            </attribute>
+            <attribute name="skip">
+                <type>number</type>
+                <required>no</required>
+                <default>1</default>
+                <description>The interval to count by</description>
+            </attribute>
+            <attribute name="direction">
+                <type>string</type>
+                <required>no</required>
+                <default>up</default>
+                <description>The direction to count (up/down)</description>
+            </attribute>
+            <attribute name="print">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether or not to print the value</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>the template variable the output will be assigned to</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.counter.php</url>
+    </entry>
+
+    <entry name="cycle">
+        <description> {cycle} is used to alternate a set of values. This makes it easy to for example, alternate between two or more colors in a table, or cycle through an array of values. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>no</required>
+                <default>default</default>
+                <description>The name of the cycle</description>
+            </attribute>
+            <attribute name="values">
+                <type>mixed</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The values to cycle through, either a comma delimited list (see delimiter attribute), or an array of values</description>
+            </attribute>
+            <attribute name="print">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to print the value or not</description>
+            </attribute>
+            <attribute name="advance">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether or not to advance to the next value</description>
+            </attribute>
+            <attribute name="delimiter">
+                <type>string</type>
+                <required>no</required>
+                <default>,</default>
+                <description>The delimiter to use in the values attribute</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The template variable the output will be assigned to</description>
+            </attribute>
+            <attribute name="reset">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>The cycle will be set to the first value and not advanced</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.cycle.php</url>
+    </entry>
+
+    <entry name="debug">
+        <description> {debug} dumps the debug console to the page. This works regardless of the debug  settings in the php script. Since this gets executed at runtime, this is only able to show the assigned  variables; not the templates that are in use. However, you can see all the currently available variables within the scope of a template.  </description>
+        <attributes>
+            <attribute name="output">
+                <type>string</type>
+                <required>no</required>
+                <default>javascript</default>
+                <description>output type, html or javascript</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.debug.php</url>
+    </entry>
+
+    <entry name="eval">
+        <description>  {eval} is used to evaluate a variable as a template. This can be used for things like embedding template tags/variables into variables or tags/variables into config file variables. &lt;br&gt;&lt;br&gt;If you supply the assign attribute, the output of the {eval} function will be assigned to this template variable instead of being output to the template.  </description>
+        <attributes>
+            <attribute name="var">
+                <type>mixed</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>Variable (or string) to evaluate</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The template variable the output will be assigned to</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.eval.php</url>
+    </entry>
+
+    <entry name="fetch">
+        <description>  {fetch} is used to retrieve files from the local file system, http, or ftp and display the contents. &lt;ul&gt;&lt;li&gt; If the file name begins with http://, the web site page will be fetched and displayed. Note: This will not support http redirects, be sure to include a trailing slash on your web page fetches where necessary. &lt;/li&gt;&lt;li&gt;If the file name begins with ftp://, the file will be downloaded from the ftp server and displayed.&lt;/li&gt; &lt;li&gt;For local files, either a full system file path must be given, or a path relative to the executed php script. Note: If template $security is enabled and you are fetching a file from the local file system, {fetch} will only allow files from within one of the defined secure directories.&lt;/li&gt;&lt;li&gt;If the assign attribute is set, the output of the {fetch} function will be assigned to this template variable instead of being output to the template.&lt;/li&gt;</description>
+        <attributes>
+            <attribute name="file">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The file, http or ftp site to fetch</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The template variable the output will be assigned to</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.fetch.php</url>
+    </entry>
+    
+    <entry name="html_checkboxes">
+        <description> {html_checkboxes} is a custom function  that creates an html checkbox group with provided data. It takes care of which item(s) are selected by default as well. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>no</required>
+                <default>checkbox</default>
+                <description>Name of checkbox list</description>
+            </attribute>
+            <attribute name="values">
+                <type>string</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of values for checkbox buttons</description>
+            </attribute>
+            <attribute name="output">
+                <type>string/array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of output for checkbox buttons</description>
+            </attribute>
+            <attribute name="selected">
+                <type>associative array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>empty</default>
+                <description>The selected checkbox element(s)</description>
+            </attribute>
+            <attribute name="options">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>An associative array of values and output</description>
+            </attribute>
+            <attribute name="separator">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>String of text to separate each checkbox item</description>
+            </attribute>
+            <attribute name="labels">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Add label-tags to the output</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Assign the output to an array with each checkbox's output as one element.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.checkboxes.php</url>
+    </entry>
+
+    <entry name="html_image">
+        <description>{html_image} is a custom function  that generates an HTML img tag. The height and width  are automatically calculated from the image file if they are not supplied.  </description>
+        <attributes>
+            <attribute name="file">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>name/path to image</description>
+            </attribute>
+            <attribute name="height">
+                <type>string</type>
+                <required>no</required>
+                <default>actual image height</default>
+                <description>Height to display image</description>
+            </attribute>
+            <attribute name="width">
+                <type>string</type>
+                <required>no</required>
+                <default>actual image width</default>
+                <description>Width to display image</description>
+            </attribute>
+            <attribute name="basedir">
+                <type>string</type>
+                <required>no</required>
+                <default>web server doc root</default>
+                <description>Directory to base relative paths from</description>
+            </attribute>
+            <attribute name="alt">
+                <type>string</type>
+                <required>no</required>
+                <default>""</default>
+                <description>Alternative description of the image</description>
+            </attribute>
+            <attribute name="href">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>href value to link the image to</description>
+            </attribute>
+            <attribute name="path_prefix">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Prefix for output path</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.image.php</url>
+    </entry>
+
+    <entry name="html_options">
+        <description>{html_options} is a custom function  that creates the html select-option group with the assigned data. It takes care of which item(s) are selected by default as well.</description>
+        <attributes>
+            <attribute name="values">
+                <type>array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of values for dropdown</description>
+            </attribute>
+            <attribute name="output">
+                <type>array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of output for dropdown</description>
+            </attribute>
+            <attribute name="selected">
+                <type>string/array</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>The selected option element(s)</description>
+            </attribute>
+            <attribute name="options">
+                <type>associative array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An associative array of values and output</description>
+            </attribute>
+            <attribute name="name">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Name of select group</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.options.php</url>
+    </entry>
+
+    <entry name="html_radios">
+        <description> {html_radios} is a custom function  that creates a HTML radio button group. It also takes care of which item is selected by default as well. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>no</required>
+                <default>radio</default>
+                <description>Name of radio list</description>
+            </attribute>
+            <attribute name="values">
+                <type>array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of values for radio buttons</description>
+            </attribute>
+            <attribute name="output">
+                <type>array</type>
+                <required>Yes, unless using options attribute</required>
+                <default>n/a</default>
+                <description>An array of output for radio buttons</description>
+            </attribute>
+            <attribute name="selected">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>The selected radio element</description>
+            </attribute>
+            <attribute name="options">
+                <type>associative array</type>
+                <required>Yes, unless using values and output</required>
+                <default>n/a</default>
+                <description>An associative array of values and output</description>
+            </attribute>
+            <attribute name="separator">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>String of text to separate each radio item</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Assign radio tags to an array instead of output</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.radios.php</url>
+    </entry>
+
+    <entry name="html_select_date">
+        <description>{html_select_date} is a custom function  that creates date dropdowns. It can display any or all of year, month, and day. All parameters that are not in the list below are printed as name/value-pairs inside the select tags of day, month and year. </description>
+        <attributes>
+            <attribute name="prefix">
+                <type>string</type>
+                <required>no</required>
+                <default>Date_</default>
+                <description>What to prefix the var name with</description>
+            </attribute>
+            <attribute name="time">
+                <type>timestamp/ YYYY-MM-DD</type>
+                <required>no</required>
+                <default>current time in unix timestamp or YYYY-MM-DD format</default>
+                <description>What date/time to use</description>
+            </attribute>
+            <attribute name="start_year">
+                <type>string</type>
+                <required>no</required>
+                <default>current year</default>
+                <description>The first year in the dropdown, either year number, or relative to current year (+/- N)</description>
+            </attribute>
+            <attribute name="end_year">
+                <type>string</type>
+                <required>no</required>
+                <default>same as start_year</default>
+                <description>The last year in the dropdown, either year number, or relative to current year (+/- N)</description>
+            </attribute>
+            <attribute name="display_days">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display days or not</description>
+            </attribute>
+            <attribute name="display_months">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display months or not</description>
+            </attribute>
+            <attribute name="display_years">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display years or not</description>
+            </attribute>
+            <attribute name="month_format">
+                <type>string</type>
+                <required>no</required>
+                <default>%B</default>
+                <description>What format the month should be in (strftime)</description>
+            </attribute>
+            <attribute name="day_format">
+                <type>string</type>
+                <required>no</required>
+                <default>%02d</default>
+                <description>What format the day output should be in (sprintf)</description>
+            </attribute>
+            <attribute name="day_value_format">
+                <type>string</type>
+                <required>no</required>
+                <default>%d</default>
+                <description>What format the day value should be in (sprintf)</description>
+            </attribute>
+            <attribute name="year_as_text">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>Whether or not to display the year as text</description>
+            </attribute>
+            <attribute name="reverse_years">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>Display years in reverse order</description>
+            </attribute>
+            <attribute name="field_array">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>If a name is given, the select boxes will be drawn such that the results will be returned to PHP in the form of name[Day], name[Year], name[Month]. </description>
+            </attribute>
+            <attribute name="day_size">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds size attribute to select tag if given</description>
+            </attribute>
+            <attribute name="month_size">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds size attribute to select tag if given</description>
+            </attribute>
+            <attribute name="year_size">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds size attribute to select tag if given</description>
+            </attribute>
+            <attribute name="all_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to all select/input tags if given</description>
+            </attribute>
+            <attribute name="day_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="month_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="year_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="field_order">
+                <type>string</type>
+                <required>no</required>
+                <default>MDY</default>
+                <description>The order in which to display the fields</description>
+            </attribute>
+            <attribute name="field_separator">
+                <type>string</type>
+                <required>no</required>
+                <default>\n</default>
+                <description>String printed between different fields</description>
+            </attribute>
+            <attribute name="month_value_format">
+                <type>string</type>
+                <required>no</required>
+                <default>%m</default>
+                <description>strftime() format of the month values, default is %m for month numbers.</description>
+            </attribute>
+            <attribute name="year_empty">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>If supplied then the first element of the year's select-box has this value as it's label and "" as it's value. This is useful to make the select-box read "Please select a year" for example. Note that you can use values like "-MM-DD"  as time-attribute to indicate an unselected year.</description>
+            </attribute>
+            <attribute name="month_empty">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>If supplied then the first element of the month's select-box has this value as it's label and "" as it's value. . Note that you can use values like "YYYY--DD"  as time-attribute to indicate an unselected month.</description>
+            </attribute>
+            <attribute name="day_empty">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>If supplied then the first element of the day's select-box has this value as it's label and "" as it's value. Note that you can use values like "YYYY-MM-"  as time-attribute to indicate an unselected day.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.select.date.php</url>
+    </entry>
+
+    <entry name="html_select_time">
+        <description>{html_select_time} is a custom function  that creates time dropdowns for you. It can display any or all of hour, minute, second and meridian. &lt;br&gt;&lt;br&gt;The time attribute can have different formats. It can be a unique timestamp, a string of the format YYYYMMDDHHMMSS or a string that is parseable by PHP's strtotime().</description>
+        <attributes>
+            <attribute name="prefix">
+                <type>string</type>
+                <required>no</required>
+                <default>Time_</default>
+                <description>What to prefix the var name with</description>
+            </attribute>
+            <attribute name="time">
+                <type>timestamp</type>
+                <required>no</required>
+                <default>current time in unix timestamp or YYYY-MM-DD format</default>
+                <description>What date/time to use</description>
+            </attribute>
+            <attribute name="display_hours">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display hours or not</description>
+            </attribute>
+            <attribute name="display_minutes">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display minutes or not</description>
+            </attribute>
+            <attribute name="display_seconds">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display seconds or not</description>
+            </attribute>
+            <attribute name="display_meridian">
+                <type>boolean</type>
+                <required>no</required>
+                <default>true</default>
+                <description>Whether to display meridian or not (am/pm)</description>
+            </attribute>
+            <attribute name="use_24_hours">
+                <type>boolean</type>
+                <required>no</required>
+                <default>ture</default>
+                <description>Whether or not to use 24 hour clock</description>
+            </attribute>
+            <attribute name="minute_interval">
+                <type>integer</type>
+                <required>no</required>
+                <default>1</default>
+                <description>Number interval in minute dropdown</description>
+            </attribute>
+            <attribute name="second_interval">
+                <type>integer</type>
+                <required>no</required>
+                <default>1</default>
+                <description>Number interval in second dropdown</description>
+            </attribute>
+            <attribute name="field_array">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Outputs values to array of this name</description>
+            </attribute>
+            <attribute name="all_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="hour_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given </description>
+            </attribute>
+            <attribute name="minute_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="second_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+            <attribute name="meridian_extra">
+                <type>string</type>
+                <required>no</required>
+                <default>null</default>
+                <description>Adds extra attributes to select/input tags if given</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.select.time.php</url>
+    </entry>
+
+
+    <entry name="html_table">
+        <description> {html_table} is a custom function  that dumps an array of data into an HTML table.</description>
+        <attributes>
+            <attribute name="loop">
+                <type>array</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>Array of data to loop through</description>
+            </attribute>
+            <attribute name="cols">
+                <type>mixed</type>
+                <required>no</required>
+                <default>3</default>
+                <description>Number of columns in the table or a comma-separated list of column heading names or an array of column heading names.if the cols-attribute is empty, but rows are given, then the number of cols is computed by the number of rows and the number of elements to display to be just enough cols to display all elements. If both, rows and cols, are omitted cols defaults to 3. if given as a list or array, the number of columns is computed from the number of elements in the list or array. </description>
+            </attribute>
+            <attribute name="rows">
+                <type>integer</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Number of rows in the table. if the rows-attribute is empty, but cols are given, then the number of rows is computed by the number of cols and the number of elements to display to be just enough rows to display all elements. </description>
+            </attribute>
+            <attribute name="inner">
+                <type>string</type>
+                <required>no</required>
+                <default>cols</default>
+                <description>Direction of consecutive elements in the loop-array to be rendered. cols  means elements are displayed col-by-col. rows  means elements are displayed row-by-row. </description>
+            </attribute>
+            <attribute name="caption">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Text to be used for the caption  element of the table</description>
+            </attribute>
+            <attribute name="table_attr">
+                <type>string</type>
+                <required>no</required>
+                <default>border="1"</default>
+                <description>Attributes for table tag</description>
+            </attribute>
+            <attribute name="th_attr">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Attributes for th tag (arrays are cycled)</description>
+            </attribute>
+            <attribute name="tr_attr">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Attributes for tr tag (arrays are cycled)</description>
+            </attribute>
+            <attribute name="td_attr">
+                <type>string</type>
+                <required>no</required>
+                <default>empty</default>
+                <description>Attributes for td tag (arrays are cycled)</description>
+            </attribute>
+            <attribute name="trailpad">
+                <type>string</type>
+                <required>no</required>
+                <default>&amp;nbsp;</default>
+                <description>Value to pad the trailing cells on last row with (if any)</description>
+            </attribute>
+            <attribute name="hdir">
+                <type>string</type>
+                <required>no</required>
+                <default>right</default>
+                <description>Direction of each row to be rendered. possible values: right (left-to-right), and left (right-to-left) </description>
+            </attribute>
+            <attribute name="vdir">
+                <type>string</type>
+                <required>no</required>
+                <default>down</default>
+                <description>Direction of each column to be rendered. possible values: down (top-to-bottom), up  (bottom-to-top) </description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.html.table.php</url>
+    </entry>
+
+    <entry name="mailto">
+        <description>  {mailto} automates the creation of a mailto:  anchor links and optionally encodes them. Encoding emails makes it more difficult for web spiders to lift email addresses off of a site.&lt;br&gt;&lt;br&gt;Technical Note: Javascript is probably the most thorough form of encoding, although you can use hex encoding too. </description>
+        <attributes>
+            <attribute name="address">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The e-mail address</description>
+            </attribute>
+            <attribute name="text">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The text to display, default is the e-mail address</description>
+            </attribute>
+            <attribute name="encode">
+                <type>string</type>
+                <required>no</required>
+                <default>none</default>
+                <description>How to encode the e-mail. Can be one of none, hex, javascript  or javascript_charcode.</description>
+            </attribute>
+            <attribute name="cc">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Email addresses to carbon copy, separate entries by a comma. </description>
+            </attribute>
+            <attribute name="bcc">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Email addresses to blind carbon copy, separate entries by a comma</description>
+            </attribute>
+            <attribute name="subject">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Email subject</description>
+            </attribute>
+            <attribute name="newsgroups">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Newsgroups to post to, separate entries by a comma.</description>
+            </attribute>
+            <attribute name="followupto">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Addresses to follow up to, separate entries by a comma.</description>
+            </attribute>
+            <attribute name="extra">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Any extra information you want passed to the link, such as style sheet classes</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.mailto.php</url>
+    </entry>
+
+    <entry name="math">
+        <description> {math} allows the template designer to do math equations in the template.&lt;ul&gt;&lt;li&gt;Any numeric template variables may be used in the equations, and the result is printed in place of the tag.&lt;/li&gt;&lt;li&gt;The variables used in the equation are passed as parameters, which can be template variables or static values.&lt;/li&gt;&lt;li&gt;+, -, /, *, abs, ceil, cos, exp, floor, log, log10, max, min, pi, pow, rand, round, sin, sqrt, srans and tan are all valid operators. Check the PHP documentation for further information on these math functions.&lt;/li&gt;&lt;li&gt;If you supply the assign attribute, the output of the {math} function will be assigned to this template variable instead of being output to the template.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;Technical Note: {math} is an expensive function in performance due to its use of the php eval() function. Doing the math in PHP is much more efficient, so whenever possible do the math calculations in the script and assign() the results to the template. Definitely avoid repetitive {math} function calls, eg within {section} loops. </description>
+        <attributes>
+            <attribute name="equation">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The equation to execute</description>
+            </attribute>
+            <attribute name="format">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The format of the result (sprintf)</description>
+            </attribute>
+            <attribute name="var">
+                <type>numeric</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>Equation variable value</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Template variable the output will be assigned to</description>
+            </attribute>
+            <attribute name="[var ...]">
+                <type>numeric</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>Equation variable value</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.math.php</url>
+    </entry>
+
+    <entry name="popup">
+        <description> {popup} is used to create Javascript popup layer/windows.  {popup_init} MUST be called first for this to work. </description>
+        <attributes>
+            <attribute name="equation">
+                <type>text</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>the text/html to display in the popup window</description>
+            </attribute>
+            <attribute name="trigger">
+                <type>string</type>
+                <required>no</required>
+                <default>onMouseOver</default>
+                <description>what is used to trigger the popup window. Can be one of onMouseOver or onClick</description>
+            </attribute>
+            <attribute name="sticky">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popup stick around until closed</description>
+            </attribute>
+            <attribute name="caption">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the caption to title</description>
+            </attribute>
+            <attribute name="fgcolor">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>color of the inside of the popup box</description>
+            </attribute>
+            <attribute name="bgcolor">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>color of the border of the popup box</description>
+            </attribute>
+            <attribute name="textcolor">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the color of the text inside the box</description>
+            </attribute>
+            <attribute name="capcolor">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets color of the box's caption</description>
+            </attribute>
+            <attribute name="closecolor">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the color of the close text</description>
+            </attribute>
+            <attribute name="textfont">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the font to be used by the main text</description>
+            </attribute>
+            <attribute name="captionfont">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the font of the caption</description>
+            </attribute>
+            <attribute name="closefont">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the font for the "Close" text</description>
+            </attribute>
+            <attribute name="textsize">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the size of the main text's font</description>
+            </attribute>
+            <attribute name="captionsize">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the size of the caption's font</description>
+            </attribute>
+            <attribute name="closesize">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the size of the "Close" text's font</description>
+            </attribute>
+            <attribute name="width">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the width of the box</description>
+            </attribute>
+            <attribute name="height">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the height of the box</description>
+            </attribute>
+            <attribute name="left">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popups go to the left of the mouse</description>
+            </attribute>
+            <attribute name="right">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popups go to the right of the mouse</description>
+            </attribute>
+            <attribute name="center">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popups go to the center of the mouse</description>
+            </attribute>
+            <attribute name="above">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popups go above the mouse. NOTE: only possible when height has been set</description>
+            </attribute>
+            <attribute name="below">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>makes the popups go below the mouse</description>
+            </attribute>
+            <attribute name="border">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>makes the border of the popups thicker or thinner</description>
+            </attribute>
+            <attribute name="offsetx">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>how far away from the pointer the popup will show up, horizontally</description>
+            </attribute>
+            <attribute name="offsety">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>how far away from the pointer the popup will show up, vertically</description>
+            </attribute>
+            <attribute name="fgbackground">
+                <type>url to image</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>defines a picture to use instead of color for the inside of the popup.</description>
+            </attribute>
+            <attribute name="bgbackground">
+                <type>url to image</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>defines a picture to use instead of color for the border of the popup. NOTE: You will want to set bgcolor to "" or the color will show as well. NOTE: When having a Close link, Netscape will re-render the table cells, making things look incorrect</description>
+            </attribute>
+            <attribute name="closetext">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the "Close" text to something else</description>
+            </attribute>
+            <attribute name="noclose">
+                <type>boolean</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>does not display the "Close" text on stickies with a caption</description>
+            </attribute>
+            <attribute name="status">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the text in the browsers status bar</description>
+            </attribute>
+            <attribute name="autostatus">
+                <type>boolean</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the status bar's text to the popup's text. NOTE: overrides status setting</description>
+            </attribute>
+            <attribute name="autostatuscap">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets the status bar's text to the caption's text. NOTE: overrides status and autostatus settings</description>
+            </attribute>
+            <attribute name="inarray">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>tells overLib to read text from this index in the ol_text array, located in overlib.js. This parameter can be used instead of text</description>
+            </attribute>
+            <attribute name="caparray">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>tells overLib to read the caption from this index in the ol_caps array</description>
+            </attribute>
+            <attribute name="capicon">
+                <type>url</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>displays the image given before the popup caption</description>
+            </attribute>
+            <attribute name="snapx">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>snaps the popup to an even position in a horizontal grid</description>
+            </attribute>
+            <attribute name="snapy">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>snaps the popup to an even position in a vertical grid</description>
+            </attribute>
+            <attribute name="fixx">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>locks the popups horizontal position Note: overrides all other horizontal placement</description>
+            </attribute>
+            <attribute name="fixy">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>locks the popups vertical position Note: overrides all other vertical placement</description>
+            </attribute>
+            <attribute name="background">
+                <type>url</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>sets image to be used instead of table box background</description>
+            </attribute>
+            <attribute name="padx">
+                <type>integer,integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>pads the background image with horizontal whitespace for text placement. Note: this is a two parameter command</description>
+            </attribute>
+            <attribute name="pady">
+                <type>integer,integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>pads the background image with vertical whitespace for text placement. Note: this is a two parameter command</description>
+            </attribute>
+            <attribute name="fullhtml">
+                <type>boolean</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>allows you to control the html over a background picture completely. The html code is expected in the "text"  attribute</description>
+            </attribute>
+            <attribute name="frame">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>controls popups in a different frame. See the overlib page for more info on this function</description>
+            </attribute>
+            <attribute name="function">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>calls the specified javascript function and takes the return value as the text that should be displayed in the popup window</description>
+            </attribute>
+            <attribute name="delay">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>makes that popup behave like a tooltip. It will popup only after this delay in milliseconds</description>
+            </attribute>
+            <attribute name="hauto">
+                <type>boolean</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>automatically determine if the popup should be to the left or right of the mouse.</description>
+            </attribute>
+            <attribute name="vauto">
+                <type>boolean</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>automatically determine if the popup should be above or below the mouse.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.popup.php</url>
+    </entry>
+    
+    <entry name="popup_init">
+        <description> {popup}  is an integration of overLib, a library used for popup windows. These are used for context sensitive information, such as help windows or tooltips.&lt;ul&gt;&lt;li&gt;{popup_init} must be called only once, preferably within the &lt;head&gt; tag within any page you plan on using the {popup} function.&lt;/li&gt;&lt;li&gt;The path is relative to the executing script or a fully qualified domain path, ie not the relative to the template.&lt;/li&gt;&lt;li&gt;overLib is written and maintained by Erik Bosrup, and the homepage/download is at http://www.bosrup.com/web/overlib/.&lt;/li&gt;&lt;/ul&gt;</description>
+        <url>http://www.smarty.net/manual/en/language.function.popup.init.php</url>
+    </entry>
+
+    <entry name="textformat">
+        <description>  {textformat} is a block function  used to format text. It basically cleans up spaces and special characters, and formats paragraphs by wrapping at a boundary and indenting lines.&lt;br&gt;&lt;br&gt;You can set the parameters explicitly, or use a preset style. Currently "email" is the only available style.  </description>
+        <attributes>
+            <attribute name="style">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Preset style</description>
+            </attribute>
+            <attribute name="indent">
+                <type>number</type>
+                <required>no</required>
+                <default>0</default>
+                <description>The number of chars to indent every line</description>
+            </attribute>
+            <attribute name="indent_first">
+                <type>number</type>
+                <required>no</required>
+                <default>0</default>
+                <description>The number of chars to indent the first line</description>
+            </attribute>
+            <attribute name="indent_char">
+                <type>string</type>
+                <required>yes</required>
+                <default>(single space)</default>
+                <description>The character (or string of chars) to indent with</description>
+            </attribute>
+            <attribute name="wrap">
+                <type>number</type>
+                <required>no</required>
+                <default>80</default>
+                <description>How many characters to wrap each line to</description>
+            </attribute>
+            <attribute name="wrap_char">
+                <type>string</type>
+                <required>no</required>
+                <default>\n</default>
+                <description>The character (or string of chars) to break each line with</description>
+            </attribute>
+            <attribute name="wrap_cut">
+                <type>boolean</type>
+                <required>no</required>
+                <default>false</default>
+                <description>If TRUE, wrap will break the line at the exact character instead of at a word boundary</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The template variable the output will be assigned to</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.textformat.php</url>
+    </entry>
+
+</entries>

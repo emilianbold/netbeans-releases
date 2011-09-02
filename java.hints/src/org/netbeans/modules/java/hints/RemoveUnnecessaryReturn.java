@@ -104,6 +104,11 @@ public class RemoveUnnecessaryReturn {
                     statements = ((CaseTree) tp.getLeaf()).getStatements();
                     break;
                 }
+                case DO_WHILE_LOOP:
+                case ENHANCED_FOR_LOOP:
+                case FOR_LOOP:
+                case WHILE_LOOP:
+                    return null;
                 default: continue OUTER;
             }
 

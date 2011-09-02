@@ -52,12 +52,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
@@ -66,14 +67,10 @@ import org.openide.util.Exceptions;
  *
  * @author Radek Matous, Jesse Glick
  */
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 900, displayName = "#Templates/NetBeansModuleDevelopment/newJavaHelp", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html", category = UIUtil.TEMPLATE_CATEGORY)
 public class NewJavaHelpIterator extends BasicWizardIterator {
     
     private NewJavaHelpIterator.DataModel data;
-    
-    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 900, displayName = "#Templates/NetBeansModuleDevelopment/newJavaHelp", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html", category = "nbm-specific")
-    public static NewJavaHelpIterator createIterator() {
-        return new NewJavaHelpIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();

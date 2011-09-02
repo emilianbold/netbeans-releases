@@ -519,9 +519,7 @@ public class ProjectTab extends TopComponent
         stopListening();
     }
 
-    // Called from the SelectNodeAction
-    
-    static final RequestProcessor RP = new RequestProcessor(ProjectTab.class);
+    public static final RequestProcessor RP = new RequestProcessor(ProjectTab.class);
     
     public void selectNodeAsync(FileObject object) {
         setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );

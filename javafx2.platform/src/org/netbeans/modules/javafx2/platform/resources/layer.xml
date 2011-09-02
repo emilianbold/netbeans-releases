@@ -7,6 +7,7 @@
                 <folder name="customizers">
                     <file name="org-netbeans-modules-javafx2-platform-JavaFXPlatformCustomizer.instance">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.platform.Bundle#Customizer_Tab_Lbl"/>
+                        <attr name="supportsDefaultPlatform" boolvalue="false"/>
                     </file>
                 </folder>
             </folder>

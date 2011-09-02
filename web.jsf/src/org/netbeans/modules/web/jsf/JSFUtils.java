@@ -52,6 +52,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -71,15 +74,16 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Pisl, Radko Najman
  */
 public class JSFUtils {
-    
+
     private static final String LIB_FOLDER = "lib";         //NOI18N
-    
+
     // the names of bundled jsf libraries
     public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
     public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
@@ -88,7 +92,7 @@ public class JSFUtils {
     public static String DEFAULT_JSF_2_0_RI_NAME = "jsf20ri";    //NOI18N
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
-    
+
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
@@ -101,11 +105,13 @@ public class JSFUtils {
     protected static final String FACELETS_DEFAULT_SUFFIX = "javax.faces.DEFAULT_SUFFIX";
     public static final String FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
 
-    
+    // usages logger
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.jsf"); // NOI18N
+
     /** This method finds out, whether the input file is a folder that contains
-     * a jsf implementation, which < = max version. It looks for lib folder and in this lib looks 
+     * a jsf implementation, which < = max version. It looks for lib folder and in this lib looks
      * through jars, whether their contain javax.faces.FacesException class.
-     * 
+     *
      * @return null if the folder contains a jsf implemention or an error message
      */
     public static String isJSFInstallFolder(File folder, JSFVersion maxVersion) {
@@ -122,7 +128,7 @@ public class JSFUtils {
                         }
                         return accepted;
                     }
-                    
+
                 });
                 boolean isJSF = false;
                 JSFVersion jsfVersion = JSFVersion.JSF_1_1;
@@ -152,10 +158,10 @@ public class JSFUtils {
         }
         return result;
     }
-    
+
     public static boolean createJSFUserLibrary(File folder, final String libraryName) throws IOException {
         boolean result = false;
-        
+
         // find all jars in the folder/lib
         File libFolder = new File(folder, LIB_FOLDER);
         if (libFolder.exists() && libFolder.isDirectory()) {
@@ -174,17 +180,17 @@ public class JSFUtils {
                 }
             }
 
-            // create new library and regist in the Library Manager. 
+            // create new library and regist in the Library Manager.
             LibraryManager libraryManager = LibraryManager.getDefault();
             LibraryImplementation libImpl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary(); //NOI18N
             libImpl.setName(libraryName);  //NOI18N
             libImpl.setDescription(libraryName);
             libImpl.setContent("classpath", urls);  //NOI18N
             libraryManager.addLibrary(LibraryFactory.createLibrary(libImpl));
-            
+
             result = true;
         }
-        
+
         return result;
     }
 
@@ -267,4 +273,23 @@ public class JSFUtils {
         return false;
     }
 
+     /**
+     * Logs usage statistics data.
+     *
+     * @param srcClass source class
+     * @param message USG message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
+    }
 }

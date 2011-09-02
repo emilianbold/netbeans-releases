@@ -73,12 +73,6 @@ public class OpenIssueTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @RandomlyFails

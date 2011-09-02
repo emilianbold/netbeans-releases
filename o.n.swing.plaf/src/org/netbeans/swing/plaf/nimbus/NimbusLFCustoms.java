@@ -118,6 +118,10 @@ public final class NimbusLFCustoms extends LFCustoms {
             VIEW_TAB_CONTENT_BORDER,
                 new MatteBorder(0, 1, 1, 1, UIManager.getColor("nimbusBorder")), //NOI18N
             VIEW_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 12,
+            "NbSlideBar.GroupSeparator.Gap.After", 4,
+            "NbSlideBar.RestoreButton.Gap", 8,
         };
         /*Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),

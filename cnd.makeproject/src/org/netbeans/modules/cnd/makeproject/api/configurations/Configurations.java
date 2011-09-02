@@ -382,8 +382,9 @@ public final class Configurations {
     private boolean checkValidIndex(int index) {
         if (index < 0 || index >= size()) {
             new ArrayIndexOutOfBoundsException(index).printStackTrace(); // NOI18N
-        // Error ???
-        // FIXUP ???
+            // Error ???
+            // FIXUP ???
+            return false;
         }
         return true;
     }

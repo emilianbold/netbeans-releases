@@ -806,6 +806,46 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue200795.php", "$clazz = new ^", false);
     }
 
+    public void testIssue201032_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myStringFnc^", false);
+    }
+
+    public void testIssue201032_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myFloatFnc^", false);
+    }
+
+    public void testIssue201032_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myIntFnc^", false);
+    }
+
+    public void testIssue201032_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myArrayFnc^", false);
+    }
+
+    public void testIssue201032_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->matchNames^", false);
+    }
+
+    public void testIssue201032_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->dontMatchNames^", false);
+    }
+
+    public void testIssue201032_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue201032.php", "$this->myMixedFnc^", false);
+    }
+
+    public void testIssue196714() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue196714.php", "$mm->^", false);
+    }
+
+    public void testIssue200178() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue200178.php", "/**/foo^", false);
+    }
+
+    public void testIssue200178_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue200178.php", "/**/bar^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

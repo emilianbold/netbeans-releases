@@ -62,7 +62,6 @@ public interface EditorSupport extends Node.Cookie {
     void markModified();
     Object getJavaContext();
     boolean close();
-    JEditorPane getEditorPane();
     void openAt(Position pos);
     void discardEditorUndoableEdits();
     void saveAs(FileObject folder, String fileName) throws IOException;

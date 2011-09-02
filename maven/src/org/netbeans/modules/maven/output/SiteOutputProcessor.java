@@ -44,13 +44,14 @@ package org.netbeans.modules.maven.output;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.netbeans.api.project.Project;
+import static org.netbeans.modules.maven.output.Bundle.*;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -97,6 +98,7 @@ public class SiteOutputProcessor implements OutputProcessor {
             
         }
         
+        @Messages({"# {0} - file name", "SiteOutputProcessor.not_found=No site index created at {0}"})
         public void outputLineAction(OutputEvent arg0) {
             File html = new File(FileUtil.toFile(prj.getProjectDirectory()), "target/site/index.html");
             if (html.isFile()) {
@@ -106,7 +108,7 @@ public class SiteOutputProcessor implements OutputProcessor {
                     assert false : x;
                 }
             } else {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SiteOutputProcessor.class, "SiteOutputProcessor.not_found", html));
+                StatusDisplayer.getDefault().setStatusText(SiteOutputProcessor_not_found(html));
             }
         }
         

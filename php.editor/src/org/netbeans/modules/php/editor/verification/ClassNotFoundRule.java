@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
@@ -58,10 +58,12 @@ import org.openide.util.NbBundle;
  */
 public class ClassNotFoundRule extends PHPRule {
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public String getId() {
         return "class.not.found"; //NOI18N
     }
@@ -77,22 +79,24 @@ public class ClassNotFoundRule extends PHPRule {
         Expression className = classInstanceCreation.getClassName().getName();
         check(className);
     }
-    
+
     private void check(Expression expression) {
         if (expression instanceof Identifier) {
             String className = ((Identifier) expression).getName();
-            
+
             if (!"self".equalsIgnoreCase(className) //NOI18N
-                && context.getIndex().getClasses(NameKind.exact(className)).isEmpty()) {                
+                && context.getIndex().getClasses(NameKind.exact(className)).isEmpty()) {
                 addHint(expression);
             }
         }
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDispName");
     }
@@ -104,7 +108,7 @@ public class ClassNotFoundRule extends PHPRule {
                 range, null, 500);
         addResult(hint);
     }
-    
+
     @Override
     public boolean getDefaultEnabled() {
         return false;

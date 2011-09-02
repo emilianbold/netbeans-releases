@@ -54,20 +54,27 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -76,7 +83,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /**
@@ -85,16 +92,21 @@ import org.openide.util.WeakListeners;
  */
 public class ModulesNode extends AbstractNode {
 
-    /** Creates a new instance of ModulesNode */
+    private final NbMavenProjectImpl proj;
+
+    @Messages("LBL_Modules=Modules")
     public ModulesNode(NbMavenProjectImpl proj) {
         super(Children.create(new ModulesChildFactory(proj), true));
+        this.proj = proj;
         setName("Modules"); //NOI18N
-        setDisplayName(org.openide.util.NbBundle.getMessage(ModulesNode.class, "LBL_Modules"));
+        setDisplayName(LBL_Modules());
     }
 
     @Override
     public Action[] getActions(boolean bool) {
-        return new Action[]{};
+        return new Action[] {
+            new AddModuleAction(),
+        };
     }
 
     private Image getIcon(boolean opened) {
@@ -198,6 +210,7 @@ public class ModulesNode extends AbstractNode {
         public Action[] getActions(boolean b) {
             ArrayList<Action> lst = new ArrayList<Action>();
             lst.add(OpenProjectAction.SINGLETON);
+            lst.add(OpenPOMAction.SINGLETON);
             lst.add(new RemoveModuleAction(parent, project));
 //            lst.addAll(Arrays.asList(super.getActions(b)));
             return lst.toArray(new Action[lst.size()]);
@@ -214,15 +227,16 @@ public class ModulesNode extends AbstractNode {
         private NbMavenProjectImpl project;
         private NbMavenProjectImpl parent;
 
-        public RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ModulesNode.class, "BTN_Remove_Module"));
+        @Messages("BTN_Remove_Module=Remove Module")
+        RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
+            putValue(Action.NAME, BTN_Remove_Module());
             project = proj;
             this.parent = parent;
         }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(ModulesNode.class, "MSG_Remove_Module"), NotifyDescriptor.YES_NO_OPTION);
+        @Messages("MSG_Remove_Module=Do you want to remove the module from the parent POM?")
+        @Override public void actionPerformed(ActionEvent e) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(MSG_Remove_Module(), NotifyDescriptor.YES_NO_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 FileObject fo = FileUtil.toFileObject(parent.getPOMFile());
@@ -260,8 +274,9 @@ public class ModulesNode extends AbstractNode {
             assert false;
         }
 
+        @Messages("BTN_Open_Project=Open Project")
         public @Override Action createContextAwareInstance(final Lookup context) {
-            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+            return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
                     OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
@@ -269,4 +284,74 @@ public class ModulesNode extends AbstractNode {
             };
         }
     }
+
+    private static class OpenPOMAction extends AbstractAction implements ContextAwareAction {
+
+        static final OpenPOMAction SINGLETON = new OpenPOMAction();
+
+        private OpenPOMAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        @Messages("BTN_open_pom=Open POM")
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(BTN_open_pom()) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    for (NbMavenProjectImpl project : context.lookupAll(NbMavenProjectImpl.class)) {
+                        FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");
+                        if (pom != null) {
+                            DataObject d;
+                            try {
+                                d = DataObject.find(pom);
+                            } catch (DataObjectNotFoundException x) {
+                                continue;
+                            }
+                            Openable o = d.getLookup().lookup(Openable.class);
+                            if (o != null) {
+                                o.open();
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    }
+
+    private class AddModuleAction extends AbstractAction {
+
+        @Messages("BTN_add_module=Add Module...")
+        AddModuleAction() {
+            super(BTN_add_module());
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            JFileChooser c = ProjectChooser.projectChooser();
+            File basedir = FileUtil.toFile(proj.getProjectDirectory());
+            c.setCurrentDirectory(basedir);
+            if (c.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            final List<String> mods = new ArrayList<String>();
+            for (File d : c.getSelectedFiles()) {
+                String mod = FileUtilities.relativizeFile(basedir, d);
+                if (mod != null && !mod.equals(".")) {
+                    mods.add(mod);
+                }
+            }
+            if (mods.isEmpty()) {
+                return;
+            }
+            org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(proj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
+                @Override public void performOperation(POMModel model) {
+                    for (String mod : mods) {
+                        model.getProject().addModule(mod);
+                    }
+                }
+            }));
+        }
+
+    }
+
 }

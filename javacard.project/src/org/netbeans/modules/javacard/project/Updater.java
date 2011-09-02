@@ -349,7 +349,8 @@ public class Updater implements UpdateImplementation {
         result.setProperty ("dist.bundle", "${dist.dir}/${dist.bundle.name}");//NOI18N
         result.setProperty ("meta.inf.dir", "META-INF");//NOI18N
         result.setProperty ("includes", "**/*"); //NOI18N
-        result.setProperty ("excludes", "**/*.java"); //NOI18N
+        result.setProperty ("excludes", ""); //NOI18N
+        result.setProperty ("build.classes.excludes", "**/*.java"); //NOI18N
         if (kind.isApplet()) {
             result.setProperty ("applet.inf.dir", "APPLET-INF");//NOI18N
             result.setProperty ("scripts.dir", "scripts");

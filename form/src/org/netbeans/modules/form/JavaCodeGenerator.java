@@ -50,8 +50,6 @@ import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
 
-import org.netbeans.api.editor.fold.*;
-
 import org.netbeans.api.java.classpath.ClassPath;
 
 import java.util.logging.Level;
@@ -75,6 +73,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.Lookup;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -286,7 +285,10 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new GenerateFQNProperty());
             propList.add(new GenerateMnemonicsCodeProperty());
             propList.add(new ListenerGenerationStyleProperty());
-            propList.add(new LayoutCodeTargetProperty());
+            FormServices services = Lookup.getDefault().lookup(FormServices.class);
+            if (services.isLayoutExtensionsLibrarySupported()) {
+                propList.add(new LayoutCodeTargetProperty());
+            }
         } else if (component != formModel.getTopRADComponent()) {
             
             propList.add(createBeanClassNameProperty(component));
@@ -948,79 +950,6 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
-    private boolean shouldExpandInitComponents(final int initComponentsOffset) {
-        if (EventQueue.isDispatchThread()) {
-            return shouldExpandInitComponentsInAWT(initComponentsOffset);
-        } else {
-            // We cannot use EQ.invokeAndWait here, see issue 131841
-            // Hence, using a simple fallback
-            return false;
-        }
-    }
-
-    private boolean shouldExpandInitComponentsInAWT(int initComponentsOffset) {
-        boolean expandInitComponents = false;
-        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
-        if (editorPane != null) {
-            String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
-            FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
-            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-            expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
-        }
-        return expandInitComponents;
-    }
-
-    private void expandInitComponents(final int initComponentsOffset) {
-        if (EventQueue.isDispatchThread()) {
-            expandInitComponentsInAWT(initComponentsOffset);
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    expandInitComponentsInAWT(initComponentsOffset);
-                }
-            });
-        }
-    }
-
-    private FoldHierarchyListener listener;
-    private boolean expandFold;
-    private void expandInitComponentsInAWT(int initComponentsOffset) {
-        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
-        if (editorPane != null) {
-            final String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
-            final FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
-            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-            if (fold != null) {
-                if (foldDescription.equals(fold.getDescription())) {
-                    // The fold exists and we found it => expand it
-                    FoldUtilities.expand(foldHierarchy, fold.getType());
-                    expandFold = false;
-                } else {
-                    // The fold doesn't exist yet => expand it once it is created
-                    expandFold = true;
-                }
-                if (listener == null) {
-                    listener = new FoldHierarchyListener() {
-                        @Override
-                        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-                            if (expandFold) {
-                                for (int i=0; i<evt.getAddedFoldCount(); i++) {
-                                    Fold candidate = evt.getAddedFold(i);
-                                    if (foldDescription.equals(candidate.getDescription())) {
-                                        FoldUtilities.expand(foldHierarchy, candidate.getType());
-                                        expandFold = false;
-                                    }
-                                }
-                            }
-                        }
-                    };
-                    foldHierarchy.addFoldHierarchyListener(listener);
-                }
-            }
-        }
-    }
-
     void regenerateInitComponents() {
         if (!initialized || !canGenerate)
             return;
@@ -1051,10 +980,8 @@ class JavaCodeGenerator extends CodeGenerator {
         cleanup();
 
         try {
-            boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
             if (foldGeneratedCode) {
-                expandInitComponents = shouldExpandInitComponents(initComponentsOffset);
                 writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
                 writer.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
                 writer.write("\">\n"); // NOI18N
@@ -1124,9 +1051,6 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             initComponentsSection.setText(newText);
             
-            if (expandInitComponents) {
-                expandInitComponents(initComponentsOffset);
-            }
             clearUndo();
         }
         catch (IOException e) { // should not happen

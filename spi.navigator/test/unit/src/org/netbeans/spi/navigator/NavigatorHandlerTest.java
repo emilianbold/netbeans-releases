@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.navigator;
 
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,9 +53,11 @@ import org.netbeans.modules.navigator.NavigatorTC;
 import org.netbeans.modules.navigator.UnitTestUtils;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -80,30 +83,44 @@ public class NavigatorHandlerTest extends NbTestCase {
         TestLookupHint hint = new TestLookupHint("NavigatorHandlerTest/TestMimeType");
         ic.add(hint);
             
-        NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        final NavigatorTC navTC = NavigatorTC.getInstance();
+        try {
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    navTC.getController().propertyChange(
+                            new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_OPENED, null, navTC));
+                    return null;
+                }
+            });
 
-        NavigatorPanel selPanel = navTC.getSelectedPanel();
-        assertNotNull("Selected panel is null", selPanel);
-        
-        List<NavigatorPanel> panels = navTC.getPanels();
-        assertEquals(2, panels.size());
-        
-        int selIndex = panels.indexOf(selPanel);
-        assertTrue(selIndex >= 0);
-        
-        System.out.println("selected panel before: " + navTC.getSelectedPanel().getDisplayName());
-        
-        if (selIndex == 0) {
-            NavigatorHandler.activatePanel(panels.get(1));
-        } else {
-            NavigatorHandler.activatePanel(panels.get(0));
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+            assertNotNull("Selected panel is null", selPanel);
+
+            List<? extends NavigatorPanel> panels = navTC.getPanels();
+            assertEquals(2, panels.size());
+
+            int selIndex = panels.indexOf(selPanel);
+            assertTrue(selIndex >= 0);
+
+            System.out.println("selected panel before: " + navTC.getSelectedPanel().getDisplayName());
+
+            final NavigatorPanel panel = panels.get(selIndex == 0 ? 1:0);
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    NavigatorHandler.activatePanel(panel);
+                    return null;
+                }
+            });
+
+            assertTrue(selPanel != navTC.getSelectedPanel());
+
+            System.out.println("selected panel after: " + navTC.getSelectedPanel().getDisplayName());
+        } finally {
+            navTC.getController().propertyChange(
+                    new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_CLOSED, null, navTC));
         }
-        
-        assertTrue(selPanel != navTC.getSelectedPanel());
-        
-        System.out.println("selected panel after: " + navTC.getSelectedPanel().getDisplayName());
-        
     }
 
     /** Panel implementation 1

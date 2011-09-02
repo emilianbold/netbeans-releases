@@ -87,7 +87,9 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -161,6 +163,31 @@ public class ReconfigureProject {
                 }
             }
         }
+        if (make == null) {
+            FileObject absBuildCommandFileObject = configuration.getMakefileConfiguration().getAbsBuildCommandFileObject();
+            if (absBuildCommandFileObject != null && absBuildCommandFileObject.isValid()) {
+                for (FileObject children : absBuildCommandFileObject.getChildren()) {
+                    String mime = children.getMIMEType();
+                    if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
+                        if (children.hasExt("mk")) { // NOI18N
+                            if (make == null) {
+                                try {
+                                    make = DataObject.find(children);
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        } else if (children.getExt().isEmpty()) { // NOI18N
+                            try {
+                                make = DataObject.find(children);
+                            } catch (DataObjectNotFoundException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         platform = configuration.getDevelopmentHost().getBuildPlatform();
     }
 
@@ -218,7 +245,7 @@ public class ReconfigureProject {
                 addExecutionListener(listener);
                 _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
                 synchronized(finished) {
-                    while(true) {
+                    while(!finished.get()) {
                         try {
                             finished.wait();
                             if (finished.get()) {
@@ -233,6 +260,10 @@ public class ReconfigureProject {
                 _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
             }
         } catch (Throwable ex) {
+            for(ExecutionListener listener : listeners){
+                // Do not prevent Run/Debug if configure is failed
+                listener.executionFinished(0);
+            }
             Exceptions.printStackTrace(ex);
         }
     }
@@ -287,6 +318,10 @@ public class ReconfigureProject {
                 listener.executionFinished(-1);
             } else {
                 lastTask = CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject, tab);
+                if (lastTask == null) {
+                    // Do not prevent Run/Debug if configure is failed
+                    listener.executionFinished(0);
+                }
             }
         } else if (qmake != null && make != null){
             String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
@@ -323,6 +358,10 @@ public class ReconfigureProject {
                 listener.executionFinished(-1);
             } else {
                 lastTask = QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject, tab);
+                if (lastTask == null) {
+                    // Do not prevent Run/Debug if configure is failed
+                    listener.executionFinished(0);
+                }
             }
         } else if (configure != null && make != null) {
             String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
@@ -361,11 +400,19 @@ public class ReconfigureProject {
                 listener.executionFinished(-1);
             } else {
                 lastTask = ShellRunAction.performAction(configure.getNodeDelegate(), listener, null, makeProject, tab);
+                if (lastTask == null) {
+                    // Do not prevent Run/Debug if configure is failed
+                    listener.executionFinished(0);
+                }
             }
         } else if (make != null) {
             postClean(true);
         } else {
             assert false;
+            for(ExecutionListener listener : listeners){
+                // Do not prevent Run/Debug if configure is failed
+                listener.executionFinished(0);
+            }
         }
     }
 
@@ -391,6 +438,10 @@ public class ReconfigureProject {
             listener.executionFinished(-1);
         } else {
             lastTask = MakeAction.execute(make.getNodeDelegate(), "clean", listener, null, makeProject, null, tab); // NOI18N
+            if (lastTask == null) {
+                // Do not prevent Run/Debug if configure is failed
+                listener.executionFinished(0);
+            }
         }
     }
 
@@ -512,6 +563,10 @@ public class ReconfigureProject {
             listener.executionFinished(-1);
         } else {
             lastTask = MakeAction.execute(node, "", listener, null, makeProject,vars, tab); // NOI18N
+            if (lastTask == null) {
+                // Do not prevent Run/Debug if configure is failed
+                listener.executionFinished(0);
+            }
         }
     }
 

@@ -48,7 +48,7 @@ Other names may be trademarks of their respective owners.
         <mapID target="about_deploy_and_test_ws" url="webservice/expose/about_deploy_and_test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
-	<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />
+	<!--<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />-->
         <mapID target="glassfish_tester-ws" url="webservice/expose/glassfish_tester-ws.html" />
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->

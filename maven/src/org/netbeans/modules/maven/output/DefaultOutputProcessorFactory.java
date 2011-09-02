@@ -42,27 +42,22 @@
 
 package org.netbeans.modules.maven.output;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
-import org.netbeans.api.project.Project;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author Milos Kleint 
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class DefaultOutputProcessorFactory implements OutputProcessorFactory {
+@ServiceProvider(service=OutputProcessorFactory.class)
+public class DefaultOutputProcessorFactory implements ContextOutputProcessorFactory {
     
-    /** Creates a new instance of DefaultOutputProcessor */
-    public DefaultOutputProcessorFactory() {
-    }
-
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
+    @Override public Set<OutputProcessor> createProcessorsSet(Project project) {
         Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-        toReturn.add(new GlobalOutputProcessor());
         if (project != null) {
             toReturn.add(new JavaOutputListenerProvider());
             toReturn.add(new ScalaOutputListenerProvider());
@@ -74,6 +69,10 @@ public class DefaultOutputProcessorFactory implements OutputProcessorFactory {
             toReturn.add(new DependencyAnalyzeOutputProcessor(nbprj));
         }
         return toReturn;
+    }
+
+    @Override public Set<? extends OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
+        return Collections.singleton(new GlobalOutputProcessor(config));
     }
     
 }
