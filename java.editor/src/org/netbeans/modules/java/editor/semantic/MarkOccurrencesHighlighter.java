@@ -298,11 +298,11 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
         if (node.getBoolean(MarkOccurencesSettings.EXCEPTIONS, true)) {
             //detect caret inside catch:
-            if (typePath != null && (typePath.getParentPath().getLeaf().getKind() == Kind.UNION_TYPE
+            if (typePath != null && ((typePath.getParentPath().getLeaf().getKind() == Kind.UNION_TYPE
                     && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.VARIABLE
                     && typePath.getParentPath().getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH)
                     || (typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
-                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH)) {
+                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH))) {
                     MethodExitDetector med = new MethodExitDetector();
 
                     setExitDetector(med);
