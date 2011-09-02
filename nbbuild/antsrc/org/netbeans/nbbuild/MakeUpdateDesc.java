@@ -642,7 +642,7 @@ public class MakeUpdateDesc extends MatchingTask {
     static Element fakeOSGiInfoXml(Attributes attr, Properties localized, File whereFrom) {
         Document doc = XMLUtil.createDocument("module");
         Element module = doc.getDocumentElement();
-        String cnb = attr.getValue("Bundle-SymbolicName");
+        String cnb = JarWithModuleAttributes.extractCodeName(attr);
         module.setAttribute("codenamebase", cnb);
         module.setAttribute("distribution", ""); // seems to be ignored anyway
         module.setAttribute("downloadsize", "0"); // recalculated anyway

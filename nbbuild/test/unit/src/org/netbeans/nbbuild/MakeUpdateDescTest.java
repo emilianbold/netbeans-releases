@@ -56,7 +56,7 @@ public class MakeUpdateDescTest extends NbTestCase {
 
     public void testFakeOSGiInfoXml() throws Exception {
         Attributes attr = new Attributes();
-        attr.putValue("Bundle-SymbolicName", "bundle");
+        attr.putValue("Bundle-SymbolicName", "bundle;singleton:=true");
         attr.putValue("Bundle-Name", "%OpenIDE-Module-Name");
         attr.putValue("Bundle-Category", "%OpenIDE-Module-Display-Category");
         attr.putValue("Bundle-Description", "%OpenIDE-Module-Short-Description");
