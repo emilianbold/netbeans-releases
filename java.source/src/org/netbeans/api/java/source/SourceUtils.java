@@ -296,6 +296,7 @@ public class SourceUtils {
      * containing owner class binary name (JLS section 13.1) in the first element,
      * field (method) name in the second element and JVM type (JVM method formal
      * parameters (JVMS section 2.10.1)) in the third element.
+     * @since 0.84
      */
     @NonNull
     public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
