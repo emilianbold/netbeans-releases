@@ -931,22 +931,28 @@ private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {/
 private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderActionPerformed
     JFXPreloaderChooserWizard wizard = new JFXPreloaderChooserWizard();
     if(wizard.show()) {
-        textFieldPreloader.setText(wizard.getSelectedSource().getPath());
-        if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
-            File file = wizard.getSelectedSource();
-            if (file != null) {
-                FileObject projectDir = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                if (projectDir != null) {
+        File file = wizard.getSelectedSource();
+        if (file != null) {
+            textFieldPreloader.setText(file.getPath());
+            FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fileObj != null) {
+                if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
                     try {
                         Project foundProject = ProjectManager.getDefault()
-                                                   .findProject(projectDir);
+                                                   .findProject(fileObj);
                         if (foundProject != null) { // it is a project directory
                             jfxProps.getPreloaderClassModel().fillFromProject(foundProject);
                         }
                     }
                     catch (IOException ex) {} // ignore
+                } else {
+                    if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
+                        //try {
+                            jfxProps.getPreloaderClassModel().fillFromJAR(fileObj);
+                        //}
+                        //catch (IOException ex) {} // ignore
+                    }
                 }
-                
             }
         }
     }

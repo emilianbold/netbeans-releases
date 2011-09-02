@@ -41,16 +41,26 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
@@ -62,10 +72,17 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * Utility class for JavaFX 2.0 Project
@@ -151,7 +168,8 @@ public final class JFXProjectUtils {
     /**
      * Returns set of names of classes of the classType type.
      * 
-     * @param map of classpaths of all project files
+     * @param classpathMap map of classpaths of all project files
+     * @param classType return only classes of this type
      * @return set of class names
      */
     public static Set<String> getAppClassNames(Map<FileObject,List<ClassPath>> classpathMap, final String classType) {
@@ -184,4 +202,48 @@ public final class JFXProjectUtils {
         }
         return appClassNames;
     }
+
+
+    /** Finds available FX Preloader classes in given JAR files. 
+     * Looks for classes specified in the JAR manifest only.
+     * 
+     * @param jarFile FileObject representing an existing JAR file
+     * @param classType return only classes of this type
+     * @return set of class names
+     */
+    public static Set<String> getAppClassNamesInJar(@NonNull FileObject jarFile, final String classType) {
+        final File jarF = FileUtil.toFile(jarFile);
+        if (jarF == null) {
+            return null;
+        }
+        final Set<String> appClassNames = new HashSet<String>();
+        JarFile jf;
+        try {
+            jf = new JarFile(jarF);
+        } catch (IOException x) {
+            return null;
+        }
+        Enumeration<JarEntry> entries = jf.entries();
+        if (entries == null) {
+            return null;
+        }        
+        while(entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if(!entry.getName().endsWith(".class")) { // NOI18N
+                continue;
+            }
+            if(entry.getName().contains("$")) { // NOI18N
+                continue;
+            }
+            String classname = entry.getName().substring(0, entry.getName().length() - 6) // cut off ".class"
+                    .replace('\\', '/').replace('/', '.');
+            if (classname.startsWith(".")) { // NOI18N
+                classname = classname.substring(1);
+            }
+            appClassNames.add(classname);
+        }
+
+        return appClassNames;
+    }
+
 }
