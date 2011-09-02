@@ -55,15 +55,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -100,8 +91,6 @@ class JavaParsingContext {
     final FQN2Files fqn2Files;
     final SourceAnalyser sa;
     private final Iterable<? extends JavaIndexerPlugin> pluginsCache;
-    private final Map<URI,List<? extends Diagnostic<? extends JavaFileObject>>> diagnostics =
-            new HashMap<URI, List<? extends Diagnostic<? extends JavaFileObject>>>();
 
     public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
         this(context, false);

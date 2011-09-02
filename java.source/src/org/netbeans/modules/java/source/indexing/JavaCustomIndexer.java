@@ -574,26 +574,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         return ret;
     }
 
-    static void setErrors(
-            @NonNull final Context context,
-            @NonNull final JavaParsingContext javaContext,
-            @NonNull final CompileTuple active,
-            @NonNull final DiagnosticListenerImpl errors) {
+    static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
         if (!active.virtual) {
-            final List<? extends Diagnostic<? extends JavaFileObject>> javacDiagnostics = errors.getDiagnostics(active.jfo);
-            final List<? extends Diagnostic<? extends JavaFileObject>> pluginsDiagnostics = javaContext.removeDiagnostics(active.jfo);
-            final List<? extends Diagnostic<? extends JavaFileObject>> diagnostics;
-            if (pluginsDiagnostics.isEmpty()) {
-                diagnostics = javacDiagnostics;
-            } else {
-                final List<Diagnostic<? extends JavaFileObject>> newDiagnostics =
-                        new ArrayList<Diagnostic<? extends JavaFileObject>>(
-                                javacDiagnostics.size() + pluginsDiagnostics.size());
-                newDiagnostics.addAll(javacDiagnostics);
-                newDiagnostics.addAll(pluginsDiagnostics);
-                diagnostics = newDiagnostics;
-            }
-            ErrorsCache.setErrors(context.getRootURI(), active.indexable, diagnostics, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
+            ErrorsCache.setErrors(context.getRootURI(), active.indexable, errors.getDiagnostics(active.jfo), active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
 

@@ -282,7 +282,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         // presumably should not happen
                     }
                 }
-                JavaCustomIndexer.setErrors(context, javaContext, active, diagnosticListener);
+                JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                 Log.instance(jt.getContext()).nerrors = 0;
                 previous.finishedFiles.add(active.indexable);
                 active = null;
