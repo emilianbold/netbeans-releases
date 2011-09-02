@@ -73,6 +73,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
@@ -573,9 +574,26 @@ public class JavaCustomIndexer extends CustomIndexer {
         return ret;
     }
 
-    static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
+    static void setErrors(
+            @NonNull final Context context,
+            @NonNull final JavaParsingContext javaContext,
+            @NonNull final CompileTuple active,
+            @NonNull final DiagnosticListenerImpl errors) {
         if (!active.virtual) {
-            ErrorsCache.setErrors(context.getRootURI(), active.indexable, errors.getDiagnostics(active.jfo), active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
+            final List<? extends Diagnostic<? extends JavaFileObject>> javacDiagnostics = errors.getDiagnostics(active.jfo);
+            final List<? extends Diagnostic<? extends JavaFileObject>> pluginsDiagnostics = javaContext.removeDiagnostics(active.jfo);
+            final List<? extends Diagnostic<? extends JavaFileObject>> diagnostics;
+            if (pluginsDiagnostics.isEmpty()) {
+                diagnostics = javacDiagnostics;
+            } else {
+                final List<Diagnostic<? extends JavaFileObject>> newDiagnostics =
+                        new ArrayList<Diagnostic<? extends JavaFileObject>>(
+                                javacDiagnostics.size() + pluginsDiagnostics.size());
+                newDiagnostics.addAll(javacDiagnostics);
+                newDiagnostics.addAll(pluginsDiagnostics);
+                diagnostics = newDiagnostics;
+            }
+            ErrorsCache.setErrors(context.getRootURI(), active.indexable, diagnostics, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
 

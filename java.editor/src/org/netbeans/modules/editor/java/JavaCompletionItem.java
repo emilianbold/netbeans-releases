@@ -254,11 +254,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
-    
+
     protected JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
-    
+
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
