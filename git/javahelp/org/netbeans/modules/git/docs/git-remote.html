@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css"/>
+        <meta content="Helen" name="generator"/>
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+<title>Git: Working with Remote Repositories</title>
+</head>
+<body>
+<h2>Git: Working with Remote Repositories</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The IDE enables you to work with remote repositories hosted on the Internet or network, which involves: </p>
+   <ul>
+     <li><a href="#fetch">fetching</a></li>
+     <li><a href="#pull">pulling</a></li>
+	 <li><a href="#push">pushing</a></li>
+   </ul>
+<h3><a name="fetch"></a>Fetching</h3>
+  <p>Fetching gets the changes from the original remote repository that you do not have yet. It never changes any of your local branches. Fetching gets all the branches from remote repositories, which you can merge into your branch or just inspect at any time.</p> 
+  <h4>To fetch updates from a remote repository:</h4>     
+        <ol>
+            <li>Choose Team &gt; Git &gt; Remote &gt; Fetch.</li>
+			<li>In the first panel of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name, login, password, private key file, passphrase, and proxy configuration if required). Click Next.</li>	
+			<li>In the second panel of the wizard, choose the branches to fetch changes from. Click Finish.<br/>A local copy of a remote branch is created. The selected branch are updated in the Branches &gt; Remote directory in the Git Repository Browser.
+Next the fetched updates can be merged into a local branch.</li>
+					
+</ol>
+<h3><a name="pull"></a>Pulling</h3>
+<p>When pulling some updates from a remote Git repository, the changes are fetched from it and merged into the current HEAD of your local repository.</p>
+<h4>To pull from a remote repository:</h4>
+<ol>
+<li>Choose Team &gt; Git &gt; Remote &gt; Pull.</li>
+<li>At the Remote Repository page of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name, login, password, private key file, and passphrase, if required) and click Next. </li>
+<li>At the Remote Branches page of the wizard, choose the branches to be pulled changes from and click Finish.
+Your local repository is synchronized with the origin repository.</li>
+</ol>
+<h3><a name="push"></a>Pushing</h3>
+<p>Pushing enables you to contribute changes from your local Git repository into a public Git repository.</p>
+<h4>To push to a remote repository:</h4>
+<ol>
+<li>Choose Team &gt; Git &gt; Remote &gt; Push.</li>
+<li>In the first panel of the wizard, select either the Configured repository (to use the path to the repository configured earlier) or Specify Git Repository Location option (to define the path to a remote repository that has not been accessed yet, its name, login,  password, private key file, and passphrase, if required) and click Next. </li>
+<li>In the second panel of the wizard, choose the branch(es) to push your edits to. Click Next.</li>
+<li>In the third panel of the wizard, choose the branch(es) to be updated in the Remotes directory of your local repository and click Finish.
+The specified remote repository branch is updated with the latest state of your local branch.</li></ol>
+<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd><a href="../git-branches.html">Git: Working with Branches</a></dd> 
+	    
+</dl>  
+<hr/>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+</body>
+</html>
