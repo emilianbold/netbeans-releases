@@ -42,68 +42,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.autoupdate;
+package org.netbeans.junit;
 
-import java.net.URL;
-import java.util.List;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.services.UpdateUnitFactoryTest;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
+/** Behaviour of logging with respect to console output.
  *
- * @author Jiri Rechtacek
+ * @author Jaroslav Tulach
  */
-public class UpdateProviderFactoryTest extends NbTestCase {
+public class StdOutLogTest extends NbTestCase {
+    private static final ByteArrayOutputStream os = new ByteArrayOutputStream();
+    static {
+        PrintStream ps = new PrintStream(os);
+        System.setErr(ps);
+        System.setOut(ps);
+    }
+
+    private Logger log;
     
-    public UpdateProviderFactoryTest (String testName) {
-        super (testName);
+    public StdOutLogTest(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void setUp () throws Exception {
-        clearWorkDir();
-        System.setProperty("netbeans.user", getWorkDirPath());
-        MockServices.setServices (MyProvider.class, MyProvider2.class);
+    protected Level logLevel() {
+        return null;
     }
     
     @Override
-    protected void tearDown () throws  Exception {
+    protected void setUp() throws Exception {
+        os.reset();
+
+        log = Logger.getLogger(getName());
     }
 
-    public void testGetUpdatesProviders () {
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-        
-        assertFalse ("Providers found in lookup.", result.isEmpty ());
-        assertEquals ("Two providers found.", 2, result.size ());
-    }
 
-    public void testSetEnable () {
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-
-        UpdateUnitProvider provider = result.get (1);
-        boolean state = false;
-        provider.setEnable (state);
-        
-        assertEquals ("New state stored.", state, provider.isEnabled ());
-
-        List<UpdateUnitProvider> resultOnlyEnabled = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true);
-        
-        assertFalse ("Providers still found in lookup.", resultOnlyEnabled.isEmpty ());
-        assertEquals ("Only one enable provider found.", 1, resultOnlyEnabled.size ());
-        assertTrue ("Provider in only enabled must be enabled.", resultOnlyEnabled.get (0).isEnabled ());
-    }
-
-    public static class MyProvider extends AutoupdateCatalogProvider {
-        public MyProvider () {
-            super ("test-updates-provider", "test-updates-provider", UpdateUnitFactoryTest.class.getResource ("data/catalog.xml"));
-        }
-    }
-    
-    public static class MyProvider2 extends AutoupdateCatalogProvider {
-        public MyProvider2 () {
-            super ("test-updates-provider-2", "test-updates-provider-2", UpdateUnitFactoryTest.class.getResource ("data/catalog.xml"));
+    public void testNullLoggingPrintsToConsole() {
+        log.warning("Ahoj");
+        if (os.toString().indexOf("Ahoj") == -1) {
+            fail("Should log: " + os);
         }
     }
 }
+

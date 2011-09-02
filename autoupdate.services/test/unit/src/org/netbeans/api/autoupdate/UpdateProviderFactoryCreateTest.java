@@ -55,9 +55,9 @@ import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
  *
  * @author Jiri Rechtacek
  */
-public class UpdateProviderFactoryTest extends NbTestCase {
+public class UpdateProviderFactoryCreateTest extends NbTestCase {
     
-    public UpdateProviderFactoryTest (String testName) {
+    public UpdateProviderFactoryCreateTest (String testName) {
         super (testName);
     }
 
@@ -72,27 +72,26 @@ public class UpdateProviderFactoryTest extends NbTestCase {
     protected void tearDown () throws  Exception {
     }
 
-    public void testGetUpdatesProviders () {
+    public void testCreate () throws Exception {
+        String name = "new-one";
+        String displayName = "Newone";
+        URL url = UpdateUnitFactoryTest.class.getResource ("data/catalog.xml");
+        
+        UpdateUnitProvider newone = UpdateUnitProviderFactory.getDefault ().create(name, displayName, url);
+        assertNotNull ("New provider was created.", newone);
+        
         List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
+        assertEquals ("More providers.", 3, result.size ());
         
-        assertFalse ("Providers found in lookup.", result.isEmpty ());
-        assertEquals ("Two providers found.", 2, result.size ());
-    }
-
-    public void testSetEnable () {
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-
-        UpdateUnitProvider provider = result.get (1);
-        boolean state = false;
-        provider.setEnable (state);
+        boolean found = false;
         
-        assertEquals ("New state stored.", state, provider.isEnabled ());
-
-        List<UpdateUnitProvider> resultOnlyEnabled = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true);
+        for (UpdateUnitProvider p : result) {
+            found = found || name.equals (p.getName ());
+        }
         
-        assertFalse ("Providers still found in lookup.", resultOnlyEnabled.isEmpty ());
-        assertEquals ("Only one enable provider found.", 1, resultOnlyEnabled.size ());
-        assertTrue ("Provider in only enabled must be enabled.", resultOnlyEnabled.get (0).isEnabled ());
+        assertTrue ("Found enabled", found);
+        
+        assertTrue ("New one provider is enabled.", newone.isEnabled ());
     }
 
     public static class MyProvider extends AutoupdateCatalogProvider {

@@ -50,9 +50,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -61,12 +65,20 @@ import org.openide.nodes.Sheet;
 
 // This test class tests the main functionality of the property sheet
 public class PropertySheetTest extends NbTestCase {
+    private static Logger LOG = Logger.getLogger(PropertySheetTest.class.getName());
+    
     public PropertySheetTest(String name) {
         super(name);
     }
     
+    @Override
     protected boolean runInEQ() {
         return false;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
     }
     
     private static boolean setup = false;
@@ -85,7 +97,7 @@ public class PropertySheetTest extends NbTestCase {
         // Create new TNode
         tn = new TNode();
         
-        System.err.println("RUNNING ON THREAD " + Thread.currentThread());
+        LOG.info("RUNNING ON THREAD " + Thread.currentThread());
         
         //Replacing NodeOp w/ JFrame to eliminate depending on full IDE init
         //and long delay while waiting for property sheet thus requested to
@@ -109,13 +121,14 @@ public class PropertySheetTest extends NbTestCase {
         jf.show();
         new ExtTestCase.WaitWindow(jf);
         
-        System.err.println("Current node set ");
+        LOG.info("Current node set ");
         try {
             
             // Wait for the initialization
             for (int i = 0; i < 10; i++) {
-                if (te.getAsText().equals("null")) {
-                    System.err.println("Checking editor getAsText - " + te.getAsText());
+                final String asText = te.getAsText();
+                if (asText == null || asText.equals("null")) {
+                    LOG.info("Checking editor getAsText - " + te.getAsText());
                     //System.out.println("null");
                     Thread.sleep(1000);
                 } else break;
@@ -123,26 +136,26 @@ public class PropertySheetTest extends NbTestCase {
             // Test if the initialization was sucessfull
             
             initEditorValue = te.getAsText();
-            System.err.println("Got initial editor value " + initEditorValue);
+            LOG.info("Got initial editor value " + initEditorValue);
             
             initPropertyValue = tp.getValue().toString();
-            System.err.println("Got initial property value " + initPropertyValue);
+            LOG.info("Got initial property value " + initPropertyValue);
             
             
             //Set new value to the Property
             tp.setValue("Test2");
             postChangePropertyValue = tp.getValue().toString();
             
-            System.err.println("Post change property value is " + postChangePropertyValue);
+            LOG.info("Post change property value is " + postChangePropertyValue);
             
             
             // Wait for the reinitialization
             for (int i = 0; i < 100; i++) {
                 if (te.getAsText().equals(initEditorValue)) {
-                    //System.err.println(i + " value not updated ");;
+                    //LOG.info(i + " value not updated ");;
                     Thread.sleep(50);
                 } else {
-                    System.err.println("value was updated");
+                    LOG.info("value was updated");
                     break;
                 }
             }
@@ -159,10 +172,7 @@ public class PropertySheetTest extends NbTestCase {
             
             // Test if the reinitialization was sucessfull
             postChangeEditorValue = te.getAsText();
-            System.err.println("postEditorChangeValue = " + postChangeEditorValue);
-            
-        } catch (Exception e) {
-            fail("FAILED - Exception thrown "+e.getClass().toString());
+            LOG.info("postEditorChangeValue = " + postChangeEditorValue);
         } finally {
             jf.hide();
             jf.dispose();
@@ -216,7 +226,7 @@ public class PropertySheetTest extends NbTestCase {
         }
         // Method firing changes
         public void fireMethod(String s, Object o1, Object o2) {
-            System.err.println("TNode firing change " + s + " from " + o1 + " to " + o2);
+            LOG.info("TNode firing change " + s + " from " + o1 + " to " + o2);
             firePropertyChange(s,o1,o2);
         }
     }
@@ -237,10 +247,10 @@ public class PropertySheetTest extends NbTestCase {
         
         // set property value
         public void setValue(Object value) throws IllegalArgumentException,IllegalAccessException, InvocationTargetException {
-            System.err.println("TProperty setValue: " + value);
+            LOG.info("TProperty setValue: " + value);
             Object oldVal = myValue;
             myValue = value;
-            System.err.println("TProperty triggering node property change");
+            LOG.info("TProperty triggering node property change");
             tn.fireMethod(getName(), oldVal, myValue);
         }
         // get the property editor
@@ -271,12 +281,12 @@ public class PropertySheetTest extends NbTestCase {
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
-            System.err.println("Property change listener added to property editor " + System.identityHashCode(this) + " - " + l);
+            LOG.info("Property change listener added to property editor " + System.identityHashCode(this) + " - " + l);
             super.addPropertyChangeListener(l);
         }
         
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            System.err.println("Property change listener removed from property editor " + System.identityHashCode(this) + " - " + l);
+            LOG.info("Property change listener removed from property editor " + System.identityHashCode(this) + " - " + l);
             super.removePropertyChangeListener(l);
         }
         
@@ -284,12 +294,12 @@ public class PropertySheetTest extends NbTestCase {
         
         // Set the Property value threw the Editor
         public void setValue(Object newValue) {
-            System.err.println("TEditor.setValue: " + newValue);
+            LOG.info("TEditor.setValue: " + newValue);
             super.setValue(newValue);
         }
         
         public void firePropertyChange() {
-            System.err.println("TEditor.firePropertyChange");
+            LOG.info("TEditor.firePropertyChange");
             super.firePropertyChange();
         }
     }

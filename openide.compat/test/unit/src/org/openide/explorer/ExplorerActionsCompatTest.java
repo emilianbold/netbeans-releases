@@ -42,58 +42,75 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
 
-import org.netbeans.SetupHid;
-import org.netbeans.MockEvents;
-import java.io.File;
-import java.io.IOException;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import org.netbeans.ModuleInstaller;
-import org.netbeans.Stamps;
-import org.openide.modules.Places;
-import org.openide.modules.api.PlacesTestUtils;
+package org.openide.explorer;
 
-/** Test the NetBeans module installer implementation.
- * Broken into pieces to ensure each runs in its own VM.
- * @author Jesse Glick
+
+
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.text.DefaultEditorKit;
+
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.AbstractNode;
+
+
+/**
+ * Test whether the old behaviour of ExplorerPanel is correctly simulated
+ * by new API. Inherits testing methods from ExplorerPanel tests, just
+ * setup is changed.
+ *
+ * @author Jaroslav Tulach
  */
-public class NbInstallerTest9 extends SetupHid {
-
-    public NbInstallerTest9(String name) {
-        super(name);
+public class ExplorerActionsCompatTest extends ExplorerPanelTest {
+    
+    public ExplorerActionsCompatTest(java.lang.String testName) {
+        super(testName);
     }
     
-    /** Test #26786/#28755: manifest caching can be buggy.
+    /** Creates a manager to operate on.
      */
-    public void testManifestCaching() throws Exception {
-        PlacesTestUtils.setUserDirectory(getWorkDir());
-        ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
-        File littleJar = new File(jars, "little-manifest.jar");
-        //inst.loadManifest(littleJar).write(System.out);
-        assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
-        File mediumJar = new File(jars, "medium-manifest.jar");
-        assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
-        File bigJar = new File(jars, "big-manifest.jar");
-        assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
-        Stamps.getModulesJARs().shutdown();
-        File allManifestsDat = Places.getCacheSubfile("all-manifest.dat");
-        assertTrue("File " + allManifestsDat + " exists", allManifestsDat.isFile());
-        // Create a new NbInstaller, since otherwise it turns off caching...
-        inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
-        assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
-        assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
-        assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
+    protected Object[] createManagerAndContext (boolean confirm) {
+        ExplorerManager em = new ExplorerManager ();
+        ActionMap map = new ActionMap ();
+        map.put (DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(em));
+        map.put (DefaultEditorKit.cutAction, ExplorerUtils.actionCut(em));
+        map.put (DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(em));
+        map.put ("delete", ExplorerUtils.actionDelete(em, confirm));
+        
+        return new Object[] { em, org.openide.util.lookup.Lookups.singleton(map) };
     }
     
-    private static Manifest getManifest(File jar) throws IOException {
-        JarFile jf = new JarFile(jar);
-        try {
-            return jf.getManifest();
-        } finally {
-            jf.close();
-        }
+    /** Instructs the actions to stop/
+     */
+    protected void stopActions(ExplorerManager em) {
+        ExplorerUtils.activateActions (em, false);
+    }
+    /** Instructs the actions to start again.
+     */
+    protected void startActions (ExplorerManager em) {
+        ExplorerUtils.activateActions (em, true);
     }
     
+    
+    public void testActionDeleteDoesNotAffectStateOfPreviousInstances () throws Exception {
+        ExplorerManager em = new ExplorerManager ();
+        Action a1 = ExplorerUtils.actionDelete(em, false);
+        Action a2 = ExplorerUtils.actionDelete(em, true);
+        
+        Node node = new AbstractNode (Children.LEAF) {
+            public boolean canDestroy () {
+                return true;
+            }
+        };
+        em.setRootContext(node);
+        em.setSelectedNodes(new Node[] { node });
+        
+        assertTrue ("A1 enabled", a1.isEnabled());
+        assertTrue ("A2 enabled", a2.isEnabled());
+        
+        // this should not show a dialog
+        a1.actionPerformed (new java.awt.event.ActionEvent (this, 0, ""));
+    }
 }
