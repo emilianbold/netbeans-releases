@@ -320,7 +320,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             // Enable components
             componentsSetEnabled(true);
             
-            editScript.setEnabled(hint.category.equals("custom"));
+            editScript.setEnabled(hint.category.equals(HintCategory.CUSTOM_CATEGORY));
             
             // Set proper values to the componetnts
             
@@ -517,6 +517,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
     public static final class HintCategory {
         private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
+        public static final String CUSTOM_CATEGORY ="custom";
 
         public final String codeName;
         public final String displayName;
@@ -524,7 +525,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         public HintCategory(String codeName) {
             this.codeName = codeName;
             FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + codeName);
-            this.displayName = catFO != null ? HintsPanel.getFileObjectLocalizedName(catFO) : codeName;
+            this.displayName = catFO != null ? HintsPanel.getFileObjectLocalizedName(catFO) :
+             CUSTOM_CATEGORY.equals(codeName)?NbBundle.getBundle("org.netbeans.modules.java.hints.resources.Bundle").getString("org-netbeans-modules-java-hints/rules/hints/custom"):codeName;
         }
 
     }

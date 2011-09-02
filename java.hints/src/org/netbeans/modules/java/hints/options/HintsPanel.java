@@ -213,7 +213,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
                         DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
                         if (o.getUserObject() instanceof HintMetadata) {
                             HintMetadata hint = (HintMetadata) o.getUserObject();
-                            if (hint.category.equals("custom")) {
+                            if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
                                 JPopupMenu popup = new JPopupMenu();
                                 popup.add(new JMenuItem(new RenameHint(o, hint, path)));
                                 popup.add(new JMenuItem(new RemoveHint(o, hint)));
@@ -921,7 +921,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet) {
         ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
         for (HintMetadata hint:keySet) {
-            if ("custom".equals(hint.category)) {
+            if (HintCategory.CUSTOM_CATEGORY.equals(hint.category)) {
                 continue;
             }
             list.add(hint);
@@ -1028,7 +1028,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
             if (o.getUserObject() instanceof HintMetadata) {
                 HintMetadata hint = (HintMetadata) o.getUserObject();
-                if (hint.category.equals("custom")) {
+                if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
                     return true;
                 }
             }
