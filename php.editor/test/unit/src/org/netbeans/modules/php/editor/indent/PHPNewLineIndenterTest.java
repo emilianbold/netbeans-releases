@@ -319,7 +319,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testArrays4() throws Exception{
         testIndentInFile("testfiles/indent/arrays4.php");
     }
-    
+
     public void testArrays5() throws Exception{
         testIndentInFile("testfiles/indent/arrays5.php");
     }
@@ -419,7 +419,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testArrays29() throws Exception{
         testIndentInFile("testfiles/indent/arrays29.php");
     }
-    
+
     public void test157137() throws Exception{
         testIndentInFile("testfiles/indent/issue157137.php");
     }
@@ -435,7 +435,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test166552() throws Exception{
         testIndentInFile("testfiles/indent/issue166552.php");
     }
-    
+
     public void test168908() throws Exception{
         testIndentInFile("testfiles/indent/issue168908.php");
     }
@@ -479,7 +479,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test175118_08() throws Exception {
         testIndentInFile("testfiles/indent/issue175118_08.php");
     }
-    
+
     public void test175118_09() throws Exception {
         testIndentInFile("testfiles/indent/issue175118_09.php");
     }
@@ -692,7 +692,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testObjectOperatorContinue11() throws Exception {
         testIndentInFile("testfiles/indent/objectOperatorContinue_11.php");
     }
-    
+
     public void test174835_01()throws Exception {
         testIndentInFile("testfiles/indent/issue174835_01.php");
     }
@@ -744,33 +744,49 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testSwitch_09()throws Exception {
         testIndentInFile("testfiles/indent/switch_09.php");
     }
-    
+
     public void testIssue197583_01() throws Exception {
         testIndentInFile("testfiles/indent/issue197583_01.php");
     }
-    
+
     public void testIssue197583_02() throws Exception {
         testIndentInFile("testfiles/indent/issue197583_02.php");
     }
-    
+
     public void testIssue179522_01() throws Exception {
         testIndentInFile("testfiles/indent/issue179522_01.php");
     }
-    
+
     public void testIssue179522_02() throws Exception {
         testIndentInFile("testfiles/indent/issue179522_02.php");
     }
-    
+
     public void testIssue179522_03() throws Exception {
         testIndentInFile("testfiles/indent/issue179522_03.php");
     }
-    
+
     public void testIssue179522_04() throws Exception {
         testIndentInFile("testfiles/indent/issue179522_04.php");
     }
-    
+
     public void testIssue179522_05() throws Exception {
         testIndentInFile("testfiles/indent/issue179522_05.php");
+    }
+
+    public void testIssue201330_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue201330_01.php");
+    }
+
+    public void testIssue201330_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue201330_02.php");
+    }
+
+    public void testIssue201330_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue201330_03.php");
+    }
+
+    public void testIssue201330_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue201330_04.php");
     }
 
     @Override
@@ -787,11 +803,11 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         assertNotNull(fo);
         String source = readFile(fo);
 
-        int sourcePos = source.indexOf('^');     
+        int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
         Formatter formatter = getFormatter(preferences);
-        
+
         JEditorPane ta = getPane(sourceWithoutMarker);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
