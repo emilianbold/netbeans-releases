@@ -52,8 +52,8 @@ public class GeneratedContentForPagedMediaModuleTest extends CssModuleTestBase {
     }
     
     public void testFnProperties() {
-        assertPropertyValues("-content_fn", "content()", "content(before)");
-        assertPropertyValues("-attr_fn", "attr()", "attr(title)", "attr(title, string)");
+        assertPropertyValues("@content_fn", "content()", "content(before)");
+        assertPropertyValues("@attr_fn", "attr()", "attr(title)", "attr(title, string)");
         
     }
     

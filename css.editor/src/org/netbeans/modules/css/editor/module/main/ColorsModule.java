@@ -60,7 +60,7 @@ public class ColorsModule extends CssModule {
 
     private final PropertyDescriptor colorPropertyDescriptor = new PropertyDescriptor(
             "color", 
-            "<colors-list> | <system-color> |  <rgb> | <rgba> | <hsl> | <hsla> | !hash_color_code | transparent | currentColor | inherit", 
+            "<colors-list> | <system-color> |  <rgb> | <rgba> | <hsl> | <hsla> | !hash_color_code | transparent | currentColor", 
             null,
             null,
             true,
@@ -68,7 +68,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor rgbPropertyDescriptor = new PropertyDescriptor(
-            "-rgb", 
+            "@rgb", 
             "rgb  (  [!number | !percentage]  ,  [ !number | !percentage ]  , [ !number | !percentage]  )", 
             null,
             null,
@@ -77,7 +77,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor rgbaPropertyDescriptor = new PropertyDescriptor(
-            "-rgba", 
+            "@rgba", 
             "rgba  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  ,  !number )", 
             null,
             null,
@@ -86,7 +86,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor hslPropertyDescriptor = new PropertyDescriptor(
-            "-hsl", 
+            "@hsl", 
             "hsl  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  )", 
             null,
             null,
@@ -95,7 +95,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor hslaPropertyDescriptor = new PropertyDescriptor(
-            "-hsla", 
+            "@hsla", 
             "hsla  (  [!number | !percentage]  ,  [ !number | !percentage ]  ,  [ !number | !percentage]  ,  !number )", 
             null,
             null,
@@ -104,7 +104,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor colorsListPropertyDescriptor = new PropertyDescriptor(
-            "-colors-list", 
+            "@colors-list", 
             generateColorsList(), 
             null,
             null,
@@ -113,7 +113,7 @@ public class ColorsModule extends CssModule {
             RenderingEngine.ALL);
     
     private final PropertyDescriptor systemColorPropertyDescriptor = new PropertyDescriptor(
-            "-system-color", 
+            "@system-color", 
             "activeborder | activecaption | appworkspace | background | buttonface | buttonhighlight | buttonshadow | buttontext | captiontext | graytext | highlight | highlighttext | inactiveborder | inactivecaption | inactivecaptiontext | infobackground | infotext | menu | menutext | scrollbar | threeddarkshadow | threedface | threedhighlight | threedlightshadow | threedshadow | window | windowframe | windowtext", 
             null,
             null,
