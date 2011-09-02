@@ -229,7 +229,10 @@ public class BeanTreeViewTest extends NbTestCase {
                 }
 
                 paths = tree.getSelectionPaths();
-                assertNull("Nothing should be selected", paths);
+                if (paths != null && paths.length == 0) {
+                    paths = null;
+                }
+                assertNull("Nothing should be selected: " + Arrays.toString(paths), paths);
                 
                 if (collapseAndExpand) {
                     btv.collapseNode(root);
@@ -342,7 +345,10 @@ public class BeanTreeViewTest extends NbTestCase {
                     fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
                 }
                 paths = tree.getSelectionPaths();
-                assertNull("Nothing should be selected", paths);
+                if (paths != null && paths.length == 0) {
+                    paths = null;
+                }
+                assertNull("Nothing should be selected: " + Arrays.toString(paths), paths);
 
                 btv.collapseNode(children[0].getParentNode());
             }

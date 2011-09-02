@@ -42,75 +42,81 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.openide.awt;
 
-package org.openide.explorer;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.util.logging.Level;
+import javax.swing.JMenu;
+import org.netbeans.junit.NbTestCase;
+import org.openide.actions.OpenAction;
+import org.openide.loaders.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-
-
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.text.DefaultEditorKit;
-
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.AbstractNode;
-
-
-/**
- * Test whether the old behaviour of ExplorerPanel is correctly simulated
- * by new API. Inherits testing methods from ExplorerPanel tests, just
- * setup is changed.
+/** Test whether menu can be quickly obtained from event dispatch thread.
  *
  * @author Jaroslav Tulach
  */
-public class ExplorerActionsImplTest extends ExplorerPanelTest {
+public class MenuBarFastFromAWTTest extends NbTestCase {
+    private DataFolder df;
+    private MenuBar mb;
     
-    public ExplorerActionsImplTest(java.lang.String testName) {
+    private int add;
+    private int remove;
+    
+    public MenuBarFastFromAWTTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.WARNING;
+    }
     
-    /** Creates a manager to operate on.
-     */
-    protected Object[] createManagerAndContext (boolean confirm) {
-        ExplorerManager em = new ExplorerManager ();
-        ActionMap map = new ActionMap ();
-        map.put (DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(em));
-        map.put (DefaultEditorKit.cutAction, ExplorerUtils.actionCut(em));
-        map.put (DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(em));
-        map.put ("delete", ExplorerUtils.actionDelete(em, confirm));
+    @Override
+    protected void setUp() throws Exception {
+        FileObject fo = FileUtil.createFolder(
+            FileUtil.getConfigRoot(),
+            "Folder" + getName()
+        );
+        df = DataFolder.findFolder(fo);
         
-        return new Object[] { em, org.openide.util.lookup.Lookups.singleton(map) };
-    }
-    
-    /** Instructs the actions to stop/
-     */
-    protected void stopActions(ExplorerManager em) {
-        ExplorerUtils.activateActions (em, false);
-    }
-    /** Instructs the actions to start again.
-     */
-    protected void startActions (ExplorerManager em) {
-        ExplorerUtils.activateActions (em, true);
-    }
-    
-    
-    public void testActionDeleteDoesNotAffectStateOfPreviousInstances () throws Exception {
-        ExplorerManager em = new ExplorerManager ();
-        Action a1 = ExplorerUtils.actionDelete(em, false);
-        Action a2 = ExplorerUtils.actionDelete(em, true);
+        FileObject fileMenu = df.getPrimaryFile().createFolder("File");
+        DataFolder fileM = DataFolder.findFolder(fileMenu);
+        InstanceDataObject.create(fileM, null, OpenAction.class);
         
-        Node node = new AbstractNode (Children.LEAF) {
-            public boolean canDestroy () {
-                return true;
+        mb = new MenuBar(df);
+        mb.waitFinished();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+    }
+    
+    public void testInAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                doTestInAwt();
             }
-        };
-        em.setRootContext(node);
-        em.setSelectedNodes(new Node[] { node });
+        });
+    }
+
+    final void doTestInAwt() {
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu m = mb.getMenu(0);
+        assertEquals("named file", "File", m.getText());
+
+        long before = System.currentTimeMillis();
+        MenuBarTest.simulateExpansionOfMenu(m);
+        Component[] arr = m.getMenuComponents();
+        assertEquals("One menu item", 1, arr.length);
+        long after = System.currentTimeMillis();
         
-        assertTrue ("A1 enabled", a1.isEnabled());
-        assertTrue ("A2 enabled", a2.isEnabled());
-        
-        // this should not show a dialog
-        a1.actionPerformed (new java.awt.event.ActionEvent (this, 0, ""));
+        long took = after - before;
+        if (took > 5000) {
+            fail("Too long time to compute menu items (" + took + " ms), probably time out somewhere!");
+        }
     }
 }

@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.Places;
+import org.openide.modules.api.PlacesTestUtils;
 
 /**
  *
@@ -84,7 +85,7 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         
         System.setProperty("netbeans.home", platform.getPath());
         System.setProperty("netbeans.dirs", ide.getPath() + File.pathSeparator + nonexist.getPath());
-        Places.setUserDirectory(userdir);
+        PlacesTestUtils.setUserDirectory(userdir);
         
         StampsTest.createModule("org.openide.awt", platform, 50000L);
         StampsTest.createModule("org.openide.nodes", platform, 60000L);

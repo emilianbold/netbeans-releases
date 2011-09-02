@@ -45,9 +45,6 @@
 package org.netbeans.junit;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,8 +53,8 @@ import java.util.logging.Logger;
  *
  * @author Jaroslav Tulach
  */
-public class StdOutTest extends NbTestCase {
-    static ByteArrayOutputStream os = new ByteArrayOutputStream();
+public class StdOutNoLogTest extends NbTestCase {
+    private static final ByteArrayOutputStream os = new ByteArrayOutputStream();
     static {
         PrintStream ps = new PrintStream(os);
         System.setErr(ps);
@@ -66,19 +63,16 @@ public class StdOutTest extends NbTestCase {
 
     private Logger log;
     
-    public StdOutTest(String testName) {
+    public StdOutNoLogTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected Level logLevel() {
-        String n = getName();
-        int inx = n.indexOf("Level");
-        if (inx == -1) {
-            return null;
-        }
-        return Level.parse(n.substring(inx + 5));
+        return Level.WARNING;
     }
     
+    @Override
     protected void setUp() throws Exception {
         os.reset();
 
@@ -86,12 +80,6 @@ public class StdOutTest extends NbTestCase {
     }
 
 
-    public void testNullLoggingPrintsToConsole() {
-        log.warning("Ahoj");
-        if (os.toString().indexOf("Ahoj") == -1) {
-            fail("Should log: " + os);
-        }
-    }
     public void testNoConsoleOnLevelWARNING() {
         log.warning("Ahoj");
         if (os.toString().indexOf("Ahoj") != -1) {

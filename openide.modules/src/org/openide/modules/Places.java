@@ -41,6 +41,7 @@ package org.openide.modules;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Lookup;
 
 /**
  * Provides access to standard file locations.
@@ -52,21 +53,11 @@ import java.util.logging.Logger;
  * <li>{@code someClass.getProtectionDomain().getCodeSource().getLocation()} to find resources inside a module class loader.
  * </ul>
  * </div>
- * @since 7.25
+ * @since 7.26
  */
-public class Places {
-
-    /**
-     * System property key for {@link #getUserDirectory}.
-     * Should not be used by most code directly.
-     */
-    public static final String USER_DIR_PROP = "netbeans.user";
-
-    private static final String MEMORY = "memory";
+public abstract class Places {
 
     private static final Logger LOG = Logger.getLogger(Places.class.getName());
-
-    private static File cacheDir;
 
     /**
      * Locates the NetBeans user directory.
@@ -77,18 +68,12 @@ public class Places {
      * @return a directory location (need not yet exist), or null if unconfigured
      */
     public static synchronized /*@CheckForNull*/ File getUserDirectory() {
-        String p = System.getProperty(USER_DIR_PROP);
-        return p != null && !p.equals(MEMORY) ? new File(p) : null;
-    }
-
-    /**
-     * Configures the NetBeans user directory.
-     * This would be called by startup code in the NetBeans Platform,
-     * but might also be useful to call from a unit test if tested code calls {@link #getUserDirectory} or {@link #getCacheDirectory}.
-     * @param dir a directory location (need not yet exist); null be passed but means the same as {@code memory} for the system property, interpreted by the module system
-     */
-    public static synchronized void setUserDirectory(/*@NullAllowed*/ File dir) {
-        System.setProperty(USER_DIR_PROP, dir != null ? dir.getAbsolutePath() : MEMORY);
+        Places places = Lookup.getDefault().lookup(Places.class);
+        if (places != null) {
+            return places.findUserDirectory();
+        }
+        String p = System.getProperty("netbeans.user");
+        return p != null ? new File(p) : null;
     }
 
     /**
@@ -103,8 +88,12 @@ public class Places {
      * @see #getCacheSubfile
      */
     public static synchronized /*@NonNull*/ File getCacheDirectory() {
-        if (cacheDir != null) {
-            return cacheDir;
+        Places places = Lookup.getDefault().lookup(Places.class);
+        if (places != null) {
+            File cache = places.findCacheDirectory();
+            if (cache != null) {
+                return cache;
+            }
         }
         File userdir = getUserDirectory();
         if (userdir != null) {
@@ -143,16 +132,25 @@ public class Places {
         return f;
     }
 
-    /**
-     * Configures the NetBeans cache directory.
-     * This would be called by startup code in the NetBeans Platform,
-     * but might also be useful to call from a unit test if tested code calls {@link #getCacheDirectory}.
-     * @param dir a directory location (need not yet exist)
+    /** Constructor for those who believe to know 
+     * where {@link #getCacheDirectory} or
+     * {@link #getUserDirectory()} is. Register your subclass via
+     * {@link ServiceProvider} annotation. 
      */
-    public static synchronized void setCacheDirectory(/*@NonNull*/ File dir) {
-        cacheDir = dir;
+    protected Places() {
     }
 
-    private Places() {}
-
+    /** The cache directory to return from {@link #getCacheDirectory}.
+     * If <code>null</code> the caches will be placed below {@link #getUserDirectory()}.
+     * @return the file to use for caches or null 
+     * @since 7.26
+     */
+    protected abstract File findCacheDirectory();
+    
+    /** Finds location of a user directory to return from {@link #getUserDirectory}.
+     * @return the user directory or <code>null</code> if no user directory is
+     *   supposed to be used
+     * @since 7.26
+     */
+    protected abstract File findUserDirectory();
 }

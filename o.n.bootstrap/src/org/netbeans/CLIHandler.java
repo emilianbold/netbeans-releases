@@ -524,10 +524,10 @@ public abstract class CLIHandler extends Object {
         }
         
         // get the value
-        String home = System.getProperty(Places.USER_DIR_PROP); // NOI18N
+        String home = System.getProperty("netbeans.user"); // NOI18N
         if (home == null) {
             home = System.getProperty("user.home"); // NOI18N
-            System.setProperty(Places.USER_DIR_PROP, home); // NOI18N
+            System.setProperty("netbeans.user", home); // NOI18N
         }
     
         if (/*Places.MEMORY*/"memory".equals(home)) { // NOI18N
