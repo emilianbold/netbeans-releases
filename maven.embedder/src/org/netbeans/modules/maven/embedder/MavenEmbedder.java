@@ -73,7 +73,6 @@ import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.LegacySupport;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -205,20 +204,6 @@ public final class MavenEmbedder {
             return result.addException(ex);
         }
         return result;
-    }
-
-    //TODO maybe remove in favour of the Request one
-    public MavenProject readProject(File fallback) {
-        try {
-            MavenExecutionRequest req = createMavenExecutionRequest();
-            req.setOffline(isOffline());
-            ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
-            configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            configuration.setRepositorySession(maven.newRepositorySession(req));
-            return projectBuilder.build(fallback, configuration).getProject();
-        } catch (ProjectBuildingException ex) {
-            return new MavenProject();
-        }
     }
 
     public Artifact createArtifactWithClassifier(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String type, String classifier) {
