@@ -262,8 +262,8 @@ public class PHPNewLineIndenter {
                                     break;
                                 }
                             }
-                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
-                                    || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                            else if ((ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
+                                    || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) && bracketBalance <= 0) {
                                 int startExpression = findStartTokenOfExpression(ts);
                                 if (startExpression != -1) {
                                     int rememberOffset = ts.offset();
