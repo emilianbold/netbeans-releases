@@ -144,6 +144,10 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
         final int threadsNum = 10;
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         Collection<String> mspecs = rcFile.getKeys("remote.platforms");
+        
+        if (mspecs.isEmpty()) {
+            fail("remote.platforms are not properly configured!");
+        }
 
         final ConcurrentTasksSupport.Counters counters = new ConcurrentTasksSupport.Counters();
         final ConcurrentTasksSupport support = new ConcurrentTasksSupport(threadsNum);
