@@ -146,7 +146,7 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
         Collection<String> mspecs = rcFile.getKeys("remote.platforms");
         
         if (mspecs.isEmpty()) {
-            fail("remote.platforms are not properly configured!");
+            fail("remote.platforms are not properly configured [rc file == " + rcFile.toString() + "] !");
         }
 
         final ConcurrentTasksSupport.Counters counters = new ConcurrentTasksSupport.Counters();
