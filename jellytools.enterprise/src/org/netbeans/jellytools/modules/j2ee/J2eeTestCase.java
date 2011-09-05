@@ -41,6 +41,7 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import org.netbeans.jemmy.JemmyException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
@@ -291,9 +292,6 @@ public class J2eeTestCase extends JellyTestCase {
      * @return J2eeServerNode for given server
      */
     protected J2eeServerNode getServerNode(Server server) {
-        if (!isRegistered(server)) {
-            throw new IllegalArgumentException("Server is not registred in IDE");
-        }
         switch (server) {
             case GLASSFISH:
                 return GlassFishV3ServerNode.invoke();
@@ -306,8 +304,10 @@ public class J2eeTestCase extends JellyTestCase {
                     if (serv.equals(ANY)) {
                         continue;
                     }
-                    if (isRegistered(serv)) {
+                    try {
                         return getServerNode(serv);
+                    } catch (JemmyException e) {
+                        // ignore and continue with next server
                     }
                 }
                 throw new IllegalArgumentException("No server is registred in IDE");
