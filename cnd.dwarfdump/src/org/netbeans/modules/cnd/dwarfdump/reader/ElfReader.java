@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.section.SymTabSection;
 import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
@@ -72,6 +73,7 @@ public class ElfReader extends ByteStreamReader {
     private HashMap<String, Integer> sectionsMap = new HashMap<String, Integer>();
     private StringTableSection stringTableSection = null;
     private SharedLibraries sharedLibraries = null;
+    private SymTabSection symTabSection = null;
     private long shiftIvArchive = 0;
     private long lengthIvArchive = 0;
     
@@ -105,6 +107,11 @@ public class ElfReader extends ByteStreamReader {
                 sections[idx] = stringTableSection;
             }
         }
+        Integer idx = sectionsMap.get(SECTIONS.SYM_TAB);
+        if (idx != null) {
+            symTabSection = new SymTabSection(this, idx);
+            sections[idx] = symTabSection;
+        }
     }
     
     public final String getSectionName(int sectionIdx) {
@@ -121,6 +128,18 @@ public class ElfReader extends ByteStreamReader {
         } else {
             return sectionHeadersTable[sectionIdx].getSectionName();
         }
+    }
+    
+    /**
+     * 
+     * @param sectionIndex in symtab
+     * @return section index in elf
+     */
+    public Integer getSymtabSectionIndex(int sectionIndex) {
+        if (symTabSection != null) {
+            return symTabSection.getSectionIndex(sectionIndex);
+        }
+        return null;
     }
     
     public final boolean readHeader(Magic magic) throws WrongFileFormatException, IOException {
@@ -562,6 +581,10 @@ public class ElfReader extends ByteStreamReader {
         }
         
         return sections[sectionIdx];
+    }
+
+    public Integer getSectionIndex(String sectionName) {
+        return sectionsMap.get(sectionName);
     }
     
     ElfSection initSection(Integer sectionIdx, String sectionName) {
