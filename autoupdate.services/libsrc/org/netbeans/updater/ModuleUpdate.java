@@ -266,15 +266,18 @@ class ModuleUpdate extends Object {
             pError = true;
         }
 
+        @Override
         public void error (org.xml.sax.SAXParseException e) {
             // normally a validity error
             pError = true;
         }
 
+        @Override
         public void warning (org.xml.sax.SAXParseException e) {
             //parseFailed = true;
         }
 
+        @Override
         public void fatalError (org.xml.sax.SAXParseException e) {
             pError = true;
         }
