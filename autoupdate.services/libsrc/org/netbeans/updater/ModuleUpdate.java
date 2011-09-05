@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.jar.*;
+import java.util.jar.Attributes;
 import java.util.logging.Level;
 
 import org.w3c.dom.*;
@@ -88,7 +89,7 @@ class ModuleUpdate extends Object {
         String errorMessage = null;
         try {
             jf = new JarFile(file);
-            String cnb = jf.getManifest().getMainAttributes().getValue("Bundle-SymbolicName");
+            String cnb = extractCodeName(jf.getManifest().getMainAttributes());
             if(cnb!=null) {
                 setCodenamebase(cnb);
             }
@@ -117,6 +118,27 @@ class ModuleUpdate extends Object {
             throw new RuntimeException (errorMessage);
         }
     }
+
+    
+    // copied from nbbuild.JarWithModuleAttributes.extractCodeName()
+    static String extractCodeName(Attributes attr) {
+        String codename = attr.getValue("OpenIDE-Module");
+        if (codename != null) {
+            return codename;
+        }
+        codename = attr.getValue("Bundle-SymbolicName");
+        if (codename == null) {
+            return null;
+        }
+        codename = codename.replace('-', '_');
+        int params = codename.indexOf(';');
+        if (params >= 0) {
+            return codename.substring(0, params);
+        } else {
+            return codename;
+        }
+    }
+    
 
     /** Creates module from downloaded .nbm file */
     private void createFromNbmDistribution( File nbmFile ) {
@@ -244,15 +266,18 @@ class ModuleUpdate extends Object {
             pError = true;
         }
 
+        @Override
         public void error (org.xml.sax.SAXParseException e) {
             // normally a validity error
             pError = true;
         }
 
+        @Override
         public void warning (org.xml.sax.SAXParseException e) {
             //parseFailed = true;
         }
 
+        @Override
         public void fatalError (org.xml.sax.SAXParseException e) {
             pError = true;
         }
