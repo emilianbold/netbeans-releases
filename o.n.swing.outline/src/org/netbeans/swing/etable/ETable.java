@@ -210,9 +210,10 @@ public class ETable extends JTable {
     private ETableColumn searchColumn = null;
     
     /**
-     * This text can be customized using setSelectVisibleColumnsLabel(...) method.
+     * This text can be customized using {@link #setSelectVisibleColumnsLabel(java.lang.String)} method.
      */
-    private String selectVisibleColumnsLabel = "Select Visible Columns";
+    private String selectVisibleColumnsLabel =
+            java.util.ResourceBundle.getBundle("org/netbeans/swing/etable/Bundle").getString("LBL_SelectVisibleColumns");
 
     private boolean inEditRequest = false;
     private boolean inRemoveRequest=false;
