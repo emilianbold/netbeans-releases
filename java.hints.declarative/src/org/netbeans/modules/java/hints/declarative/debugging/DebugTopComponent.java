@@ -213,7 +213,8 @@ public final class DebugTopComponent extends TopComponent {
         }
 
         files.setModel(dlm);
-        files.setSelectedIndex(0);
+        if (dlm.getSize()>0)
+            files.setSelectedIndex(0);
     }
 
     @Override
