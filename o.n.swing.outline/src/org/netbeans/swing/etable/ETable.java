@@ -212,7 +212,7 @@ public class ETable extends JTable {
     /**
      * This text can be customized using setSelectVisibleColumnsLabel(...) method.
      */
-    String selectVisibleColumnsLabel = "Select Visible Columns";
+    private String selectVisibleColumnsLabel = "Select Visible Columns";
 
     private boolean inEditRequest = false;
     private boolean inRemoveRequest=false;
@@ -1447,6 +1447,10 @@ public class ETable extends JTable {
      */
     public void setSelectVisibleColumnsLabel(String localizedLabel) {
         selectVisibleColumnsLabel = localizedLabel;
+    }
+    
+    String getSelectVisibleColumnsLabel() {
+        return selectVisibleColumnsLabel;
     }
     
     /**

@@ -482,6 +482,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                         try {
                             Object defaultLookup = lookupClass.getMethod("getDefault").invoke(null);    // NOI18N
                             ClassLoader systemClassLoader = (ClassLoader) lookupClass.getMethod("lookup", Class.class).invoke(defaultLookup, ClassLoader.class);    // NOI18N
+                            if (systemClassLoader == null) {
+                                return null;
+                            }
                             delegate = systemClassLoader.loadClass(HTML_RENDERER_CLASS);
                         } catch (NoSuchMethodException mex) {
                             Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);

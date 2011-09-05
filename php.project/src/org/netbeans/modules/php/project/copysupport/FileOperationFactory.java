@@ -66,7 +66,6 @@ import org.openide.filesystems.FileUtil;
 abstract class FileOperationFactory {
     protected final PhpProject project;
 
-    private final FileObject nbprojectDir;
     private final PhpVisibilityQuery phpVisibilityQuery;
 
     private volatile boolean factoryError = false;
@@ -75,9 +74,6 @@ abstract class FileOperationFactory {
         assert project != null;
         this.project = project;
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
-        nbprojectDir = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-        assert nbprojectDir != null : "No nbproject directory found for " + project;
-        assert nbprojectDir.isFolder() && nbprojectDir.isValid() : "Not valid nbproject directory found for " + project;
     }
 
     final Callable<Boolean> createInitHandler(FileObject source) {
@@ -154,6 +150,8 @@ abstract class FileOperationFactory {
     }
 
     boolean isNbProjectMetadata(FileObject fo) {
+        // #193869
+        FileObject nbprojectDir = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         return FileUtil.isParentOf(nbprojectDir, fo) || nbprojectDir.equals(fo);
     }
 

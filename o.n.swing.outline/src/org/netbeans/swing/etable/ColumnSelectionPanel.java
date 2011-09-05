@@ -68,6 +68,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -274,79 +275,91 @@ class ColumnSelectionPanel extends JPanel {
         if (! (columnModel instanceof ETableColumnModel)) {
             return;
         }
-        final ETableColumnModel etcm = (ETableColumnModel)columnModel;
-        List<TableColumn> columns = etcm.getAllColumns();
-        Collections.sort(columns, ETableColumnComparator.DEFAULT);
-        Map<String,Object> displayNameToCheckBox = new HashMap<String,Object>();
-        ArrayList<String> displayNames = new ArrayList<String>();
-        for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
-            final ETableColumn etc = (ETableColumn)it.next();
-            JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
-            Object transformed = table.transformValue (etc);
-            String dName;
-            if (transformed == etc || transformed == null) {
-                dName = etc.getHeaderValue ().toString ();
-            } else {
-                dName = transformed.toString ();
-            }
-            checkBox.setText(dName);
-            checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
-            checkBox.setSelected(! etcm.isColumnHidden(etc));
-            checkBox.setEnabled(etc.isHidingAllowed());
-            final JCheckBoxMenuItem finalChB = checkBox;
-            checkBox.addActionListener(new ActionListener() {
+        TableColumnSelector tcs = table.getColumnSelector();
+        if (tcs != null && !table.isPopupUsedFromTheCorner()) {
+            JMenuItem selector = new JMenuItem(table.getSelectVisibleColumnsLabel());
+            selector.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent evt) {
-                    etcm.setColumnHidden(etc,! finalChB.isSelected());
-                    table.updateColumnSelectionMouseListener();
+                public void actionPerformed(ActionEvent e) {
+                    showColumnSelectionDialog(table);
                 }
             });
-            if (! displayNames.contains(dName)) {
-                // the expected case
-                displayNameToCheckBox.put(dName, checkBox);
-            } else {
-                // the same display name is used for more columns - fuj
-                ArrayList<JCheckBoxMenuItem> al = null;
-                Object theFirstOne = displayNameToCheckBox.get(dName);
-                if (theFirstOne instanceof JCheckBoxMenuItem) {
-                    JCheckBoxMenuItem firstCheckBox = (JCheckBoxMenuItem)theFirstOne;
-                    al = new ArrayList<JCheckBoxMenuItem>();
-                    al.add(firstCheckBox);
+            popup.add(selector);
+        } else {
+            final ETableColumnModel etcm = (ETableColumnModel)columnModel;
+            List<TableColumn> columns = etcm.getAllColumns();
+            Collections.sort(columns, ETableColumnComparator.DEFAULT);
+            Map<String,Object> displayNameToCheckBox = new HashMap<String,Object>();
+            ArrayList<String> displayNames = new ArrayList<String>();
+            for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
+                final ETableColumn etc = (ETableColumn)it.next();
+                JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
+                Object transformed = table.transformValue (etc);
+                String dName;
+                if (transformed == etc || transformed == null) {
+                    dName = etc.getHeaderValue ().toString ();
                 } else {
-                    // already a list there
-                    if (theFirstOne instanceof ArrayList) {
-                        al = (ArrayList<JCheckBoxMenuItem>)theFirstOne;
+                    dName = transformed.toString ();
+                }
+                checkBox.setText(dName);
+                checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
+                checkBox.setSelected(! etcm.isColumnHidden(etc));
+                checkBox.setEnabled(etc.isHidingAllowed());
+                final JCheckBoxMenuItem finalChB = checkBox;
+                checkBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        etcm.setColumnHidden(etc,! finalChB.isSelected());
+                        table.updateColumnSelectionMouseListener();
+                    }
+                });
+                if (! displayNames.contains(dName)) {
+                    // the expected case
+                    displayNameToCheckBox.put(dName, checkBox);
+                } else {
+                    // the same display name is used for more columns - fuj
+                    ArrayList<JCheckBoxMenuItem> al = null;
+                    Object theFirstOne = displayNameToCheckBox.get(dName);
+                    if (theFirstOne instanceof JCheckBoxMenuItem) {
+                        JCheckBoxMenuItem firstCheckBox = (JCheckBoxMenuItem)theFirstOne;
+                        al = new ArrayList<JCheckBoxMenuItem>();
+                        al.add(firstCheckBox);
                     } else {
-                        throw new IllegalStateException("Wrong object theFirstOne is " + theFirstOne);
+                        // already a list there
+                        if (theFirstOne instanceof ArrayList) {
+                            al = (ArrayList<JCheckBoxMenuItem>)theFirstOne;
+                        } else {
+                            throw new IllegalStateException("Wrong object theFirstOne is " + theFirstOne);
+                        }
                     }
+                    al.add(checkBox);
+                    displayNameToCheckBox.put(dName, al);
                 }
-                al.add(checkBox);
-                displayNameToCheckBox.put(dName, al);
+                displayNames.add(dName);
             }
-            displayNames.add(dName);
-        }
-        Collections.sort(displayNames, Collator.getInstance());
-        int index = 0;
-        for (Iterator<String> it = displayNames.iterator(); it.hasNext(); ) {
-            String displayName = it.next();
-            Object obj = displayNameToCheckBox.get(displayName);
-            JCheckBoxMenuItem checkBox = null;
-            if (obj instanceof JCheckBoxMenuItem) {
-                checkBox = (JCheckBoxMenuItem)obj;
-            } else {
-                // in case there are duplicate names we store ArrayLists
-                // of JCheckBoxes
-                if (obj instanceof ArrayList) {
-                    ArrayList<JCheckBoxMenuItem> al = (ArrayList<JCheckBoxMenuItem>)obj;
-                    if (index >= al.size()) {
-                        index = 0;
-                    }
-                    checkBox = al.get(index++);
+            Collections.sort(displayNames, Collator.getInstance());
+            int index = 0;
+            for (Iterator<String> it = displayNames.iterator(); it.hasNext(); ) {
+                String displayName = it.next();
+                Object obj = displayNameToCheckBox.get(displayName);
+                JCheckBoxMenuItem checkBox = null;
+                if (obj instanceof JCheckBoxMenuItem) {
+                    checkBox = (JCheckBoxMenuItem)obj;
                 } else {
-                    throw new IllegalStateException("Wrong object obj is " + obj);
+                    // in case there are duplicate names we store ArrayLists
+                    // of JCheckBoxes
+                    if (obj instanceof ArrayList) {
+                        ArrayList<JCheckBoxMenuItem> al = (ArrayList<JCheckBoxMenuItem>)obj;
+                        if (index >= al.size()) {
+                            index = 0;
+                        }
+                        checkBox = al.get(index++);
+                    } else {
+                        throw new IllegalStateException("Wrong object obj is " + obj);
+                    }
                 }
+                popup.add(checkBox);
             }
-            popup.add(checkBox);
         }
         popup.show(c, 8, 8);
     }
@@ -375,7 +388,7 @@ class ColumnSelectionPanel extends JPanel {
         }
         // The default behaviour:
         ColumnSelectionPanel panel = new ColumnSelectionPanel(table);
-        int res = JOptionPane.showConfirmDialog(null, panel, table.selectVisibleColumnsLabel, JOptionPane.OK_CANCEL_OPTION);
+        int res = JOptionPane.showConfirmDialog(null, panel, table.getSelectVisibleColumnsLabel(), JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
             panel.changeColumnVisibility();
             table.updateColumnSelectionMouseListener();

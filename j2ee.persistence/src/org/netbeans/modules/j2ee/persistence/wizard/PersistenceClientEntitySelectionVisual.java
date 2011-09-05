@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
@@ -88,8 +89,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Pavel Buzek
  */
-public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
+public class PersistenceClientEntitySelectionVisual extends JPanel {
 
+    private static final long serialVersionUID = -4552755466067867817L;
+    
     private WizardDescriptor wizard;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
@@ -102,8 +105,16 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private final boolean disableNoIdSelection;
 
 
-    /** Creates new form CrudSetupPanel */
-    public PersistenceClientEntitySelectionVisual(String name, WizardDescriptor wizard) {
+    public PersistenceClientEntitySelectionVisual(String name, 
+            WizardDescriptor wizard) 
+    {
+        this( name , wizard , false );
+    }
+    
+    
+    public PersistenceClientEntitySelectionVisual(String name, 
+            WizardDescriptor wizard , boolean requireReferencedClasses ) 
+    {
         setName(name);
         this.wizard = wizard;
         initComponents();
@@ -117,6 +128,10 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         listAvailable.getSelectionModel().addListSelectionListener(selectionListener);
         listSelected.getSelectionModel().addListSelectionListener(selectionListener);
         disableNoIdSelection = wizard.getProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION) == Boolean.TRUE;
+        if ( requireReferencedClasses ){
+            cbAddRelated.setSelected( true );
+            cbAddRelated.setVisible( false );
+        }
     }
 
     /**
@@ -371,7 +386,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         changeSupport.addChangeListener(listener);
     }
 
-    boolean valid(WizardDescriptor wizard) {
+    public boolean valid(WizardDescriptor wizard) {
         // check PU - not just warning, required
 //        if (createPUButton.isVisible()) {
 //            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
@@ -415,7 +430,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
 
     
-    void read(WizardDescriptor settings) {
+    public void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
 
         EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
@@ -440,7 +455,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         updatePersistenceUnitButton();
     }
 
-    void store(WizardDescriptor settings) {
+    public void store(WizardDescriptor settings) {
         ListModel model = listSelected.getModel();
         if (model instanceof EntityListModel) {
             EntityListModel elm = (EntityListModel) model;

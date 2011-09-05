@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
-import java.awt.Component;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelectionVisual;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -56,19 +56,38 @@ import org.openide.util.HelpCtx;
  * @author Pavel Buzek
  */
 public final class EntitySelectionPanel extends AbstractPanel {
-    private EntitySelectionPanelVisual component;
+    private PersistenceClientEntitySelectionVisual component;
     
     /** Create the wizard panel descriptor. */
     public EntitySelectionPanel(String panelName, WizardDescriptor wizardDescriptor) {
         super(panelName, wizardDescriptor);
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(EntitySelectionPanel.class);
     }
     
+    @Override
     public boolean isFinishPanel() {
         return false;
+    }
+    
+    @Override
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        getComponent().read(wizardDescriptor);
+    }
+    
+    @Override
+    public void storeSettings(Object settings) {
+        getComponent().store(wizardDescriptor);
+    }
+    
+    @Override
+    public void stateChanged(javax.swing.event.ChangeEvent e) {
+        getComponent().valid(wizardDescriptor);
+        fireChangeEvent(e);
     }
     
     @Override
@@ -91,9 +110,10 @@ public final class EntitySelectionPanel extends AbstractPanel {
         return component.valid(wizardDescriptor);
     }
 
-    public Component getComponent() {
+    public PersistenceClientEntitySelectionVisual getComponent() {
         if (component == null) {
-            component = new EntitySelectionPanelVisual(panelName);
+            component = new PersistenceClientEntitySelectionVisual(panelName, 
+                    wizardDescriptor, true );//new EntitySelectionPanelVisual(panelName);
             component.addChangeListener(this);
         }
         return component;
