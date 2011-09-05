@@ -87,6 +87,7 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Base class for web services UI tests
@@ -603,10 +604,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param p project where to create new file
      * @param fileType file type name from web services category
      */
-    protected void createNewWSFile(Project p, String fileType) {
+    protected NewFileWizardOperator createNewWSFile(Project p, String fileType) {
         // Web Services
         String webServicesLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.client.wizard.Bundle", "Templates/WebServices");
-        createNewFile(p, webServicesLabel, fileType);
+        return createNewFile(p, webServicesLabel, fileType);
     }
 
     /**
@@ -616,7 +617,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param p project where to create new file
      * @param fileType file type name from web services category
      */
-    protected void createNewFile(Project p, String fileCategory, String fileType) {
+    protected NewFileWizardOperator createNewFile(Project p, String fileCategory, String fileType) {
         // file category & filetype selection step
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         new EventTool().waitNoEvent(500);
@@ -626,8 +627,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         nfwo.selectCategory(fileCategory);
         nfwo.selectFileType(fileType);
         nfwo.next();
+        return nfwo;
     }
-
+    
     /**
      * Deploy a project
      *
@@ -636,7 +638,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     protected void deployProject(String projectName) throws IOException {
         new CleanJavaProjectAction().perform();
         //Deploy
-        String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name");
+        String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_RedeployAction_Name");
         performProjectAction(projectName, deployProjectLabel);
     }
 
