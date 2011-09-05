@@ -46,27 +46,22 @@ package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.openide.WizardDescriptor;
 
 /**
  * Wizard for creating Module Installer.
  *
  * @author Martin Krauskopf
  */
-final class NewModuleInstallIterator extends BasicWizardIterator {
+@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 700, displayName = "#Templates/NetBeansModuleDevelopment/newModuleInstall", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/moduleinstall/module.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html", category = UIUtil.TEMPLATE_CATEGORY)
+public final class NewModuleInstallIterator extends BasicWizardIterator {
 
     private DataModel data;
 
-    private NewModuleInstallIterator() {}
-
-    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 700, displayName = "#Templates/NetBeansModuleDevelopment/newModuleInstall", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/moduleinstall/module.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html", category = "nbm-specific")
-    public static NewModuleInstallIterator createIterator() {
-        return new NewModuleInstallIterator();
-    }
-    
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();

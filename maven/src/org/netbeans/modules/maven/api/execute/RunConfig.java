@@ -44,9 +44,10 @@ package org.netbeans.modules.maven.api.execute;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
@@ -101,24 +102,13 @@ public interface RunConfig {
     String getActionName();
     
     /**
-     * properties to be used in the execution. Do not modify the returned Properties instance.
-     * 
-     * @return
+     * Properties to be used in execution.
+     * @return a read-only copy of the current properties (possibly inherited from the parent)
      */
-    @NonNull Properties getProperties();
+    @NonNull Map<? extends String,? extends String> getProperties();
 
-    /**
-     * use the properties in the parameter for execution. Will not necessarily use the
-     * parameter instance
-     * 
-     * @param properties property keys+value to be used in execution.
-     */
-    void setProperties(Properties properties);
+    void setProperty(@NonNull String key, @NullAllowed String value);
     
-    String setProperty(String key, String value);
-    
-    String removeProperty(String key);
-
     boolean isShowDebug();
     
     boolean isShowError();

@@ -65,6 +65,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
@@ -131,7 +132,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
             MethodInvocationTree invocation = (MethodInvocationTree) error;
             if (invocation.getMethodSelect().getKind().equals(Tree.Kind.IDENTIFIER))  {
                 IdentifierTree methodSelect = (IdentifierTree) invocation.getMethodSelect();
-                TreePath typePath = findEnclosingClass(errorPath.getParentPath());
+                TreePath typePath = findEnclosingType(errorPath.getParentPath());
                 List<TreePath> methods = new LinkedList<TreePath>();
                 for (Tree tree : ((ClassTree) typePath.getLeaf()).getMembers()) {
                     if(cancel) return Collections.<Fix>emptyList();
@@ -255,10 +256,10 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         return buf.toString();
     }
 
-    private TreePath findEnclosingClass(TreePath parentPath) {
+    private TreePath findEnclosingType(TreePath parentPath) {
         TreePath klazz = parentPath;
         while(klazz != null) {
-            if(klazz.getLeaf().getKind().equals(Tree.Kind.CLASS))
+            if(TreeUtilities.CLASS_TREE_KINDS.contains(klazz.getLeaf().getKind())) 
                 return klazz;
             klazz = klazz.getParentPath();
         }

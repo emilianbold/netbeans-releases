@@ -51,6 +51,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.Action;
+import org.netbeans.modules.openide.loaders.DataNodeUtils;
 import org.netbeans.modules.openide.loaders.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,8 +66,6 @@ import org.openide.util.datatransfer.ExTransferable;
 * @author Jaroslav Tulach
 */
 public class DataNode extends AbstractNode {
-    static final RequestProcessor RP = new RequestProcessor("Data System Nodes"); // NOI18N
-
     /** generated Serialized Version UID */
     static final long serialVersionUID = -7882925922830244768L;
 
@@ -835,7 +834,7 @@ public class DataNode extends AbstractNode {
         
         if ( refresh ) {
             // refresh current nodes display name
-            RP.post(new Runnable() {
+            DataNodeUtils.reqProcessor().post(new Runnable() {
                 @Override
                 public void run () { 
                     Iterator it = DataObjectPool.getPOOL().getActiveDataObjects();
@@ -961,7 +960,7 @@ public class DataNode extends AbstractNode {
                     if (post && !refreshNamesIconsRunning) {
                         refreshNamesIconsRunning = true;
                         if (refreshNamesIconsTask == null) {
-                            refreshNamesIconsTask = RP.post(new NamesUpdater());
+                            refreshNamesIconsTask = DataNodeUtils.reqProcessor().post(new NamesUpdater());
                         } else {
                             // Should be OK even if it is running right now.
                             // (Cf. RequestProcessorTest.testScheduleWhileRunning.)

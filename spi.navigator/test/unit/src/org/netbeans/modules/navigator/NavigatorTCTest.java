@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.navigator;
 
+import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
@@ -72,9 +73,12 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -86,7 +90,7 @@ public class NavigatorTCTest extends NbTestCase {
     public NavigatorTCTest(String testName) {
         super(testName);
     }
-    
+
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
         System.out.println("Testing correct calls of NavigatorPanel methods...");
         InstanceContent ic = getInstanceContent();
@@ -94,62 +98,67 @@ public class NavigatorTCTest extends NbTestCase {
         TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
         //nodesLkp.setNodes(new Node[]{ostravskiNode});
         ic.add(ostravskiHint);
-            
-        NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
-
-        NavigatorPanel selPanel = navTC.getSelectedPanel();
-        
-        assertNotNull("Selected panel is null", selPanel);
-        assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
-        OstravskiGyzdProvider ostravak = (OstravskiGyzdProvider)selPanel;
-        assertEquals("panelActivated calls count invalid: " + ostravak.getPanelActivatedCallsCount(),
-                        1, ostravak.getPanelActivatedCallsCount());
-        assertEquals(0, ostravak.getPanelDeactivatedCallsCount());
-        
         TestLookupHint prazskyHint = new TestLookupHint("prazsky/pepik");
-        ic.add(prazskyHint);
-        ic.remove(ostravskiHint);
-        
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
-        
-        selPanel = navTC.getSelectedPanel();
-        assertNotNull(selPanel);
-        assertTrue(selPanel instanceof PrazskyPepikProvider);
-        PrazskyPepikProvider prazak = (PrazskyPepikProvider)selPanel;
-        
-        assertEquals(1, ostravak.getPanelDeactivatedCallsCount());
-        assertTrue(ostravak.wasGetCompBetween());
-        assertFalse(ostravak.wasActCalledOnActive());
-        assertFalse(ostravak.wasDeactCalledOnInactive());
-        
-        assertEquals(1, prazak.getPanelActivatedCallsCount());
-        assertEquals(0, prazak.getPanelDeactivatedCallsCount());
 
-        ic.remove(prazskyHint);
-        ic.add(ostravskiHint);
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
-        
-        selPanel = navTC.getSelectedPanel();
-        assertNotNull("Selected panel is null", selPanel);
-        
-        assertEquals(1, prazak.getPanelDeactivatedCallsCount());
-        assertTrue(prazak.wasGetCompBetween());
-        assertFalse(prazak.wasActCalledOnActive());
-        assertFalse(prazak.wasDeactCalledOnInactive());
-        
-        navTC.componentClosed();
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        selPanel = navTC.getSelectedPanel();
-        assertNull("Selected panel should be null", selPanel);
-        assertNull("Set of panels should be null", navTC.getPanels());
-        
-        // clean
-        ic.remove(ostravskiHint);
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+
+            assertNotNull("Selected panel is null", selPanel);
+            assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+            OstravskiGyzdProvider ostravak = (OstravskiGyzdProvider)selPanel;
+            assertEquals("panelActivated calls count invalid: " + ostravak.getPanelActivatedCallsCount(),
+                            1, ostravak.getPanelActivatedCallsCount());
+            assertEquals(0, ostravak.getPanelDeactivatedCallsCount());
+
+            ic.add(prazskyHint);
+            ic.remove(ostravskiHint);
+
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+
+            selPanel = navTC.getSelectedPanel();
+            assertNotNull(selPanel);
+            assertTrue(selPanel instanceof PrazskyPepikProvider);
+            PrazskyPepikProvider prazak = (PrazskyPepikProvider)selPanel;
+
+            assertEquals(1, ostravak.getPanelDeactivatedCallsCount());
+            assertTrue(ostravak.wasGetCompBetween());
+            assertFalse(ostravak.wasActCalledOnActive());
+            assertFalse(ostravak.wasDeactCalledOnInactive());
+
+            assertEquals(1, prazak.getPanelActivatedCallsCount());
+            assertEquals(0, prazak.getPanelDeactivatedCallsCount());
+
+            ic.remove(prazskyHint);
+            ic.add(ostravskiHint);
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+
+            selPanel = navTC.getSelectedPanel();
+            assertNotNull("Selected panel is null", selPanel);
+
+            assertEquals(1, prazak.getPanelDeactivatedCallsCount());
+            assertTrue(prazak.wasGetCompBetween());
+            assertFalse(prazak.wasActCalledOnActive());
+            assertFalse(prazak.wasDeactCalledOnInactive());
+
+            navTCH.close();
+
+            selPanel = navTC.getSelectedPanel();
+            assertNull("Selected panel should be null", selPanel);
+            assertNull("Set of panels should be null", navTC.getPanels());
+        } finally {
+            // clean
+            navTCH.close();
+            ic.remove(ostravskiHint);
+            ic.remove(prazskyHint);
+        }
     }
     
     public void testBugfix104145_DeactivatedNotCalled () throws Exception {
@@ -158,16 +167,17 @@ public class NavigatorTCTest extends NbTestCase {
 
         TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
         ic.add(ostravskiHint);
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
 
         try {
-            NavigatorTC navTC = NavigatorTC.getInstance();
-            navTC.componentOpened();
+            navTCH.open();
 
             NavigatorPanel selPanel = navTC.getSelectedPanel();
             OstravskiGyzdProvider ostravak = (OstravskiGyzdProvider) selPanel;
             ostravak.resetDeactCalls();
 
-            navTC.componentClosed();
+            navTCH.close();
 
             int deact = ostravak.getPanelDeactivatedCallsCount();
             assertEquals("panelDeactivated expected to be called once but called " + deact + " times.",
@@ -175,6 +185,7 @@ public class NavigatorTCTest extends NbTestCase {
 
         } finally {
             // clean in finally block so that test doesn't affect others
+            navTCH.close();
             ic.remove(ostravskiHint);
         }
         
@@ -188,26 +199,30 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(ostravskiHint);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        NavigatorPanel selPanel = navTC.getSelectedPanel();
-        
-        assertNotNull("Selected panel is null", selPanel);
-        
-        ic.remove(ostravskiHint);
-        
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
 
-        // after 80155 fix, previous navigator should keep its content even when
-        // new component was activated, but didn't contain any activated nodes or navigator lookup hint
-        selPanel = navTC.getSelectedPanel();
-        assertNotNull("Selected panel is null", selPanel);
-        assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+            assertNotNull("Selected panel is null", selPanel);
 
-        // cleanup
-        navTC.componentClosed();
+            ic.remove(ostravskiHint);
+
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+
+            // after 80155 fix, previous navigator should keep its content even when
+            // new component was activated, but didn't contain any activated nodes or navigator lookup hint
+            selPanel = navTC.getSelectedPanel();
+            assertNotNull("Selected panel is null", selPanel);
+            assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+        } finally {
+            // cleanup
+            navTCH.close();
+            ic.remove(ostravskiHint);
+        }
     }
     
     public void testBugfix93123_RefreshCombo () throws Exception {
@@ -219,47 +234,57 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(ostravskiHint);
         TestLookupHint prazskyHint = new TestLookupHint("prazsky/pepik");
         ic.add(prazskyHint);
+        TestLookupHint prazskyHint2 = new TestLookupHint("moravsky/honza");
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        List<NavigatorPanel> panels = navTC.getPanels();
-        
-        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
-        assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
-        
-        NavigatorHandler.activatePanel(panels.get(1));
-        
-        NavigatorPanel selPanel = navTC.getSelectedPanel();
-        int selIdx = panels.indexOf(selPanel);
-        
-        assertTrue("Expected selected provider #2, but got #1", selIdx == 1);
-        
-        TestLookupHint prazskyHint2 = new TestLookupHint("moravsky/honza");
-        ic.add(prazskyHint2);
-        
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
-        
-        panels = navTC.getPanels();
-        assertTrue("Expected 3 provider panels, but got " + panels.size(), panels.size() == 3);
-        
-        JComboBox combo = navTC.getPanelSelector();
-        assertTrue("Expected 3 combo items, but got " + combo.getItemCount(), combo.getItemCount() == 3);
-     
-        assertTrue("Expected the same selection", selPanel.equals(navTC.getSelectedPanel()));
-        
-        selIdx = panels.indexOf(selPanel);
-        assertTrue("Expected the same selection in combo, sel panel index: "
-                + selIdx + ", sel in combo index: " + 
-                combo.getSelectedIndex(), selIdx == combo.getSelectedIndex());
+            List<? extends NavigatorPanel> panels = navTC.getPanels();
 
-        // cleanup
-        ic.remove(ostravskiHint);
-        ic.remove(prazskyHint);
-        ic.remove(prazskyHint2);
-        navTC.componentClosed();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
+
+            final NavigatorPanel panel = panels.get(1);
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    NavigatorHandler.activatePanel(panel);
+                    return null;
+                }
+            });
+
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+            int selIdx = panels.indexOf(selPanel);
+
+            assertTrue("Expected selected provider #2, but got #1", selIdx == 1);
+
+            ic.add(prazskyHint2);
+
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+
+            panels = navTC.getPanels();
+            assertTrue("Expected 3 provider panels, but got " + panels.size(), panels.size() == 3);
+
+            JComboBox combo = navTC.getPanelSelector();
+            assertTrue("Expected 3 combo items, but got " + combo.getItemCount(), combo.getItemCount() == 3);
+
+            assertTrue("Expected the same selection", selPanel.equals(navTC.getSelectedPanel()));
+
+            selIdx = panels.indexOf(selPanel);
+            assertTrue("Expected the same selection in combo, sel panel index: "
+                    + selIdx + ", sel in combo index: " + 
+                    combo.getSelectedIndex(), selIdx == combo.getSelectedIndex());
+        } finally {
+            // cleanup
+            navTCH.close();
+            ic.remove(ostravskiHint);
+            ic.remove(prazskyHint);
+            ic.remove(prazskyHint2);
+        }
     }
     
     /** Test for IZ feature #93711. It tests ability of NavigatorPanel implementors
@@ -277,11 +302,11 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(actNodesHint);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
-        
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
         try {
+            navTCH.open();
 
-            List<NavigatorPanel> panels = navTC.getPanels();
+            List<? extends NavigatorPanel> panels = navTC.getPanels();
             assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
             assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
             assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
@@ -294,13 +319,16 @@ public class NavigatorTCTest extends NbTestCase {
             // test if lookup content from provider propagated correctly to the
             // activated nodes of navigator TopComponent
             Node[] actNodes = navTC.getActivatedNodes();
+            Collection<? extends Node> lookupNodes = navTC.getLookup().lookupAll(Node.class);
             Node realContent = provider.getCurLookupContent();
             String tcDisplayName = navTC.getDisplayName();
             String providerDisplayName = provider.getDisplayName();
 
             assertNotNull("Activated nodes musn't be null", actNodes);
             assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+            assertTrue("Expected 1 node in lookup, but got " + lookupNodes.size(), lookupNodes.size() == 1);
             assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+            assertTrue("Different node in lookup than the activated node", realContent == lookupNodes.iterator().next());
             assertTrue("Expected display name starting with '" + providerDisplayName +
                         "', but got '" + tcDisplayName + "'",
                         (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
@@ -323,7 +351,7 @@ public class NavigatorTCTest extends NbTestCase {
                         (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
         } finally {
             // cleanup
-            navTC.componentClosed();
+            navTCH.close();
             ic.remove(actNodesHint);
         }
     }
@@ -341,22 +369,24 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(undoHint);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        NavigatorPanel selPanel = navTC.getSelectedPanel();
-        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
-        assertTrue("Panel class not expected", selPanel instanceof UndoRedoProvider);
-        UndoRedoProvider provider = (UndoRedoProvider)selPanel;
-        
-        UndoRedo panelUndo = provider.getUndoRedo();
-        UndoRedo tcUndo = navTC.getUndoRedo();
-        
-        assertTrue("Expected undo manager " + panelUndo + ", but got " + tcUndo, panelUndo == tcUndo);
-        
-        // cleanup
-        ic.remove(undoHint);
-        navTC.componentClosed();
-        
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Panel class not expected", selPanel instanceof UndoRedoProvider);
+            UndoRedoProvider provider = (UndoRedoProvider)selPanel;
+
+            UndoRedo panelUndo = provider.getUndoRedo();
+            UndoRedo tcUndo = navTC.getUndoRedo();
+
+            assertTrue("Expected undo manager " + panelUndo + ", but got " + tcUndo, panelUndo == tcUndo);
+        } finally {        
+            // cleanup
+            navTCH.close();
+            ic.remove(undoHint);
+        }        
     }
 
     /** Test for IZ issue #113764. Checks that after closing navigator window, clientsLookup 
@@ -377,34 +407,38 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(actNode);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
 
-        // get the lookup that leaked, take weak ref on it
-        NavigatorController.ClientsLookup cliLkp = navTC.getController().getClientsLookup();
-        Lookup[] lkpArray = cliLkp.obtainLookups();
-        assertTrue("Lookups array mustn't be empty", lkpArray.length > 0);
+            // get the lookup that leaked, take weak ref on it
+            NavigatorController.ClientsLookup cliLkp = navTC.getController().getClientsLookup();
+            Lookup[] lkpArray = cliLkp.obtainLookups();
+            assertTrue("Lookups array mustn't be empty", lkpArray.length > 0);
 
-        ArrayList<WeakReference<Lookup>> wLkps = new ArrayList<WeakReference<Lookup>>(lkpArray.length);
-        for (int i = 0; i < lkpArray.length; i++) {
-            WeakReference<Lookup> wLkp = new WeakReference<Lookup>(lkpArray[i]);
-            wLkps.add(wLkp);
-        }
-        
-        // erase, close and check, lookup should be freed
-        lkpArray = null;
-        navTC.componentClosed();
-        
-        for (WeakReference<Lookup> wLkp : wLkps) {
-            assertGC("Lookup instance NavigatorController.getLookup() still not GCed", wLkp);
-        }
+            ArrayList<WeakReference<Lookup>> wLkps = new ArrayList<WeakReference<Lookup>>(lkpArray.length);
+            for (int i = 0; i < lkpArray.length; i++) {
+                WeakReference<Lookup> wLkp = new WeakReference<Lookup>(lkpArray[i]);
+                wLkps.add(wLkp);
+            }
 
+            // erase, close and check, lookup should be freed
+            lkpArray = null;
+            navTCH.close();
+
+            for (WeakReference<Lookup> wLkp : wLkps) {
+                assertGC("Lookup instance NavigatorController.getLookup() still not GCed", wLkp);
+            }
+        } finally {
         // cleanup
-        ic.remove(actNodesHint);
-        ic.remove(actNode);
+            navTCH.close();
+            ic.remove(actNodesHint);
+            ic.remove(actNode);
+        }
     }
 
     /** 
@@ -418,46 +452,49 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(explorerHint);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
 
-        List<NavigatorPanel> panels = navTC.getPanels();
-        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
-        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
-        assertTrue("Panel class not expected", panels.get(0) instanceof ListViewNavigatorPanel);
-        ListViewNavigatorPanel provider = (ListViewNavigatorPanel)panels.get(0);
-                
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
+            List<? extends NavigatorPanel> panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
+            assertTrue("Panel class not expected", panels.get(0) instanceof ListViewNavigatorPanel);
+            ListViewNavigatorPanel provider = (ListViewNavigatorPanel)panels.get(0);
 
-        Node[] selNodes = provider.getExplorerManager().getSelectedNodes();
-        Node[] actNodes = navTC.getActivatedNodes();
-        Action copyAction = provider.getCopyAction();
-        assertTrue("Copy action should be enabled", copyAction.isEnabled());
-        assertNotNull("Activated nodes musn't be null", actNodes);
-        assertNotNull("Explorer view selected nodes musn't be null", selNodes);
-        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
-        assertTrue("Nodes from explorer view not propagated correctly, should be the same as activated nodes, but got: \n"
-                + "activated nodes: " + Arrays.toString(actNodes) +"\n"
-                + "explorer view selected nodes: " + Arrays.toString(selNodes),
-                Arrays.equals(actNodes, selNodes));
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
 
-        // test if action map can be found in NavigatorTC lookup
-        Collection<? extends ActionMap> result = navTC.getLookup().lookupResult(ActionMap.class).allInstances();
-        boolean found = false;
-        for (Iterator<? extends ActionMap> it = result.iterator(); it.hasNext();) {
-            ActionMap map = it.next();
-            Action a = map.get(DefaultEditorKit.copyAction);
-            if (a != null) {
-                found = true;
-                assertSame("Different action instance the expected", a, copyAction);
+            Node[] selNodes = provider.getExplorerManager().getSelectedNodes();
+            Node[] actNodes = navTC.getActivatedNodes();
+            Action copyAction = provider.getCopyAction();
+            assertTrue("Copy action should be enabled", copyAction.isEnabled());
+            assertNotNull("Activated nodes musn't be null", actNodes);
+            assertNotNull("Explorer view selected nodes musn't be null", selNodes);
+            assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+            assertTrue("Nodes from explorer view not propagated correctly, should be the same as activated nodes, but got: \n"
+                    + "activated nodes: " + Arrays.toString(actNodes) +"\n"
+                    + "explorer view selected nodes: " + Arrays.toString(selNodes),
+                    Arrays.equals(actNodes, selNodes));
+
+            // test if action map can be found in NavigatorTC lookup
+            Collection<? extends ActionMap> result = navTC.getLookup().lookupResult(ActionMap.class).allInstances();
+            boolean found = false;
+            for (Iterator<? extends ActionMap> it = result.iterator(); it.hasNext();) {
+                ActionMap map = it.next();
+                Action a = map.get(DefaultEditorKit.copyAction);
+                if (a != null) {
+                    found = true;
+                    assertSame("Different action instance the expected", a, copyAction);
+                }
             }
-        }
-        assertTrue("Action " + DefaultEditorKit.copyAction + " not found in action map", found);
-        
+            assertTrue("Action " + DefaultEditorKit.copyAction + " not found in action map", found);
+        } finally {        
         // cleanup
-        ic.remove(explorerHint);
-        navTC.componentClosed();
+            navTCH.close();
+            ic.remove(explorerHint);
+        }
     }
 
     public void test_112954_LastSelected () throws Exception {
@@ -468,7 +505,6 @@ public class NavigatorTCTest extends NbTestCase {
         URL url = NavigatorControllerTest.class.getResource("resources/lastsel/file.lastsel_mime1");
         assertNotNull("url not found.", url);
 
-        FileUtil.setMIMEType("lastsel_mime1", "lastsel/mime1");
         FileObject fo = URLMapper.findFileObject(url);
         assertNotNull("File object for test node not found.", fo);
         DataObject dObj = DataObject.find(fo);
@@ -480,10 +516,11 @@ public class NavigatorTCTest extends NbTestCase {
         ic.add(mime1Node);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
-        navTC.componentOpened();
-        
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
         try {
-            List<NavigatorPanel> panels = navTC.getPanels();
+            navTCH.open();
+        
+            List<? extends NavigatorPanel> panels = navTC.getPanels();
             assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
             assertTrue("Expected 3 provider panels, but got " + panels.size(), panels != null && panels.size() == 3);
             assertTrue("Panel class not expected", panels.get(0) instanceof LastSelMime1Panel1);
@@ -491,7 +528,14 @@ public class NavigatorTCTest extends NbTestCase {
             assertTrue("Panel class not expected", panels.get(2) instanceof LastSelMime1Panel3);
 
             // selecting 3rd panel, this should be remembered
-            navTC.getController().activatePanel(panels.get(2));
+            final NavigatorPanel p3 = panels.get(2);
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    NavigatorHandler.activatePanel(p3);
+                    return null;
+                }
+            });
 
             ic.remove(mime1Node);
             ic.add(mime2Hint);
@@ -508,7 +552,14 @@ public class NavigatorTCTest extends NbTestCase {
             assertTrue("Panel class not expected", panels.get(2) instanceof LastSelMime2Panel3);
             
             // selecting 2nd panel, this should be remembered
-            navTC.getController().activatePanel(panels.get(1));
+            final NavigatorPanel p2 = panels.get(1);
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    NavigatorHandler.activatePanel(p2);
+                    return null;
+                }
+            });
             
             ic.remove(mime2Hint);
             ic.add(mime1Node);
@@ -538,7 +589,8 @@ public class NavigatorTCTest extends NbTestCase {
             assertTrue("Expected LastSelMime2Panel2 panel to be selected, but selected is "
                     + navTC.getSelectedPanel().getClass().getSimpleName(), navTC.getSelectedPanel() instanceof LastSelMime2Panel2);
         } finally {
-            navTC.componentClosed();
+            navTCH.close();
+            ic.remove(mime1Node);
             ic.remove(mime2Hint);
         }
     }
@@ -569,6 +621,32 @@ public class NavigatorTCTest extends NbTestCase {
         }
     }
     
+    private static class NavigatorTCHandle {
+        private NavigatorTC navTC;
+        NavigatorTCHandle(NavigatorTC navTC) {
+            this.navTC = navTC;
+        }
+        void open() throws Exception {
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    navTC.getController().propertyChange(
+                            new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_OPENED, null, navTC));
+                    return null;
+                }
+            });
+        }
+        void close() throws Exception {
+//            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+//                @Override
+//                public Object run() throws Exception {
+            navTC.getController().propertyChange(
+                    new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_CLOSED, null, navTC));
+//                    return null;
+//                }
+//            });
+        }
+    }
 
     /** Test provider base, to test that infrastucture calls correct
      * methods in correct order.

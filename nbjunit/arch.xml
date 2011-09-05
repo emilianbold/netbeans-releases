@@ -578,6 +578,31 @@ Please note, SimpleDiff is rather trivial implementation of diff command, so it 
             directories (for details see JavaDoc for NbTestCase.getWorkDir()).
           </api>
       </li>
+      
+      <li>
+          <api name="NbTestCase.order" group="property" type="export" category="friend">
+            This property tries to influence the order of <code>NbTestCase</code>
+            methods so it is more predicatable (see <a href="http://wiki.apidesign.org/wiki/OrderOfElements">
+            Order of elements</a> for description of the problem). The acceptable
+            values of the property are:
+            <ul>
+                <li>"<b>natural</b>" - use the methods as provided by JDK (e.g. quite random on JDK7)</li>
+                <li>"<b>a-z</b>" - sort the tests in ascending alphabetical order</li>
+                <li>"<b>z-a</b>" - sort the tests in descending alphabetical order</li>
+                <li>"<b>shuffle</b>" - randomize the order of the tests. 
+                    If a test fails in this mode a <em>seed</em> is attached to
+                    the failure message, use it in the seed mode
+                </li>
+                <li>seed mode "<b>12234390434</b>" - one can specify any long value
+                    as a <em>seed</em> to shuffle the methods. Use this to reproduce
+                    random failures
+                </li>
+            </ul>
+            The default order is <b>natural</b> right now, but this may
+            change in future to mitigate the <a href="http://wiki.apidesign.org/wiki/OrderOfElements">
+            randomness caused by JDK7</a>.
+          </api>
+      </li>
   </ul>
  
 

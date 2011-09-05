@@ -45,6 +45,7 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.Stamps;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -60,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileUtilTest;
 import org.openide.filesystems.MultiFileSystem;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -88,12 +91,15 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     //
     // Manager factory methods
     //
+    @Override
     public LayerCacheManager createManager() throws Exception {
         return new BinaryCacheManager();
     }
 
-    public boolean supportsTimestamps () {
-        return true;
+    @Override
+    public boolean supportsTimestamps() {
+        // returns times stamps equals to Stamps value
+        return false;
     }
     
     static FileSystem store(LayerCacheManager m, List<URL> urls) throws IOException {
@@ -110,7 +116,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     /** Test issue 140061 - need to update ParsingLayerCacheManager when increasing version of DTD Filesystem.*/
     public void testDTD1_2() throws SAXException, IOException {
         BinaryCacheManager m = new BinaryCacheManager();
-        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/layer1.2.xml")));
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(loadResource("data/layer1.2.xml")));
         try {
             store(m, urls);
         } catch(Exception e) {
@@ -124,7 +130,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     }
     public void testJustAttributes() throws SAXException, IOException {
         BinaryCacheManager m = new BinaryCacheManager();
-        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/attribsonly.xml")));
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(loadResource("data/attribsonly.xml")));
         FileSystem fs = store(m, urls);
         assertEquals(Boolean.TRUE, fs.getRoot().getAttribute("myAttr"));
     }
@@ -134,8 +140,8 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         LayerCacheManager m = new BinaryCacheManager();
         // layer2.xml should override layer1.xml where necessary:
         List<URL> urls = new ArrayList<URL>(Arrays.asList(
-            BinaryCacheManagerTest.class.getResource("data/layer2.xml"),
-            BinaryCacheManagerTest.class.getResource("data/layer1.xml")));
+            loadResource("data/layer2.xml"),
+            loadResource("data/layer1.xml")));
         
         FileSystem f = store(m, urls);
         FileSystem base = FileUtil.createMemoryFileSystem();

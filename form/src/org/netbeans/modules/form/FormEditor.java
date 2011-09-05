@@ -1183,7 +1183,7 @@ public class FormEditor {
         FormEditor formEditor = getFormEditor(formModel);
         if (formEditor != null
                 && formModel.getSettings().getLayoutCodeTarget() != JavaCodeGenerator.LAYOUT_CODE_JDK6
-                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.layout.GroupLayout.class.getName())) {
+                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), "org.jdesktop.layout.GroupLayout")) { // NOI18N
             try {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                         ClassSource.unpickle("library", "swing-layout")); // NOI18N // Hack

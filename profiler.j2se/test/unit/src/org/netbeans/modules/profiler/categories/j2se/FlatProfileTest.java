@@ -802,6 +802,7 @@ public class FlatProfileTest extends TestBase {
                 uiIds.size() ,  flatProfile.getNRows());
         checkCategory(status, flatProfile, "UI", uiIds);
         
+        drillDown.drilldown( getCategoryId("AWT/Swing"));
         drillDown.drilldown( getCategoryId("Listeners"));
         
         flatProfileBuilder.cctEstablished( root , false );
@@ -845,6 +846,7 @@ public class FlatProfileTest extends TestBase {
         List<Integer> listenersIds = new LinkedList<Integer>();
         List<Integer> paintersIds = new LinkedList<Integer>();
         List<Integer> uiIds = new LinkedList<Integer>();
+        List<Integer> swingIds = new LinkedList<Integer>();
         
         builder.newThread( 0 , "main", "java.lang.Thread");
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
@@ -903,18 +905,21 @@ public class FlatProfileTest extends TestBase {
                 "eventDispatched", "(Ljava/awt/AWTEvent;)V");
         builder.methodEntry( 9 , 0, 3, 0, 0);
         listenersIds.add(9);
+        swingIds.add(9);
         uiIds.add(9);
         
         status.updateInstrMethodsInfo("painters.TestComponent", 0, 
                 "repaint", "(J)V");
         builder.methodEntry( 10 , 0, 3, 0, 0);
         paintersIds.add(10);
+        swingIds.add(10);
         uiIds.add(10);
         
         status.updateInstrMethodsInfo("pack.CustomClass3", 0, 
                 "method", "()V");
         builder.methodEntry( 11 , 0, 1, 0, 0);
         paintersIds.add(11);
+        swingIds.add(11);
         uiIds.add(11);
         
         builder.methodExit( 11 , 0, 1, 0, 0);
@@ -922,6 +927,7 @@ public class FlatProfileTest extends TestBase {
         status.updateInstrMethodsInfo("javax.swing.UIManager", 0, 
                 "getColor", "(Ljava/lang/Object;)Ljava/awt/Color;");
         builder.methodEntry( 12 , 0, 3, 0, 0);
+        swingIds.add(12);
         uiIds.add(12);
         
         builder.methodExit( 12 , 0, 3, 0, 0);
@@ -930,6 +936,7 @@ public class FlatProfileTest extends TestBase {
                 "method", "()V");
         builder.methodEntry( 13 , 0, 1, 0, 0);
         paintersIds.add(13);
+        swingIds.add(13);
         uiIds.add(13);
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
@@ -944,6 +951,15 @@ public class FlatProfileTest extends TestBase {
         assertEquals(uiIds.size()+" method expected in UI category",
                 uiIds.size() ,  flatProfile.getNRows());
         checkCategory(status, flatProfile, "UI", uiIds);
+
+        drillDown.drilldown( getCategoryId("AWT/Swing"));
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        flatProfile = flatProfileBuilder.createFlatProfile();
+        
+        assertEquals(swingIds.size()+" method expected in AWT/Swing category",
+                swingIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "AWT/Swing", swingIds);
         
         drillDown.drilldown( getCategoryId("Listeners"));
         
@@ -964,6 +980,7 @@ public class FlatProfileTest extends TestBase {
                 paintersIds.size() ,  flatProfile.getNRows());
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
+        drillDown.drillup();
         drillDown.drillup();
         drillDown.drilldown( getCategoryId("Java 2D"));
         
@@ -1038,6 +1055,7 @@ public class FlatProfileTest extends TestBase {
         List<Integer> ioIds = new LinkedList<Integer>();
         List<Integer> listenersIds = new LinkedList<Integer>();
         List<Integer> paintersIds = new LinkedList<Integer>();
+        List<Integer> swingIds = new LinkedList<Integer>();
         List<Integer> uiIds = new LinkedList<Integer>();
         
         builder.newThread( 0 , "main", "java.lang.Thread");
@@ -1100,18 +1118,21 @@ public class FlatProfileTest extends TestBase {
                 "eventDispatched", "(Ljava/awt/AWTEvent;)V");
         builder.methodEntry( 9 , 1, 2, 0, 0);
         listenersIds.add(9);
+        swingIds.add(9);
         uiIds.add(9);
         
         status.updateInstrMethodsInfo("painters.TestComponent", 0, 
                 "repaint", "(J)V");
         builder.methodEntry( 10 , 1, 3, 0, 0);
         paintersIds.add(10);
+        swingIds.add(10);
         uiIds.add(10);
         builder.methodExit(10, 1, 3, 0, 0);
         
         status.updateInstrMethodsInfo("pack.CustomClass3", 0, 
                 "method", "()V");
         builder.methodEntry( 11 , 1, 1, 0, 0);
+        swingIds.add(11);
         uiIds.add(11);
         listenersIds.add(11);
         
@@ -1120,6 +1141,7 @@ public class FlatProfileTest extends TestBase {
         status.updateInstrMethodsInfo("javax.swing.UIManager", 0, 
                 "getColor", "(Ljava/lang/Object;)Ljava/awt/Color;");
         builder.methodEntry( 12 , 1, 3, 0, 0);
+        swingIds.add(12);
         uiIds.add(12);
         
         builder.methodExit( 12 , 1, 3, 0, 0);
@@ -1128,6 +1150,7 @@ public class FlatProfileTest extends TestBase {
                 "method", "()V");
         builder.methodEntry( 13 , 1, 1, 0, 0);
         listenersIds.add(13);
+        swingIds.add(13);
         uiIds.add(13);
         
         builder.newThread( 2 , "Thread-1", "java.lang.Thread");
@@ -1147,6 +1170,7 @@ public class FlatProfileTest extends TestBase {
                 "repaint", "(J)V");
         builder.methodEntry( 16 , 2, 3, 0, 0);
         paintersIds.add(16);
+        swingIds.add(16);
         uiIds.add(16);
         builder.methodExit( 16 , 2, 3, 0, 0);
         
@@ -1164,6 +1188,7 @@ public class FlatProfileTest extends TestBase {
         status.updateInstrMethodsInfo("listeners.SubTestAWTEventListener", 0, 
                 "eventDispatched", "(Ljava/awt/AWTEvent;)V");
         builder.methodEntry( 19, 2, 3, 0, 0);
+        swingIds.add(19);
         uiIds.add( 19);
         listenersIds.add(19);
         
@@ -1178,6 +1203,7 @@ public class FlatProfileTest extends TestBase {
         status.updateInstrMethodsInfo("pack.CustomClass7", 0, 
                 "method", "()V");
         builder.methodEntry( 21 , 2, 1, 0, 0);
+        swingIds.add(21);
         uiIds.add(21 );
         listenersIds.add(21);
         
@@ -1204,6 +1230,15 @@ public class FlatProfileTest extends TestBase {
                 uiIds.size() ,  flatProfile.getNRows());
         checkCategory(status, flatProfile, "UI", uiIds);
         
+        drillDown.drilldown( getCategoryId("AWT/Swing"));
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        flatProfile = flatProfileBuilder.createFlatProfile();
+        
+        assertEquals(swingIds.size()+" method expected in AWT/Swing category",
+                swingIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "AWT/Swing", swingIds);
+
         drillDown.drilldown( getCategoryId("Listeners"));
         
         flatProfileBuilder.cctEstablished( root , false );
@@ -1223,6 +1258,7 @@ public class FlatProfileTest extends TestBase {
                 paintersIds.size() ,  flatProfile.getNRows());
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
+        drillDown.drillup();
         drillDown.drillup();
         drillDown.drilldown( getCategoryId("Java 2D"));
         

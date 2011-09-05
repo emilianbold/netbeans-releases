@@ -757,6 +757,7 @@ is divided into following sections:
                         <property environment="env"/>
                         <resolve name="profiler.current.path" value="${{profiler.info.pathvar}}"/>
                         <java fork="true" classname="@{{classname}}" dir="${{profiler.info.dir}}" jvm="${{profiler.info.jvm}}">
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
                             <jvmarg line="${{profiler.info.jvmargs}}"/>
                             <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>

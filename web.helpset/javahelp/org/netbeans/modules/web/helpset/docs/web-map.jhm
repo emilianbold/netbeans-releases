@@ -108,8 +108,8 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/framework/jsf/csh/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/framework/jsf/csh/file_ManagedBeanPanel.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="web/framework/jsf/create-facelets-template.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" url="web/framework/jsf/create-facelets-template.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="web/framework/jsf/csh/jsf-faceletstemplate.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" url="web/framework/jsf/csh/jsf-faceletstemplateclient.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual" url="web/framework/jsf/csh/richfaces-library.html"/>
     <!-- See Issue 176788 for below target (13/11/2009) -->
 	<mapID target="framework_jsf_fromentity" url="web/framework/jsf/pages-from-entities.html"/>
@@ -163,5 +163,9 @@
 	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
 	<mapID target="org.netbeans.modules.html.editor.HtmlKit" url="web/create/jsp/about_jsp_edit.html"/>
+
+        <!-- CSH : JSF from entity wizard -->
+        <mapID target="persistence_entity_selection_javaee6" url="web/framework/jsf/csh/file_jsffromentity_panel1.html"/>
+        <mapID target="framework_jsf_fromentity_setup" url="web/framework/jsf/csh/file_jsffromentity_panel2.html"/>
 </map>
 

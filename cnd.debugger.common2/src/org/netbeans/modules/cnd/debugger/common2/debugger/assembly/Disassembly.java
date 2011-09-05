@@ -125,13 +125,12 @@ public abstract class Disassembly implements StateModel.Listener {
             if (bpt instanceof InstructionBreakpoint) {
                 InstructionBreakpoint ibpt = (InstructionBreakpoint)bpt;
                 try {
-                    long parseAddr;
-                    try {
-                        parseAddr = Address.parseAddr(ibpt.getAddress());
-                    } catch (NumberFormatException e) {
-                        parseAddr = Address.parseAddr(((InstructionBreakpoint)ibpt.getParent()).getAddress());
+                    // breakpoint has an annotation already
+                    DebuggerAnnotation[] annotations = ibpt.annotations();
+                    if (annotations.length == 0) {
+                        continue;
                     }
-                    int addressLine = getAddressLine(parseAddr);
+                    int addressLine = getAddressLine(annotations[0].getAddr());
                     if (addressLine >= 0) {
                         Line line = getLine(addressLine);
                         bptAnnotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));

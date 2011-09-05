@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -59,9 +60,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -70,9 +74,11 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -213,7 +219,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 handle.finish();
                 ioput.getOut().close();
                 ioput.getErr().close();
-                actionStatesAtFinish();
+                actionStatesAtFinish(out.firstFailure != null ? new FindByName(out.firstFailure) : null);
                 markFreeTab();
                 RP.post(new Runnable() { //#103460
                     public void run() {
@@ -253,8 +259,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             File basedir = config.getExecutionDirectory();
             try {
                 if (basedir != null && !basedir.equals(basedir.getCanonicalFile())) {
-                    toRet.add("-f");
-                    toRet.add(new File(basedir, "pom.xml").getAbsolutePath());
+                    File pom = new File(basedir, "pom.xml");
+                    if (pom.isFile()) { // #201400
+                        toRet.add("-f");
+                        toRet.add(pom.getAbsolutePath());
+                    }
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.FINE, "Could not canonicalize " + basedir, x);
@@ -267,20 +276,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         // the command line parameters with space in them need to be quoted and escaped to arrive
         // correctly to the java runtime on windows
         String escaped = "\\" + quote;
-        for (Object key : config.getProperties().keySet()) {
-            String val = config.getProperties().getProperty((String)key);
-            String keyStr = (String)key;
-            if (!keyStr.startsWith(ENV_PREFIX)) {
+        for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
+            if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
+                toRet.add("-D" + entry.getKey() + "=" + (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'")));
             }
         }
-
-        String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
-        if (localRepo != null) {
-            toRet.add("-Dmaven.repo.local=" + localRepo);
-        }
-        
 
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
             toRet.add("--offline");//NOI18N
@@ -304,13 +305,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.getReactorStyle() != RunConfig.ReactorStyle.NONE) {
             File basedir = config.getExecutionDirectory();
             MavenProject mp = config.getMavenProject();
-            String id = mp.getGroupId() + ':' + mp.getArtifactId();
-            File projdir = id.equals("error:error") ? basedir : mp.getBasedir();
+            File projdir = NbMavenProject.isErrorPlaceholder(mp) ? basedir : mp.getBasedir();
             String rel = basedir != null && projdir != null ? FileUtilities.relativizeFile(basedir, projdir) : null;
             if (!".".equals(rel)) {
                 toRet.add(config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE ? "--also-make" : "--also-make-dependents");
                 toRet.add("--projects");
-                toRet.add(rel != null ? rel : id);
+                toRet.add(rel != null ? rel : mp.getGroupId() + ':' + mp.getArtifactId());
             }
         }
 
@@ -367,15 +367,13 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private ProcessBuilder constructBuilder(final RunConfig clonedConfig, InputOutput ioput) {
         File javaHome = null;
-        Map<String, String> envMap = new HashMap<String, String>();
-        for (Object key : clonedConfig.getProperties().keySet()) {
-            String keyStr = (String) key;
-            if (keyStr.startsWith(ENV_PREFIX)) {
-                String env = keyStr.substring(ENV_PREFIX.length());
-                String val = clonedConfig.getProperties().getProperty(keyStr);
-                envMap.put(env, val);
-                if (keyStr.equals(ENV_JAVAHOME)) {
-                    javaHome = new File(val);
+        Map<String, String> envMap = new LinkedHashMap<String, String>();
+        for (Map.Entry<? extends String,? extends String> entry : clonedConfig.getProperties().entrySet()) {
+            if (entry.getKey().startsWith(ENV_PREFIX)) {
+                String env = entry.getKey().substring(ENV_PREFIX.length());
+                envMap.put(env, entry.getValue());
+                if (entry.getKey().equals(ENV_JAVAHOME)) {
+                    javaHome = new File(entry.getValue());
                 }
             }
         }
@@ -413,7 +411,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        File mavenHome = MavenSettings.getDefault().getMavenHome();
+        File mavenHome = EmbedderFactory.getMavenHome();
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
@@ -485,6 +483,37 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         } else {
             ioput.getErr().println(x.getMessage());
         }
+    }
+
+    private static class FindByName implements ResumeFromFinder {
+
+        private final @NonNull String firstFailure;
+
+        /**
+         * @param firstFailure {@link MavenProject#getName}
+         */
+        FindByName(@NonNull String firstFailure) {
+            this.firstFailure = firstFailure;
+        }
+
+        @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
+            // XXX EventSpy (#194090) would make this more reliable and efficient
+            for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
+                if (Thread.interrupted()) {
+                    break;
+                }
+                NbMavenProject nbmp = module.getLookup().lookup(NbMavenProject.class);
+                if (nbmp == null) {
+                    continue;
+                }
+                MavenProject mp = nbmp.getMavenProject();
+                if (firstFailure.equals(mp.getName())) {
+                    return nbmp;
+                }
+            }
+            return null;
+        }
+
     }
     
 }

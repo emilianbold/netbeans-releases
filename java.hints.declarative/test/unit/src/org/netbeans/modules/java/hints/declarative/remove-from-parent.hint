@@ -1,0 +1,9 @@
+   int i
+=> /*remove-from-parent*/
+;;
+   float f
+=> <!error="err">
+;;
+   double d
+=> <!error="err",remove-from-parent=true>
+;;

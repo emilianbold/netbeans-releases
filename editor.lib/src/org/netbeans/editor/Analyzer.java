@@ -802,6 +802,7 @@ public class Analyzer {
     * @param fileName the name of the file to load
     * @return array of loaded characters with '\n' as line separator
     */
+
     public static char[] loadFile(String fileName) throws IOException {
         File file = new File(fileName);
         char chars[] = new char[(int)file.length()];

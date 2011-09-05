@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.eclipse.core.jobs</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>            
+            </module-dependencies>
+            <public-packages>
+                <package>org.eclipse.core.jobs</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>org-eclipse-core-jobs.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.core.jobs-3.5.1.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

@@ -150,7 +150,7 @@ public class JFXProjectGenerator {
 
     private static ReferenceHelper getReferenceHelper(Project p) {
         try {
-            return (ReferenceHelper) p.getClass().getMethod("getReferenceHelper").invoke(p);
+            return (ReferenceHelper) p.getClass().getMethod("getReferenceHelper").invoke(p); // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -179,7 +179,7 @@ public class JFXProjectGenerator {
                         public Void run() throws Exception {
                             Element data = h[0].getPrimaryConfigurationData(true);
                             Document doc = data.getOwnerDocument();
-                            NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");
+                            NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
                             assert nl.getLength() == 1;
                             Element sourceRoots = (Element) nl.item(0);
                             nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots");  //NOI18N
@@ -305,25 +305,32 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
+        
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
-        ep.setProperty("javac.classpath", ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         ep.setProperty("application.vendor", System.getProperty("user.name", "User Name")); //NOI18N
-        ep.setProperty("application.title", name);
+        ep.setProperty("application.title", name); // NOI18N
         
         // FX-specific CLASSPATH stuff
 //        ep.setProperty("endorsed.classpath", new String[]{ // NOI18N
 //                    "${libs.JavaFX2Runtime.classpath}", // NOI18N
 //                });
+        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
-        ep.setProperty("endorsed.classpath", JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
-        
+        ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
+
+        ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
+        ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
+//        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
+//        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
+                
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
-        ep.setProperty("run.classpath", new String[]{ // NOI18N
+        ep.setProperty(ProjectProperties.RUN_CLASSPATH, new String[]{ // NOI18N
                     "${javac.classpath}:", // NOI18N
                     "${build.classes.dir}", // NOI18N
                 });
@@ -331,27 +338,28 @@ public class JFXProjectGenerator {
                     "${run.classpath}", // NOI18N
                 });
         ep.setComment("debug.classpath", new String[]{ // NOI18N
-                    "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_debug.transport"),
-                    "#debug.transport=dt_socket"
+                    "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_debug.transport"), // NOI18N
+                    "#debug.transport=dt_socket" // NOI18N
                 }, false);
         ep.setProperty("jar.compress", "false"); // NOI18N
         if (!isLibrary) {
-            ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N
+            ep.setProperty(JFXProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
+            ep.setComment(JFXProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.fxclass")}, false); // NOI18N
         }
 
         ep.setProperty("javac.compilerargs", ""); // NOI18N
-        ep.setComment("javac.compilerargs", new String[]{
+        ep.setComment("javac.compilerargs", new String[]{ // NOI18N
                     "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
                 }, false);
         SpecificationVersion sourceLevel = getDefaultSourceLevel();
         ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
-        ep.setProperty("javac.test.classpath", new String[]{ // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[]{ // NOI18N
                     "${javac.classpath}:", // NOI18N
                     "${build.classes.dir}", // NOI18N
                 });
-        ep.setProperty("run.test.classpath", new String[]{ // NOI18N
+        ep.setProperty(ProjectProperties.RUN_TEST_CLASSPATH, new String[]{ // NOI18N
                     "${javac.test.classpath}:", // NOI18N
                     "${build.test.classes.dir}", // NOI18N
                 });
@@ -362,9 +370,9 @@ public class JFXProjectGenerator {
         ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
         ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
 
-        ep.setProperty("build.dir", "build"); // NOI18N
-        ep.setComment("build.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
-        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_DIR, "build"); // NOI18N
+        ep.setComment(ProjectProperties.BUILD_DIR, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${build.dir}/classes"); // NOI18N
         ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
@@ -421,20 +429,20 @@ public class JFXProjectGenerator {
         if (!h.isSharableProject()) {
             return;
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null
-                && LibraryManager.getDefault().getLibrary("junit") != null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null // NOI18N
+                && LibraryManager.getDefault().getLibrary("junit") != null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null
-                && LibraryManager.getDefault().getLibrary("junit_4") != null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null // NOI18N
+                && LibraryManager.getDefault().getLibrary("junit_4") != null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null
-                && LibraryManager.getDefault().getLibrary("CopyLibs") != null) {
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null // NOI18N
+                && LibraryManager.getDefault().getLibrary("CopyLibs") != null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("JavaFX2Runtime") == null
-                && LibraryManager.getDefault().getLibrary("JavaFX2Runtime") != null) {
+        if (rh.getProjectLibraryManager().getLibrary("JavaFX2Runtime") == null // NOI18N
+                && LibraryManager.getDefault().getLibrary("JavaFX2Runtime") != null) { // NOI18N
             File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
             referenceLibrary(LibraryManager.getDefault().getLibrary("JavaFX2Runtime"), mainPropertiesFile.toURI().toURL(), true); //NOI18N
 
@@ -482,7 +490,7 @@ public class JFXProjectGenerator {
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                             !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(JFXProjectGenerator.class.getName()).info("referenceLibrary is ignoring entry " + libEntry);
+                        Logger.getLogger(JFXProjectGenerator.class.getName()).info("referenceLibrary is ignoring entry " + libEntry); // NOI18N
                         //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
@@ -542,7 +550,7 @@ public class JFXProjectGenerator {
             return;
         }
 
-        FileObject mainTemplate = FileUtil.getConfigFile("Templates/Classes/FXMain.java"); // NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
 
         if (mainTemplate == null) {
             return; // Don't know the template
@@ -568,9 +576,9 @@ public class JFXProjectGenerator {
         } else {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) {
+            if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) { // NOI18N
                 // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
-                return new SpecificationVersion("1.5");
+                return new SpecificationVersion("1.5"); // NOI18N
             } else {
                 return v;
             }

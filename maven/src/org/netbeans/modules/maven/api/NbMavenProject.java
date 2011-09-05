@@ -240,19 +240,12 @@ public final class NbMavenProject {
      * Returns the current maven project model from the embedder.
      * Should never be kept around for long but always reloaded from here, on 
      * a project change the correct instance changes as the embedder reloads it.
-     * 
+     * Never returns null but check {@link #isErrorPlaceholder} if necessary.
      */ 
     public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
     }
 
-    /**
-     *
-     * @param embedder
-     * @param activeProfiles
-     * @param properties
-     * @return
-     */
     public MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         return project.loadMavenProject(embedder, activeProfiles, properties);
     }
@@ -526,6 +519,16 @@ public final class NbMavenProject {
         } else {
             assert false : "Attempted to remove PropertyChangeListener from project " + prj; //NOI18N
         }
+    }
+
+    /**
+     * Checks whether a given project is just an error placeholder.
+     * @param project a project loaded by e.g. {@link #getMavenProject}
+     * @return true if it was loaded as an error fallback, false for a normal project
+     * @since 2.24
+     */
+    public static boolean isErrorPlaceholder(@NonNull MavenProject project) {
+        return project.getId().equals("error:error:pom:0"); // see NbMavenProjectImpl.getFallbackProject
     }
 
     @Override public String toString() {

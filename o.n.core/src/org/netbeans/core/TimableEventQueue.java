@@ -65,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -100,7 +101,7 @@ implements Runnable {
     static volatile Thread eq;
     private final Frame mainWindow;
 
-    TimableEventQueue(Frame f) {
+    private TimableEventQueue(Frame f) {
         this.mainWindow = f;
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
@@ -110,6 +111,10 @@ implements Runnable {
         initialize(null, true);
     }
     static void initialize(final Frame f, final boolean defaultWindow) {
+        boolean install = Boolean.valueOf(NbBundle.getMessage(TimableEventQueue.class, "TimableEventQueue.install")); // NOI18N
+        if (!install) {
+            return;
+        }
         
         // #28536: make sure a JRE bug does not prevent the event queue from having
         // the right context class loader

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="o.apache.commons.discovery" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/commons-discovery-0.2.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.apache.commons.discovery"/>
+                <attribute name="Bundle-Version" value="0.2.0"/>
+                <attribute name="Require-Bundle" value="org.junit;bundle-version=&quot;3.8.0&quot;;resolution:=optional"/>
+                <attribute name="Export-Package" value="org.apache.commons.discovery,org.apache.commons.discovery.ant,org.apache.commons.discovery.jdk,org.apache.commons.discovery.log,org.apache.commons.discovery.resource,org.apache.commons.discovery.resource.classes,org.apache.commons.discovery.resource.names,org.apache.commons.discovery.tools"/>
+                <attribute name="Import-Package" value="org.apache.commons.logging;version=&quot;[1.0.4,2.0.0)&quot;"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

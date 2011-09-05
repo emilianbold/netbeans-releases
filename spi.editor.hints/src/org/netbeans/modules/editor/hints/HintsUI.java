@@ -674,7 +674,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                     invokeDefaultAction(false);
                     e.consume();
                 }
-            } else if ( e.getModifiersEx() == 0 ) {
+            } else if ( (e.getModifiersEx() & ((1 << 14) - 1)) == 0 ) {
                 if (popupShowing) {
                     Fix f = null;
                     ScrollCompletionPane listPane = subhintListComponent != null ? subhintListComponent : hintListComponent;

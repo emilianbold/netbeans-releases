@@ -59,6 +59,7 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 import javax.swing.undo.UndoManager;
 import org.netbeans.lib.editor.util.GapList;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -80,11 +81,11 @@ public class TestRootView extends View {
     
     private Rectangle.Float lastAlloc = new Rectangle.Float();
     
-    private int id;
-    
     private int dumpId;
     
     private static int lastId;
+    
+    private static WeakSet<TestRootView> allRootViews = new WeakSet<TestRootView>();
     
     static {
         EditorViewFactory.registerFactory(new TestHighlightsViewFactory.FactoryImpl());
@@ -104,8 +105,6 @@ public class TestRootView extends View {
         component.putClientProperty(TestHighlight.class, highlights);
     }
     
-    
-
     public TestRootView() {
         this(new PlainDocument());
     }
@@ -131,6 +130,7 @@ public class TestRootView extends View {
         pane.setDocument(doc);
         documentView = new DocumentView(doc.getDefaultRootElement());
         documentView.setParent(this);
+        allRootViews.add(this);
     }
     
     public void setBounds(int startOffset, int endOffset) throws BadLocationException {
@@ -263,7 +263,7 @@ public class TestRootView extends View {
     }
     
     public void dump() {
-        System.out.println("View hierarchy DUMP #" + (dumpId++) + ":\n" + documentView);
+        System.out.println("View hierarchy DUMP #" + (dumpId++) + ":\n" + toString());
     }
     
     public void checkIntegrity() {
@@ -284,6 +284,23 @@ public class TestRootView extends View {
             return lastAlloc;
         } finally {
             ((AbstractDocument)doc).readUnlock();
+        }
+    }
+
+    public static void checkIntegrityAll() {
+        for (TestRootView rootView : allRootViews) {
+            rootView.checkIntegrity();
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return documentView.toStringDetail();
+    }
+    
+    public static void appendInfoAll(StringBuilder sb) {
+        for (TestRootView rootView : allRootViews) {
+            sb.append(rootView).append("\n\n");
         }
     }
     

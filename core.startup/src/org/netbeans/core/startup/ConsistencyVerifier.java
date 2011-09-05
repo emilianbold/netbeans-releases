@@ -132,6 +132,7 @@ public class ConsistencyVerifier {
                 String bsn = man.getValue("Bundle-SymbolicName"); // NOI18N
                 String ver = man.getValue("Bundle-Version"); // NOI18N
                 if (bsn != null && ver != null) {
+                    bsn = bsn.replaceAll(";.*", "");
                     if (man.getValue("OpenIDE-Module") == null) { // NOI18N
                         man.putValue("OpenIDE-Module", bsn); // NOI18N
                     }

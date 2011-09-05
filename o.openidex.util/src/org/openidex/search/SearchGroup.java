@@ -164,9 +164,23 @@ public abstract class SearchGroup {
         return searchRoots.toArray(new Node[searchRoots.size()]);
     }
     
+    /** This method is invoked when the current search is being stopped.
+     * 
+     * You can override it to terminate any internal tasks that have been 
+     * started to process individual found items and that take a long time 
+     * to finish.
+     * 
+     * The default implementation does nothing.
+     * 
+     * @since  org.openidex.util/3 3.31
+     */
+    protected void onStopSearch() {
+    }
+    
     /** Stops searching. */
     public final void stopSearch() {
         stopped = true;
+        onStopSearch();
     }
 
     /**

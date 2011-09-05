@@ -49,6 +49,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -63,7 +65,10 @@ import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.classpath.BasePathSupport.Item;
+import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
@@ -225,6 +230,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                         }
                         setWebRoot(createProperties, projectProperties, privateProperties, phpModuleProperties);
                         setTests(createProperties, projectProperties, privateProperties, phpModuleProperties);
+                        setIncludePath((PhpProject) project, createProperties, projectProperties, privateProperties, phpModuleProperties);
 
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
@@ -608,6 +614,31 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 projectProperties.setProperty(PhpProjectProperties.TEST_SRC_DIR, testPath);
                 break; // 1st wins
+            }
+        }
+    }
+
+    private void setIncludePath(PhpProject project, PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        if (phpModuleProperties.isEmpty()) {
+            return;
+        }
+
+        for (PhpModuleProperties properties : phpModuleProperties) {
+            List<String> customIncludePath = properties.getIncludePath();
+            if (customIncludePath != null && !customIncludePath.isEmpty()) {
+                Set<String> includePath = new LinkedHashSet<String>();
+                String current = projectProperties.getProperty(PhpProjectProperties.INCLUDE_PATH);
+                if (StringUtils.hasText(current)) {
+                    includePath.add(current);
+                }
+                includePath.addAll(customIncludePath);
+                IncludePathSupport includePathSupport = new IncludePathSupport(
+                        ProjectPropertiesSupport.getPropertyEvaluator(project), project.getRefHelper(), project.getHelper());
+                Iterator<Item> itemsIterator = includePathSupport.itemsIterator(
+                        StringUtils.implode(new ArrayList<String>(includePath), ":")); // NOI18N
+                String[] encoded = includePathSupport.encodeToStrings(itemsIterator);
+                projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, encoded);
             }
         }
     }

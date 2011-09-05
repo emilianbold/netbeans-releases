@@ -44,7 +44,6 @@
 
 package org.netbeans.api.autoupdate;
 
-import junit.framework.*;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.junit.MockServices;
@@ -94,28 +93,6 @@ public class UpdateProviderFactoryTest extends NbTestCase {
         assertFalse ("Providers still found in lookup.", resultOnlyEnabled.isEmpty ());
         assertEquals ("Only one enable provider found.", 1, resultOnlyEnabled.size ());
         assertTrue ("Provider in only enabled must be enabled.", resultOnlyEnabled.get (0).isEnabled ());
-    }
-
-    public void testCreate () throws Exception {
-        String name = "new-one";
-        String displayName = "Newone";
-        URL url = UpdateUnitFactoryTest.class.getResource ("data/catalog.xml");
-        
-        UpdateUnitProvider newone = UpdateUnitProviderFactory.getDefault ().create(name, displayName, url);
-        assertNotNull ("New provider was created.", newone);
-        
-        List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
-        assertEquals ("More providers.", 3, result.size ());
-        
-        boolean found = false;
-        
-        for (UpdateUnitProvider p : result) {
-            found = found || name.equals (p.getName ());
-        }
-        
-        assertTrue ("Found enabled", found);
-        
-        assertTrue ("New one provider is enabled.", newone.isEnabled ());
     }
 
     public static class MyProvider extends AutoupdateCatalogProvider {

@@ -37,7 +37,7 @@
               </Group>
               <EmptySpace pref="41" max="32767" attributes="0"/>
           </Group>
-          <Component id="filesPanel" alignment="0" pref="409" max="32767" attributes="0"/>
+          <Component id="filesPanel" alignment="0" pref="466" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

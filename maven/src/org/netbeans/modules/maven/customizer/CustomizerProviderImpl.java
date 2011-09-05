@@ -102,6 +102,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -153,7 +154,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             Lookup context = Lookups.fixed(new Object[] { project, handle});
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N
                                              context, 
-                                             preselectedCategory, listener, listener, null );
+                                             preselectedCategory, listener, listener, new HelpCtx("maven_settings"));
             dialog.addWindowListener( listener );
             listener.setDialog(dialog);
             dialog.setTitle( MessageFormat.format(

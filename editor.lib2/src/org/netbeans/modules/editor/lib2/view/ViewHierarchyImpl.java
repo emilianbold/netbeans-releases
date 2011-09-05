@@ -117,6 +117,12 @@ public final class ViewHierarchyImpl {
     static final Logger CHECK_LOG = Logger.getLogger("org.netbeans.editor.view.check"); // -J-Dorg.netbeans.editor.view.check.level=FINE
     
     /**
+     * Logger related to any settings being used in view hierarchy.
+     * <br/>
+     */
+    static final Logger SETTINGS_LOG = Logger.getLogger("org.netbeans.editor.view.settings"); // -J-Dorg.netbeans.editor.view.settings.level=FINE
+    
+    /**
      * Logger for tracking view hierarchy locking.
      * <br/>
      * FINER stores the stack of the lock thread of view hierarchy in lockStack variable

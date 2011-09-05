@@ -313,8 +313,12 @@ public final class ModelUtils {
                 groupId = groupId.substring("maven2/".length());//NOI18N
             }
             if (groupId.startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
-                repoRoot = repoRoot + "/mirror/eclipse/rt/eclipselink/maven.repo";//NOI18N
+                repoRoot = repoRoot + "/mirror/eclipse/rt/eclipselink/maven.repo/";//NOI18N
                 groupId = groupId.substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
+            }
+            if (groupId.startsWith("rt/eclipselink/maven.repo/")) {//NOI18N
+                repoRoot = repoRoot + "/rt/eclipselink/maven.repo/";//NOI18N
+                groupId = groupId.substring("rt/eclipselink/maven.repo/".length());//NOI18N
             }
             groupId = groupId.replace('/', '.'); //NOI18N
             return new LibraryDescriptor(repoType, repoRoot, groupId, artifactId, version, classifier);

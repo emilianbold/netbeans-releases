@@ -94,7 +94,8 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         try {
             future.get(300, TimeUnit.MILLISECONDS).get(300, TimeUnit.MILLISECONDS);
             if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
-                return template.getAbbreviation().equals("fnc"); //NOI18N
+                String abbrev = template.getAbbreviation();
+                return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
             }
             return accept;
             

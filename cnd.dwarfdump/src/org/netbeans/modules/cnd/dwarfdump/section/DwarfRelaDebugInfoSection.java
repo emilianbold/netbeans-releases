@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
@@ -55,10 +56,19 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
  */
 public class DwarfRelaDebugInfoSection extends ElfSection {
     private final Map<Long, Long> table = new HashMap<Long,Long>();
+    private int abbrTableIndex = -1;
+    private final Map<Long, Long> abbrTable = new HashMap<Long,Long>();
 
     public DwarfRelaDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
         try {
+            Integer section = reader.getSectionIndex(SECTIONS.DEBUG_ABBREV);
+            if (section != null) {
+                Integer symtabSectionIndex = reader.getSymtabSectionIndex(section);
+                if (symtabSectionIndex != null) {
+                    abbrTableIndex = symtabSectionIndex;
+                }
+            }
             read();
         } catch (IOException ex) {
             Logger.getLogger(DwarfRelaDebugInfoSection.class.getName()).log(Level.SEVERE, null, ex);
@@ -69,11 +79,14 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
         return table.get(offset);
     }
 
+    public Long getAbbrAddend(long offset){
+        return abbrTable.get(offset);
+    }
+
     @Override
     public final DwarfArangesSection read() throws IOException {
         long sectionStart = header.getSectionOffset();
         long sectionEnd = header.getSectionSize() + sectionStart;
-
         reader.seek(sectionStart);
         int i = 0;
         //System.out.println("N\tr_offset\tr_info\tr_addend");
@@ -81,10 +94,46 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
             long r_offset = reader.read3264();
             long r_info = reader.read3264();
             long r_addend = reader.read3264();
-            //System.out.println(""+i+"\t"+r_offset+"\t"+r_info+"\t"+r_addend);
+            //System.out.println(""+i+"\t"+r_offset+"\t0x"+Long.toHexString(r_info)+"\t"+r_addend);
+            if (abbrTableIndex >=0 && getR_SYM(r_info) == abbrTableIndex) {
+                abbrTable.put(r_offset, r_addend);
+            } else {
+                table.put(r_offset, r_addend);
+            }
             i++;
-            table.put(r_offset, r_addend);
         }
         return null;
+    }
+    
+    private int getR_SYM(long r_info) {
+        if (reader.is64Bit()) {
+            return (int)(r_info>>32);
+        } else {
+            return (int)(r_info>>8);
+        }
+    }
+
+//    Linux:
+//    #define R_X86_64_NONE           0       /* No reloc */
+//    #define R_X86_64_64             1       /* Direct 64 bit  */
+//    #define R_X86_64_PC32           2       /* PC relative 32 bit signed */
+//    #define R_X86_64_GOT32          3       /* 32 bit GOT entry */
+//    #define R_X86_64_PLT32          4       /* 32 bit PLT address */
+//    #define R_X86_64_COPY           5       /* Copy symbol at runtime */
+//    #define R_X86_64_GLOB_DAT       6       /* Create GOT entry */
+//    #define R_X86_64_JUMP_SLOT      7       /* Create PLT entry */
+//    #define R_X86_64_RELATIVE       8       /* Adjust by program base */
+//    #define R_X86_64_GOTPCREL       9       /* 32 bit signed pc relative
+//                                               offset to GOT */
+//    #define R_X86_64_32             10      /* Direct 32 bit zero extended */
+//    #define R_X86_64_32S            11      /* Direct 32 bit sign extended */
+//    #define R_X86_64_16             12      /* Direct 16 bit zero extended */
+//    #define R_X86_64_PC16           13      /* 16 bit sign extended pc relative */
+//    #define R_X86_64_8              14      /* Direct 8 bit sign extended  */
+//    #define R_X86_64_PC8            15      /* 8 bit sign extended pc relative */
+//
+//    #define R_X86_64_NUM            16
+    private int getR_TYPE(long r_info) {
+        return (int)(r_info & 0xFFL);
     }
 }

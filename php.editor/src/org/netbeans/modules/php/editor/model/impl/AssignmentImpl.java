@@ -90,7 +90,17 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     static boolean canBeProcessed(String tName, String name) {
-        return tName.length() > 0 && tName.indexOf(name) == -1;
+        if (tName.length() > 0 && tName.indexOf(name) == -1) {
+            return true;
+        } else {
+            String varThis = VariousUtils.VAR_TYPE_PREFIX + "$this"; // NOI18N
+            int indexOfVarThis = tName.indexOf(varThis);
+            if (indexOfVarThis != -1 && !name.equals(varThis)) {
+                tName = tName.substring(0, indexOfVarThis) + tName.substring(indexOfVarThis + varThis.length());
+                return tName.length() > 0 && tName.indexOf(name) == -1;
+            }
+            return false;
+        }
     }
 
     @CheckForNull
@@ -132,7 +142,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         }
         return Collections.emptyList();
     }
-    
+
     public Collection<? extends TypeScope> getTypes() {
         List<? extends TypeScope> empty = Collections.emptyList();
         Collection<? extends TypeScope> types = typesFromUnion();

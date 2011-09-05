@@ -1,165 +1,174 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved. 
- *	  Use is subject to license terms.
+ * Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Use is subject to license terms.
 -->
 
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-<title>Replaying Session Data</title>
-<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
+        <title>Replaying Session Data</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
 
-<body>
+    <body>
 
-<h2>Replaying Session Data</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p> 
-<p>You can replay HTTP requests that are associated with the current and saved
-  HTTP request 
-  records. When you replay a request, the 
-  response appears in the web browser.</p>
+        <h2>Replaying Session Data</h2>
+        <p><small> <a href="#seealso">See Also</a></small></p> 
+        <p>You can replay HTTP requests that are associated with the current and saved
+            HTTP request 
+            records. When you replay a request, the 
+            response appears in the web browser.</p>
 
-        <p><b>Notes:</b>
+        <p><b>Notes:</b></p>
         <ul class="tip">
             <li>If the server or the web application 
-            is not running, an error message is displayed. If this happens, 
-            re-execute the application on a running target server.</li>	
+                is not running, an error message is displayed. If this happens, 
+                re-execute the application on a running target server.</li>	
             <li>The cache configuration in 
-            certain browsers can cause problems with replaying requests. If you encounter 
-            such problems, bypass the cache by clicking Reload on your browser
-            after the monitor issues the request.</li>
+                certain browsers can cause problems with replaying requests. If you encounter 
+                such problems, bypass the cache by clicking Reload on your browser
+                after the monitor issues the request.</li>
             <li>If a servlet or JSP page reads data directly from the <code>ServletInputStream</code>, 
-            instead of using methods from the <code>getParameter</code> family, 
-            requests to that resource will not replay correctly.
+                instead of using methods from the <code>getParameter</code> family, 
+                requests to that resource will not replay correctly.</li>
         </ul>
 
-<p><b>To replay HTTP requests:</b></p>
-<ol>
-  <li>In the tree view on the left side of the HTTP Server-Side Monitor, right-click the HTTP request
-      record that you want to replay.</li>
-  <li>Choose Replay from the contextual menu. The page resulting from the request 
-      appears in the web browser.</li>
-</ol>
-<p><b>To edit HTTP requests before replaying them:</b></p>
-<ol>
-  <li>In the tree view on the left side of the HTTP Server-Side Monitor, right-click the HTTP request
-      record that you want to edit and replay.</li>
-  <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
-  box appears. In the dialog box, you can do the following:</li>
+        <p><b>To replay HTTP requests:</b></p>
+        <ol>
+            <li>In the tree view on the left side of the HTTP Server-Side Monitor, right-click the HTTP request
+                record that you want to replay.</li>
+            <li>Choose Replay from the contextual menu. The page resulting from the request 
+                appears in the web browser.</li>
+        </ol>
+        
+        <p><b>To edit HTTP requests before replaying them:</b></p>
+        <ol>
+            <li>In the tree view on the left side of the HTTP Server-Side Monitor, right-click the HTTP request
+                record that you want to edit and replay.</li>
+            <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
+                box appears. In the dialog box, you can do the following:</li>
+        </ol>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+               task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top"> 
+                <td>Edit queries.</td>
+                <td> 
+                    <ol>
+                        <li>Click the Query tab.</li>
+                        <li>Edit the query:
+                            <ul>
+                                <li>To add a parameter to the query, click Add Parameter. The Add Parameter 
+                                    dialog box appears. Type in a name and value, and click OK. The query parameters 
+                                    appear in the Query tab.</li>
+                                <li>To edit a query parameter, click the ellipsis (...) button next to the parameter. </li>
+                                <li>To delete a query parameter, select the parameter and click Delete 
+                                    Parameters. Use the Shift or Control key to select multiple parameters
+                                    for deletion.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Edit requests.</td>
+                <td> 
+                    <ol>
+                        <li>Click the Request tab.</li>
+                        <li>Edit the request:
+                            <ul><li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
+                                    (...) button next to the parameter. </li>
+                                <li>To change the request method, select the desired method from the combo box 
+                                    in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
+                            </ul>
+                        </li>
+                        <li>Click Send HTTP Request.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Edit cookies.</td>
+                <td> 
+                    <ol>
+                        <li>Click the Cookies tab.</li>
+                        <li>Edit the cookie:
+                            <ul>
+                                <li>To add a cookie, click Add Cookie. The Add Cookie dialog box appears. Type 
+                                    a name and value, and click OK.</li>
+                                <li>To edit a cookie, click the ellipsis (...) button next to the cookie.</li>
+                                <li>To delete a cookie, select the cookie and click Delete Cookies. Use 
+                                    the Shift or Control key to select multiple 
+                                    cookies for deletion. </li>
+                            </ul>
+                        </li>
+                        <li>Click Send HTTP Request.  Not all servers support the editing of cookies.
+                            Note that the server ignores the values that were saved 
+                            when the record was recorded, and the server uses the cookie that 
+                            the browser generates. If the record header does not include a session 
+                            cookie, the browser does not send a cookie. Although you can edit session cookies, 
+                            the changes do not take effect on most servers. The reason is because
+                            the session's cookie ID is read before the request enters the servlet container.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Edit servers.</td>
+                <td> 
+                    <ol>
+                        <li>Click the Server tab.</li>
+                        <li>Edit the server:
+                            <ul>
+                                <li>To change a parameter's value,  such as the hostname of servlet engine 
+                                    or the port number of an HTTP service click the ellipsis (...) button 
+                                    next to the parameter.</li>
+                            </ul>
+                        </li>
+                        <li>Click Send HTTP Request.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Edit headers.</td>
+                <td> 
+                    <ol>
+                        <li>Click the Headers tab.</li>
+                        <li>Edit the header:
+                            <ul><li>To add a header, click Add Header. 
+                                    The Add Header dialog box appears. Type in a name and value and click OK.</li>
+                                <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
+                                    click the ellipsis (...) button next to the parameter.</li>
+                                <li>To delete a header, select it and click Delete Headers. Use the Shift or 
+                                    Control key to select multiple headers for deletion.</li>
+                            </ul>
+                        </li>
+                        <li>Click Send HTTP Request.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="ctx_monitorintro.html">About the HTTP Server-Side Monitor</a></dd>
+            <dd><a href="process.html">Working with the HTTP Server-Side Monitor</a></dd>
+            <dd><a href="display.html">Setting Up the HTTP Server-Side Monitor</a></dd>
+            <dd><a href="view.html">Analyzing Session Data</a></dd>
+            <dd><a href="store.html">Saving Session Data</a></dd>
+        </dl>
 
 
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-   task name. The right column lists the steps to perform.">
-  <tr valign="top"> 
-    <th scope="col" align="left">To perform this task</th>
-    <th scope="col" align="left">Follow these steps</th>
-  </tr>
-  <tr valign="top"> 
-	  <td>Edit queries.</td>
-    <td> 
-       <ol><li>Click the Query tab.</li>
-  <li>Edit the query:</li>
-  <ul><li>To add a parameter to the query, click Add Parameter. The Add Parameter 
-    dialog box appears. Type in a name and value, and click OK. The query parameters 
-    appear in the Query tab.</li>
-  <li>To edit a query parameter, click the ellipsis (...) button next to the parameter. 
-  <li>To delete a query parameter, select the parameter and click Delete 
-    Parameters. Use the Shift or Control key to select multiple parameters
-    for deletion.</li></ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Edit requests.</td>
-    <td> 
-     <ol>
-  <li>Click the Request tab.
-  <li>Edit the request:</li>
-  <ul><li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
-    (...) button next to the parameter. </li>
-  <li>To change the request method, select the desired method from the combo box 
-  in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li></ul>
-  <li>Click Send HTTP Request.</li>
-</ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Edit cookies.</td>
-    <td> 
-<ol>
-  <li>Click the Cookies tab.</li>
-  <li>Edit the cookie:</li>
-  <ul>
-  <li>To add a cookie, click Add Cookie. The Add Cookie dialog box appears. Type 
-    a name and value, and click OK.</li>
-  <li>To edit a cookie, click the ellipsis (...) button next to the cookie.</li>
-  <li>To delete a cookie, select the cookie and click Delete Cookies. Use 
-    the Shift or Control key to select multiple 
-    cookies for deletion. </li>
-  </ul>
-  <li>Click Send HTTP Request.  Not all servers support the editing of cookies.
-  Note that the server ignores the values that were saved 
-when the record was recorded, and the server uses the cookie that 
-the browser generates. If the record header does not include a session 
-cookie, the browser does not send a cookie. Although you can edit session cookies, 
- the changes do not take effect on most servers. The reason is because
-the session's cookie ID is read before the request enters the servlet container.</li>
-</ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-	  <td>Edit servers.</td>
-    <td> 
- <ol>
-  <li>Click the Server tab.</li>
-  <li>Edit the server:</li>
-  <ul>
-    <li>To change a parameter's value,  such as the hostname of servlet engine 
-    or the port number of an HTTP service click the ellipsis (...) button 
-    next to the parameter.</li>
-  </ul>
-  <li>Click Send HTTP Request.</li>
-</ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Edit headers.</td>
-    <td> 
-<ol>
-  <li>Click the Headers tab.</li>
-  <li>Edit the header:</li>
-  <ul><li>To add a header, click Add Header. 
-    The Add Header dialog box appears. Type in a name and value and click OK.</li>
-  <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
-    click the ellipsis (...) button next to the parameter.</li>
-  <li>To delete a header, select it and click Delete Headers. Use the Shift or 
-    Control key to select multiple headers for deletion.</li></ul>
-  <li>Click Send HTTP Request.</li>
-</ol>
-    </td>
-  </tr>
-  
-</table>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a> </small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table> 
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="ctx_monitorintro.html">About the HTTP Server-Side Monitor</a></dd>
-    <dd><a href="process.html">Working with the HTTP Server-Side Monitor</a></dd>
-    <dd><a href="display.html">Setting Up the HTTP Server-Side Monitor</a></dd>
-    <dd><a href="view.html">Analyzing Session Data</a></dd>
-    <dd><a href="store.html">Saving Session Data</a></dd>
-</dl>
-
-
-<hr>
-<small><a href="../credits.html">Legal Notices</a> 
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table> 
-
-</small></body></html>
+    </body></html>

@@ -350,12 +350,15 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 } else if (name != null) {
                     ve = staticInstanceOf((String)entry.getValue(), name);
                     if (ve != null) {
-                        param2hints.put(param, INSTANCE_OF);
                         TypeMirror tm = ve.getEnclosingElement().asType();
                         tm = cInfo.getTypes().erasure(tm);
-                        if (containsDeclaredType(tm))
-                            param2types.put(param, tm);
-                        return Utilities.getTypeName(cInfo, tm, true) + "." + ve.getSimpleName();
+                        String value = tm != null ? Utilities.getTypeName(cInfo, tm, true) + "." + ve.getSimpleName() : null;
+                        if (value != null) {
+                            param2hints.put(param, INSTANCE_OF);
+                            if (containsDeclaredType(tm))
+                                param2types.put(param, tm);
+                            return value;
+                        }
                     } else {
                         return valueOf((String)entry.getValue());
                     }                    
