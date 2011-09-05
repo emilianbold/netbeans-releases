@@ -317,6 +317,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(preloaderCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Preloader_Checkbox")); // NOI18N
+        preloaderCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                preloaderCheckBoxItemStateChanged(evt);
+            }
+        });
 
         lblPreloaderProject.setLabelFor(txtPreloaderProject);
         org.openide.awt.Mnemonics.setLocalizedText(lblPreloaderProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_PreloaderName_TextBox")); // NOI18N
@@ -398,7 +403,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(setAsMainCheckBox)
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
@@ -447,6 +452,10 @@ private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {
 private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformComboBoxItemStateChanged
         this.panel.fireChangeEvent();
 }//GEN-LAST:event_platformComboBoxItemStateChanged
+
+private void preloaderCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_preloaderCheckBoxItemStateChanged
+    txtPreloaderProject.setEnabled(preloaderCheckBox.isSelected());
+}//GEN-LAST:event_preloaderCheckBoxItemStateChanged
 
     @Override
     boolean valid(WizardDescriptor settings) {

@@ -84,6 +84,7 @@ import org.openide.util.Utilities;
 public final class JFXProjectProperties {
 
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+    public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
     public static final String JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N

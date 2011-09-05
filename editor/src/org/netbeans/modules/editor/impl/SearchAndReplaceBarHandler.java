@@ -160,7 +160,8 @@ public abstract class SearchAndReplaceBarHandler {
                             ReplaceBar.getInstance(searchBar).gainFocus();
                             makeSearchAndReplaceBarPersistent();
                         } else {
-                            dialogReplaceAction.actionPerformed(evt, target);
+                            if (target.isEditable())
+                                dialogReplaceAction.actionPerformed(evt, target);
                         }
                     }
                 }
