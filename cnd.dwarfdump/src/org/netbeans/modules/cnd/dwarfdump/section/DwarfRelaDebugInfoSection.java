@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
@@ -61,6 +62,13 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
     public DwarfRelaDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
         try {
+            Integer section = reader.getSectionIndex(SECTIONS.DEBUG_ABBREV);
+            if (section != null) {
+                Integer symtabSectionIndex = reader.getSymtabSectionIndex(section);
+                if (symtabSectionIndex != null) {
+                    abbrTableIndex = symtabSectionIndex;
+                }
+            }
             read();
         } catch (IOException ex) {
             Logger.getLogger(DwarfRelaDebugInfoSection.class.getName()).log(Level.SEVERE, null, ex);
@@ -91,12 +99,6 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
                 abbrTable.put(r_offset, r_addend);
             } else {
                 table.put(r_offset, r_addend);
-            }
-            if (r_offset == 6 && r_addend == 0) {
-                // TODO:
-                // This is ugly fix for Bug 199737 - Wrong parsing of dwarf *.o files
-                // Right fix should read .symtab section and getR_SYM(r_info) should point to .debug_abbrev in .symtab
-                abbrTableIndex = getR_SYM(r_info);
             }
             i++;
         }
