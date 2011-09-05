@@ -265,8 +265,15 @@ class ColumnSelectionPanel extends JPanel {
     /**
      * Shows the popup allowing to show/hide columns.
      */
-    @SuppressWarnings("unchecked")
     static void showColumnSelectionPopup(Component c, final ETable table) {
+        showColumnSelectionPopup(c, 8, 8, table);
+    }
+    
+    /**
+     * Shows the popup allowing to show/hide columns.
+     */
+    @SuppressWarnings("unchecked")
+    static void showColumnSelectionPopup(Component c, int posx, int posy, final ETable table) {
         if( !table.isColumnHidingAllowed() )
             return;
         
@@ -361,7 +368,7 @@ class ColumnSelectionPanel extends JPanel {
                 popup.add(checkBox);
             }
         }
-        popup.show(c, 8, 8);
+        popup.show(c, posx, posy);
     }
     
     /**
