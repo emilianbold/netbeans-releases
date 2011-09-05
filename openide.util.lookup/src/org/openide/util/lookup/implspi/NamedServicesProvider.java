@@ -117,6 +117,15 @@ public abstract class NamedServicesProvider {
         return prov != null ? prov.lookupObject(filePath, type) : null;
     }
 
+    static void clearCache() {
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (!assertsOn) {
+            throw new IllegalStateException();
+        }
+        namedServicesProviders.clear();
+    }
+
     /** Throws an exception. Prevents unwanted instantiation of this class
      * by unknown subclasses.
      */

@@ -116,6 +116,9 @@ public final class ProgressUtils {
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
      * <p/>
+     * The resulting progress UI should show a cancel button if the passed
+     * runnable implements org.openide.util.Cancellable.
+     * <p/>
      * Unless you are being passed the runnable or progress handle from foreign
      * code (such as in WizardDescriptor.progressInstantiatingIterator), it
      * is usually simpler to use the version of this method that takes a
@@ -143,6 +146,9 @@ public final class ProgressUtils {
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
+     * <p/>
+     * The resulting progress UI should show a cancel button if the passed
+     * runnable implements org.openide.util.Cancellable.
      *
      * @param <T> The result type - use Void if no return type needed
      * @param operation A runnable-like object which performs work in the
@@ -185,6 +191,9 @@ public final class ProgressUtils {
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
+     * <p/>
+     * The resulting progress UI should show a cancel button if the passed
+     * runnable implements org.openide.util.Cancellable.
      * .
      * @param operation A runnable to run
      * @param displayName The display name of the operation, to show in the dialog
@@ -200,6 +209,9 @@ public final class ProgressUtils {
      * started, and then return a task which can be monitored for completion
      * or cancellation.  This method will not block while the work is run,
      * only until the progress UI is initialized.
+     * <p/>
+     * The resulting progress UI should show a cancel button if the passed
+     * runnable implements org.openide.util.Cancellable.
      *
      * @param operation
      * @param handle

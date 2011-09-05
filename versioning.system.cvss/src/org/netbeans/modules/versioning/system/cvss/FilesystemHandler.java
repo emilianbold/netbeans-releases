@@ -54,11 +54,12 @@ import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import javax.swing.SwingUtilities;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
@@ -248,6 +249,8 @@ class FilesystemHandler extends VCSInterceptor {
         
                 }
             };
+        } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new CvsSearchHistorySupport(file);
         } else {
             return super.getAttribute(file, attrName);
         }
@@ -385,4 +388,23 @@ class FilesystemHandler extends VCSInterceptor {
     private static boolean ignoringEvents() {
         return ignoredThread == Thread.currentThread();
     }
+    
+    public class CvsSearchHistorySupport extends SearchHistorySupport {
+
+        public CvsSearchHistorySupport(File file) {
+            super(file);
+        }
+
+        @Override
+        protected boolean searchHistoryImpl(final int line) throws IOException {
+            assert line < 0 : "Search History a for specific not supported yet!";  // NOI18N
+            File file = getFile();
+            Set<File> s = new HashSet<File>();
+            s.add(file);
+            Context context = new Context(Collections.EMPTY_SET, s, Collections.EMPTY_SET);
+            SearchHistoryAction.openHistory(context, file.getName());
+            return true;
+        }
+
+    }    
 }

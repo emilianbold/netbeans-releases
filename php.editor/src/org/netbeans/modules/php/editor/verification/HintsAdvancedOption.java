@@ -39,21 +39,24 @@ public class HintsAdvancedOption extends AdvancedOption {
 
     OptionsPanelController panelController;
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(HintsAdvancedOption.class, "CTL_Hints_DisplayName"); // NOI18N
     }
 
+    @Override
     public String getTooltip() {
         return NbBundle.getMessage(HintsAdvancedOption.class, "CTL_Hints_ToolTip"); // NOI18N
     }
 
+    @Override
     public synchronized OptionsPanelController create() {
         if ( panelController == null ) {
             HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(FileUtils.PHP_MIME_TYPE);
             assert manager != null;
             panelController = manager.getOptionsController();
         }
-        
+
         return panelController;
     }
 

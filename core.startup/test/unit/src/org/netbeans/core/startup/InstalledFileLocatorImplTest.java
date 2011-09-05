@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.test.TestFileUtils;
 /**
@@ -81,7 +82,7 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        scratch = getWorkDir();
+        scratch = new File(getWorkDir(), "install");
         nbhome = new File(scratch, "nbhome");
         touch(file(nbhome, "a/b"));
         touch(file(nbhome, "a/c"));
@@ -93,7 +94,7 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         touch(file(nbhome, "loc/x_foo_ja.html"));
         touch(file(nbhome, "loc/y.html"));
         touch(file(nbhome, "h_ja"));
-        nbuser = new File(scratch, "nbuser");
+        nbuser = new File(getWorkDir(), "nbuser");
         touch(file(nbuser, "a/b"));
         nbdir1 = new File(scratch, "nbdir1");
         touch(file(nbdir1, "e/f/g"));
@@ -102,7 +103,7 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         touch(file(nbdir2, "loc/y_foo.html"));
         File nbdirx = new File(scratch, "nbdirx"); // nonexistent dir
         System.setProperty("netbeans.home", nbhome.getAbsolutePath());
-        System.setProperty("netbeans.user", nbuser.getAbsolutePath());
+        PlacesTestUtils.setUserDirectory(nbuser);
         System.setProperty("netbeans.dirs",
             nbdir1.getAbsolutePath() + File.pathSeparatorChar +
             nbdir2.getAbsolutePath() + File.pathSeparatorChar +

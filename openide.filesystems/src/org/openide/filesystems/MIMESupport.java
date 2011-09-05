@@ -111,6 +111,10 @@ final class MIMESupport extends Object {
             cfo.clear();
         }
     }
+    
+    static void resetCache() {
+        CachedFileObject.resetCache();
+    }
 
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
      * @param fo is FileObject, whose MIME should be resolved
@@ -242,7 +246,7 @@ final class MIMESupport extends Object {
             }
         }
 
-        private static synchronized void resetCache() {
+        static synchronized void resetCache() {
             ERR.fine("Clearing cache"); // NOI18N
             Union2<MIMEResolver[],Set<Thread>> prev = resolvers;
             if (prev != null && prev.hasFirst()) {

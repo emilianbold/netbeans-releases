@@ -1,10 +1,43 @@
 /*
- * BindingOperationImpl.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on September 24, 2006, 5:27 PM
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.e2e.wsdl;
@@ -25,62 +58,72 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.ExtensibilityElement;
  * @author Michal Skvor
  */
 public class BindingOperationImpl implements BindingOperation {
-    
+
     private String name;
     private BindingInput bindingInput;
     private BindingOutput bindingOutput;
     private Map<String, BindingFault> bindingFaults;
-    
     private List<ExtensibilityElement> extensibilityElements;
-    
+
     /** Creates a new instance of BindingOperationImpl */
-    public BindingOperationImpl( String name ) {
+    public BindingOperationImpl(String name) {
         this.name = name;
         bindingFaults = new HashMap();
         extensibilityElements = new ArrayList();
     }
 
-    public void setName( String name ) {
+    @Override
+    public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
-    public void setBindingInput( BindingInput bindingInput ) {
+    @Override
+    public void setBindingInput(BindingInput bindingInput) {
         this.bindingInput = bindingInput;
     }
 
+    @Override
     public BindingInput getBindingInput() {
         return bindingInput;
     }
 
-    public void setBindingOutput( BindingOutput bindingOutput ) {
+    @Override
+    public void setBindingOutput(BindingOutput bindingOutput) {
         this.bindingOutput = bindingOutput;
     }
 
+    @Override
     public BindingOutput getBindingOutput() {
         return bindingOutput;
     }
 
-    public void addBindingFault( BindingFault bindingFault ) {
-        bindingFaults.put( bindingFault.getName(), bindingFault );
+    @Override
+    public void addBindingFault(BindingFault bindingFault) {
+        bindingFaults.put(bindingFault.getName(), bindingFault);
     }
 
-    public BindingFault getBindingFault( String name ) {
-        return bindingFaults.get( name );
+    @Override
+    public BindingFault getBindingFault(String name) {
+        return bindingFaults.get(name);
     }
 
+    @Override
     public List<BindingFault> getBindingFaults() {
-        return Collections.unmodifiableList( new ArrayList( bindingFaults.values()));
-    }
-    
-    public void addExtensibilityElement( ExtensibilityElement extensibilityElement ) {
-        extensibilityElements.add( extensibilityElement );
+        return Collections.unmodifiableList(new ArrayList(bindingFaults.values()));
     }
 
+    @Override
+    public void addExtensibilityElement(ExtensibilityElement extensibilityElement) {
+        extensibilityElements.add(extensibilityElement);
+    }
+
+    @Override
     public List<ExtensibilityElement> getExtensibilityElements() {
-        return Collections.unmodifiableList( extensibilityElements );
-    }    
+        return Collections.unmodifiableList(extensibilityElements);
+    }
 }

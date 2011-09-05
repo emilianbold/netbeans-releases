@@ -735,7 +735,7 @@ public abstract class RestSupport {
         return false;
     }
 
-     public String getServerType() {
+    public String getServerType() {
         return getProjectProperty(J2EE_SERVER_TYPE);
     }
 
@@ -780,6 +780,8 @@ public abstract class RestSupport {
 
         return null;
     }
+    
+    public abstract void configRestPackages( String... packs ) throws IOException ;
     
     public abstract File getLocalTargetTestRest();
     

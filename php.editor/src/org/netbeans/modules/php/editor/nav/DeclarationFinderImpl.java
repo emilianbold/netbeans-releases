@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
@@ -149,13 +150,16 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         }
                     } else {
                         List<PHPDocTag> tags = docBlock.getTags();
-                        for (PHPDocTag pHPDocTag : tags) {
-                            MagicMethodDeclarationInfo methodInfo = MagicMethodDeclarationInfo.create(pHPDocTag);
-                            if (methodInfo != null) {
-                                if (methodInfo.getRange().containsInclusive(caretOffset)) {
-                                    return methodInfo.getRange();
-                                } else if (methodInfo.getTypeRange().containsInclusive(caretOffset)) {
-                                    return methodInfo.getTypeRange();
+                        for (PHPDocTag phpDocTag : tags) {
+                            if (phpDocTag instanceof PHPDocMethodTag) {
+                                PHPDocMethodTag methodTag = (PHPDocMethodTag) phpDocTag;
+                                MagicMethodDeclarationInfo methodInfo = MagicMethodDeclarationInfo.create(methodTag);
+                                if (methodInfo != null) {
+                                    if (methodInfo.getRange().containsInclusive(caretOffset)) {
+                                        return methodInfo.getRange();
+                                    } else if (methodInfo.getTypeRange().containsInclusive(caretOffset)) {
+                                        return methodInfo.getTypeRange();
+                                    }
                                 }
                             }
                         }
@@ -190,7 +194,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
         }
         if (caretOffset == startTSOffset) {
-            // if there is not a refence, and the curet is just beetween two tokens, 
+            // if there is not a refence, and the curet is just beetween two tokens,
             // try the previous token. See issue #199329
             return getReferenceSpan(ts, caretOffset - 1);
         }
@@ -240,7 +244,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                     alternatives.addAlternative(al);
                 }
-                return (numberOfCurrentDeclaration == 1 && 
+                return (numberOfCurrentDeclaration == 1 &&
                         !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
                         ? location : alternatives;
             }

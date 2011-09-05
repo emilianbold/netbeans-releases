@@ -41,6 +41,9 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import org.netbeans.jemmy.JemmyException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.List;
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ import java.lang.reflect.Method;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -288,9 +292,6 @@ public class J2eeTestCase extends JellyTestCase {
      * @return J2eeServerNode for given server
      */
     protected J2eeServerNode getServerNode(Server server) {
-        if (!isRegistered(server)) {
-            throw new IllegalArgumentException("Server is not registred in IDE");
-        }
         switch (server) {
             case GLASSFISH:
                 return GlassFishV3ServerNode.invoke();
@@ -303,8 +304,10 @@ public class J2eeTestCase extends JellyTestCase {
                     if (serv.equals(ANY)) {
                         continue;
                     }
-                    if (isRegistered(serv)) {
+                    try {
                         return getServerNode(serv);
+                    } catch (JemmyException e) {
+                        // ignore and continue with next server
                     }
                 }
                 throw new IllegalArgumentException("No server is registred in IDE");
@@ -404,15 +407,10 @@ public class J2eeTestCase extends JellyTestCase {
             return;
         }
         try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            if (loader == null) {
-                loader = J2eeTestCase.class.getClassLoader();
-            }
-            Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, loader);
+            Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, getLoader(GLASSFISH));
             Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class);
             method.setAccessible(true);
-            String enterpriseCluster = findEnterpriseCluster();
-            int result = (Integer) method.invoke(null, enterpriseCluster, glassFishHome + "/glassfish");
+            int result = (Integer) method.invoke(null, findCluster("enterprise"), glassFishHome + "/glassfish");
             if (result == 0) {
                 alreadyRegistered.add(GLASSFISH);
             }
@@ -460,15 +458,10 @@ public class J2eeTestCase extends JellyTestCase {
             return;
         }
         try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            if (loader == null) {
-                loader = J2eeTestCase.class.getClassLoader();
-            }
-            Class<?> regClass = Class.forName("org.netbeans.modules.tomcat5.registration.AutomaticRegistration", true, loader);
+            Class<?> regClass = Class.forName("org.netbeans.modules.tomcat5.registration.AutomaticRegistration", true, getLoader(TOMCAT));
             Method method = regClass.getDeclaredMethod("registerTomcatInstance", String.class, String.class);
             method.setAccessible(true);
-            String enterpriseCluster = findEnterpriseCluster();
-            int result = (Integer) method.invoke(null, enterpriseCluster, tomcatHome);
+            int result = (Integer) method.invoke(null, findCluster("enterprise"), tomcatHome);
             if (result == 0) {
                 alreadyRegistered.add(TOMCAT);
             }
@@ -477,20 +470,45 @@ public class J2eeTestCase extends JellyTestCase {
         }
     }
 
-    /** Returns absolute path to enterprise cluster.
+    /** Returns class loader for loading classes for automatic registration
+     * of server instances.
+     * @param server server to be registered
+     * @return class loader
+     */
+    private static URLClassLoader getLoader(Server server) throws MalformedURLException {
+        List<URL> urls = new ArrayList<URL>();
+        urls.add(new File(findCluster("platform"), "core/core.jar").toURI().toURL());
+        urls.add(new File(findCluster("platform"), "lib/boot.jar").toURI().toURL());
+        urls.add(new File(findCluster("platform"), "lib/org-openide-modules.jar").toURI().toURL());
+        urls.add(new File(findCluster("platform"), "core/org-openide-filesystems.jar").toURI().toURL());
+        urls.add(new File(findCluster("platform"), "lib/org-openide-util.jar").toURI().toURL());
+        urls.add(new File(findCluster("platform"), "lib/org-openide-util-lookup.jar").toURI().toURL());
+        urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeapis.jar").toURI().toURL());
+        urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar").toURI().toURL());
+        if (server == GLASSFISH) {
+            urls.add(new File(findCluster("ide"), "modules/org-netbeans-modules-glassfish-common.jar").toURI().toURL());
+        } else if (server == TOMCAT) {
+            urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-tomcat5.jar").toURI().toURL());
+        }
+        URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        return loader;
+    }
+
+    /** Returns absolute path to given cluster or null if not found.
+     * @param clusterName cluster name
      * @return absolute path to enterprise cluster.
      */
-    private static String findEnterpriseCluster() {
+    private static String findCluster(String clusterName) {
         String clusters = System.getProperty("cluster.path.final");
         assert clusters != null : "cluster.path.final must be set.";
         for (String cluster : tokenizePath(clusters)) {
-            if (cluster.endsWith("enterprise")) {
+            if (cluster.endsWith(clusterName)) {
                 return cluster;
             }
         }
         return null;
     }
-
+    
     /**
      * Split an Ant-style path specification into components.
      * Tokenizes on <code>:</code> and <code>;</code>, paying

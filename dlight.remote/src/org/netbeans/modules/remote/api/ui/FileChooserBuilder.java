@@ -52,10 +52,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.filechooser.FileView;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -88,6 +90,7 @@ public final class FileChooserBuilder {
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
     private static final String readOnlyKey = "FileChooser.readOnly"; // NOI18N
+
     private final ExecutionEnvironment env;
     private Preferences forModule;
 
@@ -117,6 +120,7 @@ public final class FileChooserBuilder {
 
             RemoteFileChooserImpl chooser = new RemoteFileChooserImpl(selectedPath, remoteFileSystemView, env, forModule);//NOI18N
             remoteFileSystemView.addPropertyChangeListener(chooser);
+            chooser.setFileView(new CustomFileView(remoteFileSystemView));
 
             UIManager.put(openDialogTitleTextKey, currentOpenTitle);
             UIManager.put(saveDialogTitleTextKey, currentSaveTitle);
@@ -277,4 +281,31 @@ public final class FileChooserBuilder {
             return ret;
         }
     }
+    
+    private static class CustomFileView extends FileView {
+        final FileSystemView view;
+
+        public CustomFileView(FileSystemView view) {
+            this.view = view;
+        }
+
+        @Override
+        public Icon getIcon(File f) {
+            return view.getSystemIcon(f);
+        }
+
+        @Override
+        public String getName(File f) {
+            if (view.isRoot(f)) {
+                return "/"; //NOI18N
+            }
+            return super.getName(f);
+        }
+
+        @Override
+        public Boolean isTraversable(File f) {
+            return f.isDirectory();
+        }
+    }
+
 }

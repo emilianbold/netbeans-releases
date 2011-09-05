@@ -46,6 +46,7 @@ package org.netbeans.spi.java.project.classpath;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
@@ -57,7 +58,8 @@ import org.openide.filesystems.FileObject;
  * allow clients to extend its compilation classpath
  * by a new classpath element (JAR, folder, dependent project, or library).
  * @since org.netbeans.modules.java.project/1 1.3
- * @deprecated Please use {@link ProjectClassPathModifier} instead.
+ * @deprecated As a caller, use {@link ProjectClassPathModifier} instead.
+ *             As an implementor, use {@link ProjectClassPathModifier#extenderForModifier}.
  */
 @Deprecated
 public interface ProjectClassPathExtender {
@@ -68,7 +70,7 @@ public interface ProjectClassPathExtender {
      * @param library to be added
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
-     * @deprecated Please use {@link ProjectClassPathModifier#addLibrary} instead.
+     * @deprecated Please use {@link ProjectClassPathModifier#addLibraries} instead.
      */
     @Deprecated
     boolean addLibrary(Library library) throws IOException;
@@ -79,7 +81,7 @@ public interface ProjectClassPathExtender {
      * @param archiveFile ZIP/JAR file to be added
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
-     * @deprecated Please use {@link ProjectClassPathModifier#addArchive} instead.
+     * @deprecated Please use {@link ProjectClassPathModifier#addRoots(URL[], FileObject, String)} instead.
      */
     @Deprecated
     boolean addArchiveFile(FileObject archiveFile) throws IOException;
@@ -92,7 +94,7 @@ public interface ProjectClassPathExtender {
      *                        (must be owned by the artifact and be relative to it)
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
-     * @deprecated Please use {@link ProjectClassPathModifier#addAntArtifact} instead.
+     * @deprecated Please use {@link ProjectClassPathModifier#addAntArtifacts} instead.
      */
     @Deprecated
     boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException;

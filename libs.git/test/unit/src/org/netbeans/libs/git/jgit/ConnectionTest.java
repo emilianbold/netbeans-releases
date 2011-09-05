@@ -85,7 +85,6 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("http://user:heslo@bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    // start damon as git daemon --base-path=/srv/git --verbose --export-all /srv/git &
     public void testHttpConnection () throws Exception {
         // UN and PWD provided by a callback
         GitClient client = getClient(workDir);
@@ -115,6 +114,11 @@ public class ConnectionTest extends AbstractGitTestCase {
             public char[] getPassphrase (String uri, String prompt) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
+
+            @Override
+            public String getIdentityFile (String uri, String prompt) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
             
             @Override
             public Boolean askYesNoQuestion (String uri, String prompt) {
@@ -125,7 +129,6 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    // start damon as git daemon --base-path=/srv/git --verbose --export-all /srv/git &
     public void testHttpConnectionPublic () throws Exception {
         GitClient client = getClient(workDir);
         // no username or password
@@ -142,7 +145,6 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git-public/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    // start damon as git daemon --base-path=/srv/git --verbose --export-all /srv/git &
     public void testHttpConnectionEmptyPassword () throws Exception {
         GitClient client = getClient(workDir);
         // UN and EMPTY password provided by a callback
@@ -164,6 +166,11 @@ public class ConnectionTest extends AbstractGitTestCase {
 
             @Override
             public char[] getPassphrase (String uri, String prompt) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public String getIdentityFile (String uri, String prompt) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
 
@@ -284,7 +291,13 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
 
             @Override
+            public String getIdentityFile (String uri, String prompt) {
+                return new File(getDataDir(), "private_key").getAbsolutePath();
+            }
+            
+            @Override
             public char[] getPassphrase (String uri, String prompt) {
+                assertTrue("Expected passphrase prompt for private_key, was " + prompt, prompt.contains(new File(getDataDir(), "private_key").getAbsolutePath()));
                 return "qwerty".toCharArray();
             }
         });
@@ -305,6 +318,11 @@ public class ConnectionTest extends AbstractGitTestCase {
         @Override
         public char[] getPassword (String uri, String prompt) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getIdentityFile (String uri, String prompt) {
+            return null;
         }
 
         @Override

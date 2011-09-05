@@ -83,13 +83,6 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        
         // bypass bugtracking owner logic
         System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
         

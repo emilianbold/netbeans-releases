@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public final class GoToInjectableAtCaretAction extends AbstractInjectableAction {
+public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
 
     private static final long serialVersionUID = -6998124281864635094L;
 
@@ -215,7 +215,7 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
             return;
         }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));
+                InjectablesModel.class, "LBL_WaitNode"));       // NOI18N
         try {
             Rectangle rectangle = target.modelToView(target.getCaret().getDot());
             Point point = new Point(rectangle.x, rectangle.y + rectangle.height);

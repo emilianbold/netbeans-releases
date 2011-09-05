@@ -548,13 +548,13 @@ Yes. Component can control its persistence and way how they are displayed in con
             </p>
         </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.DragAndDrop.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.DragAndDrop.Enabled" category="stable">
          Name of resource bundle property which disables the drag and drop of window
          TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Undocking.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Undocking.Enabled" category="stable">
          Name of resource bundle property which disables undocking of window
          TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then there is no 'Undock' item in TopComponent popup menu
@@ -562,7 +562,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Sliding.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Sliding.Enabled" category="stable">
          Name of resource bundle property which disables sliding of window
          TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then there is no 'Minimize Window' item in TopComponent popup menu
@@ -570,7 +570,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Resizing.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Resizing.Enabled" category="stable">
          Name of resource bundle property which disables resizing of window
          TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then it is not possible to drag splitter bars
@@ -578,7 +578,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 
-    <api type="export" group="property" name="org.netbeans.core.windows.View.TopComponent.Closing.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.View.TopComponent.Closing.Enabled" category="stable">
          Name of resource bundle property which disables closing of view TopComponents (non-editor windows)
          when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then there is no 'Close Window' item in view's popup menu,
@@ -587,7 +587,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 
-    <api type="export" group="property" name="org.netbeans.core.windows.Editor.TopComponent.Closing.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Editor.TopComponent.Closing.Enabled" category="stable">
          Name of resource bundle property which disables closing of editor TopComponents (document windows)
          when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then there are no 'Close Window', 'Close All Documents' and 
@@ -597,7 +597,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Maximization.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Maximization.Enabled" category="stable">
          Name of resource bundle property which disables maximization of TopComponents 
          when its value is set to <code>false</code>, the default value is <code>true</code>.
          When this feature is disabled then there is no 'Maximize Window' item 
@@ -606,7 +606,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 
-    <api type="export" group="property" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
          Name of resource bundle property which forces splitter to ignore TopComponent
          minimum size when resizing when its value is set to <code>false</code>,
          the default value is <code>true</code>.
@@ -624,42 +624,42 @@ Yes. Component can control its persistence and way how they are displayed in con
         The property value must be set before the window system loads.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.View.DragAndDrop.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.View.DragAndDrop.Enabled" category="stable">
          Name of resource bundle property which allows to drag and drop the whole
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Editor.DragAndDrop.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Editor.DragAndDrop.Enabled" category="stable">
          Name of resource bundle property which allows to drag and drop the whole
          group of document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.View.Undocking.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.View.Undocking.Enabled" category="stable">
          Name of resource bundle property which allows to float the whole
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Editor.Undocking.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Editor.Undocking.Enabled" category="stable">
          Name of resource bundle property which allows to float the whole
          group of document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Sliding.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Sliding.Enabled" category="stable">
          Name of resource bundle property which allows to minimize (slide-out) the whole
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Auto.Slide.In.Minimized.Mode.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Auto.Slide.In.Minimized.Mode.Enabled" category="stable">
          Name of resource bundle property which controls the opening of windows in a
          minimized (slided-out) group of non-document windows. When set to true
          (the default value) then a window which should open in a minimized group (Mode)
@@ -668,7 +668,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
     
-    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Closing.Enabled" category="stable">
+    <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Closing.Enabled" category="stable">
          Name of resource bundle property which allows to close the whole
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.

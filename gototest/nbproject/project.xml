@@ -177,6 +177,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.jackpot30.file</friend>
+                <friend>org.netbeans.modules.java.hints.declarative</friend>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.project</friend>

@@ -152,7 +152,10 @@ public class CustomizerDialog {
 
         innerPane.addPropertyChangeListener( new HelpCtxChangeListener( dialogDescriptor, helpCtx ) );
         if ( innerPane instanceof HelpCtx.Provider ) {
-            dialogDescriptor.setHelpCtx( ((HelpCtx.Provider)innerPane).getHelpCtx() );
+            HelpCtx help = ((HelpCtx.Provider) innerPane).getHelpCtx();
+            if (!help.equals(HelpCtx.DEFAULT_HELP)) {
+                dialogDescriptor.setHelpCtx(help);
+            }
         }
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 

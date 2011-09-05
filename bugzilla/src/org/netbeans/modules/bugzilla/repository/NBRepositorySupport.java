@@ -56,7 +56,7 @@ public class NBRepositorySupport extends BugzillaRepository {
 
     private static final String NB_BUGZILLA_HOST = "netbeans.org";           // NOI18N
     public static final String NB_BUGZILLA_URL = "https://" + NB_BUGZILLA_HOST + "/bugzilla";           // NOI18N
-    public static final String URL_NB_ORG_SIGNUP = "https://netbeans.org/people/signup";
+    public static final String URL_NB_ORG_SIGNUP = "https://" + NB_BUGZILLA_HOST + "/people/new";       // NOI18N
 
     private static BugzillaRepository nbRepository;
     private static boolean isKenai;

@@ -53,8 +53,10 @@ import java.io.File;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.branch.BranchSelector;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -121,7 +123,11 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);
-        scp.setBranch(branchName);
+        shp.setCurrentBranch(branchName);
+        if (!HgBranch.DEFAULT_NAME.equals(branchName) && HgModuleConfig.getDefault().isSearchOnBranchEnabled(branchName)) {
+            // only for branches other than default
+            scp.setBranch(branchName);
+        }
         if (roots.length > 0) {
             scp.btnSelectBranch.addActionListener(new BranchSelectorOpener(roots, scp));
         }

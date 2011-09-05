@@ -42,24 +42,17 @@
 
 package org.netbeans.modules.maven.output;
 
+import java.util.regex.Matcher;
 import junit.framework.TestCase;
 
-/**
- *
- * @author dafe
- */
 public class GlobalOutputProcessorTest extends TestCase {
 
     public GlobalOutputProcessorTest(String testName) {
         super(testName);
     }
 
-    /**
-     * Test of processLine method, of class GlobalOutputProcessor.
-     */
-    public void testProcessLine() {
-        System.out.println("processLine - skipping lines");
-        String[] lines = new String[] {
+    public void testDownloadPattern() {
+        String[] lines = {
             "51521/?", "11/12K", "11/12M", "51521/120000b",
             "51521/? 12/25K", "34/263M 464/500b",
             "51521/? 13/25K 4034/4640M",
@@ -67,11 +60,24 @@ public class GlobalOutputProcessorTest extends TestCase {
             "59/101 KB    ", "1/3 B  ", "55 KB", "300 B  ",
             "10/101 KB   48/309 KB   ", // sometimes seems to jam
         };
-        for (int i = 0; i < lines.length; i++) {
-            if (!GlobalOutputProcessor.DOWNLOAD.matcher(lines[i]).matches()) {
-                fail("Line " + lines[i] + " not skipped");
+        for (String line : lines) {
+            if (!GlobalOutputProcessor.DOWNLOAD.matcher(line).matches()) {
+                fail("Line " + line + " not skipped");
             }
         }
+    }
+
+    public void testModelProblemPattern() {
+        Matcher m = GlobalOutputProcessor.MODEL_PROBLEM.matcher("[WARNING] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-plugin-plugin is missing. @ line 60, column 21");
+        assertTrue(m.matches());
+        assertEquals(null, m.group(1));
+        assertEquals("60", m.group(2));
+        assertEquals("21", m.group(3));
+        m = GlobalOutputProcessor.MODEL_PROBLEM.matcher("[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ org.glassfish:glassfish-main-parent:3.2-SNAPSHOT, /sources/glassfish/pom.xml, line 574, column 21");
+        assertTrue(m.matches());
+        assertEquals("/sources/glassfish/pom.xml", m.group(1));
+        assertEquals("574", m.group(2));
+        assertEquals("21", m.group(3));
     }
 
 }

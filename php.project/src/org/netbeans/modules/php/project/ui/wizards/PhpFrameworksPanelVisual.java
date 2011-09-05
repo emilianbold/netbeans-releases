@@ -230,7 +230,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
             actualExtender.addChangeListener(this);
             JComponent component = actualExtender.getComponent();
             if (component != null) {
-                configPanel.add(component, BorderLayout.NORTH);
+                configPanel.add(component, BorderLayout.CENTER);
                 enableComponents(component, item.isSelected());
             }
             configPanel.revalidate();

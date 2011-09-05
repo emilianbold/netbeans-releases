@@ -72,8 +72,10 @@ import org.openide.nodes.Node;
  */
 public class JEE6RestCStubsTest extends RestCStubsTest {
 
+    protected static Server server = Server.GLASSFISH;
+
     public JEE6RestCStubsTest(String name) {
-        super(name);
+        super(name, server);
     }
 
     @Override

@@ -116,7 +116,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesVisual.setState(false);
-        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+        copyFilesPanel.add(BorderLayout.CENTER, copyFilesVisual);
 
         PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
             @Override

@@ -42,10 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -57,8 +53,10 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JEE6RestNodeTest extends RestNodeTest {
 
+    protected static Server server = Server.GLASSFISH;
+
     public JEE6RestNodeTest(String name) {
-        super(name);
+        super(name, server);
     }
 
     @Override
@@ -77,7 +75,6 @@ public class JEE6RestNodeTest extends RestNodeTest {
                 "testOpenOnLocator",
                 "testAddMethod",
                 "testRemoveMethod",
-                "testCloseProject"
-                ).enableModules(".*").clusters(".*"));
+                "testCloseProject").enableModules(".*").clusters(".*"));
     }
 }

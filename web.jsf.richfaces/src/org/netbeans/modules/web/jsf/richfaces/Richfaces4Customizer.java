@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.web.jsf.richfaces;
 
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -55,8 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
@@ -66,7 +60,6 @@ import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -96,55 +89,15 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = new Richfaces4CustomizerPanelVisual(new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    changeSupport.fireChange();
-                }
-            });
-
-            panel.addAncestorListener(new AncestorListener() {
-
-                @Override
-                public void ancestorAdded(AncestorEvent event) {
-                    Container component = event.getAncestor();
-                    if (component instanceof Dialog) {
-                        Dialog ancestorDialog = (Dialog)component;
-                        ancestorDialog.addWindowFocusListener(new WindowFocusListener() {
-
-                            @Override
-                            public void windowGainedFocus(WindowEvent e) {
-                                if (initialize) {
-                                    panel.initLibraries(true);
-                                    initialize = false;
-                                } else {
-                                    changeSupport.fireChange();
-                                }
-                            }
-
-                            @Override
-                            public void windowLostFocus(WindowEvent e) {
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void ancestorRemoved(AncestorEvent event) {
-                }
-
-                @Override
-                public void ancestorMoved(AncestorEvent event) {
-                }
-            });
+            panel = new Richfaces4CustomizerPanelVisual(new PanelChangeListener());
+            panel.initLibraries(true);
         }
         return panel;
     }
 
     @Override
     public boolean isValid() {
-        Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
+        Preferences preferences = Richfaces4Implementation.getRichfacesPreferences();
         String richfacesLibrary = preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, "");
         if (LibraryManager.getDefault().getLibrary(richfacesLibrary) != null) {
             return true;
@@ -176,7 +129,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
 
     @Override
     public void saveConfiguration() {
-        Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
+        Preferences preferences = Richfaces4Implementation.getRichfacesPreferences();
         preferences.put(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, panel.getRichFacesLibrary());
     }
 
@@ -214,6 +167,17 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public HelpCtx getHelpCtx() {
         return panel.getHelpCtx();
+    }
+
+    /**
+     * Listener for listening changes on the {@link Richfaces4CustomizerPanelVisual).
+     */
+    private class PanelChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
+        }
     }
 
 }

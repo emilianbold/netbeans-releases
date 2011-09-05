@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp;
@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
@@ -92,21 +93,47 @@ public class DebuggerTest extends NbTestCase {
     public void testStopAtBreakpoint()  throws Exception {
         FileObject scriptFo = createPHPTestFile("index.php");//NOI18N
         assertNotNull(scriptFo);
-        final SessionId sessionId = new SessionId(scriptFo);
+        Project dummyProject = DummyProject.create(scriptFo);
+        assertNotNull(dummyProject);
+        final SessionId sessionId = new SessionId(scriptFo, dummyProject);
         File scriptFile = FileUtil.toFile(scriptFo);
         assertNotNull(scriptFile);
         assertTrue(scriptFile.exists());
         final TestWrapper testWrapper = new TestWrapper(getTestForSuspendState(sessionId));
         addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
-        startDebugging(sessionId, scriptFile);        
+        startDebugging(sessionId, scriptFile);
         sessionId.isInitialized(true);
-        testWrapper.assertTested();//sometimes, randomly fails 
+        testWrapper.assertTested();//sometimes, randomly fails
     }
 
     protected static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final Continuation move) {
         Breakpoint breakpoint = new TestLineBreakpoint(createDummyLine(fo, line - 1, testObj, move));
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         return breakpoint;
+    }
+
+    private static class DummyProject implements Project {
+
+        private final FileObject fo;
+
+        static DummyProject create(FileObject fo) {
+            return new DummyProject(fo);
+        }
+
+        private DummyProject(FileObject fo) {
+            this.fo = fo;
+        }
+
+        @Override
+        public FileObject getProjectDirectory() {
+            return fo.getParent();
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
     }
 
     static Line createDummyLine(final FileObject fo, final int editorLineNum, final TestWrapper testObj, final Continuation move) {

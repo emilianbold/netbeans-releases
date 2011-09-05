@@ -171,7 +171,7 @@ public final class AquaLFCustoms extends LFCustoms {
             "NbSplitPane.dividerSize", new Integer(3),
             "NbSplitPane.background", new Color(101,101,101),
             "nb.desktop.splitpane.border", BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(49,49,49)),
-            "nb.desktop.view.insets", new Insets(3, 0, 0, 0),
+            "nb.desktop.view.insets", new Insets(0, 0, 0, 0),
 
             SPLIT_PANE_DIVIDER_SIZE_VERTICAL, new Integer(3),
             SPLIT_PANE_DIVIDER_SIZE_HORIZONTAL, new Integer(3),
@@ -205,6 +205,10 @@ public final class AquaLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
                     
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 1,
+            "NbSlideBar.GroupSeparator.Gap.After", 1,
+            "NbSlideBar.RestoreButton.Gap", 3,
         }; //NOI18N
         return result;
     }

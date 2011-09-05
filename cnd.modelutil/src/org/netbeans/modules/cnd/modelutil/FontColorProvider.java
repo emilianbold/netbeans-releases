@@ -50,6 +50,7 @@ import javax.swing.text.AttributeSet;
  */
 public interface FontColorProvider {
     AttributeSet getColor(Entity color);
+    String getMimeType();
 
     public enum Entity {
 

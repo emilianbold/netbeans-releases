@@ -385,7 +385,7 @@ public abstract class FileObject extends Object implements Serializable {
      *   implementations (since version 7.43) 
      *   support special form of arguments for their
      *   <code>setAttribute</code> method. One can use 
-     *   prefix <code>methodvalue:</code> or <code>newvalue</code>
+     *   prefix <code>methodvalue:</code> or <code>newvalue:</code>
      *   to store references to 
      *   <a href="@JDK@/java/lang/reflect/Method.html">Method</a> or
      *   <a href="@JDK@/java/lang/Class.html">Class</a> respectively. 
