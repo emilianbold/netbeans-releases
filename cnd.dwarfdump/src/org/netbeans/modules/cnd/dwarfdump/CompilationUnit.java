@@ -96,6 +96,8 @@ public class CompilationUnit {
     private DwarfLineInfoSection lineInfoSection = null;
     private DwarfMacinfoTable macrosTable = null;
     private DwarfNameLookupTable pubnamesTable = null;
+    private DwarfRelaDebugInfoSection rela = null;
+
     private long debugInfoOffset;
     
     private final Map<Long, Long> specifications = new HashMap<Long, Long>();
@@ -369,8 +371,6 @@ public class CompilationUnit {
     public long getUnitTotalLength() {
         return unit_total_length;
     }
-
-    private DwarfRelaDebugInfoSection rela;
 
     private void readCompilationUnitHeader() throws IOException {
         reader.seek(debugInfoSectionOffset + unit_offset);
