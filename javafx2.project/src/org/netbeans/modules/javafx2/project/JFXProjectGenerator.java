@@ -267,6 +267,7 @@ public class JFXProjectGenerator {
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
+//                    ext.addDependency("run", "jar"); //NOI18N 
                 }
             }
         }
@@ -323,6 +324,9 @@ public class JFXProjectGenerator {
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
         ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
+        
+        // temporary hack fopr disabling main class selector dialog
+        ep.setProperty(ProjectProperties.MAIN_CLASS, mainClass); // NOI18N
 //        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
 //        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
                 

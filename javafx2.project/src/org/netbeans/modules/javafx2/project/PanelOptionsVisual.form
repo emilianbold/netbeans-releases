@@ -110,7 +110,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="52" max="32767" attributes="0"/>
+              <EmptySpace pref="38" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -262,6 +262,9 @@
           <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="LBL_PanelOptions_Preloader_Checkbox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="preloaderCheckBoxItemStateChanged"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblPreloaderProject">
       <Properties>
