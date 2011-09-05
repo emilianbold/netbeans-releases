@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
@@ -82,7 +81,7 @@ public class IncludePathNodeFactory implements NodeFactory {
     @Override
     public NodeList<?> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
-        return NodeFactorySupport.fixedNodeList(new Nodes.DummyNode(new IncludePathRootNode(project)) {
+        return NodeFactorySupport.fixedNodeList(new Nodes.DummyNode(new IncludePathRootNode(project, new IncludePathChildFactory(project))) {
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[]{new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH)};
@@ -93,10 +92,13 @@ public class IncludePathNodeFactory implements NodeFactory {
     private static class IncludePathRootNode extends AbstractNode implements PropertyChangeListener {
 
         private final PhpProject project;
+        private final IncludePathChildFactory childFactory;
 
-        public IncludePathRootNode(PhpProject project) {
-            super(createChildren(project));
+
+        public IncludePathRootNode(PhpProject project, IncludePathChildFactory childFactory) {
+            super(Children.create(childFactory, true));
             this.project = project;
+            this.childFactory = childFactory;
             ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
         }
 
@@ -121,18 +123,9 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            // #148927 possible deadlock
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setChildren(createChildren(project));
-                }
-            });
+            childFactory.refresh();
         }
 
-        private static Children createChildren(PhpProject project) {
-            return Children.create(new IncludePathChildFactory(project), false);
-        }
     }
 
     private static class IncludePathChildFactory extends Nodes.FileChildFactory {
@@ -159,6 +152,11 @@ public class IncludePathNodeFactory implements NodeFactory {
             }
             return list;
         }
+
+        public void refresh() {
+            refresh(false);
+        }
+
     }
 
     private static class IncludePathNode extends Nodes.FileNode {

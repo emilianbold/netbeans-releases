@@ -200,7 +200,6 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -219,7 +218,7 @@ public abstract class CslTestBase extends NbTestCase {
         super.setUp();
 
         clearWorkDir();
-        PlacesTestUtils.setUserDirectory(getWorkDir());
+        System.setProperty("netbeans.user", getWorkDirPath());
         // XXX are the following four lines actually necessary?
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         assert wd != null;
