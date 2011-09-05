@@ -115,13 +115,13 @@ public class RemoteFXScreenshot {
     }
     
     private static RemoteScreenshot createRemoteFXScreenshot(DebuggerEngine engine, VirtualMachine vm, ThreadReference tr, String title, ObjectReference window, SGComponentInfo componentInfo) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException {
-        final ClassType imageClass = getClass(vm, "java.awt.image.BufferedImage");
-        final ClassType toolkitClass = getClass(vm, "com.sun.javafx.tk.Toolkit");
+        final ClassType bufImageClass = getClass(vm, "java.awt.image.BufferedImage");
+        final ClassType imageClass = getClass(vm, "javafx.scene.image.Image");
         final ClassType sceneClass = getClass(vm, "javafx.scene.Scene");
         final ClassType windowClass = getClass(vm, "javafx.stage.Window");
 
-        final Method getDefaultTk = toolkitClass.concreteMethodByName("getToolkit", "()Lcom/sun/javafx/tk/Toolkit;");
-        final Method convertImage = toolkitClass.methodsByName("toExternalImage", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;").get(0);
+        final Method fromPlatformImage = imageClass.concreteMethodByName("impl_fromPlatformImage", "(Ljava/lang/Object;)Ljavafx/scene/image/Image;"); 
+        final Method convertImage = imageClass.concreteMethodByName("impl_toExternalImage", "(Ljava/lang/Object;)Ljava/lang/Object;");
         final Method renderImage = sceneClass.concreteMethodByName("renderToImage", "(Ljava/lang/Object;FZ)Ljava/lang/Object;");
         final Method getScene = windowClass.concreteMethodByName("getScene", "()Ljavafx/scene/Scene;");
 
@@ -130,9 +130,9 @@ public class RemoteFXScreenshot {
         FloatValue factor = vm.mirrorOf(1.0f);
         BooleanValue syncNeeded = vm.mirrorOf(false);
 
-        ObjectReference image = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
-        ObjectReference toolkit = (ObjectReference)toolkitClass.invokeMethod(tr, getDefaultTk, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        ObjectReference bufImage = (ObjectReference)toolkit.invokeMethod(tr, convertImage, Arrays.asList(image, imageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
+        ObjectReference pImage = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
+        ObjectReference image = (ObjectReference)imageClass.invokeMethod(tr, fromPlatformImage, Arrays.asList(pImage), ObjectReference.INVOKE_SINGLE_THREADED); 
+        ObjectReference bufImage = (ObjectReference)image.invokeMethod(tr, convertImage, Arrays.asList(bufImageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
 
         Method getData = ((ClassType)bufImage.referenceType()).concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
         ObjectReference rasterRef = (ObjectReference) bufImage.invokeMethod(tr, getData, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
