@@ -240,7 +240,7 @@ public class CRUDTest extends RestTestBase {
         }
         Set<File> files = getFilesFromCustomPkg("service", "entity"); //NOI18N
         if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            files.addAll(getFilesFromCustomPkg("controller","controller.exceptions", "service", "entity")); //NOI18N
+            files.addAll(getFilesFromCustomPkg("controller", "controller.exceptions", "service", "entity")); //NOI18N
         }
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
             assertEquals("Some files were not generated", 3, files.size()); //NOI18N
@@ -270,10 +270,10 @@ public class CRUDTest extends RestTestBase {
         propertiesDialogOper.ok();
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
         Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
-        n.performPopupAction(testRestActionName);
+        n.performPopupActionNoBlock(testRestActionName);
         String testRestTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.support.Bundle", "TTL_SelectTarget");
-        NbDialogOperator wo = new NbDialogOperator(testRestTitle);      
-        wo.btOK();
+        NbDialogOperator wo = new NbDialogOperator(testRestTitle);
+        wo.ok();
     }
 
     protected void createPU() {
@@ -284,8 +284,9 @@ public class CRUDTest extends RestTestBase {
         createNewFile(getProject(), category, puLabel);
         String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
         WizardOperator wo = new WizardOperator(title);
-        new JComboBoxOperator(wo, 1).selectItem(0); //NOI18N
+        new JComboBoxOperator(wo, 1).selectItem(1); //NOI18N
         wo.finish();
+        new EventTool().waitEvent(2500);
         if (!getProjectType().isAntBasedProject()) {
             new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
             new EventTool().waitNoEvent(2500);

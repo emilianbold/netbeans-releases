@@ -52,6 +52,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SideBarFactory;
+import org.netbeans.editor.ext.ExtKit;
 import org.openide.util.NbBundle;
 
 /*
@@ -62,6 +63,8 @@ public abstract class SearchAndReplaceBarHandler {
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
     public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
     public static final String REPLACE_ACTION = "replace"; // NOI18N
+    private static final ExtKit.FindAction dialogFindAction = new ExtKit.FindAction();
+    private static final ExtKit.ReplaceAction dialogReplaceAction = new ExtKit.ReplaceAction();
 
     /**
      * Factory for creating the incremental search sidebar
@@ -104,6 +107,8 @@ public abstract class SearchAndReplaceBarHandler {
                             }
                             searchBarInstance.gainFocus();
                             makeSearchAndReplaceBarPersistent();
+                        } else {
+                            dialogFindAction.actionPerformed(evt, target);
                         }
                     }
                 }
@@ -154,6 +159,8 @@ public abstract class SearchAndReplaceBarHandler {
                             jp.add(ReplaceBar.getInstance(searchBar));
                             ReplaceBar.getInstance(searchBar).gainFocus();
                             makeSearchAndReplaceBarPersistent();
+                        } else {
+                            dialogReplaceAction.actionPerformed(evt, target);
                         }
                     }
                 }

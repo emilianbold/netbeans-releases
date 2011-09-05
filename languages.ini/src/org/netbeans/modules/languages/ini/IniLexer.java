@@ -184,16 +184,23 @@ class IniLexer implements Lexer<IniTokenId> {
                     processComment(input);
 
                 } else if (ch == EQUALS) {
-                    // any trailing whitespaces?
-                    String name = input.readText(0, input.readLength()).toString();
-                    String trimmed = name.replaceAll("\\s+$", ""); // NOI18N
-                    int backup = name.length() - trimmed.length();
-                    if (backup > 0) {
-                        state = State.WHITESPACE_AFTER_NAME;
-                        input.backup(backup);
+                    if (input.readLength() > 0) {
+                        // any trailing whitespaces?
+                        String name = input.readText(0, input.readLength()).toString();
+                        String trimmed = name.replaceAll("\\s+$", ""); // NOI18N
+                        int backup = name.length() - trimmed.length();
+                        if (backup > 0) {
+                            state = State.WHITESPACE_AFTER_NAME;
+                            input.backup(backup);
+                        } else {
+                            // no whitespace, just '=' or error
+                            state = State.EQUALS;
+                        }
                     } else {
-                        // no whitespace, just '='
-                        state = State.EQUALS;
+                            readTillEndLine(input);
+                            input.readText(0, input.readLength());
+                            state = State.START;
+                            return info.tokenFactory().createToken(IniTokenId.ERROR);
                     }
 
                 } else {

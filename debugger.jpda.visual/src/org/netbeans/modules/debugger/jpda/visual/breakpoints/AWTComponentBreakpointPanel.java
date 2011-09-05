@@ -112,7 +112,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         this.createBreakpoint = createBreakpoint;
         initComponents();
         int type = cb.getType();
-        componentTextField.setText(cb.getComponent().getComponentInfo().getDisplayName());
+        String componentName = ""; // NOI18N
+        if (cb.getComponent() != null && cb.getComponent().getComponentInfo() != null) {
+            componentName = cb.getComponent().getComponentInfo().getDisplayName();
+        }
+        componentTextField.setText(componentName);
         addRemoveCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_ADD) != 0 || (type & AWTComponentBreakpoint.TYPE_REMOVE) != 0);
         showHideCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_SHOW) != 0 || (type & AWTComponentBreakpoint.TYPE_HIDE) != 0);
         repaintCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0);

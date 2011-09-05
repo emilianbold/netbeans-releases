@@ -210,9 +210,10 @@ public class ETable extends JTable {
     private ETableColumn searchColumn = null;
     
     /**
-     * This text can be customized using setSelectVisibleColumnsLabel(...) method.
+     * This text can be customized using {@link #setSelectVisibleColumnsLabel(java.lang.String)} method.
      */
-    String selectVisibleColumnsLabel = "Select Visible Columns";
+    private String selectVisibleColumnsLabel =
+            java.util.ResourceBundle.getBundle("org/netbeans/swing/etable/Bundle").getString("LBL_SelectVisibleColumns");
 
     private boolean inEditRequest = false;
     private boolean inRemoveRequest=false;
@@ -1449,6 +1450,10 @@ public class ETable extends JTable {
         selectVisibleColumnsLabel = localizedLabel;
     }
     
+    String getSelectVisibleColumnsLabel() {
+        return selectVisibleColumnsLabel;
+    }
+    
     /**
      * Replaces the quickFilterFormatStrings by the given array. The
      * new array must have the same length as the old one.
@@ -2249,7 +2254,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
             }
         }
     }
@@ -2262,7 +2267,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
