@@ -969,6 +969,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             filterInputMap(outline, JComponent.WHEN_FOCUSED);
             filterInputMap(outline, JComponent.WHEN_IN_FOCUSED_WINDOW);
             filterInputMap(outline, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            outline.putClientProperty("PropertyToolTipShortDescription", Boolean.TRUE);
         }
         
         private void filterInputMap(JComponent component, int condition) {
