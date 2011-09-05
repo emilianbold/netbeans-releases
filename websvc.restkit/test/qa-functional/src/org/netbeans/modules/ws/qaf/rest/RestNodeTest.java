@@ -58,7 +58,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class RestNodeTest extends RestTestBase {
 
     protected static final String[] services = {"ItemResource", "ItemsResource [/items]", "SampleResource [sample]"}; //NOI18N
-
     private static final String addMethod =
             "    @javax.ws.rs.POST\n" + //NOI18N
             "    @javax.ws.rs.Consumes(\"application/xml\")\n" + //NOI18N
@@ -67,6 +66,10 @@ public class RestNodeTest extends RestTestBase {
 
     public RestNodeTest(String name) {
         super(name);
+    }
+
+    public RestNodeTest(String name, Server server) {
+        super(name, server);
     }
 
     @Override
@@ -206,7 +209,6 @@ public class RestNodeTest extends RestTestBase {
                 "testOpenOnLocator",
                 "testAddMethod",
                 "testRemoveMethod",
-                "testCloseProject"
-                ).enableModules(".*").clusters(".*"));
+                "testCloseProject").enableModules(".*").clusters(".*"));
     }
 }

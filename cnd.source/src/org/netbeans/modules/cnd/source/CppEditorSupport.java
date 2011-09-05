@@ -100,6 +100,11 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             CppEditorSupport.this.saveDocument();
             CppEditorSupport.this.getDataObject().setModified(false);
         }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
+        }
     };
 
     private final InstanceContent ic;
