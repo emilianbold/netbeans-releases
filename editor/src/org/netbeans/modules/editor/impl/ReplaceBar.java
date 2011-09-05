@@ -598,7 +598,9 @@ public class ReplaceBar extends JPanel {
     private void unchangeSearchBarToBeOnlySearchBar() throws MissingResourceException {
         searchBar.getCloseButton().setVisible(true);
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
-        searchBar.getFindLabel().setPreferredSize(searchBar.getFindLabel().getMinimumSize());
+        Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
+        searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
+        searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
         searchBar.addEscapeKeystrokeFocusBackTo(searchBar);
         if (searchBar.getActualTextComponent() != null) {
             searchBar.getActualTextComponent().removeFocusListener(focusAdapterForComponent);
@@ -612,7 +614,9 @@ public class ReplaceBar extends JPanel {
     private void changeSearchBarToBePartOfReplaceBar() throws MissingResourceException {
         searchBar.getCloseButton().setVisible(false);
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
-        searchBar.getFindLabel().setPreferredSize(new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height));
+        Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);
+        searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
+        searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);
         this.addEscapeKeystrokeFocusBackTo(searchBar);
         if (searchBar.getActualTextComponent() != null) {
             searchBar.getActualTextComponent().addFocusListener(focusAdapterForComponent);

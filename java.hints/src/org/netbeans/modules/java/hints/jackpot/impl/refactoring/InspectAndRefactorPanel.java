@@ -382,8 +382,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(todo, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
                 break;
             case 1:
-                //current project
-                customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                if (fileObject!=null) {
+                    //current project
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                } else {
+                    //custom
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                }
                 break;
             case 2:
                 //current package
