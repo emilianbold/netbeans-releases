@@ -66,7 +66,8 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "com.jcraft.jsch;bundle-version=\"[0.1.37,0.2.0)\", " +
                 "com.jcraft.jzlib;resolution:=optional, " +
                 "org.openide.actions;bundle-version=\"[6.15,100)\"," +
-                "javax.xml.rpc;bundle-version=1.1.0");
+                "javax.xml.rpc;bundle-version=1.1.0, " +
+                "org.apache.xerces;bundle-version=\"[2.8.0,3.0.0)\";resolution:=optional");
         Properties localization = new Properties();
         localization.setProperty("OpenIDE-Module-Name", "My Bundle");
         localization.setProperty("OpenIDE-Module-Display-Category", "hello");
@@ -80,7 +81,6 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "OpenIDE-Module-Module-Dependencies='org.netbeans.api.progress/1 &gt; 1.19, " +
                 "org.netbeans.modules.options.api/0-1 &gt; 1.17, " +
                 "com.jcraft.jsch &gt; 0.1.37, " +
-                "com.jcraft.jzlib, " +
                 "org.openide.actions &gt; 6.15, " +
                 "javax.xml.rpc &gt; 1.1.0' " +
                 "OpenIDE-Module-Name='My Bundle' OpenIDE-Module-Short-Description='Hello there!' " +
