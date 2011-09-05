@@ -664,11 +664,22 @@ public class MakeUpdateDesc extends MatchingTask {
                 if (!m.matches()) {
                     throw new BuildException("Could not parse dependency: " + dep + " in " + whereFrom);
                 }
+                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
+                boolean isOptional = false;
+                while(m2.find()) {
+                    if(m2.group(1).equals("resolution") && m2.group(2).equals("optional")) {
+                        isOptional = true;
+                        break;
+                    }
+                }
+                if(isOptional) {
+                    continue;
+                } 
+                m2.reset();
                 if (b.length() > 0) {
                     b.append(", ");
                 }
                 b.append(m.group(1)); // dep CNB
-                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
                 while (m2.find()) {
                     if (!m2.group(1).equals("bundle-version")) {
                         continue;
@@ -701,7 +712,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     b.append(" > ").append(major % 100).append(rest);
                 }
             }
-            manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+            if(b.length() > 0) {
+                manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+            }
         }
         String bundleCategory = loc(localized, attr, "Bundle-Category");
         if (bundleCategory != null) {

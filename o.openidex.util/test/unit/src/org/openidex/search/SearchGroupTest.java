@@ -37,6 +37,8 @@
  */
 package org.openidex.search;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
@@ -55,7 +57,8 @@ public class SearchGroupTest extends NbTestCase {
      */
     public void testOnStopSearchPositive() throws InterruptedException {
 
-        FakeSearchGroup fsg = new FakeSearchGroup() {
+        Semaphore s = new Semaphore(0);
+        FakeSearchGroup fsg = new FakeSearchGroup(s) {
 
             @Override
             protected void onStopSearch() {
@@ -66,13 +69,14 @@ public class SearchGroupTest extends NbTestCase {
             Thread searchThread = new Thread(new SearchRunner(fsg));
             searchThread.start();
             Thread.sleep(10);
-            assertTrue("Search should be running now", searchThread.isAlive());
+            assertTrue("acquire - start", s.tryAcquire(30, TimeUnit.SECONDS));
+            assertFalse("Search should be running now", fsg.isFinished());
             fsg.stopSearch();
             Thread.sleep(10);
-            assertFalse("Search has not been stopped", searchThread.isAlive());
-            
+            assertTrue("acquire - end", s.tryAcquire(30, TimeUnit.SECONDS));
+            assertTrue("Search has not been stopped", fsg.isFinished());
         } finally {
-            fsg.innerTask.terminate();        
+            fsg.innerTask.terminate();
         }
     }
 
@@ -81,35 +85,55 @@ public class SearchGroupTest extends NbTestCase {
      */
     public void testOnStopSearchNegative() throws InterruptedException {
 
-        FakeSearchGroup fsg = new FakeSearchGroup();
+        Semaphore s = new Semaphore(0);
+        FakeSearchGroup fsg = new FakeSearchGroup(s);
         try {
             Thread searchThread = new Thread(new SearchRunner(fsg));
             searchThread.start();
             Thread.sleep(10);
-            assertTrue("Search should be running now", searchThread.isAlive());
+            assertTrue("acquire - start", s.tryAcquire(30, TimeUnit.SECONDS));
+            assertFalse("Search should be running now", fsg.isFinished());
             fsg.stopSearch();
             Thread.sleep(10);
-            assertTrue("Search should be still running", searchThread.isAlive());
+            assertFalse("acquire - nothing", s.tryAcquire(1, TimeUnit.SECONDS));
+            assertFalse("Search should be still running", fsg.isFinished());
             fsg.getInnerTaks().terminate(); // terminate inner task explicitly
             Thread.sleep(10);
-            assertFalse("Inner task wasn't stopped", searchThread.isAlive());
+            assertTrue("acquire - end", s.tryAcquire(30, TimeUnit.SECONDS));
+            assertTrue("Inner task wasn't stopped", fsg.isFinished());
         } finally {
             fsg.getInnerTaks().terminate();
         }
     }
 
-    /** Helper class for simulating internal long-running job. */
+    /** Helper class for simulating internal long-running job. 
+     * 
+     *  The tasks releases its semaphore twice. After start and after finish.
+     */
     private static class TerminatableLongTask {
 
         private AtomicBoolean stopped = new AtomicBoolean(false);
+        private volatile boolean finished = false;
+        Semaphore s;
+
+        public TerminatableLongTask(Semaphore s) {
+            this.s = s;
+        }
 
         public void start() {
+            s.release(); // release - start
             while (!stopped.get()) {
             }
+            finished = true;
+            s.release(); // release - end
         }
 
         public final void terminate() {
             stopped.set(true);
+        }
+
+        public boolean isFinished() {
+            return finished;
         }
     }
 
@@ -117,7 +141,11 @@ public class SearchGroupTest extends NbTestCase {
      * long-running task. */
     private static class FakeSearchGroup extends SearchGroup {
 
-        private TerminatableLongTask innerTask = new TerminatableLongTask();
+        private TerminatableLongTask innerTask;
+
+        public FakeSearchGroup(Semaphore s) {
+            innerTask = new TerminatableLongTask(s);
+        }
 
         @Override
         protected void doSearch() {
@@ -132,15 +160,19 @@ public class SearchGroupTest extends NbTestCase {
         public TerminatableLongTask getInnerTaks() {
             return innerTask;
         }
+
+        public boolean isFinished() {
+            return stopped && innerTask.isFinished();
+        }
     }
 
     /** Helper Runnable for starting a search group in a new thread.     
      */
     private static class SearchRunner implements Runnable {
 
-        private SearchGroup sg;
+        private FakeSearchGroup sg;
 
-        public SearchRunner(SearchGroup sg) {
+        public SearchRunner(FakeSearchGroup sg) {
             this.sg = sg;
         }
 

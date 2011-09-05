@@ -106,8 +106,7 @@ public class actionsTest extends ExtJellyTestCase {
                 "testEditContainer",
                 "testResizing",
                 "testBeans",
-                "testManager"
-                ).gui(true).enableModules(".*").clusters(".*"));
+                "testManager").gui(true).enableModules(".*").clusters(".*"));
     }
 
     /** Called before every test case. */
@@ -123,7 +122,7 @@ public class actionsTest extends ExtJellyTestCase {
 
 
         formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + FILE_NAME);
-    //formnode.select();
+        //formnode.select();
 
 
     }
@@ -144,6 +143,7 @@ public class actionsTest extends ExtJellyTestCase {
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
     }
+
     ;
 
     /** Test case 1.
@@ -171,7 +171,7 @@ public class actionsTest extends ExtJellyTestCase {
         inspectorRootNode.select();
         inspectorRootNode.expand();
 
-       
+
         new Action(null, "Add From Palette|Swing Containers|Panel").perform(inspectorRootNode);
 
         Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
@@ -189,9 +189,9 @@ public class actionsTest extends ExtJellyTestCase {
         new Action(null, "Duplicate").performPopup(buttonNode);
 
         inspectorRootNode.select();
-        
+
         freedesignAction.performPopup(inspectorRootNode);
-        
+
         panelNode.select();
         new Action(null, "Duplicate").performPopup(panelNode);
 
@@ -233,31 +233,31 @@ public class actionsTest extends ExtJellyTestCase {
 
         new Action(null, "Design This Container").performPopup(panelNode);
 
-        
+
         FormDesignerOperator opDesigner = new FormDesignerOperator(FILE_NAME);
         opDesigner.source();
         opDesigner.design();
-        
+
         formnode.select();
         openAction.perform(formnode);
         Thread.sleep(2000);
 
         inspector = new NavigatorOperator();
-        
+
         Node inspectorRootNode1 = new Node(inspector.getTree(), FRAME_ROOT);
         Node panelNode1 = new Node(inspectorRootNode1, "jPanel1 [JPanel]");
-        panelNode1.select();                
+        panelNode1.select();
         Node buttonNode1 = new Node(panelNode1, "jButton1 [JButton]");
-        
-        
+
+
         Thread.sleep(2000);
-       
+
         new Action(null, "Design Parent|[Top Parent]").performPopup(buttonNode1);
 
         //Thread.sleep(2000);
         opDesigner.source();
         opDesigner.design();
-        
+
         formnode.select();
         openAction.perform(formnode);
         Thread.sleep(2000);
@@ -277,9 +277,9 @@ public class actionsTest extends ExtJellyTestCase {
 
         //Thread.sleep(1000);
 
-       // buttonNode.select();
+        // buttonNode.select();
         //inspector.pressKey(KeyEvent.VK_ENTER);  
-         
+
     }
 
     /** This test case verifies following Form Editor actions:<br />
@@ -290,50 +290,63 @@ public class actionsTest extends ExtJellyTestCase {
     public void testResizing() throws InterruptedException {
         createForm("JFrame Form", "MyJFrame");
 
-        inspector = new ComponentInspectorOperator();
+        ComponentInspectorOperator inspectorOp = new ComponentInspectorOperator();
 
-        Node inspectorRootNode = new Node(inspector.getTree(), FRAME_ROOT);
-        inspectorRootNode.select();
-        inspectorRootNode.expand();
-        Thread.sleep(1000);
+        inspectorOp.freezeNavigatorAndRun(new Runnable() {
 
-        new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.getTree(), "[JFrame]"));
+            @Override
+            public void run() {
+                ComponentInspectorOperator inspectorOp = new ComponentInspectorOperator();
+                Node inspectorRootNode = new Node(inspectorOp.getTree(), FRAME_ROOT);
 
-        Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
-        panelNode.select();
 
-        new Action(null, "Add From Palette|Swing Controls|Button").performPopup(panelNode);
-        Thread.sleep(1000);
-        new Action(null, "Add From Palette|Swing Controls|Button").performPopup(panelNode);
+                new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspectorOp.getTree(), "[JFrame]"));
 
-        Node btn1Node = new Node(panelNode, "jButton1 [JButton]");
-        btn1Node.select();
+                Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
+                panelNode.select();
+
+                new Action(null, "Add From Palette|Swing Controls|Button").performPopup(panelNode);
+
+                new Action(null, "Add From Palette|Swing Controls|Button").performPopup(panelNode);
+
+                Node btn1Node = new Node(panelNode, "jButton1 [JButton]");
+                btn1Node.select();
+            }
+        });
+
 
         properties = new PropertySheetOperator();
         FormDesignerOperator opDesigner = new FormDesignerOperator("MyJFrame");
         selectPropertiesTab(properties);
         new DimensionProperty(properties, "preferredSize").setValue("100,50");
-        
 
-        Node btn2Node = new Node(panelNode, "jButton2 [JButton]");
-        btn1Node.select();
-        btn2Node.addSelectionPath();
+        inspectorOp.freezeNavigatorAndRun(new Runnable() {
 
-        Thread.sleep(2000);
-        opDesigner.source();
-        opDesigner.design();
-        
-        btn1Node = new Node(panelNode, "jButton1 [JButton]");
-        btn2Node = new Node(panelNode, "jButton2 [JButton]");
-        Node[] nodes = {btn1Node, btn2Node};
-        
-        new Action(null, "Same Size|Same Width").performPopup(nodes);
+            @Override
+            public void run() {
+                
+                ComponentInspectorOperator inspectorOp = new ComponentInspectorOperator();
+                Node inspectorRootNode = new Node(inspectorOp.getTree(), FRAME_ROOT);
+                Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
+                Node btn2Node = new Node(panelNode, "jButton2 [JButton]");
+                Node btn1Node = new Node(panelNode, "jButton1 [JButton]");
+                btn1Node.select();
+                btn2Node.addSelectionPath();
 
-        Thread.sleep(2000);
+                
+
+                btn1Node = new Node(panelNode, "jButton1 [JButton]");
+                btn2Node = new Node(panelNode, "jButton2 [JButton]");
+                Node[] nodes = {btn1Node, btn2Node};
+
+                new Action(null, "Same Size|Same Width").performPopup(nodes);
+            }
+        });
+
 
         //verify, that source code contains the "grouping" of two JButtons
         String line = "new java.awt.Component[] {jButton1, jButton2}";
-        
+
 
         findInCode(line, opDesigner);
 
@@ -432,5 +445,4 @@ public class actionsTest extends ExtJellyTestCase {
         }
         tbo.push();
     }
-
 }
