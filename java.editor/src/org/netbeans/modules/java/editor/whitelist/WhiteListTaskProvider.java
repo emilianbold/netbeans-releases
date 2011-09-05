@@ -247,39 +247,43 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         return null;
     }
 
-    private static synchronized void updateErrorsInRoot(
-            /*@NotNull*/ final Callback callback,
+    private static void updateErrorsInRoot(
+            @NonNull final Callback callback,
             @NonNull final FileObject root) {
         Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
         Set<FileObject> fixedFiles = new HashSet<FileObject>(filesWithErrors);
         filesWithErrors.clear();
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
         final Map<FileObject,List<Task>> filesToTasks = new HashMap<FileObject,List<Task>>();
-        final DocumentIndex index = getIndex(root);
-        if (index != null) {
-            try {
-                for (IndexDocument doc : index.findByPrimaryKey("", QueryKind.PREFIX)) {    //NOI18N
-                    final Map.Entry<FileObject,Task> task = createTask(root, doc);
-                    if (task != null) {
-                        List<Task> tasks = filesToTasks.get(task.getKey());
-                        if (tasks == null) {
-                            tasks = new ArrayList<Task>();
-                            filesToTasks.put(task.getKey(), tasks);
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final DocumentIndex index = getIndex(root);
+                    if (index != null) {
+                        try {
+                            for (IndexDocument doc : index.findByPrimaryKey("", QueryKind.PREFIX)) {    //NOI18N
+                                final Map.Entry<FileObject,Task> task = createTask(root, doc);
+                                if (task != null) {
+                                    List<Task> tasks = filesToTasks.get(task.getKey());
+                                    if (tasks == null) {
+                                        tasks = new ArrayList<Task>();
+                                        filesToTasks.put(task.getKey(), tasks);
+                                    }
+                                    tasks.add(task.getValue());
+                                }
+                            }
+                        } finally {
+                            index.close();
                         }
-                        tasks.add(task.getValue());
                     }
+                    return null;
                 }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                try {
-                    index.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        } catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
         }
         for (Map.Entry<FileObject,List<Task>> e : filesToTasks.entrySet()) {
             LOG.log(Level.FINE, "Setting {1} for {0}\n",
@@ -294,6 +298,44 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             callback.setTasks(f, Collections.<Task>emptyList());
         }
         filesWithErrors.addAll(nueFilesWithErrors);
+    }
+
+    private static void updateErrorsInFile(
+        @NonNull final Callback callback,
+        @NonNull final FileObject root,
+        @NonNull final FileObject file) {
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>(){
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final DocumentIndex index = getIndex(root);
+                    final List<Task> tasks = new ArrayList<Task>();
+                    try {
+                        for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, file), QueryKind.PREFIX)) {
+                            final Map.Entry<FileObject,Task> task = createTask(root, doc);
+                            if (task != null) {
+                                tasks.add(task.getValue());
+                            }
+                        }
+                    } finally {
+                        index.close();
+                    }
+                    Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
+                    if (tasks.isEmpty()) {
+                        filesWithErrors.remove(file);
+                    } else {
+                        filesWithErrors.add(file);
+                    }
+                    LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
+                    callback.setTasks(file, tasks);
+                    return null;
+                }
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        } catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     private static final class Work implements Runnable {
@@ -331,35 +373,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             }
 
             if (fileOrRoot.isData()) {
-                final DocumentIndex index = getIndex(root);
-                final List<Task> tasks = new ArrayList<Task>();
-                try {
-                    for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, fileOrRoot), QueryKind.PREFIX)) {    //NOI18N
-                        final Map.Entry<FileObject,Task> task = createTask(root, doc);
-                        if (task != null) {
-                            tasks.add(task.getValue());
-                        }
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (InterruptedException e) {
-                    Exceptions.printStackTrace(e);
-                } finally {
-                    try {
-                        index.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
-                if (tasks.isEmpty()) {
-                    filesWithErrors.remove(fileOrRoot);
-                } else {
-                    filesWithErrors.add(fileOrRoot);
-                }
-
-                LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{fileOrRoot, tasks});
-                callback.setTasks(fileOrRoot, tasks);
+                updateErrorsInFile(callback, root, fileOrRoot);
             } else {
                 updateErrorsInRoot(callback, root);
             }
