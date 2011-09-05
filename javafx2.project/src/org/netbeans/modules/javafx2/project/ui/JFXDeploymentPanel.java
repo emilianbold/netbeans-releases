@@ -45,6 +45,7 @@ package org.netbeans.modules.javafx2.project.ui;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -85,6 +86,15 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
         checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
         textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
+        refreshCustomJSLabel();
+        if(jfxProps.getRuntimeCP().isEmpty()) {
+            buttonDownloadMode.setEnabled(false);
+            labelDownloadMode.setEnabled(false);
+            labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeNone")); // NOI18N
+            labelDownloadModeMessage.setEnabled(false);
+        } else {
+            refreshDownloadModeControls();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -461,8 +471,21 @@ private void buttonDownloadModeActionPerformed(java.awt.event.ActionEvent evt) {
     if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
         jfxProps.setLazyJars(rc.getResources());
         jfxProps.setLazyJarsChanged(true);
+        refreshDownloadModeControls();
     }
 }//GEN-LAST:event_buttonDownloadModeActionPerformed
+
+    private void refreshDownloadModeControls() {
+        if(jfxProps.getRuntimeCP().size() > jfxProps.getLazyJars().size()) {
+            if(jfxProps.getLazyJars().isEmpty()) {
+                labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeEager")); // NOI18N
+            } else {
+                labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeMixed")); // NOI18N
+            }
+        } else {
+            labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeLazy")); // NOI18N
+        }
+    }
 
 private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCustomJSMessageActionPerformed
     final JFXJavaScriptCallbacksPanel rc = new JFXJavaScriptCallbacksPanel(jfxProps);
@@ -475,8 +498,23 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
         jfxProps.setJSCallbacks(rc.getResources());
         jfxProps.setJSCallbacksChanged(true);
+        refreshCustomJSLabel();
     }
 }//GEN-LAST:event_buttonCustomJSMessageActionPerformed
+
+    private void refreshCustomJSLabel() {
+        int jsDefs = 0;
+        for (Map.Entry<String,String> entry : jfxProps.getJSCallbacks().entrySet()) {
+            if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                jsDefs++;
+            }
+        }
+        if(jsDefs == 0) {
+            labelCustomJSMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_CallbacksDefinedNone")); // NOI18N
+        } else {
+            labelCustomJSMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_CallbacksDefined", jsDefs)); // NOI18N
+        }
+    }
 
     private void refreshSigningLabel(boolean sign) {
         if(sign) {
