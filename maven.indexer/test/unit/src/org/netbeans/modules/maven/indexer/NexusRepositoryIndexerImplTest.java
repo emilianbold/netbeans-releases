@@ -57,7 +57,7 @@ import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery.ClassUsageResult;
-import org.openide.modules.Places;
+import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.test.JarBuilder;
 import org.openide.util.test.TestFileUtils;
 
@@ -75,7 +75,7 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
     
     @Override protected void setUp() throws Exception {
         clearWorkDir();
-        Places.setUserDirectory(getWorkDir());
+        PlacesTestUtils.setUserDirectory(getWorkDir());
         File repo = new File(getWorkDir(), "repo");
         embedder = EmbedderFactory.getProjectEmbedder();
         defaultArtifactRepository = embedder.lookupComponent(ArtifactRepositoryFactory.class).createArtifactRepository("test", repo.toURI().toString(), "default", null, null);

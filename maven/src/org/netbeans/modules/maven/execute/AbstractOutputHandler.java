@@ -128,10 +128,11 @@ public abstract class AbstractOutputHandler {
         Iterator<? extends OutputProcessorFactory> it = result.allInstances().iterator();
         while (it.hasNext()) {
             OutputProcessorFactory factory = it.next();
-            Set<OutputProcessor> procs = factory.createProcessorsSet(proj);
+            Set<? extends OutputProcessor> procs = factory.createProcessorsSet(proj);
             if (factory instanceof ContextOutputProcessorFactory) {
-                procs = new HashSet<OutputProcessor>(procs);
-                procs.addAll(((ContextOutputProcessorFactory)factory).createProcessorsSet(proj, config));
+                Set<OutputProcessor> _procs = new HashSet<OutputProcessor>(procs);
+                _procs.addAll(((ContextOutputProcessorFactory)factory).createProcessorsSet(proj, config));
+                procs = _procs;
             }
             Iterator it2 = procs.iterator();
             while (it2.hasNext()) {

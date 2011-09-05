@@ -42,29 +42,29 @@
 
 package org.openide.explorer;
 
+import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyVetoException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ExplorerActionsImplTest extends NbTestCase {
+public class ExplorerActionsImplTest extends NbTestCase implements PropertyChangeListener {
+    private volatile AssertionFailedError err;
+    private volatile int cnt;
 
     public ExplorerActionsImplTest(String s) {
         super(s);
@@ -88,13 +88,34 @@ public class ExplorerActionsImplTest extends NbTestCase {
         em.setRootContext(root);
         em.setSelectedNodes(new Node[] { root });
         Action action = ExplorerUtils.actionPaste(em);
+        Action cut = ExplorerUtils.actionCut(em);
         assertFalse("Not enabled", action.isEnabled());
+        
+        action.addPropertyChangeListener(this);
+        cut.addPropertyChangeListener(this);
+        
 
         em.setSelectedNodes(new Node[] { ch3 });
+        assertFalse("Cut is not enabled", cut.isEnabled());
         assertTrue("Now enabled", action.isEnabled());
         action.actionPerformed(new ActionEvent(this, 0, ""));
 
         assertEquals("The paste type is going to be called", 1, mockPaste.cnt);
+        
+        if (err != null) {
+            throw err;
+        }
+        if (cnt == 0) {
+            fail("There should be some change in actions: " + cnt);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (err == null && !EventQueue.isDispatchThread()) {
+            err = new AssertionFailedError("Properties should be delivered in AWT Event thread");
+        }
+        cnt++;
     }
 
     private static class PT extends PasteType {
@@ -102,6 +123,7 @@ public class ExplorerActionsImplTest extends NbTestCase {
 
         @Override
         public Transferable paste() throws IOException {
+            assertTrue("paste is performed synchronously", EventQueue.isDispatchThread());
             cnt++;
             return null;
         }
@@ -116,6 +138,7 @@ public class ExplorerActionsImplTest extends NbTestCase {
 
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
+            assertFalse("Don't block AWT", EventQueue.isDispatchThread());
             if (pasteTypes != null) {
                 s.addAll(pasteTypes);
             }

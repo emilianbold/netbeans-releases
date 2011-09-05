@@ -412,7 +412,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
 //        String platformPropsPath = "nbproject/platform.properties";
 //        EditableProperties props = suite.getHelper().getProperties(platformPropsPath);
 //        props.setProperty("harness.dir", platformC.getParent() + File.separator + "harness");
-//        props.setProperty("netbeans.dest.dir", copyP.getParent());
+//        props.setProperty(ModuleList.NETBEANS_DEST_DIR, copyP.getParent());
 //        props.setProperty("app.name", "fakeapp");
 //        props.setProperty("jnlp.servlet.jar", someJar.getAbsolutePath());
 //        suite.getHelper().putProperties(platformPropsPath, props);

@@ -68,13 +68,8 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.commons_logging</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
-                    </run-dependency>
+                    <code-name-base>org.apache.commons.logging</code-name-base>
+                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
@@ -183,6 +178,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.artifact.resolver.filter</package>
                 <package>org.apache.maven.artifact.resolver</package>
                 <package>org.apache.maven.artifact.versioning</package>
+                <package>org.apache.maven.cli</package>
                 <package>org.apache.maven.embedder</package>
                 <package>org.apache.maven.execution</package>
                 <package>org.apache.maven.lifecycle</package>

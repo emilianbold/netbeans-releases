@@ -44,13 +44,14 @@
 
 package org.netbeans.editor;
 
-import javax.swing.text.Position;
 
 /**
  * Subset of functionality of CharSequence present in JDK1.4.
  *
  * @author Miloslav Metelka
  * @version 1.00
+ * @deprecated use {@link org.netbeans.lib.editor.util.swing.DocumentUtilities#getText(javax.swing.text.Document) }
+ *  to obtain CharSequence instance from a document instead.
  */
 
 

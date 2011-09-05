@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.test.CssCompletionTestBase;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class SelectorsModuleTest extends CssCompletionTestBase {
+public class SelectorsModuleTest extends CssModuleTestBase {
     
     public SelectorsModuleTest(String name) {
         super(name);

@@ -65,6 +65,7 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -86,10 +87,44 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
+    private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/"; //NOI18N    
+    private static final String[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new String[]{
+        "default_module",
+        "marquee", 
+        "ruby", 
+        "multi-column_layout", 
+        "values_and_units", 
+        "text", 
+        "writing_modes",
+        "generated_content_for_paged_media",
+        "fonts",
+        "basic_box_model",
+        "speech",
+        "grid_positioning",
+        "flexible_box_layout",
+        "image_values",
+        "animations",
+        "transforms_2d",
+        "transforms_3d",
+        "transitions",
+        "line",
+        "hyperlinks",
+        "presentation_levels",
+        "generated_and_replaced_content"
+    };
+    private static Collection<PropertyDescriptor> propertyDescriptors;
 
     @Override
-    public Collection<PropertyDescriptor> getPropertyDescriptors() {
-        return DefaultProperties.properties();
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if (propertyDescriptors == null) {
+            propertyDescriptors = new ArrayList<PropertyDescriptor>();
+            for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
+                String path = MODULE_PATH_BASE + fileName;
+                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path));
+            }
+
+        }
+        return propertyDescriptors;
     }
 
     @Override

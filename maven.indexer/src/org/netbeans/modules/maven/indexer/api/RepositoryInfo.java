@@ -44,12 +44,12 @@ package org.netbeans.modules.maven.indexer.api;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
@@ -62,20 +62,20 @@ public final class RepositoryInfo {
 
     private final String id;
     private final String type;
-    private final String name;
+    private final @NonNull String name;
     private final String repositoryPath;
     private final String repositoryUrl;
     private final String indexUpdateUrl;
 
-    public RepositoryInfo(String id, String type, String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
+    public RepositoryInfo(String id, String type, @NullAllowed String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
         this(id, type, name, repositoryPath, repositoryUrl, null);
     }
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    private RepositoryInfo(String id, String type, String name, String repositoryPath,
+    RepositoryInfo(String id, String type, @NullAllowed String name, String repositoryPath,
             String repositoryUrl, String indexUpdateUrl) throws URISyntaxException {
         this.id = id;
         this.type = type;
-        this.name = name;
+        this.name = name != null ? name : id;
         this.repositoryPath = repositoryPath;
         if (repositoryUrl != null && !repositoryUrl.endsWith("/")) {
             repositoryUrl += "/";
@@ -90,48 +90,27 @@ public final class RepositoryInfo {
         }
     }
 
-    public static RepositoryInfo createRepositoryInfo(FileObject fo) throws URISyntaxException {
-        String type = (String) fo.getAttribute(RepositoryPreferences.KEY_TYPE);
-//it seems the type can somehow turn null
-//        assert type != null : "No type defined for repository at " + fo.getPath();
-// for now we can handle the data corruption in the following way
-        if (type ==  null) {
-            type = RepositoryPreferences.TYPE_NEXUS;
-        }
-        String id = fo.getName();
-        String name;
-        try {
-            name = /* DataObject.find(fo).getNodeDelegate().getDisplayName() */ fo.getFileSystem().getStatus().annotateName(id, Collections.singleton(fo));
-        } catch (FileStateInvalidException x) {
-            name = id;
-        }
-        String path = (String) fo.getAttribute(RepositoryPreferences.KEY_PATH);
-        String repourl =(String) fo.getAttribute(RepositoryPreferences.KEY_REPO_URL);
-        String indexurl = (String) fo.getAttribute(RepositoryPreferences.KEY_INDEX_URL);
-        return new RepositoryInfo(id, type, name, path, repourl, indexurl);
-    }
-
-    public String getId() {
+    public @NonNull String getId() {
         return id;
     }
 
-    public String getType() {
+    public @NonNull String getType() {
         return type;
     }
 
-    public String getName() {
+    public @NonNull String getName() {
         return name;
     }
 
-    public String getRepositoryPath() {
+    public @CheckForNull String getRepositoryPath() {
         return repositoryPath;
     }
 
-    public String getRepositoryUrl() {
+    public @CheckForNull String getRepositoryUrl() {
         return repositoryUrl;
     }
 
-    public String getIndexUpdateUrl() {
+    public @CheckForNull String getIndexUpdateUrl() {
         return indexUpdateUrl;
     }
 

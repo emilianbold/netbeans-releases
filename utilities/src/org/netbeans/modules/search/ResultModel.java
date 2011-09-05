@@ -48,6 +48,7 @@ package org.netbeans.modules.search;
 import java.nio.charset.Charset;
 import java.util.List;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openidex.search.SearchType;
@@ -74,15 +75,19 @@ public final class ResultModel {
                             DETAILS_COUNT_LIMIT);
 
         private final String bundleKey;
-        private final Integer msgParam;
+        private final Integer value;
 
         private Limit(String bundleKey, Integer limit) {
             this.bundleKey = bundleKey;
-            this.msgParam = limit;
+            this.value = limit;
         }
 
         String getDisplayName() {
-            return NbBundle.getMessage(Limit.class, bundleKey, msgParam);
+            return NbBundle.getMessage(Limit.class, bundleKey, value);
+        }
+
+        public Integer getValue() {
+            return this.value;
         }
     }
 
@@ -471,5 +476,10 @@ public final class ResultModel {
 
     ResultViewPanel getResultView(){
         return resultView;
+    }
+
+    /** Get common search folder. Can be null. */
+    FileObject getCommonSearchFolder() {
+        return searchGroup.getCommonSearchFolder();
     }
 }

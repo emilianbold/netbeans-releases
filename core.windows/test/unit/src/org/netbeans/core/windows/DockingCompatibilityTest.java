@@ -56,11 +56,18 @@ import org.openide.windows.*;
  * @author Jaroslav Tulach
  */
 public class DockingCompatibilityTest extends NbTestCase {
+    private Mode mode;
 
     public DockingCompatibilityTest (String name) {
         super (name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        mode = WindowManager.getDefault().getCurrentWorkspace().createMode("OwnMode", "displayName", null);
+    }
+
+    @Override
     protected boolean runInEQ () {
         return true;
     }
@@ -74,7 +81,6 @@ public class DockingCompatibilityTest extends NbTestCase {
     }
     
     public void testComponentPutIntoOwnModeCanBeDockedAsWell () {
-        Mode mode = WindowManager.getDefault ().getCurrentWorkspace ().createMode ("OwnMode", "displayName", null);
         TopComponent tc = new TopComponent ();
         mode.dockInto (tc);
         tc.open ();
@@ -83,10 +89,10 @@ public class DockingCompatibilityTest extends NbTestCase {
     }
 
     public void testComponentPlacedDirectlyIntoEditorModeHasToStayThere () {
-        Mode mode = WindowManager.getDefault ().findMode ("editor");
-        assertNotNull ("Shall not be null", mode);
+        Mode editor = WindowManager.getDefault ().findMode ("editor");
+        assertNotNull ("Shall not be null", editor);
         TopComponent tc = new TopComponent ();
-        mode.dockInto (tc);
+        editor.dockInto (tc);
         assertCanBeDocked (tc, null);
     }
     

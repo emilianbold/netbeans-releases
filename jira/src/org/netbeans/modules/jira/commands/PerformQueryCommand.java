@@ -50,7 +50,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -80,7 +79,7 @@ public class PerformQueryCommand extends JiraCommand {
                 repository.getTaskRepository(),
                 repositoryQuery,
                 collector,
-                BugtrackingRuntime.getInstance().getSynchronizationSession(),
+                null,
                 new NullProgressMonitor());
     }
 

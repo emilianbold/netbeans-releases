@@ -127,7 +127,8 @@ public class SvnConfigFiles {
             if(auth == null) {
                 auth = file.add("auth");                                        // NOI18N
             }
-            auth.put("store-auth-creds", "no");                                 // NOI18N
+            auth.put("store-auth-creds", "yes");                                // NOI18N
+            auth.put("store-passwords", "no");                                  // NOI18N
             auth.put("password-stores", "");                                    // NOI18N
         }
     }

@@ -978,7 +978,7 @@ public class LogReader {
         if (subFolders == null){
             subFolders = new HashSet<String>();
             File f = new File(root);
-            gatherSubFolders(f);
+            gatherSubFolders(f, new HashSet<String>());
             findBase = new HashMap<String,List<String>>();
             initSearchMap();
         }
@@ -987,28 +987,25 @@ public class LogReader {
     private HashSet<String> subFolders;
     private Map<String,List<String>> findBase;
 
-    private void gatherSubFolders(File d){
+    private void gatherSubFolders(File d, HashSet<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
-            String path = d.getAbsolutePath().replace('\\', '/');
-            if (!subFolders.contains(path)){
-                subFolders.add(path);
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
+            }
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
+                subFolders.add(d.getAbsolutePath().replace('\\', '/'));
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            try {
-                                String canPath = ff[i].getCanonicalPath();
-                                String absPath = ff[i].getAbsolutePath();
-                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                    continue;
-                                }
-                            } catch (IOException ex) {
-                                //Exceptions.printStackTrace(ex);
-                            }
-                            gatherSubFolders(ff[i]);
+                            gatherSubFolders(ff[i], antiLoop);
                         }
                     }
                 }

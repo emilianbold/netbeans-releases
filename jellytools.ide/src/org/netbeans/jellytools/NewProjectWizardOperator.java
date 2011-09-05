@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,16 +27,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
 package org.netbeans.jellytools;
 
@@ -53,10 +49,8 @@ import org.netbeans.jemmy.operators.*;
 import javax.swing.tree.TreePath;
 
 /**
- * Handles NetBeans New Project wizard and its components
- * Categories and Projecs.
-  * It is invoked from main menu File -> New Project... <br>
- * Usage:
+ * Handles NetBeans New Project wizard and its components Categories and
+ * Projects. It is invoked from main menu File -> New Project... <br> Usage:
  * <pre>
  *  NewProjectWizardOperator npwop = NewProjectWizardOperator.invoke();
  *  npwop.selectCategory("Standard");
@@ -64,18 +58,18 @@ import javax.swing.tree.TreePath;
  *  npwop.next();
  *  npwop.getDescription();
  * </pre>
+ *
  * @author tb115823
  */
 public class NewProjectWizardOperator extends WizardOperator {
 
-    private JLabelOperator      _lblCategories;
-    private JLabelOperator      _lblProjects;
-    private JTreeOperator       _treeCategories;
-    private JListOperator       _lstProjects;
-    private JLabelOperator      _lblDescription;
+    private JLabelOperator _lblCategories;
+    private JLabelOperator _lblProjects;
+    private JTreeOperator _treeCategories;
+    private JListOperator _lstProjects;
+    private JLabelOperator _lblDescription;
     private JEditorPaneOperator _txtDescription;
-    
-            
+
     /** Creates new NewProjectWizardOperator that can handle it.
      */
     public NewProjectWizardOperator() {
@@ -88,7 +82,7 @@ public class NewProjectWizardOperator extends WizardOperator {
     public NewProjectWizardOperator(String title) {
         super(title);
     }
-    
+
     /** Invokes new wizard and returns instance of NewProjectWizardOperator.
      * @return  instance of NewProjectWizardOperator
      */
@@ -114,33 +108,37 @@ public class NewProjectWizardOperator extends WizardOperator {
         // is shown before tree is initialized. Then we can change selection.
         try {
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object param) {
-                    return treeCategories().isSelectionEmpty() ? null: Boolean.TRUE;
+                    return treeCategories().isSelectionEmpty() ? null : Boolean.TRUE;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Wait node is selected");
+                    return ("Wait node is selected");
                 }
             }).waitAction(null);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
-        } catch(TimeoutExpiredException tee) {
+        } catch (TimeoutExpiredException tee) {
             // ignore it because sometimes can happen that no category is selected by default
         }
         new Node(treeCategories(), category).select();
     }
-    
+
     /** Selects given project
      * @param project name of project to select
      */
     public void selectProject(String project) {
         lstProjects().selectItem(project);
     }
-    
+
     /** Tries to find "Categories:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblCategories() {
-        if (_lblCategories==null) {
+        if (_lblCategories == null) {
             _lblCategories = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Categories"));
         }
         return _lblCategories;
@@ -150,7 +148,7 @@ public class NewProjectWizardOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblProjects() {
-        if (_lblProjects==null) {
+        if (_lblProjects == null) {
             _lblProjects = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Projects"));
         }
         return _lblProjects;
@@ -160,13 +158,12 @@ public class NewProjectWizardOperator extends WizardOperator {
      * @return JTreeOperator
      */
     public JTreeOperator treeCategories() {
-        if (_treeCategories==null) {
+        if (_treeCategories == null) {
             _treeCategories = new JTreeOperator(this);
         }
         return _treeCategories;
     }
-    
-    
+
     /** returns selected path in treeCategories
      * @return TreePath
      */
@@ -178,12 +175,11 @@ public class NewProjectWizardOperator extends WizardOperator {
      * @return JListOperator
      */
     public JListOperator lstProjects() {
-        if (_lstProjects==null) {
+        if (_lstProjects == null) {
             _lstProjects = new JListOperator(this, 1);
         }
         return _lstProjects;
     }
-
 
     /** returns selected item for lstProject
      * @return selected project
@@ -191,31 +187,27 @@ public class NewProjectWizardOperator extends WizardOperator {
     public String getSelectedProject() {
         return lstProjects().getSelectedValue().toString();
     }
-    
-    
+
     /** Tries to find "Description:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblDescription() {
-        if (_lblDescription==null) {
+        if (_lblDescription == null) {
             _lblDescription = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Description"));
         }
         return _lblDescription;
     }
 
-    
     /** Tries to find null JEditorPane in this dialog.
      * @return JEditorPaneOperator
      */
     public JEditorPaneOperator txtDescription() {
-        if (_txtDescription==null) {
+        if (_txtDescription == null) {
             _txtDescription = new JEditorPaneOperator(this);
         }
         return _txtDescription;
     }
 
-
-    
     /** gets text for txtDescription
      * @return String text
      */
@@ -223,26 +215,13 @@ public class NewProjectWizardOperator extends WizardOperator {
         return txtDescription().getText();
     }
 
-    /** Pushes "Finish" button and waits until wizard dismisses. Then waits for
-     * Opening Projects dialog and waits until it dismisses too.
+    /** Pushes "Finish" button and waits until wizard dismisses.
      */
     @Override
     public void finish() {
-        btFinish().pushNoBlock();
+        btFinish().push();
         getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CAP_Opening_Projects");
-        NbDialogOperator openingOper;
-        try {
-            openingOper = new NbDialogOperator(openingProjectsTitle);
-        } catch (TimeoutExpiredException e) {
-            // ignore and return when progress dialog was closed before we started to wait for it
-            return;
-        }
-        // wait at most 120 second until progress dialog dismiss
-        openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-        openingOper.waitClosed();
     }
 
     /** Performs verification of NewProjectWizardOperator by accessing all its components.
@@ -256,6 +235,4 @@ public class NewProjectWizardOperator extends WizardOperator {
         lblDescription();
         txtDescription();
     }
-
 }
-

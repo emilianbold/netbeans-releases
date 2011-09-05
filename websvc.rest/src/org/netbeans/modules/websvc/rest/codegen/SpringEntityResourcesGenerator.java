@@ -158,7 +158,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         StringBuilder body = new StringBuilder("try { ");                       // NOI18N
         body.append("Query query = entityManager.createQuery(");                // NOI18N
         body.append('"');
-        body.append("SELECT object(0) FROM ");                                  // NOI18N
+        body.append("SELECT object(o) FROM ");                                  // NOI18N
         body.append(getModel().getEntityInfo(entityFQN).getName());
         body.append(" AS o\");");                                               // NOI18N
         body.append("if (!all) {");                                             // NOI18N

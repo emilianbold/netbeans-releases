@@ -1175,18 +1175,14 @@ public class ResourceSupport {
             if (events == null) {
                 return;
             }
-            getI18nService();
-            getResourceService();
-            if (i18nService == null && resourceService == null) {
-                return;
-            }
+            boolean noService = (getI18nService() == null) && (getResourceService() == null);
 
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
                 switch (ev.getChangeType()) {
 
                 case FormModelEvent.COMPONENT_REMOVED:
-                    if (ev.getCreatedDeleted()) {
+                    if (ev.getCreatedDeleted() && !noService) {
                         for (FormProperty prop : getComponentResourceProperties(
                                 ev.getComponent(), VALID_RESOURCE_VALUE, true)) {
                             Object value = getAutoValue(prop);
@@ -1213,21 +1209,23 @@ public class ResourceSupport {
                 case FormModelEvent.COMPONENT_ADDED:
                     if (ev.getCreatedDeleted()) {
                         RADComponent addedComp = ev.getComponent();
-                        for (FormProperty prop : getComponentResourceProperties(
-                                    addedComp, VALID_RESOURCE_VALUE, true)) {
-                            try { // add resource/i18n value to properties file (restore)
-                                Object value = prop.getValue();
-                                if (value instanceof I18nValue && i18nService != null) {
-                                    i18nService.update(null, (I18nValue) value,
-                                                       getSrcDataObject(), getI18nBundleName(), designLocale,
-                                                       false);
+                        if (!noService) {
+                            for (FormProperty prop : getComponentResourceProperties(
+                                        addedComp, VALID_RESOURCE_VALUE, true)) {
+                                try { // add resource/i18n value to properties file (restore)
+                                    Object value = prop.getValue();
+                                    if (value instanceof I18nValue && i18nService != null) {
+                                        i18nService.update(null, (I18nValue) value,
+                                                           getSrcDataObject(), getI18nBundleName(), designLocale,
+                                                           false);
+                                    }
+                                    else if (value instanceof ResourceValue && resourceService != null) {
+                                        resourceService.update(null, (ResourceValue) value, getSourceFile(), designLocale);
+                                    }
                                 }
-                                else if (value instanceof ResourceValue && resourceService != null) {
-                                    resourceService.update(null, (ResourceValue) value, getSourceFile(), designLocale);
+                                catch (Exception ex) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                                 }
-                            }
-                            catch (Exception ex) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                             }
                         }
                         if (isAutoName() && addedComp != formModel.getTopRADComponent()
@@ -1821,10 +1819,17 @@ public class ResourceSupport {
             }
         };
 
-        int autoMode = getAutoMode();
-        return autoMode == AUTO_OFF || autoMode == AUTO_I18N ?
-            new Node.Property[] { autoNamingProp, autoModeProp, formBundleProp, localeProp } :
-            new Node.Property[] { autoNamingProp, autoModeProp, localeProp };
+        List<Node.Property> props = new ArrayList<Node.Property>();
+        props.add(autoNamingProp);
+        if ((getI18nService() != null) || (getResourceService() != null)) {
+            int autoMode = getAutoMode();
+            props.add(autoModeProp);
+            if (autoMode == AUTO_OFF || autoMode == AUTO_I18N) {
+                props.add(formBundleProp);
+            }
+            props.add(localeProp);
+        }
+        return props.toArray(new Node.Property[props.size()]);
     }
 
     private class BundleFilePropertyEditor extends PropertyEditorSupport {

@@ -361,4 +361,8 @@ public final class Git {
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }
+
+    public Collection<File> getCreatedFolders () {
+        return getVCSInterceptor().getCreatedFolders();
+    }
 }

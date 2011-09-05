@@ -80,6 +80,12 @@ public enum NodeType {
         bodylist, 
         bodyset, 
         combinator, 
+        
+        /** 
+         * @counter-style <counter-name> { ... }
+         */
+        counterStyle,
+        
         cssId, 
         cssClass, 
         declaration, 
@@ -94,8 +100,16 @@ public enum NodeType {
         imports, 
         invalidRule, 
         hexColor, 
+        
+        margin,
+        margin_sym,
+        
         media, 
-        mediaList,
+        media_expression,
+        media_feature,
+        media_query_list,
+        media_query,
+        media_type,
         medium, 
         
         /**
@@ -140,11 +154,15 @@ public enum NodeType {
         /**
          * error recovery rule
          */
+        syncToFollow,
+        /**
+         * error recovery rule
+         */
         syncTo_IDENT_RBRACE,
         /**
          * error recovery rule
          */
-//        syncTo_IDENT_RBRACKET_LBRACE,
+        syncTo_IDENT_RBRACKET_LBRACE,
         
         synpred2_Css3, 
         selectorsGroup, 

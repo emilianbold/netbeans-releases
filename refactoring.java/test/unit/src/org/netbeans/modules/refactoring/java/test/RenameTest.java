@@ -127,7 +127,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class B {\n"
                 + "}"));
         verifyContent(test,
-                new File("t/BTest", "package t;\n" // XXX: Why is there no extension?
+                new File("t/BTest", "package t;\n" // XXX: Why is there no java extension?
                 + "import junit.framework.TestCase;\n"
                 + "\n"
                 + "public class BTest extends TestCase {\n"
@@ -148,6 +148,20 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/J.java", "interface J { void m();}"),
                 new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
                 new File("t/D.java", "class D { public void m(){};}"));
+    }
+    
+    public void test195070() throws Exception { // #195070 - refactor/rename works wrong with override
+        writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
+        performRename(src.getFileObject("t/A.java"), 1, "bind", null);
+        verifyContent(src, new File("t/A.java", "class A { public void bind(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ super.bind();}}"));
+        
+        writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
+        performRename(src.getFileObject("t/A.java"), 1, "binding", null);
+        verifyContent(src, new File("t/A.java", "class A { public void binding(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ binding();}}"));
     }
 
     private void performRename(FileObject source, final int position, final String newname, final JavaRenameProperties props, Problem... expectedProblems) throws Exception {

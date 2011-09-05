@@ -303,6 +303,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                         <attr name="position" intvalue="900"/>
                     </file>
+                    <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
+                        <attr name="position" intvalue="1050"/>
+                    </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1100"/>

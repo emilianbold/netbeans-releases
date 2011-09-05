@@ -46,10 +46,11 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -57,7 +58,15 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Martin Krauskopf
  */
-@TemplateRegistration(folder="NetBeansModuleDevelopment", displayName="#template_action", iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png", position=100, description="../../resources/newAction.html", category="nbm-specific")
+@TemplateRegistration(
+    folder=UIUtil.TEMPLATE_FOLDER,
+    id=UIUtil.TEMPLATE_ACTION_ID,
+    displayName="#template_action",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png",
+    position=100,
+    description="../../resources/newAction.html",
+    category=UIUtil.TEMPLATE_CATEGORY
+)
 @Messages("template_action=Action")
 public final class NewActionIterator extends BasicWizardIterator {
 

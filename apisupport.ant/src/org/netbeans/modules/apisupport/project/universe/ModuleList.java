@@ -97,6 +97,8 @@ import org.xml.sax.SAXException;
  */
 public final class ModuleList {
 
+    public static final String NETBEANS_DEST_DIR = "netbeans.dest.dir";
+
     private static final Logger LOG = Logger.getLogger(ModuleList.class.getName());
 
     /** for performance measurement from ModuleListTest */
@@ -352,7 +354,7 @@ public final class ModuleList {
                 try {
                     Properties p = new Properties();
                     p.load(is);
-                    String d = p.getProperty("netbeans.dest.dir"); // NOI18N
+                    String d = p.getProperty(NETBEANS_DEST_DIR);
                     if (d != null) {
                         return new File(d);
                     }
@@ -747,7 +749,7 @@ public final class ModuleList {
     private static File resolveNbDestDir(File root, File customNbDestDir, PropertyEvaluator eval) throws IOException {
         File nbdestdir;
         if (customNbDestDir == null) {
-            String nbdestdirS = eval.getProperty("netbeans.dest.dir"); // NOI18N
+            String nbdestdirS = eval.getProperty(NETBEANS_DEST_DIR);
             if (nbdestdirS == null) {
                 throw new IOException("No netbeans.dest.dir defined in " + root); // NOI18N
             }
@@ -798,10 +800,7 @@ public final class ModuleList {
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "project.properties"))); // NOI18N
         eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
-        String platformS = eval.getProperty("nbplatform.active"); // NOI18N
-        if (platformS != null) {
-            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
-        }
+        providers.add(new DestDirProvider(eval));
         return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
@@ -1076,10 +1075,7 @@ public final class ModuleList {
                 providers.add(PropertyUtils.globalPropertyProvider());
             }
             eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
-            String platformS = eval.getProperty("nbplatform.active"); // NOI18N
-            if (platformS != null) {
-                providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
-            }
+            providers.add(new DestDirProvider(eval));
         }
         // private.properties & project.properties.
         providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
@@ -1088,7 +1084,7 @@ public final class ModuleList {
         Map<String,String> defaults = new HashMap<String,String>();
         if (type == NbModuleType.NETBEANS_ORG) {
             defaults.put("nb_all", root.getAbsolutePath()); // NOI18N
-            defaults.put("netbeans.dest.dir", findNetBeansOrgDestDir(root).getAbsolutePath()); // NOI18N
+            defaults.put(NETBEANS_DEST_DIR, findNetBeansOrgDestDir(root).getAbsolutePath());
         }
         defaults.put("code.name.base.dashes", cnb.replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "modules"); // NOI18N

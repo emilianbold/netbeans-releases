@@ -80,6 +80,7 @@ public class SubprojectProviderImplTest extends NbTestCase {
                 "<modelVersion>4.0.0</modelVersion>" +
                 "<groupId>grp</groupId>" +
                 "<artifactId>p2</artifactId>" +
+                "<version>0</version>" +
                 "</project>");
         Project p1 = ProjectManager.getDefault().findProject(d);
         Project p2 = ProjectManager.getDefault().findProject(d.getFileObject("sub"));

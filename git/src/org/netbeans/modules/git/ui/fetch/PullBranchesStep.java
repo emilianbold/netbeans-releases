@@ -61,6 +61,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -102,6 +103,11 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     @Override
     protected final JComponent getJComponent () {
         return branches.getPanel();
+    }
+    
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx(PullBranchesStep.class);
     }
 
     public void setRemote (GitRemoteConfig remote) {

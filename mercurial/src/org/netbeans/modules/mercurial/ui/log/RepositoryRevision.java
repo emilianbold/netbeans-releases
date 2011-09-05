@@ -45,7 +45,6 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import java.io.File;
 import java.util.*;
-import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -108,14 +107,16 @@ public class RepositoryRevision {
     public class Event {
     
         /**
-         * The file or folder that this event is about. It may be null if the File cannot be computed.
+         * The file that this event is about. It may be null if the File cannot be computed.
          */ 
         private File    file;
+        private File originalFile;
     
         private HgLogMessageChangedPath changedPath;
 
         private String name;
         private String path;
+        private Set<File> renames;
 
         public Event(HgLogMessageChangedPath changedPath) {
             this.changedPath = changedPath;
@@ -150,6 +151,18 @@ public class RepositoryRevision {
             this.file = file;
         }
 
+        public File getOriginalFile() {
+            return originalFile;
+        }
+
+        void setOriginalFile (File file) {
+            this.originalFile = file;
+        }
+
+        void setRenames (Set<File> renames) {
+            this.renames = new HashSet<File>(renames);
+        }
+
         public String getName() {
             return name;
         }
@@ -161,6 +174,10 @@ public class RepositoryRevision {
         @Override
         public String toString() {
             return changedPath.getPath();
+        }
+
+        boolean isPredecessorFor (File file) {
+            return file.equals(getFile()) || renames != null && renames.contains(file);
         }
 
         

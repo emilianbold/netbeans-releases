@@ -48,7 +48,6 @@ import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,13 +96,13 @@ final class Manager {
     
     private boolean moduleBeingUninstalled = false;
 
-    private final List<Runnable> pendingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> pendingTasks = new LinkedList<Runnable>();
     
     private TaskListener taskListener;
     
-    private final List<Runnable> currentTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> currentTasks = new LinkedList<Runnable>();
 
-    private final List<Runnable> stoppingTasks = Collections.synchronizedList(new LinkedList<Runnable>());
+    private final List<Runnable> stoppingTasks = new LinkedList<Runnable>();
 
     private boolean searchWindowOpen = false;
     
@@ -139,7 +138,7 @@ final class Manager {
 
     /**
      */
-    void scheduleSearchTask(SearchTask task) {
+    synchronized void scheduleSearchTask(SearchTask task) {
         assert EventQueue.isDispatchThread();
         
         ResultViewPanel viewPanel = ResultView.getInstance().initiateResultView(task);
@@ -152,7 +151,7 @@ final class Manager {
     
     /**
      */
-    void scheduleReplaceTask(ReplaceTask task) {
+    synchronized void scheduleReplaceTask(ReplaceTask task) {
         assert EventQueue.isDispatchThread();
         
         pendingTasks.add(task);
@@ -161,7 +160,7 @@ final class Manager {
 
     /**
      */
-    void schedulePrintTask(PrintDetailsTask task) {
+    synchronized void schedulePrintTask(PrintDetailsTask task) {
         assert EventQueue.isDispatchThread();
 
         pendingTasks.add(task);
@@ -170,7 +169,7 @@ final class Manager {
 
     /**
      */
-    void scheduleCleanTask(CleanTask task) {
+    synchronized void scheduleCleanTask(CleanTask task) {
         assert EventQueue.isDispatchThread();
 
         pendingTasks.add(task);
@@ -441,6 +440,7 @@ final class Manager {
                                      final Object[] params,
                                      final boolean wait) {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 final ResultView resultViewInstance = ResultView.getInstance();
                 try {
@@ -469,13 +469,13 @@ final class Manager {
     
     /**
      */
-    void searchWindowOpened() {
+    synchronized void searchWindowOpened() {
         searchWindowOpen = true;
     }
 
     /**
      */
-    void searchWindowClosed() {
+    synchronized void searchWindowClosed() {
         assert EventQueue.isDispatchThread();
         
         searchWindowOpen = false;
@@ -602,10 +602,20 @@ final class Manager {
     /**
      */
     void stopSearching(SearchTask sTask) {
-        if (pendingTasks.remove(sTask)){
-            notifySearchCancelled(sTask);
-        } else if (currentTasks.contains(sTask)){
-            stoppingTasks.add(sTask);
+        
+        boolean stopTask = false;
+
+        synchronized (this) {
+            if (pendingTasks.remove(sTask)) {
+                notifySearchCancelled(sTask);
+            } else if (currentTasks.contains(sTask)) {
+                if (!stoppingTasks.contains(sTask)) {
+                    stoppingTasks.add(sTask);
+                    stopTask = true;
+                }
+            }
+        }
+        if (stopTask) {
             sTask.stop();
         }
     }
@@ -700,6 +710,7 @@ final class Manager {
 
         /**
          */
+        @Override
         public void taskFinished(Task task) {
             Runnable rTask = Manager.this.tasksMap.remove(task);
             if (rTask != null){

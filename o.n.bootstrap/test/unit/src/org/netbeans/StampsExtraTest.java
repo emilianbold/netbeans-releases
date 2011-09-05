@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.Places;
+import org.openide.modules.api.PlacesTestUtils;
 
 /**
  *
@@ -78,7 +79,7 @@ public class StampsExtraTest extends NbTestCase {
         
         System.setProperty("netbeans.home", platform.getPath());
         System.setProperty("netbeans.dirs", ide.getPath() + File.pathSeparator + extra.getPath());
-        Places.setUserDirectory(userdir);
+        PlacesTestUtils.setUserDirectory(userdir);
 
         touch(platform, ".lastModified", 50000L);
         touch(ide, ".lastModified", 90000L);

@@ -48,14 +48,16 @@ package org.netbeans.modules.php.dbgp.packets;
 public class RequestedUrlEvalCommand extends EvalCommand {
 
     private static final String REQUEST_URI = "(isset($_SERVER['SSL']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']"; // NOI18N
+    static String LAST_USED_TRANSACTION_ID;
 
     public RequestedUrlEvalCommand(String transactionId) {
         super(transactionId);
+        LAST_USED_TRANSACTION_ID = transactionId;
     }
 
     @Override
     protected String getData() {
         return REQUEST_URI;
     }
-    
+
 }

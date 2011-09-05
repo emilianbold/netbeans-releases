@@ -58,6 +58,7 @@ import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
@@ -66,6 +67,7 @@ import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Configurat
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -116,13 +118,20 @@ public class HudsonMercurialSCM implements HudsonSCM {
         return null; // XXX
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
+    public @Override List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[kind,items[author[fullName],msg,merge,node,addedPaths,modifiedPaths,deletedPaths]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {build, x});
+            return Collections.emptyList();
+        }
         if (!"hg".equals(Utilities.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
-        URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job); // NOI18N
+        URI repo = getDefaultPull(URI.create(build.getJob().getUrl() + "ws/"), build.getJob()); // NOI18N
         if (repo == null) {
-            LOG.log(Level.FINE, "No known repo location for {0}", job);
+            LOG.log(Level.FINE, "No known repo location for {0}", build.getJob());
         }
         if (repo != null && !"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) { // NOI18N
             LOG.log(Level.FINE, "Need hgweb to show changes from {0}", repo);

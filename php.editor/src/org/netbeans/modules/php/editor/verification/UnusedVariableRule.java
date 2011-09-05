@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -64,46 +64,55 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarSta
     public void check (PHPRuleContext context, List<Hint> hints){
         for (ASTNode node : context.variableStack.getUnreferencedVars()){
             OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            
+
             Hint hint = new Hint(UnusedVariableRule.this, getDisplayName(),
                         context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
-            
+
             hints.add(hint);
         }
     }
 
+    @Override
     public Set<?> getKinds() {
         return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
     }
 
+    @Override
     public String getId() {
         return "unused.var"; //NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return false;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDispName");
     }
 
+    @Override
     public boolean showInTasklist() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }

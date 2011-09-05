@@ -50,12 +50,14 @@ import java.awt.EventQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import org.openide.util.Mutex;
+import org.openide.util.Task;
 
 /** A special task designed to run in AWT thread.
- * It will fire itself immediatelly.
+ * It will fire itself immediately.
  */
 public final class AWTTask extends org.openide.util.Task {
     static final LinkedBlockingQueue<AWTTask> PENDING = new LinkedBlockingQueue<AWTTask>();
+    private static final EDT WAKE_UP = new EDT();
     private static final Runnable PROCESSOR = new Processor();
 
     private boolean executed;
@@ -86,24 +88,58 @@ public final class AWTTask extends org.openide.util.Task {
         if (EventQueue.isDispatchThread ()) {
             run ();
         } else {
-            /*
-            if (DataObjectAccessor.DEFAULT.isInstancesThread()) {
-                try {
-                    super.waitFinished(100);
-                } catch (InterruptedException ex) {
-                    // ok, go on
-                }
-            } else {*/
-                super.waitFinished ();
-            //}
+            WAKE_UP.wakeUp();
+            super.waitFinished ();
         }
     }
 
-    public static final void flush() {
+    @Override
+    public boolean waitFinished(long milliseconds) throws InterruptedException {
+        if (EventQueue.isDispatchThread()) {
+            run();
+            return true;
+        } else {
+            WAKE_UP.wakeUp();
+            synchronized (this) {
+                if (isFinished()) {
+                    return true;
+                }
+                wait(milliseconds);
+                return isFinished();
+            }
+        }
+    }
+    
+    
+    
+    public static boolean waitFor(Task t) {
+        assert EventQueue.isDispatchThread();
+        if (!PENDING.isEmpty()) {
+            PROCESSOR.run();
+            return false;
+        }
+        Thread previous = null;
+        try {
+            previous = WAKE_UP.enter();
+            if (!t.waitFinished(10000)) {
+                flush();
+                return false;
+            }
+        } catch (InterruptedException ex) {
+            flush();
+            return false;
+        } finally {
+            WAKE_UP.exit(previous);
+        }
+        return true;
+    }
+
+    private static void flush() {
         PROCESSOR.run();
     }
 
     private static final class Processor implements Runnable {
+        @Override
         public void run() {
             assert EventQueue.isDispatchThread();
             for(;;) {
@@ -116,4 +152,31 @@ public final class AWTTask extends org.openide.util.Task {
         }
     }
 
+    /** Monitor that holds pointer to current AWT dispatch thread
+     * and can wake it up, as soon as somebody starts to wait on AWTTask.
+     */
+    private static final class EDT {
+        private Thread awt;
+        
+        public synchronized Thread enter() {
+            assert EventQueue.isDispatchThread();
+            Thread p = awt;
+            awt = Thread.currentThread();
+            return p;
+        }
+        
+        public synchronized void exit(Thread previous) {
+            assert EventQueue.isDispatchThread();
+            assert awt == Thread.currentThread() : "awt = " + awt;
+            awt = previous;
+            // clean up interrupted status
+            Thread.interrupted();
+        }
+        
+        public synchronized void wakeUp() {
+            if (awt != null) {
+                awt.interrupt();
+            }
+        }
+    }
 }

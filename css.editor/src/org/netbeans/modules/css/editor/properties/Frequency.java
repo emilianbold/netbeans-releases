@@ -57,7 +57,7 @@ public class Frequency implements CssPropertyValueAcceptor {
         String numberPart = token.endsWith("hz") ? token.substring(0, token.length() - 3) : token.endsWith("khz") ? token.substring(0, token.length() - 4) : null;
         if(numberPart != null) {
             try {
-                Integer.parseInt(numberPart);
+                java.lang.Integer.parseInt(numberPart);
                 return true;
             } catch (NumberFormatException nfe) {
                 return false;

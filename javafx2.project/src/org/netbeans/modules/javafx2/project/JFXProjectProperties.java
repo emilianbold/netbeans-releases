@@ -47,19 +47,29 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -67,6 +77,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class JFXProjectProperties {
@@ -93,21 +105,23 @@ public final class JFXProjectProperties {
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
-    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
-    public static final String PRELOADER = "javafx.preloader.enabled"; // NOI18N
-    public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
-    public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
+    //public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
+    public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
+    public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
+    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
+    public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N
+    public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
-    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
+    public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
     public static final String RUN_APP_HEIGHT = "javafx.run.height"; // NOI18N
     public static final String RUN_IN_HTMLPAGE = "javafx.run.inhtmlpage"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
-    public static final String DEFAULT_APP_WIDTH = "800";
-    public static final String DEFAULT_APP_HEIGHT = "600";
+    public static final String DEFAULT_APP_WIDTH = "800"; // NOI18N
+    public static final String DEFAULT_APP_HEIGHT = "600"; // NOI18N
 
     // Deployment properties
     public static final String BACKGROUND_UPDATE_CHECK = "javafx.deploy.backgroundupdate"; // NOI18N
@@ -115,7 +129,24 @@ public final class JFXProjectProperties {
     public static final String INSTALL_PERMANENTLY = "javafx.deploy.installpermanently"; // NOI18N
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
-    public static final String ICON_FILE = "javafx.deploy.icon";
+    public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+
+    public static final String SIGNING_GENERATED = "generated"; //NOI18N
+    public static final String SIGNING_KEY = "key"; //NOI18N
+
+    public static final String JAVAFX_SIGNED = "javafx.signed"; //NOI18N
+    public static final String JAVAFX_SIGNING = "javafx.signing"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE = "javafx.signing.keystore"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.alias"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.storepass"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keypass"; //NOI18N
+    public static final String RUN_CP = "run.classpath";    //NOI18N
+    public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
+    private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
+    private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
+    
+    public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -126,13 +157,25 @@ public final class JFXProjectProperties {
     }
 
     // CustomizerRun
-    Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
- 
+    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
+    private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
+    private String activeConfig;
+    
     public Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> getRunConfigs() {
         return RUN_CONFIGS;
     }    
-
-    String activeConfig;
+    public Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> getAppParameters() {
+        return APP_PARAMS;
+    }   
+    public List<Map<String,String/*|null*/>> getActiveAppParameters(String config) {
+        return APP_PARAMS.get(config);
+    }   
+    public List<Map<String,String/*|null*/>> getActiveAppParameters() {
+        return APP_PARAMS.get(activeConfig);
+    }   
+    public void setActiveAppParameters(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        APP_PARAMS.put(activeConfig, params);
+    }
     public String getActiveConfig() {
         return activeConfig;
     }
@@ -140,9 +183,24 @@ public final class JFXProjectProperties {
         activeConfig = config;
     }
 
-    // CustomizerRun - Arguments
-    private List<Map<String,String>> arguments;
-    public static final String argumentsSuffixes[] = new String[] { "name", "value" }; // NOI18N
+    // CustomizerRun - Preloader source type
+    public enum PreloaderSourceType {
+        NONE("none"), // NOI18N
+        PROJECT("project"), // NOI18N
+        JAR("jar"); // NOI18N
+        private final String propertyValue;
+        PreloaderSourceType(String propertyValue) {
+            this.propertyValue = propertyValue;
+        }
+        public String getString() {
+            return propertyValue;
+        }
+    }
+    
+    PreloaderClassComboBoxModel preloaderClassModel;
+    public PreloaderClassComboBoxModel getPreloaderClassModel() {
+        return preloaderClassModel;
+    }
 
     // CustomizerRun - Run type
     public enum RunAsType {
@@ -197,12 +255,49 @@ public final class JFXProjectProperties {
     String signingKeyAlias;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
+    public String getSigning() {
+        return signing;
+    }
+    public String getSigningKeyAlias() {
+        return signingKeyAlias;
+    }
     
     // Deployment - Libraries Download Mode
     List<? extends File> runtimeCP;
     List<? extends File> lazyJars;
     boolean lazyJarsChanged;
+    public List<? extends File> getRuntimeCP() {
+        return runtimeCP;
+    }
+    public List<? extends File> getLazyJars() {
+        return lazyJars;
+    }
+    public void setLazyJars(List<? extends File> newLazyJars) {
+        lazyJars = newLazyJars;
+    }
+    public boolean getLazyJarsChanged() {
+        return lazyJarsChanged;
+    }
+    public void setLazyJarsChanged(boolean changed) {
+        lazyJarsChanged = changed;
+    }
     
+    // Deployment - JavaScript Callbacks
+    Map<String,String> jsCallbacks;
+    boolean jsCallbacksChanged;
+    public Map<String,String> getJSCallbacks() {
+        return jsCallbacks;
+    }
+    public void setJSCallbacks(Map<String,String> newCallbacks) {
+        jsCallbacks = newCallbacks;
+    }
+    public boolean getJSCallbacksChanged() {
+        return jsCallbacksChanged;
+    }
+    public void setJSCallbacksChanged(boolean changed) {
+        jsCallbacksChanged = changed;
+    }
+        
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
     private PropertyEvaluator evaluator;
@@ -210,6 +305,9 @@ public final class JFXProjectProperties {
 
     public Project getProject() {
         return project;
+    }
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
     }
     
     /** Keeps singleton instance for any fx project for which property customizer is opened at once */
@@ -237,7 +335,13 @@ public final class JFXProjectProperties {
         }
         return null;
     }
-    
+
+    public static void cleanup(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        propInstance.remove(projDir);
+    }
+
     /** Creates a new instance of JFXProjectProperties */
     private JFXProjectProperties(Lookup context) {
         
@@ -250,6 +354,9 @@ public final class JFXProjectProperties {
             
             // Packaging
             binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS);
+            if(evaluator.getProperty(JAVAFX_BINARY_ENCODE_CSS) == null) {
+                binaryEncodeCSS.setSelected(true); // default is true
+            }
 
             // Deployment
             allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE);
@@ -267,7 +374,13 @@ public final class JFXProjectProperties {
 
             // CustomizerRun
             RUN_CONFIGS = readRunConfigs();
-            activeConfig = evaluator.getProperty("config");
+            APP_PARAMS = readAppParams();
+            activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
+            preloaderClassModel = new PreloaderClassComboBoxModel();
+            
+            initSigning(evaluator);
+            initResources(evaluator, project);
+            initJSCallbacks(evaluator);
         }
     }
     
@@ -278,6 +391,65 @@ public final class JFXProjectProperties {
                  value.equalsIgnoreCase("on"));     //NOI18N
     }
 
+    public static class PropertiesTableModel extends AbstractTableModel {
+        
+        private List<Map<String,String>> properties;
+        private String propSuffixes[];
+        private String columnNames[];
+        
+        public PropertiesTableModel(List<Map<String,String>> props, String sfxs[], String clmns[]) {
+            if (sfxs.length != clmns.length) {
+                throw new IllegalArgumentException();
+            }
+            properties = props;
+            propSuffixes = sfxs;
+            columnNames = clmns;
+        }
+        
+        @Override
+        public int getRowCount() {
+            return properties.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+        
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return true;
+        }
+        
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            properties.get(rowIndex).put(propSuffixes[columnIndex], (String) aValue);
+        }
+        
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return properties.get(rowIndex).get(propSuffixes[columnIndex]);
+        }
+        
+        public void addRow() {
+            Map<String,String> emptyMap = new HashMap<String,String>();
+            for (String  suffix : propSuffixes) {
+                emptyMap.put(suffix, "");
+            }
+            properties.add(emptyMap);
+        }
+        
+        public void removeRow(int index) {
+            properties.remove(index);
+        }
+
+    }
+    
     /**
      * A mess. (modified from J2SEProjectProperties)
      */
@@ -301,7 +473,7 @@ public final class JFXProjectProperties {
         } catch (IOException ex) {
             // can be ignored
         }
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, PRELOADER, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
@@ -318,10 +490,10 @@ public final class JFXProjectProperties {
             def.put(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 EditableProperties cep = null;
@@ -333,10 +505,10 @@ public final class JFXProjectProperties {
                 m.put(kid.getName(), new TreeMap<String,String>(cep) );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 Map<String,String> c = m.get(kid.getName());
@@ -352,22 +524,148 @@ public final class JFXProjectProperties {
                 c.putAll(new HashMap<String,String>(cep));
             }
         }
-        //System.err.println("readRunConfigs: " + m);
+        //System.err.println("readRunConfigs: " + p);
         return m;
+    }
+
+    /**
+     * Another mess.
+     */
+    Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> readAppParams() {
+        Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> p = new TreeMap<String,List<Map<String,String/*|null*/>>/*|null*/>(new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+            }
+        });
+        List<Map<String,String/*|null*/>>/*|null*/ def = new ArrayList<Map<String,String/*|null*/>>(); //TreeMap<String,String>();
+        EditableProperties ep = null;
+        try {
+            ep = readFromFile(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        } catch (IOException ex) {
+            // can be ignored
+        }
+        EditableProperties pep = null;
+        try {
+            pep = readFromFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        } catch (IOException ex) {
+            // can be ignored
+        }
+        
+        int index = 0;
+        while (true) {
+            Map<String,String> map = new HashMap<String,String>();
+            int numProps = 0;
+            for (String propSuffix : APP_PARAM_SUFFIXES) {
+                String propValue = ep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
+                if(propValue == null) {
+                    propValue = pep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
+                }
+                if (propValue != null) {
+                    map.put(propSuffix, propValue);
+                    numProps++;
+                }
+            }
+            if (numProps == 0) {
+                break;
+            }
+            def.add(map);
+            index++;
+        }       
+        p.put(null, def);
+
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) { // NOI18N
+                    continue;
+                }
+                EditableProperties cep = null;
+                try {
+                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
+                } catch (IOException ex) {
+                    // can be ignored
+                }
+                List<Map<String,String/*|null*/>>/*|null*/ params = new ArrayList<Map<String,String/*|null*/>>();
+                if(cep != null) {
+                    index = 0;
+                    while (true) {
+                        Map<String,String> map = new HashMap<String,String>();
+                        int numProps = 0;
+                        for (String propSuffix : APP_PARAM_SUFFIXES) {
+                            String propValue = cep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
+                            if (propValue != null) {
+                                map.put(propSuffix, propValue);
+                                numProps++;
+                            }
+                        }
+                        if (numProps == 0) {
+                            break;
+                        }
+                        params.add(map);
+                        index++;
+                    }
+                }
+                p.put(kid.getName(), params );
+            }
+        }
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) { // NOI18N
+                    continue;
+                }
+                //Map<String,String> c = p.get(kid.getName());
+                List<Map<String,String/*|null*/>>/*|null*/ params = p.get(kid.getName());
+                if (params == null) {
+                    params = new ArrayList<Map<String,String/*|null*/>>();
+                    p.put(kid.getName(), params);
+                }
+                EditableProperties cep = null;
+                try {
+                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
+                } catch (IOException ex) {
+                    // can be ignored
+                }
+                if(cep != null) {
+                    index = 0;
+                    while (true) {
+                        Map<String,String> map = new HashMap<String,String>();
+                        int numProps = 0;
+                        for (String propSuffix : APP_PARAM_SUFFIXES) {
+                            String propValue = cep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
+                            if (propValue != null) {
+                                map.put(propSuffix, propValue);
+                                numProps++;
+                            }
+                        }
+                        if (numProps == 0) {
+                            break;
+                        }
+                        params.add(map);
+                        index++;
+                    }
+                }
+                //c.putAll(new HashMap<String,String>(cep));
+            }
+        }
+        //System.err.println("readAppParams: " + p);
+        return p;
     }
 
     /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
+            Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> params,
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, PRELOADER, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
-                    (prop.equals(APPLICATION_ARGS) ||
+                    (//prop.equals(APPLICATION_ARGS) ||
                     prop.equals(RUN_WORK_DIR)  ||
                     prop.equals(RUN_IN_HTMLPAGE)  ||
                     prop.equals(RUN_IN_BROWSER)  ||
@@ -381,6 +679,21 @@ public final class JFXProjectProperties {
                     ep.remove(prop);
                 }
             }
+        }
+        int index = 0;
+        for(Map<String,String> m : params.get(null)) {
+            for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                String v = propSuffix.getValue();
+                if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
+                    if (v != null && v.length() > 0) {
+                        projectProperties.setProperty(prop, v);
+                    } else {
+                        projectProperties.remove(prop);
+                    }
+                }
+            }
+            index++;
         }
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
             String config = entry.getKey();
@@ -410,7 +723,7 @@ public final class JFXProjectProperties {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
                 EditableProperties ep =
-                        (prop.equals(APPLICATION_ARGS) ||
+                        (//prop.equals(APPLICATION_ARGS) ||
                          prop.equals(RUN_WORK_DIR) ||
                          prop.equals(RUN_IN_HTMLPAGE)  ||
                          prop.equals(RUN_IN_BROWSER)  ||
@@ -426,6 +739,21 @@ public final class JFXProjectProperties {
                     privatePropsChanged |= ep == privateCfgProps;
                 }
             }
+            index = 0;
+            for(Map<String,String> m : params.get(config)) {
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                    String v = propSuffix.getValue();
+                    if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
+                        if (v != null && v.length() > 0) {
+                            sharedCfgProps.setProperty(prop, v);
+                        } else {
+                            sharedCfgProps.remove(prop);
+                        }
+                    }
+                }
+                index++;
+            }
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 saveToFile(privatePath, privateCfgProps);
@@ -434,9 +762,48 @@ public final class JFXProjectProperties {
     }
     
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
-        // TODO
+//        // store descriptor type
+//        DescType descType = getSelectedDescType();
+//        if (descType != null) {
+//            editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
+//        }
+//        //Store Mixed Code
+//        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
+//        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
+//        //Store jar indexing
+//        if (editableProps.getProperty(JAR_INDEX) == null) {
+//            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
+//        }
+//        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
+//            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
+//        }
+        // store signing info
+        editableProps.setProperty(JAVAFX_SIGNING, signing);
+        editableProps.setProperty(JAVAFX_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
+        setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
+        setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
+        setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
+        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
+        
+        // store resources
+        storeResources(editableProps);
+
+        // store JavaScript callbacks
+        storeJSCallbacks(editableProps);
     }
 
+    private void setOrRemove(EditableProperties props, String name, char [] value) {
+        setOrRemove(props, name, value != null ? new String(value) : null);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, String value) {
+        if (value != null) {
+            props.setProperty(name, value);
+        } else {
+            props.remove(name);
+        }
+    }
+        
     public EditableProperties readFromFile(String relativePath) throws IOException {
         final EditableProperties ep = new EditableProperties(true);
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
@@ -500,7 +867,7 @@ public final class JFXProjectProperties {
         final FileObject propsFO;
         if(f == null) {
             propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
-            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802
+            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
         } else {
             propsFO = f;
         }
@@ -559,7 +926,7 @@ public final class JFXProjectProperties {
                     }
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
-                    storeRunConfigs(RUN_CONFIGS, ep, pep);
+                    storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -594,4 +961,143 @@ public final class JFXProjectProperties {
         }       
     }
 
+    private void initSigning(PropertyEvaluator eval) {
+        signing = eval.getProperty(JAVAFX_SIGNING);
+        if (signing == null) signing = "";
+        signingKeyStore = eval.getProperty(JAVAFX_SIGNING_KEYSTORE);
+        if (signingKeyStore == null) signingKeyStore = "";
+        signingKeyAlias = eval.getProperty(JAVAFX_SIGNING_KEY);
+        if (signingKeyAlias == null) signingKeyAlias = "";
+        if (eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD) != null) {
+            signingKeyStorePassword = eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD).toCharArray();
+        }
+        if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
+            signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
+        }
+        // compatibility
+        if ("".equals(signing) && "true".equals(eval.getProperty(JAVAFX_SIGNED))) { //NOI18N
+            signing = SIGNING_GENERATED;
+        }
+    }
+    
+    private void initResources (final PropertyEvaluator eval, final Project prj) {
+        final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
+        final String rcp = eval.getProperty(RUN_CP);        
+        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
+        final List<File> lazyFileList = new ArrayList<File>();
+        String[] paths;
+        if (lz != null) {
+            paths = PropertyUtils.tokenizePath(lz);            
+            for (String p : paths) {
+                lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
+            }
+        }
+        paths = PropertyUtils.tokenizePath(rcp);
+        final List<File> resFileList = new ArrayList<File>(paths.length);
+        for (String p : paths) {
+            if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
+                continue;
+            }
+            final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (bc == null || !bcDir.equals(f)) {
+                resFileList.add(f);
+                if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
+                    lazyFileList.add(f);
+                }
+            }
+        }
+        lazyJars = lazyFileList;
+        runtimeCP = resFileList;
+        lazyJarsChanged = false;
+    }
+    
+    private void storeResources(final EditableProperties props) {
+        if (lazyJarsChanged) {
+            //Remove old way if exists
+            props.remove(DOWNLOAD_MODE_LAZY_JARS);
+            final Iterator<Map.Entry<String,String>> it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                if (it.next().getKey().startsWith(DOWNLOAD_MODE_LAZY_JAR)) {
+                    it.remove();
+                }
+            }
+            for (File lazyJar : lazyJars) {
+                props.setProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, lazyJar.getName()), "true");  //NOI18N
+            }
+        }
+    }
+
+    private void initJSCallbacks (final PropertyEvaluator eval) {
+        String platformName = eval.getProperty("platform.active");
+        Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
+        Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
+        for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {
+            String v = eval.getProperty(JFXProjectProperties.JAVASCRIPT_CALLBACK_PREFIX + entry.getKey());
+            if(v != null && !v.isEmpty()) {
+                result.put(entry.getKey(), v);
+            }
+        }
+        jsCallbacks = result;
+        jsCallbacksChanged = false;
+    }
+    
+    private void storeJSCallbacks(final EditableProperties props) {
+        if (jsCallbacksChanged) {
+            for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    props.setProperty(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey(), entry.getValue());  //NOI18N
+                } else {
+                    props.remove(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey());
+                }
+            }
+        }
+    }
+
+    public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
+              
+        public PreloaderClassComboBoxModel() {
+            removeAllElements();
+            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+        }
+        
+        public void fillFromProject(Project project) {
+            final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
+                    removeAllElements();
+                    if(appClassNames.isEmpty()) {
+                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                    } else {
+                        addElements(appClassNames);
+                    }
+                }
+            });            
+        }
+
+        public void fillFromJAR(final FileObject jarFile) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                    removeAllElements();
+                    if(appClassNames.isEmpty()) {
+                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                    } else {
+                        addElements(appClassNames);
+                    }
+                }
+            });            
+        }
+
+        private void addElements(Set<String> elems) {
+            for (String elem : elems) {
+                addElement(elem);
+            }
+        }
+        
+    }
 }

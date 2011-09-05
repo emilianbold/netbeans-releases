@@ -73,7 +73,7 @@ public class InstalledFileLocatorImplDirTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        scratch = getWorkDir();
+        scratch = new File(getWorkDir(), "install");
         nbhome = new File(scratch, "nbhome");
         touch(file(nbhome, "a/b"));
         touch(file(nbhome, "a/c"));
@@ -85,7 +85,7 @@ public class InstalledFileLocatorImplDirTest extends NbTestCase {
         touch(file(nbhome, "loc/x_foo_ja.html"));
         touch(file(nbhome, "loc/y.html"));
         touch(file(nbhome, "h_ja"));
-        nbuser = new File(scratch, "nbuser");
+        nbuser = new File(getWorkDir(), "nbuser");
         touch(file(nbuser, "a/b"));
         nbdir1 = new File(scratch, "nbdir1");
         touch(file(nbdir1, "e/f/g"));

@@ -599,12 +599,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             editorUndoManager.discardAllEdits();
     }
     
-    @Override
-    public JEditorPane getEditorPane() {
-        return multiviewTC != null ?
-            ((CloneableEditorSupport.Pane)multiviewTC).getEditorPane() : null;
-    }
-    
     // -----------
     // closing/reloading
     

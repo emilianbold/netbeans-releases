@@ -76,6 +76,10 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.api.Bundle.*;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Creates an HTTP connection to Hudson.
@@ -384,6 +388,21 @@ public final class ConnectionBuilder {
             return (HttpURLConnection) c;
         } else {
             throw new IOException("Not an HTTP connection: " + c); // NOI18N
+        }
+    }
+
+    /**
+     * Parses content as XML.
+     * @throws IOException see {@link #connection} for subtype description; also thrown in case of malformed XML
+     */
+    public Document parseXML() throws IOException {
+        URLConnection c = connection();
+        InputSource source = new InputSource(url.toString());
+        source.setByteStream(c.getInputStream());
+        try {
+            return XMLUtil.parse(source, false, false, XMLUtil.defaultErrorHandler(), null);
+        } catch (SAXException x) {
+            throw new IOException(x);
         }
     }
 

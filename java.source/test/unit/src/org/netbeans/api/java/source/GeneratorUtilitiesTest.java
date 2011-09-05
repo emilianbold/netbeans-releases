@@ -45,7 +45,9 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -60,8 +62,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -73,6 +77,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -391,6 +396,168 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 }
 
                 fail("toArray method not found");
+            }
+        }, false);
+    }
+
+    public void testAddImports1() throws Exception {
+        performTest("package test;\nimport java.util.List;\nimport javax.swing.JLabel;\npublic class Test { }\n", "1.5", new AddImportsTask("javax.swing.JTable", "java.util.ArrayList"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(4, imports.size());
+                assertEquals("java.util.ArrayList", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("javax.swing.JLabel", imports.get(2).getQualifiedIdentifier().toString());
+                assertEquals("javax.swing.JTable", imports.get(3).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports2() throws Exception {
+        performTest("package test;\nimport java.util.List;\nimport javax.swing.JLabel;\npublic class Test { }\n", "1.5", new AddImportsTask("javax.swing.*", "java.util.ArrayList", "java.util.*"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(2, imports.size());
+                assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("javax.swing.*", imports.get(1).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports3() throws Exception {
+        performTest("package test;\nimport java.util.List;\nimport javax.swing.*;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.ArrayList", "javax.swing.JTable"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(3, imports.size());
+                assertEquals("java.util.ArrayList", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("javax.swing.*", imports.get(2).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports4() throws Exception {
+        performTest("package test;\nimport java.util.List;\npublic class Test { }\n", "1.5", new AddImportsTask("java.lang.Math.max"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(2, imports.size());
+                assertEquals("java.lang.Math.max", imports.get(0).getQualifiedIdentifier().toString());
+                assertTrue(imports.get(0).isStatic());
+                assertEquals("java.util.List", imports.get(1).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports5() throws Exception {
+        performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(1, imports.size());
+                assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports6() throws Exception {
+        performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(1, imports.size());
+                assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports7() throws Exception {
+        performTest("package test;\nimport java.util.*;\npublic class Test {\n}\n", "1.5", new AddImportsTask("java.awt.*"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(2, imports.size());
+                assertEquals("java.awt.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.*", imports.get(1).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports8() throws Exception {
+        performTest("package test;\nimport java.util.*;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.awt.*"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(3, imports.size());
+                assertEquals("java.awt.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.*", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports9() throws Exception {
+        performTest("package test;\nimport java.awt.*;\nimport java.util.List;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(3, imports.size());
+                assertEquals("java.awt.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.*", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports10() throws Exception {
+        performTest("package test;\nimport static java.lang.Math.max;\npublic class Test { }\n", "1.5", new AddImportsTask("java.lang.Math.abs", "java.lang.Math.min"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(1, imports.size());
+                assertEquals("java.lang.Math.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertTrue(imports.get(0).isStatic());
+            }
+        }, false);
+    }
+
+    public void testAddImports11() throws Exception {
+        performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Map.Entry"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(5, imports.size());
+                assertEquals("java.util.AbstractList", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.ArrayList", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
+                assertEquals("java.util.Map.Entry", imports.get(3).getQualifiedIdentifier().toString());
+                assertEquals("java.util.Vector", imports.get(4).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports12() throws Exception {
+        performTest("package test;\nimport Bar;\nimport org.me.Foo;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.List"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(2, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(3, imports.size());
+                assertEquals("Bar.<error>", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("org.me.Foo", imports.get(2).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
+    public void testAddImports13() throws Exception {
+        performTest("package test;\npublic class Test { }\n", "1.5", new AddImportsTask("test.Test"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(0, imports.size());
             }
         }, false);
     }
@@ -916,6 +1083,53 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             assertNotNull(utilities);
             ClassTree newCt = utilities.insertClassMembers(ct, Collections.singletonList(utilities.createMethod(dt, ee)));
             copy.rewrite(ct, newCt);
+        }
+    }
+
+    private static class AddImportsTask implements CancellableTask<WorkingCopy> {
+
+        private String[] toImport;
+        
+        public AddImportsTask(String... toImport) {
+            this.toImport = toImport;
+        }
+
+        public void cancel() {
+        }
+
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            CompilationUnitTree cut = copy.getCompilationUnit();
+            Elements elements = copy.getElements();
+            Set<Element> imports = new HashSet<Element>();
+            for (String imp : toImport) {
+                if (imp.endsWith(".*"))
+                    imp = imp.substring(0, imp.length() - 2);
+                Element el = elements.getTypeElement(imp);
+                if (el == null)
+                    el = elements.getPackageElement(imp);
+                if (el == null) {
+                    int idx = imp.lastIndexOf('.');
+                    if (idx >= 0) {
+                        el = elements.getTypeElement(imp.substring(0, idx));
+                        if (el != null) {
+                            String name = imp.substring(idx + 1);
+                            for (Element ee : el.getEnclosedElements()) {
+                                if (name.contentEquals(ee.getSimpleName())) {                                
+                                    el = ee;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                assertNotNull(el);
+                imports.add(el);
+            }
+            GeneratorUtilities utilities = GeneratorUtilities.get(copy);
+            assertNotNull(utilities);
+            CompilationUnitTree newCut = utilities.addImports(cut, imports);
+            copy.rewrite(cut, newCut);
         }
     }
 
