@@ -202,6 +202,9 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     newActions.add(null);
 //                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
 //                        newActions.add(null);
+                } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
+                    newActions.add(oldActions[i]);
+                    newActions.add(SystemAction.get(CompileSingleAction.class));
                 } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                     newActions.add(NodeActionFactory.createRenameAction());
                     NodeActionFactory.addSyncActions(newActions);

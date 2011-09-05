@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -112,6 +113,8 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -906,6 +909,34 @@ public final class MakeActionProvider implements ActionProvider {
                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                 outputFile = customToolConfiguration.getOutputs().getValue();
             }
+            if (conf.isMakefileConfiguration()) {
+                AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+                if (options != null) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    AbstractCompiler ccCompiler = null;
+                    if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    } 
+                    if (ccCompiler == null) {
+                        return false;
+                    }
+                    String compileLine = options.getAllOptions(ccCompiler);
+                    if (compileLine != null) {
+                        int hasPath = compileLine.indexOf('#');
+                        if (hasPath >= 0) {
+                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+                            profile.setRunDirectory(compileLine.substring(0, hasPath));
+                            profile.setArgs(compileLine.substring(hasPath+1).replace("\"", "\\\""));
+                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
+                            actionEvents.add(projectActionEvent);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
             outputFile = conf.expandMacros(outputFile);
             // Clean command
             String commandLine;
@@ -931,7 +962,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
-            projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
+            projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true, context);
             actionEvents.add(projectActionEvent);
         }
         return true;
@@ -1119,6 +1150,20 @@ public final class MakeActionProvider implements ActionProvider {
                     return false;
                 }
                 if (conf.isMakefileConfiguration()) {
+                    AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+                    if (options != null) {
+                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                        AbstractCompiler ccCompiler = null;
+                        if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                        } 
+                        if (ccCompiler == null) {
+                            return false;
+                        }
+                        return true;
+                    }
                     return false;
                 }
             }
