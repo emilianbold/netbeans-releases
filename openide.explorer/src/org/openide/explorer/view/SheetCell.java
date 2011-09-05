@@ -272,7 +272,10 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             if (Boolean.TRUE.equals(computeTooltip)) {
                 String toolT = null;
                 PropertyEditor propEd = property.getPropertyEditor();
-                if (propEd != null) {
+                Object propertyToolTipShortDescription = table.getClientProperty("PropertyToolTipShortDescription");
+                if (Boolean.TRUE.equals(propertyToolTipShortDescription) && property.getShortDescription() != null) {
+                    toolT = property.getShortDescription();
+                } else if (propEd != null) {
                     try {
                         propEd.setValue(property.getValue());
                         toolT = propEd.getAsText();
