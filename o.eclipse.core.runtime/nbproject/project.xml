@@ -5,7 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.eclipse.core.runtime</code-name-base>
             <module-dependencies>
-                <!--dependency>
+                <dependency>
                     <code-name-base>org.eclipse.equinox.common</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -39,7 +39,12 @@
                     <code-name-base>org.eclipse.core.jobs</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency-->
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.osgi</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.eclipse.core.internal.preferences.legacy</package>
