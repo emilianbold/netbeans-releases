@@ -2254,7 +2254,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
             }
         }
     }
@@ -2267,7 +2267,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
