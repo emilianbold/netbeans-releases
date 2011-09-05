@@ -104,7 +104,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     public PHPDocTypeTag getTypeTag() {
         return typeTag;
     }
-       
+
     @Override
     public Kind getKind() {
         return kind;

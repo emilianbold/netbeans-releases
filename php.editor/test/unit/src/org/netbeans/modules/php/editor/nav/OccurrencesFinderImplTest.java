@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -50,11 +50,11 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class OccurrencesFinderImplTest extends TestBase {
-    
+
     public OccurrencesFinderImplTest(String testName) {
         super(testName);
-    }            
-           
+    }
+
     public void testGotoLabel() throws Exception {
         checkOccurrences(getTestPath(), "goto en^d;", true);
     }
@@ -336,32 +336,32 @@ public class OccurrencesFinderImplTest extends TestBase {
         //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
     }
-    
+
     public void testMagicMethod171249() throws Exception {
         checkOccurrences(getTestPath(), "class OldC^lass {", true);
     }
-    
+
     public void testInstanceof198909_01() throws Exception {
         checkOccurrences(getTestPath(), "$mExpectedE^xception = null", true);
     }
-    
+
     public void testInstanceof198909_02() throws Exception {
         checkOccurrences(getTestPath(), "} catch (Exception $^e) {", true);
     }
-    
+
     public void testInstanceof198909_03() throws Exception {
         checkOccurrences(getTestPath(), "$e instanceof $mExpect^edException", true);
     }
-    
+
     public void testIssue198449_01() throws Exception {
         checkOccurrences(getTestPath(), "$cl^ass = 'StdClass';", true);
     }
-    
+
     public void testIssue201429_01() throws Exception {
         checkOccurrences(getTestPath(), "protected static function test($keyC^losure)", true);
     }
-    
-    
+
+
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
