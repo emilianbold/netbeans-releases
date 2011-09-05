@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
@@ -57,6 +56,7 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.NodeAction;
 
@@ -65,6 +65,7 @@ import org.openide.util.actions.NodeAction;
  * @author Alexander Simon
  */
 public class ReconfigureAction extends NodeAction {
+    private static final RequestProcessor RP = new RequestProcessor(ReconfigureAction.class.getName(), 1);
 
     private final static boolean TEST_ACTION = true;
 
@@ -159,7 +160,7 @@ public class ReconfigureAction extends NodeAction {
     public void performAction(final Node[] activatedNodes) {
         running = true;
         Project p = getProject(activatedNodes);
-        ReconfigureProject reconfigurator = new ReconfigureProject(p);
+        final ReconfigureProject reconfigurator = new ReconfigureProject(p);
         String cFlags;
         String cxxFlags;
         String linkerFlags = "";
@@ -188,7 +189,16 @@ public class ReconfigureAction extends NodeAction {
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
             reconfigurator.setConfigureCodeAssistance(true);
-            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions(), false, null);
+            final String c = panel.getCFlags();
+            final String cpp = panel.getCppFlags();
+            final String link = panel.getLinkerFlags();
+            final String other = panel.getOtherOptions();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    reconfigurator.reconfigure(c, cpp, link, other, false, null);
+                }
+            });
         }
         running = false;
     }
