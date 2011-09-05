@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
-import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -269,24 +268,4 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     private static String getString(String s) {
         return NbBundle.getMessage(CCompilerConfiguration.class, s);
     }
-
-    private static class StringRONodeProp extends PropertySupport<String> {
-
-        private String value;
-
-        public StringRONodeProp(String name, String description, String value) {
-            super(name, String.class, name, name, true, false);
-            this.value = value;
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public void setValue(String v) {
-        }
-    }
-
 }
