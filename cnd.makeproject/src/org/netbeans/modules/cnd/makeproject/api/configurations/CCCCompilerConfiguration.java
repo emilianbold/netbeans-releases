@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -375,6 +376,25 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             } else {
                 return ""; // NOI18N
             }
+        }
+    }
+    
+    protected static class StringRONodeProp extends PropertySupport<String> {
+
+        private String value;
+
+        public StringRONodeProp(String name, String description, String value) {
+            super(name, String.class, name, name, true, false);
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(String v) {
         }
     }
 }
