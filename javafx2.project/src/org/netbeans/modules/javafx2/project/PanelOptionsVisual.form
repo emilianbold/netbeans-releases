@@ -110,7 +110,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="38" max="32767" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -188,6 +188,9 @@
           <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ACSD_createMainCheckBox" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="createMainCheckBoxItemStateChanged"/>
+      </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
