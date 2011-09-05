@@ -48,7 +48,6 @@ import java.util.Set;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
@@ -74,9 +73,9 @@ public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
         new PersistenceHelper(getProject()).configure(getModel().getBuilder().
                 getAllEntityNames(),!RestUtils.hasJTASupport(getProject()));
         
-        Set<Entity> entities = new HashSet<Entity>();
+        Set<String> entities = new HashSet<String>();
         for (EntityClassInfo info : getModel().getEntityInfos()) {
-            Entity entity = info.getEntity();
+            String entity = info.getEntityFqn();
             entities.add( entity );
             Util.modifyEntity( entity , getProject());
         }

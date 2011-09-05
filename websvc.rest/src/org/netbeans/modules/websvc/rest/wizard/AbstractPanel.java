@@ -44,8 +44,9 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.FinishablePanel;
@@ -56,8 +57,11 @@ import org.openide.util.NbBundle;
  *
  * @author nam
  */
-public abstract class AbstractPanel implements ChangeListener, FinishablePanel, Panel {
-    private final java.util.Set listeners = new HashSet(1);
+public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
+    Panel 
+{
+    private final CopyOnWriteArrayList<ChangeListener> listeners = 
+        new CopyOnWriteArrayList<ChangeListener>();
     protected java.lang.String panelName;
     protected org.openide.WizardDescriptor wizardDescriptor;
 
@@ -66,8 +70,10 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         this.wizardDescriptor = wizardDescriptor;
     }
     
+    @Override
     public abstract java.awt.Component getComponent();
 
+    @Override
     public abstract boolean isFinishPanel();
 
     public static interface Settings {
@@ -77,16 +83,19 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         public void addChangeListener(ChangeListener l);
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         ((Settings)getComponent()).read(wizardDescriptor);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         ((Settings)getComponent()).store(wizardDescriptor);
     }
 
+    @Override
     public boolean isValid() {
         if (getComponent() instanceof Settings) {
             return ((Settings)getComponent()).valid(wizardDescriptor);
@@ -94,26 +103,20 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         return false;
     }
     
-    public final void addChangeListener(javax.swing.event.ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+    @Override
+    public final void addChangeListener(ChangeListener l) {
+        listeners.add( l );
+    }
+
+    protected final void fireChangeEvent(ChangeEvent ev) {
+        for ( ChangeListener listener : listeners ){
+            listener.stateChanged(ev);
         }
     }
 
-    protected final void fireChangeEvent(javax.swing.event.ChangeEvent ev) {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
-        }
-    }
-
-    public final void removeChangeListener(javax.swing.event.ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    @Override
+    public final void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
     }
 
     public static void clearMessage(WizardDescriptor wizard, MessageType type) {
@@ -172,6 +175,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         setMessage(wizardDescriptor, MessageType.INFO, key);
     }
 
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         Component c = getComponent();
         if (c instanceof Settings) {
