@@ -643,6 +643,12 @@ Microsystems, Inc. All Rights Reserved.
           can be accessed. Available since version 1.26.
           </p>
       </api>
+      <api name="netbeans.productversion" category="devel" group="systemproperty" type="export">
+          <p>
+          This property includes the display name presented to the user as Product Version
+          in the About dialog box and in the log file.
+          </p>
+      </api>
   </p>
  </answer>
 
