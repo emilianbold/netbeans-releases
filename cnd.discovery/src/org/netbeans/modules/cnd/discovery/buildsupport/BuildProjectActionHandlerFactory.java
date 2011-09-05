@@ -50,10 +50,12 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -68,6 +70,13 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
     public boolean canHandle(Type type, Lookup context, Configuration configuration) {
         if (type == PredefinedType.BUILD) {
             if (configuration instanceof MakeConfiguration) {
+                Node node = context.lookup(Node.class);
+                if (node != null) {
+                    Item item = (Item) node.getValue("Item"); // NOI18N
+                    if (item != null) {
+                        return false;
+                    }
+                }
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
                 if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
