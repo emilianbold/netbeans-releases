@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -366,7 +366,8 @@ public final class ModuleUpdater extends Thread {
                     jarFile = new JarFile (nbm);
                     Enumeration<JarEntry> entries = jarFile.entries();
                     final Manifest manifest = jarFile.getManifest();
-                    if (manifest != null && manifest.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                    String symbolicName = manifest != null ? ModuleUpdate.extractCodeName(manifest.getMainAttributes()) : null;
+                    if (symbolicName != null) {
                         //OSGi bundle
                         File osgiJar = nbm;
                         
@@ -1062,7 +1063,7 @@ public final class ModuleUpdater extends Thread {
         
         class NbmFilter implements java.io.FilenameFilter {
             public boolean accept (File dir, String name) {
-                return name.endsWith (ModuleUpdater.NBM_EXTENSION);
+                return name.endsWith (ModuleUpdater.NBM_EXTENSION) || name.endsWith (ModuleUpdater.JAR_EXTENSION);
             }
         }
         
