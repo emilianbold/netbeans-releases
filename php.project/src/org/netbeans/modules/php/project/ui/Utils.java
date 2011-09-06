@@ -592,7 +592,7 @@ public final class Utils {
             if (preselected != null) {
                 setSelectedItem(preselected);
             } else {
-                setSelectedItem(ProjectPropertiesSupport.getDefaultPhpVersion());
+                setSelectedItem(PhpVersion.getDefault());
             }
         }
     }
