@@ -106,6 +106,12 @@ class DelegatingCellEditor implements TableCellEditor {
         if (currentEditor != null) {
             return currentEditor.getCellEditorValue();
         }
+        if (canceledEditorRef != null) {
+            TableCellEditor canceledEditor = canceledEditorRef.get();
+            if (canceledEditor != null) {
+                return canceledEditor.getCellEditorValue();
+            }
+        }
         Exceptions.printStackTrace(new IllegalStateException("No current editor."));
         return null;
     }
@@ -186,7 +192,6 @@ class DelegatingCellEditor implements TableCellEditor {
             }
             return status;
         }
-        Exceptions.printStackTrace(new IllegalStateException("No current editor."));
         return true;
     }
 
@@ -198,7 +203,6 @@ class DelegatingCellEditor implements TableCellEditor {
             currentEditor = null;
             return ;
         }
-        Exceptions.printStackTrace(new IllegalStateException("No current editor."));
     }
 
     @Override

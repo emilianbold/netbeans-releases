@@ -727,7 +727,7 @@ final class ViewBuilder {
         docView.addChange(startY, endY, deltaY);
         
         // For accurate span force computation of text layouts
-        Rectangle2D.Double docViewRect = docView.getAllocation();
+        Rectangle2D.Double docViewRect = docView.getAllocationMutable();
         if (docView.op.isAccurateSpan()) {
             int pIndex = docReplace.index;
             int endIndex = docReplace.addEndIndex();

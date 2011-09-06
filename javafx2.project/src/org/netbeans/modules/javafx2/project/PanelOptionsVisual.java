@@ -100,7 +100,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     private void preInitComponents() {
-        platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform");
+        platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform"); // NOI18N
         platformsCellRenderer = PlatformUiSupport.createPlatformListCellRenderer();
     }
     
@@ -109,6 +109,15 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
+        
+        // Select first Java FX enabled platform
+        for (int i = 0; i < platformsModel.getSize(); i++) {
+            JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
+            if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                platformComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
 
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
         txtLibFolder.setText(currentLibrariesLocation);

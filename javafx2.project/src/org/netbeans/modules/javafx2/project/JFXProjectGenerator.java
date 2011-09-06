@@ -378,11 +378,16 @@ public class JFXProjectGenerator {
     //        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
             if (preloader != null && preloader.length() > 0) { // this project uses preloader
+                String preloaderJar = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
+                        + File.separatorChar + preloader + "\\dist\\" + preloader + ".jar"; // NOI18N
+                String preloaderSrc = preloader + "\\src"; // NOI18N
+
                 ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
                 ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_preloader")}, false); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE_TYPE, PreloaderSourceType.PROJECT.getString());
-                ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE, preloader + "\\src"); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE, preloaderSrc);
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader)); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR, preloaderJar);
             }
         }
 
