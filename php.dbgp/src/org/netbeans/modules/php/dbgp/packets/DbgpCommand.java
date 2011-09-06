@@ -65,12 +65,12 @@ public abstract class DbgpCommand {
         this.command = command;
         this.transactionId = transactionId;
     }
-    
+
     public void send(OutputStream out) throws IOException {
-        String encodedData = null; 
+        String encodedData = null;
         if ( getData() != null ){
             BASE64Encoder encoder = new BASE64Encoder();
-            encodedData = encoder.encode( getData().getBytes( 
+            encodedData = encoder.encode( getData().getBytes(
                     DbgpMessage.ISO_CHARSET) );
         }
         StringBuilder dataToSend = new StringBuilder( getCommand());
@@ -79,7 +79,7 @@ public abstract class DbgpCommand {
             dataToSend.append( DATA_SEPARATOR );
             dataToSend.append( encodedData );
         }
-        Logger.getLogger( DbgpCommand.class.getName()).fine( 
+        Logger.getLogger( DbgpCommand.class.getName()).fine(
                 "command to send : "+dataToSend );             // NOI18N
         byte[] bytes = dataToSend.toString().getBytes();
         byte[] sendBytes = new byte[ bytes.length + 1 ];
@@ -88,25 +88,25 @@ public abstract class DbgpCommand {
         out.write( sendBytes );
         out.flush();
     }
-    
+
     public String getTransactionId() {
         return transactionId;
     }
-    
+
     public abstract boolean wantAcknowledgment();
-    
+
     protected String getData(){
         return null;
     }
-    
+
     public String getCommand() {
         return command;
     }
-    
+
     protected String getArguments() {
         return "";
     }
-    
+
     private String getArgumentString(){
         if ( getArguments() != null && getArguments().length() >0 ) {
             return TRANSACTION_OPT + transactionId+ " " +getArguments();
@@ -114,5 +114,5 @@ public abstract class DbgpCommand {
         else {
             return TRANSACTION_OPT + transactionId;
         }
-    }       
+    }
 }
