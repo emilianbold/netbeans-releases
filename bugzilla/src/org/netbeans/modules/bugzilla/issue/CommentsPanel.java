@@ -247,7 +247,7 @@ public class CommentsPanel extends JPanel {
         // state label
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            int index = author.indexOf('@');
+            int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
             stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
@@ -396,7 +396,7 @@ public class CommentsPanel extends JPanel {
                             StringTokenizer tokenizer = new StringTokenizer(text, "\n"); // NOI18N
                             while (tokenizer.hasMoreElements()) {
                                 String line = tokenizer.nextToken();
-                                sb.append(QUOTE_PREFIX).append(line).append('\n');
+                                sb.append(QUOTE_PREFIX).append(line).append('\n'); // NOI18N
                             }
                             newCommentHandler.append(sb.toString());
                         }
@@ -498,7 +498,7 @@ public class CommentsPanel extends JPanel {
     
     private class ExpandPopupMenu extends JPopupMenu {
         public ExpandPopupMenu() {
-            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_ExpandAll")) {
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_ExpandAll")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     for (ExpandLabel l : expandLabels) {
@@ -506,7 +506,7 @@ public class CommentsPanel extends JPanel {
                     }
                 }
             }));
-            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_CollapseAll")) {
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_CollapseAll")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     for (ExpandLabel l : expandLabels) {
@@ -603,7 +603,7 @@ public class CommentsPanel extends JPanel {
             if(collapsed) {
                 textPane.setVisible(false);
                 placeholderPanel.setVisible(false);
-                commentLabel.setText(textPane.getText().replace("\n", " ").replace("\t", " "));
+                commentLabel.setText(textPane.getText().replace("\n", " ").replace("\t", " ")); // NOI18N
                 setIcon(ci);
                 headerPanel.setBackground(BLUE_BACKGROUND);
                 commentCollapsed(number);
