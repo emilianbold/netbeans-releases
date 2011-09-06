@@ -99,6 +99,17 @@ public final class WhiteListQuery {
     }
 
     /**
+     * Tests whether the given whitelist is enabled in the project or not.
+     * @param project the project in to be tested for whitelist presence
+     * @param whiteListId the white list identifier
+     * @return true if whitelist is enabled in the project
+     * @since 1.1
+     */
+    public static boolean isWhiteListEnabledInProject(@NonNull Project project, @NonNull String whiteListId) {
+        return WhiteListCategoryPanel.isWhiteListEnabledInProject(project, whiteListId);
+    }
+
+    /**
      * The white list used to emit errors for usages of non allowed
      * types or methods.
      */
