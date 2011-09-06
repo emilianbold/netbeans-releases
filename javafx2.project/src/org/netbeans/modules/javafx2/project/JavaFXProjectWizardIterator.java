@@ -56,6 +56,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -166,15 +169,16 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         String preloader = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME);
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
+        AntProjectHelper projectHelper;
         switch (type) {
             case EXTISTING:
                 File[] sourceFolders = (File[]) wiz.getProperty("sourceRoot"); // NOI18N
                 File[] testFolders = (File[]) wiz.getProperty("testRoot"); // NOI18N
                 String buildScriptName = (String) wiz.getProperty("buildScriptName"); // NOI18N
-                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders,
+                projectHelper = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders,
                         MANIFEST_FILE, librariesDefinition, buildScriptName, platformName, preloader);
                 
-                EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                EditableProperties ep = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
                 if (includes == null) {
                     includes = "**"; // NOI18N
@@ -185,7 +189,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                     excludes = ""; // NOI18N
                 }
                 ep.setProperty(ProjectProperties.EXCLUDES, excludes);
-                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 
                 handle.progress(2);
                 for (File f : sourceFolders) {
@@ -197,13 +201,13 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             default:
                 String manifest = type == WizardType.APPLICATION ? MANIFEST_FILE : null;
-                h = JFXProjectGenerator.createProject(dirF, name, mainClass, manifest, librariesDefinition,
+                projectHelper = JFXProjectGenerator.createProject(dirF, name, mainClass, manifest, librariesDefinition,
                         platformName, preloader);
                 handle.progress(2);
                 if (mainClass != null && mainClass.length() > 0) {
                     try {
                         //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR); // NOI18N
-                        FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); // NOI18N
+                        FileObject sourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
                         FileObject mainClassFo = getClassFO(sourcesRoot, mainClass);
                         assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass; // NOI18N
                         // Returning FileObject of main class, will be called its preferred action
@@ -231,7 +235,28 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         handle.progress(3);
 
-        // Returning FileObject of project diretory. 
+        // create preloader project
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
+        if (preloader != null && preloader.length() > 0) {
+            preloader = preloader.trim();
+            File preloaderDir = new File(dirF.getParentFile().getAbsolutePath() + File.separatorChar + preloader);
+            FileUtil.normalizeFile(preloaderDir);
+            
+            AntProjectHelper preloaderProjectHelper = JFXProjectGenerator.createPreloaderProject(preloaderDir, preloader, librariesDefinition, platformName);
+            FileObject sourcesRoot = preloaderProjectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
+            FileObject preloaderClassFo = getClassFO(sourcesRoot, generatePreloaderClassName(preloader));
+            resultSet.add(preloaderClassFo);
+            
+            FileObject preloaderDirFO = FileUtil.toFileObject(preloaderDir);
+            resultSet.add(preloaderDirFO);
+            
+            // dependency to preloader project
+            final Project[] p = new Project[] {ProjectManager.getDefault().findProject(preloaderDirFO)};
+            FileObject ownerSourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
+            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);
+        }
+        
+        // Returning FileObject of project directory. 
         // Project will be open and set as main
         int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
@@ -246,21 +271,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
         }
         resultSet.add(dir);
-        
-        // create preloader project
-        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
-        if (preloader != null && preloader.length() > 0) {
-            preloader = preloader.trim();
-            File preloaderDir = new File(dirF.getParentFile().getAbsolutePath() + File.separatorChar + preloader);
-            FileUtil.normalizeFile(preloaderDir);
-            AntProjectHelper h = JFXProjectGenerator.createPreloaderProject(preloaderDir, preloader, librariesDefinition, platformName);
-            FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); // NOI18N
-            FileObject preloaderClassFo = getClassFO(sourcesRoot, generatePreloaderClassName(preloader));
-            resultSet.add(preloaderClassFo);
-            resultSet.add(h.getProjectDirectory());
-            
-//            ProjectClassPathModifier.addProjects(projects, sourcesRoot, ClassPath.COMPILE);
-        }
+//        Project project = ProjectManager.getDefault().findProject(dir);
+//        OpenProjects.getDefault().setMainProject(project);
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N
         dirF = (dirF != null) ? dirF.getParentFile() : null;
