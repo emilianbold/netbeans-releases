@@ -42,7 +42,10 @@
 package org.netbeans.modules.web.jsf.richfaces;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,13 +57,17 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -76,6 +83,8 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     private Richfaces4Customizer customizer;
 
     private static final String RICHFACES_NAME = "RichFaces 4.0"; //NOI18N
+    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom";
+    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.0.0.Final/richfaces-core-impl-4.0.0.Final.pom";
 
     public static final Map<String, String> RF_LIBRARIES = new HashMap<String, String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();
@@ -138,8 +147,25 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
             }
 
             if (rfLibrary != null) {
-                libraries.add(rfLibrary);
                 FileObject[] javaSources = webModule.getJavaSources();
+                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
+
+                // in cases of Maven, update library to contains maven-pom references if needed
+                if (antArtifactProvider == null) {
+                    List<URI> pomArtifacts;
+                    try {
+                        pomArtifacts = Arrays.asList(
+                                new URI(richfacesUiPom),
+                                new URI(richfacesCorePom));
+                        rfLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(rfLibrary, pomArtifacts);
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                // add library to project dependencies
+                libraries.add(rfLibrary);
                 ProjectClassPathModifier.addLibraries(
                         libraries.toArray(new Library[1]),
                         javaSources[0],
