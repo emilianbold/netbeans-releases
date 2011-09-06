@@ -178,13 +178,13 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
         @Override
         public Image getIcon(int type) {
-            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR ?
+            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR  || app.getType() == null ?
                     UISupport.ServerIcon.WAR_ARCHIVE : UISupport.ServerIcon.EAR_ARCHIVE));
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR ?
+            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR || app.getType() == null ?
                     UISupport.ServerIcon.WAR_ARCHIVE : UISupport.ServerIcon.EAR_ARCHIVE));
         }
 
