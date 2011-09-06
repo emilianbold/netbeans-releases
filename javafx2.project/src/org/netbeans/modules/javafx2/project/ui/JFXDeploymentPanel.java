@@ -95,6 +95,11 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         } else {
             refreshDownloadModeControls();
         }
+        checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
+        labelSigning.setEnabled(jfxProps.getSigningEnabled());
+        labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
+        buttonSigning.setEnabled(jfxProps.getSigningEnabled());
+        refreshSigningLabel();
     }
 
     /** This method is called from within the constructor to
@@ -446,7 +451,7 @@ private void buttonSigningActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
         panel.store();
-        refreshSigningLabel(true);
+        refreshSigningLabel();
     }
 }//GEN-LAST:event_buttonSigningActionPerformed
 
@@ -455,7 +460,11 @@ private void checkBoxUnrestrictedAccActionPerformed(java.awt.event.ActionEvent e
     labelSigning.setEnabled(sel);
     labelSigningMessage.setEnabled(sel);
     buttonSigning.setEnabled(sel);
-    refreshSigningLabel(sel);
+    jfxProps.setSigningEnabled(sel);
+    if(jfxProps.getSigningEnabled() && jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
+        jfxProps.setSigningType(JFXProjectProperties.SigningType.SELF);
+    }
+    refreshSigningLabel();
 }//GEN-LAST:event_checkBoxUnrestrictedAccActionPerformed
 
 private void buttonDownloadModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDownloadModeActionPerformed
@@ -516,16 +525,15 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         }
     }
 
-    private void refreshSigningLabel(boolean sign) {
-        if(sign) {
-            if(JFXProjectProperties.SIGNING_KEY.equals(jfxProps.getSigning())) {
-                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Key", jfxProps.getSigningKeyAlias())); // NOI18N
-            } else {
-                // JFXProjectProperties.SIGNING_GENERATED.equals(jfxProps.getSigning())
-                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Generated")); // NOI18N
-            }
+    private void refreshSigningLabel() {
+        if(!jfxProps.getSigningEnabled() || jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
+            labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningUnsigned")); // NOI18N
         } else {
-            labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Unsigned")); // NOI18N
+            if(jfxProps.getSigningType() == JFXProjectProperties.SigningType.KEY) {
+                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningKey", jfxProps.getSigningKeyAlias())); // NOI18N
+            } else {
+                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningGenerated")); // NOI18N
+            }
         }
     }
 

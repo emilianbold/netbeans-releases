@@ -163,6 +163,17 @@ public final class J2SEProject implements Project {
     static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
 
+    private static final String[] EXTENSIBLE_TARGETS = new String[] {
+        "-do-init",             //NOI18N
+        "-init-check",          //NOI18N
+        "-post-clean",          //NOI18N
+        "-pre-pre-compile",     //NOI18N
+        "-do-compile",          //NOI18N
+        "-do-compile-single",   //NOI18N
+        "jar",                  //NOI18N
+        "-post-jar",            //NOI18N
+        "run"                   //NOI18N
+    };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
@@ -811,10 +822,7 @@ public final class J2SEProject implements Project {
         //add targets here as required by the external plugins..
         @Override
         public List<String> getExtensibleTargets() {
-            String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-post-jar" //NOI18N
-            };
-            return Arrays.asList(targets);
+            return Arrays.asList(EXTENSIBLE_TARGETS);
         }
 
         @Override

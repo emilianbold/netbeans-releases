@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -147,7 +145,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         final String propName = event.getPropertyName();
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(propName)) {
             final String projectName = (String) event.getNewValue();
-            this.mainClassTextField.setText(createMainClassName(projectName));
+            mainClassTextField.setText(createMainClassName(projectName));
+            txtPreloaderProject.setText(createPreloaderProjectName(projectName));
         } else if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(propName)) {
             projectLocation = (String) event.getNewValue();
         }
@@ -178,7 +177,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         }
     }
     
-    static String createMainClassName(final String projectName) {
+    private static String createPreloaderProjectName(final String projectName) {
+        return projectName + "-Preloader"; // NOI18N
+    }
+    
+    private static String createMainClassName(final String projectName) {
 
         final StringBuilder pkg = new StringBuilder();
         final StringBuilder main = new StringBuilder();
