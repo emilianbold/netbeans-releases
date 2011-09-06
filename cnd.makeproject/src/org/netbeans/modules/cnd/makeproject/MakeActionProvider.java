@@ -924,21 +924,21 @@ public final class MakeActionProvider implements ActionProvider {
                     }
                     String compileLine = options.getAllOptions(ccCompiler);
                     if (compileLine != null) {
-                        int hasPath = compileLine.indexOf('#');
+                        int hasPath = compileLine.indexOf('#');// NOI18N
                         if (hasPath >= 0) {
                             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                             profile.setRunDirectory(compileLine.substring(0, hasPath));
                             String command = compileLine.substring(hasPath+1).trim();
-                            if (command.length() > 0 && command.charAt(0) != '-') {
+                            if (command.length() > 0 && command.charAt(0) != '-') {// NOI18N
                                 int i = command.indexOf(' ');
                                 if (i > 0) {
                                     command = command.substring(i+1).trim();
                                 }
                             }
-                            if (command.indexOf('\"') > 0) {
-                                int i = command.indexOf("\\\"");
+                            if (command.indexOf('\"') > 0) {// NOI18N
+                                int i = command.indexOf("\\\"");// NOI18N
                                 if (i < 0) {
-                                    command = command.replace("\"", "\\\"");
+                                    command = command.replace("\"", "\\\"");// NOI18N
                                 }
                             }
                             profile.setArgs(command);
