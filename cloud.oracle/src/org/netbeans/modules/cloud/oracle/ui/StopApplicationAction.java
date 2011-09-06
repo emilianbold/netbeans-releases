@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import oracle.nuviaq.model.xml.ApplicationDeployment;
+import oracle.cloud.paas.model.Application;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,7 +56,7 @@ public class StopApplicationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
         inst.getOracleInstance().stop(app);
     }
 
@@ -67,7 +67,7 @@ public class StopApplicationAction extends NodeAction {
         }
         // TODO: enabled only when app in right state
         return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
+                activatedNodes[0].getLookup().lookup(Application.class) != null;
     }
 
     @Override

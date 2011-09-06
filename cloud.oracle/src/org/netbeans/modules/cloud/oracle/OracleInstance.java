@@ -56,12 +56,14 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import oracle.nuviaq.api.ApplicationManager;
-import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
-import oracle.nuviaq.exception.ManagerException;
-import oracle.nuviaq.model.xml.ApplicationDeployment;
-import oracle.nuviaq.model.xml.Job;
-import oracle.nuviaq.model.xml.Log;
+import oracle.cloud.paas.api.ApplicationManager;
+import oracle.cloud.paas.api.ApplicationManagerConnectionFactory;
+import oracle.cloud.paas.exception.ManagerException;
+import oracle.cloud.paas.model.Application;
+import oracle.cloud.paas.model.ApplicationType;
+import oracle.cloud.paas.model.Job;
+import oracle.cloud.paas.model.JobStatus;
+import oracle.cloud.paas.model.Log;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -339,29 +341,28 @@ public class OracleInstance {
             }
             String appId = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
+            ApplicationType at = ApplicationType.WAR;
+            if ("EAR".equalsIgnoreCase(fo.getExt())) { // NOI18N
+                at = ApplicationType.EAR;
+            }
             String ctx = CommandBasedDeployer.readWebContext(fo);
-            ApplicationDeployment adt =new ApplicationDeployment();
-            adt.setInstanceId(serviceName);
-            adt.setApplicationId(appId);
-            adt.setArchiveUrl(f.getName());
             boolean redeploy = false;
-            List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
-            for (ApplicationDeployment app : apps) {
-                if (app.getApplicationId().equals(appId)) {
+            List<Application> apps = am.listApplications(tenantId, serviceName);
+            for (Application app : apps) {
+                if (app.getApplicationName().equals(appId)) {
                     redeploy = true;
-                    adt = app;
                     break;
                 }
             }
             
             Job jt;
             if (redeploy) {
-                LOG.log(Level.INFO, "redeploying: archive="+f+" "+adt); // NOI18N
-                jt = am.redeployApplication(is, tenantId, serviceName, adt);
+                LOG.log(Level.INFO, "redeploying: archive="+f); // NOI18N
+                jt = am.redeployApplication(tenantId, serviceName, appId, is);
                 LOG.log(Level.INFO, "redeployed as "+jt.getJobId()+" "+jt); // NOI18N
             } else {
-                LOG.log(Level.INFO, "deploying: archive="+f+" "+adt); // NOI18N
-                jt = am.deployApplication(is, tenantId, serviceName, adt);
+                LOG.log(Level.INFO, "deploying: archive="+f); // NOI18N
+                jt = am.deployApplication(tenantId, serviceName, appId, at, is);
                 LOG.log(Level.INFO, "deployed as "+jt.getJobId()+" "+jt); // NOI18N
             }
             
@@ -381,18 +382,18 @@ public class OracleInstance {
                 }
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
                 Job latestJob = am.describeJob(jt.getJobId());
-                String jobStatus = latestJob.getStatus();
+                JobStatus jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
-                if ("Complete".equals(jobStatus)) {
+                if (JobStatus.COMPLETE.equals(jobStatus)) {
                     url[0] = instanceURL+(instanceURL.endsWith("/") ? ctx.substring(1) : ctx);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
-                } else if ("submitted".equalsIgnoreCase(jobStatus)) {
+                } else if (JobStatus.SUBMITTED.equals(jobStatus)) {
                     // let's wait longer
-                } else if ("running".equalsIgnoreCase(jobStatus)) {
+                } else if (JobStatus.RUNNING.equals(jobStatus)) {
                     // let's wait longer
-                } else if ("failed".equalsIgnoreCase(jobStatus)) {
+                } else if (JobStatus.FAILED.equals(jobStatus)) {
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_FAILED"));
                     return DeploymentStatus.FAILED;
@@ -458,24 +459,24 @@ public class OracleInstance {
         return f;
     }
     
-    public List<ApplicationDeployment> getApplications() {
+    public List<Application> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
         return getApplicationManager().listApplications(getSystem(), getService());
     }
 
-    public void undeploy(ApplicationDeployment app) {
+    public void undeploy(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().undeployApplication(getSystem(), getService(), app.getApplicationId());
+        getApplicationManager().undeployApplication(getSystem(), getService(), app.getApplicationName());
     }
     
-    public void start(ApplicationDeployment app) {
+    public void start(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().startApplication(getSystem(), getService(), app.getApplicationId());
+        getApplicationManager().startApplication(getSystem(), getService(), app.getApplicationName());
     }
     
-    public void stop(ApplicationDeployment app) {
+    public void stop(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().stopApplication(getSystem(), getService(), app.getApplicationId());
+        getApplicationManager().stopApplication(getSystem(), getService(), app.getApplicationName());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {

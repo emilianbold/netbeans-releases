@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import oracle.nuviaq.model.xml.ApplicationDeployment;
-import org.netbeans.modules.cloud.oracle.OracleInstance;
+import oracle.cloud.paas.model.Application;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -57,7 +56,7 @@ public class UndeployApplicationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
         inst.getOracleInstance().undeploy(app);
     }
 
@@ -67,7 +66,7 @@ public class UndeployApplicationAction extends NodeAction {
             return false;
         }
         return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
+                activatedNodes[0].getLookup().lookup(Application.class) != null;
     }
 
     @Override

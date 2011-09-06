@@ -41,16 +41,11 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.management.ObjectInstance;
-import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import oracle.nuviaq.exception.ManagerException;
+import oracle.cloud.paas.exception.ManagerException;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor;
 import org.netbeans.modules.cloud.oracle.OracleInstance;

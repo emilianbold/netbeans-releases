@@ -162,9 +162,9 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
-                <package>oracle.nuviaq.api</package>
-                <package>oracle.nuviaq.exception</package>
-                <package>oracle.nuviaq.model.xml</package>
+                <package>oracle.cloud.paas.api</package>
+                <package>oracle.cloud.paas.exception</package>
+                <package>oracle.cloud.paas.model</package>
                 <package>org.netbeans.libs.oracle.cloud.api</package>
             </friend-packages>
             <class-path-extension>
@@ -172,8 +172,8 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/nuviaq-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/whitelistscantool.jar</runtime-relative-path>
-                <binary-origin>external/whitelistscantool.jar</binary-origin>
+                <runtime-relative-path>ext/whitelist.jar</runtime-relative-path>
+                <binary-origin>external/whitelist.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
-import oracle.nuviaq.model.xml.ApplicationDeployment;
+import oracle.cloud.paas.model.Application;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -54,7 +54,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -124,7 +123,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         };
     }
     
-    private static class OracleJ2EEInstanceChildren extends Children.Keys<ApplicationDeployment> {
+    private static class OracleJ2EEInstanceChildren extends Children.Keys<Application> {
 
         private OracleJ2EEInstance aij;
         private boolean basicNode;
@@ -132,7 +131,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         public OracleJ2EEInstanceChildren(OracleJ2EEInstance aij, boolean basicNode) {
             this.aij = aij;
             this.basicNode = basicNode;
-            setKeys(Collections.<ApplicationDeployment>emptySet());
+            setKeys(Collections.<Application>emptySet());
         }
         
         @Override
@@ -144,11 +143,11 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<ApplicationDeployment>emptySet());
+            setKeys(Collections.<Application>emptySet());
         }
         
         @Override
-        protected Node[] createNodes(ApplicationDeployment key) {
+        protected Node[] createNodes(Application key) {
             return new Node[]{new ApplicationNode(aij, key)};
         }
         
@@ -156,7 +155,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             OracleInstance.runAsynchronously(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    List<ApplicationDeployment> apps = aij.getOracleInstance().getApplications();
+                    List<Application> apps = aij.getOracleInstance().getApplications();
                     OracleJ2EEInstanceChildren.this.setKeys(apps);
                     return null;
                 }
@@ -166,10 +165,10 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
     public static class ApplicationNode extends AbstractNode {
 
-        public ApplicationNode(OracleJ2EEInstance aij, ApplicationDeployment app) {
+        public ApplicationNode(OracleJ2EEInstance aij, Application app) {
             super(Children.LEAF, Lookups.fixed(aij, app));
             setName(""); // NOI18N
-            setDisplayName(app.getApplicationId());
+            setDisplayName(app.getApplicationName());
         }
 
         @Override
