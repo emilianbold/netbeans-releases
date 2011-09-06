@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.java.editor.whitelist;
 
-//import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
@@ -71,6 +72,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,41 +87,74 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
 
     private static final RequestProcessor WORKER = new RequestProcessor(WhiteListTaskProvider.class);
     private static final Logger LOG = Logger.getLogger(WhiteListTaskProvider.class.getName());
+    //@GuardedBy("TASKS")
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    //@GuardedBy("root2FilesWithAttachedErrors")
     private static final Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
+    //@GuardedBy("TASKS")
     private static boolean clearing;
+    private static volatile WhiteListTaskProvider INSTANCE;
 
-
-    private volatile TaskScanningScope scope;
-    private volatile Callback callback;
+    //@GuardedBy("this")
+    private Callback currentCallback;
+    //@GuardedBy("this")
+    private Set<FileObject> currentFiles;
 
     @NbBundle.Messages({
         "LBL_ProviderName=White lists violations",
         "LBL_ProviderDescription=Lists violations of white list rules"
     })
+    @SuppressWarnings("LeakingThisInConstructor")
     public WhiteListTaskProvider() {
         super(Bundle.LBL_ProviderName(),
               Bundle.LBL_ProviderDescription(),
               null);
+        INSTANCE = this;
+    }
+
+    @CheckForNull
+    static WhiteListTaskProvider getInstance() {
+        return INSTANCE;
+    }
+
+    void refresh(final @NonNull URL root) {
+        final FileObject rootFo = URLMapper.findFileObject(root);
+        final Set<FileObject> files;
+        final Callback callback;
+        synchronized (this) {
+            files = currentFiles;
+            callback = currentCallback;
+        }
+        if (rootFo != null &&
+            files != null &&
+            files.contains(rootFo)) {
+            assert callback != null;
+            enqueue(new Work(rootFo, currentCallback));
+        }
     }
 
     @Override
     public void setScope(TaskScanningScope scope, Callback callback) {
         cancelAllCurrent();
-        this.scope = scope;
-        this.callback = callback;
-
         if (scope == null || callback == null)
             return ;
 
+        final Set<FileObject> files = new WeakSet<FileObject>();
         for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
-            enqueue(new Work(file, callback));
+            files.add(file);
         }
 
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
             for (SourceGroup javaSG : ProjectUtils.getSources(p).getSourceGroups("java")) {    //NOI18N
-                enqueue(new Work(javaSG.getRootFolder(), callback));
+                files.add(javaSG.getRootFolder());
             }
+        }
+        for (FileObject fo : files) {
+            enqueue(new Work(fo, callback));
+        }
+        synchronized (this) {
+            currentFiles = files;
+            currentCallback = callback;
         }
     }
 
@@ -179,7 +214,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         }
         final Task task = Task.create(
             file,
-            "nb-tasklist-warning",
+            "nb-whitelist-warning", //NOI18N
             doc.getValue(WhiteListIndexerPlugin.MSG),
             Integer.parseInt(doc.getValue(WhiteListIndexerPlugin.LINE)));
         return new Map.Entry<FileObject, Task>() {
@@ -201,13 +236,10 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     @CheckForNull
     private static DocumentIndex getIndex(@NonNull final FileObject root) {
         try {
-            final FileObject indexFolder = null; //todo: IndexFolder.getIndexFolderForSourceRoot(root.getURL());
-            if (indexFolder != null) {
-                final File indexDir = FileUtil.toFile(indexFolder);
-                if (indexDir != null) {
-                    final File whiteListFolder = new File (indexDir,WhiteListIndexerPlugin.getWhiteListPath());
-                    return IndexManager.createDocumentIndex(whiteListFolder);
-                }
+            final File whiteListFolder = WhiteListIndexerPlugin.getWhiteListDir(root.getURL());
+            if (whiteListFolder != null) {
+                final DocumentIndex index = IndexManager.createDocumentIndex(whiteListFolder);
+                return index.getStatus() == Index.Status.VALID ? index : null;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -215,36 +247,43 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         return null;
     }
 
-    private static synchronized void updateErrorsInRoot(
-            /*@NotNull*/ final Callback callback,
+    private static void updateErrorsInRoot(
+            @NonNull final Callback callback,
             @NonNull final FileObject root) {
         Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
         Set<FileObject> fixedFiles = new HashSet<FileObject>(filesWithErrors);
+        filesWithErrors.clear();
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
         final Map<FileObject,List<Task>> filesToTasks = new HashMap<FileObject,List<Task>>();
-        final DocumentIndex index = getIndex(root);
         try {
-            for (IndexDocument doc : index.findByPrimaryKey("", QueryKind.PREFIX)) {    //NOI18N
-                final Map.Entry<FileObject,Task> task = createTask(root, doc);
-                if (task != null) {
-                    List<Task> tasks = filesToTasks.get(task.getKey());
-                    if (tasks == null) {
-                        tasks = new ArrayList<Task>();
-                        filesToTasks.put(task.getKey(), tasks);
+            IndexManager.readAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final DocumentIndex index = getIndex(root);
+                    if (index != null) {
+                        try {
+                            for (IndexDocument doc : index.findByPrimaryKey("", QueryKind.PREFIX)) {    //NOI18N
+                                final Map.Entry<FileObject,Task> task = createTask(root, doc);
+                                if (task != null) {
+                                    List<Task> tasks = filesToTasks.get(task.getKey());
+                                    if (tasks == null) {
+                                        tasks = new ArrayList<Task>();
+                                        filesToTasks.put(task.getKey(), tasks);
+                                    }
+                                    tasks.add(task.getValue());
+                                }
+                            }
+                        } finally {
+                            index.close();
+                        }
                     }
-                    tasks.add(task.getValue());
+                    return null;
                 }
-            }
+            });
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         } catch (InterruptedException e) {
             Exceptions.printStackTrace(e);
-        } finally {
-            try {
-                index.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
         for (Map.Entry<FileObject,List<Task>> e : filesToTasks.entrySet()) {
             LOG.log(Level.FINE, "Setting {1} for {0}\n",
@@ -259,6 +298,44 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             callback.setTasks(f, Collections.<Task>emptyList());
         }
         filesWithErrors.addAll(nueFilesWithErrors);
+    }
+
+    private static void updateErrorsInFile(
+        @NonNull final Callback callback,
+        @NonNull final FileObject root,
+        @NonNull final FileObject file) {
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>(){
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final DocumentIndex index = getIndex(root);
+                    final List<Task> tasks = new ArrayList<Task>();
+                    try {
+                        for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, file), QueryKind.PREFIX)) {
+                            final Map.Entry<FileObject,Task> task = createTask(root, doc);
+                            if (task != null) {
+                                tasks.add(task.getValue());
+                            }
+                        }
+                    } finally {
+                        index.close();
+                    }
+                    Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
+                    if (tasks.isEmpty()) {
+                        filesWithErrors.remove(file);
+                    } else {
+                        filesWithErrors.add(file);
+                    }
+                    LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
+                    callback.setTasks(file, tasks);
+                    return null;
+                }
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        } catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     private static final class Work implements Runnable {
@@ -296,35 +373,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             }
 
             if (fileOrRoot.isData()) {
-                final DocumentIndex index = getIndex(root);
-                final List<Task> tasks = new ArrayList<Task>();
-                try {
-                    for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, fileOrRoot), QueryKind.PREFIX)) {    //NOI18N
-                        final Map.Entry<FileObject,Task> task = createTask(root, doc);
-                        if (task != null) {
-                            tasks.add(task.getValue());
-                        }
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (InterruptedException e) {
-                    Exceptions.printStackTrace(e);
-                } finally {
-                    try {
-                        index.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
-                if (tasks.isEmpty()) {
-                    filesWithErrors.remove(fileOrRoot);
-                } else {
-                    filesWithErrors.add(fileOrRoot);
-                }
-
-                LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{fileOrRoot, tasks});
-                callback.setTasks(fileOrRoot, tasks);
+                updateErrorsInFile(callback, root, fileOrRoot);
             } else {
                 updateErrorsInRoot(callback, root);
             }

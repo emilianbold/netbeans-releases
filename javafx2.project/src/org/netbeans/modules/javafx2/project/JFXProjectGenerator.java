@@ -70,6 +70,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.JFXProjectProperties.PreloaderSourceType;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -94,7 +95,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Creates a J2SEProject from scratch according to some initial configuration.
+ * Creates a JavaFX Project from scratch according to some initial configuration.
  * 
  * TODO use J2SEProjectBuider instead
  */
@@ -104,7 +105,7 @@ public class JFXProjectGenerator {
     }
 
     /**
-     * Create a new empty J2SE project.
+     * Create a new empty JavaFX project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the name for the project
      * @param librariesDefinition project relative or absolute OS path to libraries definition; can be null
@@ -112,16 +113,19 @@ public class JFXProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
-            final String manifestFile, final String librariesDefinition, final String platformName) throws IOException {
+            final String manifestFile, final String librariesDefinition,
+            final String platformName, final String preloader) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
+        
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null, librariesDefinition, platformName); //NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
+                        manifestFile == null, librariesDefinition, platformName, preloader);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
                 ProjectManager.getDefault().saveProject(p);
@@ -159,18 +163,19 @@ public class JFXProjectGenerator {
     public static AntProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders,
             final String manifestFile, final String librariesDefinition,
-            final String buildXmlName, final String platformName) throws IOException {
+            final String buildXmlName, final String platformName, final String preloader) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI8N
         Parameters.notNull("sourceFolders", sourceFolders); //NOI18N
         Parameters.notNull("testFolders", testFolders); //NOI18N
+        
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false, librariesDefinition, platformName);
+                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false, librariesDefinition, platformName, preloader);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
@@ -256,6 +261,48 @@ public class JFXProjectGenerator {
         return h[0];
     }
 
+    static AntProjectHelper createPreloaderProject(final File dir, final String name,
+            final String librariesDefinition, final String platformName) throws IOException {
+        Parameters.notNull("dir", dir); //NOI18N
+        Parameters.notNull("name", name);   //NOI18N
+
+        final FileObject dirFO = FileUtil.createFolder(dir);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                h[0] = createProject(dirFO, name, "src", "test", JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME, // NOI18N
+                        JavaFXProjectWizardIterator.MANIFEST_FILE, false, librariesDefinition, platformName, null);
+                
+                EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true"); // NOI18N
+                
+                final Project p = ProjectManager.getDefault().findProject(dirFO);
+                createJfxExtension(p, dirFO);
+                ProjectManager.getDefault().saveProject(p);
+                final ReferenceHelper refHelper = getReferenceHelper(p);
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            copyRequiredLibraries(h[0], refHelper);
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exceptions.printStackTrace(ex.getException());
+                }
+                
+                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
+                dirFO.createFolder("test"); // NOI18N
+                createPreloaderClass(srcFolder);
+            }
+        });
+        JavaFXProjectWizardIterator.createManifest(FileUtil.toFileObject(dir), true);
+
+        return h[0];
+    }
+
     private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
@@ -267,6 +314,7 @@ public class JFXProjectGenerator {
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
+//                    ext.addDependency("run", "jar"); //NOI18N 
                 }
             }
         }
@@ -274,7 +322,8 @@ public class JFXProjectGenerator {
 
     private static AntProjectHelper createProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, String mainClass, String manifestFile,
-            boolean isLibrary, String librariesDefinition, String platformName) throws IOException {
+            boolean isLibrary, String librariesDefinition, String platformName,
+            String preloader) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -323,9 +372,20 @@ public class JFXProjectGenerator {
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
         ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
+        
+        // temporary hack fopr disabling main class selector dialog
+        ep.setProperty(ProjectProperties.MAIN_CLASS, mainClass); // NOI18N
 //        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
 //        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
-                
+
+         // this project uses preloader
+        if (preloader != null && preloader.length() > 0) {
+            ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
+            ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE_TYPE, PreloaderSourceType.PROJECT.getString());
+            ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE, preloader + "\\src"); // NOI18N
+            ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME); // NOI18N
+        }
+        
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
@@ -490,19 +550,23 @@ public class JFXProjectGenerator {
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                             !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(JFXProjectGenerator.class.getName()).info("referenceLibrary is ignoring entry " + libEntry); // NOI18N
+                        Logger.getLogger(JFXProjectGenerator.class.getName()).log(Level.INFO,
+                                "referenceLibrary is ignoring entry {0}", libEntry); // NOI18N
                         //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
-                        Logger.getLogger(JFXProjectGenerator.class.getName()).warning("Library '" + lib.getDisplayName() + // NOI18N
-                                "' contains entry (" + libEntry + ") which does not exist. This entry is ignored and will not be refernced from sharable libraries."); // NOI18N
+                        Logger.getLogger(JFXProjectGenerator.class.getName()).log(Level.WARNING,
+                                "Library '{0}' contains entry ({1}) which does not exist. " // NOI18N
+                                + "This entry is ignored and will not be refernced from sharable " // NOI18N
+                                + "libraries.", new Object[]{lib.getDisplayName(), libEntry}); // NOI18N
                         continue;
                     }
                 }
                 URI u;
                 String name = PropertyUtils.relativizeFile(libBaseFolder, FileUtil.toFile(libEntryFO));
                 if (name == null) { // #198955
-                    Logger.getLogger(JFXProjectGenerator.class.getName()).warning("Can not relativize file: " + libEntryFO.getPath()); // NOI18N
+                    Logger.getLogger(JFXProjectGenerator.class.getName()).log(Level.WARNING,
+                            "Can not relativize file: {0}", libEntryFO.getPath()); // NOI18N
                     continue;
                 }
                 u = LibrariesSupport.convertFilePathToURI(name);
@@ -535,8 +599,7 @@ public class JFXProjectGenerator {
     }
 
     private static void createMainClass(String mainClassName, FileObject srcFolder) throws IOException {
-
-        int lastDotIdx = mainClassName.lastIndexOf('.');
+        int lastDotIdx = mainClassName.lastIndexOf('.'); // NOI18N
         String mName, pName;
         if (lastDotIdx == -1) {
             mName = mainClassName.trim();
@@ -565,8 +628,20 @@ public class JFXProjectGenerator {
         }
         DataFolder pDf = DataFolder.findFolder(pkgFolder);
         mt.createFromTemplate(pDf, mName);
-
     }
+    
+    private static void createPreloaderClass(FileObject srcFolder) throws IOException {
+        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXPreloader.java"); // NOI18N
+
+        if (mainTemplate == null) {
+            return; // Don't know the template
+        }
+
+        DataObject mt = DataObject.find(mainTemplate);
+        DataFolder srcDf = DataFolder.findFolder(srcFolder);
+        mt.createFromTemplate(srcDf, JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+    }
+    
     //------------ Used by unit tests -------------------
     private static SpecificationVersion defaultSourceLevel;
 

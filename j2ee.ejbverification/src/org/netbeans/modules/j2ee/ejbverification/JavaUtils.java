@@ -43,13 +43,17 @@
  */
 package org.netbeans.modules.j2ee.ejbverification;
 
+import java.util.HashMap;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 
@@ -108,28 +112,66 @@ public class JavaUtils {
     public static String getShortClassName(String qualifiedClassName){
         return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1); //NOI18N
     }
-    
+
     public static boolean isMethodSignatureSame(CompilationInfo cinfo,
             ExecutableElement method1, ExecutableElement method2){
+
+        // check for parameters count
         int paramCount = method1.getParameters().size();
-        
-        if (paramCount != method2.getParameters().size()){
+        if (paramCount != method2.getParameters().size()) {
             return false;
         }
-        
-        for (int i = 0; i < paramCount; i ++){
+
+        for (int i = 0; i < paramCount; i++) {
             TypeMirror param1 = method1.getParameters().get(i).asType();
             TypeMirror param2 = method2.getParameters().get(i).asType();
 
-            if (!cinfo.getTypes().isSameType(param1, param2)){
+            if (!cinfo.getTypes().isSameType(param1, param2)) {
                 if (isSameDeclaredType(param1, param2)) {
-                    return true;
+                    continue;
+                } else if (param2.getKind() == TypeKind.TYPEVAR) {
+                    // interface method contains type erasure - see issue #201543
+                    if (isParamEquivalentOfErasure(cinfo, method1, method2, param1.toString(), param2.toString())) {
+                        continue;
+                    }
                 }
                 return false;
             }
         }
-        
         return true;
+    }
+
+    private static boolean isParamEquivalentOfErasure(CompilationInfo cinfo, ExecutableElement sourceMethod,
+            ExecutableElement targetMethod, String sourceParam, String targetParam) {
+        TypeMirror classTypeMirror = sourceMethod.getEnclosingElement().asType();
+        for (TypeMirror typeMirror : cinfo.getTypes().directSupertypes(classTypeMirror)) {
+            if (typeMirror instanceof DeclaredType) {
+                DeclaredType declaredType = (DeclaredType) typeMirror;
+                if (declaredType.asElement().getEnclosedElements().contains(targetMethod)) {
+                    HashMap<String, String> argumentNamesMap = getErasureTypesMap(
+                            cinfo.getElementUtilities().enclosingTypeElement(targetMethod).getTypeParameters(),
+                            declaredType.getTypeArguments());
+
+                    if (sourceParam.equals(argumentNamesMap.get(targetParam))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static HashMap<String, String> getErasureTypesMap(List<? extends TypeParameterElement> erasureArguments,
+            List<? extends TypeMirror> typeArguments) {
+        HashMap<String, String> result = new HashMap<String, String>(erasureArguments.size());
+
+        for (int i = 0; i < erasureArguments.size(); i++) {
+            if (erasureArguments.size() == i || typeArguments.size() == i) {
+                return result;
+            }
+            result.put(erasureArguments.get(i).toString(), typeArguments.get(i).toString());
+        }
+        return result;
     }
 
     public static boolean isSameDeclaredType(TypeMirror param1, TypeMirror param2) {

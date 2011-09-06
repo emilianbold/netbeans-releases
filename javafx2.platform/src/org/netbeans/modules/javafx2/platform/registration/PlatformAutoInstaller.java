@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.openide.filesystems.FileObject;
@@ -115,10 +116,13 @@ public class PlatformAutoInstaller implements Runnable {
 
         // 2. Create java platform instance
         FileObject platformFolder = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders().iterator().next();
-        // TODO after Tomas makes us friend for java.j2seplatform module
         JavaPlatform platform = null;
-//        platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder);
-
+        try {
+            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ioe); // NOI18N
+            return;
+        }
         // 3. Register Java FX platform extension
         Map<String, String> map = new HashMap<String, String>(2);
         map.put(Utils.getSDKPropertyKey(platform), sdkPath);

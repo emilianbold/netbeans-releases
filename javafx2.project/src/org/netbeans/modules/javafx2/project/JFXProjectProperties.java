@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
 import javax.swing.table.AbstractTableModel;
@@ -84,8 +83,8 @@ import org.openide.util.Utilities;
 public final class JFXProjectProperties {
 
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+    public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
-    public static final String JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
