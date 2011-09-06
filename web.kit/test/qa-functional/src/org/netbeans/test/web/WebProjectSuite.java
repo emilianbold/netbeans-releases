@@ -33,43 +33,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.test.web;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
+ * Run all tests in the same instance of the IDE.
  *
- * @author Jindrich Sedek
+ * @author Jiri Skrivanek
  */
-public class MavenWebProjectValidationEE6 extends MavenWebProjectValidation {
+public class WebProjectSuite extends J2eeTestCase {
 
-    public static final String[] TESTS = {
-        "testPreconditions", "testNewMavenWebProject",
-        "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
-        "testRunServlet", "testCreateTLD", "testCreateTagHandler",
-        "testRunTag", "testNewHTML", "testRunHTML",
-        "testNewSegment", "testNewDocument",
-        "testFinish"
-    };
-
-    public MavenWebProjectValidationEE6(String name) {
+    public WebProjectSuite(String name) {
         super(name);
-        PROJECT_NAME = "WebMavenProjectEE6";
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MavenWebProjectValidationEE6.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+//        conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation14.class, WebProjectValidation14.TESTS);
+//        conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationEE5.class, WebProjectValidationEE5.TESTS);
+//        conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation.class, WebProjectValidation.TESTS);
+//        conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationNb36WebModule.class, WebProjectValidationNb36WebModule.TESTS);
+//        conf = addServerTests(Server.GLASSFISH, conf, WebSpringProjectValidation.class, WebSpringProjectValidation.TESTS);
+//        conf = addServerTests(Server.GLASSFISH, conf, WebStrutsProjectValidation.class, WebStrutsProjectValidation.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidation.class, MavenWebProjectValidation.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidationEE6.class, MavenWebProjectValidationEE6.TESTS);
         return NbModuleSuite.create(conf);
-    }
-
-    @Override
-    protected String getEEVersion() {
-        return JAVA_EE_6;
     }
 }
