@@ -412,63 +412,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         proxyPortLabel = new JLabel();
         proxyPortTextField = new JTextField();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return removePathMappingButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return removePathMappingButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return proxyPortTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  removePathMappingButton){
-                    return proxyHostTextField;
-                }
-                if(aComponent ==  newPathMappingButton){
-                    return removePathMappingButton;
-                }
-                if(aComponent ==  proxyHostTextField){
-                    return proxyPortTextField;
-                }
-                if(aComponent ==  defaultUrlRadioButton){
-                    return askUrlRadioButton;
-                }
-                if(aComponent ==  askUrlRadioButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return newPathMappingButton;
-                }
-                return removePathMappingButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  proxyHostTextField){
-                    return removePathMappingButton;
-                }
-                if(aComponent ==  removePathMappingButton){
-                    return newPathMappingButton;
-                }
-                if(aComponent ==  proxyPortTextField){
-                    return proxyHostTextField;
-                }
-                if(aComponent ==  askUrlRadioButton){
-                    return defaultUrlRadioButton;
-                }
-                if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return askUrlRadioButton;
-                }
-                if(aComponent ==  newPathMappingButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                return proxyPortTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
         Mnemonics.setLocalizedText(debugUrlLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.text")); // NOI18N
@@ -489,6 +433,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         pathMappingLabel.setLabelFor(pathMappingTable);
 
         Mnemonics.setLocalizedText(pathMappingLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.text"));
+
         pathMappingTable.setModel(new DefaultTableModel(
             new Object [][] {
 
@@ -498,8 +443,8 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
             }
         ));
         pathMappingScrollPane.setViewportView(pathMappingTable);
-
         pathMappingTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingTable.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(newPathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.newPathMappingButton.text")); // NOI18N
         newPathMappingButton.setEnabled(false);
         newPathMappingButton.addActionListener(new ActionListener() {
@@ -510,12 +455,12 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
 
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
-
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
 
@@ -523,20 +468,19 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text")); // NOI18N
 
         proxyPortLabel.setLabelFor(proxyPortTextField);
-
         Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
+
         proxyPortTextField.setPreferredSize(new Dimension(46, 19));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                        .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(removePathMappingButton)
@@ -628,6 +572,7 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
         proxyPortLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleName")); // NOI18N
         proxyPortLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.AccessibleContext.accessibleDescription")); // NOI18N
         proxyPortTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
