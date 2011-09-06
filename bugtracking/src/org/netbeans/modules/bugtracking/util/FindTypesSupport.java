@@ -72,9 +72,9 @@ import org.openide.util.NbBundle;
  */
 final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
-    private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");
-    private String HIGHLIGHTS_PROPERTY = "highlights.property";
-    private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";
+    private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");  // NOI18N
+    private String HIGHLIGHTS_PROPERTY = "highlights.property";                                             // NOI18N
+    private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";                                    // NOI18N
             
     private static FindTypesSupport instance;
     private Style defStyle;
@@ -151,7 +151,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         long t = System.currentTimeMillis();
         try {
             StyledDocument doc = pane.getStyledDocument();
-            Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);            
+            Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);     // NOI18N
             hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);            
@@ -166,7 +166,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             pane.addMouseMotionListener(this);
             pane.addMouseListener(this);
         } finally {
-            BugtrackingManager.LOG.log(Level.INFO, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t});
+            BugtrackingManager.LOG.log(Level.INFO, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
         }
     }
 
@@ -198,7 +198,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         }
         
         if(h != null && offset < elem.getEndOffset() - 1) {
-            Style hlStyle = doc.getStyle("regularBlue-findtype");
+            Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
             doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
             pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
         } 
@@ -278,7 +278,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     private class TypeLink {
         public void jumpTo(String resource) {
-            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null);
+            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null); // NOI18N
             if(td != null) {
                 td.open();
             }
@@ -316,15 +316,15 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         String name = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
                         int idx = name.lastIndexOf(".");
                         final String shortname = idx > -1 && name.length() > idx ? name.substring(idx + 1) : name;
-                        add(new JMenuItem(new AbstractAction("GoTo type '" + shortname + "'") {
+                        add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_GotoType", name)) { // NOI18N
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 link.jumpTo(shortname);
                             }
                         }));
                         if(name.length() > shortname.length()) {
-                            final String path = name.replace(".", "/") + ".java";
-                            add(new JMenuItem(new AbstractAction("Open '" + path + "'") { // XXX + ".java" ???
+                            final String path = name.replace(".", "/") + ".java"; // NOI18N
+                            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_OpenType", name)) { // XXX + ".java" ??? // NOI18N
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     StackTraceSupport.open(path, -1);
