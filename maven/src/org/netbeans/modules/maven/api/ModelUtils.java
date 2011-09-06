@@ -259,6 +259,7 @@ public final class ModelUtils {
      */
     private static Pattern DEFAULT = Pattern.compile("(.+)/(.+)/(.+)/(.+)[.]pom");
     private static Pattern LEGACY = Pattern.compile("(.+)/poms/([a-zA-Z0-9_]+[a-zA-Z_-]+)-([0-9].+)[.]pom");
+    private static final Pattern PROBABLE_ROOT_PATHS = Pattern.compile("(.+/)?maven(2?|[.]repo)/|(nexus/)?content/(groups|repositories|shadows)/[^/]+/");
     private static final List<String> knownRepositories = Arrays.asList(RepositoryPreferences.REPO_CENTRAL, "http://download.java.net/maven/1/", "http://download.java.net/maven/glassfish/");
 
     /** Returns a library descriptor corresponding to the given library,
@@ -304,25 +305,11 @@ public final class ModelUtils {
                 groupId = groupId.substring(1);
             }
             //sort of hack, these are the most probable root paths.
-            if (groupId.startsWith("maven/")) {//NOI18N
-                repoRoot = repoRoot + "/maven";//NOI18N
-                groupId = groupId.substring("maven/".length());//NOI18N
-            }
-            if (groupId.startsWith("maven2/")) {//NOI18N
-                repoRoot = repoRoot + "/maven2";//NOI18N
-                groupId = groupId.substring("maven2/".length());//NOI18N
-            }
-            if (groupId.startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
-                repoRoot = repoRoot + "/mirror/eclipse/rt/eclipselink/maven.repo/";//NOI18N
-                groupId = groupId.substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
-            }
-            if (groupId.startsWith("rt/eclipselink/maven.repo/")) {//NOI18N
-                repoRoot = repoRoot + "/rt/eclipselink/maven.repo/";//NOI18N
-                groupId = groupId.substring("rt/eclipselink/maven.repo/".length());//NOI18N
-            }
-            if (groupId.startsWith("nexus/content/groups/public-jboss/")) { //NOI18N
-                repoRoot = repoRoot + "/nexus/content/groups/public-jboss/"; //NOI18N
-                groupId = groupId.substring("nexus/content/groups/public-jboss/".length()); //NOI18N
+            Matcher root = PROBABLE_ROOT_PATHS.matcher(groupId);
+            if (root.lookingAt()) {
+                String s = root.group();
+                repoRoot += '/' + s;
+                groupId = groupId.substring(s.length());
             }
             groupId = groupId.replace('/', '.'); //NOI18N
             return new LibraryDescriptor(repoType, repoRoot, groupId, artifactId, version, classifier);
