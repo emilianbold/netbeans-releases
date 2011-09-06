@@ -140,7 +140,7 @@ public final class PhpLanguageOptions {
     public Properties getProperties(FileObject file) {
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
-        PhpVersion phpVersion = PhpVersion.PHP_5;
+        PhpVersion phpVersion = null;
 
         if (file != null) {
             PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(file);
@@ -211,8 +211,8 @@ public final class PhpLanguageOptions {
 
         /**
          * Get the {@link PhpVersion PHP version} of the project.
-         * If not specified, {@link PhpVersion#PHP_5 PHP version 5.1/5.2} is returned.
-         * @return the {@link PhpVersion PHP version} of the project
+         * If not specified, {@code null} is returned.
+         * @return the {@link PhpVersion PHP version} of the project, or {@code null} if not known
          * @since 2.16
          */
         public PhpVersion getPhpVersion() {
