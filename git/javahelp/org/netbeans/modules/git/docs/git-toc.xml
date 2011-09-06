@@ -6,7 +6,7 @@
       <tocitem text="Git">
         <tocitem text="About Git" target="org.netbeans.modules.git.about" />
         <tocitem text="Git Tasks: Quick Reference" target="org.netbeans.modules.git.quickref" /> 
-        <tocitem text="Setting Up Git" target="org.netbeans.modules.git.setup" /> 
+        <tocitem text="Cloning a Git Repository" target="org.netbeans.modules.git.clone" /> 
 		<tocitem text="Working with Remote Repositories" target="org.netbeans.modules.git.remote" />    
       </tocitem>
     </tocitem>

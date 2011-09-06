@@ -3,7 +3,7 @@
 <map version="2.0">
     <mapID target="org.netbeans.modules.git.about" url="git-about.html"/>
 	<mapID target="org.netbeans.modules.git.quickref" url="git-quickref.html" />
-	<mapID target="org.netbeans.modules.git.setup" url="git-setup.html" />
+	<mapID target="org.netbeans.modules.git.clone" url="git-clone.html" />
 	<mapID target="org.netbeans.modules.git.remote" url="git-remote.html" />
 
 
