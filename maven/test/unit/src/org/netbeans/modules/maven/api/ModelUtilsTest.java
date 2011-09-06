@@ -97,7 +97,7 @@ public class ModelUtilsTest extends TestCase {
         result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
-        assertEquals("http://repository.jboss.org/maven2", result.getRepoRoot());
+        assertEquals("http://repository.jboss.org/maven2/", result.getRepoRoot());
         assertEquals("junit", result.getGroupId());
         assertEquals("junit", result.getArtifactId());
         assertEquals("3.8.2", result.getVersion());
