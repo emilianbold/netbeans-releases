@@ -312,29 +312,19 @@ public class OracleInstance {
         OutputWriter owe = null;
         try {
             assert f.exists() : "archive does not exist: "+f;
-//            if (po != null) {
-//                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
-//            }
             String name = "";
             FileObject fo = FileUtil.toFileObject(f);
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
-            String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName, name);
-//            File weblogic = findWeblogicJar(onPremiseServiceInstanceId);
-//            if (weblogic != null) {
-//                if (!WhiteListTool.execute(f, tabName, weblogic)) {
-//    //                return DeploymentStatus.FAILED;
-//                }
-//            }
-            
-            InputOutput io = IOProvider.getDefault().getIO(tabName, /*false*/true);
+            String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName);
+            InputOutput io = IOProvider.getDefault().getIO(tabName, false);
+            if (io.isClosed()) {
+                io = IOProvider.getDefault().getIO(tabName, true);
+            }
             ow = io.getOut();
             owe = io.getErr();
-//            if (weblogic == null) {
-//                owe.println(NbBundle.getMessage(OracleInstance.class, "MSG_NO_WEBLOGIC"));
-//            }
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
