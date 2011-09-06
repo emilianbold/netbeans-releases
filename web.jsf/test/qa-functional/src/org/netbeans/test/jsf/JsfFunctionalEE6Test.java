@@ -53,18 +53,10 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JsfFunctionalEE6Test extends JsfFunctionalTest {
 
-    static {
-        PROJECT_NAME = "WebJSFProject";
-    }
-
     /** Need to be defined because of JUnit */
     public JsfFunctionalEE6Test(String name) {
         super(name);
-    }
-
-    /** Need to be defined because of JUnit */
-    public JsfFunctionalEE6Test() {
-        super();
+        PROJECT_NAME = "WebJSFProjectEE6";
     }
 
     public static Test suite() {

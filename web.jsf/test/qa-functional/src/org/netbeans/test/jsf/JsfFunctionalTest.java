@@ -45,7 +45,6 @@ package org.netbeans.test.jsf;
 import org.netbeans.test.web.*;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.JComboBox;
 import junit.framework.Test;
@@ -73,18 +72,13 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /** Test JSF support.
  *
@@ -105,10 +99,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     public static final String DESCRIPTION_CASE1 = "DescriptionCase1";
     public static final String DESCRIPTION_CASE2 = "DescriptionCase2";
 
-    static {
-        PROJECT_NAME = "WebJSFProject";
-    }
-
     protected static String URL_PATTERN_NULL = "The URL Pattern has to be entered.";
     protected static String URL_PATTERN_INVALID = "The URL Pattern is not valid.";
     // folder of sample project
@@ -116,11 +106,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Need to be defined because of JUnit */
     public JsfFunctionalTest(String name) {
         super(name);
-    }
-
-    /** Need to be defined because of JUnit */
-    public JsfFunctionalTest() {
-        super();
+        PROJECT_NAME = "WebJSFProjectEE5";
     }
 
     public static Test suite() {
@@ -165,11 +151,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
      * - check index.jsp is opened
      */
     public void testNewJSFWebProject() throws IOException {
-        File projectFolder = new File (getProjectFolder(PROJECT_NAME));
-        if (projectFolder.exists()){
-            FileObject fo = FileUtil.createData(projectFolder);
-            fo.delete();
-        }
         final String serverNodeName = getServerNode(Server.ANY).getText();
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
         String category = Bundle.getStringTrimmed(
@@ -181,8 +162,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        String sFolder = getProjectFolder(PROJECT_NAME);
-        nameStep.txtProjectLocation().typeText(sFolder);
+        nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer(serverNodeName);
@@ -209,7 +189,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
 //        frameworkStep.rbDoNotAppendAnyLibrary().push();
 
         frameworkStep.finish();
-        sleep(5000);
         ProjectSupport.waitScanFinished();
         EditorOperator.closeDiscardAll();
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
@@ -230,17 +209,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         }
     }
 
-    @Override
-    protected File getProjectFolder() {
-        try {
-            File dataDir = new JsfFunctionalTest().getWorkDir();
-            return Manager.normalizeFile(dataDir);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-    
     /** Test JSF Managed Bean Wizard. */
     public void testManagedBeanWizard(){
         NewFileWizardOperator projectWizard = NewFileWizardOperator.invoke();
@@ -535,7 +503,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** If installed visualweb cluster in IDE, switch from PageFlow to XML view of faces-config.xml. 
      * @return EditorOperator instance of faces-config.xml
      */
-    public static EditorOperator getFacesConfig() {
+    public EditorOperator getFacesConfig() {
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
         Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
         new OpenAction().perform(facesconfig);
