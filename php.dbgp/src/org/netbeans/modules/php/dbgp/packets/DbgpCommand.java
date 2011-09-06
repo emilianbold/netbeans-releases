@@ -47,6 +47,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import sun.misc.BASE64Encoder;
 
 
@@ -69,9 +73,7 @@ public abstract class DbgpCommand {
     public void send(OutputStream out) throws IOException {
         String encodedData = null;
         if ( getData() != null ){
-            BASE64Encoder encoder = new BASE64Encoder();
-            encodedData = encoder.encode( getData().getBytes(
-                    DbgpMessage.ISO_CHARSET) );
+            encodedData = encodeData();
         }
         StringBuilder dataToSend = new StringBuilder( getCommand());
         dataToSend.append( getArgumentString() );
@@ -87,6 +89,19 @@ public abstract class DbgpCommand {
         sendBytes[ bytes.length ] = 0;
         out.write( sendBytes );
         out.flush();
+    }
+
+    private String encodeData() throws IOException {
+        BASE64Encoder encoder = new BASE64Encoder();
+        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (session != null) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                String projectEncoding = SessionManager.getInstance().getSession(sessionId).getOptions().getProjectEncoding();
+                return encoder.encode(getData().getBytes(projectEncoding));
+            }
+        }
+        return encoder.encode(getData().getBytes());
     }
 
     public String getTransactionId() {
