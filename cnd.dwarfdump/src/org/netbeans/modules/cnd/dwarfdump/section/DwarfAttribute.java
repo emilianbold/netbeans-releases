@@ -80,6 +80,18 @@ public class DwarfAttribute {
         if (value != null) {
             if (valueForm == FORM.DW_FORM_ref4) {
                 out.printf(" <%x>", value); // NOI18N
+            } else if (valueForm == FORM.DW_FORM_addr) {
+                if (value instanceof byte[]) {
+                    byte[] data = (byte[])value;
+                    out.printf("0x"); // NOI18N
+                    for (int i = 0; i < data.length; i++) {
+                        out.printf("%x", data[i]); // NOI18N
+                    }
+                } else if (value instanceof Number){
+                    out.printf(" 0x%x", ((Number)value).longValue()); // NOI18N
+                } else {
+                    out.printf(" %s", value.toString()); // NOI18N
+                }
             } else if (valueForm == FORM.DW_FORM_block1) {
                 byte[] data = (byte[])value;
                 out.printf(" %d bytes: ", data.length); // NOI18N

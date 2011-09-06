@@ -47,56 +47,52 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
-
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
-import org.netbeans.api.java.source.CodeStyle;
-import org.netbeans.api.java.source.CodeStyle.*;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
-
-import com.sun.tools.javac.util.*;
-import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.code.Symbol.*;
-import com.sun.tools.javac.main.JavaCompiler;
 import static com.sun.tools.javac.code.Flags.*;
+import com.sun.tools.javac.code.Symbol.*;
 import static com.sun.tools.javac.code.TypeTags.*;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.util.*;
+import com.sun.tools.javac.util.List;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyle.*;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
-
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+
 import org.openide.util.Exceptions;
 
 /** Prints out a tree as an indented Java source program.
@@ -1933,10 +1929,21 @@ public final class VeryPretty extends JCTree.Visitor {
 
     public void printImportsBlock(java.util.List<? extends JCTree> imports, boolean maybeAppendNewLine) {
         boolean hasImports = !imports.isEmpty();
+        CodeStyle.ImportGroups importGroups = null;
         if (hasImports) {
             blankLines(cs.getBlankLinesBeforeImports());
+            if (cs.separateImportGroups())
+                importGroups = cs.getImportGroups();
         }
+        int lastGroup = -1;
         for (JCTree importStat : imports) {
+            if (importGroups != null) {
+                Name name = fullName(((JCImport)importStat).qualid);
+                int group = name != null ? importGroups.getGroupId(name.toString(), ((JCImport)importStat).staticImport) : -1;
+                if (lastGroup >= 0 && lastGroup != group)
+                    blankline();
+                lastGroup = group;
+            }
             printStat(importStat);
             newline();
         }
@@ -2381,7 +2388,7 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    private Name fullName(JCTree tree) {
+    public Name fullName(JCTree tree) {
 	switch (tree.getTag()) {
 	case JCTree.IDENT:
 	    return ((JCIdent) tree).name;

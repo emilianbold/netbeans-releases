@@ -58,5 +58,5 @@ public interface OutputProcessorFactory {
      * returns a Set of <code>OutputProcessor</code> instances or empty set, never null.
      *
      */
-    public Set<OutputProcessor> createProcessorsSet(Project project);
+    Set<? extends OutputProcessor> createProcessorsSet(Project project);
 }

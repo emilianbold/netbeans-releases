@@ -297,6 +297,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
     }
 
     public void testMainProjectFlagNotMovedWhenCopying() throws Exception {
+        OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
         OpenProjects.getDefault().open(new Project[] {prj}, false);
         
         Project main = OpenProjects.getDefault().getMainProject();

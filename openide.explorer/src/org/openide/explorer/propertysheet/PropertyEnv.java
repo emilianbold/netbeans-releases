@@ -164,11 +164,31 @@ public class PropertyEnv {
     boolean editable = true;
     private static final Logger LOG = Logger.getLogger(PropertyEnv.class.getName());
 
+    static {
+        CustomEditorAccessorImpl.register();
+    }
+   
     /** Default constructor has package access -
      * we do not want the instances to be created outside
      * our package.
      */
     PropertyEnv() {
+    }
+
+    /**
+     * Creates a PropertyEnv instance for given feature descriptor (property)
+     * and beans (nodes). To be used for initializing property editors not
+     * managed by the property sheet classes.
+     * @param fd Feature descritor that describes the property.
+     * @param beans Objects that the edited property belongs to (typically its node).
+     * @return the created PropertyEnv instance
+     * @since 6.39
+     */
+    public static PropertyEnv create(FeatureDescriptor fd, Object... beans) {
+        PropertyEnv env = new PropertyEnv();
+        env.setFeatureDescriptor(fd);
+        env.setBeans(beans);
+        return env;
     }
 
     /**

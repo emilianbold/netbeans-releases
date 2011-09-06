@@ -51,11 +51,13 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.openide.util.NbBundle;
 
 
@@ -82,6 +84,15 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
             // rule should not be applied to interceptor 
             return ;
         }
+        boolean hasIBindings = hasInterceptorBindings(element, model);
+        if ( hasIBindings ){
+            result.requireCdiEnabled(element, model);
+            EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
+            ElementHandle<TypeElement> handle = ElementHandle.create(element);
+            helper.addInterceptedBean( result , handle.resolve( result.getInfo()));
+        }
+        
+        
         Set<Modifier> modifiers = element.getModifiers();
         boolean isFinal = modifiers.contains(Modifier.FINAL);
         List<ExecutableElement> methods = ElementFilter.methodsIn(
@@ -108,10 +119,6 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
         }
         if ( cancel.get() ){
             return;
-        }
-        boolean hasIBindings = hasInterceptorBindings(element, model);
-        if ( hasIBindings ){
-            result.requireCdiEnabled(element, model);
         }
         if (hasIBindings && isFinal) {
             result.addError(element, model, 

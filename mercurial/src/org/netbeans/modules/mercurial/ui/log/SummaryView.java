@@ -866,6 +866,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sb.append(revisionEvent.getChangedPath().getPath());
                 Component renderer = super.getListCellRendererComponent(list, sb.toString(), index, isSelected, isSelected);
                 if(renderer instanceof JLabel) {
+                    if (revisionEvent.getChangedPath().getAction() == HgLogMessage.HgCopyStatus) {
+                        sb.append(" (").append(revisionEvent.getChangedPath().getCopySrcPath()).append(")"); //NOI18N
+                    }
                     ((JLabel) renderer).setToolTipText(sb.toString());
                 }
                 return renderer;

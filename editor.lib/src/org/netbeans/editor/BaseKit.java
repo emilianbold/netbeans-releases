@@ -105,6 +105,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
@@ -932,6 +933,7 @@ public class BaseKit extends DefaultEditorKit {
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
                    new ActionFactory.ToggleHighlightSearchAction(),
+                   new ActionFactory.ToggleRectangularSelectionAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),
@@ -1114,6 +1116,26 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     final BaseDocument doc = (BaseDocument)target.getDocument();
+                    // Check rectangular selection => special mode
+                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                        doc.runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    List<Position> regions = RectangularSelectionUtils.regionsCopy(target);
+                                    if (regions != null) {
+                                        RectangularSelectionUtils.removeSelection(doc, regions);
+                                        RectangularSelectionUtils.insertText(doc, regions, cmd);
+                                    }
+                                } catch (BadLocationException ble) {
+                                    LOG.log(Level.FINE, null, ble);
+                                    target.getToolkit().beep();
+                                }
+                            }
+                        });
+                        return;
+                    }
+                    
                     final int insertionOffset = computeInsertionOffset(target.getCaret());
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
                             target, insertionOffset, cmd);
@@ -1748,7 +1770,13 @@ public class BaseKit extends DefaultEditorKit {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    if (!RectangularSelectionUtils.removeSelection(target)) {
+                                        RectangularSelectionUtils.removeChar(target, nextChar);
+                                    }
+                                } else {
+                                    doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                }
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {

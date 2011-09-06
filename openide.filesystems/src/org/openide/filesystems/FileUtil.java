@@ -1516,7 +1516,10 @@ public final class FileUtil extends Object {
                 mimeToExtensions.put(mimeType, Collections.singleton(extension));
             }
         }
-        MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+        if (MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions)) {
+            MIMESupport.resetCache();
+        }
+        MIMESupport.freeCaches();
     }
 
     /** Returns list of file extensions associated with specified MIME type. In

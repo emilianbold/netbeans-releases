@@ -153,6 +153,14 @@ public final class Splash implements Stamps.Updater {
         }
     }
     
+    final int getMaxSteps() {
+        return painter.maxSteps;
+    }
+    
+    final int getProgress() {
+        return painter.progress;
+    }
+    
     /** Enables or disables splash component and its progress
      * animation
      */
@@ -532,14 +540,20 @@ public final class Splash implements Stamps.Updater {
          * It also alters progress to preserve ratio between completed and total
          * number of steps.
          */
-        private void addToMaxSteps(int steps) {
+        final void addToMaxSteps(int steps) {
             if (steps == 0) {
                 return;
             }
-            int max = maxSteps + steps;
-            int prog = progress / maxSteps * max;
-            maxSteps = max;
-            progress = prog;
+            if (maxSteps == 0) {
+                int prog = progress / steps;
+                maxSteps = steps;
+                progress = prog;
+            } else {
+                int max = maxSteps + steps;
+                int prog = progress * max / maxSteps;
+                maxSteps = max;
+                progress = prog;
+            }
             // do repaint on next increment
         }
 	

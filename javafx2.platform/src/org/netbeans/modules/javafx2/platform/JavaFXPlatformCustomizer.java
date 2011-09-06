@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.platform;
 
 import java.beans.Customizer;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -266,9 +268,18 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             lastUsedFolder = file.getParentFile();
             sdkTextField.setText(file.getAbsolutePath());
+            
+            if (runtimeTextField.getText().length() == 0) {
+                runtimeTextField.setText(JavaFXPlatformUtils.guessRuntimePath(file));
+            }
+
+            if (javadocTextField.getText().length() == 0) {
+                javadocTextField.setText(JavaFXPlatformUtils.guessJavadocPath(file));
+            }
         
             if (isPlatformValid()) {
                 saveProperties();
+                firePlatformChange();
                 clearErrorMessage();
             } else {
                 setErrorMessage();
@@ -306,6 +317,7 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
             if (isPlatformValid()) {
                 saveProperties();
+                firePlatformChange();
                 clearErrorMessage();
             } else {
                 setErrorMessage();
@@ -353,6 +365,7 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
             if (isPlatformValid()) {
                 saveProperties();
+                firePlatformChange();
                 clearErrorMessage();
             } else {
                 setErrorMessage();
@@ -399,6 +412,7 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
             if (isPlatformValid()) {
                 saveProperties();
+                firePlatformChange();
                 clearErrorMessage();
             } else {
                 setErrorMessage();
@@ -430,7 +444,7 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
     private void saveProperties() {
-        Map<String, String> map = new HashMap<String, String>(1);
+        Map<String, String> map = new HashMap<String, String>(3);
         boolean propertiesChanged = false;
 
         String sdkPath = sdkTextField.getText();
@@ -500,5 +514,17 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     private void addToPlatformCP() {
         ClassPath bootstrapLibraries = platform.getBootstrapLibraries();
         // TODO after Tomas will give me API
+    }
+    
+    // XXX dirty hack, change it
+    private void firePlatformChange() {
+//        platform.firePropertyChange(Utils.PROP_JAVA_FX, null, null);
+        try {
+            Method method = JavaPlatform.class.getDeclaredMethod("firePropertyChange", String.class, Object.class, Object.class); // NOI18N
+            method.setAccessible(true);
+            method.invoke(platform, JavaFXPlatformUtils.PROPERTY_JAVA_FX, null, null);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

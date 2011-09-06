@@ -46,10 +46,14 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.PlexusContainerException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -72,7 +76,7 @@ public class BeanRunConfig implements RunConfig {
     private FileObject projectDirectory;
     private List<String> goals;
     private String executionName;
-    private Properties properties;
+    private Map<String,String> properties;
     //for these delegate to default options for defaults.
     private boolean showDebug = MavenSettings.getDefault().isShowDebug();
     private boolean showError = MavenSettings.getDefault().isShowErrors();
@@ -199,51 +203,25 @@ public class BeanRunConfig implements RunConfig {
         this.executionName = executionName;
     }
 
-    public final Properties getProperties() {
-        if (parent != null && properties == null) {
-            return parent.getProperties();
+    @Override public final Map<? extends String,? extends String> getProperties() {
+        if (properties == null) {
+            return parent != null ? parent.getProperties() : Collections.<String,String>emptyMap();
         }
-        Properties newProperties = new Properties();
-        if (properties != null) {
-            newProperties.putAll(properties);
-        }
-        return newProperties;
+        return Collections.unmodifiableMap(new LinkedHashMap<String,String>(properties));
     }
 
-    public final String removeProperty(String key) {
+    @Override public final void setProperty(@NonNull String key, @NullAllowed String value) {
         if (properties == null) {
-            properties = new Properties();
+            properties = new LinkedHashMap<String,String>();
             if (parent != null) {
                 properties.putAll(parent.getProperties());
             }
         }
-        String toRet = (String) properties.remove(key);
-        synchronized (this) {
-            mp = null;
+        if (value != null) {
+            properties.put(key, value);
+        } else {
+            properties.remove(key);
         }
-        return toRet;
-    }
-
-    public final String setProperty(String key, String value) {
-        if (properties == null) {
-            properties = new Properties();
-            if (parent != null) {
-                properties.putAll(parent.getProperties());
-            }
-        }
-        String toRet = (String) properties.setProperty(key, value);
-        synchronized (this) {
-            mp = null;
-        }
-        return toRet;
-    }
-
-    public final void setProperties(Properties props) {
-        if (properties == null) {
-            properties = new Properties();
-        }
-        properties.clear();
-        properties.putAll(props);
         synchronized (this) {
             mp = null;
         }

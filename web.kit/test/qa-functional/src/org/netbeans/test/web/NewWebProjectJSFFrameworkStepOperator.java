@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,36 +27,36 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.web;
 
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.*;
 
-/** Class implementing all necessary methods for handling "New Web Application" NbDialog.
+/**
+ * Class implementing all necessary methods for handling "New Web Application"
+ * NbDialog.
  *
  * @author dkolar
  * @version 1.0
  */
 public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOperator {
 
-    /** Creates new NewWebProjectJSFFrameworkStepOperator that can handle it.
+    /**
+     * Creates new NewWebProjectJSFFrameworkStepOperator that can handle it.
      */
     public NewWebProjectJSFFrameworkStepOperator() {
         super("New Web Application");
     }
-
     private JTabbedPaneOperator _tbpJTabbedPane;
     private String _selectPageConfiguration = "Configuration";
     private JCheckBoxOperator _cbValidateXML;
@@ -79,112 +76,88 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     private JLabelOperator _lblJSFDirectory;
     private JTableOperator _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
     private JTextFieldOperator _txtDefaultJavaPackage;//VW JSF
-    
     private JLabelOperator _lblTheURLPatternHasToBeEntered;
     private JLabelOperator _lblTheURLPatternIsNotValid;//Struts as well
     private JLabelOperator _lblIsNotValidPathForAFolder;
     private JLabelOperator _lblDefaultJavaPackageNameIsInvalid;//VW JSF    
 
-
     //******************************
     // Subcomponents definition part
     //******************************
-
-    
     /*
      * Selects a JSF Framework to be added
      */
-     
-    public boolean setJSFFrameworkCheckbox()
-    {
+    public boolean setJSFFrameworkCheckbox() {
         Integer jsfRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.web.jsf");
-        if(jsfRow != -1)
-        {
+        if (jsfRow != -1) {
             tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(jsfRow, 0);
             return true;
-        }
-        else
-        {
+        } else {
             System.err.println("No JSF framework found!");
             return false;
         }
     }
 
-     /*
+    /*
      * Selects a Visual Web Framework to be added
      */
-
-    public boolean setVWJSFFrameworkCheckbox()
-    {
+    public boolean setVWJSFFrameworkCheckbox() {
         Integer vwjsfRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.visualweb.project.jsf");
-        if(vwjsfRow != -1)
-        {
+        if (vwjsfRow != -1) {
             tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(vwjsfRow, 0);
             return true;
-        }
-        else
-        {
+        } else {
             System.err.println("No Visual Web framework found!");
             return false;
         }
 
     }
-     /*
+    /*
      * Selects a Struts Framework to be added
      */
 
-    public boolean setStrutsFrameworkCheckbox()
-    {
+    public boolean setStrutsFrameworkCheckbox() {
         Integer strutsRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.web.struts");
-        if(strutsRow != -1)
-        {
+        if (strutsRow != -1) {
             tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(strutsRow, 0);
             return true;
-        }
-        else
-        {
+        } else {
             System.err.println("No Struts framework found!");
             return false;
         }
-        
+
     }
     /*
      * Selects a Spring MVC Framework to be added
      */
 
-    public boolean setSpringFrameworkCheckbox()
-    {
+    public boolean setSpringFrameworkCheckbox() {
         Integer springRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.spring.webmvc");
-        if(springRow != -1)
-        {
+        if (springRow != -1) {
             tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(springRow, 0);
             return true;
-        }
-        else
-        {
+        } else {
             System.err.println("No Spring framework found!");
             return false;
         }
     }
-    
+
 //*********************************************************************
-    
-    
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtDefaultJavaPackage() {
-        if (_txtDefaultJavaPackage==null) {
+        if (_txtDefaultJavaPackage == null) {
             _txtDefaultJavaPackage = new JTextFieldOperator(this, 2);
         }
         return _txtDefaultJavaPackage;
     }
 
-        /** Tries to find "The URL Pattern is not valid." WizardDescriptor$FixedHeightLabel in this dialog.
+    /** Tries to find "The URL Pattern is not valid." WizardDescriptor$FixedHeightLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblTheURLPatternIsNotValid() {
-        if (_lblTheURLPatternIsNotValid==null) {
+        if (_lblTheURLPatternIsNotValid == null) {
             _lblTheURLPatternIsNotValid = new JLabelOperator(this, "The URL Pattern is not valid.");
         }
         return _lblTheURLPatternIsNotValid;
@@ -194,7 +167,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JLabelOperator
      */
     public JLabelOperator lblIsNotValidPathForAFolder() {
-        if (_lblIsNotValidPathForAFolder==null) {
+        if (_lblIsNotValidPathForAFolder == null) {
             _lblIsNotValidPathForAFolder = new JLabelOperator(this, "\"\" is not valid path for a folder.");
         }
         return _lblIsNotValidPathForAFolder;
@@ -204,26 +177,27 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JLabelOperator
      */
     public JLabelOperator lblTheURLPatternHasToBeEntered() {
-        if (_lblTheURLPatternHasToBeEntered==null) {
+        if (_lblTheURLPatternHasToBeEntered == null) {
             _lblTheURLPatternHasToBeEntered = new JLabelOperator(this, "The URL Pattern has to be entered.");
         }
         return _lblTheURLPatternHasToBeEntered;
     }
+
     /** Tries to find "Default java package name is invalid" WizardDescriptor$FixedHeightLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblDefaultJavaPackageNameIsInvalid() {
-        if (_lblDefaultJavaPackageNameIsInvalid==null) {
+        if (_lblDefaultJavaPackageNameIsInvalid == null) {
             _lblDefaultJavaPackageNameIsInvalid = new JLabelOperator(this, "Default java package name is invalid");
         }
         return _lblDefaultJavaPackageNameIsInvalid;
     }
-    
+
     /** Tries to find null JTabbedPane in this dialog.
      * @return JTabbedPaneOperator
      */
     public JTabbedPaneOperator tbpJTabbedPane() {
-        if (_tbpJTabbedPane==null) {
+        if (_tbpJTabbedPane == null) {
             _tbpJTabbedPane = new JTabbedPaneOperator(this);
         }
         return _tbpJTabbedPane;
@@ -233,7 +207,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbValidateXML() {
-        if (_cbValidateXML==null) {
+        if (_cbValidateXML == null) {
             _cbValidateXML = new JCheckBoxOperator(selectPageConfiguration(), org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_XML"));
         }
         selectPageConfiguration();
@@ -244,7 +218,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtJSFServletName() {
-        if (_txtJSFServletName==null) {
+        if (_txtJSFServletName == null) {
             _txtJSFServletName = new JTextFieldOperator(selectPageConfiguration());
         }
         selectPageConfiguration();
@@ -255,7 +229,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbVerifyObjects() {
-        if (_cbVerifyObjects==null) {
+        if (_cbVerifyObjects == null) {
             _cbVerifyObjects = new JCheckBoxOperator(selectPageConfiguration(), "Verify Objects");
         }
         selectPageConfiguration();
@@ -266,7 +240,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtServletURLMapping() {
-        if (_txtServletURLMapping==null) {
+        if (_txtServletURLMapping == null) {
             _txtServletURLMapping = new JTextFieldOperator(selectPageConfiguration(), 1);
         }
         selectPageConfiguration();
@@ -277,7 +251,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbRegisteredLibraries() {
-        if (_rbRegisteredLibraries==null) {
+        if (_rbRegisteredLibraries == null) {
             _rbRegisteredLibraries = new JRadioButtonOperator(selectPageLibraries(), "Registered Libraries:");
         }
         selectPageLibraries();
@@ -288,7 +262,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboJComboBox() {
-        if (_cboJComboBox==null) {
+        if (_cboJComboBox == null) {
             _cboJComboBox = new JComboBoxOperator(selectPageLibraries());
         }
         selectPageLibraries();
@@ -299,7 +273,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtLibraryName() {
-        if (_txtLibraryName==null) {
+        if (_txtLibraryName == null) {
             _txtLibraryName = new JTextFieldOperator(selectPageLibraries());
         }
         selectPageLibraries();
@@ -310,7 +284,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtJSFDirectory() {
-        if (_txtJSFDirectory==null) {
+        if (_txtJSFDirectory == null) {
             _txtJSFDirectory = new JTextFieldOperator(selectPageLibraries(), 1);
         }
         selectPageLibraries();
@@ -321,7 +295,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JButtonOperator
      */
     public JButtonOperator btBrowse() {
-        if (_btBrowse==null) {
+        if (_btBrowse == null) {
             _btBrowse = new JButtonOperator(selectPageLibraries(), "Browse...");
         }
         selectPageLibraries();
@@ -332,7 +306,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbCreateNewLibrary() {
-        if (_rbCreateNewLibrary==null) {
+        if (_rbCreateNewLibrary == null) {
             _rbCreateNewLibrary = new JRadioButtonOperator(selectPageLibraries(), org.netbeans.jellytools.Bundle.getString("org.netbeans.api.project.libraries.Bundle", "LibrariesCustomizer.createLibrary.title"));
         }
         selectPageLibraries();
@@ -343,7 +317,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbDoNotAppendAnyLibrary() {
-        if (_rbDoNotAppendAnyLibrary==null) {
+        if (_rbDoNotAppendAnyLibrary == null) {
             _rbDoNotAppendAnyLibrary = new JRadioButtonOperator(selectPageLibraries(), "Do not append any library.");
         }
         selectPageLibraries();
@@ -354,7 +328,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JLabelOperator
      */
     public JLabelOperator lblLibraryName() {
-        if (_lblLibraryName==null) {
+        if (_lblLibraryName == null) {
             _lblLibraryName = new JLabelOperator(selectPageLibraries(), "Library Name:");
         }
         selectPageLibraries();
@@ -365,7 +339,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JLabelOperator
      */
     public JLabelOperator lblJSFDirectory() {
-        if (_lblJSFDirectory==null) {
+        if (_lblJSFDirectory == null) {
             _lblJSFDirectory = new JLabelOperator(selectPageLibraries(), "JSF Directory:");
         }
         selectPageLibraries();
@@ -376,16 +350,15 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @return JTableOperator
      */
     public JTableOperator tabSelectTheFrameworksYouWantToUseInYourWebApplication() {
-        if (_tabSelectTheFrameworksYouWantToUseInYourWebApplication==null) {
+        if (_tabSelectTheFrameworksYouWantToUseInYourWebApplication == null) {
             _tabSelectTheFrameworksYouWantToUseInYourWebApplication = new JTableOperator(this);
         }
         return _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
     }
-    
+
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** changes current selected tab
      * @param tabName String tab name */
     public void selectJTabbedPanePage(String tabName) {
@@ -404,7 +377,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @param state boolean requested state
      */
     public void checkValidateXML(boolean state) {
-        if (cbValidateXML().isSelected()!=state) {
+        if (cbValidateXML().isSelected() != state) {
             cbValidateXML().push();
         }
     }
@@ -434,7 +407,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      * @param state boolean requested state
      */
     public void checkVerifyObjects(boolean state) {
-        if (cbVerifyObjects().isSelected()!=state) {
+        if (cbVerifyObjects().isSelected() != state) {
             cbVerifyObjects().push();
         }
     }
@@ -572,9 +545,9 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /** Performs verification of NewWebProjectJSFFrameworkStepOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         tbpJTabbedPane();
         cbValidateXML();
@@ -593,13 +566,4 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         tabSelectTheFrameworksYouWantToUseInYourWebApplication();
         lblTheURLPatternHasToBeEntered();
     }
-
-    /** Performs simple test of NewWebProjectJSFFrameworkStepOperator
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        new NewWebProjectJSFFrameworkStepOperator().verify();
-        System.out.println("NewWebProjectJSFFrameworkStepOperator verification finished.");
-    }
 }
-

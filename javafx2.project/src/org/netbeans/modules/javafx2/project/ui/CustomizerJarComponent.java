@@ -36,18 +36,8 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-/*
- * CustomizerJarComponent.java
- *
- * Created on 2.8.2011, 15:34:54
- */
 package org.netbeans.modules.javafx2.project.ui;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
-//import java.util.HashMap;
-//import java.util.Map;
-//import org.netbeans.modules.java.j2seproject.api.J2SEJarConfigProvider;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.openide.util.Lookup;
 
@@ -55,11 +45,8 @@ import org.openide.util.Lookup;
  *
  * @author Petr Somol
  */
-public class CustomizerJarComponent extends javax.swing.JPanel {// implements ActionListener {
+public class CustomizerJarComponent extends javax.swing.JPanel {
 
-    //private Map<String,String> propMap = new HashMap<String,String>();
-    
-    //private J2SEJarConfigProvider.ConfigChangeListener listener;
     private static JFXProjectProperties jfxProps = null;
     
     /**
@@ -70,22 +57,6 @@ public class CustomizerJarComponent extends javax.swing.JPanel {// implements Ac
         jfxProps = JFXProjectProperties.getInstance(context);
         binaryCSSCheckBox.setModel(jfxProps.getBinaryEncodeCSSModel());
     }
-
-//    public void addListener(J2SEJarConfigProvider.ConfigChangeListener l) {
-//        listener = l;
-//    }
-
-//    @Override
-//    public void actionPerformed(ActionEvent e) {
-//        jfxProps.
-//        if (binaryCSSCheckBox.isSelected()) {
-//            //JFXProjectProperties.binaryEncodeCSS
-//            propMap.put(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
-//        } else {
-//            propMap.put(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "false"); // NOI18N
-//        }
-//        //listener.propertiesChanged(propMap);
-//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -100,18 +71,11 @@ public class CustomizerJarComponent extends javax.swing.JPanel {// implements Ac
 
         setLayout(new java.awt.GridBagLayout());
 
-        binaryCSSCheckBox.setText(org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
-        binaryCSSCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                binaryCSSCheckBoxActionPerformed(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(binaryCSSCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "LBL_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
         add(binaryCSSCheckBox, new java.awt.GridBagConstraints());
+        binaryCSSCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "AN_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
+        binaryCSSCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "AD_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void binaryCSSCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryCSSCheckBoxActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_binaryCSSCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox binaryCSSCheckBox;

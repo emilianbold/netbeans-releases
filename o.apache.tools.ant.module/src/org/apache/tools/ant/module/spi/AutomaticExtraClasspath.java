@@ -45,9 +45,10 @@
 package org.apache.tools.ant.module.spi;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -69,17 +70,16 @@ final class AutomaticExtraClasspath implements AutomaticExtraClasspathProvider {
         if (obj instanceof URL) {
             FileObject fo = URLMapper.findFileObject((URL)obj);
             File f = fo != null ? FileUtil.toFile(fo) : null;
-            if (f != null) {
-                AutomaticExtraClasspath aec = new AutomaticExtraClasspath(f);
-                return aec;
+            if (f == null) {
+                Logger.getLogger(AutomaticExtraClasspathProvider.class.getName()).log(obj.toString().contains("com.jcraft.") ? Level.FINE : Level.WARNING, "No File found for {0}", obj);
             }
-            throw new FileNotFoundException(obj.toString());
+            return new AutomaticExtraClasspath(f);
         } else {
             throw new IllegalArgumentException("url arg is not URL: " + obj); // NOI18N
         }
     }
 
-    public File[] getClasspathItems() {
-        return new File[] { file };
+    @Override public File[] getClasspathItems() {
+        return file != null ? new File[] {file} : new File[0];
     }
 }

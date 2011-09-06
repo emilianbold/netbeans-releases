@@ -369,7 +369,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         assertEquals(compiler, compilerName);
         assertEquals(root, sourceRoot);
         assertNotNull(mainFunctionPosition);
-        assertTrue(mainFunctionPosition.getFilePath().startsWith(root));
+        assertTrue(mainFunctionPosition.getFilePath().replace('\\', '/').startsWith(root));
         assertEquals(mainLine, mainFunctionPosition.getLine());
         assertTrue(canAnalyze.isApplicable());
         assertTrue(canAnalyze.getDependencies().size()>=2);

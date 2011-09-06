@@ -126,9 +126,10 @@ public interface GitClient {
      * Checks out the index into the working copy root. Does not move HEAD.
      * @param revision if not null, index is updated with the revision content before checking out to WC
      * @param roots files/folders to checkout
+     * @param recursively if set to <code>true</code>, all files under given roots will be checked out, otherwise only direct file children will be affected.
      * @throws GitException other error
      */
-    public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void checkout(File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Checks out a given revision.
@@ -455,9 +456,10 @@ public interface GitClient {
      * Updates entries for given files in the index with those from the given revision
      * @param revision revision to go back to
      * @param roots files or folders to update in the index
+     * @param recursively if set to <code>true</code>, all files under given roots will be affected, otherwise only direct file children will be modified in the index.
      * @throws GitException
      */
-    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void reset (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type

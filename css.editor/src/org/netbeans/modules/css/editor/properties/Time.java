@@ -57,7 +57,7 @@ public class Time implements CssPropertyValueAcceptor {
         String numberPart = token.endsWith("ms") ? token.substring(0, token.length() - 2) : token.endsWith("s") ? token.substring(0, token.length() - 1) : null;
         if(numberPart != null) {
             try {
-                Integer.parseInt(numberPart);
+                java.lang.Integer.parseInt(numberPart);
                 return true;
             } catch (NumberFormatException nfe) {
                 return false;

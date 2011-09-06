@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.openide.util.NbBundle;
 
 
@@ -97,6 +98,9 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
                             DelegateFieldAnalizer.class,
                             "ERR_DelegateIsNotInDecorator"));   // NOI18N
         }
+        EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
+                result);
+        helper.addDelegate(result, element );
         if ( cancel.get()){
             return;
         }

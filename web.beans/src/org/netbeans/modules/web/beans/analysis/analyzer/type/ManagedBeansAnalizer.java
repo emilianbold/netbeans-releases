@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,10 +54,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -98,6 +101,21 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             return;
         }
         checkImplementsExtension(element, model, result);
+        if (cancel.get()) {
+            return;
+        }
+        checkDecorators( element , model , result );
+    }
+
+    private void checkDecorators( TypeElement element, WebBeansModel model,
+            Result result )
+    {
+        Collection<TypeElement> decorators = model.getDecorators(element);
+        if ( decorators!= null && decorators.size() >0 ){
+            EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
+            ElementHandle<TypeElement> handle = ElementHandle.create(element);
+            helper.addDecoratedBean( result , handle.resolve( result.getInfo() ));
+        }
     }
 
     private void checkImplementsExtension( TypeElement element,

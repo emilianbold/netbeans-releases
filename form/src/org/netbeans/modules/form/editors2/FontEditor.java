@@ -56,9 +56,6 @@ import javax.swing.event.ChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
-
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -234,16 +231,15 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         final GroupLayout layout = new GroupLayout(editor);
         editor.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup()
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(switchBox))
-            .add(pane));
+                .addComponent(switchBox))
+            .addComponent(pane));
         layout.setVerticalGroup(layout.createSequentialGroup()
             .addContainerGap()
-            .add(switchBox)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(pane));
-//            .addContainerGap());
+            .addComponent(switchBox)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(pane));
 
         switchBox.addItemListener(new ItemListener() {
             private Component absoluteInLayout = absoluteComp;
@@ -274,12 +270,12 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         JPanel panel = new JPanel();
         GroupLayout layout = new GroupLayout(panel);
 
-        layout.setAutocreateGaps(true);
+        layout.setAutoCreateGaps(true);
         panel.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup()
-                .add(fontEditor).add(resourcePanelGUI));
+                .addComponent(fontEditor).addComponent(resourcePanelGUI));
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .add(fontEditor).add(resourcePanelGUI));
+                .addComponent(fontEditor).addComponent(resourcePanelGUI));
         return panel;
     }
 
@@ -684,57 +680,57 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             setLayout(layout);
             layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup()
-                    .add(fontSizeLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup()
-                            .add(relativeChoice)
-                            .add(absoluteChoice))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup()
-                            .add(relativeSize, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-                            .add(absoluteSize, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup()
-                    .add(fontStyleLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup()
-                            .add(italicCheckBox)
-                            .add(layout.createSequentialGroup()
-                                .add(17)
-                                .add(layout.createParallelGroup()
-                                    .add(addItalicChoice)
-                                    .add(removeItalicChoice))))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup()
-                            .add(thicknessCheckBox)
-                            .add(layout.createSequentialGroup()
-                                .add(17)
-                                .add(layout.createParallelGroup()
-                                    .add(removeBoldChoice)
-                                    .add(addBoldChoice))))))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(fontSizeLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup()
+                            .addComponent(relativeChoice)
+                            .addComponent(absoluteChoice))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup()
+                            .addComponent(relativeSize, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(absoluteSize, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(fontStyleLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup()
+                            .addComponent(italicCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(17)
+                                .addGroup(layout.createParallelGroup()
+                                    .addComponent(addItalicChoice)
+                                    .addComponent(removeItalicChoice))))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup()
+                            .addComponent(thicknessCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(17)
+                                .addGroup(layout.createParallelGroup()
+                                    .addComponent(removeBoldChoice)
+                                    .addComponent(addBoldChoice))))))
                     .addContainerGap());
             layout.setVerticalGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(fontSizeLabel)
-                    .add(fontStyleLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(relativeChoice)
-                    .add(relativeSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(italicCheckBox)
-                    .add(thicknessCheckBox))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(absoluteChoice)
-                    .add(absoluteSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(addItalicChoice)
-                    .add(addBoldChoice))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(removeItalicChoice)
-                    .add(removeBoldChoice))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(fontSizeLabel)
+                    .addComponent(fontStyleLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(relativeChoice)
+                    .addComponent(relativeSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(italicCheckBox)
+                    .addComponent(thicknessCheckBox))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(absoluteChoice)
+                    .addComponent(absoluteSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addItalicChoice)
+                    .addComponent(addBoldChoice))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(removeItalicChoice)
+                    .addComponent(removeBoldChoice))
                 .addContainerGap(260, 260));
         }
 

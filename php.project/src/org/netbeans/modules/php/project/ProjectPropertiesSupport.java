@@ -221,20 +221,15 @@ public final class ProjectPropertiesSupport {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
-    public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
-        return PhpLanguageOptions.PhpVersion.PHP_53;
-    }
-
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
-        PhpLanguageOptions.PhpVersion phpVersion = null;
         if (value != null) {
             try {
-                phpVersion = PhpLanguageOptions.PhpVersion.valueOf(value);
+                return PhpLanguageOptions.PhpVersion.valueOf(value);
             } catch (IllegalArgumentException iae) {
                 // ignored
             }
         }
-        return phpVersion != null ? phpVersion : PhpLanguageOptions.PhpVersion.PHP_5;
+        return PhpLanguageOptions.PhpVersion.getDefault();
     }
 
     /**

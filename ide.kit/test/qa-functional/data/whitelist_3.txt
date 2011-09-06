@@ -2,6 +2,23 @@
 
 #include whitelist_bug_195029.txt
 
+#201357
+org.netbeans.modules.profiler.api.project.ProjectProfilingSupport
+org.netbeans.modules.profiler.api.project.ProjectStorage
+org.netbeans.modules.profiler.j2se.J2SEProjectProfilingSupportProvider
+org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider
+org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities
+org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities$IntegrationUpdater
+org.netbeans.modules.profiler.nbimpl.providers.JavaProfilerSourceImpl
+org.netbeans.modules.profiler.nbimpl.providers.ProjectStorageProviderImpl
+org.netbeans.modules.profiler.nbimpl.providers.SelectionTreeBuilderFactoryImpl$FileTreeBuilder
+org.netbeans.modules.profiler.selector.api.builders.SingleFileSelectionTreeBuilder
+org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder
+org.netbeans.modules.profiler.spi.java.AbstractJavaProfilerSource
+org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider
+org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider$Basic
+org.netbeans.modules.profiler.spi.project.ProjectStorageProvider
+
 #200051 - bunch of classes
 org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl$OnExpandAction
 org.netbeans.modules.ant.grammar.AntHighlightsLayerFactory

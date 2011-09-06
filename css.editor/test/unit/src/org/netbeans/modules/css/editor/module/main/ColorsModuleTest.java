@@ -61,9 +61,9 @@ public class ColorsModuleTest extends CslTestBase {
         PropertyModel color = CssModuleSupport.getProperty("color");
         assertNotNull(color);
 
-        assertNotNull(CssModuleSupport.getProperty("-rgb"));
-        assertNotNull(CssModuleSupport.getProperty("-colors-list"));
-        assertNotNull(CssModuleSupport.getProperty("-system-color"));
+        assertNotNull(CssModuleSupport.getProperty("@rgb"));
+        assertNotNull(CssModuleSupport.getProperty("@colors-list"));
+        assertNotNull(CssModuleSupport.getProperty("@system-color"));
     }
 
     public void testTextValues() {
@@ -115,7 +115,7 @@ public class ColorsModuleTest extends CslTestBase {
     
     public void testSpecialValues() {
         PropertyModel p = CssModuleSupport.getProperty("color");
-        assertTrue(new PropertyValue(p, "inherit").success());
+//        assertTrue(new PropertyValue(p, "inherit").success());
         assertTrue(new PropertyValue(p, "currentColor").success());
         assertTrue(new PropertyValue(p, "transparent").success());
     }

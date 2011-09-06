@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -260,6 +260,7 @@ public final class TopLogging {
 
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
+        System.setProperty("netbeans.productversion", currentVersion); // NOI18N
         ps.print("  Product Version         = " + currentVersion); // NOI18N
         for (File cluster : clusters) { // also print Hg ID if available; more precise
             File buildInfo = new File(cluster, "build_info"); // NOI18N

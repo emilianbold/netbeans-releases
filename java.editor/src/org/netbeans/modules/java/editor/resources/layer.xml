@@ -471,6 +471,26 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="TaskList">
+        <folder name="Groups">
+            <file name="whitelist.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                <attr name="groupName" stringvalue="nb-whitelist-warning"/>
+                <attr name="diplayNameKey" stringvalue="LBL_whitelist_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_whitelist_group"/>
+                <attr name="iconKey" stringvalue="ICON_whitelist"/>
+                <attr name="position" intvalue="51"/>
+            </file>
+         </folder>
+        <folder name="Scanners">
+            <file name="WhiteListsViolationsProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.PushTaskScanner"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider"/>
+            </file>
+        </folder>
+    </folder>
+
     <!--
     <folder name="org.netbeans.modules.java.source">
       <folder name="options">

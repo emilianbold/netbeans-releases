@@ -135,10 +135,12 @@ public final class CsmFontColorManager {
             listener.stateChanged(this);
         }
 
+        @Override
         public AttributeSet getColor(Entity color) {
             return fcs.getTokenFontColors(color.getResourceName());
         }
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
             fcs = lookup.lookup(FontColorSettings.class);
@@ -151,6 +153,11 @@ public final class CsmFontColorManager {
                     it.remove();
                 }
             }
+        }
+
+        @Override
+        public String getMimeType() {
+            return mimeType;
         }
     }
 }

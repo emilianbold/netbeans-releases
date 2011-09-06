@@ -44,12 +44,18 @@
 
 package org.netbeans.modules.search;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openidex.search.DataObjectSearchGroup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
@@ -65,6 +71,7 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     final boolean hasExtraSearchTypes;
     private final SearchScope searchScope;
     private SearchTask listeningSearchTask;
+    private CommonSearchRoot commonSearchRoot = new CommonSearchRoot();
 
     private LinkedList searchItems;
     
@@ -104,7 +111,15 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
             if (stopped) {
                 return;
             }
-            searchItems.add(j.next());
+
+            Object file = j.next();
+            searchItems.add(file);
+
+            if (file instanceof FileObject) {
+                commonSearchRoot.update((FileObject) file);
+            } else if (file instanceof DataObject) {
+                commonSearchRoot.update(((DataObject) file).getPrimaryFile());
+            }
         }
     }
 
@@ -195,5 +210,133 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     SearchScope getSearchScope(){
         return searchScope;
     }
+
+    @Override
+    protected void onStopSearch() {
+        try {
+            basicCriteria.terminateCurrentSearches();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /** Class for holding a updating common search root of searched files. */
+    static class CommonSearchRoot {
+
+        /** Minimal number of folders shown in relative path to a matching file.
+         */
+        private int minRelPathLen = 4;
+        private boolean exists = true;
+        private List<FileObject> path;
+        private FileObject file = null;
+
+        public CommonSearchRoot() {
+        }
+
+        public CommonSearchRoot(int minRelPathLen) {
+            if (minRelPathLen < 1) {
+                throw new IllegalArgumentException();
+            }
+            this.minRelPathLen = minRelPathLen;
+        }
+
+        /** Update path to folder that is common parent of all searched files. 
+         */
+        synchronized void update(FileObject fo) {
+
+            if (!exists) {
+                // It is clear that no common path does exist.
+            } else if (exists && file == null) {
+                // Common path has not been initialized yet.
+                initCommonPath(fo);
+            } else if ((FileUtil.isParentOf(file, fo))) {
+                // No need to update, file under common path.
+            } else {
+                List<FileObject> p = filePathAsList(fo.getParent());
+                path = findCommonPath(path, p);
+                if (path.isEmpty()) {
+                    path = null;
+                    file = null;
+                    exists = false;
+                } else {
+                    file = path.get(path.size() - 1);
+                }
+            }
+        }
+
+        /** Find common part of two file paths.
+         *  
+         * @return Longest common sub-path. If p1 and p2 are equal paths,
+         * p1 is returned.
+         */
+        static List<FileObject> findCommonPath(List<FileObject> p1,
+                List<FileObject> p2) {
+
+            for (Iterator<FileObject> i1 = p1.iterator(),
+                    i2 = p2.iterator(); i1.hasNext() && i2.hasNext();) {
+                FileObject fo1 = i1.next();
+                FileObject fo2 = i2.next();
+                if (!fo1.equals(fo2)) {
+                    return p1.subList(0, p1.indexOf(fo1));
+                }
+            }
+            return p1;
+        }
+
+        /** Get list describing file path from root (first item) to a file. */
+        static List<FileObject> filePathAsList(FileObject fo) {
+            List<FileObject> path = new LinkedList<FileObject>();
+            for (FileObject p = fo; p != null; p = p.getParent()) {
+                path.add(0, p);
+            }
+            return path;
+        }
+
+        /** Create initial common path for the first searched file.  */
+        private void initCommonPath(FileObject fo) {
+
+            for (FileObject p = fo.getParent(); p != null; p = p.getParent()) {
+                if (isLikeProjectFolder(p)) {
+                    FileObject projectParent = p.getParent();
+                    if (projectParent != null) {
+                        file = projectParent;
+                        path = filePathAsList(projectParent);
+                        return;
+                    }
+                }
+            }
+            List<FileObject> p = filePathAsList(fo);
+            if (p.size() > minRelPathLen) {
+                path = p.subList(0, p.size() - minRelPathLen);
+                file = path.get(path.size() - 1);
+            } else {
+                exists = false;
+            }
+        }
+
+        /** Return true if folder seems to be a project folder */
+        private boolean isLikeProjectFolder(FileObject folder) {
+            if (folder.getFileObject("src") != null) {
+                return true;
+            } else if (folder.getFileObject("nbproject") != null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        synchronized FileObject getFileObject() {
+            if (exists) {
+                return file;
+            } else {
+                return null;
+            }
+        }
+    }
     
+    /** Get folder that is common to all searched files. Can be null. */
+    synchronized FileObject getCommonSearchFolder() {
+        return commonSearchRoot.getFileObject();
+    }
 }

@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.MissingResourceException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
@@ -70,6 +72,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
@@ -85,6 +88,17 @@ public final class DesignSupport implements TaskListener, Runnable {
         this.project = p;
         this.toEnable = toEnable;
         this.userDir = ud;
+    }
+    
+    static boolean isDesignModeSupported(NbModuleProvider info) {
+        try {
+            SpecificationVersion current = info.getDependencyVersion("org.openide.windows");
+            return current.compareTo(new SpecificationVersion("6.45")) >= 0; // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
+            return false;
+        }
+        
     }
     
     static JComponent warningPanel() throws MissingResourceException {
@@ -116,7 +130,9 @@ public final class DesignSupport implements TaskListener, Runnable {
                 return null;
             }
         }
-        FileObject fo = prj.getProjectDirectory().getFileObject("build/designdir"); // NOI18N
+        // XXX better would be an API in NbModuleProvider for finding generic build dir (${build.dir} or ${project.basedir}/target/)
+        File path = new File(prj.getLookup().lookup(NbModuleProvider.class).getClassesDirectory().getParentFile(), "designdir");
+        FileObject fo = FileUtil.toFileObject(path);
         if (fo != null) {
             if (warnPrevResult) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "MSG_AlreadyLaunched", new Object[]{}));
@@ -127,8 +143,7 @@ public final class DesignSupport implements TaskListener, Runnable {
             }
             fo.delete();
         }
-        fo = FileUtil.createFolder(prj.getProjectDirectory(), "build/designdir"); // NOI18N
-        File path = FileUtil.toFile(fo);
+        fo = FileUtil.createFolder(path);
         userDir.set(fo);
         return es.execute(
             "--nosplash", // NOI18N

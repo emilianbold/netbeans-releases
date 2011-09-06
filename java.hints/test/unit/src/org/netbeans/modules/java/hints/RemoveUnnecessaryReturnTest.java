@@ -180,5 +180,18 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                             "}\n",
                             "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
     }
+
+    public void testInLoop201393() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Test(int i) {\n" +
+                            "        while (i-- > 0) {\n" +
+                            "            System.err.println(1);\n" +
+                            "            if (i == 3) return ;\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
     
 }

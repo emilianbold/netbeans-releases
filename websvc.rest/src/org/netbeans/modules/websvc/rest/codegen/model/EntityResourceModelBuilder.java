@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.netbeans.api.java.source.JavaSource;
@@ -70,46 +71,27 @@ public class EntityResourceModelBuilder {
     EntityResourceBeanModel model;
 
     /** Creates a new instance of ModelBuilder */
-    public EntityResourceModelBuilder(Project project, Collection<Entity> entities) {
+    public EntityResourceModelBuilder(Project project, Collection<String> entities) {
         entityClassInfoMap = new HashMap<String, EntityClassInfo>();
-        for (Entity entity : entities) {
+        for (String entity : entities) {
             try {
                 EntityClassInfo info = null;
                 JavaSource js = SourceGroupSupport.getJavaSourceFromClassName(
-                        entity.getClass2(), project);
+                        entity, project);
 
                 if (js != null) {
                     info = new EntityClassInfo(entity, project, this, js);
-                } else if (entity instanceof RuntimeJpaEntity) {
-                    info = new RuntimeEntityClassInfo((RuntimeJpaEntity) entity, 
-                            project, this);
                 }
                 if (info != null && !info.getFieldInfos().isEmpty()) {
-                    entityClassInfoMap.put(entity.getClass2(), info);
+                    entityClassInfoMap.put(entity, info);
                 }
+                
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
     }
 
-    public List<Entity> getEntities() {
-        List<Entity> ret = new ArrayList<Entity>();
-        for (EntityClassInfo info : entityClassInfoMap.values()) {
-            ret.add(info.getEntity());
-        }
-        return ret;
-    }
-
-    public List<Entity> getValidEntities() {
-        List<Entity> ret = new ArrayList<Entity>();
-        for (EntityClassInfo info : entityClassInfoMap.values()) {
-            if (info.getIdFieldInfo() != null) {
-                ret.add(info.getEntity());
-            }
-        }
-        return ret;
-    }
 
     public Set<EntityClassInfo> getEntityInfos() {
         return new HashSet<EntityClassInfo>(entityClassInfoMap.values());
@@ -123,12 +105,13 @@ public class EntityResourceModelBuilder {
         return entityClassInfoMap.get(type);
     }
 
-    public EntityResourceBeanModel build(Collection<Entity> selected) {
+    public EntityResourceBeanModel build() {
         model = new EntityResourceBeanModel(this);
         try {
-            for (Entity entity : selected) {
-                EntityClassInfo info = entityClassInfoMap.get(entity.getClass2());
-                model.addEntityInfo( info.getEntity().getClass2(), info);
+            for (Entry<String, EntityClassInfo> entry : entityClassInfoMap.entrySet()) {
+                String fqn = entry.getKey();
+                EntityClassInfo info = entry.getValue();
+                model.addEntityInfo( fqn, info);
                 computeRelationships( info );
             }
 

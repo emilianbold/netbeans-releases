@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
@@ -69,12 +71,15 @@ public class DebugScript  extends RunScript {
                         run();
                     }
                 } else {
+                    PhpProject phpProject = PhpProjectUtils.getPhpProject(provider.getStartFile());
+                    // #198753 - debug file without project
+                    String encoding = phpProject != null ? ProjectPropertiesSupport.getEncoding(phpProject) : FileEncodingQuery.getDefaultEncoding().name();
                     XDebugStarter.Properties props = XDebugStarter.Properties.create(
                             provider.getStartFile(),
                             true,
                             provider.getDebugPathMapping(),
                             provider.getDebugProxy(),
-                            ProjectPropertiesSupport.getEncoding(PhpProjectUtils.getPhpProject(provider.getStartFile())));
+                            encoding);
                     dbgStarter.start(provider.getProject(), callable, props);
                 }
             }

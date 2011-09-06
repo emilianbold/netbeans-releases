@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -56,6 +56,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="netbeans.productversion">
+        <api name="exec-property"/>
+        <summary>netbeans.productversion property</summary>
+        <version major="1" minor="35"/>
+        <date day="2" month="9" year="2011"/>
+        <author login="anebuzelsky"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            New property 
+            <a href="architecture-summary.html#systemproperty-netbeans.productversion">netbeans.productversion</a> 
+            is available.
+        </p>
+        </description>
+    </change>
      <change id="netbeans.bootdelegation">
         <api name="exec-property"/>
         <summary>netbeans.bootdelegation property</summary>

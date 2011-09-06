@@ -219,7 +219,6 @@ public class ExtKit extends BaseKit {
         ArrayList<Action> actions = new ArrayList<Action>();
 
         actions.add(new ExtDefaultKeyTypedAction());
-        actions.add(replaceActionDef);
         actions.add(gotoActionDef);
 // XXX: remove
 //        if (!ExtCaret.NO_HIGHLIGHT_BRACE_LAYER) {

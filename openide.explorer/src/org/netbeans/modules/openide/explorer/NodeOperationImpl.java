@@ -46,8 +46,10 @@ package org.netbeans.modules.openide.explorer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import javax.swing.*;
 
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
@@ -135,5 +137,40 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         public org.openide.explorer.ExplorerManager getExplorerManager () {
             return em;
         }
+    }
+
+    /**
+     * Shows a modal dialog with the custom editor of given property, just like
+     * it would be invoked when clicking the [...] button next to a property in
+     * the property sheet. The property value is updated if the dialog is
+     * successfully closed via the OK button.
+     * @param property The property to be edited (its property editor to be used).
+     * @param beans The objects the property belongs to. Typically one item
+     *   array with the Node of the property. The meaning is the same as in
+     *   {@link org.openide.explorer.propertysheet.PropertyEnv#getBeans()}.
+     */
+    @Override
+    public void showCustomEditorDialog(Node.Property<?> property, Object... beans) {
+        if (!EventQueue.isDispatchThread()) {
+            throw new IllegalStateException();
+        }
+        if (accessor == null) {
+            try {
+                // hack to make sure the accessor initialized from PropertyEnv static init
+                Class.forName(PropertyEnv.class.getName(), true, getClass().getClassLoader());
+            } catch (ClassNotFoundException ex) {
+            }
+        }
+        accessor.showDialog(property, beans);
+    }
+
+    private static CustomEditorAccessor accessor;
+
+    public static void registerCustomEditorAccessor(CustomEditorAccessor acc) {
+        accessor = acc;
+    }
+
+    public interface CustomEditorAccessor {
+        void showDialog(Node.Property property, Object[] beans);
     }
 }

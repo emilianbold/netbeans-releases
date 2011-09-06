@@ -1,0 +1,428 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.javafx2.project;
+
+import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+
+/**
+ * Wizard to create a new Java FX project
+ */
+public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+    enum WizardType {APPLICATION, PRELOADER, LIBRARY, EXTISTING}
+    
+    static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
+    static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
+    static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
+    
+    static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
+    static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
+
+    private static final long serialVersionUID = 1L;
+    
+    private WizardType type;
+
+    public JavaFXProjectWizardIterator() {
+        this(WizardType.APPLICATION);
+    }
+
+    public static JavaFXProjectWizardIterator preloader() {
+        return new JavaFXProjectWizardIterator(WizardType.PRELOADER);
+    }
+
+    public static JavaFXProjectWizardIterator library() {
+        return new JavaFXProjectWizardIterator(WizardType.LIBRARY);
+    }
+
+    public static JavaFXProjectWizardIterator existing() {
+        return new JavaFXProjectWizardIterator(WizardType.EXTISTING);
+    }
+
+    private JavaFXProjectWizardIterator(WizardType type) {
+        this.type = type;
+    }
+
+    private WizardDescriptor.Panel[] createPanels() {
+        switch (type) {
+            case EXTISTING:
+                return new WizardDescriptor.Panel[]{
+                            new PanelConfigureProject(type),
+                            new PanelSourceFolders.Panel(),
+                            new PanelIncludesExcludes(),};
+            default:
+                return new WizardDescriptor.Panel[]{
+                            new PanelConfigureProject(type)
+                        };
+        }
+    }
+
+    private String[] createSteps() {
+        switch (type) {
+            case EXTISTING:
+                return new String[]{
+                            NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LAB_ConfigureProject"), // NOI18N
+                            NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LAB_ConfigureSourceRoots"), // NOI18N
+                            NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LAB_PanelIncludesExcludes"),}; // NOI18N
+            default:
+                return new String[]{
+                            NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LAB_ConfigureProject"),}; // NOI18N
+        }
+    }
+
+    @Override
+    public Set<?> instantiate() throws IOException {
+        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+
+    @Override
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(4);
+        //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
+        Set<FileObject> resultSet = new HashSet<FileObject>();
+        File dirF = (File) wiz.getProperty("projdir"); // NOI18N
+        if (dirF == null) {
+            throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
+        }
+        dirF = FileUtil.normalizeFile(dirF);
+        
+        String name = (String) wiz.getProperty("name"); // NOI18N
+        String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
+        
+        String librariesDefinition = (String) wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
+        }
+        
+        String platformName = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_JAVA_PLATFORM_NAME);
+        String preloader = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME);
+        
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
+        switch (type) {
+            case EXTISTING:
+                File[] sourceFolders = (File[]) wiz.getProperty("sourceRoot"); // NOI18N
+                File[] testFolders = (File[]) wiz.getProperty("testRoot"); // NOI18N
+                String buildScriptName = (String) wiz.getProperty("buildScriptName"); // NOI18N
+                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders,
+                        MANIFEST_FILE, librariesDefinition, buildScriptName, platformName, preloader);
+                
+                EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
+                if (includes == null) {
+                    includes = "**"; // NOI18N
+                }
+                ep.setProperty(ProjectProperties.INCLUDES, includes);
+                String excludes = (String) wiz.getProperty(ProjectProperties.EXCLUDES);
+                if (excludes == null) {
+                    excludes = ""; // NOI18N
+                }
+                ep.setProperty(ProjectProperties.EXCLUDES, excludes);
+                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                
+                handle.progress(2);
+                for (File f : sourceFolders) {
+                    FileObject srcFo = FileUtil.toFileObject(f);
+                    if (srcFo != null) {
+                        resultSet.add(srcFo);
+                    }
+                }
+                break;
+            default:
+                String manifest = type == WizardType.APPLICATION ? MANIFEST_FILE : null;
+                h = JFXProjectGenerator.createProject(dirF, name, mainClass, manifest, librariesDefinition,
+                        platformName, preloader);
+                handle.progress(2);
+                if (mainClass != null && mainClass.length() > 0) {
+                    try {
+                        //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR); // NOI18N
+                        FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); // NOI18N
+                        FileObject mainClassFo = getMainClassFO(sourcesRoot, mainClass);
+                        assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass; // NOI18N
+                        // Returning FileObject of main class, will be called its preferred action
+                        resultSet.add(mainClassFo);
+                    } catch (Exception x) {
+                        ErrorManager.getDefault().notify(x);
+                    }
+                }
+            // if ( type == TYPE_LIB ) {
+            // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
+            // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
+            // }            // if ( type == TYPE_LIB ) {
+            // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
+            // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
+            // }
+        }
+        FileObject dir = FileUtil.toFileObject(dirF);
+        switch (type) {
+            case APPLICATION:
+                createManifest(dir, false);
+                break;
+            case EXTISTING:
+                createManifest(dir, true);
+                break;
+        }
+        handle.progress(3);
+
+        // Returning FileObject of project diretory. 
+        // Project will be open and set as main
+        int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        switch (type) {
+            case APPLICATION:
+                WizardSettings.setNewApplicationCount(ind);
+                break;
+            case LIBRARY:
+                WizardSettings.setNewLibraryCount(ind);
+                break;
+            case EXTISTING:
+                WizardSettings.setNewProjectCount(ind);
+                break;
+        }
+        resultSet.add(dir);
+        
+        // create preloader project
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
+        if (preloader != null && preloader.length() > 0) {
+            File preloaderDir = new File(dirF.getParentFile().getAbsolutePath() + File.separatorChar + preloader);
+            FileUtil.normalizeFile(preloaderDir);
+            AntProjectHelper h = JFXProjectGenerator.createPreloaderProject(preloaderDir, preloader, librariesDefinition, platformName);
+            resultSet.add(h.getProjectDirectory());
+        }
+        
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder(dirF);
+        }
+
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
+        return resultSet;
+    }
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
+
+    @Override
+    public void initialize(WizardDescriptor wiz) {
+        this.wiz = wiz;
+        index = 0;
+        panels = createPanels();
+        // Make sure list of steps is accurate.
+        String[] steps = createSteps();
+        for (int i = 0; i < panels.length; i++) {
+            Component c = panels[i].getComponent();
+            if (steps[i] == null) {
+                // Default step name to component name of panel.
+                // Mainly useful for getting the name of the target
+                // chooser to appear in the list of steps.
+                steps[i] = c.getName();
+            }
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+            }
+        }
+        //set the default values of the sourceRoot and the testRoot properties
+        this.wiz.putProperty("sourceRoot", new File[0]); // NOI18N
+        this.wiz.putProperty("testRoot", new File[0]); // NOI18N
+    }
+
+    @Override
+    public void uninitialize(WizardDescriptor wiz) {
+        if (this.wiz != null) {
+            this.wiz.putProperty("projdir", null); // NOI18N
+            this.wiz.putProperty("name", null); // NOI18N
+            this.wiz.putProperty("mainClass", null); // NOI18N
+            switch (type) {
+                case EXTISTING:
+                    this.wiz.putProperty("sourceRoot", null); // NOI18N
+                    this.wiz.putProperty("testRoot", null); // NOI18N
+            }
+            this.wiz = null;
+            panels = null;
+        }
+    }
+
+    @Override
+    public String name() {
+        return NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LAB_IteratorName", index + 1, panels.length); // NOI18N
+    }
+
+    @Override
+    public boolean hasNext() {
+        return index < panels.length - 1;
+    }
+
+    @Override
+    public boolean hasPrevious() {
+        return index > 0;
+    }
+
+    @Override
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
+    }
+
+    @Override
+    public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        index--;
+    }
+
+    @Override
+    public WizardDescriptor.Panel current() {
+        return panels[index];
+    }
+
+    // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
+    public final void addChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public final void removeChangeListener(ChangeListener l) {
+    }
+
+    // helper methods, finds mainclass's FileObject
+    private FileObject getMainClassFO(FileObject sourcesRoot, String mainClass) {
+        // replace '.' with '/'
+        mainClass = mainClass.replace('.', '/'); // NOI18N
+
+        // ignore unvalid mainClass ???
+
+        return sourcesRoot.getFileObject(mainClass + ".java"); // NOI18N
+    }
+
+    static String getPackageName(String displayName) {
+        StringBuilder builder = new StringBuilder();
+        boolean firstLetter = true;
+        for (int i = 0; i < displayName.length(); i++) {
+            char c = displayName.charAt(i);
+            if ((!firstLetter && Character.isJavaIdentifierPart(c)) || (firstLetter && Character.isJavaIdentifierStart(c))) {
+                firstLetter = false;
+                if (Character.isUpperCase(c)) {
+                    c = Character.toLowerCase(c);
+                }
+                builder.append(c);
+            }
+        }
+        return builder.length() == 0 ? NbBundle.getMessage(JavaFXProjectWizardIterator.class, "TXT_DefaultPackageName") : builder.toString(); // NOI18N
+    }
+
+    /**
+     * Create a new application manifest file with minimal initial contents.
+     * @param dir the directory to create it in
+     * @throws IOException in case of problems
+     */
+    static void createManifest(final FileObject dir, final boolean skeepIfExists) throws IOException {
+        if (skeepIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
+            return;
+        } else {
+            FileObject manifest = dir.createData(MANIFEST_FILE);
+            FileLock lock = manifest.lock();
+            try {
+                OutputStream os = manifest.getOutputStream(lock);
+                try {
+                    PrintWriter pw = new PrintWriter(os);
+                    pw.println("Manifest-Version: 1.0"); // NOI18N
+                    pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
+                    pw.println(); // safest to end in \n\n due to JRE parsing bug
+                    pw.flush();
+                } finally {
+                    os.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+        }
+    }
+
+    static boolean isIllegalProjectName(final String name) {
+        return name.length() == 0   || 
+            name.indexOf('/')  >= 0 ||        //NOI18N
+            name.indexOf('\\') >= 0 ||        //NOI18N
+            name.indexOf(':')  >= 0 ||        //NOI18N
+            name.indexOf("\"") >= 0 ||        //NOI18N
+            name.indexOf('<')  >= 0 ||        //NOI18N
+            name.indexOf('>')  >= 0;          //NOI18N
+    }
+
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+}

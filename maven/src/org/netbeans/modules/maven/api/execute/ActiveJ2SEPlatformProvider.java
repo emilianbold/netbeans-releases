@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
@@ -51,5 +52,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
  */
 public interface ActiveJ2SEPlatformProvider {
 
-    JavaPlatform getJavaPlatform();
+    @NonNull JavaPlatform getJavaPlatform();
+
 }

@@ -41,6 +41,8 @@
  */
 
 package org.netbeans.modules.maven.apisupport;
+
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -53,19 +55,17 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 @ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class ApisupportRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
-        private static final String[] NBM_PRIVILEGED_NAMES = new String[] {
+        private static final String[] NBM_PRIVILEGED_NAMES = {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newAction", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newLoader", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWindow", // NOI18N
-            "Templates/NetBeansModuleDevelopment/newWizard", // NOI18N
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_ACTION_ID,
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_WINDOW_ID,
             //"Templates/Other/properties.properties", // NOI18N
         };
-        private static final String[] NBM_TYPES = new String[] {         
+        private static final String[] NBM_TYPES = {         
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -75,7 +75,7 @@ public class ApisupportRecoPrivTemplates implements RecommendedTemplates, Privil
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
             "REST-clients",         // NOI18N
-            "nbm-specific"         // NOI18N
+            UIUtil.TEMPLATE_CATEGORY,
         };
         
     

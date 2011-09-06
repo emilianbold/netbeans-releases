@@ -42,10 +42,29 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.openide.filesystems.FileObject;
@@ -55,7 +74,7 @@ import org.openide.util.NbBundle;
 /**
  * Utility class for java plugins.
  */
-final class JavaPluginUtils {
+public final class JavaPluginUtils {
 
     public static final Problem isSourceElement(Element el, CompilationInfo info) {
         Problem preCheckProblem = null;
@@ -77,5 +96,153 @@ final class JavaPluginUtils {
         }
         return null;
     }
+    
+    public static TreePath findMethod(TreePath path) {
+        while (path != null) {
+            if (path.getLeaf().getKind() == Kind.METHOD) {
+                return path;
+            }
 
+            if (path.getLeaf().getKind() == Kind.BLOCK
+                    && path.getParentPath() != null
+                    && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
+                //initializer:
+                return path;
+            }
+
+            path = path.getParentPath();
+        }
+
+        return null;
+    }
+    
+    public static TreePath findStatement(TreePath statementPath) {
+        while (statementPath != null
+                && (!StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface())
+                || (statementPath.getParentPath() != null
+                && statementPath.getParentPath().getLeaf().getKind() != Kind.BLOCK))) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind())) {
+                return null;
+            }
+
+            statementPath = statementPath.getParentPath();
+        }
+
+        return statementPath;
+    }
+    
+    public static boolean isParentOf(TreePath parent, TreePath path) {
+        Tree parentLeaf = parent.getLeaf();
+
+        while (path != null && path.getLeaf() != parentLeaf) {
+            path = path.getParentPath();
+        }
+
+        return path != null;
+    }
+
+    public static boolean isParentOf(TreePath parent, List<? extends TreePath> candidates) {
+        for (TreePath tp : candidates) {
+            if (!isParentOf(parent, tp)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    public static Problem chainProblems(Problem p, Problem p1) {
+        Problem problem;
+
+        if (p == null) {
+            return p1;
+        }
+        if (p1 == null) {
+            return p;
+        }
+        problem = p;
+        while (problem.getNext() != null) {
+            problem = problem.getNext();
+        }
+        problem.setNext(p1);
+        return p;
+    }
+    
+    /**
+     * Convert typemirror of an anonymous class to supertype/iface
+     * 
+     * @return typemirror of supertype/iface, initial tm if not anonymous
+     */
+    public static TypeMirror convertIfAnonymous(TypeMirror tm) {
+        //anonymous class?
+        Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+        if (tm instanceof DeclaredType) {
+            Element el = ((DeclaredType) tm).asElement();
+            if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+                List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
+                if (interfaces.isEmpty()) {
+                    tm = ((TypeElement) el).getSuperclass();
+                } else {
+                    tm = interfaces.get(0);
+                }
+            }
+        }
+        return tm;
+    }
+    
+    public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+        
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
+        }
+        
+        return type;
+    }
+    
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        TypeMirror orig = SourceUtils.resolveCapturedType(tm);
+
+        if (orig != null) {
+            if (orig.getKind() == TypeKind.WILDCARD) {
+                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
+                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
+                if (rct != null) {
+                    return rct;
+                }
+            }
+            return orig;
+        }
+        
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
+            
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+            
+            final TypeMirror enclosingType = dt.getEnclosingType();
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            } else {
+                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            }
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+        }
+        
+        return tm;
+    }
+    
 }

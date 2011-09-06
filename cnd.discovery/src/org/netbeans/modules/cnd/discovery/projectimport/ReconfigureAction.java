@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
@@ -57,6 +56,7 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.NodeAction;
 
@@ -65,11 +65,7 @@ import org.openide.util.actions.NodeAction;
  * @author Alexander Simon
  */
 public class ReconfigureAction extends NodeAction {
-
-    private final static boolean TEST_ACTION = true;
-
-    private JMenuItem presenter;
-    private boolean inited = false;
+    private static final RequestProcessor RP = new RequestProcessor(ReconfigureAction.class.getName(), 1);
 
     public ReconfigureAction() {
     }
@@ -78,47 +74,9 @@ public class ReconfigureAction extends NodeAction {
         return SharedClassObject.findObject(ReconfigureAction.class, true);
     }
 
-    private static boolean running = false;
-
     @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ReconfigureAction"); //NOI18N
-    }
-
-    @Override
-    public JMenuItem getMenuPresenter() {
-        return getPresenter();
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        return getPresenter();
-    }
-
-    private JMenuItem getPresenter() {
-        if (!inited) {
-            presenter = new JMenuItem();
-            org.openide.awt.Actions.connect(presenter, (Action) this, true);
-            inited = true;
-        }
-        final Project p = getProject(getActivatedNodes());
-        if (TEST_ACTION) {
-            if (p == null) {
-                setEnabled(!running);
-                presenter.setVisible(false);
-            } else {
-                try {
-                    presenter.setVisible(true);
-                    setEnabled(!running);
-                } catch (Throwable thr) {
-                    thr.printStackTrace();
-                    setEnabled(false);
-                }
-            }
-        } else {
-            presenter.setVisible(false);
-        }
-        return presenter;
     }
 
     @Override
@@ -157,9 +115,8 @@ public class ReconfigureAction extends NodeAction {
 
     @Override
     public void performAction(final Node[] activatedNodes) {
-        running = true;
         Project p = getProject(activatedNodes);
-        ReconfigureProject reconfigurator = new ReconfigureProject(p);
+        final ReconfigureProject reconfigurator = new ReconfigureProject(p);
         String cFlags;
         String cxxFlags;
         String linkerFlags = "";
@@ -188,9 +145,17 @@ public class ReconfigureAction extends NodeAction {
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
             reconfigurator.setConfigureCodeAssistance(true);
-            reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions(), false, null);
+            final String c = panel.getCFlags();
+            final String cpp = panel.getCppFlags();
+            final String link = panel.getLinkerFlags();
+            final String other = panel.getOtherOptions();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    reconfigurator.reconfigure(c, cpp, link, other, false, null);
+                }
+            });
         }
-        running = false;
     }
 
     private String getLegend(ReconfigureProject reconfigurator){

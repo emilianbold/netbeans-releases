@@ -66,9 +66,10 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-//import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-//import org.netbeans.modules.search.FindInFilesAction;
+import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -270,7 +271,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     private class TypeLink {
         public void jumpTo(String resource) {
-//            TypeBrowser.browse("Find type", resource, null);
+            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null);
+            if(td != null) {
+                td.open();
+            }
         }
     }
     

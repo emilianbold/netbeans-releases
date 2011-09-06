@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.openide.util.NbBundle;
 
 
@@ -110,6 +111,10 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
             {
                 disposesCount++;
             }
+        }
+        if ( observesCount >0 ){
+            EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
+            helper.addObserver( result , element );
         }
         String firstAnnotation = null;
         String secondAnnotation = null;

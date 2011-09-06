@@ -227,7 +227,7 @@ public abstract class InstanceProperties {
     public static InstanceProperties createInstanceProperties(String url, String username,
             String password, String displayName, Map<String, String> initialProperties) throws InstanceCreationException {
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(url, username, password, displayName, false, initialProperties);
+        registry.addInstance(url, username, password, displayName, false, false, initialProperties);
         ServerInstance inst = registry.getServerInstance(url);
         InstanceProperties ip = inst.getInstanceProperties();
         return ip;
@@ -260,7 +260,40 @@ public abstract class InstanceProperties {
     public static InstanceProperties createInstancePropertiesWithoutUI(String url, String username, 
             String password, String displayName, Map<String, String> initialProperties) throws InstanceCreationException {
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(url, username, password, displayName, true, initialProperties);
+        registry.addInstance(url, username, password, displayName, true, false, initialProperties);
+        ServerInstance inst = registry.getServerInstance(url);
+        InstanceProperties ip = inst.getInstanceProperties();
+        return ip;
+    }
+
+    /**
+     * Create new instance without persisting it and returns instance properties for the server instance.
+     * This method also register the instance for ui server components such as
+     * server node, add wizard dialog and similar. When this method is used
+     * j2eeserver module will not handle UI for the server.
+     *
+     * @param url the url connection string to get the instance deployment manager
+     * @param username username which is used by the deployment manager
+     * @param password password which is used by the deployment manager
+     * @param displayName display name which is used by IDE to represent this
+     *             server instance
+     * @param initialProperties any other properties to set during the instance creation.
+     *             If the map contains any of InstanceProperties.URL_ATTR,
+     *             InstanceProperties.USERNAME_ATTR, InstanceProperties.PASSWORD_ATTR
+     *             or InstanceProperties.DISPLAY_NAME_ATTR they will be ignored
+     *             - the explicit parameter values are always used.
+     *             <code>null</code> is accepted.
+     * @return the <code>InstanceProperties</code> object, <code>null</code> if
+     *             instance does not exists
+     * @throws InstanceCreationException when instance with same url already
+     *             registered
+     * @see #removeInstance(String) 
+     * @since 1.83.0
+     */
+    public static InstanceProperties createInstancePropertiesNonPersistent(String url, String username, 
+            String password, String displayName, Map<String, String> initialProperties) throws InstanceCreationException {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        registry.addInstance(url, username, password, displayName, true, true, initialProperties);
         ServerInstance inst = registry.getServerInstance(url);
         InstanceProperties ip = inst.getInstanceProperties();
         return ip;

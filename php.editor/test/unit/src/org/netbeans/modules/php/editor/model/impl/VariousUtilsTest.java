@@ -55,6 +55,7 @@ import org.junit.Test;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import static org.junit.Assert.*;
@@ -216,6 +217,15 @@ public class VariousUtilsTest extends ModelTestBase{
         name = classScope.getSuperClassName();
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testGetPossibleNamespaces08() throws Exception {
+        Model model = getModel(prepareTestFile("testfiles/model/namespaces07.php"));
+        FileScope topScope = model.getFileScope();
+        
+        Collection<? extends FunctionScope> functions = ModelUtils.getDeclaredFunctions(topScope);
+        assertEquals(2, functions.size());        
     }
 
 }

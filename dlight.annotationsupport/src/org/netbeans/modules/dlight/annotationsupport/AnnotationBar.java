@@ -425,10 +425,11 @@ public class AnnotationBar extends JComponent implements Accessible,
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         Rectangle bounds = g.getClipBounds();
+        Rectangle newBound = new Rectangle(bounds.x, yBase, bounds.width - 1, editorUI.getLineHeight() - 1);
 
         int y = yBase + editorUI.getLineAscent();
 
-        g.setClip(bounds.x, yBase, bounds.width - 1, editorUI.getLineHeight() - 1);
+        g.setClip(bounds.intersection(newBound));
         drawAnnotation(g2d, 2, y, info.getLineAnnotationInfoByLineOffset(view.getStartOffset()));
         drawAnnotation(g2d, 2, y, info.getBlockAnnotationInfoByLineOffset(view.getStartOffset()));
         g.setClip(bounds);

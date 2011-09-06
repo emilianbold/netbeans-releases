@@ -110,12 +110,12 @@ public abstract class GrammarElement {
         if (origin == null) {
             return null;
         }
-        if (origin.startsWith("-")) {
+        if (GrammarParser.isArtificialElementName(origin)) {
             //NOI18N
             //artificial origin, get real origin from the first ancestor element with an origin
             GrammarElement parentElement = this;
             while ((parentElement = parentElement.parent()) != null) {
-                if (parentElement.origin() != null && !parentElement.origin().startsWith("-")) {
+                if (parentElement.origin() != null && !GrammarParser.isArtificialElementName(parentElement.origin())) {
                     origin = parentElement.origin();
                     break;
                 }

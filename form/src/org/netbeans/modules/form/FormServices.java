@@ -59,4 +59,5 @@ public interface FormServices {
     ClassSource getProjectClassSource(Project project, String className);
     Node createFormDataNode(FormDataObject formDataObject);
     MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile);
+    boolean isLayoutExtensionsLibrarySupported();
 }
