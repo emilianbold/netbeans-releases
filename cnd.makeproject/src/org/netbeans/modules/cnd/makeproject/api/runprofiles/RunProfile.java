@@ -701,7 +701,7 @@ public boolean isSimpleRunCommand() {
             System.err.print("Profile - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
             return;
         }
-        String oldEnv = getEnvironment().toString();
+        Env oldEnv = getEnvironment();
         String oldArgs = getArgsFlat();
 
         RunProfile p = (RunProfile) profileAuxObject;
@@ -718,7 +718,7 @@ public boolean isSimpleRunCommand() {
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
-        if (pcs != null && !oldEnv.equals(environment.toString())) {
+        if (pcs != null && !oldEnv.toString().equals(environment.toString())) {
             pcs.firePropertyChange(PROP_ENVVARS_CHANGED, oldEnv, environment);
         }
         getConsoleType().assign(p.getConsoleType());

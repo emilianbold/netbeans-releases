@@ -130,21 +130,22 @@ public final class JFXProjectProperties {
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
 
-    public static final String SIGNING_GENERATED = "generated"; //NOI18N
-    public static final String SIGNING_KEY = "key"; //NOI18N
-
-    public static final String JAVAFX_SIGNED = "javafx.signed"; //NOI18N
-    public static final String JAVAFX_SIGNING = "javafx.signing"; //NOI18N
+    // Deployment - signing
+    public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
+    public static final String JAVAFX_SIGNING_TYPE = "javafx.signing.type"; //NOI18N
     public static final String JAVAFX_SIGNING_KEYSTORE = "javafx.signing.keystore"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.alias"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.storepass"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keypass"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.keystore.password"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.keyalias"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keyalias.password"; //NOI18N
+    
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
     
+    // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
@@ -179,7 +180,7 @@ public final class JFXProjectProperties {
         return activeConfig;
     }
     public void setActiveConfig(String config) {
-        activeConfig = config;
+        this.activeConfig = config;
     }
 
     // CustomizerRun - Preloader source type
@@ -249,16 +250,60 @@ public final class JFXProjectProperties {
     }
 
     // Deployment - Signing
-    String signing;
+    public enum SigningType {
+        NOSIGN("notsigned"), // NOI18N
+        SELF("self"), // NOI18N
+        KEY("key"); // NOI18N
+        private final String propertyValue;
+        SigningType(String propertyValue) {
+            this.propertyValue = propertyValue;
+        }
+        public String getString() {
+            return propertyValue;
+        }
+    }
+
+    boolean signingEnabled;
+    SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
-    public String getSigning() {
-        return signing;
+    public boolean getSigningEnabled() {
+        return signingEnabled;
+    }
+    public void setSigningEnabled(boolean enabled) {
+        this.signingEnabled = enabled;
+    }
+    public SigningType getSigningType() {
+        return signingType;
+    }
+    public void setSigningType(SigningType type) {
+        this.signingType = type;
+    }
+    public String getSigningKeyStore() {
+        return signingKeyStore;
     }
     public String getSigningKeyAlias() {
         return signingKeyAlias;
+    }
+    public char[] getSigningKeyStorePassword() {
+        return signingKeyStorePassword;
+    }
+    public char[] getSigningKeyPassword() {
+        return signingKeyPassword;
+    }
+    public void setSigningKeyAlias(String signingKeyAlias) {
+        this.signingKeyAlias = signingKeyAlias;
+    }
+    public void setSigningKeyPassword(char[] signingKeyPassword) {
+        this.signingKeyPassword = signingKeyPassword;
+    }
+    public void setSigningKeyStore(String signingKeyStore) {
+        this.signingKeyStore = signingKeyStore;
+    }
+    public void setSigningKeyStorePassword(char[] signingKeyStorePassword) {
+        this.signingKeyStorePassword = signingKeyStorePassword;
     }
     
     // Deployment - Libraries Download Mode
@@ -272,13 +317,13 @@ public final class JFXProjectProperties {
         return lazyJars;
     }
     public void setLazyJars(List<? extends File> newLazyJars) {
-        lazyJars = newLazyJars;
+        this.lazyJars = newLazyJars;
     }
     public boolean getLazyJarsChanged() {
         return lazyJarsChanged;
     }
     public void setLazyJarsChanged(boolean changed) {
-        lazyJarsChanged = changed;
+        this.lazyJarsChanged = changed;
     }
     
     // Deployment - JavaScript Callbacks
@@ -777,8 +822,8 @@ public final class JFXProjectProperties {
 //            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
 //        }
         // store signing info
-        editableProps.setProperty(JAVAFX_SIGNING, signing);
-        editableProps.setProperty(JAVAFX_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
@@ -961,21 +1006,31 @@ public final class JFXProjectProperties {
     }
 
     private void initSigning(PropertyEvaluator eval) {
-        signing = eval.getProperty(JAVAFX_SIGNING);
-        if (signing == null) signing = "";
+        String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
+        String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);
+        signingEnabled = isTrue(enabled);
+        if(signedProp == null) {
+            signingType = SigningType.NOSIGN;
+        } else {
+            if(signedProp.equalsIgnoreCase(SigningType.SELF.getString())) {
+                signingType = SigningType.SELF;
+            } else {
+                if(signedProp.equalsIgnoreCase(SigningType.KEY.getString())) {
+                    signingType = SigningType.KEY;
+                } else {
+                    signingType = SigningType.NOSIGN;
+                }
+            }
+        }
         signingKeyStore = eval.getProperty(JAVAFX_SIGNING_KEYSTORE);
-        if (signingKeyStore == null) signingKeyStore = "";
+        //if (signingKeyStore == null) signingKeyStore = "";
         signingKeyAlias = eval.getProperty(JAVAFX_SIGNING_KEY);
-        if (signingKeyAlias == null) signingKeyAlias = "";
+        //if (signingKeyAlias == null) signingKeyAlias = "";
         if (eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD) != null) {
             signingKeyStorePassword = eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD).toCharArray();
         }
         if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
             signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
-        }
-        // compatibility
-        if ("".equals(signing) && "true".equals(eval.getProperty(JAVAFX_SIGNED))) { //NOI18N
-            signing = SIGNING_GENERATED;
         }
     }
     
