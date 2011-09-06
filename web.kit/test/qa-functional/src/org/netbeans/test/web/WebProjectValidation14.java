@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL or
@@ -39,70 +39,39 @@
  */
 package org.netbeans.test.web;
 
-import java.io.File;
-import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.NewProjectAction;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test web application project from existing sources.
- *
- * @author lm97939
+ * Test web project J2EE 1.4.
  */
-public class WebProjectValidationNb36WebModule extends WebProjectValidation {
+public class WebProjectValidation14 extends WebProjectValidation {
 
     public static final String[] TESTS = new String[]{
-        "testNewWebProject",
+        "testPreconditions", "testNewWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-        "testCompileAllJSP", "testCompileJSP",
-        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
+        "testCompileAllJSP", "testCompileJSP", "testCleanAndBuildProject",
+        "testRedeployProject", "testRunProject", "testRunJSP", "testViewServlet",
         "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
         "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
         "testFinish"
     };
 
     /** Need to be defined because of JUnit */
-    public WebProjectValidationNb36WebModule(String name) {
+    public WebProjectValidation14(String name) {
         super(name);
-        PROJECT_NAME = "WebModuleNB36"; // NOI18N
+        PROJECT_NAME = "WebProject14"; // NOI18N
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationNb36WebModule.class);
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation14.class);
         conf = addServerTests(Server.GLASSFISH, conf, TESTS);
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
 
-    /** Test creation of web application.
-     * - open New Project wizard from main menu (File|New Project)
-     * - select Java Web|Web Application with Existing Sources
-     * - in the next panel type project name and project location
-     * - finish the wizard
-     * - wait until scanning of java files is finished
-     */
     @Override
-    public void testNewWebProject() throws IOException {
-        new NewProjectAction().perform();
-        NewProjectWizardOperator projectWizard = new NewProjectWizardOperator();
-        projectWizard.selectCategory("Java Web"); // XXX use Bundle.getString instead
-        projectWizard.selectProject("Web Application with Existing Sources");
-        projectWizard.next();
-        NewWebProjectNameLocationStepOperator nameStep = new NewWebProjectNameLocationStepOperator();
-        nameStep.txtLocation().setText(getDataDir().getAbsolutePath()
-                + File.separator + PROJECT_NAME);
-        nameStep.txtProjectName().setText(PROJECT_NAME);
-        nameStep.txtProjectFolder().setText(getWorkDirPath()
-                + File.separator + PROJECT_NAME + "Prj");
-        nameStep.next();
-        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.cboServer().selectItem(0);
-        serverStep.next();
-        NewWebProjectSourcesStepOperator srcStep = new NewWebProjectSourcesStepOperator();
-        srcStep.finish();
-        // wait for project creation
-        waitScanFinished();
+    protected String getEEVersion() {
+        return J2EE_4;
     }
 }

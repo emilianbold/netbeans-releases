@@ -365,6 +365,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "function functionName(Character\\Ma^nager", true);
     }
 
+    public void testIssue201671() throws Exception {
+        checkOccurrences(getTestPath(), "$array as $my^Key", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
