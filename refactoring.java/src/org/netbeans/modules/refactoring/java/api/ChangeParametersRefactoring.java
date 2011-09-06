@@ -179,6 +179,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      * </pre>
      * 
      * @return true if a new overloading method will be created, false otherwise
+     * 
+     * @since 1.28
      */
     public boolean isOverloadMethod() {
         return overloadMethod;
@@ -205,6 +207,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      * </pre>
      * 
      * @param overloadMethod true if you want to create a new overloading method
+     * 
+     * @since 1.28
      */
     public void setOverloadMethod(boolean overloadMethod) {
         this.overloadMethod = overloadMethod;
