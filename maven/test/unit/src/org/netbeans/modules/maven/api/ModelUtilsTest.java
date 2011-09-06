@@ -141,6 +141,15 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("org.eclipse.persistence", result.getGroupId());
         assertEquals("eclipselink", result.getArtifactId());
         assertEquals("2.3.0", result.getVersion());
+
+        pom = new URL("https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom");
+        result = ModelUtils.checkLibrary(pom);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("https://repository.jboss.org/nexus/content/groups/public-jboss/", result.getRepoRoot());
+        assertEquals("org.richfaces.ui", result.getGroupId());
+        assertEquals("richfaces-components-ui", result.getArtifactId());
+        assertEquals("4.0.0.Final", result.getVersion());
     }
     
 }

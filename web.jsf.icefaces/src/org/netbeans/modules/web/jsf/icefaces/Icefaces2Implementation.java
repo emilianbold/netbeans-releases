@@ -42,7 +42,10 @@
 package org.netbeans.modules.web.jsf.icefaces;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -51,16 +54,20 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.icefaces.ui.Icefaces2CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -95,6 +102,7 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     // Constants for web.xml
     private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD";
     private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS";
+    private static final String icefacesPom ="http://anonsvn.icefaces.org/repo/maven2/releases/org/icefaces/icefaces/2.0.2/icefaces-2.0.2.pom";
 
     @Override
     public String getName() {
@@ -134,8 +142,22 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
             }
 
             if (ifLibrary != null) {
-                libraries.add(ifLibrary);
                 FileObject[] javaSources = webModule.getJavaSources();
+                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
+
+                // in cases of Maven, update library to contains maven-pom references if needed
+                if (antArtifactProvider == null) {
+                    List<URI> pomArtifacts;
+                    try {
+                        pomArtifacts = Arrays.asList(new URI(icefacesPom));
+                        ifLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(ifLibrary, pomArtifacts);
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                libraries.add(ifLibrary);
                 ProjectClassPathModifier.addLibraries(
                         libraries.toArray(new Library[1]),
                         javaSources[0],
