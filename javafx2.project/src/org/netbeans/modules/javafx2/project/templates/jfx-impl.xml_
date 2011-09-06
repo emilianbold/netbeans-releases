@@ -26,7 +26,7 @@
             name="${application.title}"
             mainClass="${javafx.main.class}"
             preloaderClass="${javafx.preloader.class}"
-            fallbackClass="NoJavaFXFallback"/>
+            fallbackClass="com.javafx.main.NoJavaFXFallback"/>
 
         <fx:resources id="appRes">
             <fx:fileset requiredFor="preloader" dir="${jfx.deployment.dir}">
