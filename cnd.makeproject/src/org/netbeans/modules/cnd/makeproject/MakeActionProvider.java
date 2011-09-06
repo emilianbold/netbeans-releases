@@ -928,7 +928,20 @@ public final class MakeActionProvider implements ActionProvider {
                         if (hasPath >= 0) {
                             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                             profile.setRunDirectory(compileLine.substring(0, hasPath));
-                            profile.setArgs(compileLine.substring(hasPath+1).replace("\"", "\\\""));
+                            String command = compileLine.substring(hasPath+1).trim();
+                            if (command.length() > 0 && command.charAt(0) != '-') {
+                                int i = command.indexOf(' ');
+                                if (i > 0) {
+                                    command = command.substring(i+1).trim();
+                                }
+                            }
+                            if (command.indexOf('\"') > 0) {
+                                int i = command.indexOf("\\\"");
+                                if (i < 0) {
+                                    command = command.replace("\"", "\\\"");
+                                }
+                            }
+                            profile.setArgs(command);
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
                             actionEvents.add(projectActionEvent);
                             return true;
