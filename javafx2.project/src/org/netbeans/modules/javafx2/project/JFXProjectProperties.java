@@ -108,10 +108,13 @@ public final class JFXProjectProperties {
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    
     public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
     public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N
     public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
+    public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
+    
     public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
     public static final String RUN_APP_HEIGHT = "javafx.run.height"; // NOI18N

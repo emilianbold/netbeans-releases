@@ -688,13 +688,6 @@ public class ReplaceBar extends JPanel {
             if (replaceAll) {
                 findSupport.replaceAll(findProps);
             } else {
-                if (searchBar.isSearched()) {
-                    if (backwardsCheckBox.isSelected())
-                        searchBar.findNext();
-                    else
-                        searchBar.findPrevious();
-                    searchBar.setSearched(false);
-                }
                 findSupport.replace(findProps, false);
             }
         } catch (BadLocationException ex) {

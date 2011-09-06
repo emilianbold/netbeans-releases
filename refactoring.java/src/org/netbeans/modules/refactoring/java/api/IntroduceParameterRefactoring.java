@@ -56,6 +56,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author  Jan Becicka
  * @author  Ralph Ruijs
+ * 
+ * @since 1.28
  */
 public final class IntroduceParameterRefactoring extends AbstractRefactoring {
     

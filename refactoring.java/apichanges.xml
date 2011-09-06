@@ -49,7 +49,25 @@ made subject to such option by the copyright holder.
     <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
 </apidefs>
 <changes>
-        <change id="JavaScopeBuilder">
+    <change id="IntroduceParameterRefactoring">
+            <api name="refactoring"/>
+            <summary>Added new refactoring and dependent change in ChangeParameterRefactoring.</summary>
+            <version major="1" minor="28"/>
+            <date day="29" month="8" year="2011"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Add an api for the introduce parameter refactoring. Also changed
+                    the Change Paramters refactoring to support the creation of
+                    compatible overloaded methods.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.api" name="IntroduceParameterRefactoring"/>
+            <class package="org.netbeans.modules.refactoring.java.api" name="ChangeParametersRefactoring"/>
+            <issue number="201399"/>
+    </change>
+    <change id="JavaScopeBuilder">
             <api name="refactoring"/>
             <summary>UI support for creating a new Scope.</summary>
             <version major="1" minor="27"/>

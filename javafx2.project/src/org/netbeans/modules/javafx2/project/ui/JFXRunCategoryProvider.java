@@ -37,9 +37,6 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -48,7 +45,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,20 +57,17 @@ public final class JFXRunCategoryProvider implements ProjectCustomizer.Composite
     private static final String CAT_RUN = "Run"; // NOI18N
     
     private static JFXProjectProperties jfxProps = null;
-    
-//    public JFXProjectProperties getJFXProjectProperties() {
-//        return jfxProps;
-//    }
-    
+       
     @Override
     public Category createCategory(Lookup context) {
-        boolean fxEnabled = true;
+        boolean fxProjectEnabled = true;
         final Project project = context.lookup(Project.class);
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); //NOI18N
+            fxProjectEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")) //NOI18N
+                    && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.preloader")); //NOI18N
         }
-        if(fxEnabled) {
+        if(fxProjectEnabled) {
             jfxProps = JFXProjectProperties.getInstance(context);
             return ProjectCustomizer.Category.create(CAT_RUN,
                     NbBundle.getMessage(JFXRunCategoryProvider.class, "LBL_Category_Run"), null); //NOI18N
@@ -84,8 +77,6 @@ public final class JFXRunCategoryProvider implements ProjectCustomizer.Composite
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-//        category.setOkButtonListener(new OkButtonListener(jfxProps, context.lookup(Project.class)));
-//        category.setStoreListener(new SavePropsListener(jfxProps, context.lookup(Project.class)));
         return new JFXRunPanel(jfxProps);
     }
 
