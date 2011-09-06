@@ -242,13 +242,6 @@ public class ReplaceBar extends JPanel {
         setVisible(false);
         createFocusList();
         makeBarExpandable();
-        this.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent evt) {
-                computeLayout();
-            }
-        });
     }
 
     private SearchBar getSearchBar() {
@@ -334,6 +327,12 @@ public class ReplaceBar extends JPanel {
             }
         });
         return expPopup;
+    }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        computeLayout();
+        return super.getPreferredSize();
     }
 
     private void computeLayout() {

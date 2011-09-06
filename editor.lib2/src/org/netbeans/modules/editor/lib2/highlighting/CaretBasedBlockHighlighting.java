@@ -465,18 +465,20 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                     rectangularSelectionBag.addHighlightsChangeListener(this);
                 }
                 List<Position> regions = RectangularSelectionUtils.regionsCopy(c);
-                AttributeSet attrs = getAttribs();
-                rectangularSelectionBag.clear();
-                int size = regions.size();
-                for (int i = 0; i < size;) {
-                    Position startPos = regions.get(i++);
-                    Position endPos = regions.get(i++);
-                    rectangularSelectionBag.addHighlight(startPos, endPos, attrs);
-                }
-                // Fire change at once
-                if (hlChangeStartOffset != -1) {
-                    fireHighlightsChange(hlChangeStartOffset, hlChangeEndOffset);
-                    hlChangeStartOffset = -1;
+                if (regions != null) {
+                    AttributeSet attrs = getAttribs();
+                    rectangularSelectionBag.clear();
+                    int size = regions.size();
+                    for (int i = 0; i < size;) {
+                        Position startPos = regions.get(i++);
+                        Position endPos = regions.get(i++);
+                        rectangularSelectionBag.addHighlight(startPos, endPos, attrs);
+                    }
+                    // Fire change at once
+                    if (hlChangeStartOffset != -1) {
+                        fireHighlightsChange(hlChangeStartOffset, hlChangeEndOffset);
+                        hlChangeStartOffset = -1;
+                    }
                 }
             }
         }
