@@ -61,29 +61,29 @@ public class PanelConfigureProjectVisual extends JPanel {
 //    private boolean noDir = true;
     private SettingsPanel projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
-    private NewJFXProjectWizardIterator.WizardType type;
+    private JavaFXProjectWizardIterator.WizardType type;
 
-    public PanelConfigureProjectVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
+    PanelConfigureProjectVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
 //        this.panel = panel;
         initComponents();
         this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
         switch (type) {
-            case APP:
+            case APPLICATION:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
                 putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
                 jSeparator1.setVisible(true);
                 getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
                 getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaApp")); // NOI18N
                 break;
-            case LIB:
+            case LIBRARY:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
                 jSeparator1.setVisible(true);
                 putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaLib")); // NOI18N
                 getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaLib")); // NOI18N
                 getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaLib")); // NOI18N
                 break;
-            case EXT:
+            case EXTISTING:
                 projectLocationPanel = new PanelProjectLocationExtSrc(panel);
                 jSeparator1.setVisible(true);
                 putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_JavaExtSourcesProjectLocation")); // NOI18N
