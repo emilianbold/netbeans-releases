@@ -276,6 +276,7 @@ public class JFXProjectGenerator {
                 
                 EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true"); // NOI18N
+                h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
