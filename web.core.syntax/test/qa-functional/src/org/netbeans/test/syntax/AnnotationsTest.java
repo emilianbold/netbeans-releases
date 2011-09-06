@@ -154,7 +154,7 @@ public class AnnotationsTest extends J2eeTestCase {
     }
 
     public void testAnnotationsCSS() throws Exception {
-        runTest("annotations.css", 5);
+        runTest("annotations.css", 6);
     }
 
     public void testMissingEndTag() throws Exception {
