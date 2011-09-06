@@ -103,14 +103,14 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
 
-                    <file name="format">
+<!--                    <file name="format">
                         <attr intvalue="750" name="position"/>
                     </file>
 
                     <file name="SeparatorAfterFormat.instance">
                         <attr intvalue="780" name="position"/>
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
+                    </file>-->
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
                     </file>
