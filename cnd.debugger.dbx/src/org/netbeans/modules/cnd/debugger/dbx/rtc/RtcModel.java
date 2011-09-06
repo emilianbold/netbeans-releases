@@ -735,7 +735,7 @@ public class RtcModel {
     }
 
     public void runEnd() {
-        if (currentRun == null) {
+        if (currentRun != null) {
             currentRun.setComplete();
         }
 	currentRun = null;
