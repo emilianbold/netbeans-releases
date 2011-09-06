@@ -9,9 +9,7 @@
 
     <target name="check-jfx-deployment" depends="-init-javafx">
         <condition property="jfx-deployment-available">
-            <and>
-                <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
-            </and>
+            <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
         </condition>
     </target>
 
@@ -24,14 +22,16 @@
         <delete file="${jfx.deployment.dir}/README.TXT"/>
         <!-- hack end -->
 
-        <fx:application id="fxApp" name="${application.title}" mainClass="${main.class}"/>
-<!--            preloaderClass="testpreloader.Preloader" fallbackClass="test.UseMeIfNoFX"-->
+        <fx:application id="fxApp"
+            name="${application.title}"
+            mainClass="${javafx.main.class}"
+            preloaderClass="${javafx.preloader.class}"
+            fallbackClass="com.javafx.main.NoJavaFXFallback"/>
 
         <fx:resources id="appRes">
-            <!-- PRELOADER -->
-<!--            <fileset dir="dist"
-                requiredFor="preloader"
-                includes="mypreloader.jar"/>      -->
+            <fx:fileset requiredFor="preloader" dir="${jfx.deployment.dir}">
+                <include name="${javafx.preloader.jar}"/>
+            </fx:fileset>
             <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
                 <include name="${jfx.deployment.jar}"/>
                 <include name="lib/*.jar"/>
@@ -63,8 +63,7 @@
             <fx:application refId="fxApp"/>
             <fx:resources refid="appRes"/>
             <info title="${application.title}" vendor="${application.vendor}"/>
-            <!-- Request elevated permissions -->
-<!--            <permissions elevate="true"/>-->
+            <permissions elevated="true"/>
         </fx:deploy>
     </target>
 

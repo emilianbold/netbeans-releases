@@ -76,8 +76,12 @@ public class RectangularSelectionUtils {
         @SuppressWarnings("unchecked") List<Position> regions =
                 (List<Position>) c.getClientProperty(RECTANGULAR_SELECTION_REGIONS_PROPERTY);
         List<Position> lRegions;
-        synchronized (regions) {
-            lRegions = new ArrayList<Position>(regions);
+        if (regions != null) {
+            synchronized (regions) {
+                lRegions = new ArrayList<Position>(regions);
+            }
+        } else {
+            lRegions = null;
         }
         return lRegions;
     }
