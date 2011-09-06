@@ -188,12 +188,26 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             }
         }
 
-        private void delete (final File folder) {
+        private static void delete(@NonNull final File folder) throws IOException {
+            try {
+                IndexManager.writeAccess(new IndexManager.Action<Void>(){
+                    @Override
+                    public Void run() throws IOException, InterruptedException {
+                        deleteImpl(folder);
+                        return null;
+                    }
+                });
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
+            }
+        }
+
+        private static void deleteImpl (final File folder) {
             final File[] children = folder.listFiles();
             if (children != null) {
                 for (File child : children) {
                     if (child.isDirectory()) {
-                        delete(child);
+                        deleteImpl(child);
                     }
                     child.delete();
                 }
