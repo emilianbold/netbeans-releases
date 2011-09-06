@@ -68,6 +68,8 @@ import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Java FX project
+ * 
+ * @author phrebejk, Anton Chechel
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     enum WizardType {APPLICATION, PRELOADER, LIBRARY, EXTISTING}
@@ -200,7 +202,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                     try {
                         //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR); // NOI18N
                         FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); // NOI18N
-                        FileObject mainClassFo = getMainClassFO(sourcesRoot, mainClass);
+                        FileObject mainClassFo = getClassFO(sourcesRoot, mainClass);
                         assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass; // NOI18N
                         // Returning FileObject of main class, will be called its preferred action
                         resultSet.add(mainClassFo);
@@ -246,9 +248,13 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         // create preloader project
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
         if (preloader != null && preloader.length() > 0) {
+            preloader = preloader.trim();
             File preloaderDir = new File(dirF.getParentFile().getAbsolutePath() + File.separatorChar + preloader);
             FileUtil.normalizeFile(preloaderDir);
             AntProjectHelper h = JFXProjectGenerator.createPreloaderProject(preloaderDir, preloader, librariesDefinition, platformName);
+            FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); // NOI18N
+            FileObject preloaderClassFo = getClassFO(sourcesRoot, generatePreloaderClassName(preloader));
+            resultSet.add(preloaderClassFo);
             resultSet.add(h.getProjectDirectory());
         }
         
@@ -355,13 +361,9 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     // helper methods, finds mainclass's FileObject
-    private FileObject getMainClassFO(FileObject sourcesRoot, String mainClass) {
-        // replace '.' with '/'
-        mainClass = mainClass.replace('.', '/'); // NOI18N
-
-        // ignore unvalid mainClass ???
-
-        return sourcesRoot.getFileObject(mainClass + ".java"); // NOI18N
+    private static FileObject getClassFO(FileObject sourcesRoot, String className) {
+        className = className.replace('.', '/'); // NOI18N
+        return sourcesRoot.getFileObject(className + ".java"); // NOI18N
     }
 
     static String getPackageName(String displayName) {
@@ -425,4 +427,15 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             return null;
         }
     }
+
+    // TODO there should be additional wizard page for preloader,
+    // class name will be taken from UI
+    static String generatePreloaderClassName(String preloaderProjectName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
+        sb.append('.'); // NOI18N
+        sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        return  sb.toString();
+    }
+
 }
