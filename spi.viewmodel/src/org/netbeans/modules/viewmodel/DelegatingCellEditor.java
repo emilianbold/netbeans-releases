@@ -106,6 +106,12 @@ class DelegatingCellEditor implements TableCellEditor {
         if (currentEditor != null) {
             return currentEditor.getCellEditorValue();
         }
+        if (canceledEditorRef != null) {
+            TableCellEditor canceledEditor = canceledEditorRef.get();
+            if (canceledEditor != null) {
+                return canceledEditor.getCellEditorValue();
+            }
+        }
         Exceptions.printStackTrace(new IllegalStateException("No current editor."));
         return null;
     }
