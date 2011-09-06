@@ -53,6 +53,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -256,6 +258,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             FileObject preloaderClassFo = getClassFO(sourcesRoot, generatePreloaderClassName(preloader));
             resultSet.add(preloaderClassFo);
             resultSet.add(h.getProjectDirectory());
+            
+//            ProjectClassPathModifier.addProjects(projects, sourcesRoot, ClassPath.COMPILE);
         }
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N
