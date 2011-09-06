@@ -70,7 +70,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     private boolean basicNode;
     
     public OracleJ2EEInstanceNode(OracleJ2EEInstance aij, boolean basicNode) {
-        super(new OracleJ2EEInstanceChildren(aij, basicNode), Lookups.fixed(aij));
+        super(new OracleJ2EEInstanceChildren(aij, basicNode), Lookups.fixed(aij, aij.getOracleInstance()));
         this.basicNode = basicNode;
         this.aij = aij;
         setName(""); // NOI18N
@@ -122,6 +122,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
+            SystemAction.get(RefreshOracleInstanceNodeAction.class),
             SystemAction.get(RemoteServerPropertiesAction.class)
         };
     }
