@@ -622,9 +622,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FieldAccess node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
-        //super.visit(node);
         Variable field = node.getField();
+        if (field.isDollared()) {
+            scan(field);
+        } else {
+            occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        }
+        //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
             scan(access.getIndex());

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Git: Adding Files to a Repository</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Git: Adding Files to a Repository</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE enables you to track a new file and also to stage changes to an already tracked file in the Git repository. You effectively <em>add</em> your sources into a local Git repository. The repository files are placed under a <tt>.git</tt> directory under the project directory.</p>
+        
+        <h4>To add files to a Git Repository:</h4>
+        <p>When adding files to a Git repository, the IDE composes and saves snapshots of your project first in the Index. After you perform the commit, the IDE saves  those snapshots in the HEAD. The IDE allows you to choose between the two  workflows described in the following table. </p>
+		 <table border="1" cellpadding="5">
+		 <tr align="center">
+                        <th>Workflow Description</th>
+						<td class="tbltd1">
+                            
+                                Explicitly add new or modified  files to the Index and then commit only those that are staged in the Index to the HEAD
+                      </td>
+                        <td class="tbltd1">Skip adding  
+                                    new or modified  files to the Index 
+									
+
+
+                                   and commit the required files directly to the HEAD 
+                     </td>
+						
+           </tr>
+                    <tr>
+					 <th>Steps to Follow the Workflow </th>
+					<td class="tbltd1">
+                          <ol>
+						  <li>In the Projects window, right-click the file you want to add.</li> 
+		  <li>In the context menu, choose <tt>Git</tt> &gt; <tt>Add</tt>.<br>
+		  This adds the file contents to the  Index before you commit it. </li>
+		  <li>In the Projects window, right-click the file you want to commit.</li>
+		  <li>In the Commit dialog box, select the Changes between HEAD and Index  toggle button.<br> This displays the list of files that are already staged. </li> 
+		<li>Commit the file(s) as described in the <a href="#git-commit.html">Committing Sources to a Repository</a> section below.</li>
+                          </ol>  </td>
+                        <td class="tbltd1">
+						<ol>
+						<li>In the Projects window, right-click the file you want to commit.</li> 
+		                <li>In the context menu, choose <tt>Git</tt> &gt; <tt>Commit</tt>.		   </li>
+		 			  <li>In the Commit dialog box, select the Select the Changes between Index and Working Tree toggle button. <br> 
+		 			    This displays the list of files that are not staged.  </li>
+						<li>Commit the file(s) as described in the <a href="#git-commit.html">Committing Sources to a Repository</a> section below.</li>
+						</ol>
+                      </td>
+           </tr>                            
+</table>
+		  <p class="notes"><b>Note:</b> </p>
+		  <ul>
+		  <li>The status of the file in the HEAD displays in green to the left of the slash. The new files and their status can be viewed by clicking on Git &gt; Status from the right-click menu.</li>
+		  <li>The action works recursively if invoked on folders while respecting the NetBeans IDE flat folder content structure. You can  view files being added to the 
+            repository from the Output window (Ctrl+4).</li>
+           </ul>
+        
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+                   
+            <dd><a href="git-about.html">About Git Support</a></dd>
+			<dd><a href="git-commit.html">Git: Committing Sources to a Repository</a></dd>
+        </dl>
+        <hr><small><a href="credits.html">Legal Notices</a></small>
+        
+    </body>
+</html>

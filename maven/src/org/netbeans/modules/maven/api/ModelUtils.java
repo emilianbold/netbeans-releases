@@ -320,6 +320,10 @@ public final class ModelUtils {
                 repoRoot = repoRoot + "/rt/eclipselink/maven.repo/";//NOI18N
                 groupId = groupId.substring("rt/eclipselink/maven.repo/".length());//NOI18N
             }
+            if (groupId.startsWith("nexus/content/groups/public-jboss/")) { //NOI18N
+                repoRoot = repoRoot + "/nexus/content/groups/public-jboss/"; //NOI18N
+                groupId = groupId.substring("nexus/content/groups/public-jboss/".length()); //NOI18N
+            }
             groupId = groupId.replace('/', '.'); //NOI18N
             return new LibraryDescriptor(repoType, repoRoot, groupId, artifactId, version, classifier);
         }

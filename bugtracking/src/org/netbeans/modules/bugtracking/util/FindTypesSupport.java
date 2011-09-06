@@ -60,12 +60,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -77,9 +72,9 @@ import org.openide.util.NbBundle;
  */
 final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
-    private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("([a-zA-Z_\\$][a-zA-Z\\d_\\$\\.]*)*([A-Z_\\$][a-zA-Z\\d_\\$]*)"); 
-    private String HIGHLIGHTS_PROPERTY = "highlights.property";
-    private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";
+    private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");  // NOI18N
+    private String HIGHLIGHTS_PROPERTY = "highlights.property";                                             // NOI18N
+    private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";                                    // NOI18N
             
     private static FindTypesSupport instance;
     private Style defStyle;
@@ -98,7 +93,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     }
 
     private Highlight getHighlight(JTextPane pane, int offset) {
-        List<Highlight> highlights = (List<Highlight>) pane.getClientProperty(HIGHLIGHTS_PROPERTY);
+        List<Highlight> highlights = getHighlights(pane);
         Highlight h = null;
         for (int i = 0; i < highlights.size(); i++) {
             h = highlights.get(i);
@@ -108,6 +103,15 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             h = null;
         }
         return h;
+    }
+
+    private List<Highlight> getHighlights(JTextPane pane) {
+        List<Highlight> highlights = (List<Highlight>) pane.getClientProperty(HIGHLIGHTS_PROPERTY);
+        if(highlights == null) {
+            highlights = new LinkedList<Highlight>();
+            pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
+        }
+        return highlights;
     }
     
     private class Highlight {
@@ -144,21 +148,26 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     }
     
     public void register(JTextPane pane) {
-        StyledDocument doc = pane.getStyledDocument();
-        Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle); 
-        hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
-        StyleConstants.setForeground(hlStyle, Color.BLUE);
-        StyleConstants.setUnderline(hlStyle, true);     
-        
-        List<Integer> l = getTypeName(pane.getText());
-        List<Highlight> highlights = new ArrayList<Highlight>(l.size());
-        for (int i = 0; i < l.size(); i++) {
-            highlights.add(new Highlight(l.get(i), l.get(++i)));
+        long t = System.currentTimeMillis();
+        try {
+            StyledDocument doc = pane.getStyledDocument();
+            Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);     // NOI18N
+            hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
+            StyleConstants.setForeground(hlStyle, Color.BLUE);
+            StyleConstants.setUnderline(hlStyle, true);            
+            
+            List<Integer> l = getHighlightOffsets(pane.getText());
+            List<Highlight> highlights = new ArrayList<Highlight>(l.size());
+            for (int i = 0; i < l.size(); i++) {
+                highlights.add(new Highlight(l.get(i), l.get(++i)));
+            }
+            pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
+            
+            pane.addMouseMotionListener(this);
+            pane.addMouseListener(this);
+        } finally {
+            BugtrackingManager.LOG.log(Level.INFO, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
         }
-        pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
-        
-        pane.addMouseMotionListener(this);
-        pane.addMouseListener(this);
     }
 
     @Override
@@ -189,14 +198,14 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         }
         
         if(h != null && offset < elem.getEndOffset() - 1) {
-            Style hlStyle = doc.getStyle("regularBlue-findtype");
+            Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
             doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
             pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
         } 
         
     }
     
-    static List<Integer> getTypeName(String txt) {
+    static List<Integer> getHighlightOffsets(String txt) {
         LinkedList<Integer> result = new LinkedList<Integer>();
         if ( txt == null) {
             return Collections.emptyList();
@@ -211,12 +220,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         int last = -1;       
         int start = -1;
         while( m.find() ) {
-           start = m.start(); 
-           if(start != -1) {
-               last = start + (m.group(1) != null ? m.group(1).length() : 0) + m.group(2).length(); 
-               result.add(start);
-               result.add(last);
-           }
+           last = m.end(); 
+           start = last - (m.group(1) != null ? m.group(1).length() : 0) - m.group(2).length();
+           result.add(start);
+           result.add(last);
         }
         return result;
     }
@@ -271,7 +278,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     private class TypeLink {
         public void jumpTo(String resource) {
-            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null);
+            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null); // NOI18N
             if(td != null) {
                 td.open();
             }
@@ -309,15 +316,15 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         String name = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
                         int idx = name.lastIndexOf(".");
                         final String shortname = idx > -1 && name.length() > idx ? name.substring(idx + 1) : name;
-                        add(new JMenuItem(new AbstractAction("GoTo type '" + shortname + "'") {
+                        add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_GotoType", name)) { // NOI18N
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 link.jumpTo(shortname);
                             }
                         }));
                         if(name.length() > shortname.length()) {
-                            final String path = name.replace(".", "/") + ".java";
-                            add(new JMenuItem(new AbstractAction("Open '" + path + "'") { // XXX + ".java" ???
+                            final String path = name.replace(".", "/") + ".java"; // NOI18N
+                            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_OpenType", name)) { // XXX + ".java" ??? // NOI18N
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     StackTraceSupport.open(path, -1);
