@@ -257,8 +257,8 @@ public final class ModelUtils {
      *          [4] version
      *          [5] classifier (optional, not part of path, but url's ref)
      */
-    private static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
-    private static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
+    private static Pattern DEFAULT = Pattern.compile("(.+)/(.+)/(.+)/(.+)[.]pom");
+    private static Pattern LEGACY = Pattern.compile("(.+)/poms/([a-zA-Z0-9_]+[a-zA-Z_-]+)-([0-9].+)[.]pom");
     private static final List<String> knownRepositories = Arrays.asList(RepositoryPreferences.REPO_CENTRAL, "http://download.java.net/maven/1/", "http://download.java.net/maven/glassfish/");
 
     /** Returns a library descriptor corresponding to the given library,
