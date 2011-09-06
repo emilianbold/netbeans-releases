@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
 import oracle.cloud.paas.model.Application;
+import oracle.cloud.paas.model.ApplicationType;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -94,6 +95,8 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             = "org/netbeans/modules/cloud/oracle/ui/resources/waiting.png"; // NOI18N
     private static final String TERMINATED_ICON
             = "org/netbeans/modules/cloud/oracle/ui/resources/terminated.png"; // NOI18N
+    private static final String FAILED_ICON
+            = "org/netbeans/modules/cloud/oracle/ui/resources/failed.png"; // NOI18N
     
     private Image badgeIcon(Image origImg) {
         if (basicNode) {
@@ -165,24 +168,46 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
     public static class ApplicationNode extends AbstractNode {
 
+        private Application app;
         public ApplicationNode(OracleJ2EEInstance aij, Application app) {
             super(Children.LEAF, Lookups.fixed(aij, app));
+            this.app = app;
             setName(""); // NOI18N
             setDisplayName(app.getApplicationName());
         }
 
         @Override
         public Image getIcon(int type) {
-            return badgeIcon(UISupport.getIcon(UISupport.ServerIcon.WAR_ARCHIVE));
+            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR ?
+                    UISupport.ServerIcon.WAR_ARCHIVE : UISupport.ServerIcon.EAR_ARCHIVE));
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return badgeIcon(UISupport.getIcon(UISupport.ServerIcon.WAR_ARCHIVE));
+            return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR ?
+                    UISupport.ServerIcon.WAR_ARCHIVE : UISupport.ServerIcon.EAR_ARCHIVE));
         }
 
         private Image badgeIcon(Image origImg) {
             Image badge = null;        
+            switch (app.getState()) {
+                    
+                case STATE_ADMIN:
+                case STATE_NEW:
+                case STATE_PREPARED:
+                case STATE_UPDATE_PENDING:
+                    badge = ImageUtilities.loadImage(WAITING_ICON);
+                    break;
+                case STATE_RETIRED:
+                    badge = ImageUtilities.loadImage(TERMINATED_ICON);
+                    break;
+                case STATE_FAILED:
+                    badge = ImageUtilities.loadImage(FAILED_ICON);
+                    break;
+                case STATE_ACTIVE:
+                    // no badge; app is running
+                    break;
+            }
             return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
         }
         

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.oracle.ui;
 
 import oracle.cloud.paas.model.Application;
+import oracle.cloud.paas.model.ApplicationState;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -65,8 +66,14 @@ public class UndeployApplicationAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(Application.class) != null;
+        if (activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) == null) {
+            return false;
+        }
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
+        if (app == null) {
+            return false;
+        }
+        return ApplicationState.STATE_RETIRED != app.getState();
     }
 
     @Override
