@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.weblogic9.optional;
 import java.io.OutputStream;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
