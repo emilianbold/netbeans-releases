@@ -129,7 +129,10 @@ public class DiscoveryProjectGeneratorImpl {
                             @Override
                             public String next() {
                                 FileConfiguration next = iterator.next();
-                                return next.getFilePath()+"="+next.getCompilePath()+"#"+next.getCompileLine(); // NOI18N
+                                if (next.getCompileLine() != null) {
+                                    return next.getFilePath()+"="+next.getCompilePath()+"#"+next.getCompileLine(); // NOI18N
+                                }
+                                return ""; // NOI18N
                             }
 
                             @Override
