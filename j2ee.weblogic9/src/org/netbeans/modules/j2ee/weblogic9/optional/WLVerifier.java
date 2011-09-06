@@ -61,12 +61,9 @@ public class WLVerifier extends VerifierSupport {
         if (p == null) {
             return;
         }
-        
-        // XXX waiting for below new API method to get from trunk into private repo:
-        
-        //if (WhiteListQuery.isWhiteListEnabledInProject(p, "oracle.cloud")) { // NOI18N
+        if (WhiteListQuery.isWhiteListEnabledInProject(p, "oracle.cloud")) { // NOI18N
             WhiteListTool.execute(FileUtil.toFile(target));
-        //}
+        }
     }
 
 }
