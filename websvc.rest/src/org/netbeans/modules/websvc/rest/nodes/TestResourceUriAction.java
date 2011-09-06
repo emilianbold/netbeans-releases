@@ -100,8 +100,8 @@ public class TestResourceUriAction extends NodeAction  {
     @Override
     protected void performAction(Node[] activatedNodes) {
         String uri = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class).getResourceUri();
-        if (!uri.startsWith("/")) {
-            uri = "/"+uri;
+        if (!uri.startsWith("/")) {          //NOI18N
+            uri = "/"+uri;                   //NOI18N
         }
         String resourceURL = getResourceURL(activatedNodes[0].getLookup().lookup(Project.class), uri);
         try {
@@ -201,10 +201,25 @@ public class TestResourceUriAction extends NodeAction  {
                 applicationPath = restSupport.getApplicationPath();
             } catch (IOException ex) {}
         }
+        StringBuilder builder = new StringBuilder("http://");   // NOI18N
+        builder.append(hostName);
+        builder.append(':');
+        builder.append(portNumber);
+        builder.append('/');
+        if ( contextRoot != null && contextRoot.length()>0  ){
+            builder.append( contextRoot );
+        }
+        builder.append( '/');
+        builder.append( applicationPath );
+        // Fix for BZ#200724 - Testing RESTful WebService fails when clicking "Test Resource Uri" from witin NetBeans 
+        if ( uri.startsWith("/") && applicationPath.length() ==0 ){             // NOI18N
+            builder.append( uri.substring( 1 ) );
+        }
+        else {
+            builder.append( uri );
+        }
 
-        return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
-                (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/"+applicationPath + uri; //NOI18N
+        return builder.toString();
     }
 
     @Override
