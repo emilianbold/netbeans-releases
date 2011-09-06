@@ -180,7 +180,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             return isSmartyFound.get();
         } finally {
             Logger.getLogger(SmartyPhpFrameworkProvider.class.getName()).log(
-                    Level.INFO, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
+                    Level.FINE, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
         }
     }
 
