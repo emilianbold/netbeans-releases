@@ -316,7 +316,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         String name = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
                         int idx = name.lastIndexOf(".");
                         final String shortname = idx > -1 && name.length() > idx ? name.substring(idx + 1) : name;
-                        add(new JMenuItem(new AbstractAction("GoTo type '" + shortname + "'") { // NOI18N
+                        add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_GotoType", name)) { // NOI18N
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 link.jumpTo(shortname);
@@ -324,7 +324,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         }));
                         if(name.length() > shortname.length()) {
                             final String path = name.replace(".", "/") + ".java"; // NOI18N
-                            add(new JMenuItem(new AbstractAction("Open '" + path + "'") { // XXX + ".java" ??? // NOI18N
+                            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(FindTypesSupport.class, "MSG_OpenType", name)) { // XXX + ".java" ??? // NOI18N
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     StackTraceSupport.open(path, -1);
