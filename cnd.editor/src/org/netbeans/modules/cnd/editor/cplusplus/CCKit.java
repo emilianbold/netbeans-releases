@@ -44,7 +44,9 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -59,6 +61,7 @@ import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.util.NbPreferences;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
@@ -134,10 +137,10 @@ public class CCKit extends NbEditorKit {
             getCommentAction(),
             getUncommentAction(),
 
-            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new CCNextWordAction(nextWordAction),
+            new CCPreviousWordAction(previousWordAction),
+            new CCNextWordAction(selectionNextWordAction),
+            new CCPreviousWordAction(selectionPreviousWordAction),
             new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
             new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
 
@@ -156,6 +159,39 @@ public class CCKit extends NbEditorKit {
             }
         }
         return null;
+    }
+
+    private static boolean isUsingCamelCase() {
+        return NbPreferences.root().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+    }
+
+    public static class CCNextWordAction extends NextWordAction {
+
+        CCNextWordAction(String name) {
+            super(name);
+        }
+        
+        @Override
+        protected int getNextWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.nextCamelCasePosition(target, true)
+                    : super.getNextWordOffset(target);
+        }
+
+    }
+
+    public static class CCPreviousWordAction extends PreviousWordAction {
+
+        CCPreviousWordAction(String name) {
+            super(name);
+        }
+
+        protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.previousCamelCasePosition(target)
+                    : super.getPreviousWordOffset(target);
+        }
+
     }
 
 }

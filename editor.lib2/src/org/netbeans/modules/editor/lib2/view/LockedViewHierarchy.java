@@ -37,10 +37,10 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
-import java.util.concurrent.Callable;
+import java.awt.Shape;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyImpl;
 
 /**
  * Locked view hierarchy as result of {@link ViewHierarchy#lock() }.
@@ -79,8 +79,6 @@ public final class LockedViewHierarchy {
     /**
      * Get y coordinate of a visual row that corresponds to given offset.
      * <br/>
-     * This method can only be run within transaction {@link #runTransaction(java.util.concurrent.Callable)}.
-     * <br/>
      * Underlying document of the view hierarchy's text component should be read-locked
      * to guarantee stability of passed offset.
      * <br/>
@@ -106,18 +104,49 @@ public final class LockedViewHierarchy {
     }
     
     /**
+     * Return visual mapping of character at offset.
+     *
+     * @param offset
+     * @param bias
+     * @return shape corresponding to given offset.
+     */
+    public Shape modelToView(int offset, Position.Bias bias) {
+        return impl.modelToView(offset, bias);
+    }
+
+    /**
+     * Map visual point to an offset.
+     *
+     * @param x
+     * @param y
+     * @param biasReturn single-item array or null to ignore return bias.
+     * @return offset corresponding to given visual point.
+     */
+    public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
+        return impl.viewToModel(x, y, biasReturn);
+    }
+    
+    /**
      * Get height of a visual row of text.
      * <br/>
      * For wrapped lines (containing multiple visual rows) this is height of a single visual row.
      * <br/>
      * Current editor view hierarchy implementation uses uniform row height for all the rows.
-     * <br/>
-     * This method can only be run within transaction {@link #runTransaction(java.util.concurrent.Callable)}.
      * 
      * @return height of a visual row.
      */
     public float getDefaultRowHeight() {
         return impl.getDefaultRowHeight(this);
+    }
+    
+    /**
+     * Get width of a typical character of a default font used by view hierarchy.
+     * <br/>
+     * In case mixed fonts (non-monospaced) are used this gives a little value
+     * but certain tools such as retangular selection may use this value.
+     */
+    public float getDefaultCharWidth() {
+        return impl.getDefaultCharWidth(this);
     }
 
 }

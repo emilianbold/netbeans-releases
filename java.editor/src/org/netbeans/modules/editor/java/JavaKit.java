@@ -89,6 +89,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
 * Java editor kit with appropriate document
@@ -278,10 +279,10 @@ public class JavaKit extends NbEditorKit {
             new SelectCodeElementAction(selectNextElementAction, true),
             new SelectCodeElementAction(selectPreviousElementAction, false),
 
-            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new JavaNextWordAction(nextWordAction),
+            new JavaPreviousWordAction(previousWordAction),
+            new JavaNextWordAction(selectionNextWordAction),
+            new JavaPreviousWordAction(selectionPreviousWordAction),
             new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
             new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
 
@@ -955,6 +956,39 @@ public class JavaKit extends NbEditorKit {
 
         public String getPopupMenuText(JTextComponent target) {
             return NbBundle.getBundle(JavaKit.class).getString("show_javadoc"); // NOI18N
+        }
+
+    }
+
+    private static boolean isUsingCamelCase() {
+        return NbPreferences.root().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+    }
+
+    public static class JavaNextWordAction extends NextWordAction {
+
+        JavaNextWordAction(String name) {
+            super(name);
+        }
+        
+        @Override
+        protected int getNextWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.nextCamelCasePosition(target)
+                    : super.getNextWordOffset(target);
+        }
+
+    }
+
+    public static class JavaPreviousWordAction extends PreviousWordAction {
+
+        JavaPreviousWordAction(String name) {
+            super(name);
+        }
+
+        protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.previousCamelCasePosition(target)
+                    : super.getPreviousWordOffset(target);
         }
 
     }
