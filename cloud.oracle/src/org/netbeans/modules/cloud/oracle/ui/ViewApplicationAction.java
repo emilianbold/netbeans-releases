@@ -43,7 +43,8 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import oracle.nuviaq.model.xml.ApplicationDeployment;
+import oracle.cloud.paas.model.Application;
+import oracle.cloud.paas.model.ApplicationState;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
@@ -59,8 +60,9 @@ public class ViewApplicationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
-        String appContext = app.getArchiveUrl().substring(0, app.getArchiveUrl().lastIndexOf('.'));
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
+        // XXX: there is no way to retrieve app context name; it it being considered to be added to API
+        String appContext = app.getApplicationName();
         String url = inst.getOracleInstance().getInstanceURL();
         if (appContext.startsWith("/")) {
             appContext = appContext.substring(1);
@@ -78,8 +80,14 @@ public class ViewApplicationAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
+        if (activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) == null) {
+            return false;
+        }
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
+        if (app == null) {
+            return false;
+        }
+        return ApplicationState.STATE_ACTIVE == app.getState();
     }
 
     @Override

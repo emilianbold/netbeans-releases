@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import oracle.nuviaq.model.xml.ApplicationDeployment;
+import oracle.cloud.paas.model.Application;
+import oracle.cloud.paas.model.ApplicationState;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,7 +57,7 @@ public class StartApplicationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
         inst.getOracleInstance().start(app);
     }
 
@@ -65,9 +66,15 @@ public class StartApplicationAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        // TODO: enabled only when app in right state
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
+        if (activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) == null) {
+            return false;
+        }
+        Application app = activatedNodes[0].getLookup().lookup(Application.class);
+        if (app == null) {
+            return false;
+        }
+        return ApplicationState.STATE_NEW == app.getState() ||
+                ApplicationState.STATE_PREPARED == app.getState();
     }
 
     @Override

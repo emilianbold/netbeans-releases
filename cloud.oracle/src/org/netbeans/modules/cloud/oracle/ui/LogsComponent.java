@@ -65,9 +65,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import oracle.nuviaq.api.ApplicationManager;
-import oracle.nuviaq.model.xml.Job;
-import oracle.nuviaq.model.xml.Log;
+import oracle.cloud.paas.api.ApplicationManager;
+import oracle.cloud.paas.model.Job;
+import oracle.cloud.paas.model.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -390,30 +390,19 @@ public class LogsComponent extends TopComponent {
         }
 
         
-        private String getDuration(String start, String end) {
-            // <StartTime>2011-06-24 11:16:47.034</StartTime>
-            // <EndTime>2011-06-24 11:18:03.421</EndTime>            
-            DateFormat formatter;
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            try {
-                Date startDate = formatter.parse(start);
-                Date endDate = formatter.parse(end);
-                long startTime = startDate.getTime();
-                long endTime = endDate.getTime();
-                long diff = endTime - startTime;
+        private String getDuration(Date startDate, Date endDate) {
+            long startTime = startDate.getTime();
+            long endTime = endDate.getTime();
+            long diff = endTime - startTime;
 
-                long secondInMillis = 1000;
-                long minuteInMillis = secondInMillis * 60;
+            long secondInMillis = 1000;
+            long minuteInMillis = secondInMillis * 60;
 
-                long elapsedMinutes = diff / minuteInMillis;
-                diff = diff % minuteInMillis;
-                long elapsedSeconds = diff / secondInMillis;
-                
-                return ""+elapsedMinutes+":"+elapsedSeconds;
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-                return "?";
-            }
+            long elapsedMinutes = diff / minuteInMillis;
+            diff = diff % minuteInMillis;
+            long elapsedSeconds = diff / secondInMillis;
+
+            return ""+elapsedMinutes+":"+elapsedSeconds;
         }
         
         @Override
