@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.cloud;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -56,7 +51,6 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -69,49 +63,25 @@ import org.openide.util.Utilities;
  */
 public class WhiteListTool {
 
-    private static final String WHITELIST_TOOL_DIR = "JavaEE/WebLogic"; // NOI18N
-    
     private static final Logger LOGGER = Logger.getLogger(WhiteListTool.class.getName());
 
     private static final ExecutionDescriptor TOOL_DESCRIPTOR =
             new ExecutionDescriptor().controllable(false).frontWindow(true);
     
-    public static boolean execute(File file, File weblogicJar) {
-        return execute(file, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"), weblogicJar);
+    public static boolean execute(File file) {
+        return execute(file, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
     }
     
-    public static boolean execute(File file, String displayName, File weblogicJar) {
-        assert weblogicJar != null;
-        // the tool is not very friendly in order to be used in-jvm so far
-        // it si configuring loggers etc.
+    public static boolean execute(File file, String displayName) {
         File jarFo = InstalledFileLocator.getDefault().locate(
-                "modules/ext/whitelistscantool.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
+                "modules/ext/whitelist.jar", "org.netbeans.libs.oracle.cloud", false); // NOI18N
         if (jarFo == null) {
             LOGGER.log(Level.WARNING, "Could not invoke whitelist tool");
             return true;
         }
 
-        File propertiesFile = null;
-        try {
-            FileObject configRoot = FileUtil.getConfigRoot();
-            FileObject loggingDir = FileUtil.createFolder(
-                    configRoot, WHITELIST_TOOL_DIR);
-            File logging = FileUtil.toFile(loggingDir);
-            if (logging != null) {
-                propertiesFile = new File(logging, "whitelist.logging.properties"); // NOI18N
-                prepareLoggingPropeties(propertiesFile);
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            propertiesFile = null;
-        }
-
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary());
-        if (propertiesFile != null) {
-            builder = builder.addArgument("-Djava.util.logging.config.file=" + propertiesFile.getAbsolutePath()); // NOI18N
-        }
-        builder = builder.addArgument("-cp").addArgument(weblogicJar.getAbsolutePath()) // NOI18N
-                .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
+        builder = builder.addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
                 .addArgument(file.getAbsolutePath())
                 .redirectErrorStream(true)
                 .workingDirectory(file.getParentFile());
@@ -148,21 +118,4 @@ public class WhiteListTool {
         return javaBinary;
     }
     
-    private static void prepareLoggingPropeties(File dest) throws IOException {
-        if (dest.exists()) {
-            return;
-        }
-        
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(dest));
-        try {
-            InputStream is = WLDeploymentFactory.class.getResourceAsStream("resources/whitelist.logging.properties"); // NOI18N
-            try {
-                FileUtil.copy(is, os);
-            } finally {
-                is.close();
-            }
-        } finally {
-            os.close();
-        }
-    }
 }
