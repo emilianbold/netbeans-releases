@@ -270,14 +270,6 @@ public final class SearchBar extends JPanel {
         makeBarExpandable();
 
         setVisible(false);
-
-        this.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent evt) {
-                computeLayout();
-            }
-        });
     }
 
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
@@ -446,7 +438,6 @@ public final class SearchBar extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 searched = false;
                 // text changed - attempt incremental search
-                computeLayout();
                 if (incSearchTextField.getText().length() > 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
                 }
@@ -457,7 +448,6 @@ public final class SearchBar extends JPanel {
             public void removeUpdate(DocumentEvent e) {
                 searched = false;
                 // text changed - attempt incremental search
-                computeLayout();
                 if (incSearchTextField.getText().length() <= 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
                 }
@@ -682,6 +672,12 @@ public final class SearchBar extends JPanel {
         remove(expandButton);
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        computeLayout();
+        return super.getPreferredSize();
+    }
+    
     void computeLayout() {
         int parentWidth = this.getParent().getWidth();
         int totalWidth = 0;
@@ -1131,6 +1127,6 @@ public final class SearchBar extends JPanel {
     void setSearched(boolean searched) {
         this.searched = searched;
     }
-    
+
     
 }
