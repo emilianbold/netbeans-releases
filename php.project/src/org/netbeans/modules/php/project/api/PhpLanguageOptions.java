@@ -84,14 +84,26 @@ public final class PhpLanguageOptions {
      * @see #getProperties(FileObject)
      */
     public static enum PhpVersion {
+
+        // order is important! from oldest to newest, see #getDefault()
         PHP_5(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_5")),
         PHP_53(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_53"));
 
         private final String displayName;
 
+
         PhpVersion(String displayName) {
             assert displayName != null;
             this.displayName = displayName;
+        }
+
+        /**
+         * Always return the latest PHP version.
+         * @return the latest PHP version
+         */
+        public static PhpVersion getDefault() {
+            PhpVersion[] phpVersions = PhpVersion.values();
+            return phpVersions[phpVersions.length - 1];
         }
 
         public String getDisplayName() {
@@ -102,6 +114,7 @@ public final class PhpLanguageOptions {
         public String toString() {
             return getDisplayName();
         }
+
     };
 
     static final PhpLanguageOptions INSTANCE = new PhpLanguageOptions();
@@ -140,7 +153,7 @@ public final class PhpLanguageOptions {
     public Properties getProperties(FileObject file) {
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
-        PhpVersion phpVersion = null;
+        PhpVersion phpVersion = PhpVersion.getDefault();
 
         if (file != null) {
             PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(file);
@@ -211,8 +224,8 @@ public final class PhpLanguageOptions {
 
         /**
          * Get the {@link PhpVersion PHP version} of the project.
-         * If not specified, {@code null} is returned.
-         * @return the {@link PhpVersion PHP version} of the project, or {@code null} if not known
+         * If not specified, {@link PhpVersion#getDefault() default PHP version} is returned.
+         * @return the {@link PhpVersion PHP version} of the project, or {@link PhpVersion#getDefault() default PHP version} if not known
          * @since 2.16
          */
         public PhpVersion getPhpVersion() {
