@@ -468,7 +468,7 @@ class DbxVariable extends Variable {
 	    newVariable.setType(type);
 	    newVariable.setAType(atype);
 	    newVariable.setStatic(stat);
-	    if (hint != null && hint.equals("literal"))
+	    if (hint != null && hint.equals("literal")) // NOI18N
 		newVariable.setLiteral(true);
 	    newVariable.setLeaf(true);
 	    newVariable.setDelta(delta);
