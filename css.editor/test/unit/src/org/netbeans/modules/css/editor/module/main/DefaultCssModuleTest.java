@@ -41,62 +41,39 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * The colors module functionality is partially implemented in the DefaultCssModule
- * from historical reasons. Newly added features are implemented here.
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-@ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
+public class DefaultCssModuleTest extends CssModuleTestBase {
 
-    //NOI18N>>>
-    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
-                "default",
-                "valid",
-                "invalid",
-                "in-range",
-                "out-of-range",
-                "required",
-                "optional",
-                "read-only",
-                "read-write"
-            });
-    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
-                "selection",
-                "value",
-                "choices",
-                "repeat-item",
-                "repeat-index"});
-
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
-    
-    private static Collection<Property> propertyDescriptors;
-    
-    @Override
-    public Collection<String> getPseudoClasses() {
-        return PSEUDO_CLASSES;
+    public DefaultCssModuleTest(String name) {
+        super(name);
     }
-
-    @Override
-    public Collection<String> getPseudoElements() {
-        return PSEUDO_ELEMENTS;
-    }
-
     
     @Override
-    public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
-        }
-        return propertyDescriptors;
-    }    
+    protected void setUp() throws Exception {
+        super.setUp();
+        //allow the InstalledFilesLocator to work
+        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
+    }
+    
+    public void testDocumentation() {
+        HelpResolver resolver = CssModuleSupport.getHelpResolver();
+        assertNotNull(resolver);
+        
+        Property color = CssModuleSupport.getProperties().get("color");
+        assertNotNull(color);
+        
+        String help = resolver.getHelp(color);
+        assertNotNull(help);
+        assertTrue(help.length() > 0);
+        
+        System.out.println(help);
+    }
     
 }

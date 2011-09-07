@@ -41,62 +41,69 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.util.lookup.ServiceProvider;
+import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.css.editor.module.spi.Browser;
 
 /**
- * The colors module functionality is partially implemented in the DefaultCssModule
- * from historical reasons. Newly added features are implemented here.
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-@ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
+public class DefaultBrowser extends Browser {
 
-    //NOI18N>>>
-    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
-                "default",
-                "valid",
-                "invalid",
-                "in-range",
-                "out-of-range",
-                "required",
-                "optional",
-                "read-only",
-                "read-write"
-            });
-    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
-                "selection",
-                "value",
-                "choices",
-                "repeat-item",
-                "repeat-index"});
+    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+    
+    private String iconBase;
+    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
+    private AtomicReference<URL> active = new AtomicReference<URL>();
+    private AtomicReference<URL> inactive = new AtomicReference<URL>();
 
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
-    
-    private static Collection<Property> propertyDescriptors;
-    
-    @Override
-    public Collection<String> getPseudoClasses() {
-        return PSEUDO_CLASSES;
+    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
+        this.name = name;
+        this.vendor = vendor;
+        this.renderingEngineId = renderingEngineId;
+        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
+        this.iconBase = iconBase;
     }
 
     @Override
-    public Collection<String> getPseudoElements() {
-        return PSEUDO_ELEMENTS;
+    public String getName() {
+        return name;
     }
 
-    
     @Override
-    public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
-        }
-        return propertyDescriptors;
-    }    
-    
+    public String getVendor() {
+        return vendor;
+    }
+
+    @Override
+    public URL getActiveIcon() {
+        active.compareAndSet(null, DefaultBrowser.class.getResource(
+                DEFAULT_ICONS_LOCATION + iconBase + ".png"));
+
+        return active.get();
+    }
+
+    @Override
+    public URL getInactiveIcon() {
+        inactive.compareAndSet(null, DefaultBrowser.class.getResource(
+                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"));
+
+        return inactive.get();
+    }
+
+    @Override
+    public String getDescription() {
+        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
+    }
+
+    @Override
+    public String getVendorSpecificPropertyId() {
+        return vendorSpecificPropertyId;
+    }
+
+    @Override
+    public String getRenderingEngineId() {
+        return renderingEngineId;
+    }
 }

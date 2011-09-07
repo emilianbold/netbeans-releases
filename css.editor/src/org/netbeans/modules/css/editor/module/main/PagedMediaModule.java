@@ -58,7 +58,7 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
@@ -74,8 +74,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssModule.class)
 public class PagedMediaModule extends CssModule {
 
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/paged_media"; //NOI18N
-    private static Collection<PropertyDescriptor> propertyDescriptors;
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/paged_media"; //NOI18N
+    private static Collection<Property> propertyDescriptors;
     private static final Collection<String> PAGE_PSEUDO_CLASSES = Arrays.asList(new String[]{"first", "left", "right"}); //NOI18N
     private static final Collection<String> PAGE_MARGIN_SYMBOLS =
             Arrays.asList(new String[]{
@@ -98,7 +98,7 @@ public class PagedMediaModule extends CssModule {
             });
 
     @Override
-    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
         }
@@ -182,7 +182,7 @@ public class PagedMediaModule extends CssModule {
     }
     
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
-        return Utilities.wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), context.getAnchorOffset());
+        return Utilities.wrapProperties(CssModuleSupport.getProperties().values(), context.getAnchorOffset());
     }
     
     

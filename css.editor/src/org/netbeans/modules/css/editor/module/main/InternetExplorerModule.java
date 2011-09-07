@@ -41,62 +41,26 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Arrays;
-import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * The colors module functionality is partially implemented in the DefaultCssModule
- * from historical reasons. Newly added features are implemented here.
  *
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
+public class InternetExplorerModule extends BrowserSupportModule {
 
-    //NOI18N>>>
-    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
-                "default",
-                "valid",
-                "invalid",
-                "in-range",
-                "out-of-range",
-                "required",
-                "optional",
-                "read-only",
-                "read-write"
-            });
-    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
-                "selection",
-                "value",
-                "choices",
-                "repeat-item",
-                "repeat-index"});
-
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
-    
-    private static Collection<Property> propertyDescriptors;
-    
-    @Override
-    public Collection<String> getPseudoClasses() {
-        return PSEUDO_CLASSES;
+    public InternetExplorerModule() {
+        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", "ms", "ie20"));
     }
 
     @Override
-    public Collection<String> getPseudoElements() {
-        return PSEUDO_ELEMENTS;
+    public Factory getPropertySupportResolverFactory() {
+        return new SupportAllFactory();
     }
 
-    
-    @Override
-    public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
-        }
-        return propertyDescriptors;
-    }    
-    
+      
 }
