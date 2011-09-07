@@ -403,6 +403,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteExceptions(completionResult, request);
                     break;
+                case CLASS_MEMBER_IN_STRING:
+                    autoCompleteClassFields(completionResult, request);
+                    break;
                 case SERVER_ENTRY_CONSTANTS:
                     //TODO: probably better PHPCompletionItem instance should be used
                     //autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
@@ -836,6 +839,30 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
                             completionResult.add(constantItem);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private void autoCompleteClassFields(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request) {
+        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, request.anchor);
+        Model model = request.result.getModel();
+        Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+        final ElementFilter fieldsFilter = ElementFilter.allOf(
+            ElementFilter.forKind(PhpElementKind.FIELD),
+            ElementFilter.forName(NameKind.prefix(request.prefix)),
+            ElementFilter.forInstanceOf(FieldElement.class)
+        );
+        if (types != null) {
+            TypeElement enclosingType = getEnclosingType(request, types);
+            for (TypeScope typeScope : types) {
+                for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
+                    if (fieldsFilter.isAccepted(phpElement)) {
+                        FieldElement field = (FieldElement) phpElement;
+                        FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request);
+                        completionResult.add(fieldItem);
                     }
                 }
             }

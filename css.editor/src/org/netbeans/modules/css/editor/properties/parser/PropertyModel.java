@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.css.editor.properties.parser;
 
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
@@ -51,14 +51,14 @@ import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
 public class PropertyModel {
     
     private GroupGrammarElement values;
-    private PropertyDescriptor pd;
+    private Property pd;
     
     
-    public PropertyModel(PropertyDescriptor pd) {
+    public PropertyModel(Property pd) {
         this.pd = pd;
     }
     
-    public PropertyDescriptor getPropertyDescriptor() {
+    public Property getPropertyDescriptor() {
         return pd;
     }
         
