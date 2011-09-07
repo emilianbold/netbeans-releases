@@ -137,7 +137,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         doPerform( context, null, true );
     }
 
-    private void doPerform( Lookup context, DataObject template, boolean inProject ) {
+    private void doPerform( Lookup context, final DataObject template, boolean inProject ) {
 
         if ( context == null ) {
             context = getLookup();
@@ -154,13 +154,15 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             return;
         }
 
-        NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
+        final NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
         
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
             wd.setTargetFolder( preselectedFolder );
         }
 
+        RP.post(new Runnable() {
+            @Override public void run() {
         try {
             Set resultSet = template == null ? wd.instantiate () : wd.instantiate( template );
 
@@ -199,7 +201,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         //Project project = Templates.getProject( wd );
         FileObject foTemplate = Templates.getTemplate( wd );
         OpenProjectList.getDefault().updateTemplatesLRU( foTemplate );
-
+            }
+        });
     }
 
     // Context Aware action implementation -------------------------------------

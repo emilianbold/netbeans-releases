@@ -63,21 +63,20 @@ import org.netbeans.qa.form.BindDialogOperator;
  * 20 April 2011 WORKS
  */
 public class SimpleBeansBindingTest extends ExtJellyTestCase {
-    
+
     /** Constructor required by JUnit */
     public SimpleBeansBindingTest(String testName) {
         super(testName);
     }
-    
-   public static Test suite() {
-       //TODO "testUpdateMode"
+
+    public static Test suite() {
+        //TODO "testUpdateMode"
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(SimpleBeansBindingTest.class).addTest(
-                "testSimpleBeansBinding"
-                ).gui(true).enableModules(".*").clusters(".*"));
+                "testSimpleBeansBinding").gui(true).enableModules(".*").clusters(".*"));
 
     }
-    
+
     /** Tests basic beans binding features */
     public void testSimpleBeansBinding() {
         String jLabel1NodePath = "[JFrame]|jLabel1 [JLabel]";  // NOI18N
@@ -87,12 +86,12 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         String bindExpression = "${text}";  // NOI18N
         ProjectRootNode prn;
         ProjectsTabOperator pto;
-        
-        
+
+
         // create frame
         String frameName = createJFrameFile();
-        
-        
+
+
         pto = new ProjectsTabOperator();
         prn = pto.getProjectRootNode("SampleProject");
         prn.select();
@@ -103,29 +102,51 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         designer.source();
         designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        
-        // add two labels
-        Node actNode = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
-        String itemPath = "Add From Palette|Swing Controls|Label"; // NOI18N
-        runPopupOverNode(itemPath, actNode);
-        runPopupOverNode(itemPath, actNode);
+        inspector.freezeNavigatorAndRun(new Runnable() {
 
-        // invoke bind dialog
-        actNode = new Node(inspector.treeComponents(), jLabel1NodePath);
-        Action act = new ActionNoBlock(null, actionPath);
-        act.perform(actNode);
-        
+            @Override
+            public void run() {
+                String jLabel1NodePath = "[JFrame]|jLabel1 [JLabel]";
+                String actionPath = "Bind|text";
+                // add two labels
+                ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+                Node actNode = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
+                String itemPath = "Add From Palette|Swing Controls|Label"; // NOI18N
+                runPopupOverNode(itemPath, actNode);
+                runPopupOverNode(itemPath, actNode);
+
+                // invoke bind dialog
+                actNode = new Node(inspector.treeComponents(), jLabel1NodePath);
+                runNoBlockPopupOverNode(actionPath, actNode);
+            }
+        });
+
+
+
         // bind jlabel1.text with jlabel2.text
         BindDialogOperator bindOp = new BindDialogOperator();
         bindOp.selectBindSource(bindSource);
         bindOp.setBindExpression(bindExpression);
         bindOp.ok();
-        
-        // invoke bind dialog again ...
-        actNode = new Node(inspector.treeComponents(), jLabel1NodePath);
-        act = new ActionNoBlock(null, actionPath);
-        act.perform(actNode);
-        
+
+        designer.source();
+        designer.design();
+        inspector = new ComponentInspectorOperator();
+        inspector.freezeNavigatorAndRun(new Runnable() {
+
+            @Override
+            public void run() {
+                String jLabel1NodePath = "[JFrame]|jLabel1 [JLabel]";
+                String actionPath = "Bind|text";
+                // add two labels
+                ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+
+                // invoke bind dialog again ...
+                Node actNode = new Node(inspector.treeComponents(), jLabel1NodePath);
+                runNoBlockPopupOverNode(actionPath, actNode);
+            }
+        });
+
         // ... and check the values in binding dialog
         bindOp = new BindDialogOperator();
         assertEquals(bindOp.getSelectedBindSource(), bindSource);
@@ -135,18 +156,18 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         // check generated binding code
         findInCode("createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jLabel2, org.jdesktop.beansbinding.ELProperty.create(\"${text}\"), jLabel1, org.jdesktop.beansbinding.BeanProperty.create(\"text\"));", designer);  // NOI18N
         findInCode("bindingGroup.bind();", designer);  // NOI18N
-        
+
         formnode.select();
         openAction.perform(formnode);
         designer.source();
         designer.design();
         inspector = new ComponentInspectorOperator();
-        String jLabel1Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath);
+        String jLabel1Text = this.getTextValueOfLabelNonStatic(inspector, jLabel1NodePath);
         designer.source();
         designer.design();
         inspector = new ComponentInspectorOperator();
-        String jLabel2Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath);
+        String jLabel2Text = this.getTextValueOfLabelNonStatic(inspector, jLabel2NodePath);
         // get values of text properties of jLabels and test them
-        assertEquals(jLabel1Text,jLabel2Text);
+        assertEquals(jLabel1Text, jLabel2Text);
     }
 }

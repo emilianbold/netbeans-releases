@@ -43,30 +43,37 @@
 package org.netbeans.modules.maven.newproject;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  *
  *@author Dafe Simonek
  */
-public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -97,14 +104,49 @@ public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingI
     }
     
     public Set/*<FileObject>*/ instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
+        ProjectInfo ear_vi = (ProjectInfo) wiz.getProperty("ear_versionInfo"); //NOI18N
+        assert ear_vi != null;
+        // enterprise application wizard, multiple archetypes to run
+        ProjectInfo web_vi = (ProjectInfo) wiz.getProperty("web_versionInfo"); //NOI18N
+        ProjectInfo ejb_vi = (ProjectInfo) wiz.getProperty("ejb_versionInfo"); //NOI18N
+        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
+        Archetype arch = (Archetype) wiz.getProperty("archetype"); //NOI18N
+        @SuppressWarnings("unchecked")
+        Map<String, String> additional = (Map<String, String>) wiz.getProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS);
+        ArchetypeWizardUtils.createFromArchetype(rootFile, vi, arch, additional, true);
+        File earFile = FileUtil.normalizeFile((File) wiz.getProperty("ear_projdir")); // NOI18N
+        ArchetypeWizardUtils.createFromArchetype(earFile, ear_vi, (Archetype) wiz.getProperty("ear_archetype"), null, false); //NOI18N
+        if (web_vi != null) {
+            ArchetypeWizardUtils.createFromArchetype(FileUtil.normalizeFile((File) wiz.getProperty("web_projdir")), web_vi, //NOI18N
+                    (Archetype) wiz.getProperty("web_archetype"), null, false); //NOI18N
+        }
+        if (ejb_vi != null) {
+            ArchetypeWizardUtils.createFromArchetype(FileUtil.normalizeFile((File) wiz.getProperty("ejb_projdir")), ejb_vi, //NOI18N
+                    (Archetype) wiz.getProperty("ejb_archetype"), null, false); //NOI18N
+        }
+        addEARDeps((File) wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
+        return ArchetypeWizardUtils.openProjects(rootFile, earFile);
     }
     
-    public Set instantiate(ProgressHandle handle) throws IOException {
-        return ArchetypeWizardUtils.instantiate(handle, wiz);
+    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi) {
+        FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
+        if (earDirFO == null) {
+            return;
+        }
+        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
+        if (ejbVi != null) {
+            // EAR ---> ejb
+            operations.add(new ArchetypeWizardUtils.AddDependencyOperation(ejbVi, "ejb"));
+        }
+        if (webVi != null) {
+            // EAR ---> war
+            operations.add(new ArchetypeWizardUtils.AddDependencyOperation(webVi, "war"));
+        }
+
+        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
     }
-    
+
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
