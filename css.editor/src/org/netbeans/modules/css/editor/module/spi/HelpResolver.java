@@ -41,81 +41,36 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.net.URL;
 
 /**
- * Represents a rendering engine or its usage in a browser.
- * So more then GECKO or WEBKIT this should describe
- * Mozilla 5.0 or Safari 3.0 or IE9
- * 
- * @todo clarify the usage more
  *
  * @author mfukala@netbeans.org
  */
-public abstract class RenderingEngine {
-
-    private static final String MOZILLA = "Mozilla"; //NOI18N
-    private static final String MS = "Microsoft"; //NOI18N
+public abstract class HelpResolver {
     
-    public static final RenderingEngine MOZILLA_FIREFOX_50 = new RenderingEngine() {
-
-        @Override
-        public String getVendor() {
-            return MOZILLA;
-        }
-
-        @Override
-        public String getName() {
-            return "Firefox";
-        }
-
-        @Override
-        public String getVersion() {
-            return "5.0";
-        }
-    };
-    public static final RenderingEngine MICROSOFT_IE_90 = new RenderingEngine() {
-
-        @Override
-        public String getVendor() {
-            return MS;
-        }
-
-        @Override
-        public String getName() {
-            return "Internet Explorer";
-        }
-
-        @Override
-        public String getVersion() {
-            return "9.0";
-        }
-    };
+    /**
+     * Returns the help content in the html code form for the given property.
+     */
+    public abstract String getHelp(Property property);
     
-    public static final Collection<RenderingEngine> ALL = 
-            Arrays.asList(new RenderingEngine[]{
-                MOZILLA_FIREFOX_50, 
-                MICROSOFT_IE_90
-            });
+    /**
+     * Returns the help content in the html code form for the given URL.
+     * @return null if the url is not from the help resolver's context
+     */
+    public abstract String getHelp(URL url);
     
-    private static final char ID_ITEMS_SEPARATOR = '_'; //NOI18N
-
-    //mozilla
-    public abstract String getVendor();
-
-    //firefox
-    public abstract String getName();
-
-    //5.0
-    public abstract String getVersion();
-
-    //mozilla_firefox_5.0
-    public String getId() {
-        return new StringBuilder().append(getVendor()).append(ID_ITEMS_SEPARATOR).append(getName()).append(ID_ITEMS_SEPARATOR).append(getVersion()).toString();
-    }
-
-    public String getDescription() {
-        return ""; //default is no description
-    }
+    /**
+     * Resolves a link (relative or absolute) from within the property help content
+     */
+    public abstract URL resolveLink(Property property, String link);
+    
+    /**
+     * Return a reasonable number representing a sort priority of the help resolver.
+     * Lower number means higher priority - the help content will appear higher in the 
+     * documentation window if there are more help resolvers returning a content for the 
+     * given source object.
+     */
+    public abstract int getPriority();
+    
 }

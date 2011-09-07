@@ -185,6 +185,8 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
         uploadInfoLabel = new JLabel();
         filesPanel = new JPanel();
 
+        setFocusTraversalPolicy(null);
+
         statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getStyle() | Font.BOLD));
         statusLabel.setText("DUMMY"); // NOI18N
 
@@ -196,7 +198,6 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -204,8 +205,8 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
                     .addComponent(statusLabel)
                     .addComponent(downloadInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(uploadInfoLabel))
-                .addContainerGap(41, Short.MAX_VALUE))
-            .addComponent(filesPanel, GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(filesPanel, GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -221,6 +222,7 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
 
         downloadInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.AccessibleContext.accessibleName")); // NOI18N
         downloadInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

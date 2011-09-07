@@ -448,7 +448,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             } else if (NEW_VAR_NAME.equals(entry.getKey())) {
                 param2hints.put(param, NEW_VAR_NAME);
-                return newVarName(param.getInsertTextOffset() + 1);
+                return newVarName(param.getInsertTextOffset() + 1, (String) entry.getValue());
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
                 return owningClassName();
@@ -748,7 +748,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         return null;
     }
     
-    private String newVarName(int caretOffset) {
+    private String newVarName(int caretOffset, String suggestedName) {
         try {
             if (cInfo != null) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
@@ -803,7 +803,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                         }
                     };
-                    Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
                     if (names.hasNext())
                         return names.next();
                 }

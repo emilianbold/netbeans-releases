@@ -98,7 +98,7 @@ public class PhpUnitTestGroupsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(testGroupsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                    .addComponent(testGroupsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
                     .addComponent(selectTestGroupLabel)
                     .addComponent(selectAllTestGroupsCheckBox, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
@@ -109,7 +109,7 @@ public class PhpUnitTestGroupsPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(selectTestGroupLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(testGroupsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(testGroupsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectAllTestGroupsCheckBox))
         );

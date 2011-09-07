@@ -353,7 +353,7 @@ class ConfigActionTest extends ConfigAction {
 
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.SUITE_NAME)
-                    .addArgument(PhpUnit.SUITE.getAbsolutePath())
+                    .addArgument(PhpUnit.getNbSuite().getAbsolutePath())
                     .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;
         }
