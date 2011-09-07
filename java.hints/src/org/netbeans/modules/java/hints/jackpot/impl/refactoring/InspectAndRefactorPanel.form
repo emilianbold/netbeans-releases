@@ -35,21 +35,19 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="singleRefactoringCombo" pref="33" max="32767" attributes="0"/>
-                          <Component id="configurationCombo" alignment="0" pref="33" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="manageSingleRefactoring" alignment="1" max="32767" attributes="1"/>
-                          <Component id="manageConfigurations" alignment="1" max="32767" attributes="1"/>
+                          <Component id="singleRefactoringCombo" pref="45" max="32767" attributes="0"/>
+                          <Component id="configurationCombo" alignment="0" pref="45" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="scopeCombo" pref="179" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="customScopeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
+                  <Component id="scopeCombo" alignment="1" pref="191" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="manageSingleRefactoring" alignment="1" max="32767" attributes="1"/>
+                      <Component id="manageConfigurations" alignment="1" max="32767" attributes="1"/>
                   </Group>
+                  <Component id="customScopeButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
