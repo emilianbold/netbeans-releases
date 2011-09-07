@@ -107,12 +107,6 @@ public class ArchetypeWizardUtils {
     static final Archetype[] APPCLIENT_ARCHS;
     static final Archetype EA_ARCH;
     
-    static final String[] EE_LEVELS = {
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
-    };
-
     static {
         WEB_APP_ARCHS = new Archetype[3];
 

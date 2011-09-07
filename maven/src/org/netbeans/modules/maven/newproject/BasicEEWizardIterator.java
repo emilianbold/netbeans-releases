@@ -65,28 +65,34 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
     private WizardDescriptor wiz;
 
     private Archetype[] archs;
-    private String[] eeLevels;
 
-    private BasicEEWizardIterator(String[] eeLevels, Archetype[] archs) {
+    private BasicEEWizardIterator(Archetype[] archs) {
         this.archs = archs;
-        this.eeLevels = eeLevels;
     }
-    
+
     public static BasicEEWizardIterator createWebAppIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.WEB_APP_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.WEB_APP_ARCHS);
     }
 
     public static BasicEEWizardIterator createEJBIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.EJB_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.EJB_ARCHS);
     }
     
     public static BasicEEWizardIterator createAppClientIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.APPCLIENT_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.APPCLIENT_ARCHS);
     }
     
+    static String[] eeLevels() {
+        return new String[] {
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"),
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"),
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14")
+        };
+    }
+
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(vg, eeLevels, archs, true, false)
+            new BasicWizardPanel(vg, eeLevels(), archs, true, false)
         };
     }
     
