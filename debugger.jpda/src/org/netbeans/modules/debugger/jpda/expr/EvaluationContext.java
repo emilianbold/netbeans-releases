@@ -151,6 +151,10 @@ public class EvaluationContext {
     public StackFrame getFrame() {
         return frame;
     }
+    
+    JPDAThreadImpl getThread() {
+        return thread;
+    }
 
     ObjectReference getContextVariable() {
         return contextVariable;
