@@ -50,7 +50,9 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  */
 public class WLMessageDestination implements MessageDestination, WLApplicationModule {
 
-    private final String name;
+    private final String jndiName;
+
+    private final String resourceName;
 
     private final Type type;
 
@@ -58,16 +60,24 @@ public class WLMessageDestination implements MessageDestination, WLApplicationMo
 
     private final boolean system;
 
-    public WLMessageDestination(String name, Type type, File origin, boolean system) {
-        this.name = name;
+    public WLMessageDestination(String resourceName, String jndiName, Type type,
+            File origin, boolean system) {
+        this.resourceName = resourceName;
+        this.jndiName = jndiName;
         this.type = type;
         this.origin = origin;
         this.system = system;
     }
 
+    // this is the JNDI name
     @Override
     public String getName() {
-        return name;
+        return jndiName;
+    }
+
+    // the object name
+    public String getResourceName() {
+        return resourceName;
     }
 
     @Override
@@ -93,7 +103,7 @@ public class WLMessageDestination implements MessageDestination, WLApplicationMo
             return false;
         }
         final WLMessageDestination other = (WLMessageDestination) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+        if ((this.jndiName == null) ? (other.jndiName != null) : !this.jndiName.equals(other.jndiName)) {
             return false;
         }
         if (this.type != other.type) {
@@ -105,7 +115,7 @@ public class WLMessageDestination implements MessageDestination, WLApplicationMo
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 43 * hash + (this.jndiName != null ? this.jndiName.hashCode() : 0);
         hash = 43 * hash + (this.type != null ? this.type.hashCode() : 0);
         return hash;
     }
