@@ -44,15 +44,15 @@ package org.netbeans.modules.maven.newproject;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -82,11 +82,16 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         return new BasicEEWizardIterator(ArchetypeWizardUtils.APPCLIENT_ARCHS);
     }
     
+    @Messages({
+        "LBL_JEE6=Java EE 6",
+        "LBL_JEE5=Java EE 5",
+        "LBL_J2EE14=J2EE 1.4"
+    })
     static String[] eeLevels() {
         return new String[] {
-            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"),
-            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"),
-            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14")
+            LBL_JEE6(),
+            LBL_JEE5(),
+            LBL_J2EE14()
         };
     }
 
@@ -96,9 +101,10 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         };
     }
     
+    @Messages("LBL_CreateProjectStep2ee=Name and Location")
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_CreateProjectStep2"),
+            LBL_CreateProjectStep2ee(),
         };
     }
     
@@ -136,9 +142,9 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         panels = null;
     }
     
+    @Messages("NameFormat={0} of {1}")
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(BasicEEWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+        return NameFormat(index + 1, panels.length);
     }
     
     public boolean hasNext() {

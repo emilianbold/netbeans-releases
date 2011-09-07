@@ -60,19 +60,20 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
+import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -80,7 +81,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -191,6 +192,10 @@ public class ArchetypeWizardUtils {
         EA_ARCH.setArtifactId("pom-root"); //NOI18N
     }
 
+    @Messages({
+        "RUN_Project_Creation=Project Creation",
+        "RUN_Maven=Create project"
+    })
     private static void runArchetype(File directory, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional) throws IOException {
         BeanRunConfig config = new BeanRunConfig();
         config.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
@@ -214,7 +219,7 @@ public class ArchetypeWizardUtils {
         }
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
-        config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
+        config.setExecutionName(RUN_Project_Creation());
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
 
         //ExecutionRequest.setInteractive seems to have no influence on archetype plugin.
@@ -225,7 +230,7 @@ public class ArchetypeWizardUtils {
             config.setUpdateSnapshots(true);
         }
 
-        config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
+        config.setTaskDisplayName(RUN_Maven());
         ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
         task.result();
     }

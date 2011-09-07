@@ -44,12 +44,13 @@ package org.netbeans.modules.maven.newproject;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
@@ -88,10 +89,11 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
         return validationGroup;
     }
     
+    @Messages("LBL_CreateProjectStep2=Name and Location")
     public @Override BasicPanelVisual getComponent() {
         if (component == null) {
             component = new BasicPanelVisual(this, arch);
-            component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
+            component.setName(LBL_CreateProjectStep2());
         }
         return component;
     }
