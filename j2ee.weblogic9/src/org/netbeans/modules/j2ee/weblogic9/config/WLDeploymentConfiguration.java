@@ -91,7 +91,8 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration, Messa
 
     @Override
     public MessageDestination createMessageDestination(String name, Type type) throws UnsupportedOperationException, ConfigurationException {
-        return messageSupport.createMessageDestination(name, type);
+        // api does not provide module and jndi name so we use the same
+        return messageSupport.createMessageDestination(name, name, type);
     }
 
     @Override
