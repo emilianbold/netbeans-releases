@@ -530,6 +530,7 @@ public class RADComponent {
             throw iae;
         }
 
+        FormEditor.getCodeGenerator(formModel).regenerateCode(); // Issue 201053
         if (formModel.getCodeStructure().isVariableNameReserved(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
