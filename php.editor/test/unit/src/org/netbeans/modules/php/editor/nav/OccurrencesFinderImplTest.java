@@ -369,6 +369,18 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$array as $my^Key", true);
     }
 
+    public void testIssue133465_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $U^RL;", true);
+    }
+
+    public void testIssue133465_02() throws Exception {
+        checkOccurrences(getTestPath(), "st $this->$U^RL", true);
+    }
+
+    public void testIssue133465_03() throws Exception {
+        checkOccurrences(getTestPath(), "return $this->$U^RL;", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
