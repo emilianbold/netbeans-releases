@@ -105,6 +105,7 @@
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
