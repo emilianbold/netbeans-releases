@@ -183,8 +183,8 @@ public final class J2EEProjectProperties {
 
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         if (!j2eePlatform.getSupportedProfiles(moduleType).contains(j2eeProfile)) {
-            Logger.getLogger("global").log(Level.WARNING,
-                    "J2EE level:" + j2eeProfile.getDisplayName() + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
+            Logger.getLogger("global").log(Level.WARNING, "J2EE level: {0} not supported by server {1} for module type WAR",
+                    new Object[] {j2eeProfile != null ? j2eeProfile.getDisplayName() : "Unknown J2EE profile version - ", Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID)}); // NOI18N
         }
 
         // set *always* sharable server properties:
