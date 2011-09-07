@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.io.File;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -165,22 +166,19 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         Mnemonics.setLocalizedText(ignorePathLabel, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.text")); // NOI18N
 
         ignorePathScrollPane.setViewportView(ignorePathList);
-
-
-
         ignorePathList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleName")); // NOI18N
         ignorePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.text"));
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.text"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
 
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addComponent(ignorePathLabel)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addComponent(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(removeButton)
@@ -200,7 +198,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
                         .addComponent(addButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(removeButton))
-                    .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                    .addComponent(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
 
@@ -212,6 +210,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.AccessibleContext.accessibleDescription")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.AccessibleContext.accessibleName")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

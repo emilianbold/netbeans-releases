@@ -135,9 +135,9 @@ public class Utilities {
         return proposals;
     }
  
-    public static List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, int anchor) {
+    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (PropertyDescriptor p : props) {
+        for (Property p : props) {
             //filter out non-public properties
             if (!GrammarParser.isArtificialElementName(p.getName())) {
                 CssElement handle = new CssPropertyElement(p);
@@ -162,8 +162,8 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<PropertyDescriptor> parsePropertyDefinitionFile(String sourcePath) {
-        Collection<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath) {
+        Collection<Property> properties = new ArrayList<Property>();
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
         Enumeration<String> keys = bundle.getKeys();
@@ -171,38 +171,12 @@ public class Utilities {
             String name = keys.nextElement();
             String value = bundle.getString(name);
 
-            //parse the value - delimiter is semicolon
-            StringTokenizer st = new StringTokenizer(value, ";"); //NOI18N
-            if(!st.hasMoreTokens()) {
-                throw new IllegalArgumentException("Error parsing property " + name);
-            }
-            String values = st.nextToken();
-
-            //following tokens are not mandatory
-            String initialValue = getNextToken(st);
-            String appliedTo = getNextToken(st);
-            boolean inherited = Boolean.parseBoolean(getNextToken(st));
-            String percentages = getNextToken(st);
-
-            //parse media groups list
-            String mediaGroups = getNextToken(st);
-            ArrayList<String> mediaGroupsList = new ArrayList<String>();
-            if (mediaGroups != null) {
-                StringTokenizer st3 = new StringTokenizer(mediaGroups, ","); //NOI18N
-                while (st3.hasMoreTokens()) {
-                    mediaGroupsList.add(st3.nextToken());
-                }
-            }
-
             //parse bundle key - there might be more properties separated by semicolons
             StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
-
-                PropertyDescriptor prop = new PropertyDescriptor(parsed_name, values, initialValue,
-                        appliedTo, inherited, mediaGroupsList, RenderingEngine.ALL);
-
+                Property prop = new Property(parsed_name, value);
                 properties.add(prop);
             }
 
@@ -211,8 +185,4 @@ public class Utilities {
         return properties;
     }
 
-    private static String getNextToken(StringTokenizer st) {
-        return st.hasMoreTokens() ? st.nextToken().trim() : null;
-    }
-      
 }

@@ -154,6 +154,15 @@ class CompletionContextFinder {
         new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
+    private static final List<Object[]> CLASS_MEMBER_IN_STRING_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR},
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN},
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+    );
+
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
         PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
 
@@ -222,7 +231,7 @@ class CompletionContextFinder {
     public static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
-        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH};
+        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH, CLASS_MEMBER_IN_STRING};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -269,7 +278,10 @@ class CompletionContextFinder {
         } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces) &&
                 !acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)){
             return CompletionContext.NEW_CLASS;
-        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces)){
+        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_IN_STRING_TOKENCHAINS, moveNextSucces)) {
+            return CompletionContext.CLASS_MEMBER_IN_STRING;
+        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces) &&
+                !acceptTokenChains(tokenSequence, CLASS_MEMBER_IN_STRING_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS, moveNextSucces)){
             return CompletionContext.STATIC_CLASS_MEMBER;

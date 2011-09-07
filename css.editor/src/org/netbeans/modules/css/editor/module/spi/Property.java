@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import java.util.Collection;
-
 /**
  * Described a CSS property.
  * 
@@ -71,21 +69,13 @@ import java.util.Collection;
  * 
  * @author mfukala@netbeans.org
  */
-public class PropertyDescriptor {
+public class Property {
     
-    private String name, valueGrammar, initialValue, appliedTo;
-    private boolean isInherited;
-    private Collection<String> supportedMedias;
-    private Collection<RenderingEngine> engines;
+    private String name, valueGrammar;
 
-    public PropertyDescriptor(String name, String valueGrammar, String initialValue, String appliedTo, boolean isInherited, Collection<String> supportedMedias, Collection<RenderingEngine> engines) {
+    public Property(String name, String valueGrammar) {
         this.name = name;
         this.valueGrammar = valueGrammar;
-        this.initialValue = initialValue;
-        this.appliedTo = appliedTo;
-        this.isInherited = isInherited;
-        this.supportedMedias = supportedMedias;
-        this.engines = engines;
     }
     
     /**
@@ -102,42 +92,30 @@ public class PropertyDescriptor {
         return valueGrammar;
     }
     
-    /**
-     * @return Initial value of the property.
-     */
-    public String getInitialValue() {
-        return initialValue;
-    }
     
-    /**
-     * @return  A text description of to what elements this property applies to.
-     */
-    public String getAppliedTo() {
-        return appliedTo;
-    }
-    
-    /**
-     * @return true if the property is inherited in term of css inheritance.
-     */
-    public boolean isInherited() {
-        return isInherited;
-    }
     
 //    public URL getHelpURL();
-    
-    /**
-     * @return List of medias where this property can be used.
-     */
-    //TODO: media queries
-    public Collection<String> getMedias() {
-        return supportedMedias;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Property other = (Property) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
     }
-    
-    /**
-     * @return a collection of RenderingEngine-s which suppors the property
-     */
-    public Collection<RenderingEngine> getRenderingEnginesWithPropertySupport() {
-        return engines;
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
     }
     
 }

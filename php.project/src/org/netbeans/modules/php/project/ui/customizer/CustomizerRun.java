@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -186,8 +187,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         setFocusTraversalPolicy(null);
 
         configLabel.setLabelFor(configCombo);
-
         Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration"));
+
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -209,37 +210,33 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         runPanel.setLayout(new CardLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(runPanel, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(runPanel, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addComponent(separator, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(configLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(configCombo, 0, 142, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(configNew)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(configDel)))
-                .addGap(0, 0, 0))
+                .addComponent(configLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configCombo, 0, 0, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configNew)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configDel))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(configLabel)
-                    .addComponent(configCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configNew)
                     .addComponent(configDel))
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(runPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addComponent(runPanel, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -255,6 +252,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         separator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.separator.AccessibleContext.accessibleDescription")); // NOI18N
         runPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.runPanel.AccessibleContext.accessibleName")); // NOI18N
         runPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.runPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

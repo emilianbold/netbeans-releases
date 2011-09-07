@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -157,29 +158,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new TypeParameterItem(elem, substitutionOffset);
     }
 
-    public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+    public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
-                return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
+                return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType, assignToVarPos);
             case ENUM_CONSTANT:
             case FIELD:
-                return new FieldItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, smartType, autoImport, whiteList);
+                return new FieldItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, smartType, autoImport, assignToVarPos, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
     public static final JavaCompletionItem createVariableItem(CompilationInfo info, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
-        return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType);
+        return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType, -1);
     }
 
-    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport, whiteList);
+                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport, assignToVarPos, whiteList);
             case CONSTRUCTOR:
                 return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null, whiteList);
             default:
@@ -264,7 +265,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Completion.get().hideDocumentation();
             Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null, false);
         }
     }
 
@@ -287,7 +288,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Completion.get().hideCompletion();
                 JTextComponent component = (JTextComponent)evt.getSource();
                 int caretOffset = component.getSelectionEnd();
-                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()), (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
                 evt.consume();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
@@ -306,6 +307,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
+        } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.ALT_MASK) > 0) {
+            JTextComponent component = (JTextComponent)evt.getSource();
+            Completion.get().hideDocumentation();
+            Completion.get().hideCompletion();
+            int caretOffset = component.getSelectionEnd();
+            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null, true);
+            evt.consume();
         }
     }
 
@@ -354,7 +362,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return null;
     }
 
-    protected void substituteText (final JTextComponent c, final int offset, int len, String toAdd) {
+    protected void substituteText (final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
         final BaseDocument doc = (BaseDocument)c.getDocument();
         CharSequence prefix = getInsertPrefix();
         if (prefix == null)
@@ -427,6 +435,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         });
     }
+    
     static abstract class WhiteListJavaCompletionItem extends JavaCompletionItem {
 
         private final WhiteListQuery.WhiteList whiteList;
@@ -449,6 +458,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return isBlackListed;
         }
     }
+    
     static class KeywordItem extends JavaCompletionItem {
         
         private static final String JAVA_KEYWORD = "org/netbeans/modules/java/editor/resources/javakw_16.png"; //NOI18N
@@ -501,9 +511,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
         
-        protected void substituteText (final JTextComponent c, final int offset, int len, String toAdd) {
+        @Override
+        protected void substituteText (final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             if (dim == 0) {
-                super.substituteText(c, offset, len, toAdd != null ? toAdd : postfix);
+                super.substituteText(c, offset, len, toAdd != null ? toAdd : postfix, assignToVar);
                 return;
             }
             final BaseDocument doc = (BaseDocument)c.getDocument();
@@ -628,12 +639,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (inPackageStatement || Utilities.getJavaCompletionAutoPopupTriggers().indexOf('.') < 0)
                     Completion.get().hideCompletion();
                 int caretOffset = component.getSelectionEnd();
-                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null, false);
             }
         }
 
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : "."); //NOI18N
+        @Override
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd, final boolean assingToVar) {
+            super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : ".", assingToVar); //NOI18N
         }
         
         public String toString() {
@@ -737,7 +749,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return CLASS_COLOR;
         }
 
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -932,13 +945,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (val != 1 || ctor != null) {
                                     final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
                                             val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false,getWhiteList());
+                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false, -1, getWhiteList());
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
                                             public void run() {
                                                 if (item != null) {
-                                                    item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString());
+                                                    item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString(), assignToVar);
                                                 } else {
                                                     //Temporary ugly solution
                                                     SwingUtilities.invokeLater(new Runnable() {
@@ -1062,13 +1075,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String typeName;
         private String leftText;
         private String rightText;
+        private int assignToVarPos;
+        private String assignToVarText;
         
-        private VariableItem(CompilationInfo info, TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
+        private VariableItem(CompilationInfo info, TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType, int assignToVarPos) {
             super(substitutionOffset);
             this.varName = varName;
             this.newVarName = newVarName;
             this.smartType = smartType;
             this.typeName = type != null ? Utilities.getTypeName(info, type, false).toString() : null;
+            this.assignToVarPos = assignToVarPos;
+            this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type, varName);
         }
         
         public int getSortPriority() {
@@ -1100,6 +1117,36 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return icon;            
         }
 
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
+            try {
+                final BaseDocument doc = (BaseDocument) c.getDocument();
+                final Position startPos = assignToVarPos < 0 ? null : doc.createPosition(assignToVarPos, Position.Bias.Backward);
+                final Position endPos = assignToVarText == null ? null : doc.createPosition(offset);
+                super.substituteText(c, offset, len, toAdd != null ? toAdd : assignToVar && assignToVarText != null ? ";" : null, assignToVar); //NOI18N
+                if (assignToVar && assignToVarText != null) {
+                    final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                    if (ctm != null) {
+                        final String[] docText = new String[1];
+                        doc.runAtomic(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    docText[0] = doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                    doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                } catch (BadLocationException ex) {
+                                }
+                            }
+                        });
+                        CodeTemplate tmp = ctm.createTemporary(assignToVarText + docText[0]);
+                        c.setCaretPosition(startPos.getOffset());
+                        tmp.insert(c);
+                    }
+                }
+            } catch (BadLocationException ex) {
+            }
+        }
+
         public String toString() {
             return (typeName != null ? typeName + " " : "") + varName; //NOI18N
         }
@@ -1128,8 +1175,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         private boolean autoImport;
+        private String enclSortText;
+        private int assignToVarPos;
+        private String assignToVarText;
         
-        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, whiteList);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
@@ -1139,6 +1189,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.modifiers = elem.getModifiers();
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.autoImport = autoImport;
+            if (autoImport) {
+                String enclName = Utilities.getElementName(elem.getEnclosingElement().getEnclosingElement(), true).toString();
+                this.enclSortText = elem.getEnclosingElement().getSimpleName().toString() + Utilities.getImportanceLevel(enclName);
+            } else {
+                this.enclSortText = ""; //NOI18N
+            }
+            this.assignToVarPos = assignToVarPos;
+            this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type, this.simpleName);
         }
         
         public int getSortPriority() {
@@ -1146,7 +1204,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return simpleName;
+            return simpleName + "#" + enclSortText; //NOI18N
         }
         
         public CharSequence getInsertPrefix() {
@@ -1238,27 +1296,52 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
-        protected void substituteText(final JTextComponent c, final int offset, final int len, final String toAdd) {
-            super.substituteText(c, offset, len, toAdd);
-            if (autoImport) {
-                Source s = Source.create(c.getDocument());
-                try {
-                    ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                            controller.toPhase(Phase.RESOLVED);
-                            final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                            VariableElement ve = elementHandle.resolve(controller);
-                            if (ve != null)
-                                AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ve.getEnclosingElement().asType());
-                        }
-                    });
-                } catch (ParseException pe) {                    
+        protected void substituteText(final JTextComponent c, final int offset, final int len, final String toAdd, final boolean assignToVar) {
+            try {
+                final BaseDocument doc = (BaseDocument) c.getDocument();
+                final Position startPos = assignToVarPos < 0 ? null : doc.createPosition(assignToVarPos, Position.Bias.Backward);
+                final Position endPos = assignToVarText == null ? null : doc.createPosition(offset);
+                super.substituteText(c, offset, len, toAdd != null ? toAdd : assignToVar && assignToVarText != null ? ";" : null, assignToVar); //NOI18N
+                if (autoImport) {
+                    Source s = Source.create(c.getDocument());
+                    try {
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.RESOLVED);
+                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                VariableElement ve = elementHandle.resolve(controller);
+                                if (ve != null)
+                                    AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ve.getEnclosingElement().asType());
+                            }
+                        });
+                    } catch (ParseException pe) {
+                    }
                 }
+                if (assignToVar && assignToVarText != null) {
+                    final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                    if (ctm != null) {
+                        final String[] docText = new String[1];
+                        doc.runAtomic(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    docText[0] = doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                    doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                } catch (BadLocationException ex) {
+                                }
+                            }
+                        });
+                        CodeTemplate tmp = ctm.createTemporary(assignToVarText + docText[0]);
+                        c.setCaretPosition(startPos.getOffset());
+                        tmp.insert(c);
+                    }
+                }
+            } catch (BadLocationException ble) {                
             }
         }
-        
+
         public String toString() {
             StringBuilder sb = new StringBuilder();
             for(Modifier mod : modifiers) {
@@ -1300,8 +1383,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         private boolean autoImport;
+        private String enclSortText;
+        private int assignToVarPos;
+        private String assignToVarText;
         
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, whiteList);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
@@ -1323,6 +1409,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.typeName = Utilities.getTypeName(info, retType, false).toString();
             this.addSemicolon = addSemicolon && (retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID);
             this.autoImport = autoImport;
+            if (autoImport) {
+                String enclName = Utilities.getElementName(elem.getEnclosingElement().getEnclosingElement(), true).toString();
+                this.enclSortText = elem.getEnclosingElement().getSimpleName().toString() + Utilities.getImportanceLevel(enclName);
+            } else {
+                this.enclSortText = ""; //NOI18N
+            }
+            this.assignToVarPos = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarPos;
+            this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
         }
         
         public int getSortPriority() {
@@ -1343,7 +1437,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     cnt++;
                 }
                 sortParams.append(')');
-                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+                sortText = simpleName + "#" + enclSortText + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
             return sortText;
         }
@@ -1449,134 +1543,173 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return newIcon;            
         }
         
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
-            if (toAdd == null && addSemicolon) {
-                toAdd = ";"; //NOI18N
-            }
-            final BaseDocument doc = (BaseDocument)c.getDocument();
-            if (inImport || params.isEmpty()) {
-                String add = inImport ? ";" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
-                if (toAdd != null && !add.startsWith(toAdd))
-                    add += toAdd;
-                super.substituteText(c, offset, len, add);
-                if ("(".equals(toAdd)) //NOI18N
-                    c.setCaretPosition(c.getCaretPosition() - 1);
-                if (autoImport) {
-                    Source s = Source.create(doc);
-                    try {
-                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.RESOLVED);
-                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                ExecutableElement ee = elementHandle.resolve(controller);
-                                if (ee != null)
-                                    AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
-                            }
-                        });
-                    } catch (ParseException pe) {                    
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
+            try {
+                if (toAdd == null && (addSemicolon || assignToVar && assignToVarText != null)) {
+                    toAdd = ";"; //NOI18N
+                }
+                final BaseDocument doc = (BaseDocument)c.getDocument();
+                final Position startPos = assignToVarPos < 0 ? null : doc.createPosition(assignToVarPos, Position.Bias.Backward);
+                final Position endPos = assignToVarText == null ? null : doc.createPosition(offset);
+                if (inImport || params.isEmpty()) {
+                    String add = inImport ? ";" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
+                    if (toAdd != null && !add.startsWith(toAdd))
+                        add += toAdd;
+                    super.substituteText(c, offset, len, add, assignToVar);
+                    if ("(".equals(toAdd)) //NOI18N
+                        c.setCaretPosition(c.getCaretPosition() - 1);
+                    if (autoImport) {
+                        Source s = Source.create(doc);
+                        try {
+                            ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                    controller.toPhase(Phase.RESOLVED);
+                                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                    ExecutableElement ee = elementHandle.resolve(controller);
+                                    if (ee != null)
+                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                                }
+                            });
+                        } catch (ParseException pe) {                    
+                        }
                     }
-                }
-            } else {
-                String add = "()"; //NOI18N
-                if (toAdd != null && !add.startsWith(toAdd))
-                    add += toAdd;
-                String text = ""; //NOI18N
-                final int semiPos = add.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
-                if (semiPos > -2)
-                    add = add.length() > 1 ? add.substring(0, add.length() - 1) : null;
-                TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
-                    text += add;
-                    add = null;
-                }
-                boolean added = false;
-                while(add != null && add.length() > 0) {
-                    String tokenText = sequence.token().text().toString();
-                    if (tokenText.startsWith(add)) {
-                        len = sequence.offset() - offset + add.length();
+                    if (assignToVar && assignToVarText != null) {
+                        final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                        if (ctm != null) {
+                            final String[] docText = new String[1];
+                            doc.runAtomic(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        docText[0] = doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                        doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                    } catch (BadLocationException ex) {
+                                    }
+                                }
+                            });
+                            CodeTemplate tmp = ctm.createTemporary(assignToVarText + docText[0]);
+                            c.setCaretPosition(startPos.getOffset());
+                            tmp.insert(c);
+                        }
+                    }
+                } else {
+                    String add = "()"; //NOI18N
+                    if (toAdd != null && !add.startsWith(toAdd))
+                        add += toAdd;
+                    String text = ""; //NOI18N
+                    final int semiPos = add.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+                    if (semiPos > -2)
+                        add = add.length() > 1 ? add.substring(0, add.length() - 1) : null;
+                    TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
+                    if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                         text += add;
                         add = null;
-                    } else if (add.startsWith(tokenText)) {
-                        sequence.moveNext();
-                        len = sequence.offset() - offset;
-                        text += add.substring(0, tokenText.length());
-                        add = add.substring(tokenText.length());
-                        added = true;
-                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
-                        if (!sequence.moveNext()) {
+                    }
+                    boolean added = false;
+                    while(add != null && add.length() > 0) {
+                        String tokenText = sequence.token().text().toString();
+                        if (tokenText.startsWith(add)) {
+                            len = sequence.offset() - offset + add.length();
                             text += add;
                             add = null;
-                        }
-                    } else {
-                        if (!added)
-                            text += add;
-                        add = null;
-                    }
-                }
-                final int length = len;
-                doc.runAtomic (new Runnable () {
-                    public void run () {
-                    try {
-                        Position pos = doc.createPosition(offset);
-                        Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                        if (length > 0)
-                            doc.remove(pos.getOffset(), length);
-                        doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
-                        if (semiPosition != null) {
-                            doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                            c.setCaretPosition(semiPosition.getOffset() - 1);
-                        }
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    }
-                    }
-                });
-                if (autoImport) {
-                    Source s = Source.create(doc);
-                    try {
-                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.RESOLVED);
-                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                ExecutableElement ee = elementHandle.resolve(controller);
-                                if (ee != null)
-                                    AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                        } else if (add.startsWith(tokenText)) {
+                            sequence.moveNext();
+                            len = sequence.offset() - offset;
+                            text += add.substring(0, tokenText.length());
+                            add = add.substring(tokenText.length());
+                            added = true;
+                        } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                            if (!sequence.moveNext()) {
+                                text += add;
+                                add = null;
                             }
-                        });
-                    } catch (ParseException pe) {                    
-                    }
-                }
-                CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-                if (ctm != null) {
-                    StringBuilder sb = new StringBuilder();
-                    boolean guessArgs = Utilities.guessMethodArguments();
-                    if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
-                    sb.append(' '); //NOI18N
-                    sb.append('('); //NOI18N
-                    if (text.length() > 1) {
-                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                            ParamDesc paramDesc = it.next();
-                            sb.append("${"); //NOI18N
-                            sb.append(paramDesc.name);
-                            if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
-                                sb.append(paramDesc.fullTypeName);
-                            }
-                            sb.append('}'); //NOI18N
-                            if (it.hasNext())
-                                sb.append(", "); //NOI18N
+                        } else {
+                            if (!added)
+                                text += add;
+                            add = null;
                         }
-                        sb.append(')');//NOI18N
-                        if (text.length() > 2)
-                            sb.append(text.substring(2));
                     }
-                    ctm.createTemporary(sb.toString()).insert(c);
-                    Completion.get().showToolTip();
+                    final int length = len;
+                    doc.runAtomic (new Runnable () {
+                        public void run () {
+                        try {
+                            Position pos = doc.createPosition(offset);
+                            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                            if (length > 0)
+                                doc.remove(pos.getOffset(), length);
+                            doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            if (semiPosition != null) {
+                                doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                                c.setCaretPosition(semiPosition.getOffset() - 1);
+                            }
+                        } catch (BadLocationException e) {
+                            // Can't update
+                        }
+                        }
+                    });
+                    if (autoImport) {
+                        Source s = Source.create(doc);
+                        try {
+                            ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                    controller.toPhase(Phase.RESOLVED);
+                                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                    ExecutableElement ee = elementHandle.resolve(controller);
+                                    if (ee != null)
+                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                                }
+                            });
+                        } catch (ParseException pe) {                    
+                        }
+                    }
+                    CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                    if (ctm != null) {
+                        final StringBuilder sb = new StringBuilder();
+                        boolean guessArgs = Utilities.guessMethodArguments();
+                        if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
+                        sb.append(' '); //NOI18N
+                        sb.append('('); //NOI18N
+                        if (text.length() > 1) {
+                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                ParamDesc paramDesc = it.next();
+                                sb.append("${"); //NOI18N
+                                sb.append(paramDesc.name);
+                                if (guessArgs) {
+                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(paramDesc.fullTypeName);
+                                }
+                                sb.append('}'); //NOI18N
+                                if (it.hasNext())
+                                    sb.append(", "); //NOI18N
+                            }
+                            sb.append(')');//NOI18N
+                            if (text.length() > 2)
+                                sb.append(text.substring(2));
+                        }
+                        if (assignToVar && assignToVarText != null) {
+                            doc.runAtomic(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        sb.insert(0, doc.getText(startPos.getOffset(), endPos.getOffset() - startPos.getOffset()));
+                                        doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                    } catch (BadLocationException ex) {
+                                    }
+                                }
+                            });
+                            sb.insert(0, assignToVarText);
+                            c.setCaretPosition(startPos.getOffset());
+                        }
+                        ctm.createTemporary(sb.toString()).insert(c);
+                        Completion.get().showToolTip();
+                    }
                 }
+            } catch (BadLocationException ex) {
             }
         }        
 
@@ -1621,7 +1754,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
-            super(info, elem, type, substitutionOffset, false, false, false, false, false, false, whiteList);
+            super(info, elem, type, substitutionOffset, false, false, false, false, false, false, -1, whiteList);
             this.implement = implement;
         }
         
@@ -1652,7 +1785,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         
-        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd, final boolean assignToVar) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final Position pos;
             try {
@@ -1820,7 +1954,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         @Override
-        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd, final boolean assignToVar) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final Position pos;
             try {
@@ -2036,7 +2170,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return newIcon;            
         }
         
-        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd, final boolean assignToVar) {
             if (!insertName) {
                 offset += len;
                 len = 0;
@@ -2244,7 +2379,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return icon;            
         }
 
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             final boolean lpar = "(".equals(toAdd); //NOI18N
             final int[] offset2 = new int[] {offset + len};
             len = 0;
@@ -2453,12 +2589,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return false;
         }
         
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             String add = ")"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             if (params.isEmpty()) {
-                super.substituteText(c, offset, len, add);
+                super.substituteText(c, offset, len, add, assignToVar);
             } else {                
                 final BaseDocument doc = (BaseDocument)c.getDocument();
                 String text = ""; //NOI18N
@@ -2709,8 +2845,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return rightText;
         }
         
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            super.substituteText(c, offset, len, toAdd != null ? toAdd : "="); //NOI18N
+        @Override
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd, boolean assignToVar) {
+            super.substituteText(c, offset, len, toAdd != null ? toAdd : "=", assignToVar); //NOI18N
         }
 
         public String toString() {
@@ -2823,14 +2960,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             if (delegate != null) {
                 if (toAdd == null || ".".equals(toAdd)) { //NOI18N
                     toAdd = ".class"; //NOI18N
                 } else {
                     toAdd = ".class" + toAdd; //NOI18N
                 }
-                delegate.substituteText(c, offset, len, toAdd);
+                delegate.substituteText(c, offset, len, toAdd, assignToVar);
             } else {
                 if (toAdd == null && value.charAt(value.length() - 1) == '\"') {
                     TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset + len);
@@ -2839,7 +2976,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         len++;
                     }
                 }
-                super.substituteText(c, offset, len, toAdd);
+                super.substituteText(c, offset, len, toAdd, assignToVar);
                 if (toAdd == null && quoteAdded)
                     c.setCaretPosition(c.getCaretPosition() - 1);
             }
@@ -3018,7 +3155,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return newIcon;            
         }
 
-        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd, final boolean assignToVar) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -3276,7 +3414,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return simpleName;
         }        
         
-        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd, final boolean assignToVar) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             if (len > 0) {
                 doc.runAtomic (new Runnable () {
@@ -3429,8 +3568,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return ret[0];
     }
     
-    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(CompilationController controller, int startPos, int endPos) {
-        TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(CompilationInfo info, int startPos, int endPos) {
+        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         ts.move(endPos);
         while(ts.movePrevious()) {
             int offset = ts.offset();
@@ -3447,6 +3586,75 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
         return null;
+    }
+    
+    private static String getAssignToVarText(CompilationInfo info, TypeMirror type, String name) {
+        name = adjustName(name);
+        StringBuilder sb = new StringBuilder();
+        sb.append("${TYPE type=\""); //NOI18N
+        sb.append(Utilities.getTypeName(info, type, true));
+        sb.append("\" default=\""); //NOI18N
+        sb.append(Utilities.getTypeName(info, type, false));
+        sb.append("\" editable=false}"); //NOI18N
+        sb.append(" ${NAME newVarName=\""); //NOI18N
+        sb.append(name);
+        sb.append("\" default=\""); //NOI18N
+        sb.append(name);
+        sb.append("\"} = "); //NOI18N
+        return sb.toString();
+    }
+    
+    private static String adjustName(String name) {
+        if (name == null)
+            return null;
+        
+        String shortName = null;
+        
+        if (name.startsWith("get") && name.length() > 3) { //NOI18N
+            shortName = name.substring(3);
+        }
+        
+        if (name.startsWith("is") && name.length() > 2) { //NOI18N
+            shortName = name.substring(2);
+        }
+        
+        if (shortName != null) {
+            return firstToLower(shortName);
+        }
+        
+        if (SourceVersion.isKeyword(name)) {
+            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1); //NOI18N
+        } else {
+            return name;
+        }
+    }
+    
+    private static String firstToLower(String name) {
+        if (name.length() == 0)
+            return null;
+
+        StringBuilder result = new StringBuilder();
+        boolean toLower = true;
+        char last = Character.toLowerCase(name.charAt(0));
+
+        for (int i = 1; i < name.length(); i++) {
+            if (toLower && Character.isUpperCase(name.charAt(i))) {
+                result.append(Character.toLowerCase(last));
+            } else {
+                result.append(last);
+                toLower = false;
+            }
+            last = name.charAt(i);
+
+        }
+
+        result.append(last);
+        
+        if (SourceVersion.isKeyword(result)) {
+            return "a" + name; //NOI18N
+        } else {
+            return result.toString();
+        }
     }
     
     static class ParamDesc {

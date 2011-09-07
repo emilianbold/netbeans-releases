@@ -126,18 +126,24 @@ public class MoveTransformer extends RefactoringVisitor {
                     }
                 } else {
                     if (isThisFileMoving) {
-                        if (el.getKind() != ElementKind.PACKAGE
-                                && getPackageOf(el).toString().equals(originalPackage)
-                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                        if (el.getKind() != ElementKind.PACKAGE) {
+                            Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                            if(getPackageOf(el).toString().equals(originalPackage)
+                                && ((!(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED)))
+                                || (enclosingTypeElement!=null?!(enclosingTypeElement.getModifiers().contains(Modifier.PUBLIC) || enclosingTypeElement.getModifiers().contains(Modifier.PROTECTED)) : false))
                                 && !move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
+                        }
                     } else {
-                        if (el.getKind()!=ElementKind.PACKAGE
-                                && getPackageOf(el).toString().equals(originalPackage)
-                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                        if (el.getKind()!=ElementKind.PACKAGE) {
+                            Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                            if(getPackageOf(el).toString().equals(originalPackage)
+                                && ((!(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED)))
+                                || (enclosingTypeElement!=null?!(enclosingTypeElement.getModifiers().contains(Modifier.PUBLIC) || enclosingTypeElement.getModifiers().contains(Modifier.PROTECTED)) : false))
                                 && move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
+                        }
                         }
                     }
                 }
@@ -167,11 +173,14 @@ public class MoveTransformer extends RefactoringVisitor {
                             if (!RetoucheUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
                                 elementsToImport.add(el);
                         }
-                    } else if (el.getKind() != ElementKind.PACKAGE
-                            && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
-                            && getPackageOf(el).toString().equals(originalPackage)
-                            && move.filesToMove.contains(getFileObject(el))) {
-                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                } else if (el.getKind() != ElementKind.PACKAGE) {
+                        Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                        if (getPackageOf(el).toString().equals(originalPackage)
+                                && ((!(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED)))
+                                || (enclosingTypeElement!=null?!(enclosingTypeElement.getModifiers().contains(Modifier.PUBLIC) || enclosingTypeElement.getModifiers().contains(Modifier.PROTECTED)) : false))
+                                && move.filesToMove.contains(getFileObject(el))) {
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature", workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                        }
                     }
                 } else {
                     Boolean[] isElementMoving = new Boolean[1];
@@ -180,12 +189,15 @@ public class MoveTransformer extends RefactoringVisitor {
                         importToAdd.add(el.toString());
                         isThisFileReferencingOldPackage = true;
                     }
-                    if (el.getKind() != ElementKind.PACKAGE
-                            && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
-                            && !isElementMoving(el, isElementMoving)
-                            && getPackageOf(el).toString().equals(originalPackage)
-                            && !move.filesToMove.contains(getFileObject(el))) {
-                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
+                    if (el.getKind() != ElementKind.PACKAGE) {
+                        Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                        if (getPackageOf(el).toString().equals(originalPackage)
+                                && ((!(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED)))
+                                || (enclosingTypeElement!=null?!(enclosingTypeElement.getModifiers().contains(Modifier.PUBLIC) || enclosingTypeElement.getModifiers().contains(Modifier.PROTECTED)) : false))
+                                && !isElementMoving(el, isElementMoving)
+                                && !move.filesToMove.contains(getFileObject(el))) {
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2", workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                        }
                     }
                 }
             }

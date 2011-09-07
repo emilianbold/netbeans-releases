@@ -150,11 +150,6 @@ public final class PhpDocOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
-
-
-
         phpDocLabel = new JLabel();
         phpDocTextField = new JTextField();
         browseButton = new JButton();
@@ -200,6 +195,7 @@ public final class PhpDocOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -215,7 +211,7 @@ public final class PhpDocOptionsPanel extends JPanel {
                         .addComponent(phpDocUsageLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpDocTextField, GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                        .addComponent(phpDocTextField, GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(browseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
