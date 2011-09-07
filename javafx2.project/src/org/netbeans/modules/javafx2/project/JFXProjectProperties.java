@@ -787,19 +787,22 @@ public final class JFXProjectProperties {
                 }
             }
             index = 0;
-            for(Map<String,String> m : params.get(config)) {
-                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                    String v = propSuffix.getValue();
-                    if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
-                        if (v != null && v.length() > 0) {
-                            sharedCfgProps.setProperty(prop, v);
-                        } else {
-                            sharedCfgProps.remove(prop);
+            List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
+            if(paramsConfig != null) {
+                for(Map<String,String> m : params.get(config)) {
+                    for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                        String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                        String v = propSuffix.getValue();
+                        if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
+                            if (v != null && v.length() > 0) {
+                                sharedCfgProps.setProperty(prop, v);
+                            } else {
+                                sharedCfgProps.remove(prop);
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
             }
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
