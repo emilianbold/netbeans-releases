@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.newproject.ArchetypeWizardUtils;
@@ -65,16 +64,14 @@ public class ArchetypeWizards {
 
     /**
      * Run a single archetype.
-     * @param handle a progress handle
      * @param projDir the new project directory (must be normalized first!) (note: parent dir is actually passed to plugin, i.e. assumes that project name matches this basedir)
      * @param vi metadata for new project
      * @param arch the archetype to process
      * @param additionalProperties any additional archetype properties, or null
-     * @param progressCounter step to set progress handle to (will step to this number +1 and +2)
      * @param updateLastUsedProjectDir true to update last-used project directory for next wizard run
      */
-    public static void createFromArchetype(ProgressHandle handle, File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additionalProperties, int progressCounter, boolean updateLastUsedProjectDir) throws IOException {
-        ArchetypeWizardUtils.createFromArchetype(handle, projDir, vi, arch, additionalProperties, progressCounter, updateLastUsedProjectDir);
+    public static void createFromArchetype(File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additionalProperties, boolean updateLastUsedProjectDir) throws IOException {
+        ArchetypeWizardUtils.createFromArchetype(projDir, vi, arch, additionalProperties, updateLastUsedProjectDir);
     }
 
     /**

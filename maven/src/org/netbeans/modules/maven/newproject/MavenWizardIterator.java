@@ -50,7 +50,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -62,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  *@author mkleint
  */
-public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 1L;
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
@@ -95,13 +94,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     }
     
     public @Override Set<FileObject> instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
-    }
-    
-    @Override
-    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        return ArchetypeWizardUtils.instantiate(handle, wiz);
+        return ArchetypeWizardUtils.instantiate(wiz);
     }
     
     @Override

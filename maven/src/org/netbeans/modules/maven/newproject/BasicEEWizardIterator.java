@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -59,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  *@author Dafe Simonek
  */
-public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
@@ -98,12 +97,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
     }
     
     public Set/*<FileObject>*/ instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
-    }
-    
-    public Set instantiate(ProgressHandle handle) throws IOException {
-        return ArchetypeWizardUtils.instantiate(handle, wiz);
+        return ArchetypeWizardUtils.instantiate(wiz);
     }
     
     public void initialize(WizardDescriptor wiz) {
