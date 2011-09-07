@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,7 +133,7 @@ public class BatchProblemNotifier {
 
     static void resolved(File f) {
         synchronized (reactors) {
-            for (Reactor reactor : reactors.values()) {
+            for (Reactor reactor : new ArrayList<Reactor>(reactors.values())) {
                 reactor.resolved(f);
             }
         }
