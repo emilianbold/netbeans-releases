@@ -1126,6 +1126,10 @@ public class BaseKit extends DefaultEditorKit {
                                     if (regions != null) {
                                         RectangularSelectionUtils.removeSelection(doc, regions);
                                         RectangularSelectionUtils.insertText(doc, regions, cmd);
+                                        Caret caret = target.getCaret();
+                                        if (caret instanceof BaseCaret) {
+                                            ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
+                                        }
                                     }
                                 } catch (BadLocationException ble) {
                                     LOG.log(Level.FINE, null, ble);
@@ -1773,6 +1777,9 @@ public class BaseKit extends DefaultEditorKit {
                                 if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                     if (!RectangularSelectionUtils.removeSelection(target)) {
                                         RectangularSelectionUtils.removeChar(target, nextChar);
+                                    }
+                                    if (caret instanceof BaseCaret) {
+                                        ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
                                     }
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
