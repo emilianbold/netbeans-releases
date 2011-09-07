@@ -15,12 +15,15 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#include <libgen.h>
+
 #if defined __CYGWIN__ && !defined WCONTINUED
 //added for compatibility with cygwin 1.5
 #define WCONTINUED 0
 #endif
 
 static void set_noecho(int);
+const char* progname;
 
 /*
  * 
@@ -31,6 +34,7 @@ int main(int argc, char** argv) {
     int status = 0;
     int envnum = 0;
     int envsize = 0;
+    int pty_open = 0;
     char **envvars = NULL;
     char *pty = NULL;
 
@@ -39,20 +43,31 @@ int main(int argc, char** argv) {
     int idx;
     int nopt = 1;
 
+    progname = basename(argv[0]);
+
     for (idx = 1; idx < argc; idx++) {
         if (argv[idx][0] == '-') {
+            if (strcmp(argv[idx], "-h") == 0) {
+                //  -e          turned echoing off
+                //  -p          defines pts_name to use instead of opening a new one
+                // --env        passes additional environment variable to a program
+                //              in NAME=VALUE form. For multiple variables multiple
+                //              --env options should be used.
+                printf("usage: %s -h \n %s [-e] [-p pts_name] [[--env NAME=VALUE] ...] [program [ arg ... ]]\n", progname, progname);
+                exit(-1);
+            }
+            
             if (strcmp(argv[idx], "-p") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {
-                    printf("ERROR missing pty after -p\n");
-                    exit(-1);
+                    err_quit("missing pty after -p\n");
                 }
                 pty = argv[idx];
                 nopt += 2;
             } else if (strcmp(argv[idx], "--env") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {
-                    printf("ERROR missing variable=value pair after --env\n");
+                    err_quit("missing variable=value pair after --env\n");
                     exit(-1);
                 }
 
@@ -85,13 +100,7 @@ int main(int argc, char** argv) {
     /* now argv points to the executable */
 
     if (argc == 0) {
-        //  -e          turned echoing off
-        //  -p          defines pts_name to use instead of opening a new one
-        // --env        passes additional environment variable to a program
-        //              in NAME=VALUE form. For multiple variables multiple
-        //              --env options should be used.
-        err_quit("usage: pty_start [-e] [-p pts_name] [[--env NAME=VALUE] ...] program [ arg ... ]");
-        exit(-1);
+        pty_open = 1;
     }
 
     if (pty != NULL) {
@@ -114,11 +123,11 @@ int main(int argc, char** argv) {
         }
 
         // Set passed environment variables
-        
+
         for (int i = 0; i < envnum; i++) {
             putenv(envvars[i]);
         }
-                
+
         if (execvp(argv[0], argv) < 0) {
             err_sys("can't execute: %s", argv[0]);
         }
@@ -128,7 +137,7 @@ int main(int argc, char** argv) {
     if (envvars != NULL) {
         free(envvars);
     }
-    
+
     /* parent */
 
     int loop_result = 0;
