@@ -109,6 +109,7 @@
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>com.sun.tools.tuxedo.testrunner</friend>
