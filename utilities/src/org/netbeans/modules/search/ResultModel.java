@@ -172,7 +172,7 @@ public final class ResultModel {
      * Clean the allocated resources. Do not rely on GC there as we are often
      * referenced from various objects. So keep leak as small as possible.
      * */
-    void close() {
+    synchronized void close() {
         if ((matchingObjects != null) && !matchingObjects.isEmpty()) {
             for (MatchingObject matchingObj : matchingObjects) {
                 matchingObj.cleanup();
@@ -238,7 +238,7 @@ public final class ResultModel {
 
     /**
      */
-    void objectBecameInvalid(MatchingObject matchingObj) {
+    synchronized void objectBecameInvalid(MatchingObject matchingObj) {
         
         /* may be called from non-EDT thread */
         
@@ -316,7 +316,7 @@ public final class ResultModel {
     
     /**
      */
-    int getDetailsCount(MatchingObject matchingObject) {
+    synchronized int getDetailsCount(MatchingObject matchingObject) {
         prepareCacheFor(matchingObject);
         if (infoCacheDetailsCount == -1) {
             infoCacheDetailsCount = getDetailsCountReal(matchingObject);
@@ -358,7 +358,7 @@ public final class ResultModel {
      *          or {@code null} if either there are no associated detail nodes
      *          or {@code matchingObject} is {@code null}.
      */
-    Node[] getDetails(MatchingObject matchingObject) {
+    synchronized Node[] getDetails(MatchingObject matchingObject) {
         if(matchingObject == null) {
             return null;
         }
@@ -428,7 +428,7 @@ public final class ResultModel {
     }
     
     /** Getter for search group property. */
-    SpecialSearchGroup getSearchGroup() {
+    synchronized SpecialSearchGroup getSearchGroup() {
         return searchGroup;
     }
     
@@ -438,13 +438,17 @@ public final class ResultModel {
      * @return  array of <code>SearchType</code>s that each tested object was
      *          tested for compliance
      */
-    SearchType[] getQueriedSearchTypes() {
-        return searchGroup.getSearchTypes();
+    synchronized SearchType[] getQueriedSearchTypes() {
+        if (searchGroup != null) {
+            return searchGroup.getSearchTypes();
+        } else {
+            return new SearchType[0];
+        }
     }
 
     /**
      */
-    boolean wasLimitReached() {
+    synchronized boolean wasLimitReached() {
         return limitReached != null;
     }
 
@@ -455,7 +459,7 @@ public final class ResultModel {
     }
 
     /** This exception stoped search */
-    void searchException(RuntimeException ex) {
+    synchronized void searchException(RuntimeException ex) {
         ErrorManager.Annotation[] annotations =
                 ErrorManager.getDefault().findAnnotations(ex);
         for (int i = 0; i < annotations.length; i++) {
@@ -470,7 +474,7 @@ public final class ResultModel {
     
     /**
      */
-    String getExceptionMsg() {
+    synchronized String getExceptionMsg() {
         return finishMessage;
     }
 
@@ -479,7 +483,11 @@ public final class ResultModel {
     }
 
     /** Get common search folder. Can be null. */
-    FileObject getCommonSearchFolder() {
-        return searchGroup.getCommonSearchFolder();
+    synchronized FileObject getCommonSearchFolder() {
+        if (searchGroup != null) {
+            return searchGroup.getCommonSearchFolder();
+        } else {
+            return null; // Result model has been already closed.
+        }
     }
 }
