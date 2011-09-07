@@ -36,24 +36,24 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
-                          <Component id="sourceFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
+                          <Component id="projectFolderTextField" alignment="0" pref="237" max="32767" attributes="0"/>
+                          <Component id="sourceFolderTextField" alignment="0" pref="237" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="testFolderTextField" pref="204" max="32767" attributes="0"/>
+                              <Component id="testFolderTextField" pref="129" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="testFolderButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="webRootTextField" pref="204" max="32767" attributes="0"/>
+                              <Component id="webRootTextField" pref="129" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="webRootButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="encodingComboBox" alignment="0" pref="280" max="32767" attributes="0"/>
-                          <Component id="phpVersionComboBox" alignment="0" pref="280" max="32767" attributes="0"/>
+                          <Component id="encodingComboBox" alignment="0" pref="237" max="32767" attributes="0"/>
+                          <Component id="phpVersionComboBox" alignment="0" pref="237" max="32767" attributes="0"/>
                           <Component id="phpVersionInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="copyFilesPanel" alignment="1" pref="384" max="32767" attributes="0"/>
+                  <Component id="copyFilesPanel" alignment="1" pref="353" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>

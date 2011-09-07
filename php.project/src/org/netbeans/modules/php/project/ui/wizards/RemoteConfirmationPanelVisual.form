@@ -35,9 +35,9 @@
                   <Component id="downloadInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="uploadInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="41" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
-          <Component id="filesPanel" alignment="0" pref="466" max="32767" attributes="0"/>
+          <Component id="filesPanel" alignment="0" pref="437" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

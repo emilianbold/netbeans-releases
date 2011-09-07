@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -167,9 +168,8 @@ public class CopyFilesVisual extends JPanel {
         Mnemonics.setLocalizedText(copyFilesButton, NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
         copyFilesButton.setEnabled(false);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addComponent(copyFilesCheckBox)
@@ -177,7 +177,7 @@ public class CopyFilesVisual extends JPanel {
                 .addContainerGap()
                 .addComponent(localServerLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(copyFilesComboBox, 0, 235, Short.MAX_VALUE)
+                .addComponent(copyFilesComboBox, 0, 141, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(copyFilesButton))
         );
@@ -188,7 +188,7 @@ public class CopyFilesVisual extends JPanel {
                 .addGap(9, 9, 9)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(copyFilesButton)
-                    .addComponent(copyFilesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(localServerLabel)))
         );
 
@@ -200,6 +200,7 @@ public class CopyFilesVisual extends JPanel {
         copyFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         copyFilesButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesButton.AccessibleContext.accessibleName")); // NOI18N
         copyFilesButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
