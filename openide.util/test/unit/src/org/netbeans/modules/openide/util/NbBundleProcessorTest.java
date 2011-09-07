@@ -47,11 +47,14 @@ import java.net.URL;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
 import java.net.URLClassLoader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.test.TestFileUtils;
 import static org.netbeans.modules.openide.util.Bundle.*;
+import org.openide.util.Exceptions;
 
 @Messages("k3=value #3")
 public class NbBundleProcessorTest extends NbTestCase {
@@ -209,6 +212,9 @@ public class NbBundleProcessorTest extends NbTestCase {
     }
 
     public void testIncrementalCompilation() throws Exception {
+        if (isJDK7EarlyBuild()) {
+            return;
+        }
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "public class C2 {public @Override String toString() {return Bundle.k2();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
@@ -257,4 +263,23 @@ public class NbBundleProcessorTest extends NbTestCase {
         // XXX also check non-ASCII chars in comments; works locally but fails on deadlock
     }
 
+    private static boolean isJDK7EarlyBuild() {
+        String run = System.getProperty("java.runtime.version");
+        if ("1.7".equals(System.getProperty("java.specification.version")) && run != null) {
+            if (run.startsWith("1.7.0-ea")) {
+                return true;
+            }
+            // builds up until
+            // java.runtime.version=1.7.0-b147
+            // are known to fail testIncrementalCompilation
+            Pattern buildNumber = Pattern.compile("1\\.7\\.0-b([0-9]+)");
+            Matcher m = buildNumber.matcher(run);
+            if (m.matches()) {
+                if (Integer.parseInt(m.group(1)) <= 147) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

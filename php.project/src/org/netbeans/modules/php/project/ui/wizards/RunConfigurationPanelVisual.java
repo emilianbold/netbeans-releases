@@ -83,18 +83,18 @@ public class RunConfigurationPanelVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
         infoLabel1 = new JLabel();
         infoLabel2 = new JLabel();
         runAsPanel = new RunAsPanel(insidePanels);
+
+        setFocusTraversalPolicy(null);
         Mnemonics.setLocalizedText(infoLabel1, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1"));
         Mnemonics.setLocalizedText(infoLabel2, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2"));
+
         runAsPanel.setLayout(new CardLayout());
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -103,7 +103,7 @@ public class RunConfigurationPanelVisual extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(infoLabel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE)
+            .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -121,6 +121,7 @@ public class RunConfigurationPanelVisual extends JPanel {
         infoLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel2.AccessibleContext.accessibleDescription")); // NOI18N
         runAsPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.runAsPanel.AccessibleContext.accessibleName")); // NOI18N
         runAsPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.runAsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

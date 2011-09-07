@@ -43,7 +43,7 @@
 package org.netbeans.modules.css.editor.csl;
 
 
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
@@ -51,14 +51,14 @@ import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
  */
 public class CssPropertyElement extends CssElement {
 
-    private PropertyDescriptor propertyDescriptor;
+    private Property propertyDescriptor;
     
-    public CssPropertyElement(PropertyDescriptor propertyDescriptor) {
+    public CssPropertyElement(Property propertyDescriptor) {
         super(propertyDescriptor.getName());
         this.propertyDescriptor = propertyDescriptor;
     }
     
-    public PropertyDescriptor getPropertyDescriptor() {
+    public Property getPropertyDescriptor() {
         return this.propertyDescriptor;
     }
 }
