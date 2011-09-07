@@ -312,87 +312,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         phpOptionsTextField = new JTextField();
         hintLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return phpOptionsTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return phpOptionsTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return phpOptionsTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  workDirBrowseButton){
-                    return phpOptionsTextField;
-                }
-                if(aComponent ==  workDirTextField){
-                    return workDirBrowseButton;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  runAsCombo){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  configureButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return configureButton;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  argsTextField){
-                    return workDirTextField;
-                }
-                return phpOptionsTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  phpOptionsTextField){
-                    return workDirBrowseButton;
-                }
-                if(aComponent ==  workDirBrowseButton){
-                    return workDirTextField;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return runAsCombo;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return configureButton;
-                }
-                if(aComponent ==  configureButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  workDirTextField){
-                    return argsTextField;
-                }
-                return phpOptionsTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         interpreterLabel.setLabelFor(interpreterTextField);
         Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
@@ -406,7 +326,6 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         });
 
         defaultInterpreterCheckBox.setSelected(true);
-
         Mnemonics.setLocalizedText(defaultInterpreterCheckBox, NbBundle.getMessage(RunAsScript.class, "LBL_UseDefaultInterpreter"));
         Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(RunAsScript.class, "LBL_Configure"));
         configureButton.addActionListener(new ActionListener() {
@@ -422,10 +341,6 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-
-
-
-
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_Browse"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -442,9 +357,9 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         });
         Mnemonics.setLocalizedText(phpOptionsLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.phpOptionsLabel.text"));
         Mnemonics.setLocalizedText(hintLabel, "dummy");
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -551,6 +466,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
         hintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.hintLabel.AccessibleContext.accessibleName")); // NOI18N
         hintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.hintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

@@ -265,27 +265,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         separator = new JSeparator();
         configPanel = new JPanel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return frameworksTable;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return frameworksTable;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return frameworksTable;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                return frameworksTable;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                return frameworksTable;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         frameworksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         frameworksTable.setShowHorizontalLines(false);
@@ -301,15 +281,14 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(descriptionLabel)
                 .addContainerGap())
-            .addComponent(configPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addComponent(frameworksScrollPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(configPanel, GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+            .addComponent(frameworksScrollPane, GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -328,6 +307,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         descriptionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.descriptionLabel.AccessibleContext.accessibleName")); // NOI18N
         configPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleName")); // NOI18N
         configPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

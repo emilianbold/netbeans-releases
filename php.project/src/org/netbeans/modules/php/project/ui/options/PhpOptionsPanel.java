@@ -280,7 +280,7 @@ public final  class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(phpInterpreterBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -294,12 +294,12 @@ public final  class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(commandLineLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
+                .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addComponent(addFolderButton)
@@ -311,7 +311,7 @@ public final  class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(globalIncludePathLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
+                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});

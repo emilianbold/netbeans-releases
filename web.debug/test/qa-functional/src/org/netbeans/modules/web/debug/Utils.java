@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.Random;
 import javax.swing.JComponent;
@@ -273,10 +274,13 @@ public class Utils {
 
             @Override
             public void run() {
+                URL url = null;
                 try {
-                    new URI(getDefaultUrl() + urlSuffix).toURL().openStream();
+                    url = new URI(getDefaultUrl() + urlSuffix).toURL();
+                    url.openStream();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println("RELOAD PAGE FAILED FOR URL " + url);
+                    e.printStackTrace(System.out);
                 }
             }
         }).start();

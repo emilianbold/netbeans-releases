@@ -153,7 +153,6 @@ public final class BrowseFolderPanel extends JPanel {
         browseTargetFolderButton = new JButton();
 
         targetFolderLabel.setLabelFor(targetFolderTextField);
-
         Mnemonics.setLocalizedText(targetFolderLabel, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.targetFolderLabel.text"));
         Mnemonics.setLocalizedText(browseTargetFolderButton, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.browseTargetFolderButton.text"));
         browseTargetFolderButton.addActionListener(new ActionListener() {
@@ -170,7 +169,7 @@ public final class BrowseFolderPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(targetFolderLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(targetFolderTextField, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addComponent(targetFolderTextField)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(browseTargetFolderButton)
                 .addContainerGap())

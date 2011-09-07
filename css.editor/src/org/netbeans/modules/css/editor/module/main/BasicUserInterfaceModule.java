@@ -44,7 +44,7 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -76,9 +76,9 @@ public class BasicUserInterfaceModule extends CssModule {
                 "repeat-item",
                 "repeat-index"});
 
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/basic_user_interface"; //NOI18N
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
     
-    private static Collection<PropertyDescriptor> propertyDescriptors;
+    private static Collection<Property> propertyDescriptors;
     
     @Override
     public Collection<String> getPseudoClasses() {
@@ -92,7 +92,7 @@ public class BasicUserInterfaceModule extends CssModule {
 
     
     @Override
-    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public synchronized Collection<Property> getProperties() {
         if(propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
         }
