@@ -396,7 +396,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             }
         };
         FutureTask<OperationState> task = null;
-        if (!isRemote() || null != Util.computeTarget(properties)) {
+        if (!isRemote() || !Util.isDefaultOrServerTarget(properties)) {
             task = new FutureTask<OperationState>(
                 new StopTask(this, stopServerListener, stateListener));
         // prevent j2eeserver from stopping a server it did not start.
@@ -751,7 +751,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 public void run() {
                     // Can block for up to a few seconds...
                     boolean isRunning = isReallyRunning();
-                    if (isRunning && null != Util.computeTarget(properties)) {
+                    if (isRunning && !Util.isDefaultOrServerTarget(properties)) {
                         isRunning = pingHttp(1);
                     }
                     ServerState currentState = getServerState();
@@ -826,7 +826,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     void updateHttpPort() {
         String target = Util.computeTarget(properties);
         GetPropertyCommand gpc = null;
-        if (null == target) {
+        if (Util.isDefaultOrServerTarget(properties)) {
             gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, "localhost", true); // NOI18N
         } else {
@@ -854,7 +854,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     }
                 }
             }
-            if (!didSet && null != target) {
+            if (!didSet && !Util.isDefaultOrServerTarget(properties)) {
                 setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, "28080", true); // NOI18N
             }
         } catch (InterruptedException ex) {
