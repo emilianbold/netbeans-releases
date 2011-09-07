@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning.util.common;
+package org.netbeans.modules.mercurial.ui.queues;
 
+import java.io.File;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.util.NbBundle;
 
 /**
- * @author Maros Sandor
+ *
+ * @author Tomas Stupka
  */
-public abstract class VCSCommitOptions {
+public class QFileNode extends VCSFileNode<FileInformation> {
+    public static final VCSCommitOptions INCLUDE = new VCSCommitOptions.Commit(NbBundle.getMessage(QFileNode.class, "IncludeOption.name")); //NOI18N
+    public static final VCSCommitOptions EXCLUDE = new VCSCommitOptions.Commit(NbBundle.getMessage(QFileNode.class, "ExcludeOption.name")); //NOI18N
+    private final FileInformation fi;
 
-    public static final VCSCommitOptions COMMIT = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Commit")); // NOI18N
-    public static final VCSCommitOptions COMMIT_REMOVE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_CommitRemove")); // NOI18N
-    public static final VCSCommitOptions EXCLUDE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Exclude")); // NOI18N
-    
-    private final String label;
+    public QFileNode(File root, File file) {
+        this(root, file, null);
+    }
 
-    private VCSCommitOptions (String label) {
-        this.label = label;
+    QFileNode (File repository, File file, FileInformation fi) {
+        super(repository, file);
+        this.fi = fi;
     }
 
     @Override
-    public String toString() {
-        return label;
+    public FileInformation getInformation() {
+        return fi == null ? Mercurial.getInstance().getFileStatusCache().getStatus(getFile()) : fi;
     }
-    
-    public static class Add extends VCSCommitOptions {
-        
-        public Add(String label) {
-            super(label);
+
+    @Override
+    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
+        if (withExclusions && HgModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
+            return EXCLUDE;
+        } else {
+            if ((getInformation().getStatus() & (FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
+                return VCSCommitOptions.COMMIT_REMOVE;
+            } else if ((getInformation().getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                return HgModuleConfig.getDefault().getExludeNewFiles() ? EXCLUDE : INCLUDE;
+            } else {
+                return INCLUDE;
+            }
         }
     }
 
-    public static class Commit extends VCSCommitOptions {
-        
-        public Commit(String label) {
-            super(label);
-        }
-    }
 }
-
