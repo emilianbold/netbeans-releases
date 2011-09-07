@@ -39,13 +39,7 @@ package org.netbeans.modules.refactoring.java.suites;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.refactoring.java.test.ChangeParametersTest;
-import org.netbeans.modules.refactoring.java.test.CopyClassTest;
-import org.netbeans.modules.refactoring.java.test.FindUsagesTest;
-import org.netbeans.modules.refactoring.java.test.InlineTest;
-import org.netbeans.modules.refactoring.java.test.InnerToOutterTest;
-import org.netbeans.modules.refactoring.java.test.IntroduceParameterTest;
-import org.netbeans.modules.refactoring.java.test.RenameTest;
+import org.netbeans.modules.refactoring.java.test.*;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringActionsProviderTest;
 
 /**
@@ -61,6 +55,8 @@ public class JavaRefactoringTestSuite {
             InlineTest.class,
             InnerToOutterTest.class,
             ChangeParametersTest.class,
+            UseSuperTypeTest.class,
+            MoveClassTest.class,
             JavaRefactoringActionsProviderTest.class};
         TestSuite testSuite = new TestSuite(classes);
         testSuite.addTest(FindUsagesTest.suite());
