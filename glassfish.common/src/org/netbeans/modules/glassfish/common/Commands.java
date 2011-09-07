@@ -47,7 +47,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,7 +67,6 @@ import java.util.zip.GZIPInputStream;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.Utils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -143,7 +144,15 @@ public class Commands {
                 return false;
             }
 
-            String appsList = list.getMainAttributes().getValue("children"); // NOI18N
+            String appsList = null;
+            try {
+                String tmp = list.getMainAttributes().getValue("children"); // NOI18N
+                if (null != tmp) {
+                    appsList = URLDecoder.decode(tmp, "UTF-8"); // NOI18N
+                }
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8");
+            }
             if(appsList == null || appsList.length() == 0) {
                 // no applications deployed...
                 return true;
@@ -265,19 +274,28 @@ public class Commands {
 
             String[] resources = resourceList.split("[,;]"); // NOI18N
             for(String r : resources) {
-                if(skipResource(r)) {
+                if(r == null || skipResource(r)) {
                     continue;
                 }
 
                 // get container attributes
                 Attributes resourceAttr = list.getAttributes(r);
                 if(resourceAttr != null) {
-                    String name = resourceAttr.getValue("message"); // NOI18N
+                    String name = null;
+                    String tmp = null;
+                    try {
+                        tmp = resourceAttr.getValue("message"); // NOI18N
+                        if (null != tmp) {
+                            name = URLDecoder.decode(tmp , "UTF-8"); // NOI18N
+                        }
 
-                    if (null == name || name.length() < 1)  {
-                        name = r.trim();
+                        if (null == name || name.length() < 1)  {
+                            name = URLDecoder.decode(r.trim(), "UTF-8"); // NOI18N
+                        }
+
+                    } catch (UnsupportedEncodingException uee) {
+                        Logger.getLogger("glassfish").log(Level.INFO, "", uee); // NOI18N
                     }
-
                     if(name != null && name.length() > 0) {
                         if(resList == null) {
                             resList = new ArrayList<ResourceDesc>();
@@ -616,12 +634,12 @@ public class Commands {
                     sw.write("\n");
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger("glassfish").log(Level.INFO,"",ex);
             } finally {
                 try {
                     sw.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger("glassfish").log(Level.INFO,"",ex);
                 }
             }
             lines = sw.toString();
