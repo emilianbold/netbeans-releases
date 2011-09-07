@@ -64,9 +64,6 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     public static ParameterImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope, boolean global) {
         ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
         postObjectCreateRegistration(global, parameterImpl);
-        if (global && (type instanceof TypeImpl)) {
-            ((TypeImpl)type).setOwner(parameterImpl);
-        }
         return parameterImpl;
     }
 
@@ -97,9 +94,6 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
         // restore UID for unnamed parameter
         if (getName().length() == 0) {
             super.readUID(input);
-        }
-        if (getType() instanceof TypeImpl) {
-            ((TypeImpl)getType()).setOwner(this);
         }
     } 
 }
