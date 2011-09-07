@@ -107,10 +107,10 @@ public abstract class SearchAndReplaceBarHandler {
                             }
                             searchBarInstance.gainFocus();
                             makeSearchAndReplaceBarPersistent();
-                        } else {
-                            dialogFindAction.actionPerformed(evt, target);
-                        }
+                            return;
+                        } 
                     }
+                    dialogFindAction.actionPerformed(evt, target);
                 }
             }
         }
@@ -159,11 +159,11 @@ public abstract class SearchAndReplaceBarHandler {
                             jp.add(ReplaceBar.getInstance(searchBar));
                             ReplaceBar.getInstance(searchBar).gainFocus();
                             makeSearchAndReplaceBarPersistent();
-                        } else {
-                            if (target.isEditable())
-                                dialogReplaceAction.actionPerformed(evt, target);
+                            return;
                         }
                     }
+                    if (target.isEditable())
+                        dialogReplaceAction.actionPerformed(evt, target);
                 }
             }
         }
