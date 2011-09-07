@@ -1374,6 +1374,18 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileReferences().getReference(offset);
     }
 
+    public boolean addResolvedReference(CsmReference ref, CsmObject referencedObject) {
+        return getFileReferences().addResolvedReference(ref, referencedObject);
+    }
+
+    public void removeResolvedReference(CsmReference ref) {
+        getFileReferences().removeResolvedReference(ref);
+    }
+
+    public CsmReference getResolvedReference(CsmReference ref) {
+        return getFileReferences().getResolvedReference(ref);
+    }
+
     public void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
     }

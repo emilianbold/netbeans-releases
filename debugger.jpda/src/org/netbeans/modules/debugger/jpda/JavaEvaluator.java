@@ -50,8 +50,10 @@ import com.sun.jdi.Value;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.expr.JavaExpression;
@@ -86,7 +88,7 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
             expr = JavaExpression.parse(expression.getExpression(), JavaExpression.LANGUAGE_JAVA_1_5);
             expression.setPreprocessedObject(expr);
         }
-        Value v = evaluateIn(expr, context.getStackFrame(), context.getStackDepth(),
+        Value v = evaluateIn(expr, context.getCallStackFrame(), context.getStackFrame(), context.getStackDepth(),
                              context.getContextObject(), debugger.methodCallsUnsupportedExc == null,
                              new Runnable() { public void run() { context.notifyMethodToBeInvoked(); } });
         return new Result(v);
@@ -103,6 +105,7 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
     // * Might be changed to return a variable with disabled collection. When not used any more,
     // * it's collection must be enabled again.
     private Value evaluateIn (org.netbeans.modules.debugger.jpda.expr.JavaExpression expression,
+                              CallStackFrame csf,
                               final StackFrame frame, int frameDepth,
                               ObjectReference var, boolean canInvokeMethods,
                               Runnable methodInvokePreprocessor) throws InvalidExpressionException {
@@ -153,7 +156,10 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (InvalidStackFrameExceptionWrapper e) {
-            Exceptions.printStackTrace(e); // Should not occur
+            JPDAThreadImpl t = (JPDAThreadImpl) csf.getThread();
+            String msg = "Thread "+t+", isSuspended = "+t.isSuspended()+", isSuspendedNoFire = "+t.isSuspendedNoFire()+
+                    ", isThreadSuspended = "+t.isThreadSuspended()+", isInStep = "+t.isInStep()+", isMethodInvoking = "+t.isMethodInvoking();
+            Exceptions.printStackTrace(Exceptions.attachMessage(e, msg)); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (EvaluationException e) {

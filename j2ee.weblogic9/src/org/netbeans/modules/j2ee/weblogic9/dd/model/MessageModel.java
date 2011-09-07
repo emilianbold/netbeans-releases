@@ -52,7 +52,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.schema2beans.NullEntityResolver;
 import org.openide.util.NbBundle;
@@ -105,17 +105,21 @@ public final class MessageModel extends BaseDescriptorModel {
         return generate1031();
     }
 
-    public List<String> getMessageDestinations(MessageDestination.Type type) {
-        List<String> ret = new ArrayList<String>();
+    public List<MessageDestination> getMessageDestinations(org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type type) {
+        List<MessageDestination> ret = new ArrayList<MessageDestination>();
         switch (type) {
             case QUEUE:
                 for (QueueType qType : bean.getQueue()) {
-                    ret.add(qType.getName());
+                    MessageDestination element = new MessageDestination(
+                            qType.getName(), qType.getJndiName(), type);
+                    ret.add(element);
                 }
                 break;
             case TOPIC:
                 for (TopicType tType : bean.getTopic()) {
-                    ret.add(tType.getName());
+                    MessageDestination element = new MessageDestination(
+                            tType.getName(), tType.getJndiName(), type);
+                    ret.add(element);
                 }
                 break;
             default:
@@ -124,17 +128,17 @@ public final class MessageModel extends BaseDescriptorModel {
         return ret;
     }
 
-    public void addMessageDestination(String name, MessageDestination.Type type) {
-        switch (type) {
+    public void addMessageDestination(MessageDestination destination) {
+        switch (destination.getType()) {
             case QUEUE:
                 QueueType qType = bean.addQueue();
-                qType.setName(name);
-                qType.setJndiName(name);
+                qType.setName(destination.getResourceName());
+                qType.setJndiName(destination.getJndiName());
                 break;
             case TOPIC:
                 TopicType tType = bean.addTopic();
-                tType.setName(name);
-                tType.setJndiName(name);
+                tType.setName(destination.getResourceName());
+                tType.setJndiName(destination.getJndiName());
                 break;
             default:
         }
@@ -145,5 +149,32 @@ public final class MessageModel extends BaseDescriptorModel {
         webLogicJms.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicJms.setAttributeValue("xsi:schemaLocation", "http://xmlns.oracle.com/weblogic/weblogic-jms http://xmlns.oracle.com/weblogic/weblogic-jms/1.0/weblogic-jms.xsd"); // NOI18N
         return new MessageModel(webLogicJms);
+    }
+
+    public static class MessageDestination {
+
+        private final String resourceName;
+
+        private final String jndiName;
+
+        private final org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type type;
+
+        public MessageDestination(String resourceName, String jndiName, Type type) {
+            this.resourceName = resourceName;
+            this.jndiName = jndiName;
+            this.type = type;
+        }
+
+        public String getJndiName() {
+            return jndiName;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public Type getType() {
+            return type;
+        }
     }
 }

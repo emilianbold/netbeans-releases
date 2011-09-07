@@ -45,6 +45,9 @@ package org.openide.awt;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.EditorKit;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.CSS.Attribute;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -523,6 +526,29 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             actionMap.put(DefaultEditorKit.downAction, new ScrollAction(1));
         }
 
+        @Override
+        public EditorKit getEditorKitForContentType( String type ) {
+            if( "text/html".equals( type ) ) {
+                return new HTMLEditorKit() {
+                    @Override
+                    public Document createDefaultDocument() {
+                        StyleSheet styles = getStyleSheet();
+                        //#200472 - hack to make JDK 1.7 javadoc readable
+                        StyleSheet ss = new FilteredStyleSheet();
+
+                        ss.addStyleSheet(styles);
+
+                        HTMLDocument doc = new HTMLDocument(ss);
+                        doc.setParser(getParser());
+                        doc.setAsynchronousLoadPriority(4);
+                        doc.setTokenThreshold(100);
+                        return doc;
+                    }
+                };
+            }
+            return super.getEditorKitForContentType( type );
+        }
+
         /**
          * Fetches a stream for the given URL, which is about to
          * be loaded by the <code>setPage</code> method.
@@ -693,6 +719,38 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             openStream();
 
             return super.read();
+        }
+    }
+    
+    private static class FilteredStyleSheet extends StyleSheet {
+
+        @Override
+        public void addCSSAttribute( MutableAttributeSet attr, Attribute key, String value ) {
+            value = fixFontSize( key, value );
+            super.addCSSAttribute( attr, key, value );
+        }
+
+        @Override
+        public boolean addCSSAttributeFromHTML( MutableAttributeSet attr, Attribute key, String value ) {
+            value = fixFontSize( key, value );
+            return super.addCSSAttributeFromHTML( attr, key, value );
+        }
+        
+        /**
+         * CSS with e.g. 'font-size: 75%' makes the HTML unreadable in the default JEditorPane
+         * @param key
+         * @param value
+         * @return 
+         */
+        private static String fixFontSize( Attribute key, String value ) {
+            if( "font-size".equals( key.toString() ) && null != value && value.endsWith( "%" ) ) {
+                String strPercentage = value.replace( "%", "");
+                int percentage = Integer.parseInt( strPercentage );
+                if( percentage < 100 ) {
+                    value = "100%";
+                }
+            }
+            return value;
         }
     }
 }

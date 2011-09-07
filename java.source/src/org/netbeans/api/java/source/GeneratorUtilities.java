@@ -611,7 +611,7 @@ public final class GeneratorUtilities {
         }
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         for (ImportTree imp : imports) {
-            Element e = getImportedElement(cut, imp, trees);
+            Element e = getImportedElement(cut, imp, trees, elements);
             Element el = imp.isStatic()
                     ? e.getKind().isClass() || e.getKind().isInterface() ? e : elementUtilities.enclosingTypeElement(e)
                     : e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
@@ -708,7 +708,7 @@ public final class GeneratorUtilities {
                         || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
                 while (currentExisting >= 0) {
                     ImportTree imp = imports.get(currentExisting);
-                    Element impElement = getImportedElement(cut, imp, trees);
+                    Element impElement = getImportedElement(cut, imp, trees, elements);
                     el = imp.isStatic()
                             ? impElement.getKind().isClass() || impElement.getKind().isInterface() ? impElement : elementUtilities.enclosingTypeElement(impElement)
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
@@ -894,15 +894,29 @@ public final class GeneratorUtilities {
         return copy.getTreeUtilities().translate(result, translate);
     }
     
-    private Element getImportedElement(CompilationUnitTree cut, ImportTree imp, Trees trees) {
+    private Element getImportedElement(CompilationUnitTree cut, ImportTree imp, Trees trees, Elements elements) {
         Tree qualIdent = imp.getQualifiedIdentifier();        
-        if (qualIdent.getKind() != Tree.Kind.MEMBER_SELECT)
-            return trees.getElement(TreePath.getPath(cut, qualIdent));
+        if (qualIdent.getKind() != Tree.Kind.MEMBER_SELECT) {
+            Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+            if (element == null)
+                element = elements.getTypeElement(qualIdent.toString());
+            return element;
+        }
         Name name = ((MemberSelectTree)qualIdent).getIdentifier();
-        if ("*".contentEquals(name)) //NOI18N
-            return trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
+        if ("*".contentEquals(name)) { //NOI18N
+            Element element = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
+            if (element == null) {
+                String fqn = ((MemberSelectTree)qualIdent).getExpression().toString();
+                element = elements.getTypeElement(fqn);
+                if (element == null)
+                    element = elements.getPackageElement(fqn);
+            }
+            return element;
+        }
         if (imp.isStatic()) {
             Element parent = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
+            if (parent == null)
+                parent = elements.getTypeElement(((MemberSelectTree)qualIdent).getExpression().toString());
             if (parent != null && (parent.getKind().isClass() || parent.getKind().isInterface())) {
                 Scope s = trees.getScope(new TreePath(cut));
                 for (Element e : parent.getEnclosedElements()) {
@@ -912,7 +926,10 @@ public final class GeneratorUtilities {
                 return parent;
             }
         }
-        return trees.getElement(TreePath.getPath(cut, qualIdent));
+        Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+        if (element == null)
+            element = elements.getTypeElement(qualIdent.toString());
+        return element;
     }
     
     private Map<Name, TypeElement> getUsedTypes(final CompilationUnitTree cut, final Trees trees) {

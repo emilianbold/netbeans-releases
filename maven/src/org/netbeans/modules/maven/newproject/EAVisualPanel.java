@@ -165,7 +165,7 @@ public final class EAVisualPanel extends JPanel  {
         tfEjb = new javax.swing.JTextField();
         tfEar = new javax.swing.JTextField();
 
-        cmbEEVersion.setModel(new DefaultComboBoxModel(ArchetypeWizardUtils.EE_LEVELS));
+        cmbEEVersion.setModel(new DefaultComboBoxModel(BasicEEWizardIterator.eeLevels()));
 
         lblEEVersion.setLabelFor(cmbEEVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.lblEEVersion.text")); // NOI18N

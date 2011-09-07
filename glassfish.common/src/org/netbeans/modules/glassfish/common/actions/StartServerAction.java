@@ -98,7 +98,7 @@ public class StartServerAction extends NodeAction {
         return commonSupport.getServerState() == ServerState.STOPPED &&
                 (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ||
                 // there is a target associated with this server URL and the DAS is running.
-                (null != Util.computeTarget(commonSupport.getInstanceProperties()) &&
+                (!Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties()) &&
                 ((CommonServerSupport) commonSupport).isReallyRunning()));
     }
     

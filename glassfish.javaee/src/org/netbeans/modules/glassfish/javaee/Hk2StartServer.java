@@ -499,6 +499,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             return true;
         }
         String target = Hk2DeploymentManager.getTargetFromUri(uri);
-        return null == target ? false : true;
+        return null == target ? false : !"server".equals(target);
     }
 }

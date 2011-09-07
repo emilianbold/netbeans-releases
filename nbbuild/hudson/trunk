@@ -1,2 +1,2 @@
 #!/bin/sh
-ant -Dcontinue.after.failing.tests=true build-nozip commit-validation
+ant -Dcontinue.after.failing.tests=true -Dtest.fail.on.error=false build-nozip commit-validation build-test-dist

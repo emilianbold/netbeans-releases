@@ -98,6 +98,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
     @Override
     public void doAction(Object action) {
         String msg = null;
+        setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, false);
         try {
             RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
             for (int i = 0; i < screenshots.length; i++) {
@@ -140,6 +141,8 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
             if (ex.getCause() != null) {
                 Exceptions.printStackTrace(ex);
             }
+        } finally {
+            setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, true);
         }
         if (msg != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg);

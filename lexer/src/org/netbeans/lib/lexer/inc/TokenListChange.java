@@ -73,12 +73,17 @@ public class TokenListChange<T extends TokenId> {
     
     private static final TokenOrEmbedding<?>[] EMPTY_TOKENS = {};
     
+    public static <T extends TokenId> TokenListChange<T> createEmptyChange(MutableTokenList<T> tokenList) {
+        TokenListChange<T> change = new TokenListChange<T>(tokenList);
+        // Leave matchIndex at 0 (no replaced tokens)
+        change.setRemovedTokensEmpty();
+        return change;
+    }
+
     public static <T extends TokenId> TokenListChange<T> createRebuildChange(MutableTokenList<T> tokenList) {
         TokenListChange<T> change = new TokenListChange<T>(tokenList);
-//        change.setIndex(0);
-//        change.setOffset(0);
-//        change.addedEndOffset = 0; // Tokens will be recreated lazily
-        change.matchIndex = tokenList.tokenCountCurrent(); // All tokens removed
+        // Signal all tokens removed => IncTokenList.replaceTokens() will physically remove them
+        change.matchIndex = tokenList.tokenCountCurrent();
         return change;
     }
 

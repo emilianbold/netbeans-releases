@@ -381,6 +381,30 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "return $this->$U^RL;", true);
     }
 
+    public void testIssue197283_01() throws Exception {
+        checkOccurrences(getTestPath(), "$fu^nc = 'someFunc';", true);
+    }
+
+    public void testIssue197283_02() throws Exception {
+        checkOccurrences(getTestPath(), "$fu^nc();", true);
+    }
+
+    public void testIssue197283_03() throws Exception {
+        checkOccurrences(getTestPath(), "$o^bj = 'MyObj';", true);
+    }
+
+    public void testIssue197283_04() throws Exception {
+        checkOccurrences(getTestPath(), "$x = new $o^bj;", true);
+    }
+
+    public void testIssue197283_05() throws Exception {
+        checkOccurrences(getTestPath(), "$another^Obj = 'AnotherObj';", true);
+    }
+
+    public void testIssue197283_06() throws Exception {
+        checkOccurrences(getTestPath(), "$y = new $another^Obj();", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

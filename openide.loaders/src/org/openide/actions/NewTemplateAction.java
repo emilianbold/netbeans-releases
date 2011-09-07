@@ -163,7 +163,7 @@ public class NewTemplateAction extends NodeAction {
     }
     
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
 
     /* Enables itself only when activates node is DataFolder.

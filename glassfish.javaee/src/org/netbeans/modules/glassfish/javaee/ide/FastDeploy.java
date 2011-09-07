@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.ModuleConfigurationImpl;
 import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -69,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule2;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.openide.filesystems.FileObject;
@@ -126,6 +128,17 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode()))) +
                 nameSuffix;
         String contextRoot = null;
+        if (module.getType() == J2eeModule.Type.WAR) {
+            // compute cr 
+            ModuleConfigurationImpl mci = ModuleConfigurationImpl.get(module);
+            if (null != mci) {
+                try {
+                    contextRoot = mci.getContextRoot();
+                } catch (ConfigurationException ex) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, "could not getContextRoot() for {0}",dir);
+                }
+            }
+        }
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
@@ -156,14 +169,15 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         }
         ResourceRegistrationHelper.deployResources(dir,dm);
         if (restart) {
+            final String cr = contextRoot;
             restartProgress.addProgressListener(new ProgressListener() {
                 @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (commonSupport2 != null && requiredLibraries.length > 0) {
-                            commonSupport2.deploy(deployProgress, dir, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+                            commonSupport2.deploy(deployProgress, dir, moduleName, cr, Collections.<String, String>emptyMap(), requiredLibraries);
                         } else {
-                            commonSupport.deploy(deployProgress, dir, moduleName);
+                            commonSupport.deploy(deployProgress, dir, moduleName, cr);
                         }
                     } else {
                         deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
@@ -174,9 +188,9 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             return updateCRProgress;
         } else {
             if (commonSupport2 != null && requiredLibraries.length > 0) {
-                commonSupport2.deploy(deployProgress, dir, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+                commonSupport2.deploy(deployProgress, dir, moduleName, contextRoot, Collections.<String, String>emptyMap(), requiredLibraries);
             } else {
-                commonSupport.deploy(deployProgress, dir, moduleName);
+                commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
             }
             return updateCRProgress;
         }
@@ -333,7 +347,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
 
         if (!url.trim().matches(".*:[0-9]+$"))  // NOI18N
-            return false;
+            return url.trim().endsWith("server");
 
         return true;
     }
@@ -435,7 +449,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
 
         if (!url.trim().matches(".*:[0-9]+$")) // NOI18N
-            return false;
+            return url.trim().endsWith("server");
         return !"false".equals(System.getProperty("glassfish.javaee.deployonsave"));
     }
 

@@ -179,7 +179,13 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardD
             super (it);
         }
     }
-    
+
+    static class BackgroundInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
+        public BackgroundInstantiatingIterator (TemplateWizardIterImpl it) {
+            super (it);
+        }
+    }
+
     static class ProgressInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
         private TemplateWizardIterImpl itImpl;
         public ProgressInstantiatingIterator (TemplateWizardIterImpl it) {

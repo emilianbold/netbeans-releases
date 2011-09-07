@@ -131,13 +131,13 @@ public class NewProject extends BasicAction {
         FileObject fo = FileUtil.getConfigFile( "Templates/Project" ); //NOI18N
         final NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
-        
-        SwingUtilities.invokeLater( new Runnable() {
-            
-            public void run() {
-                try {
-                    
-                    Set newObjects = wizard.instantiate();
+        final Set newObjects;
+        try {
+            newObjects = wizard.instantiate();
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
+        }
                     // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
                     Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
                     String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
@@ -148,9 +148,13 @@ public class NewProject extends BasicAction {
                             prjDir.delete();
                         }
                     }
-                    
+
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
+        
+        SwingUtilities.invokeLater( new Runnable() {
+            
+            public void run() {
                     ProjectUtilities.WaitCursor.show();
                     
                     if ( newObjects != null && !newObjects.isEmpty() ) {
@@ -225,9 +229,6 @@ public class NewProject extends BasicAction {
                         
                     }
                     ProjectUtilities.WaitCursor.hide();
-                } catch ( IOException e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                }
             }
             
         } );
