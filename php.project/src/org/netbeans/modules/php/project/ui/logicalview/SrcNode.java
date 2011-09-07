@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.ui.logicalview;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -217,13 +219,32 @@ public class SrcNode extends FilterNode {
     }
 
     private static final class PackageNode extends FilterNode {
+
+        final FileObject folder;
+
         private final PhpProject project;
         private final boolean isTest;
+        private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (PhpProject.PROP_WEB_ROOT.equals(propertyName)) {
+                    if (folder.equals(evt.getOldValue()) || folder.equals(evt.getNewValue())) {
+                        fireIconChange();
+                        fireOpenedIconChange();
+                    }
+                }
+            }
+        };
+
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode, new FolderChildren(project, originalNode, isTest));
             this.project = project;
             this.isTest = isTest;
+            folder = originalNode.getLookup().lookup(FileObject.class);
+
+            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override
