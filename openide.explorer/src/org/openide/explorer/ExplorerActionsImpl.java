@@ -427,7 +427,9 @@ final class ExplorerActionsImpl {
         if (asu != null) {
             asu.update();
         }
-        syncActions();
+        if (EventQueue.isDispatchThread()) {
+            syncActions();
+        }
     }
     
     final void syncActions() {
