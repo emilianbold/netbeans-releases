@@ -137,7 +137,6 @@ public final class NestedType extends TypeImpl {
                 classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]));
             }
             _setClassifier(classifier);
-            putTypeOwner();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();

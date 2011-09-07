@@ -162,11 +162,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static FileObject getWebRootDirectory(PhpProject project) {
-        FileObject webRoot = getSourceSubdirectory(project, project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT));
-        if (webRoot != null && webRoot.isValid()) {
-            return webRoot;
-        }
-        return getSourcesDirectory(project);
+        return project.getWebRootDirectory();
     }
 
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {

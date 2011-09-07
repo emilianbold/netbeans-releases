@@ -221,6 +221,10 @@ public class TreeEvaluator {
         } catch (NativeMethodException e) {
             throw new InvalidExpressionException (e.getLocalizedMessage());
         } catch (InvalidStackFrameException e) {
+            JPDAThreadImpl t = evaluationContext.getThread();
+            String msg = "Thread "+t+", isSuspended = "+t.isSuspended()+", isSuspendedNoFire = "+t.isSuspendedNoFire()+
+                    ", isThreadSuspended = "+t.isThreadSuspended()+", isInStep = "+t.isInStep()+", isMethodInvoking = "+t.isMethodInvoking();
+            e = Exceptions.attachMessage(e, msg);
             Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));

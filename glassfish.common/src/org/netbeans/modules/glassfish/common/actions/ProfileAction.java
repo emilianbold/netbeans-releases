@@ -107,7 +107,7 @@ public class ProfileAction extends NodeAction {
         ProfilerCookie pc = node.getLookup().lookup(ProfilerCookie.class);
         return null != pc && commonSupport.getServerState() == ServerState.STOPPED &&
                 null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) &&
-                null == Util.computeTarget(commonSupport.getInstanceProperties());
+                Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties());
     }
 
     @Override

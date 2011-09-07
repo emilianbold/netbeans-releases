@@ -149,14 +149,9 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
 
     private void replaceSubtypeUsages(final TreePathHandle subClassHandle, final RefactoringElementsBag elemsBag) {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
-
-
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
+                public void cancel() { }
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
@@ -168,7 +163,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                             resolveElement(complController);
                     EnumSet<ClassIndex.SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES);
                     Set<FileObject> refFileObjSet = clsIndx.getResources(ElementHandle.create(javaClassElement), typeRefSearch, EnumSet.of(ClassIndex.SearchScope.SOURCE));
-
 
                     if (!refFileObjSet.isEmpty()) {
                         fireProgressListenerStart(AbstractRefactoring.PREPARE, refFileObjSet.size());
@@ -194,7 +188,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
-        return;
     }
 
     private final class FindRefTask implements CancellableTask<WorkingCopy> {

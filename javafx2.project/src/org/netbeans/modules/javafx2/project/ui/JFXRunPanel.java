@@ -981,18 +981,20 @@ private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private String getParamsString(List<Map<String,String>> props) {
         String s = new String();
-        for(Map<String,String> m : props) {
-            if(s.length() > 0) {
-                s += ", "; // NOI18N
-            }
-            int suffixIdx = 0;
-            for(String propName : JFXProjectProperties.APP_PARAM_SUFFIXES) {
-                if(m.get(propName) != null && !m.get(propName).isEmpty()) {
-                    if(suffixIdx > 0) {
-                        s += "="; // NOI18N
+        if(props != null) {
+            for(Map<String,String> m : props) {
+                if(s.length() > 0) {
+                    s += ", "; // NOI18N
+                }
+                int suffixIdx = 0;
+                for(String propName : JFXProjectProperties.APP_PARAM_SUFFIXES) {
+                    if(m.get(propName) != null && !m.get(propName).isEmpty()) {
+                        if(suffixIdx > 0) {
+                            s += "="; // NOI18N
+                        }
+                        s += m.get(propName);
+                        suffixIdx++;
                     }
-                    s += m.get(propName);
-                    suffixIdx++;
                 }
             }
         }
