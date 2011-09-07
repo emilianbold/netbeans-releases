@@ -495,11 +495,11 @@ public class CallStackFrameImpl implements CallStackFrame {
         if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         thread.accessLock.writeLock().lock();
-        if (thread.isInStep()) {
-            // A next step is submitted, give this up
-            return null;
-        }
         try {
+            if (thread.isInStep()) {
+                // A next step is submitted, give this up
+                return null;
+            }
             try {
                 ThreadReference tr = thread.getThreadReference();
                 com.sun.jdi.VirtualMachine vm = MirrorWrapper.virtualMachine(tr);

@@ -64,7 +64,6 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.ModelUtils;
@@ -72,7 +71,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -109,12 +107,6 @@ public class ArchetypeWizardUtils {
     static final Archetype[] APPCLIENT_ARCHS;
     static final Archetype EA_ARCH;
     
-    static final String[] EE_LEVELS = {
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
-    };
-
     static {
         WEB_APP_ARCHS = new Archetype[3];
 
@@ -281,9 +273,9 @@ public class ArchetypeWizardUtils {
     }
 
     /**
-     * Instantiates archetype stored in given wizard descriptor, with progress UI notification.
+     * Instantiates archetype stored in given wizard descriptor.
      */
-    static Set<FileObject> instantiate(ProgressHandle handle, WizardDescriptor wiz) throws IOException {
+    static Set<FileObject> instantiate(WizardDescriptor wiz) throws IOException {
         ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
 
         Archetype arch = (Archetype) wiz.getProperty("archetype"); //NOI18N
@@ -292,46 +284,11 @@ public class ArchetypeWizardUtils {
         @SuppressWarnings("unchecked")
         Map<String,String> additional = (Map<String,String>) wiz.getProperty(ADDITIONAL_PROPS);
 
-        try {
-            ProjectInfo ear_vi = (ProjectInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
-            if (ear_vi != null) {
-                // enterprise application wizard, multiple archetypes to run
-                ProjectInfo web_vi = (ProjectInfo)wiz.getProperty("web_versionInfo"); //NOI18N
-                ProjectInfo ejb_vi = (ProjectInfo)wiz.getProperty("ejb_versionInfo"); //NOI18N
-
-                handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
-                File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-                createFromArchetype(handle, rootFile, vi, arch, additional, 0, true);
-                File earFile = FileUtil.normalizeFile((File) wiz.getProperty("ear_projdir")); // NOI18N
-                createFromArchetype(handle, earFile, ear_vi, (Archetype) wiz.getProperty("ear_archetype"), null, 4, false); //NOI18N
-                int progressCounter = 6;
-                if (web_vi != null) {
-                    createFromArchetype(handle, FileUtil.normalizeFile((File)wiz.getProperty("web_projdir")), web_vi, //NOI18N
-                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter, false); //NOI18N
-                    progressCounter += 3;
-                }
-                if (ejb_vi != null) {
-                    createFromArchetype(handle, FileUtil.normalizeFile((File)wiz.getProperty("ejb_projdir")), ejb_vi, //NOI18N
-                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter, false); //NOI18N
-                    progressCounter += 3;
-                }
-                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
-                progressCounter++;
-                Set<FileObject> projects = openProjects(rootFile, earFile);
-                handle.progress(++progressCounter);
-                return projects;
-            } else {
-                handle.start(4);
-                File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-                createFromArchetype(handle, projFile, vi, arch, additional, 0, true);
-                Set<FileObject> projects = openProjects(projFile, null);
-                handle.progress(4);
-                Templates.setDefinesMainProject(wiz, projects.size() > 1);
-                return projects;
-            }
-        } finally {
-            handle.finish();
-        }
+        File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        createFromArchetype(projFile, vi, arch, additional, true);
+        Set<FileObject> projects = openProjects(projFile, null);
+        Templates.setDefinesMainProject(wiz, projects.size() > 1);
+        return projects;
     }
 
     private static final String loggerName = "org.netbeans.ui.metrics.maven"; // NOI18N
@@ -345,9 +302,7 @@ public class ArchetypeWizardUtils {
         Logger.getLogger(loggerName).log(logRecord);
     }
     
-    public static void createFromArchetype(ProgressHandle handle, File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional, int progressCounter, boolean updateLastUsedProjectDir) throws IOException {
-        handle.progress(++progressCounter);
-
+    public static void createFromArchetype(File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional, boolean updateLastUsedProjectDir) throws IOException {
         final File parent = projDir.getParentFile();
         if (parent == null) {
             throw new IOException("no parent of " + projDir);
@@ -358,11 +313,7 @@ public class ArchetypeWizardUtils {
         if (!parent.isDirectory() && !parent.mkdirs()) {
             throw new IOException("could not create " + parent);
         }
-        handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), ++progressCounter);
-
         runArchetype(parent, vi, arch, additional);
-
-        handle.progress(++progressCounter);
     }
 
     public static Set<FileObject> openProjects(File dirF, File mainProjectDir) throws IOException {
@@ -408,24 +359,6 @@ public class ArchetypeWizardUtils {
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi) {
-        FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
-        if (earDirFO == null) {
-            return;
-        }
-        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
-        if (ejbVi != null) {
-            // EAR ---> ejb
-            operations.add(new AddDependencyOperation(ejbVi, "ejb"));
-        }
-        if (webVi != null) {
-            // EAR ---> war
-            operations.add(new AddDependencyOperation(webVi, "war"));
-        }
-
-        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
     }
 
     public static class AddDependencyOperation implements ModelOperation<POMModel> {

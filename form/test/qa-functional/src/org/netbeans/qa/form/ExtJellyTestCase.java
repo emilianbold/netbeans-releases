@@ -87,6 +87,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
     public Boolean DELETE_FILES = true;
     public static String OS = System.getProperty("os.name").toLowerCase();
+    private static String handler="";
 
     public String getTestProjectName() {
         return _testProjectName;
@@ -190,7 +191,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         ProjectRootNode prn = pto.getProjectRootNode(project);
         prn.select();
         Node formnode = new Node(prn, "Source Packages|" + packageName + "|" + fileName); // NOI18N
-        formnode.select();
+        //formnode.select();
 
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
@@ -225,6 +226,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
         new ActionNoBlock("Tools|Add To Palette...", null).perform(); // NOI18N
         SelectPaletteCategoryOperator op = new SelectPaletteCategoryOperator();
+        op.lstPaletteCategories().selectItem(SelectPaletteCategoryOperator.ITEM_SWINGCONTROLS);
         op.lstPaletteCategories().selectItem(SelectPaletteCategoryOperator.ITEM_BEANS);
         op.ok();
 
@@ -533,9 +535,19 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      */
     public static String getTextValueOfLabel(ComponentInspectorOperator inspector, String nodePath) {
         // invoke properties of component ...
-        Node actNode = new Node(inspector.treeComponents(), nodePath);
-        ActionNoBlock act = new ActionNoBlock(null, "Properties");  // NOI18N
-        act.perform(actNode);
+        handler=nodePath;
+        inspector.freezeNavigatorAndRun(new Runnable() {
+
+            @Override
+            public void run() {
+                ComponentInspectorOperator inspector=new ComponentInspectorOperator();
+                Node actNode = new Node(inspector.treeComponents(), handler);
+                
+                ActionNoBlock act = new ActionNoBlock(null, "Properties");  // NOI18N
+                act.perform(actNode);
+            }
+        });
+
 
         // get value of property
         NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
@@ -548,6 +560,33 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
         return result;
     }
+    
+    public  String getTextValueOfLabelNonStatic(ComponentInspectorOperator inspector, String nodePath) {
+        // invoke properties of component ...
+        handler=nodePath;
+        inspector.freezeNavigatorAndRun(new Runnable() {
+
+            @Override
+            public void run() {
+                ComponentInspectorOperator inspector=new ComponentInspectorOperator();
+                Node actNode = new Node(inspector.treeComponents(), handler);
+                runNoBlockPopupOverNode("Properties", actNode);
+            }
+        });
+
+
+        // get value of property
+        NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
+        Property prop = new Property(new PropertySheetOperator(dialogOp), "text");  // NOI18N
+        String result = prop.getValue();
+
+        // close property dialog
+        new JButtonOperator(dialogOp, "Close").push();  // NOI18N
+        waitAMoment();
+
+        return result;
+    }
+
 
     public void createJDABasicProject() {
 
@@ -565,7 +604,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
     public static String getJDKVersionCode() {
         String specVersion = System.getProperty("java.version");
-        
+
         if (specVersion.startsWith("1.4")) {
             return "jdk14";
         }
@@ -577,13 +616,11 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         if (specVersion.startsWith("1.6")) {
             return "jdk16";
         }
-        
+
         if (specVersion.startsWith("1.7")) {
             return "jdk17";
         }
 
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }
-    
-   
 }

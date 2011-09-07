@@ -313,4 +313,9 @@ public final class Util {
         }
         return retVal;
     }
+    
+    static public boolean isDefaultOrServerTarget(Map<String, String> ip) {
+        String target = Util.computeTarget(ip);
+        return null == target || "server".equals(target);
+    }
 }

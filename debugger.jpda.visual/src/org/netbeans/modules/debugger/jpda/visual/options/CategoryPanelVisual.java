@@ -127,7 +127,7 @@ public class CategoryPanelVisual extends StorablePanel {
     public void load() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA.visual");
         uploadAgentCheckBox.setSelected(p.getBoolean("UploadAgent", true));
-        componentBreakpointsCheckBox.setSelected(p.getBoolean("TrackComponentChanges", true));
+        componentBreakpointsCheckBox.setSelected(p.getBoolean("TrackComponentChanges", false));
     }
 
     @Override

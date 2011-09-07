@@ -1,4 +1,5 @@
 #include "loop.h"
+#include "error.h"
 #include <poll.h>
 #include <sys/termios.h>
 #include <stdio.h>
@@ -26,15 +27,18 @@ int loop(int master_fd) {
         FD_SET(master_fd, &read_set);
         select_result = select(master_fd + 1, &read_set, NULL, NULL, NULL);
 
+        // interrupted select is ignored - see CR 7086177
+        if (select_result == -1 && errno == EINTR) {
+            continue;
+        }
+        
         if (select_result == -1) {
-            printf("ERROR: poll failed\n");
-            exit(1);
+            err_sys("poll failed\n");
         }
 
         if (FD_ISSET(STDIN_FILENO, &read_set)) {
             if ((n = read(STDIN_FILENO, buf, BUFSIZ)) == -1) {
-                printf("ERROR: read from stdin failed\n");
-                exit(1);
+                err_sys("read from stdin failed\n");
             }
 
             if (n == 0) {
@@ -42,15 +46,13 @@ int loop(int master_fd) {
             }
 
             if (write(master_fd, buf, n) == -1) {
-                printf("ERROR: write to master failed\n");
-                exit(1);
+                err_sys("write to master failed\n");
             }
         }
 
         if (FD_ISSET(master_fd, &read_set)) {
             if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
-                printf("ERROR: read from master failed\n");
-                exit(1);
+                err_sys("read from master failed\n");
             }
 
             if (n == 0) {
@@ -58,12 +60,12 @@ int loop(int master_fd) {
             }
 
             if (write(STDOUT_FILENO, buf, n) == -1) {
-                printf("ERROR: write to stdout failed\n");
+                err_sys("write to stdout failed\n");
                 exit(1);
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -86,15 +88,18 @@ int loop(int master_fd) {
     for (;;) {
         poll_result = poll((struct pollfd*) & fds, 2, INFTIM);
 
+        // interrupted poll is ignored - see CR 7086177
+        if (poll_result == -1 && errno == EINTR) {
+            continue;
+        }
+
         if (poll_result == -1) {
-            printf("ERROR: poll failed\n");
-            exit(1);
+            err_sys("poll() failed in main_loop");
         }
 
         if (fds[0].revents & POLLIN) {
             if ((n = read(STDIN_FILENO, buf, BUFSIZ)) == -1) {
-                printf("ERROR: read from stdin failed\n");
-                exit(1);
+                err_sys("read from stdin failed");
             }
 
             if (n == 0) {
@@ -109,15 +114,13 @@ int loop(int master_fd) {
             }
 
             if (writen(master_fd, buf, n) == -1) {
-                printf("ERROR: write to master failed\n");
-                exit(1);
+                err_sys("write to master failed\n");
             }
         }
 
         if (fds[1].revents & POLLIN) {
             if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
-                printf("ERROR: read from master failed\n");
-                exit(1);
+                err_sys("read from master failed\n");
             }
 
             if (n == 0) {
@@ -125,8 +128,7 @@ int loop(int master_fd) {
             }
 
             if (writen(STDOUT_FILENO, buf, n) == -1) {
-                printf("ERROR: write to stdout failed\n");
-                exit(1);
+                err_sys("write to stdout failed\n");
             }
         }
 
@@ -145,7 +147,7 @@ int loop(int master_fd) {
             return 1;
         }
     }
-    
+
     return 0;
 }
 #endif
@@ -154,7 +156,7 @@ static ssize_t writen(int fd, const void *ptr, size_t n) {
     const char *pos = ptr;
     size_t nleft = n;
     ssize_t nwritten;
-    
+
     while (nleft > 0) {
         if ((nwritten = write(fd, pos, nleft)) < 0) {
             if (nleft == n)

@@ -152,10 +152,9 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
             
         } else if (value.getClass() == MatchingObject.class) {
             final MatchingObject matchingObj = (MatchingObject) value;
-            final DataObject dataObj = (DataObject) matchingObj.getDataObject();
             final boolean valid = matchingObj.isObjectValid();
             if (valid) {
-                final Node node = dataObj.getNodeDelegate();
+                final Node node = matchingObj.getNodeDelegate();
                 String folderPath = matchingObj.getRelativeSearchPath();
                 int matchesCount = matchingObj.getMatchesCount();
                 try {

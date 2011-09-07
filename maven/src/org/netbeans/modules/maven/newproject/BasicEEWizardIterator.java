@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -59,35 +58,41 @@ import org.openide.util.NbBundle;
  *
  *@author Dafe Simonek
  */
-public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
 
     private Archetype[] archs;
-    private String[] eeLevels;
 
-    private BasicEEWizardIterator(String[] eeLevels, Archetype[] archs) {
+    private BasicEEWizardIterator(Archetype[] archs) {
         this.archs = archs;
-        this.eeLevels = eeLevels;
     }
-    
+
     public static BasicEEWizardIterator createWebAppIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.WEB_APP_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.WEB_APP_ARCHS);
     }
 
     public static BasicEEWizardIterator createEJBIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.EJB_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.EJB_ARCHS);
     }
     
     public static BasicEEWizardIterator createAppClientIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.APPCLIENT_ARCHS);
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.APPCLIENT_ARCHS);
     }
     
+    static String[] eeLevels() {
+        return new String[] {
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"),
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"),
+            NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14")
+        };
+    }
+
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(vg, eeLevels, archs, true, false)
+            new BasicWizardPanel(vg, eeLevels(), archs, true, false)
         };
     }
     
@@ -98,12 +103,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
     }
     
     public Set/*<FileObject>*/ instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
-    }
-    
-    public Set instantiate(ProgressHandle handle) throws IOException {
-        return ArchetypeWizardUtils.instantiate(handle, wiz);
+        return ArchetypeWizardUtils.instantiate(wiz);
     }
     
     public void initialize(WizardDescriptor wiz) {

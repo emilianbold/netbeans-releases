@@ -48,10 +48,16 @@ package org.netbeans.modules.cnd.source;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -60,6 +66,9 @@ import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.spi.editor.guards.GuardedEditorSupport;
+import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
+import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 
@@ -194,12 +203,68 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             }
             in.close();
         }
-        super.loadFromStreamToKit(doc, stream, kit);
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        if (guardedProvider == null) {
+            super.loadFromStreamToKit(doc, stream, kit);
+        } else {
+            Charset cs = FileEncodingQuery.getEncoding(fo);
+            Reader reader = guardedProvider.createGuardedReader(stream, cs);
+            try {
+                kit.read(reader, doc, 0);
+            } finally {
+                reader.close();
+            }
+        }
         if (resetLS) {
             doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n"); //NOI18N
         }
     }
 
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        if (guardedProvider != null) {
+            Charset cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+            Writer writer = guardedProvider.createGuardedWriter(stream, cs);
+            try {
+                kit.write(writer, doc, 0, doc.getLength());
+            } finally {
+                writer.close();
+            }
+        } else {
+            kit.write(stream, doc, 0, doc.getLength());
+        }
+    }
+
+    private static class GuardedEditorSupportImpl implements GuardedEditorSupport {
+        private final StyledDocument doc;
+        public GuardedEditorSupportImpl(StyledDocument doc) {
+            this.doc = doc;
+        }
+        @Override
+        public StyledDocument getDocument() {
+            return doc;
+        }
+    }
+    
+    private GuardedSectionsProvider getGuardedSectionsProvider(final StyledDocument doc) {
+        Object o = doc.getProperty(GuardedSectionsProvider.class);
+        if (o instanceof GuardedSectionsProvider) {
+            return (GuardedSectionsProvider) o;
+        }        
+        DataObject dataObject = getDataObject();
+        if (dataObject != null) {
+            FileObject fo = dataObject.getPrimaryFile();
+            GuardedSectionsFactory gsf = GuardedSectionsFactory.find(dataObject.getPrimaryFile().getMIMEType());
+            if (gsf != null) {
+                GuardedSectionsProvider gsp = gsf.create(new GuardedEditorSupportImpl(doc));
+                doc.putProperty(GuardedSectionsProvider.class, gsp);
+                return gsp;
+            }
+        }
+        return null;
+    }
+            
     @Override
     protected String documentID() {
         DataObject dataObject = getDataObject();
