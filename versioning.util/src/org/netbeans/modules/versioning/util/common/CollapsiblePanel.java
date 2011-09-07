@@ -121,12 +121,12 @@ abstract class CollapsiblePanel extends JPanel {
         }
     }
 
-    private void displaySection() {
+    protected final void displaySection() {
         sectionPanel.setVisible(true);
         master.enlargeVerticallyAsNecessary();
     }
 
-    private void hideSection() {
+    protected final void hideSection() {
         sectionPanel.setVisible(false);            
     }        
     
@@ -228,7 +228,11 @@ abstract class CollapsiblePanel extends JPanel {
             // need this to happen in addNotify() - depends on how 
             // repositoryComboSupport in hook.createComponents works for bugzilla|jira
             if (hooks.size() == 1) {                
-                sectionPanel.add(hooks.iterator().next().createComponent(hookContext));
+                JPanel p = hooks.iterator().next().createComponent(hookContext);
+                if (Boolean.TRUE.equals(p.getClientProperty("prop.requestOpened"))) { //NOI18N - some hook panels may want to be opened (hg queue hook with previously configured setts)
+                    super.displaySection();
+                }
+                sectionPanel.add(p);
             } else {
                 JTabbedPane hooksTabbedPane = new JTabbedPane();
                 for (VCSHook hook : hooks) {

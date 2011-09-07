@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -62,6 +64,8 @@ import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  * Mercurial queue hook implementation
@@ -73,22 +77,19 @@ public class HgQueueHookImpl extends HgQueueHook {
     private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"changeset", "author", "date", "message"}; // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");// NOI18N
 
-    private HookPanel panel;
+    private HgQueueHookPanel panel;
     private final VCSQueueHooksConfig config;
 
     private final String name;
     private static final String HOOK_NAME = "HG"; //NOI18N
     private final VCSHooksConfig globalConfig;
+    private static final Set<Issue> cachedIssues = new WeakSet<Issue>();
+    private Format issueMessageTemplate;
 
     public HgQueueHookImpl() {
         name = NbBundle.getMessage(HgQueueHookImpl.class, "LBL_VCSHook"); //NOI18N
         globalConfig = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.HG);
         config = VCSQueueHooksConfig.getInstance(VCSQueueHooksConfig.HookType.HG);
-    }
-
-    @Override
-    public JPanel createComponent (HgQueueHookContext context) {
-        return createComponent(context.getFiles());
     }
 
     @Override
@@ -129,6 +130,7 @@ public class HgQueueHookImpl extends HgQueueHook {
                 HookImpl.LOG.log(Level.FINE, " no issue set for {0}", file);             // NOI18N
                 return null;
             }
+            cacheIssue(issue);
             String issueInfo = new MessageFormat(formatString).format(
                     new Object[] {issue.getID(), issue.getSummary()},
                     new StringBuffer(),
@@ -173,6 +175,7 @@ public class HgQueueHookImpl extends HgQueueHook {
             return;
         }
 
+        cacheIssue(issue);
         globalConfig.setLink(isLinkSelected());
         globalConfig.setResolve(isResolveSelected());
         config.setAfterRefresh(isCommitSelected());
@@ -181,11 +184,11 @@ public class HgQueueHookImpl extends HgQueueHook {
             HookImpl.LOG.log(Level.FINER, " commit hook message will be set after qfinish");     // NOI18N            
             if (isCommitSelected()) {
                 config.setFinishPatchAction(context.getPatchId(), new VCSQueueHooksConfig.FinishPatchOperation(issue.getID(),
-                    globalConfig.getRevisionTemplate().getFormat(), isResolveSelected(), isLinkSelected(), false));
+                    issueMessageTemplate.getFormat(), isResolveSelected(), isLinkSelected(), false));
                 HookImpl.LOG.log(Level.FINE, "scheduling issue {0} for file {1} after qfinish", new Object[] { issue.getID(), file }); // NOI18N
             } else {
                 config.setFinishPatchAction(context.getPatchId(), new VCSQueueHooksConfig.FinishPatchOperation(issue.getID(),
-                    globalConfig.getRevisionTemplate().getFormat(), isResolveSelected(), isLinkSelected(), true));
+                    issueMessageTemplate.getFormat(), isResolveSelected(), isLinkSelected(), true));
                 HookImpl.LOG.log(Level.FINE, "scheduling push preparations for issue {0} for file {1} after qfinish", new Object[] { issue.getID(), file }); // NOI18N
             }
         } else {
@@ -229,7 +232,7 @@ public class HgQueueHookImpl extends HgQueueHook {
             HookImpl.LOG.log(Level.FINE, " no issue repository for {0}:{1}", new Object[] { op.getIssueID(), file }); //NOI18N
             return;
         }
-        Issue issue = repository.getIssue(op.getIssueID());
+        Issue issue = getIssue(repository, op.getIssueID());
         if (issue == null) {
             HookImpl.LOG.log(Level.FINE, " no issue found for {0}", op.getIssueID());                 // NOI18N
             return;
@@ -265,26 +268,68 @@ public class HgQueueHookImpl extends HgQueueHook {
         VCSHooksConfig.logHookUsage(HOOK_NAME, getSelectedRepository());             // NOI18N
     }
 
-    public HookPanel createComponent(File[] files) {
-        return createComponent(files, null);
-    }
-    public HookPanel createComponent(File[] files, Boolean afterCommit) {
+    @Override
+    public JPanel createComponent (HgQueueHookContext context) {
         HookImpl.LOG.finer("HookImpl.createComponent()");                              // NOI18N
-        File referenceFile;
+        File[] files = context.getFiles();
+        final File referenceFile;
         if(files.length == 0) {
             referenceFile = null;
             HookImpl.LOG.warning("creating hook component for zero files");           // NOI18N
         } else {
             referenceFile = files[0];
         }
-        
-        panel = new HookPanel(
+
+        panel = new HgQueueHookPanel(
                         globalConfig.getLink(),
                         globalConfig.getResolve(),
-                        afterCommit != null ? afterCommit : config.getAfterRefresh());
+                        config.getAfterRefresh());
         panel.commitRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(HgQueueHookImpl.class, "CTL_HgQueueHookImpl.commitRadioButton.ACSD")); //NOI18N
         Mnemonics.setLocalizedText(panel.commitRadioButton, NbBundle.getMessage(HgQueueHookImpl.class, "CTL_HgQueueHookImpl.commitRadioButton.text")); //NOI18N
-        
+
+        String patchId = context.getPatchId();
+        issueMessageTemplate = globalConfig.getRevisionTemplate();
+        if (patchId != null) {
+            final VCSQueueHooksConfig.FinishPatchOperation op = config.popFinishPatchAction(patchId, false);
+            if (referenceFile != null && op != null) {
+                issueMessageTemplate = new Format(false, op.getMsg());
+                panel.putClientProperty("prop.requestOpened", true); //NOI18N
+                final String issueId = op.getIssueID();
+                if (issueId != null) {
+                    panel.enableIssueField(false);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run () {
+                            Issue issue = null;
+                            Repository repository = null;
+                            try {
+                                repository = BugtrackingOwnerSupport.getInstance().getRepository(referenceFile, issueId, false);
+                                if (repository == null) {
+                                    issue = null;
+                                } else {
+                                    issue = getIssue(repository, issueId);
+                                }
+                            } finally {
+                                final Issue fIssue = issue;
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run () {
+                                        panel.enableIssueField(true);
+                                        if (fIssue != null) {
+                                            panel.setIssue(fIssue);
+                                            panel.pushRadioButton.setSelected(op.isAfterPush());
+                                            panel.commitRadioButton.setSelected(!op.isAfterPush());
+                                            panel.linkCheckBox.setSelected(op.isAddInfo());
+                                            panel.resolveCheckBox.setSelected(op.isClose());
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        }
         if (referenceFile != null) {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
         } else {
@@ -293,25 +338,21 @@ public class HgQueueHookImpl extends HgQueueHook {
         panel.changeFormatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                onShowFormat();
+                FormatPanel p = new FormatPanel(
+                            issueMessageTemplate,
+                            globalConfig.getDefaultRevisionTemplate(),
+                            SUPPORTED_REVISION_VARIABLES,
+                            globalConfig.getIssueInfoTemplate(),
+                            globalConfig.getDefaultIssueInfoTemplate(),
+                            SUPPORTED_ISSUE_INFO_VARIABLES);
+                if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
+                    issueMessageTemplate = p.getIssueFormat();
+                    globalConfig.setRevisionTemplate(p.getIssueFormat());
+                    globalConfig.setIssueInfoTemplate(p.getCommitFormat());
+                }
             }
         });
         return panel;
-    }
-
-    private void onShowFormat() {
-        FormatPanel p = 
-                new FormatPanel(
-                    globalConfig.getRevisionTemplate(),
-                    globalConfig.getDefaultRevisionTemplate(),
-                    SUPPORTED_REVISION_VARIABLES,
-                    globalConfig.getIssueInfoTemplate(),
-                    globalConfig.getDefaultIssueInfoTemplate(),
-                    SUPPORTED_ISSUE_INFO_VARIABLES);
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            globalConfig.setRevisionTemplate(p.getIssueFormat());
-            globalConfig.setIssueInfoTemplate(p.getCommitFormat());
-        }
     }
 
     private boolean isLinkSelected() {
@@ -327,7 +368,8 @@ public class HgQueueHookImpl extends HgQueueHook {
     }
 
     private Repository getSelectedRepository() {
-        return (panel != null) ? panel.getSelectedRepository() : null;
+        Issue issue = getIssue();
+        return (issue == null) ? null : issue.getRepository();
     }
 
     private Issue getIssue() {
@@ -336,5 +378,29 @@ public class HgQueueHookImpl extends HgQueueHook {
 
     private void clearSettings (String patchId) {
         config.clearFinishPatchAction(patchId);
+    }
+
+    private Issue getIssue (Repository repository, String issueID) {
+        // we can get issue only via repository.getIssue which access the server, so we need to cache issues
+        synchronized (cachedIssues) {
+            for (Issue issue : cachedIssues) {
+                if (repository.equals(issue.getRepository()) && issueID.equals(issue.getID())) {
+                    return issue;
+                }
+            }
+        }
+        Issue issue = repository.getIssue(issueID);
+        if (issue != null) {
+            synchronized (cachedIssues) {
+                cachedIssues.add(issue);
+            }
+        }
+        return issue;
+    }
+
+    private void cacheIssue (Issue issue) {
+        synchronized (cachedIssues) {
+            cachedIssues.add(issue);
+        }
     }
 }
