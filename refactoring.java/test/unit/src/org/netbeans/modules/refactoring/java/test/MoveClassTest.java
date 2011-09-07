@@ -57,7 +57,7 @@ public class MoveClassTest extends RefactoringTestBase {
         super(name);
     }
     
-    public void test185959() throws Exception {
+    public void test185959() throws Exception { // #185959 - [Move] No warning on move-refactoring a package-private class with references [69cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c; } }"),
@@ -117,6 +117,18 @@ public class MoveClassTest extends RefactoringTestBase {
                       new File("t/package-info.java", "package t;"),
                       new File("t/A.java", "package t; import u.B; public class A { public void foo() { int d = B.c(); } }"),
                       new File("u/B.java", "package u; public class B { public static int c() { return 5 } }"));
+    }
+    
+    public void test121738() throws Exception { // #121738 - [Move] Fields are not accessible after move class
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/C1.java", "package u; public class C1 { protected int p; }"),
+                new File("u/C2.java", "package u; public class C2 { public void m(C1 c1) { c1.p=2; } }"));
+        performCopyClass(src.getFileObject("u/C1.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("t/C1.java", "package t; public class C1 { protected int p; }"),
+                new File("u/C2.java", "package u; import t.C1; public class C2 { public void m(C1 c1) { c1.p=2; } }"));
     }
 
     private void performCopyClass(FileObject source, URL target, Problem... expectedProblems) throws Exception {
