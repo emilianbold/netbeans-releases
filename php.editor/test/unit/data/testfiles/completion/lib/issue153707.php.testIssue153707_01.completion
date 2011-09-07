@@ -36,6 +36,7 @@ CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
+CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      C                               [PUBLIC]   test.php
