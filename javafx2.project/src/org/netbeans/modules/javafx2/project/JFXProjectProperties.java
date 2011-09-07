@@ -109,6 +109,7 @@ public final class JFXProjectProperties {
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
+    public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
     public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
     public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N

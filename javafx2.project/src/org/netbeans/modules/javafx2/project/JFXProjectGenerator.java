@@ -398,6 +398,7 @@ public class JFXProjectGenerator {
 
         // TODO select from UI
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback"); // NOI18N
+        ep.setProperty(JFXProjectProperties.SIGNED_JAR, "${dist.dir}/" + validatePropertyValue(name) + "_signed.jar"); // NOI18N
                 
         // ===========================
         //     J2SE Project stuff

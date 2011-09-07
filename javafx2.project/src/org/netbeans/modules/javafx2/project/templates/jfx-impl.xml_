@@ -58,9 +58,43 @@
         if="jfx-deployment-available">
     </target>
 
+    <macrodef name="sign-with-new-cert">
+        <element name="jarfiles"/>
+        <sequential>
+            <delete file="${javafx.signing.keystore}"/>
+            <genkey alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                keystore="${javafx.signing.keystore}"
+                dname="CN=Deploy, OU=JavaFX Dev, O=Oracle, C=US"/>       
+            <signjar keystore="${javafx.signing.keystore}"
+                alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                verbose="true">
+                <jarfiles/>
+            </signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="fxsign-with-new-cert">
+        <element name="jarfiles"/>
+        <sequential>
+            <delete file="${javafx.signing.keystore}"/>
+            <genkey alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                keystore="${javafx.signing.keystore}"
+                dname="CN=Deploy, OU=JavaFX Dev, O=Oracle, C=US"/>       
+            <fx:signjar keystore="${javafx.signing.keystore}"
+                alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}">
+                <jarfiles/>
+            </fx:signjar>
+        </sequential>
+    </macrodef>
+
     <!-- project with preloader -->
     <target name="deploy-app" if="app-with-preloader" unless="preloader-app">
         <basename property="jfx.deployment.jar" file="${dist.jar}"/>
+        <property name="jfx.deployment.signed.jar" location="${dist.signed.jar}"/>
         <property name="jfx.deployment.dir" location="${dist.dir}"/>
 
         <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
@@ -96,12 +130,12 @@
                 <attribute name="Implementation-Version" value="1.0"/>
             </manifest>
         </fx:jar>
-
-            <!-- SIGNING -->
-<!--        <fx:signjar keyStore="${basedir}/sample.jks" destdir="dist"
-               alias="javafx" storePass="****" keyPass="****">
-            <fileset dir='dist/*.jar'/>
-        </fx:signjar>-->
+        <!-- SIGNING -->
+<!--        <sign-with-new-cert>
+            <jarfiles>
+                <fileset file="${jfx.deployment.signed.jar}"/>
+            </jarfiles>
+        </sign-with-new-cert>-->
 
         <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}"
                   outdir="${jfx.deployment.dir}" embedJNLP="true"
@@ -123,13 +157,7 @@
         <!-- CALLBACKS -->
 <!--            <callbacks>
                 <callback name="onLoadHandler">
-                  function () {perfLog(0, "onLoad called");}
-                </callback>
-                <callback name="onStopHandler">
-                  function () {perfLog(0, "onStop called");}
-                </callback>
-                <callback name="onErrorHandler">
-                  function () {perfLog(0, "onError called");}
+                    ${javafx.jscallback.onLoadHandler}
                 </callback>
             </callbacks>-->
         </fx:deploy>
@@ -137,6 +165,7 @@
 
     <target name="deploy-app-nopreloader" if="app-without-preloader" unless="preloader-app">
         <basename property="jfx.deployment.jar" file="${dist.jar}"/>
+        <property name="jfx.deployment.signed.jar" location="${dist.signed.jar}"/>
         <property name="jfx.deployment.dir" location="${dist.dir}"/>
 
         <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
