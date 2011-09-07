@@ -51,7 +51,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -185,7 +184,7 @@ final class Manager {
      *          cannot be started, or {@code null} if there is no such reason
      *          (i.e. if a new search may be started)
      */
-    String mayStartSearching() {
+    synchronized String mayStartSearching() {
         String msgKey = haveRunningReplaceTask() ? "MSG_Cannot_start_search__replacing"//NOI18N
                                 : null;
         return (msgKey != null) ? NbBundle.getMessage(getClass(), msgKey)
@@ -494,7 +493,7 @@ final class Manager {
     
     /**
      */
-    private void processNextPendingTask() {
+    private synchronized void processNextPendingTask() {
         Runnable[] pTasks = pendingTasks.toArray(new Runnable[pendingTasks.size()]);
         for(int i=0; i<pTasks.length ;i++){
             boolean haveReplaceRunning = haveRunningReplaceTask();
@@ -528,21 +527,19 @@ final class Manager {
         }
     }
 
-    private boolean haveRunningReplaceTask(){
-        synchronized(currentTasks){
-            for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
-                if (iter.next() instanceof ReplaceTask)
-                    return true;
+    private boolean haveRunningReplaceTask() {
+        for (Runnable r : currentTasks) {
+            if (r instanceof ReplaceTask) {
+                return true;
             }
         }
         return false;
     }
 
-    private boolean haveRunningSearchTask(){
-        synchronized(currentTasks){
-            for(ListIterator iter = currentTasks.listIterator(); iter.hasNext();){
-                if (iter.next() instanceof SearchTask)
-                    return true;
+    private boolean haveRunningSearchTask() {
+        for (Runnable r : currentTasks) {
+            if (r instanceof SearchTask) {
+                return true;
             }
         }
         return false;
@@ -623,14 +620,24 @@ final class Manager {
     /**
      */
     private void taskFinished(Runnable task) {
-        if (moduleBeingUninstalled) {
-            allTasksFinished();
-            return;
-        }
 
-        if (task instanceof SearchTask){
-            SearchTask sTask = (SearchTask)task;
-            stoppingTasks.remove(task);
+        notifyTaskFinished(task);
+
+        synchronized (this) {
+            if (task instanceof SearchTask) {
+                stoppingTasks.remove(task);
+            } else if (task instanceof PrintDetailsTask) {
+                PrintDetailsTask pTask = (PrintDetailsTask) task;
+                outputWriterRef = pTask.getOutputWriterRef();
+            }
+            currentTasks.remove(task);
+        }
+        processNextPendingTask();
+    }
+    
+    private void notifyTaskFinished(Runnable task) {
+        if (task instanceof SearchTask) {
+            SearchTask sTask = (SearchTask) task;
             if (sTask.notifyWhenFinished()) {
                 if (sTask.wasInterrupted()) {
                     notifySearchInterrupted(sTask);
@@ -644,23 +651,7 @@ final class Manager {
         } else if (task instanceof PrintDetailsTask){
             PrintDetailsTask pTask = (PrintDetailsTask)task;
             notifyPrintingDetailsFinished();
-            outputWriterRef = pTask.getOutputWriterRef();
         }
-        currentTasks.remove(task);
-
-        processNextPendingTask();
-    }
-    
-    /**
-     * Called only if the module is about to be uninstalled.
-     * This method is called at the moment that there are no active tasks
-     * (searching, printing details, etc.) and the module is ready for
-     * final cleanup.
-     */
-    private void allTasksFinished() {
-//        synchronized (lock) {
-//            lock.notifyAll();
-//        }
     }
     
     /**
@@ -674,16 +665,20 @@ final class Manager {
      * the window until the currently active task(s) finish.
      */
     void doCleanup() {
-        moduleBeingUninstalled = true;
-        pendingTasks.clear();
-        for(ListIterator<Runnable> iter = currentTasks.listIterator(); iter.hasNext();){
-            Runnable task = iter.next();
-            if (task instanceof SearchTask){
-                ((SearchTask)task).stop();
-            } else if (task instanceof PrintDetailsTask){
-                ((PrintDetailsTask)task).stop();
-            }
 
+        Runnable[] tasksToStop = null;
+        synchronized (this) {
+            moduleBeingUninstalled = true;
+            pendingTasks.clear();
+            tasksToStop = currentTasks.toArray(
+                    new Runnable[currentTasks.size()]);
+        }
+        for (Runnable task : tasksToStop) {
+            if (task instanceof SearchTask) {
+                ((SearchTask) task).stop();
+            } else if (task instanceof PrintDetailsTask) {
+                ((PrintDetailsTask) task).stop();
+            }
         }
         callOnWindowFromAWT("closeResults");                        //NOI18N
     }
@@ -712,8 +707,11 @@ final class Manager {
          */
         @Override
         public void taskFinished(Task task) {
-            Runnable rTask = Manager.this.tasksMap.remove(task);
-            if (rTask != null){
+            Runnable rTask = null;
+            synchronized (Manager.this) {
+                rTask = Manager.this.tasksMap.remove(task);
+            }
+            if (rTask != null) {
                 Manager.this.taskFinished(rTask);
             }
         }

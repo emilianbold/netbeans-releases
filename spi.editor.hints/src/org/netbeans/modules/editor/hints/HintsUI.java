@@ -656,9 +656,15 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
     public void keyPressed(KeyEvent e) {
         JTextComponent comp = getComponent(); 
-        if (comp == null) {
+        if (comp == null || e.isConsumed()) {
             return;
         }
+        
+        boolean codeComplationShowing = comp.getClientProperty("completion-visible") == Boolean.TRUE; //NOI18N
+        if (codeComplationShowing) {
+            return;
+        }
+        
 //        boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
         boolean errorTooltipShowing = errorTooltip != null && errorTooltip.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();

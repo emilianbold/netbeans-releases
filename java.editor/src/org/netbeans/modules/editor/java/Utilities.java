@@ -450,11 +450,11 @@ public final class Utilities {
         return refs;
     }
     
-    public static List<String> varNamesSuggestions(TypeMirror type, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
+    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
         List<String> result = new ArrayList<String>();
         if (type == null)
             return result;
-        List<String> vnct = varNamesForType(type, types, elements, prefix);
+        List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
