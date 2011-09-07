@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
@@ -58,10 +59,12 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
@@ -82,7 +85,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
     private CssElement element;
     protected boolean addSemicolon;
 
-    public static  CssCompletionItem createValueCompletionItem(CssValueElement element,
+    public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             GrammarElement value,
             int anchorOffset,
             boolean addSemicolon,
@@ -119,13 +122,13 @@ public abstract class CssCompletionItem implements CompletionProposal {
     }
 
     public static CssCompletionItem createHashColorCompletionItem(CssElement element,
-                String value,
-                String origin,
-                int anchorOffset,
-                boolean addSemicolon,
-                boolean addSpaceBeforeItem,
-                boolean usedInCurrentFile) {
-        
+            String value,
+            String origin,
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem,
+            boolean usedInCurrentFile) {
+
         return new HashColorCompletionItem(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem, usedInCurrentFile);
     }
 
@@ -134,27 +137,23 @@ public abstract class CssCompletionItem implements CompletionProposal {
     }
 
     public static CssCompletionItem createSelectorCompletionItem(CssElement element,
-                String value,
-                int anchorOffset,
-                boolean related) {
+            String value,
+            int anchorOffset,
+            boolean related) {
 
         return new SelectorCompletionItem(element, value, anchorOffset, related);
     }
 
     public static CssCompletionItem createFileCompletionItem(CssElement element,
-                String value,
-                int anchorOffset,
-                Color color,
-                ImageIcon icon,
-                boolean addQuotes,
-                boolean addSemicolon) {
+            String value,
+            int anchorOffset,
+            Color color,
+            ImageIcon icon,
+            boolean addQuotes,
+            boolean addSemicolon) {
 
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
-    
-  
-    
-
     protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     protected static final int SORT_PRIORITY = 300;
 
@@ -242,13 +241,12 @@ public abstract class CssCompletionItem implements CompletionProposal {
         boolean defaultIcon = colorCode == null;
         if (defaultIcon) {
             //unknown color code, we still want a generic icon
-            colorCode = WHITE_COLOR_HEX_CODE; 
+            colorCode = WHITE_COLOR_HEX_CODE;
         }
-        
-        if(colorCode.length() == 3) {
+
+        if (colorCode.length() == 3) {
             //shorthand color code #fc0 means #ffcc00
-            colorCode = new StringBuilder().
-                    append(colorCode.charAt(0)).
+            colorCode = new StringBuilder().append(colorCode.charAt(0)).
                     append(colorCode.charAt(0)).
                     append(colorCode.charAt(1)).
                     append(colorCode.charAt(1)).
@@ -264,7 +262,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             g.setColor(Color.decode("0x" + colorCode)); //NOI18N
         } catch (NumberFormatException ignoredException) {
             //unparseable code
-            colorCode = WHITE_COLOR_HEX_CODE; 
+            colorCode = WHITE_COLOR_HEX_CODE;
             defaultIcon = true;
         }
         g.fillRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE,
@@ -288,9 +286,9 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         return new ImageIcon(i);
     }
-    
+
     static class RAWCompletionItem extends CssCompletionItem {
-        
+
         private ElementKind kind;
 
         public RAWCompletionItem(CssElement element, ElementKind kind, String value, int anchorOffset, boolean addSemicolon) {
@@ -302,7 +300,6 @@ public abstract class CssCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return kind;
         }
-        
     }
 
     static class ValueCompletionItem extends CssCompletionItem {
@@ -341,18 +338,6 @@ public abstract class CssCompletionItem implements CompletionProposal {
         public String getRhsHtml(HtmlFormatter formatter) {
             return "<font color=999999>" + origin + "</font>"; //NOI18N
         }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            PropertyDescriptor owningProperty = ((CssValueElement) getElement()).getPropertyDescriptor();
-            String initialValue = owningProperty.getInitialValue();
-            if (initialValue != null && initialValue.equals(getName())) {
-                //initial value
-                return "<i>" + super.getLhsHtml(formatter) + "</i>"; //NOI18N
-            }
-
-            return super.getLhsHtml(formatter);
-        }
     }
     private static final byte COLOR_ICON_SIZE = 16; //px
     private static final byte COLOR_RECT_SIZE = 10; //px
@@ -380,7 +365,6 @@ public abstract class CssCompletionItem implements CompletionProposal {
     static class HashColorCompletionItem extends ColorCompletionItem {
 
         private static final int HASH_COLOR_SORT_PRIORITY = SORT_PRIORITY - 10;
-
         private boolean usedInCurrentFile;
 
         private HashColorCompletionItem(CssElement element,
@@ -530,6 +514,19 @@ public abstract class CssCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            if (Css3Utils.isVendorSpecificProperty(getName())) {
+                formatter.appendHtml("<i>");
+                formatter.appendText(getName());
+                formatter.appendHtml("</i>");
+
+                return formatter.getText();
+            } else {
+                return super.getLhsHtml(formatter);
+            }
+        }
+
+        @Override
         public String getInsertPrefix() {
             return super.getInsertPrefix() + ": "; //NOI18N
         }
@@ -541,7 +538,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         private static String GRAY_COLOR_CODE = Integer.toHexString(Color.GRAY.getRGB()).substring(2);
         private boolean related;
 
-       private SelectorCompletionItem(CssElement element,
+        private SelectorCompletionItem(CssElement element,
                 String value,
                 int anchorOffset,
                 boolean related) {
@@ -596,7 +593,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
                 boolean addSemicolon) {
             super(element, value, anchorOffset, false);
             this.icon = icon;
-            this.colorCode =  WebUtils.toHexCode(color).substring(1);
+            this.colorCode = WebUtils.toHexCode(color).substring(1);
             this.addQuotes = addQuotes;
             this.addSemicolon = addSemicolon;
         }
@@ -614,14 +611,14 @@ public abstract class CssCompletionItem implements CompletionProposal {
         @Override
         public String getInsertPrefix() {
             StringBuilder b = new StringBuilder();
-            if(addQuotes) {
+            if (addQuotes) {
                 b.append('"'); //NOI18N
             }
             b.append(getName());
-            if(addQuotes) {
+            if (addQuotes) {
                 b.append('"'); //NOI18N
-            } 
-            if(addSemicolon) {
+            }
+            if (addSemicolon) {
                 b.append(';'); //NOI18N
             }
             return b.toString();
@@ -635,8 +632,5 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
             return formatter.getText();
         }
-
-
-
     }
 }

@@ -76,21 +76,21 @@ public class SymfonyCustomizerPanel extends JPanel {
         ignoreCacheDirectoryCheckBox = new JCheckBox();
 
         ignoreCacheDirectoryCheckBox.setSelected(true);
-
         Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.ignoreCacheDirectoryCheckBox.text"));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(ignoreCacheDirectoryCheckBox)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(ignoreCacheDirectoryCheckBox)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

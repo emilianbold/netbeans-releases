@@ -1004,6 +1004,9 @@ public final class PhpProject implements Project {
     }
 
     private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+
+        private static final Logger LOGGER = Logger.getLogger(PhpSearchInfo.class.getName());
+
         private final PhpProject project;
         // @GuardedBy(this)
         private SearchInfo.Files delegate = null;
@@ -1043,11 +1046,33 @@ public final class PhpProject implements Project {
         }
 
         private FileObject[] getSearchRoots() {
-            List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
-            roots.addAll(PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
+            List<FileObject> roots = new LinkedList<FileObject>();
+            addRoots(roots, project.getSourceRoots());
+            addRoots(roots, project.getTestRoots());
+            addRoots(roots, project.getSeleniumRoots());
+            addIncludePath(roots, PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
             return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        // #197968
+        private void addRoots(List<FileObject> roots, SourceRoots sourceRoots) {
+            for (FileObject root : sourceRoots.getRoots()) {
+                if (!root.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for source roots {1}", new Object[] {root, Arrays.toString(sourceRoots.getRootNames())});
+                } else {
+                    roots.add(root);
+                }
+            }
+        }
+
+        private void addIncludePath(List<FileObject> roots, List<FileObject> includePath) {
+            for (FileObject folder : includePath) {
+                if (!folder.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for Include path {1}", new Object[] {folder, includePath});
+                } else {
+                    roots.add(folder);
+                }
+            }
         }
 
         @Override

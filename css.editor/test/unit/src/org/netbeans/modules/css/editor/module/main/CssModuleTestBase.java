@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
@@ -98,6 +99,15 @@ public class CssModuleTestBase extends CslTestBase {
         return CssLanguage.CSS_MIME_TYPE;
     }
     
+    protected CssModule getCssModuleByClass(Class clazz) {
+        for(CssModule module : CssModuleSupport.getModules()) {
+            if(module.getClass().equals(clazz)) {
+                return module;
+            }
+        }
+        return null;
+    }
+    
     /**
      * 
      * @param declaration - in the form: "property: value" as in css rule
@@ -120,7 +130,7 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected void assertPropertyValues(String propertyName, String... values) {
 
-        PropertyModel model = CssModuleSupport.getProperty(propertyName);
+        PropertyModel model = CssModuleSupport.getPropertyModel(propertyName);
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {

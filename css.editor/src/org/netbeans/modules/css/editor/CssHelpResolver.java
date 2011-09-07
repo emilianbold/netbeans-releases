@@ -95,7 +95,7 @@ public class CssHelpResolver {
     public String getPropertyHelp(String propertyName) {
         URL helpURL = getPropertyHelpURL(propertyName);
         if(helpURL == null) {
-            return NbBundle.getMessage(CssHelpResolver.class, "MISSING_HELP_FILE_MSG");//NOI18N
+            return null;
         } else {
             return getHelpText(helpURL);
         }
@@ -220,13 +220,7 @@ public class CssHelpResolver {
 //        return null;
 //    }
     private PropertyDescriptor getPD(String propertyName) {
-        PropertyDescriptor pd = properties.get(propertyName.toLowerCase());
-        if (pd == null) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "No such property: {0}", propertyName); //NOI18N
-            return null;
-        } else {
-            return pd;
-        }
+        return properties.get(propertyName.toLowerCase());
     }
     
     private int findSectionStart( int startIndex, String fileContent ) {

@@ -158,7 +158,6 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
         titleTextField = new JTextField();
 
         targetLabel.setLabelFor(targetTextField);
-
         Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.targetLabel.text"));
         Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.targetButton.text"));
         targetButton.addActionListener(new ActionListener() {
@@ -168,8 +167,8 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
         });
 
         titleLabel.setLabelFor(titleTextField);
-
         Mnemonics.setLocalizedText(titleLabel, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.titleLabel.text"));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,10 +180,10 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(targetTextField, GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                        .addComponent(targetTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(targetButton))
-                    .addComponent(titleTextField, GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))
+                    .addComponent(titleTextField, GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
