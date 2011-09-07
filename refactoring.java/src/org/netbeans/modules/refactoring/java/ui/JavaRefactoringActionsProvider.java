@@ -606,7 +606,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     }
 
     public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
-        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
+        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2);
 
         for ( ; tp != null; tp = tp.getParentPath()) {
             Tree leaf = tp.getLeaf();
@@ -618,7 +618,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
             long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
 
-            if (treeStart != start || treeEnd != end) {
+            if (!(treeStart <= start) || !(treeEnd >= end)) {
                 continue;
             }
 
@@ -666,14 +666,11 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                             return null;
                         }
                 }
-
                 leaf = tp.getLeaf();
                 tp = tp.getParentPath();
             }
-
             return candidate;
         }
-
         return null;
     }
 

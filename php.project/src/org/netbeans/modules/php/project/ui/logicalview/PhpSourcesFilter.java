@@ -86,32 +86,36 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
 
         @Override
         public boolean acceptDataObject(DataObject object) {
-            return !isNbProject(object)
-                    && !isTestDirectory(object)
-                    && !isSeleniumDirectory(object)
-                    && phpVisibilityQuery.isVisible(object.getPrimaryFile());
+            return acceptFileObject(object.getPrimaryFile());
         }
 
-        private boolean isNbProject(DataObject object) {
-            File f = FileUtil.toFile(object.getPrimaryFile());
+        public boolean acceptFileObject(FileObject file) {
+            return !isNbProject(file)
+                    && !isTestDirectory(file)
+                    && !isSeleniumDirectory(file)
+                    && phpVisibilityQuery.isVisible(file);
+        }
+
+        private boolean isNbProject(FileObject file) {
+            File f = FileUtil.toFile(file);
             return nbProject.equals(f);
         }
 
-        private boolean isTestDirectory(DataObject object) {
-            return isDirectory(object, ProjectPropertiesSupport.getTestDirectory(project, false));
+        private boolean isTestDirectory(FileObject file) {
+            return isDirectory(file, ProjectPropertiesSupport.getTestDirectory(project, false));
         }
 
-        private boolean isSeleniumDirectory(DataObject object) {
-            return isDirectory(object, ProjectPropertiesSupport.getSeleniumDirectory(project, false));
+        private boolean isSeleniumDirectory(FileObject file) {
+            return isDirectory(file, ProjectPropertiesSupport.getSeleniumDirectory(project, false));
         }
 
-        private boolean isDirectory(DataObject object, FileObject directory) {
+        private boolean isDirectory(FileObject file, FileObject directory) {
             if (rootFolder == null || directory == null) {
                 return false;
             }
             if (!directory.equals(rootFolder)) {
                 // in sources or similar (but not in 'directory' definitely)
-                return directory.equals(object.getPrimaryFile());
+                return directory.equals(file);
             }
             return false;
         }

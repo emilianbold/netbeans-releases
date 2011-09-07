@@ -72,7 +72,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private static final String NB_BUILD_SCRIPT_NAME = "nbbuild.xml"; // NOI18N
 
     /** Creates new form PanelSourceFolders */
-    public PanelProjectLocationExtSrc(PanelConfigureProject panel) {
+    PanelProjectLocationExtSrc(PanelConfigureProject panel) {
         this.firer = panel;
         initComponents();
         this.projectName.getDocument().addDocumentListener(new DocumentListener() {
@@ -186,7 +186,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 projectName = MessageFormat.format(formater, new Object[]{new Integer(index)});
                 file = new File(projectLocation, projectName);
             } while (file.exists());
-            settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
+            settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
             this.projectLocation.setText(projectLocation.getAbsolutePath());
             this.setCalculateProjectFolder(true);
         } else {
@@ -235,19 +235,15 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         }
     }
 
-    static String checkValidity(final String projectName, final String projectLocation,
-            final String buildScriptName) {
-        if (projectName.length() == 0
-                || projectName.indexOf('/') > 0 // NOI18N
-                || projectName.indexOf('\\') > 0 // NOI18N
-                || projectName.indexOf(':') > 0) { // NOI18N
+    static String checkValidity(final String projectName, final String projectLocation, final String buildScriptName) {
+        if (JavaFXProjectWizardIterator.isIllegalProjectName(projectName)) {
             // Display name not specified
             return NbBundle.getMessage(PanelSourceFolders.class, "MSG_IllegalProjectName"); // NOI18N
         }
 
         File projLoc = new File(projectLocation).getAbsoluteFile();
 
-        if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
+        if (JavaFXProjectWizardIterator.getCanonicalFile(projLoc) == null) {
             return NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
         }
 

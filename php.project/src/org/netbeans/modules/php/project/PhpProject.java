@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -173,9 +174,8 @@ public final class PhpProject implements Project {
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
     // frameworks
-    final Object frameworksLock = new Object();
-    // @GuardedBy(frameworksLock)
-    List<PhpFrameworkProvider> frameworks;
+    private volatile boolean frameworksDirty = true;
+    final List<PhpFrameworkProvider> frameworks = new CopyOnWriteArrayList<PhpFrameworkProvider>();
     private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
     private final LookupListener frameworksListener = new FrameworksListener();
 
@@ -570,21 +570,26 @@ public final class PhpProject implements Project {
     }
 
     public List<PhpFrameworkProvider> getFrameworks() {
-        synchronized (frameworksLock) {
-            if (frameworks == null) {
-                frameworks = new LinkedList<PhpFrameworkProvider>();
-                PhpModule phpModule = getPhpModule();
-                for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
-                    if (frameworkProvider.isInPhpModule(phpModule)) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getSourcesDirectory()));
+        if (frameworksDirty) {
+            synchronized (frameworks) {
+                if (frameworksDirty) {
+                    frameworksDirty = false;
+                    List<PhpFrameworkProvider> newFrameworks = new LinkedList<PhpFrameworkProvider>();
+                    PhpModule phpModule = getPhpModule();
+                    for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+                        if (frameworkProvider.isInPhpModule(phpModule)) {
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getSourcesDirectory()));
+                            }
+                            newFrameworks.add(frameworkProvider);
                         }
-                        frameworks.add(frameworkProvider);
                     }
+                    frameworks.clear();
+                    frameworks.addAll(newFrameworks);
                 }
             }
-            return new ArrayList<PhpFrameworkProvider>(frameworks);
         }
+        return new ArrayList<PhpFrameworkProvider>(frameworks);
     }
 
     public boolean hasConfigFiles() {
@@ -598,15 +603,10 @@ public final class PhpProject implements Project {
     }
 
     public void resetFrameworks() {
-        boolean fire = false;
-        synchronized (frameworksLock) {
-            List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
-            frameworks = null;
-            List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
-            fire = !oldFrameworkProviders.equals(newFrameworkProviders);
-        }
-
-        if (fire) {
+        List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
+        frameworksDirty = true;
+        List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
+        if (!oldFrameworkProviders.equals(newFrameworkProviders)) {
             propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
         }
     }
@@ -1004,6 +1004,9 @@ public final class PhpProject implements Project {
     }
 
     private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+
+        private static final Logger LOGGER = Logger.getLogger(PhpSearchInfo.class.getName());
+
         private final PhpProject project;
         // @GuardedBy(this)
         private SearchInfo.Files delegate = null;
@@ -1043,11 +1046,33 @@ public final class PhpProject implements Project {
         }
 
         private FileObject[] getSearchRoots() {
-            List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
-            roots.addAll(PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
+            List<FileObject> roots = new LinkedList<FileObject>();
+            addRoots(roots, project.getSourceRoots());
+            addRoots(roots, project.getTestRoots());
+            addRoots(roots, project.getSeleniumRoots());
+            addIncludePath(roots, PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
             return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        // #197968
+        private void addRoots(List<FileObject> roots, SourceRoots sourceRoots) {
+            for (FileObject root : sourceRoots.getRoots()) {
+                if (!root.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for source roots {1}", new Object[] {root, Arrays.toString(sourceRoots.getRootNames())});
+                } else {
+                    roots.add(root);
+                }
+            }
+        }
+
+        private void addIncludePath(List<FileObject> roots, List<FileObject> includePath) {
+            for (FileObject folder : includePath) {
+                if (!folder.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for Include path {1}", new Object[] {folder, includePath});
+                } else {
+                    roots.add(folder);
+                }
+            }
         }
 
         @Override

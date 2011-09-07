@@ -140,7 +140,15 @@ public class SaasUtil {
     }
 
     public static <T> T loadJaxbObject(InputStream in, Class<T> type, boolean includeAware) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader( SaasUtil.class.getClassLoader());
+        JAXBContext jc = null;
+        try {
+            jc = JAXBContext.newInstance(type.getPackage().getName(), original);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader( original);
+        }
         Unmarshaller unmarshaller = jc.createUnmarshaller();
         Object o;
         //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not

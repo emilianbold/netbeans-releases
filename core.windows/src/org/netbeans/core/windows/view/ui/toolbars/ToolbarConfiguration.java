@@ -151,12 +151,23 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         }
     }
 
+    @NbBundle.Messages({
+        "MSG_ToolbarsInitializing=Initializing..."
+    })
     private void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
+        final ToolbarPool pool = getToolbarPool();
+        if (!pool.isFinished()) {
+            final JMenuItem mi = new JMenuItem();
+            mi.setText(Bundle.MSG_ToolbarsInitializing());
+            mi.setEnabled(false);
+            menu.add(mi);
+            return;
+        }
         boolean fullScreen = MainWindow.getInstance().isFullScreenMode();
 
         Map<String, ToolbarConstraints> name2constr = collectAllConstraints();
         // generate list of available toolbars
-        for( Toolbar tb : getToolbarPool().getToolbars() ) {
+        for( Toolbar tb : pool.getToolbars() ) {
             final Toolbar bar = tb;
             final String tbName = tb.getName();
             ToolbarConstraints tc = name2constr.get(tbName);

@@ -107,7 +107,7 @@ public final class DockModeAction extends AbstractAction {
     @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("UndockModeAction", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("DockModeAction", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
@@ -118,7 +118,7 @@ public final class DockModeAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("UndockModeAction"); //NOI18N
+            return ActionUtils.getSharedAccelerator("DockModeAction"); //NOI18N
         } else {
             return super.getValue(key);
         }

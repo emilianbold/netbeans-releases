@@ -1,0 +1,15 @@
+int $a;
+=>int $b; :: changeVariableName($a, $b)
+;;
+
+$a :: $a instanceof int
+=> $b :: changeVariableName($a, $b)
+;;
+
+<?
+public boolean changeVariableName(Variable v, Variable target) {
+String name = context.name(v);
+context.createRenamed(v, target, name + name);
+return true;
+}
+?>

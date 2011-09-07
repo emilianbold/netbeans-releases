@@ -45,8 +45,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
-import org.netbeans.modules.css.editor.module.spi.RenderingEngine;
+import org.netbeans.modules.css.editor.module.spi.Property;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,71 +57,48 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssModule.class)
 public class ColorsModule extends CssModule {
 
-    private final PropertyDescriptor colorPropertyDescriptor = new PropertyDescriptor(
+    private final Property colorPropertyDescriptor = new Property(
             "color", 
-            "'-colors-list' | '-system-color' |  '-rgb' | '-rgba' | '-hsl' | '-hsla' | !hash_color_code | transparent | currentColor | inherit", 
-            null,
-            null,
-            true,
-            null,
-            RenderingEngine.ALL);
+            "<colors-list> | <system-color> |  <rgb> | <rgba> | <hsl> | <hsla> "
+            + "| !hash_color_code | transparent | currentColor");
     
-    private final PropertyDescriptor rgbPropertyDescriptor = new PropertyDescriptor(
-            "-rgb", 
-            "rgb > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > )", 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property rgbPropertyDescriptor = new Property(
+            "@rgb", 
+            "rgb  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
+            + ", [ !number | !percentage]  )");
     
-    private final PropertyDescriptor rgbaPropertyDescriptor = new PropertyDescriptor(
-            "-rgba", 
-            "rgba > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > , > !number )", 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property rgbaPropertyDescriptor = new Property(
+            "@rgba", 
+            "rgba  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
+            + ",  [ !number | !percentage]  ,  !number )");
     
-    private final PropertyDescriptor hslPropertyDescriptor = new PropertyDescriptor(
-            "-hsl", 
-            "hsl > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > )", 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property hslPropertyDescriptor = new Property(
+            "@hsl", 
+            "hsl  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
+            + ",  [ !number | !percentage]  )");
     
-    private final PropertyDescriptor hslaPropertyDescriptor = new PropertyDescriptor(
-            "-hsla", 
-            "hsla > ( > [!number | !percentage] > , > [ !number | !percentage ] > , > [ !number | !percentage] > , > !number )", 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property hslaPropertyDescriptor = new Property(
+            "@hsla", 
+            "hsla  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
+            + ",  [ !number | !percentage]  ,  !number )");
     
-    private final PropertyDescriptor colorsListPropertyDescriptor = new PropertyDescriptor(
-            "-colors-list", 
-            generateColorsList(), 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property colorsListPropertyDescriptor = new Property(
+            "@colors-list", 
+            generateColorsList());
     
-    private final PropertyDescriptor systemColorPropertyDescriptor = new PropertyDescriptor(
-            "-system-color", 
-            "activeborder | activecaption | appworkspace | background | buttonface | buttonhighlight | buttonshadow | buttontext | captiontext | graytext | highlight | highlighttext | inactiveborder | inactivecaption | inactivecaptiontext | infobackground | infotext | menu | menutext | scrollbar | threeddarkshadow | threedface | threedhighlight | threedlightshadow | threedshadow | window | windowframe | windowtext", 
-            null,
-            null,
-            false,
-            null,
-            RenderingEngine.ALL);
+    private final Property systemColorPropertyDescriptor = new Property(
+            "@system-color", 
+            "activeborder | activecaption | appworkspace | background "
+            + "| buttonface | buttonhighlight | buttonshadow | buttontext "
+            + "| captiontext | graytext | highlight | highlighttext "
+            + "| inactiveborder | inactivecaption | inactivecaptiontext "
+            + "| infobackground | infotext | menu | menutext | scrollbar "
+            + "| threeddarkshadow | threedface | threedhighlight "
+            + "| threedlightshadow | threedshadow | window | windowframe "
+            + "| windowtext");
     
-    private final Collection<PropertyDescriptor> propertyDescriptors = 
-            Arrays.asList(new PropertyDescriptor[]{
+    private final Collection<Property> propertyDescriptors = 
+            Arrays.asList(new Property[]{
                 colorPropertyDescriptor, 
                 rgbPropertyDescriptor, 
                 rgbaPropertyDescriptor,
@@ -145,7 +121,7 @@ public class ColorsModule extends CssModule {
     }
     
     @Override
-    public Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public Collection<Property> getProperties() {
         return propertyDescriptors;
     }
 

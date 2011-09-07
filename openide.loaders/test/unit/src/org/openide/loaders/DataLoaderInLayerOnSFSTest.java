@@ -60,6 +60,12 @@ public class DataLoaderInLayerOnSFSTest extends DataLoaderInLayerTest {
 
     @Override
     protected FileSystem createFS(String... resources) throws IOException {
+        for (String s : resources) {
+            FileObject fo = FileUtil.getConfigFile(s.replaceAll("/.*", ""));
+            if (fo != null) {
+                fo.delete();
+            }
+        }
         FileSystem sfs = FileUtil.getConfigRoot().getFileSystem();
         for (String s : resources) {
             assertNotNull("creating: " + s, FileUtil.createData(sfs.getRoot(), s));

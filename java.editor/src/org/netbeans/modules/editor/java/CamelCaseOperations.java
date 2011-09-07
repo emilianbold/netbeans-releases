@@ -178,37 +178,4 @@ import org.openide.util.Exceptions;
         return Utilities.getPreviousWord(textComponent, offset);
     }
 
-    static void replaceChar(JTextComponent textComponent, int offset, char c) {
-        if (!textComponent.isEditable()) {
-            return;
-        }
-        replaceText(textComponent, offset, 1, String.valueOf(c));
-    }
-
-    static void replaceText (final JTextComponent textComponent, final int offset, final int length, final String text) {
-        if (!textComponent.isEditable()) {
-            return;
-        }
-        Document document = textComponent.getDocument();
-        if (document instanceof BaseDocument)
-            ((BaseDocument) document).runAtomic (new Runnable () {
-                public void run () {
-                    replaceText2 (textComponent, offset, length, text);
-                }
-            });
-        else
-            replaceText2 (textComponent, offset, length, text);
-    }
-
-    static void replaceText2 (JTextComponent textComponent, int offset, int length, String text) {
-        Document document = textComponent.getDocument();
-        try {
-            if (length > 0) {
-                document.remove(offset, length);
-            }
-            document.insertString(offset, text, null);
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        }
-    }
 }

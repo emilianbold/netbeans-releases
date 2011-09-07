@@ -63,6 +63,8 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
+import com.sun.source.tree.ClassTree;
+
 /**
  *
  * @author Peter Liu
@@ -184,10 +186,19 @@ public class Utils {
         return value;
     }
     
-    static boolean checkForJsr311Bootstrap(TypeElement element, Project project, AnnotationModelHelper helper) {
+    static boolean checkForJsr311Bootstrap(TypeElement element, Project project, 
+            AnnotationModelHelper helper) 
+    {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
+        ClassTree tree = helper.getCompilationController().getTrees().getTree(element);
+        if ( tree == null ){
+            // the element is not in source , it's binary
+            return false;
+        }
         if (restSupport != null && ! restSupport.isRestSupportOn() && 
-                isRest(element, helper)) {
+                isRest(element, helper)) 
+        {
             try {
                 restSupport.ensureRestDevelopmentReady();
                 return true;

@@ -45,6 +45,7 @@
 package org.openide.util.lookup;
 
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.ServiceLoaderLineTest;
 import org.openide.util.test.MockLookup;
 
 
@@ -55,9 +56,26 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     static {
         MockLookup.init();
     }
+    private ClassLoader previousContextClassLoader;
+    
     public NamedServicesLookupTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        previousContextClassLoader = Thread.currentThread().getContextClassLoader();
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Thread.currentThread().setContextClassLoader(previousContextClassLoader);
+        super.tearDown();
+        ServiceLoaderLineTest.clearLookupsForPath();
+    }
+    
+    
 
     @Override
     protected String prefix() {
@@ -66,8 +84,8 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     
     @Override
     protected Lookup createLookup(ClassLoader c) {
-        MockLookup.setInstances(c);
         Thread.currentThread().setContextClassLoader(c);
+        MockLookup.setInstances(c);
         Lookup l = Lookups.forPath("sub/path");
         return l;
     }

@@ -138,7 +138,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         }
     }
 
-    public static final String PROXY_SOURCE_DIR = "proxies";
+    public static final String PROXY_SOURCE_DIR = "proxies";  //NOI18N
     @Override
     protected void onBeforeStoreProperties() throws IOException {
         super.onBeforeStoreProperties();
@@ -168,7 +168,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 }
             }
             if (!found) {
-                String label = NbBundle.getMessage(ClassicAppletProjectProperties.class, "LBL_PROXY_SOURCES");
+                String label = NbBundle.getMessage(ClassicAppletProjectProperties.class, "LBL_PROXY_SOURCES");  //NOI18N
                 srcRootsModel.addRow(new Object[] { proxiesFile, label });
             }
         } else {
@@ -202,8 +202,9 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
     }
 
     private static void offerToGenerateProxies(JCProject project) {
-        Parameters.notNull("project", project);
-        if (Boolean.getBoolean("JCProject.test")) return; //unit tests
+        Parameters.notNull("project", project);  //NOI18N
+        //unit tests
+        if (Boolean.getBoolean("JCProject.test")) return; //NOI18N
         assert project.kind().isClassic();
         //Do this after everything has been written to disk and with no
         //mutexes held - currently we're inside ProjectManager.mutex().
@@ -220,15 +221,14 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
         public void run() {
             if (EventQueue.isDispatchThread()) {
-                String msg = NbBundle.getMessage (ClassicAppletProjectProperties.class, "ASK_GENERATE_PROXIES");
-                String title= NbBundle.getMessage(ClassicAppletProjectProperties.class, "TITLE_ASK_GENERATE_PROXIES");
+                String msg = NbBundle.getMessage (ClassicAppletProjectProperties.class, "ASK_GENERATE_PROXIES"); //NOI18N
+                String title= NbBundle.getMessage(ClassicAppletProjectProperties.class, "TITLE_ASK_GENERATE_PROXIES"); //NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
                 if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(nd))) {
                     RequestProcessor.getDefault().post (this);
                 }
             } else {
-                FileObject buildFo = project.getProjectDirectory().getFileObject(
-                        "build.xml"); //NOI18N
+                FileObject buildFo = project.getProjectDirectory().getFileObject("build.xml"); //NOI18N
                 if (buildFo != null) {
                     try {
                         ExecutorTask task = ActionUtils.runTarget(buildFo,
@@ -247,8 +247,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
-        boolean result = false;
-        if (result = (wasUseMyProxies != useMyProxies)) {
+        if (wasUseMyProxies != useMyProxies) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
             if (useMyProxies) {
                 props.setProperty (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR,
@@ -258,11 +257,12 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 props.remove (ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
             }
         }
-        if (result |= (packageAID != null && !packageAID.equals(originalPackageAID))) {
+        if (packageAID != null && !packageAID.equals(originalPackageAID)) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
         }
-        return result;
+        // #198931
+        return true;
     }
 
     @Override
@@ -277,7 +277,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
             } catch (IllegalArgumentException e) {
                 Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(Level.INFO,
                         "Bad classic package aid in " + //NOI18N
-                        project.getProjectDirectory().getPath() + ": " + aidString, e);
+                        project.getProjectDirectory().getPath() + ": " + aidString, e); //NOI18N
             }
         }
     }

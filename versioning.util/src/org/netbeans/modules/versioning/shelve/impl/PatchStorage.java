@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 
 /**
@@ -57,6 +58,7 @@ public final class PatchStorage {
     private static PatchStorage instance;
     private static final Logger LOG = Logger.getLogger(PatchStorage.class.getName());
     private static final String SEP = "<==>"; //NOI18N
+    private static final String PROP_EXPLICIT_LOCATION = "versioning.shelve.patchStorage"; //NOI18N
 
     public static synchronized  PatchStorage getInstance () {
         if (instance == null) {
@@ -98,8 +100,13 @@ public final class PatchStorage {
     }
 
     private static File getStorageLocation () {
-        String userDir = System.getProperty("netbeans.user"); //NOI18N
-        return new File(new File(new File(userDir, "config"), "Versioning"), "patch-storage"); //NOI18N
+        String explicitLocation = System.getProperty(PROP_EXPLICIT_LOCATION, ""); //NOI18N
+        if (explicitLocation.isEmpty()) {
+            File userDir = Places.getUserDirectory();
+            return new File(new File(new File(userDir, "config"), "Versioning"), "patch-storage"); //NOI18N
+        } else {
+            return new File(explicitLocation);
+        }
     }
 
     private File getPatchFile (File storageLocation, String patchName) {

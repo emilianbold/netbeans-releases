@@ -215,10 +215,9 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setProfilingType(int profilingType) {
-//        sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING);
-//        profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
-//                                       profilingType == ProfilingSettings.PROFILE_CPU_PART);
-        profileAppRadio.setSelected(true);  // FIXXX - remove once sampling is implemented
+        sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING);
+        profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
+                                       profilingType == ProfilingSettings.PROFILE_CPU_PART);
         stopwatchRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_STOPWATCH);
     }
 
@@ -322,11 +321,10 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
         // entireAppRadio
         sampleAppRadio = new JRadioButton();
-        sampleAppRadio.setEnabled(false); // FIXXX - remove once sampling is implemented
         org.openide.awt.Mnemonics.setLocalizedText(sampleAppRadio, SAMPLE_APP_RADIO_TEXT);
         sampleAppRadio.setToolTipText(STP_SAMPLEAPP_TOOLTIP);
         sampleAppRadio.setOpaque(false);
-//        sampleAppRadio.setSelected(true); // FIXXX - uncomment once sampling is implemented
+        sampleAppRadio.setSelected(true);
         cpuModeRadios.add(sampleAppRadio);
         sampleAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {

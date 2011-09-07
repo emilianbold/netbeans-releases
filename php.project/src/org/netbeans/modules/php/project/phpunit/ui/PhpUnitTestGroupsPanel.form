@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="testGroupsScrollPane" alignment="0" pref="470" max="32767" attributes="2"/>
+                  <Component id="testGroupsScrollPane" alignment="0" pref="346" max="32767" attributes="2"/>
                   <Component id="selectTestGroupLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="selectAllTestGroupsCheckBox" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -33,7 +33,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="selectTestGroupLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="testGroupsScrollPane" pref="181" max="32767" attributes="0"/>
+              <Component id="testGroupsScrollPane" pref="90" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="selectAllTestGroupsCheckBox" min="-2" max="-2" attributes="0"/>
           </Group>

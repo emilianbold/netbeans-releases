@@ -160,7 +160,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
     public void testIsSupported() {
         JiraAutoupdate jau = new JiraAutoupdate();
         assertTrue(jau.isSupportedVersion(JiraVersion.MIN_VERSION));
-        assertTrue(jau.isSupportedVersion(JiraVersion.JIRA_3_3));
+        assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.0")));
         assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.1")));
         assertTrue(jau.isSupportedVersion(new JiraVersion("3.8.0")));
         assertTrue(jau.isSupportedVersion(getLower(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));

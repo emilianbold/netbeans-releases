@@ -50,6 +50,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,15 +92,25 @@ public final class DocUtils {
                doc.getDefaultRootElement().getElementIndex(offset)).getEndOffset() - 1;
     }
     
-    /** 
-     * Return line offset (line number - 1) for some position in the document.
-     * 
-     * @param doc document to operate on
-     * @param offset position in document where to start searching
+    /**
+     * Return line index (line number - 1) for some offset in document.
+     * @throws BadLocationException in case the offset is out of document.
+     * @see {@link #getLineIndex(javax.swing.text.Document, int)} instead.
      */
     public static int getLineOffset(Document doc, int offset) throws BadLocationException {
         checkOffsetValid(offset, doc.getLength() + 1);
+        return getLineIndex(doc, offset);
+    }
 
+    /** 
+     * Return line index (line number - 1) for some offset in document.
+     * 
+     * @param doc document to operate on.
+     * @param offset offset in document.
+     * @return line index &gt;=0 since document always contains at least single '\n'.
+     *  Returns 0 if offset &lt;=0. Returns last line index if offset is beyond document's end.
+     */
+    public static int getLineIndex(Document doc, int offset) {
         Element lineRoot = doc.getDefaultRootElement();
         return lineRoot.getElementIndex(offset);
     }
@@ -107,7 +120,7 @@ public final class DocUtils {
 
         if (offset >= 0) {
             try {
-                int line = getLineOffset(doc, offset) + 1;
+                int line = getLineIndex(doc, offset) + 1;
                 int col = getVisualColumn(doc, offset) + 1;
                 ret = String.valueOf(line) + ":" + String.valueOf(col); // NOI18N
             } catch (BadLocationException e) {
@@ -143,6 +156,27 @@ public final class DocUtils {
             e.printStackTrace();
             return -1;
         }
+    }
+    
+    /**
+     * Transpose letter at offset with the next one at offset+1.
+     * @param doc non-null document that should be write-locked.
+     * @param offset
+     * @return true if succeeded or false when at end of doc.
+     */
+    public static boolean transposeLetters(@NonNull Document doc, int offset) {
+        if (offset >= 0 && offset <= doc.getLength() - 2) {
+            CharSequence text = DocumentUtilities.getText(doc);
+            char ch = text.charAt(offset);
+            try {
+                doc.remove(offset, 1);
+                doc.insertString(offset + 1, String.valueOf(ch), null);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex); // Should never happen due to check above
+            }
+            return true;
+        }
+        return false;
     }
     
     private static Method findDeclaredMethod(Class<?> clazz, String name, Class... parameters) throws NoSuchMethodException {
@@ -181,6 +215,15 @@ public final class DocUtils {
         try {
             Method unlockMethod = doc.getClass().getMethod("atomicUnlock");
             unlockMethod.invoke(doc);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+    
+    public static void runAtomicAsUser(Document doc, Runnable r) {
+        try {
+            Method m = doc.getClass().getMethod("runAtomicAsUser", Runnable.class);
+            m.invoke(doc, r);
         } catch (Exception e) {
             LOG.log(Level.WARNING, e.getMessage(), e);
         }

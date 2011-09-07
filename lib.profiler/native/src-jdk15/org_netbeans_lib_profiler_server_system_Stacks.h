@@ -60,22 +60,6 @@ JNIEXPORT jint JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_getCu
 
 /*
  * Class:     org_netbeans_lib_profiler_server_system_Stacks
- * Method:    createNativeStackFrameBuffer
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_createNativeStackFrameBuffer
-  (JNIEnv *, jclass, jint);
-
-/*
- * Class:     org_netbeans_lib_profiler_server_system_Stacks
- * Method:    clearNativeStackFrameBuffer
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_clearNativeStackFrameBuffer
-  (JNIEnv *, jclass);
-
-/*
- * Class:     org_netbeans_lib_profiler_server_system_Stacks
  * Method:    getCurrentStackFrameIds
  * Signature: (Ljava/lang/Thread;I[I)I
  */
@@ -89,6 +73,30 @@ JNIEXPORT jint JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_getCu
  */
 JNIEXPORT jbyteArray JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_getMethodNamesForJMethodIds
   (JNIEnv *, jclass, jint, jintArray, jintArray);
+
+/*
+ * Class:     org_netbeans_lib_profiler_server_system_Stacks
+ * Method:    getAllStackTraces
+ * Signature: ([[Ljava/lang/Thread;[[I[[[I)V
+ */
+JNIEXPORT void JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_getAllStackTraces
+  (JNIEnv *, jclass, jobjectArray, jobjectArray, jobjectArray);
+
+/*
+ * Class:     org_netbeans_lib_profiler_server_system_Stacks
+ * Method:    clearNativeStackFrameBuffer
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_clearNativeStackFrameBuffer
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_netbeans_lib_profiler_server_system_Stacks
+ * Method:    createNativeStackFrameBuffer
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_netbeans_lib_profiler_server_system_Stacks_createNativeStackFrameBuffer
+  (JNIEnv *, jclass, jint);
 
 #ifdef __cplusplus
 }

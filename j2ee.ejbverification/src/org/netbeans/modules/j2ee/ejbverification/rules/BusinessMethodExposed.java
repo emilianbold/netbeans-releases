@@ -124,10 +124,14 @@ public class BusinessMethodExposed extends EJBVerificationRule {
                 definedMethods.addAll(ElementFilter.methodsIn(iface.getEnclosedElements()));
             }
             
-            Map<String, ExecutableElement> definedMethodsByName = new HashMap<String, ExecutableElement>();
+            Map<String, ArrayList<ExecutableElement>> definedMethodsByName = new HashMap<String, ArrayList<ExecutableElement>>();
             
             for (ExecutableElement method : definedMethods){
-                definedMethodsByName.put(method.toString(), method);
+                String hashName = method.getSimpleName().toString();
+                if (!definedMethodsByName.containsKey(hashName)) {
+                    definedMethodsByName.put(hashName, new ArrayList<ExecutableElement>(1));
+                }
+                definedMethodsByName.get(hashName).add(method);
             }
             
             // ----
@@ -135,11 +139,12 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             Collection<ErrorDescription> problemsFound = new LinkedList<ErrorDescription>();
             for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())){
                 if (isEligibleMethod(method)){
-                    ExecutableElement potentialMatch = definedMethodsByName.get(method.toString());
-                    
-                    if (potentialMatch != null && JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
-                            method, potentialMatch)){
-                        continue;
+                    ArrayList<ExecutableElement> potentialMatches = definedMethodsByName.get(method.getSimpleName().toString());
+
+                    if (potentialMatches != null && !potentialMatches.isEmpty()) {
+                        if (isFoundMatchingMethodSignature(ctx.getComplilationInfo(), method, potentialMatches)) {
+                            continue;
+                        }
                     }
                     
                     ArrayList<Fix> fixes = new ArrayList<Fix>();
@@ -176,7 +181,16 @@ public class BusinessMethodExposed extends EJBVerificationRule {
 
         return null;
     }
-    
+
+    private boolean isFoundMatchingMethodSignature(CompilationInfo cinfo, ExecutableElement method, ArrayList<ExecutableElement> potentialMatches) {
+        for (ExecutableElement potentialMatch : potentialMatches) {
+            if (JavaUtils.isMethodSignatureSame(cinfo, method, potentialMatch)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Collection<TypeElement> resolveClasses(CompilationInfo info, String classNames[]){
         Collection<TypeElement> result = new ArrayList<TypeElement>();
         

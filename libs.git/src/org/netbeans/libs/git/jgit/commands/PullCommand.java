@@ -81,6 +81,7 @@ public class PullCommand extends TransportCommand {
     @Override
     protected void run () throws GitException.AuthorizationException, GitException {
         FetchCommand fetch = new FetchCommand(getRepository(), remote, refSpecs, monitor);
+        fetch.setCredentialsProvider(getCredentialsProvider());
         fetch.run();
         this.updates = fetch.getUpdates();
         MergeCommand merge = new MergeCommand(getRepository(), branchToMerge, monitor);

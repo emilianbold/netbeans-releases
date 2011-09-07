@@ -54,10 +54,12 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         super(name);
     }
 
+    @Override
     public LayerCacheManager createManager() throws Exception {
         return LayerCacheManager.manager(false);
     }
 
+    @Override
     public boolean supportsTimestamps () {
         return false;
     }

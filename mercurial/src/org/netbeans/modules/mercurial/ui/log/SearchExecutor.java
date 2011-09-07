@@ -50,9 +50,11 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
@@ -106,6 +108,10 @@ class SearchExecutor implements Runnable {
         final String toRevision = criteria.getTo();
         final int limitRevisions = criteria.getLimit();
         final String branchName = criteria.getBranch();
+        if (!HgBranch.DEFAULT_NAME.equals(branchName)) {
+            // only for branches other than default
+            HgModuleConfig.getDefault().setSearchOnBranchEnabled(master.getCurrentBranch(), !branchName.isEmpty());
+        }
 
         completedSearches = 0;
         for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {
@@ -154,7 +160,7 @@ class SearchExecutor implements Runnable {
      * @param logMessages events in chronological order
      */ 
     private synchronized void appendResults(File root, HgLogMessage[] logMessages) {
-        Map<String, String> historyPaths = new HashMap<String, String>();
+        Map<File, Set<File>> renamedFiles = new HashMap<File, Set<File>>();
         List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
@@ -165,26 +171,20 @@ class SearchExecutor implements Runnable {
             if (msg != null && logMessage.getMessage().indexOf(msg) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, root);
             for (RepositoryRevision.Event event : rev.getEvents()) {
-                if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {
-                    // TBD: Need to handle Copy status
-                    // http://www.selenic.com/mercurial/bts/Issue931 - should get it in HgCommand.getLogMessages()
-                    String existingMapping = historyPaths.get(event.getChangedPath().getPath());
-                    if (existingMapping == null) {
-                        existingMapping = event.getChangedPath().getPath();
-                    }
-                    historyPaths.put(event.getChangedPath().getCopySrcPath(), existingMapping);
+                String filePath = event.getChangedPath().getPath();
+                File f = new File(root, filePath);
+                event.setFile(f);
+                event.setOriginalFile(f);
+                if (renamedFiles.containsKey(f)) {
+                    event.setRenames(renamedFiles.get(f));
                 }
-                String originalFilePath = event.getChangedPath().getPath();
-                for (String srcPath : historyPaths.keySet()) {
-                    if ( originalFilePath.startsWith(srcPath) && 
-                         (originalFilePath.length() == srcPath.length() || originalFilePath.charAt(srcPath.length()) == '/') ) 
-                    {
-                        originalFilePath = historyPaths.get(srcPath) + originalFilePath.substring(srcPath.length());
-                        break;
-                    }
+            }
+            for (RepositoryRevision.Event event : rev.getEvents()) {
+                if (event.getChangedPath().getAction() == HgLogMessage.HgCopyStatus && event.getChangedPath().getCopySrcPath() != null) {
+                    File originalFile = new File(root, event.getChangedPath().getCopySrcPath());
+                    event.setOriginalFile(originalFile);
+                    addRename(renamedFiles, originalFile, event.getFile());
                 }
-                File file = new File(root, originalFilePath);
-                event.setFile(file);
             }
             results.add(rev);
         }                
@@ -206,6 +206,15 @@ class SearchExecutor implements Runnable {
                 }
             });
         }
+    }
+
+    private void addRename (Map<File, Set<File>> renamedFiles, File originalFile, File file) {
+        Set<File> renames = renamedFiles.get(originalFile);
+        if (renames == null) {
+            renames = new HashSet<File>(2);
+            renamedFiles.put(originalFile, renames);
+        }
+        renames.add(file);
     }
   
 }

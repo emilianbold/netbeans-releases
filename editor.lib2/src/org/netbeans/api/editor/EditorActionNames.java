@@ -86,13 +86,25 @@ public final class EditorActionNames {
      * integer of how many points the font size should be increased (decreased).
      * @since 1.45
      */
-    public static final String zoomTextIn = "zoom-text-in";
+    public static final String zoomTextIn = "zoom-text-in"; // NOI18N
 
     /**
      * Zoom text out by decreasing default font size.
      * @see #zoomInTextAction
      * @since 1.45
      */
-    public static final String zoomTextOut = "zoom-text-out";
+    public static final String zoomTextOut = "zoom-text-out"; // NOI18N
+    
+    /**
+     * Toggle between regular text selection and rectangular block selection
+     * when caret selects in a column mode.
+     */
+    public static final String toggleRectangularSelection = "toggle-rectangular-selection"; // NOI18N
+    
+    /**
+     * Transpose letter at caret offset with the next one (useful when making typo).
+     * @since 1.48
+     */
+    public static final String transposeLetters = "transpose-letters"; // NOI18N
 
 }

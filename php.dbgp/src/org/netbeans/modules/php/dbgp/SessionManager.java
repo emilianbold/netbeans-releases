@@ -74,7 +74,7 @@ public class SessionManager  {
         assert properties.startFile != null;
         SessionId sessionId = SessionManager.getSessionId(project);
         if (sessionId == null) {
-            sessionId = new SessionId(properties.startFile);
+            sessionId = new SessionId(properties.startFile, project);
             DebuggerOptions options = new DebuggerOptions();
             options.debugForFirstPageOnly = properties.closeSession;
             options.pathMapping = properties.pathMapping;
@@ -107,7 +107,7 @@ public class SessionManager  {
     synchronized  Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
         DebugSession dbgSession = new DebugSession(options, new BackendLauncher(backendLauncher));
         DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, dbgSession});
-        DebuggerManager.getDebuggerManager().startDebugging(dInfo);        
+        DebuggerManager.getDebuggerManager().startDebugging(dInfo);
         for (Session session : DebuggerManager.getDebuggerManager().getSessions()) {
             DebugSession debugSession = session.lookupFirst(null, DebugSession.class);
             if (debugSession != null && debugSession == dbgSession) {
@@ -186,7 +186,7 @@ public class SessionManager  {
         Session retval = currentSession != null ? getPhpSession(new Session[] {currentSession}) : null;
         return  retval != null ? retval : getPhpSession(manager.getSessions());
     }
-    
+
     private Session getPhpSession(Session[] sessions) {
         for (Session session : sessions) {
             SessionId sessionId = session.lookupFirst(null, SessionId.class);

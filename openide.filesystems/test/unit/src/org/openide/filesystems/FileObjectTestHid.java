@@ -1416,13 +1416,17 @@ public class FileObjectTestHid extends TestBaseHid {
     public void  testGetMIMEType() {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        String mimeType = "mimeType";
+        
+        String prev = fo.getMIMEType();
+        
+        String mimeType = "text/mimeType";
         
         FileUtil.setMIMEType(fo.getExt(),mimeType);
         String actualMT = fo.getMIMEType();
         // deregister
         FileUtil.setMIMEType(fo.getExt(), null);
-        fsAssert("mimeType for this fo was registered; was really " + actualMT, actualMT.equals(mimeType));
+        fsAssertEquals("mimeType for this fo was registered", mimeType, actualMT);
+        fsAssertEquals("Last mime type same as first one", prev, fo.getMIMEType());
     }
 
     public void testGetMIMETypeWithResolver() {

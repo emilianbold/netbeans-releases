@@ -86,7 +86,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
      * Returns array of all classpaths of the given type in the project.
      * The result is used for example for GlobalPathRegistry registrations.
      */
-    public ClassPath[] getProjectClassPaths(String type) {
+    @Override public ClassPath[] getProjectClassPaths(String type) {
         if (ClassPath.BOOT.equals(type)) {
             //TODO
             return new ClassPath[]{ getBootClassPath() };
@@ -120,7 +120,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
      * Returns the given type of the classpath for the project sources
      * (i.e., excluding tests roots).
      */
-    public ClassPath getProjectSourcesClassPath(String type) {
+    @Override public ClassPath getProjectSourcesClassPath(String type) {
         if (ClassPath.BOOT.equals(type)) {
             return getBootClassPath();
         }
@@ -141,10 +141,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     }
     
     
-    public ClassPath findClassPath(FileObject file, String type) {
+    @Override public ClassPath findClassPath(FileObject file, String type) {
         int fileType = getType(file);
         if (fileType != TYPE_SRC &&  fileType != TYPE_TESTSRC && fileType != TYPE_WEB) {
-            Logger.getLogger(ClassPathProviderImpl.class.getName()).log(Level.FINEST, " bad type=" + type + " for " + file); //NOI18N
+            Logger.getLogger(ClassPathProviderImpl.class.getName()).log(Level.FINEST, " bad type={0} for {1}", new Object[] {type, file}); //NOI18N
             return null;
         }
         if (type.equals(ClassPath.COMPILE)) {
@@ -298,7 +298,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         return bcpImpl;
     }
 
-    public JavaPlatform getJavaPlatform() {
+    @Override public @NonNull JavaPlatform getJavaPlatform() {
         return getBootClassPathImpl().findActivePlatform();
     }
 

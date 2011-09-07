@@ -140,6 +140,11 @@ public class HelpLineProcessorTest extends NbTestCase {
         }
 
         @Override
+        public FileObject getProjectDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public FileObject getSourceDirectory() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

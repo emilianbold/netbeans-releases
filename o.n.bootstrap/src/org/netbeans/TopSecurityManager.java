@@ -272,7 +272,7 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
         }
-        if ("netbeans.home".equals(x) || Places.USER_DIR_PROP.equals(x)) { // NOI18N
+        if ("netbeans.home".equals(x) || "netbeans.user".equals(x)) { // NOI18N
             // Control access to this system property.
             for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&

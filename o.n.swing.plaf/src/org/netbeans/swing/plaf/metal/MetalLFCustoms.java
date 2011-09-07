@@ -60,6 +60,7 @@ public final class MetalLFCustoms extends LFCustoms {
 
 
 
+    @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE); //NOI18N
@@ -85,10 +86,15 @@ public final class MetalLFCustoms extends LFCustoms {
             // #61395        
             SPINNERFONT, controlFont,        
             EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(16, 0, 16, 0),
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 15,
+            "NbSlideBar.GroupSeparator.Gap.After", 5,
+            "NbSlideBar.RestoreButton.Gap", 10,
         }; 
         return result;
     }
 
+    @Override
     public Object[] createApplicationSpecificKeysAndValues () {
         Border outerBorder = BorderFactory.createLineBorder(UIManager.getColor("controlShadow")); //NOI18N
         Object propertySheetColorings = new MetalPropertySheetColorings();
@@ -145,6 +151,7 @@ public final class MetalLFCustoms extends LFCustoms {
             super (null);
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
                 //Property sheet settings as defined by HIE

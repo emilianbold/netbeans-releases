@@ -8,19 +8,21 @@ package org.netbeans.test.web;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.*;
 
-/** Class implementing all necessary methods for handling "New Web Application" NbDialog.
+/**
+ * Class implementing all necessary methods for handling "New Web Application"
+ * NbDialog.
  *
  * @author dkolar
  * @version 1.0
  */
 public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOperator {
 
-    /** Creates new NewWebProjectStrutsFrameworkStepOperator that can handle it.
+    /**
+     * Creates new NewWebProjectStrutsFrameworkStepOperator that can handle it.
      */
     public NewWebProjectStrutsFrameworkStepOperator() {
         super("New Web Application");
     }
-
     private JLabelOperator _lblActionServletName;
     private JTextFieldOperator _txtActionServletName;
     private JLabelOperator _lblActionURLPattern;
@@ -31,38 +33,31 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
     private JTextFieldOperator _txtApplicationResource;
     private JCheckBoxOperator _cbAddStrutsTLDs;
     private JTableOperator _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
-    private JLabelOperator _lblTheURLPatternHasToBeEntered;
-    private JLabelOperator _lblTheURLPatternIsNotValid;//Struts as well
 
     //******************************
     // Subcomponents definition part
     //******************************
 
-     /*
+    /*
      * Selects a Struts Framework to be added
      */
-
-    public boolean setStrutsFrameworkCheckbox()
-    {
+    public boolean setStrutsFrameworkCheckbox() {
         Integer strutsRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.web.struts");
-        if(strutsRow != -1)
-        {
+        if (strutsRow != -1) {
             tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(strutsRow, 0);
             return true;
-        }
-        else
-        {
+        } else {
             System.err.println("No Struts framework found!");
             return false;
         }
-        
+
     }
-    
+
     /** Tries to find "Action Servlet Name:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblActionServletName() {
-        if (_lblActionServletName==null) {
+        if (_lblActionServletName == null) {
             _lblActionServletName = new JLabelOperator(this, "Action Servlet Name:");
         }
         return _lblActionServletName;
@@ -72,7 +67,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtActionServletName() {
-        if (_txtActionServletName==null) {
+        if (_txtActionServletName == null) {
             _txtActionServletName = new JTextFieldOperator(this);
         }
         return _txtActionServletName;
@@ -82,7 +77,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JLabelOperator
      */
     public JLabelOperator lblActionURLPattern() {
-        if (_lblActionURLPattern==null) {
+        if (_lblActionURLPattern == null) {
             _lblActionURLPattern = new JLabelOperator(this, "Action URL Pattern:");
         }
         return _lblActionURLPattern;
@@ -92,7 +87,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboActionURLPattern() {
-        if (_cboActionURLPattern==null) {
+        if (_cboActionURLPattern == null) {
             _cboActionURLPattern = new JComboBoxOperator(this);
         }
         return _cboActionURLPattern;
@@ -102,7 +97,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JLabelOperator
      */
     public JLabelOperator lblApplicationResource() {
-        if (_lblApplicationResource==null) {
+        if (_lblApplicationResource == null) {
             _lblApplicationResource = new JLabelOperator(this, "Application Resource:");
         }
         return _lblApplicationResource;
@@ -112,7 +107,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtApplicationResource() {
-        if (_txtApplicationResource==null) {
+        if (_txtApplicationResource == null) {
             _txtApplicationResource = new JTextFieldOperator(this, 2);
         }
         return _txtApplicationResource;
@@ -122,7 +117,7 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbAddStrutsTLDs() {
-        if (_cbAddStrutsTLDs==null) {
+        if (_cbAddStrutsTLDs == null) {
             _cbAddStrutsTLDs = new JCheckBoxOperator(this, "Add Struts TLDs");
         }
         return _cbAddStrutsTLDs;
@@ -132,36 +127,15 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @return JTableOperator
      */
     public JTableOperator tabSelectTheFrameworksYouWantToUseInYourWebApplication() {
-        if (_tabSelectTheFrameworksYouWantToUseInYourWebApplication==null) {
+        if (_tabSelectTheFrameworksYouWantToUseInYourWebApplication == null) {
             _tabSelectTheFrameworksYouWantToUseInYourWebApplication = new JTableOperator(this);
         }
         return _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
     }
 
-    /** Tries to find "The URL Pattern has to be entered. " WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTheURLPatternHasToBeEntered() {
-        if (_lblTheURLPatternHasToBeEntered==null) {
-            _lblTheURLPatternHasToBeEntered = new JLabelOperator(this, "The URL Pattern has to be entered.");
-        }
-        return _lblTheURLPatternHasToBeEntered;
-    }
-
-        /** Tries to find "The URL Pattern is not valid." WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTheURLPatternIsNotValid() {
-        if (_lblTheURLPatternIsNotValid==null) {
-            _lblTheURLPatternIsNotValid = new JLabelOperator(this, "The URL Pattern is not valid.");
-        }
-        return _lblTheURLPatternIsNotValid;
-    }
-
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** gets text for txtActionServletName
      * @return String text
      */
@@ -229,18 +203,17 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
      * @param state boolean requested state
      */
     public void checkAddStrutsTLDs(boolean state) {
-        if (cbAddStrutsTLDs().isSelected()!=state) {
+        if (cbAddStrutsTLDs().isSelected() != state) {
             cbAddStrutsTLDs().push();
         }
     }
 
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /** Performs verification of NewWebProjectStrutsFrameworkStepOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblActionServletName();
         txtActionServletName();
@@ -250,15 +223,12 @@ public class NewWebProjectStrutsFrameworkStepOperator extends NewProjectWizardOp
         txtApplicationResource();
         cbAddStrutsTLDs();
         tabSelectTheFrameworksYouWantToUseInYourWebApplication();
-        lblTheURLPatternHasToBeEntered();
     }
 
-    /** Performs simple test of NewWebProjectStrutsFrameworkStepOperator
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        new NewWebProjectStrutsFrameworkStepOperator().verify();
-        System.out.println("NewWebProjectStrutsFrameworkStepOperator verification finished.");
+    /** Returns error message shown in description area.
+     * @return message in description area
+     */
+    public String getErrorMessage() {
+        return new JTextPaneOperator(this).getToolTipText();
     }
 }
-

@@ -47,10 +47,10 @@ package org.netbeans.modules.form.editors2;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle;
 import org.netbeans.modules.form.NamedPropertyEditor;
 import org.netbeans.modules.form.ResourceSupport;
 import org.netbeans.modules.form.ResourceWrapperEditor;
@@ -116,11 +116,11 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
                         StringEditor.class).getString("ACD_NOI18NCheckBox")); //NOI18N
             
             layout.setHorizontalGroup(layout.createParallelGroup()
-                    .add(customEd)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap().add(noI18nCheckbox).addContainerGap()));
+                    .addComponent(customEd)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap().addComponent(noI18nCheckbox).addContainerGap()));
             layout.setVerticalGroup(layout.createSequentialGroup()
-                    .add(customEd).addPreferredGap(LayoutStyle.UNRELATED).add(noI18nCheckbox));
+                    .addComponent(customEd).addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addComponent(noI18nCheckbox));
             return panel;
         }
         else {

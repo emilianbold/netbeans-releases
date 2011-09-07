@@ -91,6 +91,11 @@ public class Utils {
      * Keeps excluded/unversioned folders
      */
     private static File [] unversionedFolders;
+    
+    /**
+     * Temporary top folder for vcs in a single session
+     */
+    private static File tempDir;
 
     /**
      * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
@@ -183,7 +188,7 @@ public class Utils {
     }
 
     public static File getTempFolder() {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+        File tmpDir = getMainTempDir();
         for (;;) {
             File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
             if (!dir.exists() && dir.mkdirs()) {
@@ -419,6 +424,21 @@ public class Utils {
         } catch (BackingStoreException ex) {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);
         }
+    }
+
+    private static synchronized File getMainTempDir () {
+        if (tempDir == null) {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+            for (;;) {
+                File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+                if (!dir.exists() && dir.mkdirs()) {
+                    tempDir = FileUtil.normalizeFile(dir);
+                    tempDir.deleteOnExit();
+                    break;
+                }
+            }
+        }
+        return tempDir;
     }
 
     private static void logLasting (File file, long last, String message) {

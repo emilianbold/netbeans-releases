@@ -53,7 +53,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class JEE6PatternsTest extends PatternsTest {
 
     protected static Server server = Server.GLASSFISH;
-    
+
     /**
      * Def constructor.
      *
@@ -79,15 +79,15 @@ public class JEE6PatternsTest extends PatternsTest {
                 "testSingleton1", //NOI18N
                 "testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                "testContainerI1" //NOI18N
-//                "testContainerI2", //NOI18N
-//                "testSingleton3", //NOI18N
-//                "testContainerI3", //NOI18N
-//                "testCcContainerI2", //NOI18N
-//                "testCcContainerI3", //NOI18N
-//                "testNodes", //NOI18N
-//                "testDeploy", //NOI18N
-//                "testUndeploy" //NOI18N
+                "testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
+                "testDeploy", //NOI18N
+                "testUndeploy" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
 

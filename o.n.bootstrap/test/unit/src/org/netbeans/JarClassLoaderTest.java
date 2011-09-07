@@ -47,8 +47,10 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -60,8 +62,10 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Permission;
+import java.util.Map;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.TestFileUtils;
 
 /** Tests that cover some basic aspects of a Proxy/JarClassLoader.
@@ -253,6 +257,71 @@ public class JarClassLoaderTest extends NbTestCase {
         assertEquals(jar.toURI().toURL(), jconn.getJarFileURL());
         assertEquals("bar", jconn.getMainAttributes().getValue("foo"));
         assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
+    }
+
+    public void testResourceDefinition() throws Exception { // #196595
+        File jar = new File(getWorkDir(), "some.jar");
+        TestFileUtils.writeZipFile(jar, "package/resource.txt:content");
+        ClassLoader cl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        URL r = cl.getResource("package/resource.txt");
+        assertNotNull(r);
+        assertStreamContent(r.openStream(), "content");
+        assertEquals(cl, r.getContent(new Class<?>[] {ClassLoader.class}));
+    }
+
+    public void testMetaInfServicesUsesGetContentCL() throws Exception {
+        final ClassLoader parent = MetaInfServicesToken.class.getClassLoader().getParent();
+        class JDKOnly extends ClassLoader {
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                return parent.loadClass(name);
+            }
+
+            @Override
+            protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                return parent.loadClass(name);
+            }
+
+            @Override
+            public URL getResource(String name) {
+                return parent.getResource(name);
+            }
+
+            @Override
+            public InputStream getResourceAsStream(String name) {
+                return parent.getResourceAsStream(name);
+            }
+
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException {
+                return parent.getResources(name);
+            }
+        }
+        ClassLoader jdkonly = new JDKOnly();
+        
+        File jar = new File(getWorkDir(), "some.jar");
+        TestFileUtils.writeZipFile(
+            jar, 
+            "META-INF/services/java.io.Serializable:org.netbeans.MetaInfServicesToken"
+        );
+        URL url = MetaInfServicesToken.class.getProtectionDomain().getCodeSource().getLocation();
+
+        URLClassLoader one = new URLClassLoader(new URL[] { url }, jdkonly);
+        URLClassLoader two = new URLClassLoader(new URL[] { url }, jdkonly);
+        
+        final String name = MetaInfServicesToken.class.getName();
+        Class<?> cOne = one.loadClass(name);
+        Class<?> cTwo = two.loadClass(name);
+        
+        if (cOne == cTwo) {
+            fail("Classes should be different, not loaded by: " + cOne.getClassLoader());
+        }
+        
+        ClassLoader cl = new JarClassLoader(Collections.singletonList(jar), new ClassLoader[] { two });
+        ProxyClassLoader all = new ProxyClassLoader(new ClassLoader[] { one, cl }, false);
+        Object res = Lookups.metaInfServices(all).lookup(Serializable.class);
+        assertNotNull("One serializable found", res);
+        assertEquals("It is from the second classloader", cTwo, res.getClass());
     }
 
     private void assertURLsContent(Enumeration<URL> urls, String ... contents) throws IOException {

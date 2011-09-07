@@ -97,7 +97,6 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
@@ -786,11 +785,6 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             File f = new File(file.getAbsolutePath().toString());
             set.add(f.getParentFile().getAbsolutePath());
         }
-        ArrayList<String> list = new ArrayList<String>(set);
-        for (Iterator<String> it = list.iterator(); it.hasNext();){
-            File f = new File(it.next());
-            gatherSubFolders(f, set);
-        }
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
         for (Iterator<String> it = set.iterator(); it.hasNext();){
             File d = new File(it.next());
@@ -811,33 +805,6 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             }
         }
         return map;
-    }
-    
-    private void gatherSubFolders(File d, HashSet<String> set){
-        if (d.exists() && d.isDirectory() && d.canRead()){
-            if (CndPathUtilitities.isIgnoredFolder(d)){
-                return;
-            }
-            String path = d.getAbsolutePath();
-            if (!set.contains(path)){
-                set.add(d.getAbsolutePath());
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
-                            }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
-                        }
-                        gatherSubFolders(ff[i], set);
-                    }
-                }
-            }
-        }
     }
     
     private static String i18n(String id) {

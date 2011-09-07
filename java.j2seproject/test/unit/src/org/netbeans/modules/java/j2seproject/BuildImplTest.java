@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -89,6 +90,10 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     private File junitJar;
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
 
     protected @Override void setUp() throws Exception {
         super.setUp();

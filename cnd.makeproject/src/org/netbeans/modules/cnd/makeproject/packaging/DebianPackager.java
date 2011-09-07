@@ -52,6 +52,11 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,8 +90,20 @@ public class DebianPackager implements PackagerDescriptor {
         } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         } else {
-            // Anything else ?
             defArch = "i386"; // NOI18N
+            HostInfo hostInfo = null;
+            try {
+                hostInfo = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                // Could happen from time to time
+            }
+            if (hostInfo != null) {
+                if (hostInfo.getOS().getBitness().equals(Bitness._64)) {
+                    defArch = "amd64";  // NOI18N
+                }
+            }
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Package", packagingConfiguration.getOutputName(), true, true)); // NOI18N

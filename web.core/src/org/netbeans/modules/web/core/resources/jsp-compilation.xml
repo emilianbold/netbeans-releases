@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl.jar!/</resource>
 <!--        <resource>jar:nbinst://org.netbeans.libs.glassfish_logging/modules/ext/glassfish-logging-2.0.jar!/</resource>-->
-<!--        <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>-->
+<!--        <resource>jar:nbinst://org.apache.commons.logging/modules/org-apache-commons-logging.jar!/</resource>-->
         <resource>jar:nbinst://org.apache.tools.ant.module/ant/lib/ant-launcher.jar!/</resource>
     </volume>
 </library>

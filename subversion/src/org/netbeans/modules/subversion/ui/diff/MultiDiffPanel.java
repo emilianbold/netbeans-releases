@@ -636,7 +636,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
-        executeStatusSupport = new SvnProgressSupport() {
+        SvnProgressSupport supp = new SvnProgressSupport() {
             @Override
             public void perform() {                                         
                 // remote status is called when we're either in a remote mode or the refresh is manually started (refresh button)
@@ -654,7 +654,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             SvnClientExceptionHandler.notifyException(ex, true, true);     
             return;             
         }
-        executeStatusSupport.start(rp, url, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
+        supp.start(rp, url, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
+        executeStatusSupport = supp;
     }                    
 
     private void onUpdateButton() {

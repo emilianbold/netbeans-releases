@@ -70,6 +70,7 @@ public class GtkLFCustoms extends LFCustoms {
     //Background colors for winsys tabs
 
 
+    @Override
     public Object[] createApplicationSpecificKeysAndValues () {
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
@@ -143,12 +144,17 @@ public class GtkLFCustoms extends LFCustoms {
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
             "winclassic_tab_sel_gradient", tabBg,
             SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 7,
+            "NbSlideBar.GroupSeparator.Gap.After", 2,
+            "NbSlideBar.RestoreButton.Gap", 5,
         };
 
         //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
         return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown( result );
     }
     
+    @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         if (ThemeValue.functioning()) {
             return new Object[] {
@@ -214,10 +220,12 @@ public class GtkLFCustoms extends LFCustoms {
     /** Temporary workaround for GTK L&F */
     private static abstract class GTKIcon implements Icon {
         private static final int SIZE = 11;
+        @Override
         public int getIconWidth() {
             return GTKIcon.SIZE;
         }
         
+        @Override
         public int getIconHeight() {
             return GTKIcon.SIZE;
         }
@@ -229,6 +237,7 @@ public class GtkLFCustoms extends LFCustoms {
      * correctly, we have this silliness.
      */
     private static final class GTKCollapsedIcon extends GTKIcon {
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.translate(x, y);
             int mid, height, thick, i, j, up, down;
@@ -283,6 +292,7 @@ public class GtkLFCustoms extends LFCustoms {
      * correctly, we have this silliness.
      */
     private static final class GTKExpandedIcon extends GTKIcon {
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.translate(x, y);
             int mid, height, thick, i, j, up, down;

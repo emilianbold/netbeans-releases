@@ -499,7 +499,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 		applyRunDirectory();
 
 	    } else if (RunProfile.PROP_ENVVARS_CHANGED.equals(name)) {
-		String o = (String) evt.getOldValue();
+		String o = evt.getOldValue().toString();
 		Env n = (Env) evt.getNewValue();
 		// CR 4887794
 		if (savedEnv != null) {

@@ -230,13 +230,15 @@ public class BufferedCharSequence implements CharSequence {
      * @return the underlying instance of this class.
      * @throws IOException if an I/O error occurs.
      */
-    public BufferedCharSequence close() throws IOException {
-        reset();
-        source.close();
-        source = null;
-        sink = null;
-        coderResult = null;
-        isClosed = true;
+    public synchronized BufferedCharSequence close() throws IOException {
+        if (!isClosed) {
+            reset();
+            source.close();
+            source = null;
+            sink = null;
+            coderResult = null;
+            isClosed = true;
+        }
         return this;
     }
 

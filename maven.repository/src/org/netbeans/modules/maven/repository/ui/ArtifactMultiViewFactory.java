@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -81,7 +80,6 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -202,15 +200,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     dd.setOptions(new Object[] { close });
                     dd.setClosingOptions(new Object[] { close });
                     DialogDisplayer.getDefault().notify(dd);
-                    File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-                    try {
-                        MavenProject m = embedder.readProject(fallback);
-                        m.setDescription(null);
-                        ic.add(m);
-                    } catch (Exception x) {
-                        // oh well..
-                        //NOPMD
-                    }
+                    ic.add(new MavenProject()); // XXX is this useful for anything?
                 } catch (ThreadDeath d) { // download interrupted
                 } finally {
                     hndl.finish();

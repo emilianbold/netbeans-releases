@@ -51,7 +51,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import org.netbeans.CLIHandler;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,6 +84,7 @@ public class CLIOptions extends CLIHandler {
     private static String userDir;
     /** The netbeans system dir - ${netbeans.user}/system */
     private static String systemDir;
+    private static File cacheDir;
 
     /**
      * Create a default handler.
@@ -135,7 +135,11 @@ public class CLIOptions extends CLIHandler {
                 args[i] = null;
                 try {
                     String v = args[++i];
-                    Places.setUserDirectory(v.equals(/*Places.MEMORY*/"memory") ? null : FileUtil.normalizeFile(new File(v)));
+                    if (!v.equals(/*Places.MEMORY*/"memory")) {
+                        v = FileUtil.normalizeFile(new File(v)).getPath();
+                    }
+                    userDir = v;
+                    System.setProperty("netbeans.user", v);
                 } catch(ArrayIndexOutOfBoundsException e) {
                     System.err.println(getString("ERR_UserDirExpected"));
                     return 2;
@@ -143,7 +147,7 @@ public class CLIOptions extends CLIHandler {
             } else if (isOption(args[i], "cachedir")) { // NOI18N
                 args[i] = null;
                 try {
-                    Places.setCacheDirectory(FileUtil.normalizeFile(new File(args[++i])));
+                    cacheDir = FileUtil.normalizeFile(new File(args[++i]));
                 } catch(ArrayIndexOutOfBoundsException e) {
                     System.err.println(getString("ERR_UserDirExpected"));
                     return 2;
@@ -287,7 +291,7 @@ public class CLIOptions extends CLIHandler {
 
     /** Getter for user home directory. */
     public static String getUserDir () {
-        if (userDir == null) {
+        if (userDir == null || !userDir.equals(System.getProperty("netbeans.user"))) {
             userDir = System.getProperty ("netbeans.user");
             
             if ("memory".equals (userDir)) { // NOI18N
@@ -324,6 +328,10 @@ public class CLIOptions extends CLIHandler {
     //        makedir(new File(userDirF, DIR_MODULES)); // NOI18N
         }
         return userDir;
+    }
+    
+    public static File getCacheDir() {
+        return cacheDir;
     }
 
     private static void makedir (File f) {

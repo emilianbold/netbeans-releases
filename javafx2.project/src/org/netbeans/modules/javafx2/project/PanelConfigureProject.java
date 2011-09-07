@@ -58,10 +58,10 @@ import org.openide.util.HelpCtx;
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
-    private NewJFXProjectWizardIterator.WizardType type;
+    private JavaFXProjectWizardIterator.WizardType type;
     private PanelConfigureProjectVisual component;
 
-    public PanelConfigureProject(NewJFXProjectWizardIterator.WizardType type) {
+    public PanelConfigureProject(JavaFXProjectWizardIterator.WizardType type) {
         this.type = type;
     }
 

@@ -46,6 +46,7 @@ import org.netbeans.modules.refactoring.java.test.InlineTest;
 import org.netbeans.modules.refactoring.java.test.InnerToOutterTest;
 import org.netbeans.modules.refactoring.java.test.IntroduceParameterTest;
 import org.netbeans.modules.refactoring.java.test.RenameTest;
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringActionsProviderTest;
 
 /**
  * A TestSuite containing all the Java Refactoring Tests, excluding the performance tests.
@@ -54,12 +55,13 @@ import org.netbeans.modules.refactoring.java.test.RenameTest;
 public class JavaRefactoringTestSuite {
 
     public static Test suite() throws InterruptedException {
-        Class[] classes = {RenameTest.class,
+        Class[] classes = {IntroduceParameterTest.class,
+            RenameTest.class,
             CopyClassTest.class,
             InlineTest.class,
             InnerToOutterTest.class,
             ChangeParametersTest.class,
-            IntroduceParameterTest.class};
+            JavaRefactoringActionsProviderTest.class};
         TestSuite testSuite = new TestSuite(classes);
         testSuite.addTest(FindUsagesTest.suite());
         return testSuite;

@@ -176,7 +176,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
             FileObject fo = lfs.findResource("folder");
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] arr = df.getChildren();
-            assertEquals("One object", 1, arr.length);
+            assertEquals("One object: " + Arrays.toString(arr), 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
 

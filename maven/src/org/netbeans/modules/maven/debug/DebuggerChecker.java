@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.debug;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -86,10 +85,10 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             //cannot act on execution without a project instance..
             return true;
         }
-        boolean debug = "true".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
+        boolean debug = "true".equalsIgnoreCase(config.getProperties().get(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
         if (debug && ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(config.getActionName()) && config.getGoals().contains("surefire:test")) { //NOI18N - just a safeguard
-            String newArgs = config.getProperties().getProperty(MAVENSUREFIREDEBUG); //NOI18N
-            String oldArgs = config.getProperties().getProperty(ARGLINE); //NOI18N
+            String newArgs = config.getProperties().get(MAVENSUREFIREDEBUG); //NOI18N
+            String oldArgs = config.getProperties().get(ARGLINE); //NOI18N
 
             String ver = PluginPropertyUtils.getPluginVersion(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE); //NOI18N
             //make sure we have both old surefire-plugin and new surefire-plugin covered
@@ -104,18 +103,14 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             if (oldArgs != null && newArgs == null && compare >= 0) {
                 //this case is for custom user mapping in nbactions.xml
                 // we can move it to new property safely IMHO.
-                Properties prop = config.getProperties();
-                prop.put(MAVENSUREFIREDEBUG, oldArgs);//NOI18N
-                prop.remove(ARGLINE);//NOI18N
-                config.setProperties(prop);
+                config.setProperty(MAVENSUREFIREDEBUG, oldArgs);
+                config.setProperty(ARGLINE, null);
             }
             if (newArgs != null && compare < 0) {
                 oldArgs = (oldArgs == null ? "" : oldArgs) + " " + newArgs;
-                Properties prop = config.getProperties();
-                prop.setProperty(ARGLINE, oldArgs);//NOI18N
+                config.setProperty(ARGLINE, oldArgs);
                 // in older versions this property id dangerous
-                prop.remove(MAVENSUREFIREDEBUG);//NOI18N
-                config.setProperties(prop);
+                config.setProperty(MAVENSUREFIREDEBUG, null);
             }
         }
         return true;
@@ -127,13 +122,13 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             return true;
         }
 
-        boolean debug = "true".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
-        boolean mavenDebug = "maven".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN)); //NOI18N
+        boolean debug = "true".equalsIgnoreCase(config.getProperties().get(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
+        boolean mavenDebug = "maven".equalsIgnoreCase(config.getProperties().get(Constants.ACTION_PROPERTY_JPDALISTEN)); //NOI18N
         if (debug || mavenDebug) {
             String key = "Env.MAVEN_OPTS"; //NOI18N
             if (mavenDebug) {
                 String vmargs = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
-                String orig = config.getProperties().getProperty(key);
+                String orig = config.getProperties().get(key);
                 if (orig == null) {
                     orig = System.getenv("MAVEN_OPTS"); // NOI18N
                 }
@@ -143,7 +138,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 JPDAStart start = new JPDAStart(context.getInputOutput());
                 NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
                 start.setName(prj.getMavenProject().getArtifactId());
-                start.setStopClassName(config.getProperties().getProperty("jpda.stopclass")); //NOI18N
+                start.setStopClassName(config.getProperties().get("jpda.stopclass")); //NOI18N
                 String val = start.execute(config.getProject());
                 for (Map.Entry<String,String> entry : NbCollections.checkedMapByFilter(config.getProperties(), String.class, String.class, true).entrySet()) {
                     StringBuilder buf = new StringBuilder(entry.getValue());
@@ -172,7 +167,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
 
     public @Override void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         if (config.getProject() != null && resultCode == 0 && "debug.fix".equals(config.getActionName())) { //NOI18N
-            String cname = config.getProperties().getProperty("jpda.stopclass"); //NOI18N
+            String cname = config.getProperties().get("jpda.stopclass"); //NOI18N
             if (cname != null) {
                 reload(config.getProject(), res.getInputOutput().getOut(), cname);
             } else {

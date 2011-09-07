@@ -70,8 +70,10 @@ import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.openide.filesystems.FileObject;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
@@ -261,13 +263,21 @@ public final class SemanticHighlighter extends HighlighterBase {
     private void addHighlightsToBag(PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
         Document doc = getDocument();
         if (doc != null) {
+            String mimeType = null;
+            FileObject fileObject = CsmUtilities.getFileObject(doc);
+            if (fileObject != null) {
+                mimeType = fileObject.getMIMEType();
+            }
+            if (mimeType == null) {
+                mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
+            }
             for (CsmOffsetable block : blocks) {
                 int startOffset = getDocumentOffset(doc, block.getStartOffset());
                 int endOffset = block.getEndOffset();
 
                 endOffset = getDocumentOffset(doc, endOffset == Integer.MAX_VALUE ? doc.getLength() + 1 : endOffset);
                 if (startOffset < doc.getLength() && endOffset > 0) {
-                    addHighlightsToBag(bag, startOffset, endOffset, entity.getAttributes(block), entity.getName());
+                    addHighlightsToBag(bag, startOffset, endOffset, entity.getAttributes(block, mimeType), entity.getName());
                 }
             }
         }

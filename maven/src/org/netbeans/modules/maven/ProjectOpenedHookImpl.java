@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven;
 
 import java.util.prefs.BackingStoreException;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
@@ -62,6 +63,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Repository;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -163,25 +165,12 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
         USG_LOGGER.log(record);
 
-        REPO: for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
-            String id = rep.getId();
-            if (RepositoryPreferences.getInstance().getRepositoryInfoById(id) == null) {
-                String url = rep.getMirroredRepositories().size() == 1 ? rep.getMirroredRepositories().get(0).getUrl() : rep.getUrl();
-                for (RepositoryInfo ri : RepositoryPreferences.getInstance().getRepositoryInfos()) { // #195130
-                    if (url.equals(ri.getRepositoryUrl())) {
-                        LOGGER.log(Level.WARNING, "Refusing to add duplicate repository definition for {0} with ID {1} when already registered as {2}", new Object[] {url, id, ri.getId()});
-                        continue REPO;
-                    }
-                }
-                RepositoryInfo ri;
-                try {
-                    ri = new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, id, null, url);
-                } catch (URISyntaxException x) {
-                    LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
-                    continue;
-                }
-                RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(ri);
-            }
+        MavenProject mp = project.getOriginalMavenProject();
+        for (ArtifactRepository repo : mp.getRemoteArtifactRepositories()) {
+            register(repo, mp.getModel().getRepositories());
+        }
+        for (ArtifactRepository repo : mp.getPluginArtifactRepositories()) {
+            register(repo, mp./* MNG-5163 */getModel().getPluginRepositories());
         }
 
         CopyResourcesOnSave.opened();
@@ -218,6 +207,25 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }, 1000 * 60 * 2);
         }
     }
+    private void register(ArtifactRepository repo, List<Repository> definitions) {
+        String id = repo.getId();
+        String displayName = id;
+        for (Repository r : definitions) {
+            if (id.equals(r.getId())) {
+                String n = r.getName();
+                if (n != null) {
+                    displayName = n;
+                    break;
+                }
+            }
+        }
+        List<ArtifactRepository> mirrors = repo.getMirroredRepositories();
+        try {
+            RepositoryPreferences.getInstance().addTransientRepository(this, id, displayName, mirrors.size() == 1 ? mirrors.get(0).getUrl() : repo.getUrl());
+        } catch (URISyntaxException x) {
+            LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
+        }
+    }
     private boolean existsDefaultIndexLocation() {
         File cacheDir = new File(Places.getCacheDirectory(), "mavenindex");//NOI18N
         return cacheDir.exists() && cacheDir.isDirectory();
@@ -242,7 +250,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
+        BatchProblemNotifier.closed(project);
         CopyResourcesOnSave.closed();
+        RepositoryPreferences.getInstance().removeTransientRepositories(this);
     }
    
    private void checkBinaryDownloads() {

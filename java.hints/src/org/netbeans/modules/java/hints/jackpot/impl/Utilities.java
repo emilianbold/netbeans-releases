@@ -1017,6 +1017,7 @@ public class Utilities {
         private final Map<Tree, Tree> tree2Variable;
 
         public GeneralizePatternITT(Map<Tree, Tree> tree2Variable) {
+            super(null);
             this.tree2Variable = tree2Variable;
         }
 
@@ -1053,16 +1054,12 @@ public class Utilities {
         @Override
         public void setCompilationUnit(CompilationUnitTree cut) {}
 
-        private List<? extends ImportTree> imports;
+        @Override
+        public void setImports(List<? extends ImportTree> importsToAdd) {}
 
         @Override
-        public void setImports(List<? extends ImportTree> importsToAdd) {
-            this.imports = importsToAdd;
-        }
-
-        @Override
-        public List<? extends ImportTree> getImports() {
-            return this.imports;
+        public Set<? extends Element> getImports() {
+            return Collections.emptySet();
         }
 
         @Override

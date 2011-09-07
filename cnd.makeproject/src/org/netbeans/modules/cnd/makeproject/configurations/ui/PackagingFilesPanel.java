@@ -270,7 +270,10 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             return false;
         }
         final String mime = dataObject.getPrimaryFile().getMIMEType();
-        return mime.equals(MIMENames.SHELL_MIME_TYPE) || MIMENames.isBinaryExecutable(mime);
+        return mime.equals(MIMENames.SHELL_MIME_TYPE) || 
+               mime.equals(MIMENames.BAT_MIME_TYPE) || 
+               mime.equals(MIMENames.ELF_SHOBJ_MIME_TYPE) || 
+               MIMENames.isBinaryExecutable(mime);
     }
 
     private final class AddFilesButtonAction implements java.awt.event.ActionListener {
