@@ -45,10 +45,13 @@ import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -377,7 +380,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         indexFileBrowseButton = new JButton();
         argsLabel = new JLabel();
         argsTextField = new JTextField();
-        urlHintLabel = new JTextArea();
+        urlHintLabel = new JTextPane();
         remoteConnectionLabel = new JLabel();
         remoteConnectionComboBox = new JComboBox();
         manageRemoteConnectionButton = new JButton();
@@ -402,7 +405,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -412,17 +414,15 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
 
         argsLabel.setLabelFor(argsTextField);
-        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
 
-        urlHintLabel.setEditable(false);
-        urlHintLabel.setLineWrap(true);
-        urlHintLabel.setRows(2);
-        urlHintLabel.setWrapStyleWord(true);
+        Mnemonics.setLocalizedText(argsLabel,NbBundle.getMessage(RunAsRemoteWeb.class,"LBL_Arguments"));
+
+        urlHintLabel.setBackground(UIManager.getDefaults().getColor("Label.background"));
         urlHintLabel.setBorder(null);
-        urlHintLabel.setOpaque(false);
+        urlHintLabel.setEditable(false);
+        urlHintLabel.setFocusable(false);
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
-
         Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection"));
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage"));
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
@@ -451,7 +451,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text"));
 
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
-
         Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text"));
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
         advancedButton.addActionListener(new ActionListener() {
@@ -460,11 +459,24 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(preservePermissionsCheckBox)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(preservePermissionsLabel)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(uploadDirectlyCheckBox)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(uploadDirectlyLabel)
+                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(remoteConnectionLabel)
@@ -476,42 +488,28 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .addComponent(argsLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(urlHintLabel, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(remoteConnectionHintLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                            .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(urlTextField, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                                .addComponent(indexFileTextField, GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(indexFileBrowseButton))
-                            .addComponent(argsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(argsTextField, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                             .addComponent(uploadFilesHintLabel, Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(remoteConnectionComboBox, 0, 225, Short.MAX_VALUE)
+                                .addComponent(remoteConnectionComboBox, 0, 236, Short.MAX_VALUE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(manageRemoteConnectionButton))
-                            .addComponent(uploadDirectoryTextField, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .addComponent(uploadFilesComboBox, Alignment.LEADING, 0, 322, Short.MAX_VALUE)
-                            .addComponent(runAsComboBox, Alignment.LEADING, 0, 322, Short.MAX_VALUE)
-                            .addComponent(urlHintLabel, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(uploadDirectoryTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                            .addComponent(uploadFilesComboBox, Alignment.LEADING, 0, 348, Short.MAX_VALUE)
+                            .addComponent(runAsComboBox, Alignment.LEADING, 0, 348, Short.MAX_VALUE)
                             .addComponent(advancedButton))
                         .addGap(0, 0, 0))))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(preservePermissionsCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(preservePermissionsLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(uploadDirectlyCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(uploadDirectlyLabel)
-                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {indexFileBrowseButton, manageRemoteConnectionButton});
@@ -521,37 +519,37 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(runAsLabel)
-                    .addComponent(runAsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(runAsComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(urlLabel)
-                    .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(urlTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(indexFileLabel)
-                    .addComponent(indexFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(indexFileBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(argsLabel)
-                    .addComponent(argsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(urlHintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(urlHintLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(remoteConnectionLabel)
                     .addComponent(manageRemoteConnectionButton)
-                    .addComponent(remoteConnectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(remoteConnectionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(uploadDirectoryLabel)
-                    .addComponent(uploadDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(uploadDirectoryTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(remoteConnectionHintLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(uploadFilesLabel)
-                    .addComponent(uploadFilesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(uploadFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(uploadFilesHintLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -563,8 +561,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(uploadDirectlyLabel)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(advancedButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(advancedButton))
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -585,8 +582,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         argsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.argsLabel.AccessibleContext.accessibleDescription")); // NOI18N
         argsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.argsTextField.AccessibleContext.accessibleName")); // NOI18N
         argsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.argsTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        urlHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlHintLabel.AccessibleContext.accessibleName")); // NOI18N
-        urlHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlHintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.jTextPane1.AccessibleContext.accessibleName")); // NOI18N
+        urlHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.jTextPane1.AccessibleContext.accessibleDescription")); // NOI18N
         remoteConnectionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleName")); // NOI18N
         remoteConnectionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleDescription")); // NOI18N
         remoteConnectionComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleName")); // NOI18N
@@ -615,6 +612,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.AccessibleContext.accessibleDescription")); // NOI18N
         advancedButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleName")); // NOI18N
         advancedButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -679,7 +677,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JComboBox uploadFilesComboBox;
     private JLabel uploadFilesHintLabel;
     private JLabel uploadFilesLabel;
-    private JTextArea urlHintLabel;
+    private JTextPane urlHintLabel;
     private JLabel urlLabel;
     private JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
