@@ -39,64 +39,72 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.module.spi;
 
-import java.util.Arrays;
+import java.net.URL;
 import java.util.Collection;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.Icon;
 
 /**
- * The colors module functionality is partially implemented in the DefaultCssModule
- * from historical reasons. Newly added features are implemented here.
- *
+ * Represents a browser 
+ * 
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
+public abstract class Browser {
 
-    //NOI18N>>>
-    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
-                "default",
-                "valid",
-                "invalid",
-                "in-range",
-                "out-of-range",
-                "required",
-                "optional",
-                "read-only",
-                "read-write"
-            });
-    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
-                "selection",
-                "value",
-                "choices",
-                "repeat-item",
-                "repeat-index"});
+    /**
+     * 
+     * @return name of the browsers vendor (Mozilla, Microsoft, ...)
+     */
+    public abstract String getVendor();
 
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
+    /**
+     * 
+     * @return name of the browser (Firefox, Chrome, ...)
+     */
+    public abstract String getName();
     
-    private static Collection<Property> propertyDescriptors;
+    /**
+     * 
+     * @return brief browser description. 
+     */
+    public abstract String getDescription();
+
+    /**
+     * 
+     * @return name of the rendering engive along with its version (gecko 5.0,...)
+     */
+    public abstract String getRenderingEngineId();
     
-    @Override
-    public Collection<String> getPseudoClasses() {
-        return PSEUDO_CLASSES;
+    /**
+     * 
+     * @return a vendor specific property prefix, (moz, o, ...)
+     */
+    public abstract String getVendorSpecificPropertyId();
+    
+    /**
+     * 
+     * @return the vendor specific property prefix with the added dashes as
+     * it appears in the css notation: -moz-, -o-, -webkit-, ...
+     */
+    public final String getVendorSpecificPropertyPrefix() {
+        return new StringBuilder().append('-').append(getVendorSpecificPropertyId()).append('-').toString();
     }
-
-    @Override
-    public Collection<String> getPseudoElements() {
-        return PSEUDO_ELEMENTS;
-    }
-
     
-    @Override
-    public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
-        }
-        return propertyDescriptors;
-    }    
+    /**
+     * Return a small icon (16-20px) representing the browser.
+     * The icon is used to represent the browser in some user UIs.
+     * 
+     */
+    public abstract URL getActiveIcon();
     
+    /**
+     * Return a small icon (16-20px) representing the browser in an inactive
+     * state. The icon should be in gray color preferably.
+     * 
+     * The icon is used to represent the browser in some user UIs.
+     * 
+     */
+    public abstract URL getInactiveIcon();
+
 }

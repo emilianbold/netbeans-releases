@@ -41,62 +41,51 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import java.net.URL;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * The colors module functionality is partially implemented in the DefaultCssModule
- * from historical reasons. Newly added features are implemented here.
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-@ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
-
-    //NOI18N>>>
-    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
-                "default",
-                "valid",
-                "invalid",
-                "in-range",
-                "out-of-range",
-                "required",
-                "optional",
-                "read-only",
-                "read-write"
-            });
-    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
-                "selection",
-                "value",
-                "choices",
-                "repeat-item",
-                "repeat-index"});
-
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
-    
-    private static Collection<Property> propertyDescriptors;
-    
-    @Override
-    public Collection<String> getPseudoClasses() {
-        return PSEUDO_CLASSES;
-    }
+public class PropertyCompatibilityHelpResolver extends HelpResolver {
 
     @Override
-    public Collection<String> getPseudoElements() {
-        return PSEUDO_ELEMENTS;
-    }
-
-    
-    @Override
-    public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+    public String getHelp(Property property) {
+        StringBuilder sb = new StringBuilder();
+        //XXX using legacy html code instead of css styling due to the jdk swingbrowser
+        sb.append("<table width=\"100%\" border=\"0\"><tr><td><div style=\"font-size: large; font-weight: bold\">");
+        sb.append(property.getName());
+        sb.append("</div></td>");
+        sb.append("<td width=\"125\">");
+        for (Browser browser : CssModuleSupport.getBrowsers()) {
+            URL browserIcon = CssModuleSupport.isPropertySupported(property.getName(), browser)
+                    ? browser.getActiveIcon()
+                    : browser.getInactiveIcon();
+            sb.append("<img src=\"");
+            sb.append(browserIcon.toExternalForm());
+            sb.append("\">"); // NOI18N
         }
-        return propertyDescriptors;
-    }    
-    
+        sb.append("</td></tr></table>");
+        
+        return sb.toString();
+    }
+
+    @Override
+    public String getHelp(URL url) {
+        return null;
+    }
+
+    @Override
+    public URL resolveLink(Property property, String link) {
+        return null;
+    }
+
+    @Override
+    public int getPriority() {
+        return 10; //high priority
+    }
 }

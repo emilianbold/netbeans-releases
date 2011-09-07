@@ -43,7 +43,7 @@ package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  * Not threadsafe
@@ -152,9 +152,9 @@ public class GrammarParser {
 
                     //without explicit at-sign prefix, first try to resolve
                     //with the prefix, if not found without prefix
-                    PropertyDescriptor p = CssModuleSupport.getPropertyDescriptors().get("@" + referredElementName);
+                    Property p = CssModuleSupport.getProperties().get("@" + referredElementName);
                     if (p == null) {
-                        p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
+                        p = CssModuleSupport.getProperties().get(referredElementName);
                     }
 
                     if (p == null) {
