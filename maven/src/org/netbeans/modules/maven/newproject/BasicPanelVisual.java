@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -117,7 +116,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private BasicWizardPanel panel;
     private final Archetype arch;
 
-    private String lastProjectName = ""; //NOI18N
     private final ValidationGroup vg;
 
     private boolean changedPackage = false;
@@ -163,11 +161,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         tblAdditionalProps.setVisible(false);
         lblAdditionalProps.setVisible(false);
         jScrollPane1.setVisible(false);
-
-        if (panel.getArchetypes() == null) {
-            lblEEVersion.setVisible(false);
-            comboEEVersion.setVisible(false);
-        }
 
         btnSetupNewer.setVisible(false);
 
@@ -267,8 +260,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         jScrollPane1 = new javax.swing.JScrollPane();
         tblAdditionalProps = new javax.swing.JTable();
         btnSetupNewer = new javax.swing.JButton();
-        lblEEVersion = new javax.swing.JLabel();
-        comboEEVersion = new javax.swing.JComboBox();
 
         projectNameLabel.setLabelFor(projectNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_ProjectName")); // NOI18N
@@ -310,7 +301,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_Optional")); // NOI18N
 
         lblAdditionalProps.setLabelFor(tblAdditionalProps);
-        org.openide.awt.Mnemonics.setLocalizedText(lblAdditionalProps, "jLabel2");
+        org.openide.awt.Mnemonics.setLocalizedText(lblAdditionalProps, "<additional properties>"); // NOI18N
 
         tblAdditionalProps.setModel(createPropModel());
         tblAdditionalProps.setColumnSelectionAllowed(true);
@@ -331,11 +322,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             pnlAdditionalsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlAdditionalsLayout.createSequentialGroup()
                 .addComponent(lblAdditionalProps)
-                .addContainerGap(511, Short.MAX_VALUE))
+                .addContainerGap(379, Short.MAX_VALUE))
             .addGroup(pnlAdditionalsLayout.createSequentialGroup()
                 .addComponent(btnSetupNewer)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -349,48 +340,37 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         btnSetupNewer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.btnSetupNewer.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lblEEVersion.setLabelFor(comboEEVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_JavaEE")); // NOI18N
-
-        comboEEVersion.setModel(new DefaultComboBoxModel(panel.getEELevels()));
-        comboEEVersion.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboEEVersionActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(createdFolderLabel)
+                    .addComponent(projectLocationLabel)
+                    .addComponent(projectNameLabel)
                     .addComponent(lblPackage)
                     .addComponent(lblVersion)
                     .addComponent(lblGroupId)
-                    .addComponent(lblArtifactId)
-                    .addComponent(createdFolderLabel)
-                    .addComponent(projectLocationLabel)
-                    .addComponent(projectNameLabel))
+                    .addComponent(lblArtifactId))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(createdFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtPackage, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtPackage, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(createdFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(projectNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(browseButton)
-                    .addComponent(jLabel1)))
-            .addComponent(pnlAdditionals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(browseButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addContainerGap())))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(lblEEVersion)
-                .addGap(18, 18, 18)
-                .addComponent(comboEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(253, 253, 253))
+                .addComponent(pnlAdditionals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -407,11 +387,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createdFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(createdFolderLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblEEVersion)
-                    .addComponent(comboEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(31, 31, 31)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtArtifactId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblArtifactId))
@@ -469,10 +445,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    private void comboEEVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEEVersionActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_comboEEVersionActionPerformed
-
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
         OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
         panel.getValidationGroup().validateAll();
@@ -482,14 +454,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JButton btnSetupNewer;
-    private javax.swing.JComboBox comboEEVersion;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAdditionalProps;
     private javax.swing.JLabel lblArtifactId;
-    private javax.swing.JLabel lblEEVersion;
     private javax.swing.JLabel lblGroupId;
     private javax.swing.JLabel lblPackage;
     private javax.swing.JLabel lblVersion;
@@ -564,9 +534,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 map.put((String)mdl.getValueAt(i, 0), (String)mdl.getValueAt(i, 1));
             }
             d.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, map);
-        }
-        if (panel.getArchetypes() != null) {
-            d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -666,12 +633,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (arch != null) {
             return arch;
         }
-        Archetype[] archs = panel.getArchetypes();
-        if (archs == null) {
-            return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
-        } else {
-            return archs[Math.max(0, comboEEVersion.getSelectedIndex())];
-        }
+        return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
     }
 
     @Messages("Handle_Download=Downloading Archetype")

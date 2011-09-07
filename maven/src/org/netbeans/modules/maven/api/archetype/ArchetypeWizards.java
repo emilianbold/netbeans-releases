@@ -95,8 +95,8 @@ public class ArchetypeWizards {
         return new ArchetypeWizardUtils.AddDependencyOperation(info, type);
     }
 
-    public static WizardDescriptor.Panel<WizardDescriptor> basicWizardPanel(ValidationGroup vg, boolean isFinish, Archetype archetype) {
-        return new BasicWizardPanel(vg, isFinish, archetype);
+    public static WizardDescriptor.Panel<WizardDescriptor> basicWizardPanel(ValidationGroup vg, boolean isFinish, @NullAllowed Archetype archetype) {
+        return new BasicWizardPanel(vg, archetype, isFinish, false);
     }
 
 }

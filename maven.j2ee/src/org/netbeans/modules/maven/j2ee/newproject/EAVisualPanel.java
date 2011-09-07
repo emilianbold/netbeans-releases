@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.j2ee.newproject;
 
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
@@ -48,7 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import static org.netbeans.modules.maven.newproject.Bundle.*;
+import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
@@ -110,14 +110,14 @@ public final class EAVisualPanel extends JPanel  {
         d.putProperty("ear_projdir", new File(parent, earText));
         ProjectInfo pi = new ProjectInfo((String) d.getProperty("groupId"), earText, (String) d.getProperty("version"), null);
         d.putProperty("ear_versionInfo", pi);
-        d.putProperty("ear_archetype", ArchetypeWizardUtils.EAR_ARCHS[eeLevelIdx]);
+        d.putProperty("ear_archetype", EAWizardIterator.EAR_ARCHS[eeLevelIdx]);
 
         if (chkEjb.isSelected()) {
             String ejbText = tfEjb.getText().trim();
             d.putProperty("ejb_projdir", new File(parent, ejbText));
             pi = new ProjectInfo((String) d.getProperty("groupId"), ejbText, (String) d.getProperty("version"), null);
             d.putProperty("ejb_versionInfo", pi);
-            d.putProperty("ejb_archetype", ArchetypeWizardUtils.EJB_ARCHS[eeLevelIdx]);
+            d.putProperty("ejb_archetype", EAWizardIterator.EJB_ARCHS[eeLevelIdx]);
         } else {
             d.putProperty("ejb_projdir", null);
             d.putProperty("ejb_versionInfo", null);
@@ -129,7 +129,7 @@ public final class EAVisualPanel extends JPanel  {
             d.putProperty("web_projdir", new File(parent, webText));
             pi = new ProjectInfo((String) d.getProperty("groupId"), webText, (String) d.getProperty("version"), null);
             d.putProperty("web_versionInfo", pi);
-            d.putProperty("web_archetype", ArchetypeWizardUtils.WEB_APP_ARCHS[eeLevelIdx]);
+            d.putProperty("web_archetype", EAWizardIterator.WEB_APP_ARCHS[eeLevelIdx]);
 
         } else {
             d.putProperty("web_projdir", null);

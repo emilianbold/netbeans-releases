@@ -40,18 +40,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.j2ee.newproject;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import static org.netbeans.modules.maven.newproject.Bundle.*;
+import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -66,20 +73,29 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
 
     private Archetype[] archs;
 
+    /** value is Integer index into {@link #eeLevels} */
+    static final String PROP_EE_LEVEL = "eeLevel";
+
     private BasicEEWizardIterator(Archetype[] archs) {
         this.archs = archs;
     }
 
+    @TemplateRegistration(folder = "Project/Maven2", position = 200, displayName = "#template.WebApp", iconBase = "org/netbeans/modules/maven/j2ee/web/maven_web_application_16.png", description = "WebAppDescription.html")
+    @Messages("template.WebApp=Web Application")
     public static BasicEEWizardIterator createWebAppIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.WEB_APP_ARCHS);
+        return new BasicEEWizardIterator(EAWizardIterator.WEB_APP_ARCHS);
     }
 
+    @TemplateRegistration(folder = "Project/Maven2", position = 250, displayName = "#template.EJB", iconBase = "org/netbeans/modules/maven/j2ee/ejb/maven_ejb_module_16.png", description = "EjbDescription.html")
+    @Messages("template.EJB=EJB Module")
     public static BasicEEWizardIterator createEJBIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.EJB_ARCHS);
+        return new BasicEEWizardIterator(EAWizardIterator.EJB_ARCHS);
     }
     
+    @TemplateRegistration(folder = "Project/Maven2", position = 277, displayName = "#template.APPCLIENT", iconBase = "org/netbeans/modules/maven/j2ee/appclient/appclient.png", description = "AppClientDescription.html")
+    @Messages("template.APPCLIENT=Enterprise Application Client")
     public static BasicEEWizardIterator createAppClientIterator() {
-        return new BasicEEWizardIterator(ArchetypeWizardUtils.APPCLIENT_ARCHS);
+        return new BasicEEWizardIterator(EAWizardIterator.APPCLIENT_ARCHS);
     }
     
     @Messages({
@@ -97,7 +113,8 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
 
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(vg, eeLevels(), archs, true, false)
+            ArchetypeWizards.basicWizardPanel(vg, false, null),
+            new EELevelPanel(),
         };
     }
     
@@ -105,11 +122,19 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
     private String[] createSteps() {
         return new String[] {
             LBL_CreateProjectStep2ee(),
+            LBL_EESettings(),
         };
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
-        return ArchetypeWizardUtils.instantiate(wiz);
+    public Set<FileObject> instantiate() throws IOException {
+        ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
+
+        Archetype arch = archs[(Integer) wiz.getProperty(PROP_EE_LEVEL)];
+        ArchetypeWizards.logUsage(arch.getGroupId(), arch.getArtifactId(), arch.getVersion());
+
+        File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        ArchetypeWizards.createFromArchetype(projFile, vi, arch, null, true);
+        return ArchetypeWizards.openProjects(projFile, null);
     }
     
     public void initialize(WizardDescriptor wiz) {
@@ -148,17 +173,25 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
     }
     
     public boolean hasNext() {
-        return false;
+        return index < panels.length - 1;
     }
     
     public boolean hasPrevious() {
-        return false;
+        return index > 0;
     }
     
     public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
     }
     
     public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        index--;
     }
     
     public WizardDescriptor.Panel current() {
