@@ -42,17 +42,18 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public final class EAVisualPanel extends JPanel  {
 
@@ -82,12 +83,13 @@ public final class EAVisualPanel extends JPanel  {
         tfEar.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ear ArtifactId");
         tfEjb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ejb ArtifactId");
 
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EAVisualPanel.class, "LBL_EESettings"));
+        getAccessibleContext().setAccessibleDescription(LBL_EESettings());
     }
 
+    @Messages("LBL_EESettings=Settings")
     @Override
     public String getName() {
-        return NbBundle.getMessage(EAWizardPanel.class, "LBL_EESettings");
+        return LBL_EESettings();
     }
 
     void readSettings(WizardDescriptor wizardDescriptor) {

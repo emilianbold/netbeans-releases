@@ -83,7 +83,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -140,10 +139,11 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
     }
 
     /** Creates new form ChooseArchetypePanel */
+    @Messages("TIT_CreateProjectStep=Select a Maven archetype as a template for your project.")
     public ChooseArchetypePanel(ChooseWizardPanel wizPanel) {
         initComponents();
         
-        Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_CreateProjectStep")); // NOI18N
+        Mnemonics.setLocalizedText(jLabel2, TIT_CreateProjectStep());
         
         this.wizardPanel = wizPanel;
         tv = new BeanTreeView();
@@ -272,12 +272,13 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.btnRemove.accessibledesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @Messages("Q_RemoveArch=Really remove {0} archetype from local repository?")
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
     Node[] nds = getExplorerManager().getSelectedNodes();
     if (nds.length != 0) {
         final Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(ChooseArchetypePanel.class, "Q_RemoveArch", arch.getArtifactId()), 
+                Q_RemoveArch(arch.getArtifactId()), 
                 NotifyDescriptor.YES_NO_OPTION);
         Object ret = DialogDisplayer.getDefault().notify(nd);
         if (ret != NotifyDescriptor.YES_OPTION) {
@@ -309,9 +310,13 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 }//GEN-LAST:event_btnRemoveActionPerformed
 
+    @Messages({
+        "TIT_Archetype_details=Specify archetype details",
+        "LBL_Custom=Custom archetype - {0}"
+    })
     private void btnCustomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomActionPerformed
         CustomArchetypePanel panel = new CustomArchetypePanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_Archetype_details"));
+        DialogDescriptor dd = new DialogDescriptor(panel, TIT_Archetype_details());
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == NotifyDescriptor.OK_OPTION) {
             Childs childs = (Childs)manager.getRootContext().getChildren();
@@ -320,7 +325,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             arch.setGroupId(panel.getGroupId());
             arch.setVersion(panel.getVersion().length() == 0 ? "LATEST" : panel.getVersion()); //NOI18N
             
-            arch.setName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Custom", panel.getArtifactId()));
+            arch.setName(LBL_Custom(panel.getArtifactId()));
             if (panel.getRepository().length() != 0) {
                 arch.setRepository(panel.getRepository());
             }
@@ -398,7 +403,8 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     @Messages({
         "MSG_Description_with_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}\nRepository: {4}",
-        "MSG_Description_no_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}"
+        "MSG_Description_no_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}",
+        "MSG_NoTemplate=<No template selected>"
     })
     private void updateDescription() {
         Node[] nds = manager.getSelectedNodes();
@@ -416,21 +422,25 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return;
             }
         }
-        taDescription.setText(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "MSG_NoTemplate"));
+        taDescription.setText(MSG_NoTemplate());
         btnRemove.setEnabled(false);
     }
     
+    @Messages({
+        "LBL_Loading=Loading more archetypes...",
+        "TIT_Archetype_Node_Name={0} ({1})"
+    })
     public static Node[] createNodes(Archetype arch, Children childs) {
         if (arch == LOADING_ARCHETYPE) {
             AbstractNode loading = new AbstractNode(Children.LEAF);
             loading.setName("loading"); //NOI18N
-            loading.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Loading"));
+            loading.setDisplayName(LBL_Loading());
             return new Node[] {loading};
         }
         AbstractNode nd = new AbstractNode(childs);
         String dn = arch.getName() == null ? arch.getArtifactId() : arch.getName();
         nd.setName(dn);
-        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_Archetype_Node_Name", dn, arch.getVersion()));
+        nd.setDisplayName(TIT_Archetype_Node_Name(dn, arch.getVersion()));
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
         nd.setValue(PROP_ARCHETYPE, arch);
         return new Node[] { nd };

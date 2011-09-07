@@ -52,10 +52,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,10 +106,10 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
         List<String> steps = new ArrayList<String>();
         if (archetype == null) {
             panels.add(new ChooseWizardPanel());
-            steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep"));
+            steps.add(LBL_CreateProjectStep());
         }
         panels.add(new BasicWizardPanel(vg));
-        steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep2"));
+        steps.add(LBL_CreateProjectStep2());
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
             c.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
@@ -129,7 +129,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     }
     
     public @Override String name() {
-        return NbBundle.getMessage(MavenWizardIterator.class, "NameFormat", index + 1, panels.size());
+        return NameFormat(index + 1, panels.size());
     }
     
     @Override

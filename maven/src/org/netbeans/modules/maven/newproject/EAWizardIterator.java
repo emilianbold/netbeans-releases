@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.newproject;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +59,11 @@ import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -98,8 +97,8 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(EAWizardIterator.class, "LBL_CreateProjectStep2"),
-            NbBundle.getMessage(EAWizardIterator.class, "LBL_EESettings")
+            LBL_CreateProjectStep2ee(),
+            LBL_EESettings()
         };
     }
     
@@ -165,8 +164,7 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
     }
     
     public String name() {
-        return MessageFormat.format(org.openide.util.NbBundle.getMessage(EAWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+        return NameFormat(index + 1, panels.length);
     }
     
     public boolean hasNext() {
