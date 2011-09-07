@@ -71,6 +71,7 @@
                 <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.odb</friend>
+                <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
