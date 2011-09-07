@@ -456,13 +456,15 @@ public final class JaxWsModelImpl implements JaxWsModel {
                 os = fo.getOutputStream(lock);
                 write(os);
                 os.close();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } finally {
+            } 
+            finally {
                 if (lock!=null) lock.releaseLock();
                 if (os != null) os.close();
             }
-        } else throw new IOException("No FileObject for writing specified"); //NOI18N
+        } 
+        else {
+            throw new IOException("No FileObject for writing specified"); //NOI18N
+        }
     }
     
     @Override
