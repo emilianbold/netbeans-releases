@@ -1249,7 +1249,7 @@ AtomicLockListener, FoldHierarchyListener {
                             hierarchy.unlock();
                         }
                         if (rectangularSelection) {
-                            adjustRectangularSelectionToDotAndMark();
+                            setRectangularSelectionToDotAndMark();
                         }
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
@@ -1761,7 +1761,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
     
-    private void adjustRectangularSelectionToDotAndMark() {
+    void setRectangularSelectionToDotAndMark() {
         int dotOffset = getDot();
         int markOffset = getMark();
         try {
@@ -2046,7 +2046,7 @@ AtomicLockListener, FoldHierarchyListener {
             rectangularSelection = Boolean.TRUE.equals(component.getClientProperty(RECTANGULAR_SELECTION_PROPERTY));
             if (rectangularSelection != origRectangularSelection) {
                 if (rectangularSelection) {
-                    adjustRectangularSelectionToDotAndMark();
+                    setRectangularSelectionToDotAndMark();
                     RectangularSelectionTransferHandler.install(component);
 
                 } else { // No rectangular selection

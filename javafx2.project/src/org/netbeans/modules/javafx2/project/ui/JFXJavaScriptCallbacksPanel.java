@@ -72,6 +72,7 @@ public class JFXJavaScriptCallbacksPanel extends javax.swing.JPanel {
         this.props = props;
         initComponents();
         this.tableCallbacks.setModel(createModel(createResources()));
+        this.tableCallbacks.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
 
     Map<String,String> getResources() {

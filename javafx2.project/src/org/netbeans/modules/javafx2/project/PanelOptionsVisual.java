@@ -110,7 +110,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
         
-        // Select first Java FX enabled platform
+        // Select first JavaFX enabled platform
         for (int i = 0; i < platformsModel.getSize(); i++) {
             JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
             if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {

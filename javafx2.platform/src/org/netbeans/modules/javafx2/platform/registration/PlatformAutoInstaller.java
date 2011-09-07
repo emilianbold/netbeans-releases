@@ -67,7 +67,7 @@ public class PlatformAutoInstaller implements Runnable {
     public void run() {
         FileObject installedSDK = findInstalledSDK();
         if (installedSDK == null) {
-            LOGGER.log(Level.INFO, "Can't find auto registered Java FX SDK instance"); // NOI18N
+            LOGGER.log(Level.INFO, "Can't find auto registered JavaFX SDK instance"); // NOI18N
             return;
         }
 
@@ -110,7 +110,7 @@ public class PlatformAutoInstaller implements Runnable {
         String sdkPath = getStringAttribute(installedSDK, AutomaticRegistration.SDK_ATTR);
         String runtimePath = getStringAttribute(installedSDK, AutomaticRegistration.RUNTIME_ATTR);
         if (sdkPath == null || runtimePath == null) {
-            LOGGER.log(Level.FINE, "Can't read attributes from auto registered Java FX SDK instance: {0}", installedSDK.getPath()); // NOI18N
+            LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
             return;
         }
 
@@ -123,13 +123,13 @@ public class PlatformAutoInstaller implements Runnable {
             LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ioe); // NOI18N
             return;
         }
-        // 3. Register Java FX platform extension
+        // 3. Register JavaFX platform extension
         Map<String, String> map = new HashMap<String, String>(2);
         map.put(Utils.getSDKPropertyKey(platform), sdkPath);
         map.put(Utils.getRuntimePropertyKey(platform), runtimePath);
         PlatformPropertiesHandler.saveGlobalProperties(map);
 
-        LOGGER.log(Level.INFO, "Java FX Platform instance has been successfully registered: {0}", platform); // NOI18N
+        LOGGER.log(Level.INFO, "JavaFX Platform instance has been successfully registered: {0}", platform); // NOI18N
     }
 
     private static String getStringAttribute(FileObject fo, String attrName) {

@@ -417,7 +417,9 @@ public class FormUtils
             "model", "mnemonic",
             "model", "text" },
         { "javax.swing.JRadioButton",
-            "model", "buttonGroup" }
+            "model", "buttonGroup" },
+        { "javax.swing.JFileChooser",
+            "dialogType", "approveButtonText"}
     };
 
     /** Table enumerating properties that can hold HTML text. */

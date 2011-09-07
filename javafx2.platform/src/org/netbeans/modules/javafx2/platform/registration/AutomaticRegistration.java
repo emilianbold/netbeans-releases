@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Registers Java FX SDK and Java FX Runtime instances by creating instance file
+ * Registers JavaFX SDK and JavaFX Runtime instances by creating instance file
  * in cluster config directory. Designed to be called from installer.
  * <p>
  * Sample command line<br>
@@ -85,7 +85,7 @@ public class AutomaticRegistration {
      */
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.out.println("Parameters: <ide clusterDir> <Java FX SDK path> <Java FX Runtime path>"); // NOI18N
+            System.out.println("Parameters: <ide clusterDir> <JavaFX SDK path> <JavaFX Runtime path>"); // NOI18N
             System.exit(-1);
         }
 
@@ -103,15 +103,15 @@ public class AutomaticRegistration {
         if (sdkInstanceDir == null) {
             sdkInstanceDir = FileUtil.createFolder(FileUtil.getConfigRoot(), CONFIG);
             if (sdkInstanceDir == null) {
-                LOGGER.log(Level.INFO, "Cannot register the default Java FX SDK. The config/" + CONFIG + " folder cannot be created."); // NOI18N
+                LOGGER.log(Level.INFO, "Cannot register the default JavaFX SDK. The config/" + CONFIG + " folder cannot be created."); // NOI18N
                 return 2;
             }
         }
 
-        // make sure the Java FX SDK is not registered yet
+        // make sure the JavaFX SDK is not registered yet
         for (FileObject fo : sdkInstanceDir.getChildren()) {
             if (fo.getAttribute(SDK_ATTR).equals(sdkPath)) {
-                // the Java FX SDK is already registered, do nothing
+                // the JavaFX SDK is already registered, do nothing
                 return 0;
             }
         }
@@ -133,7 +133,7 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(RUNTIME_ATTR, rtPath);
             return true;
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "Cannot register the default Java FX SDK."); // NOI18N
+            LOGGER.log(Level.INFO, "Cannot register the default JavaFX SDK."); // NOI18N
             LOGGER.log(Level.INFO, null, e);
         }
         return false;
