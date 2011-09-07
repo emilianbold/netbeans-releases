@@ -219,9 +219,6 @@ final class MarkVector {
             if (offsetGapStart != offset) {
                 moveOffsetGap(offset, index);
             }
-            // Shift the offset gap right to the end of insertion.
-            // This is necessary since marks from markUpdates assume it and so they update to below-gap offsets.
-            offsetGapStart += length;
 
         } else { // Backward-bias marks or marks at offset == 0
             int newGapOffset = offset + 1;
@@ -230,22 +227,10 @@ final class MarkVector {
             if (offsetGapStart != newGapOffset) {
                 moveOffsetGap(newGapOffset, index);
             }
-            // Shift the offset gap right to the end of insertion + 1.
-            // This corresponds to how the removal gets handled.
-            // This is necessary since marks from markUpdates assume it and so they update to below-gap offsets.
-            offsetGapStart += length;
-
-            if (markUpdates != null) { // Possibly restore marks' original offsets
-                int activeMarkUpdatesCount = 0;
-                for (int i = 0; i < markUpdates.length; i++) {
-                    MarkUpdate update = markUpdates[i];
-                    if (update.mark.isActive()) {
-                        update.restoreRawOffset();
-                        markUpdates[activeMarkUpdatesCount++] = update; // Filter markUpdates to valid ones
-                    }
-                }
-            }
         }
+        // Shift the offset gap right to the end of insertion (to end-of-insertion+1 for backward-bias marks).
+        // This is necessary since marks from markUpdates assume it and so they update to below-gap offsets.
+        offsetGapStart += length;
         offsetGapLength -= length; // Shrink the offset gap to process insertion
 
         // If markUpdates != null (retain original offsets) then marks could become "unsorted":
