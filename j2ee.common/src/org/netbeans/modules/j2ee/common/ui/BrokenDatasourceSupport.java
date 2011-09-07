@@ -175,8 +175,8 @@ public class BrokenDatasourceSupport {
         String url = ds.getUrl();
         String username = ds.getUsername();
         DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
-        for(int i=0; i<dbConns.length; i++ ){
-            DatabaseConnection dbCon = dbConns[i];
+        
+        for (DatabaseConnection dbCon : dbConns) {
             String url1 = dbCon.getDatabaseURL();
             String username1 = dbCon.getUser();
             if (matchURL(url, url1, true) && Utilities.compareObjects(username, username1)) {
@@ -196,9 +196,14 @@ public class BrokenDatasourceSupport {
         }
         
         if (jdbcResourceUrl.contains("derby")) {
-            String newJdbcResourceUrl = jdbcResourceUrl.substring(0, jdbcResourceUrl.lastIndexOf(":")) + jdbcResourceUrl.substring(jdbcResourceUrl.lastIndexOf("/"));
-            if (newJdbcResourceUrl.equals(dsInfoUrl)){
-                return true;
+            int lastIndexOfColon = jdbcResourceUrl.lastIndexOf(":");
+            int lastIndexOfSlash = jdbcResourceUrl.lastIndexOf("/");
+            
+            if (lastIndexOfColon >= 0 && lastIndexOfSlash >= 0) {
+                String newJdbcResourceUrl = jdbcResourceUrl.substring(0, lastIndexOfColon) + jdbcResourceUrl.substring(lastIndexOfSlash);
+                if (newJdbcResourceUrl.equals(dsInfoUrl)){
+                    return true;
+                }
             }
         }
         
