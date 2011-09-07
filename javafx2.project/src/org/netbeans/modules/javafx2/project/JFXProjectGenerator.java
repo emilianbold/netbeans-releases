@@ -352,7 +352,7 @@ public class JFXProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
         
         // ===========================
-        //   Java FX specific stuff
+        //   JavaFX specific stuff
         // ===========================
         ep.setProperty(JFXProjectProperties.JAVAFX_ENABLED, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_javafx")}, false); // NOI18N
