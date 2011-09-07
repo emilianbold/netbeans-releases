@@ -25,7 +25,7 @@ public class ${name} extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Application.launch(${name}.class, args);
+        Application.launch(args);
     }
 
     @Override
