@@ -1175,6 +1175,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         private boolean autoImport;
+        private String enclSortText;
         private int assignToVarPos;
         private String assignToVarText;
         
@@ -1188,6 +1189,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.modifiers = elem.getModifiers();
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.autoImport = autoImport;
+            if (autoImport) {
+                String enclName = Utilities.getElementName(elem.getEnclosingElement().getEnclosingElement(), true).toString();
+                this.enclSortText = elem.getEnclosingElement().getSimpleName().toString() + Utilities.getImportanceLevel(enclName);
+            } else {
+                this.enclSortText = ""; //NOI18N
+            }
             this.assignToVarPos = assignToVarPos;
             this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type, this.simpleName);
         }
@@ -1197,7 +1204,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return simpleName;
+            return simpleName + "#" + enclSortText; //NOI18N
         }
         
         public CharSequence getInsertPrefix() {
@@ -1376,6 +1383,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         private boolean autoImport;
+        private String enclSortText;
         private int assignToVarPos;
         private String assignToVarText;
         
@@ -1401,6 +1409,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.typeName = Utilities.getTypeName(info, retType, false).toString();
             this.addSemicolon = addSemicolon && (retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID);
             this.autoImport = autoImport;
+            if (autoImport) {
+                String enclName = Utilities.getElementName(elem.getEnclosingElement().getEnclosingElement(), true).toString();
+                this.enclSortText = elem.getEnclosingElement().getSimpleName().toString() + Utilities.getImportanceLevel(enclName);
+            } else {
+                this.enclSortText = ""; //NOI18N
+            }
             this.assignToVarPos = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarPos;
             this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
         }
@@ -1423,7 +1437,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     cnt++;
                 }
                 sortParams.append(')');
-                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+                sortText = simpleName + "#" + enclSortText + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
             return sortText;
         }
