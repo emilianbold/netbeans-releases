@@ -643,6 +643,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 File mimepull = ServerUtilities.getJarName(gfRoot, 
                         "mimepull.jar");          // NOI18N
                 addURL( urls , mimepull);
+                File asm = ServerUtilities.getJarName(gfRoot, 
+                        "asm-all-repackaged.jar");          // NOI18N
+                addURL( urls , asm);
             }
             else if ( version.startsWith( VERSION_31X )){
                 File jackson = ServerUtilities.getJarName( gfRoot, 
@@ -675,6 +678,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 File jerseyJson = ServerUtilities.getJarName( gfRoot, 
                         "jersey-json");          // NOI18N
                 addURL( urls , jerseyJson);
+                File asm = ServerUtilities.getJarName(gfRoot, 
+                    "asm-all-repackaged.jar");          // NOI18N
+                addURL( urls , asm);
             }
             return urls;
         }

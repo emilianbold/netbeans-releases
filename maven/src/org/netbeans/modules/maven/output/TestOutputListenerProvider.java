@@ -46,24 +46,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.output.TestOutputObserver;
+import static org.netbeans.modules.maven.output.Bundle.*;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -180,6 +180,10 @@ public class TestOutputListenerProvider implements OutputProcessor {
         /** Called when some sort of action is performed on a line.
          * @param ev the event describing the line
          */
+        @Messages({
+            "MSG_CannotFollowLink1=Cannot follow link. Test output directory is missing.",
+            "MSG_CannotFollowLink2=Cannot follow link. Test report file is missing."
+        })
         public void outputLineAction(OutputEvent ev) {
             FileObject outDir = null;
             if (outputDir != null) {
@@ -189,7 +193,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
             } 
             if (outDir == null) {
                 LOG.info("Cannot find path " + outputDir + " to follow link in Output Window."); //NOI18N
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestOutputListenerProvider.class, "MSG_CannotFollowLink1"));
+                StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink1());
                 return;
             }
             outDir.refresh();
@@ -206,7 +210,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                     openLog(report, nm, testDir);
                 } else {
                     LOG.info("Cannot find report path " + outputDir + testname + ".txt to follow link in Output Window."); //NOI18N
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestOutputListenerProvider.class, "MSG_CannotFollowLink2"));
+                    StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink2());
                 }
             }
         }

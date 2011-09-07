@@ -104,18 +104,22 @@ import org.openide.util.NbBundle;
  */
 public class IntroduceHint extends AbstractRule {
 
+    @Override
     public String getId() {
         return "Introduce.Hint";//NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDesc");//NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDispName");//NOI18N
     }
 
+    @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
@@ -382,12 +386,14 @@ public class IntroduceHint extends AbstractRule {
             this.folder = folder;
         }
 
+        @Override
         public void implement() throws Exception {
             final DataFolder dataFolder = DataFolder.findFolder(folder);
             final DataObject configDataObject = DataObject.find(template);
             final FileObject[] clsFo = new FileObject[1];
             FileUtil.runAtomicAction(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         DataObject clsDataObject = configDataObject.createFromTemplate(dataFolder, clsName);
@@ -437,6 +443,7 @@ public class IntroduceHint extends AbstractRule {
             this.item = createMethodDeclarationItem(type, node);
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -471,6 +478,7 @@ public class IntroduceHint extends AbstractRule {
             this.item = createMethodDeclarationItem(type, node);
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -505,6 +513,7 @@ public class IntroduceHint extends AbstractRule {
             this.templ = createTemplate();//NOI18N
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -548,6 +557,7 @@ public class IntroduceHint extends AbstractRule {
             this.templ = createTemplate();
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -593,6 +603,7 @@ public class IntroduceHint extends AbstractRule {
             this.templ = String.format("const %s = \"\";", constantName);
         }
 
+        @Override
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
@@ -629,10 +640,12 @@ public class IntroduceHint extends AbstractRule {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }

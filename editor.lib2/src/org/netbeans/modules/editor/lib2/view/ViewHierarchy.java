@@ -39,9 +39,6 @@ package org.netbeans.modules.editor.lib2.view;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.editor.lib2.view.ViewApiPackageAccessor;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyChange;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyImpl;
 
 /**
  * View hierarchy associated with a particular text component (for its whole lifetime).

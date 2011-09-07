@@ -64,7 +64,7 @@
             than the Tab Size property, the indentation created by typing the Tab key is 
             made up of a combination of spaces and tab characters.  It is easiest to predict 
             the location of tab characters if you set Number of Spaces per Indent to an even
-            multiple or divisor of Tab Size.
+            multiple or divisor of Tab Size.</p>
              <ul class="note"><li><b>Important:</b> This feature does not convert
                         existing tabs to spaces. Only tabs that you add <i>after</i> you
                         enable this option are converted.</li></ul>
@@ -109,12 +109,12 @@
             <li>New line half indented</li>
             <li>New line indented</li>
         </ul></li>
-		<li><b>Special "else if" Treatment:</b> When selected, the &quot;else if&quot; is not separated into two lines and the code is kept together in one line. </li>
+		<li><b>Special &quot;else if&quot; Treatment:</b> When selected, the &quot;else if&quot; is not separated into two lines and the code is kept together in one line. </li>
 		<li><b>Braces Generation:</b> Select where to generate the braces for each type of statement listed here. The possible brace locations are:
           <ul>
             <li>Generate</li>
             <li>Leave Alone</li>
-            <li>Eiminate</li>
+            <li>Eliminate</li>
            
         </ul></li></ul>
 		 <ul class="note"><li>You can experiment with different Braces settings and see the results in the Preview window.</li></ul>
@@ -125,7 +125,7 @@
 		   <ul class="note"><li>You can experiment with different Wrapping settings and see the results in the Preview window.</li>
             <li>See also the Line Wrap option in <a href="#tabs-indents">Tabs and Indents</a>.</li></ul>
 		 <h3><a name="blank-lines"></a>Blank Lines</h3>
-		 <p>Improves readability by setting off sections of code that are logically related according to the specified options. Select the number of blank lines to place in the listed positions. For example, "After Field: 1" places 1 blank line after every field.</p>
+		 <p>Improves readability by setting off sections of code that are logically related according to the specified options. Select the number of blank lines to place in the listed positions. For example, &quot;After Field: 1&quot; places 1 blank line after every field.</p>
 		  <ul class="note"><li>You can experiment with different Blank Lines settings and see the results in the Preview window.</li></ul>
 		 <h3><a name="spaces"></a>Spaces</h3>
 		  <p>In this panel, set where the IDE automatically puts whitespaces. Due to the large number
@@ -134,11 +134,11 @@
         Expand a tree node to see the places under a category, or
         collapse a node to hide the places under a category. The categories are:</p>
         <ul>
-            <li>Before Keywords (example: "while")</li>
-            <li>Before Parentheses (example: "for (")</li>
+            <li>Before Keywords (example: &quot;while&quot;)</li>
+            <li>Before Parentheses (example: &quot;for (&quot;)</li>
             <li>Around Operators (example: binary operators)</li>
-            <li>Before Left Braces (example: Class declarations, "class Example {")</li>
-            <li>Within Parentheses (example: "if ( convert...")</li>
+            <li>Before Left Braces (example: Class declarations, &quot;class Example {&quot;)</li>
+            <li>Within Parentheses (example: &quot;if ( convert...&quot;)</li>
             <li>Other (example: After Commas)</li>               
         </ul>
 		 <ul class="note"><li>You can experiment with different Spaces settings and see the results in the Preview window.</li></ul>
@@ -149,8 +149,29 @@
 		  <li><b>Javadoc.</b> Selected options specify the style of implementing  comments for Javadoc. </li>
 		  </ul>
 		   <ul class="note"><li>You can experiment with different Comments settings and see the results in the Preview window.</li></ul>
-		 <!--<h3><a name="imports"></a>Optimize Imports</h3>
-		 <p>TBD</p>-->
+		 <h3><a name="imports"></a>Imports</h3>
+		
+		 <ul>
+          <li><b>Use Single Class Imports:</b> Select to import only a particular class from a package during  import optimization and code generation. Specify the following 
+		    import options:
+            <ul>
+		  <li><b>Import Inner Classes.</b> When selected, the IDE creates imports for the inner classes referenced in your code.</li>
+		  <li><b>Class Count To Use Star Import.</b> Number of classes to be imported from a single package until all statements importing a single class are substituted with a statement importing an entire package.</li>
+		  <li><b>Members Count To Use Static Star Import.</b> Number of static import statements that are allowed for static members of the same type before type is used.</li>
+		  <li><b>Packages To Use Star Import.</b> Specify a list of packages to be imported completely. Click Add to specify the package name or Remove to delete the currently selected entry from the list. </li>
+		  </ul></li>
+		  <li><b>Use Package Imports:</b> Select to import packages during import optimization and code generation.</li>
+		  
+		  <li><b>Use Fully Qualified Names:</b> Select to use the fully qualified name of the class during  import optimization and code generation.</li>
+		  <li><b>Import Layout:</b>
+		  Specify how import statements should be organized in your code:
+		    <ul>
+		  <li><b>Separate Static Imports.</b> When selected, static imports are kept in a separate section.  Click Add to add a package name to the list. Click Move Up and Move Down to position certain entries first, or last, or one after another in the list. Click Remove to delete the currently selected entry from the list.</li>
+		  
+		  <li><b>Separate Groups.</b> When selected, imported classes are grouped as per their packages and sorted alphabetically within a package.</li>
+		 </ul></li>
+		 </ul>
+		 <ul class="note"><li>You can experiment with different Imports settings and see the results in the Preview window.</li></ul>
          <hr>
         <p>
             <small><a href="../../credits.html">Legal Notices</a></small>

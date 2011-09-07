@@ -82,6 +82,7 @@ public final class XPLFCustoms extends LFCustoms {
     
     static final String SCROLLPANE_BORDER_COLOR = "scrollpane_border"; //NOI18N
 
+    @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE); //NOI18N
@@ -100,6 +101,7 @@ public final class XPLFCustoms extends LFCustoms {
         return result;
     }
 
+    @Override
     public Object[] createApplicationSpecificKeysAndValues () {
         UIBootstrapValue editorTabsUI = new XPEditorColorings (
                 "org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI");
@@ -143,7 +145,11 @@ public final class XPLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
-            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_xp.png")
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_xp.png"),
+            //slide bar
+            "NbSlideBar.GroupSeparator.Gap.Before", 8,
+            "NbSlideBar.GroupSeparator.Gap.After", 2,
+            "NbSlideBar.RestoreButton.Gap", 1,
 
         }; //NOI18N
         
@@ -161,13 +167,14 @@ public final class XPLFCustoms extends LFCustoms {
      * Takes a UIManager color key and ensures that it is stored as a 
      * ColorUIResource, not a Color. 
      */
-    private static final void convert (String key) {
+    private static void convert (String key) {
         Color c = UIManager.getColor(key);
         if (c != null && !(c instanceof ColorUIResource)) {
             UIManager.put (key, new ColorUIResource(c));
         }
     }
     
+    @Override
     protected Object[] additionalKeys() {
         Object[] kv = new XPEditorColorings("").createKeysAndValues();
         Object[] kv2 = new XPPropertySheetColorings().createKeysAndValues();
@@ -189,6 +196,7 @@ public final class XPLFCustoms extends LFCustoms {
             super (name);
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
             //Tab control - XXX REPLACE WITH RelativeColor - need to figure out base
@@ -232,6 +240,7 @@ public final class XPLFCustoms extends LFCustoms {
             super ("propertySheet");  //NOI18N
         }
 
+        @Override
         public Object[] createKeysAndValues() {
             return new Object[] {
                 PROPSHEET_SET_BACKGROUND, new Color(49,106,197),

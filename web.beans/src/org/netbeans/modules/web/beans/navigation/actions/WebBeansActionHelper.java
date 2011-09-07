@@ -70,7 +70,9 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -80,6 +82,10 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -90,6 +96,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -139,6 +146,14 @@ public class WebBeansActionHelper {
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = 
         EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
+    
+    private static final PositionStrategy CARET_POSITION_STRATEGY = new PositionStrategy() {
+        
+        @Override
+        public int getOffset( JTextComponent component ) {
+            return component.getCaret().getDot();
+        }
+    };
 
     private WebBeansActionHelper(){
     }
@@ -157,15 +172,97 @@ public class WebBeansActionHelper {
         if ( fileObject == null ){
             return false;
         }
-        WebModule webModule = WebModule.getWebModule(fileObject);
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            return false;
+        }
+        boolean hasJsr330 = hasJsr330(project);
+        if ( !hasJsr330 ){
+            return false;
+        }
+        if ( !hasJsr299(project) ){
+            return false;
+        }
+        return true;
+        /*WebModule webModule = WebModule.getWebModule(fileObject);
         if ( webModule == null ){
             return false;
         }
         Profile profile = webModule.getJ2eeProfile();
         return Profile.JAVA_EE_6_WEB.equals( profile) || 
-            Profile.JAVA_EE_6_FULL.equals( profile );
+            Profile.JAVA_EE_6_FULL.equals( profile );*/
     }
     
+    public static boolean hasJsr330( Project project ){
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
+            getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups.length == 0) {
+            return false;
+        }
+        boolean hasInject = false;
+        boolean hasQualifier = false;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            boolean injectFound = hasResource(sourceGroup, ClassPath.COMPILE, 
+                    AnnotationUtil.INJECT_FQN) ||
+                hasResource(sourceGroup, ClassPath.SOURCE, AnnotationUtil.INJECT_FQN);
+            if ( injectFound ){
+                hasInject = true;
+            }
+            boolean qualifierFound = hasResource(sourceGroup, ClassPath.COMPILE, 
+                    AnnotationUtil.QUALIFIER_FQN) ||
+                hasResource(sourceGroup, ClassPath.SOURCE, AnnotationUtil.QUALIFIER_FQN);
+            if ( qualifierFound ){
+                hasQualifier = true;
+            }
+        }
+        
+        return hasInject && hasQualifier;
+    }
+    
+    public static boolean hasJsr299( Project project ){
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
+            getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups.length == 0) {
+            return false;
+        }
+        boolean hasDefault = false;
+        boolean hasProduces = false;
+        boolean hasDependent = false;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            boolean defaultFound = hasResource(sourceGroup, ClassPath.COMPILE, 
+                    AnnotationUtil.DEFAULT_FQN) ||
+                hasResource(sourceGroup, ClassPath.SOURCE, AnnotationUtil.DEFAULT_FQN);
+            if ( defaultFound ){
+                hasDefault = true;
+            }
+            boolean producesFound = hasResource(sourceGroup, ClassPath.COMPILE, 
+                    AnnotationUtil.PRODUCES_FQN) ||
+                hasResource(sourceGroup, ClassPath.SOURCE, AnnotationUtil.PRODUCES_FQN);
+            if ( producesFound ){
+                hasProduces = true;
+            }
+            boolean dependentFound = hasResource(sourceGroup, ClassPath.COMPILE, 
+                    AnnotationUtil.DEPENDENT) ||
+                hasResource(sourceGroup, ClassPath.SOURCE, AnnotationUtil.DEPENDENT);
+            if ( dependentFound ){
+                hasDependent = true;
+            }
+        }
+        
+        return hasDefault && hasProduces &&  hasDependent;
+    }
+    
+    static boolean hasResource(SourceGroup group , String classPathType, String fqn){
+        ClassPath classPath = ClassPath.getClassPath(group.getRootFolder(), classPathType);
+        String path = fqn.replace('.', '/');
+        if ( ClassPath.SOURCE.equals( classPathType ) ){
+            path = path+".java";                    // NOI18N
+        }
+        else {
+            path = path+".class";                   // NOI18N
+        }
+        return classPath.findResource(path)!=null;
+    }
     
     /**
      * Compilation controller from metamodel could not be used for getting 
@@ -180,6 +277,24 @@ public class WebBeansActionHelper {
     static boolean getVariableElementAtDot( final JTextComponent component,
             final Object[] variable , final boolean showStatusOnError) 
     {
+        return getVariableElementAtDot(component, variable, showStatusOnError, 
+                CARET_POSITION_STRATEGY);
+    }
+    
+    /**
+     * Compilation controller from metamodel could not be used for getting 
+     * TreePath via dot because it is not based on one FileObject ( Document ).
+     * So this method is required for searching Element at dot.
+     * If appropriate element is found it's name is placed into list 
+     * along with name of containing type.
+     * Resulted element could not be used in metamodel for injectable
+     * access. This is because element was gotten via other Compilation
+     * controller so it is from other model.
+     */
+    static boolean getVariableElementAtDot( final JTextComponent component,
+            final Object[] variable , final boolean showStatusOnError, 
+            final PositionStrategy strategy) 
+    {
         
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
@@ -191,7 +306,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities().pathFor(dot);
                     Element contextElement = controller.getTrees().getElement(tp );
                     if ( contextElement == null ){
@@ -283,6 +398,13 @@ public class WebBeansActionHelper {
     static boolean getClassAtDot(
             final JTextComponent component , final Object[] subject )
     {
+        return getClassAtDot(component, subject, CARET_POSITION_STRATEGY);
+    }
+    
+    static boolean getClassAtDot(
+            final JTextComponent component , final Object[] subject, 
+            final PositionStrategy strategy )
+    {
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
             Toolkit.getDefaultToolkit().beep();
@@ -293,7 +415,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities()
                         .pathFor(dot);
                     Element element = controller.getTrees().getElement(tp );
@@ -321,7 +443,8 @@ public class WebBeansActionHelper {
     }
     
     static boolean getMethodAtDot(
-            final JTextComponent component , final Object[] subject )
+            final JTextComponent component , final Object[] subject , 
+            final PositionStrategy strategy)
     {
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
@@ -333,7 +456,7 @@ public class WebBeansActionHelper {
                 @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
+                    int dot = strategy.getOffset(component);
                     TreePath tp = controller.getTreeUtilities()
                         .pathFor(dot);
                     Element element = controller.getTrees().getElement(tp );
@@ -370,8 +493,15 @@ public class WebBeansActionHelper {
         return subject[0]!=null;
     }
     
+    static boolean getMethodAtDot(
+            final JTextComponent component , final Object[] subject )
+    {
+        return getMethodAtDot(component, subject, CARET_POSITION_STRATEGY );
+    }
+    
     public static boolean getContextEventInjectionAtDot(
-            final JTextComponent component, final Object[] variable )
+            final JTextComponent component, final Object[] variable , 
+            final PositionStrategy strategy )
     {
         try {
             ParserManager.parse(Collections.singleton (Source.create(
@@ -379,8 +509,8 @@ public class WebBeansActionHelper {
             {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    Result resuslt = resultIterator.getParserResult (component.getCaret().
-                            getDot());
+                    Result resuslt = resultIterator.getParserResult (
+                            strategy.getOffset(component));
                     CompilationController controller = CompilationController.get(
                             resuslt);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).
@@ -390,7 +520,7 @@ public class WebBeansActionHelper {
                     }
                     Token<JavaTokenId>[] token = new Token[1];
                     int[] span = getIdentifierSpan( component.getDocument(), 
-                            component.getCaret().getDot(), token);
+                            strategy.getOffset(component), token);
 
                     if (span == null) {
                         return ;
@@ -456,6 +586,12 @@ public class WebBeansActionHelper {
             throw new IllegalStateException(e);
         }
         return variable[1] !=null ;
+    }
+    
+    public static boolean getContextEventInjectionAtDot(
+            final JTextComponent component, final Object[] variable )
+    {
+        return getContextEventInjectionAtDot(component, variable, CARET_POSITION_STRATEGY);
     }
     
     static void showInjectablesDialog( MetadataModel<WebBeansModel> metamodel,

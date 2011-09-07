@@ -783,7 +783,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     private void setOperation(BugzillaOperation operation) {
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
-        ta.setValue(operation.name());
+        ta.setValue(operation.toString());
     }
 
     List<Attachment> getAttachments() {
@@ -1025,7 +1025,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     boolean isResolveAvailable () {
         Map<String, TaskOperation> operations = getAvailableOperations();
-        return operations.containsKey(BugzillaOperation.resolve.name());
+        return operations.containsKey(BugzillaOperation.resolve.toString());
     }
 
     private Map<String, String> getSeenAttributes() {

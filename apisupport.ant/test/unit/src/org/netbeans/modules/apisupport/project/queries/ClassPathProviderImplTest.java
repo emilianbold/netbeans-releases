@@ -1014,7 +1014,7 @@ public class ClassPathProviderImplTest extends TestBase {
         os = new FileOutputStream(pp);
         try {
             Properties p = new Properties();
-            p.setProperty("netbeans.dest.dir", file("nbbuild/netbeans").getAbsolutePath());
+            p.setProperty(ModuleList.NETBEANS_DEST_DIR, file("nbbuild/netbeans").getAbsolutePath());
             p.store(os, null);
         } finally {
             os.close();

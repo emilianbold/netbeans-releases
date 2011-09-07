@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.filesystems.FileUtil;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -758,4 +759,27 @@ final class MatchingObject
         return hash;
     }
 
+    /** Get number of matches in this matching object.  */
+    int getMatchesCount() {
+        return resultModel.getDetailsCount(this);
+    }
+
+    String getRelativeSearchPath() {
+
+        FileObject searchRoot = resultModel.getCommonSearchFolder();
+        FileObject fileFolder = fileObject.getParent();
+
+        String fileDisplayName = FileUtil.getFileDisplayName(fileFolder);
+
+        if (searchRoot == null) {
+            return fileDisplayName;
+        } else {
+            return FileUtil.getRelativePath(searchRoot, fileFolder);
+        }
+    }
+
+    /** Get file display name, e.g. for JTree tooltip. */
+    String getFileDisplayName() {
+        return FileUtil.getFileDisplayName(fileObject);
+    }
 }

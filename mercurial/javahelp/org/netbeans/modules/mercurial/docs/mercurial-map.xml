@@ -26,7 +26,8 @@
     <mapID target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" url="mercurial-properties.html" />
     <mapID target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" url="mercurial-options.html" />
 
-    <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="csh/mercurial-clone.html" />   
+    <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="csh/mercurial-clone.html" /> 
+	<mapID target="org.netbeans.modules.mercurial.ui.create.CreatePanel" url="csh/mercurial-init.html" />  
     
     <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="csh/mercurial-export-diff.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="csh/mercurial-pullother.html" />

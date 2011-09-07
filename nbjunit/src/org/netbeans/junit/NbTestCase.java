@@ -57,7 +57,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,8 +70,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -93,7 +97,9 @@ import org.netbeans.junit.internal.NbModuleLogHandler;
  * directory for test files, testing memory usage, etc.
  */
 public abstract class NbTestCase extends TestCase implements NbTest {
-    
+    static {
+        MethodOrder.initialize();
+    }
     /**
      * active filter
      */
@@ -324,6 +330,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 try {
                     doSomething();
                 } catch (Throwable thrwn) {
+                    if (MethodOrder.isShuffled()) {
+                        thrwn = Log.wrapWithAddendum(thrwn, "(executed in shuffle mode, run with -DNbTestCase.order=" + MethodOrder.getSeed() + " to reproduce the order)", false);
+                    }
                     this.t = Log.wrapWithMessages(thrwn);
                 } finally {
                     synchronized (this) {

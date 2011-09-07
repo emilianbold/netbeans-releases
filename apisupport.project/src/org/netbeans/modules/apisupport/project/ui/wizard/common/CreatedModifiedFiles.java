@@ -861,7 +861,8 @@ public final class CreatedModifiedFiles {
      *                      are to be created in the layer and which will therefore appear
      *                      on disk alongside the layer, usually with the same names (unless
      *                      they conflict with existing files); you still need to create them
-     *                      yourself using e.g. {@link FileObject#createData} and {@link FileObject#getOutputStream}
+     *                      yourself using e.g. {@link FileObject#createData} and {@link FileObject#getOutputStream};
+     *                      you must use {@link LayerUtils#findGeneratedName} to translate names to a safer version
      * @return the operation handle
      */
     public Operation layerModifications(final LayerOperation op, final Set<String> externalFiles) {

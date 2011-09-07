@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.JRadioButton;
 import org.junit.Test;
+import org.netbeans.modules.server.ServerRegistry;
 import static org.junit.Assert.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -98,7 +99,7 @@ public class AddServerInstanceWizardTest {
 
             private void check1() {
                 try {
-                    JRadioButton[] result = AddServerInstanceWizard.listAvailableProviders();
+                    JRadioButton[] result = AddServerInstanceWizard.listAvailableProviders(ServerRegistry.SERVERS_PATH);
                     assertEquals("One action found", 1, result.length);
                     assertEquals("Message is taken from attribute", "Ahoj", result[0].getText());
                     assertSame("Not part of API, but behaviour: Action is stored in property",

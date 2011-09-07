@@ -214,6 +214,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.hudson.ant</friend>
+                <friend>org.netbeans.modules.hudson.git</friend>
                 <friend>org.netbeans.modules.hudson.indexerinstaller</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.hudson.mercurial</friend>

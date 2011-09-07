@@ -89,9 +89,9 @@ public final class DockWindowAction extends AbstractAction {
         if( null == contextTC )
             return; //just being paranoid
         
-        if( wmi.isTopComponentMinimized( tc ) ) {
+        if( wmi.isTopComponentMinimized( contextTC ) ) {
             //restore from minimized state
-            wmi.setTopComponentMinimized( tc, false );
+            wmi.setTopComponentMinimized( contextTC, false );
         } else {
             //dock floating window
             boolean isDocked = wmi.isDocked(contextTC);
@@ -108,7 +108,7 @@ public final class DockWindowAction extends AbstractAction {
     @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("UndockWindowAction", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("DockWindowAction", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
@@ -119,7 +119,7 @@ public final class DockWindowAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("UndockWindowAction"); //NOI18N
+            return ActionUtils.getSharedAccelerator("DockWindowAction"); //NOI18N
         } else {
             return super.getValue(key);
         }

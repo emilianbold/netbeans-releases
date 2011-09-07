@@ -48,7 +48,6 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -94,6 +93,7 @@ final class TextFetcher implements Runnable {
         task.cancel();
     }
 
+    @Override
     public void run() {
         if (EventQueue.isDispatchThread()) {
             if (cancelled) {
@@ -109,7 +109,7 @@ final class TextFetcher implements Runnable {
                 mimeType = "text/plain";                                //NOI18N
             }
             textDisplayer.setText(text,
-                                  fob.getMIMEType(),
+                                  mimeType,
                                   getLocation());
             done = true;
         }  else {

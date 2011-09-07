@@ -50,6 +50,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.FloatValue;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
@@ -57,25 +58,17 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -84,15 +77,11 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -115,13 +104,13 @@ public class RemoteFXScreenshot {
     }
     
     private static RemoteScreenshot createRemoteFXScreenshot(DebuggerEngine engine, VirtualMachine vm, ThreadReference tr, String title, ObjectReference window, SGComponentInfo componentInfo) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException {
-        final ClassType imageClass = getClass(vm, "java.awt.image.BufferedImage");
-        final ClassType toolkitClass = getClass(vm, "com.sun.javafx.tk.Toolkit");
-        final ClassType sceneClass = getClass(vm, "javafx.scene.Scene");
-        final ClassType windowClass = getClass(vm, "javafx.stage.Window");
+        final ClassType bufImageClass = getClass(vm, tr, "java.awt.image.BufferedImage");
+        final ClassType imageClass = getClass(vm, tr, "javafx.scene.image.Image");
+        final ClassType sceneClass = getClass(vm, tr, "javafx.scene.Scene");
+        final ClassType windowClass = getClass(vm, tr, "javafx.stage.Window");
 
-        final Method getDefaultTk = toolkitClass.concreteMethodByName("getToolkit", "()Lcom/sun/javafx/tk/Toolkit;");
-        final Method convertImage = toolkitClass.methodsByName("toExternalImage", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;").get(0);
+        final Method fromPlatformImage = imageClass.concreteMethodByName("impl_fromPlatformImage", "(Ljava/lang/Object;)Ljavafx/scene/image/Image;"); 
+        final Method convertImage = imageClass.concreteMethodByName("impl_toExternalImage", "(Ljava/lang/Object;)Ljava/lang/Object;");
         final Method renderImage = sceneClass.concreteMethodByName("renderToImage", "(Ljava/lang/Object;FZ)Ljava/lang/Object;");
         final Method getScene = windowClass.concreteMethodByName("getScene", "()Ljavafx/scene/Scene;");
 
@@ -130,9 +119,9 @@ public class RemoteFXScreenshot {
         FloatValue factor = vm.mirrorOf(1.0f);
         BooleanValue syncNeeded = vm.mirrorOf(false);
 
-        ObjectReference image = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
-        ObjectReference toolkit = (ObjectReference)toolkitClass.invokeMethod(tr, getDefaultTk, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        ObjectReference bufImage = (ObjectReference)toolkit.invokeMethod(tr, convertImage, Arrays.asList(image, imageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
+        ObjectReference pImage = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
+        ObjectReference image = (ObjectReference)imageClass.invokeMethod(tr, fromPlatformImage, Arrays.asList(pImage), ObjectReference.INVOKE_SINGLE_THREADED); 
+        ObjectReference bufImage = (ObjectReference)image.invokeMethod(tr, convertImage, Arrays.asList(bufImageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
 
         Method getData = ((ClassType)bufImage.referenceType()).concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
         ObjectReference rasterRef = (ObjectReference) bufImage.invokeMethod(tr, getData, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -191,7 +180,7 @@ public class RemoteFXScreenshot {
         //RemoteScreenshot[] screenshots = NO_SCREENSHOTS;
         final ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
         final VirtualMachine vm = tawt.virtualMachine();
-        final ClassType windowClass = getClass(vm, "javafx.stage.Window");
+        final ClassType windowClass = getClass(vm, tawt, "javafx.stage.Window");
         
         if (windowClass == null) {
             logger.fine("No Window");
@@ -243,7 +232,7 @@ public class RemoteFXScreenshot {
     
     private static void retrieveScreenshots(JPDAThreadImpl t, final ThreadReference tr, VirtualMachine vm, DebuggerEngine engine, JPDADebuggerImpl d, final List<RemoteScreenshot> screenshots) throws RetrievalException {
         try {
-            final ClassType windowClass = getClass(vm, "javafx.stage.Window");
+            final ClassType windowClass = getClass(vm, tr, "javafx.stage.Window");
             
             Method getWindows = windowClass.concreteMethodByName("impl_getWindows", "()Ljava/util/Iterator;");
             Method windowName = windowClass.concreteMethodByName("impl_getMXWindowType", "()Ljava/lang/String;");
@@ -271,7 +260,7 @@ public class RemoteFXScreenshot {
     }
     
     private static boolean pauseAll(ThreadReference tr, VirtualMachine vm) throws RetrievalException {
-        final ClassType toolkitClass = getClass(vm, "com.sun.javafx.tk.Toolkit");
+        final ClassType toolkitClass = getClass(vm, tr, "com.sun.javafx.tk.Toolkit");
         
         if (toolkitClass == null) {
             logger.fine("No Toolkiit");
@@ -310,7 +299,7 @@ public class RemoteFXScreenshot {
     }
     
     private static boolean resumeAll(ThreadReference tr, VirtualMachine vm) throws RetrievalException {
-        final ClassType toolkitClass = getClass(vm, "com.sun.javafx.tk.Toolkit");
+        final ClassType toolkitClass = getClass(vm, tr, "com.sun.javafx.tk.Toolkit");
         
         if (toolkitClass == null) {
             logger.fine("No Toolkiit");
@@ -351,10 +340,10 @@ public class RemoteFXScreenshot {
     private static final Collection<ObjectReference> pausedPlayers = new ArrayList<ObjectReference>();
     
     private static void pauseMedia(ThreadReference tr, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException {
-        final ClassType audioClipClass = getClass(vm, "com.sun.media.jfxmedia.AudioClip");
-        final ClassType mediaManagerClass = getClass(vm, "com.sun.media.jfxmedia.MediaManager");
-        final ClassType mediaPlayerClass = getClass(vm, "com.sun.media.jfxmedia.MediaPlayer");
-        final ClassType playerStateEnum = getClass(vm, "com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState");
+        final ClassType audioClipClass = getClass(vm, tr, "com.sun.media.jfxmedia.AudioClip");
+        final ClassType mediaManagerClass = getClass(vm, tr, "com.sun.media.jfxmedia.MediaManager");
+        final ClassType mediaPlayerClass = getClass(vm, tr, "com.sun.media.jfxmedia.MediaPlayer");
+        final ClassType playerStateEnum = getClass(vm, tr, "com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState");
         
         if (audioClipClass != null) {
             Method stopAllClips = audioClipClass.concreteMethodByName("stopAllClips", "()V");
@@ -397,22 +386,67 @@ public class RemoteFXScreenshot {
     
     private static void resumeMedia(ThreadReference tr, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException {
         if (!pausedPlayers.isEmpty()) {
-            final ClassType mediaPlayerClass = getClass(vm, "com.sun.media.jfxmedia.MediaPlayer");
-            Method play = mediaPlayerClass.concreteMethodByName("play", "()V");
+            final InterfaceType mediaPlayerClass = getInterface(vm, tr, "com.sun.media.jfxmedia.MediaPlayer");
+            List<Method> play = mediaPlayerClass.methodsByName("play", "()V");
+            if (play.isEmpty()) {
+                return;
+            }
+            Method p = play.iterator().next();
             for(ObjectReference pR : pausedPlayers) {
-                pR.invokeMethod(tr, play, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                pR.invokeMethod(tr, p, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             }
         }
     }
     
-    private static ClassType getClass(VirtualMachine vm, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
-        ReferenceType clazz = null;
-        for (ReferenceType c : classList) {
-            clazz = c;
-            break;
+    private static ClassType getClass(VirtualMachine vm, ThreadReference tr, String name) {
+        ReferenceType t = getType(vm, tr, name);
+        if (t instanceof ClassType) {
+            return (ClassType)t;
         }
-        return (ClassType) clazz;
+        logger.log(Level.WARNING, name + " is not a class but " + t); // NOI18N
+        return null;
+    } 
+    
+    private static InterfaceType getInterface(VirtualMachine vm, ThreadReference tr, String name) {
+        ReferenceType t = getType(vm, tr, name);
+        if (t instanceof InterfaceType) {
+            return (InterfaceType)t;
+        }
+        logger.log(Level.WARNING, name + " is not an interface but " + t); // NOI18N
+        return null;
+    } 
+
+    
+    private static ReferenceType getType(VirtualMachine vm, ThreadReference tr, String name) {
+        List<ReferenceType> classList = vm.classesByName(name);
+        if (!classList.isEmpty()) {
+            return classList.iterator().next();
+        }
+        List<ReferenceType> classClassList = vm.classesByName("java.lang.Class"); // NOI18N
+        if (classClassList.isEmpty()) {
+            throw new IllegalStateException("Cannot load class Class"); // NOI18N
+        }
+
+        ClassType cls = (ClassType) classClassList.iterator().next();
+        Method m = cls.concreteMethodByName("forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
+        StringReference mirrorOfName = vm.mirrorOf(name);
+        try {
+            cls.invokeMethod(tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
+            List<ReferenceType> classList2 = vm.classesByName(name);
+            if (!classList2.isEmpty()) {
+                return classList2.iterator().next();
+            }
+        } catch (InvalidTypeException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (ClassNotLoadedException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (IncompatibleThreadStateException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (InvocationException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        }
+        
+        return null;
     }
     
     public static class SGComponentInfo extends JavaComponentInfo {

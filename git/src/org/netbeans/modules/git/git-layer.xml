@@ -68,4 +68,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <file name="git-helpset.xml" url="git-helpset.xml">
+                <attr name="position" intvalue="3005"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

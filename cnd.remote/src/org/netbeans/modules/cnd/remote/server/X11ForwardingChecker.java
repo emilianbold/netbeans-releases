@@ -110,7 +110,9 @@ public class X11ForwardingChecker {
             int port = 6000;
             SocketAddress sockaddr = new InetSocketAddress(addr, port);
             Socket sock = new Socket();
-            sock.connect(sockaddr, 1000); // 1 second timeout
+            sock.setReuseAddress(true);
+            sock.setSoTimeout(1000); // 1 second timeout
+            sock.connect(sockaddr, 1000); // 1 second timeout            
             boolean result = sock.isConnected();
             sock.close();
             return result;

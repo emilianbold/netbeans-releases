@@ -45,7 +45,6 @@ package org.netbeans.modules.web.beans.testutilities;
 import java.io.IOException;
 
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 
@@ -445,6 +444,29 @@ public class CdiTestUtilities {
                 " String name() default \"\"; "+
                 " String description() default \"\"; "+
                 " String mappedName() default \"\"; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Stateful.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+      
+                "public @interface Stateful  {" +
+                " String name() default \"\"; "+
+                " String description() default \"\"; "+
+                " String mappedName() default \"\"; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PostActivate.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD}) "+      
+                "public @interface PostActivate  {" +
                 "}");
     }
     

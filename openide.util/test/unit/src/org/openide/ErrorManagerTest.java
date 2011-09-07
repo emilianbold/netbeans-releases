@@ -56,9 +56,11 @@ public class ErrorManagerTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp () {
         System.setProperty("org.openide.util.Lookup", "org.openide.ErrorManagerTest$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
+        ErrManager.clear();
     }
     
     /** Test of getDefault method, of class org.openide.ErrorManager. */
@@ -70,18 +72,18 @@ public class ErrorManagerTest extends NbTestCase {
     public void testNotify() {
         Throwable t = new Throwable ();
         ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, t);
-        ErrManager.get ().assertNotify (ErrManager.INFORMATIONAL, t);
+        ErrManager.assertNotify (ErrManager.INFORMATIONAL, t);
         t = new Throwable ();
         ErrorManager.getDefault ().notify (t);
-        ErrManager.get ().assertNotify (ErrManager.UNKNOWN, t);
+        ErrManager.assertNotify (ErrManager.UNKNOWN, t);
     }
     
     /** Test of log method, of class org.openide.ErrorManager. */
     public void testLog() {
         ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "A text");
-        ErrManager.get ().assertLog (ErrorManager.INFORMATIONAL, "A text");
+        ErrManager.assertLog (ErrorManager.INFORMATIONAL, "A text");
         ErrorManager.getDefault ().log ("Another text");
-        ErrManager.get ().assertLog (ErrorManager.INFORMATIONAL, "Another text");
+        ErrManager.assertLog (ErrorManager.INFORMATIONAL, "Another text");
     }
     
     /** Test of isLoggable method, of class org.openide.ErrorManager. */
@@ -108,7 +110,7 @@ public class ErrorManagerTest extends NbTestCase {
         try {
             ErrorManager man = ErrorManager.getDefault ().getInstance ("hi");
             man.log ("Anything");
-            ErrManager.get ().assertLog (-1, null); // no logging because we are disabled
+            ErrManager.assertLog (-1, null); // no logging because we are disabled
             Lkp.turn (true);
             man.log ("Something");
             ErrManager.assertLog (ErrorManager.INFORMATIONAL, "Something");
@@ -149,6 +151,11 @@ public class ErrorManagerTest extends NbTestCase {
     //
     public static final class ErrManager extends org.openide.ErrorManager {
         public static final StringBuffer messages = new StringBuffer ();
+
+        static void clear() {
+            lastText = null;
+            lastSeverity = -1;
+        }
         
         private String prefix;
         
@@ -163,18 +170,22 @@ public class ErrorManagerTest extends NbTestCase {
             return (ErrManager)org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
         }
         
+        @Override
         public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
             return t;
         }
         
+        @Override
         public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
             return t;
         }
         
+        @Override
         public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
             return null;
         }
         
+        @Override
         public org.openide.ErrorManager getInstance (String name) {
             if (
                 name.startsWith ("org.netbeans.core.AutomountSupport") ||
@@ -188,11 +199,13 @@ public class ErrorManagerTest extends NbTestCase {
             }
         }
         
+        @Override
         public void log (int severity, String s) {
             lastSeverity = severity;
             lastText = s;
         }
         
+        @Override
         public void notify (int severity, Throwable t) {
             lastThrowable = t;
             lastSeverity = severity;
@@ -204,15 +217,13 @@ public class ErrorManagerTest extends NbTestCase {
         public static void assertNotify (int sev, Throwable t) {
             assertEquals ("Severity is same", sev, lastSeverity);
             assertSame ("Throwable is the same", t, lastThrowable);
-            lastThrowable = null;
-            lastSeverity = -1;
+            clear();
         }
         
         public static void assertLog (int sev, String t) {
             assertEquals ("Severity is same", sev, lastSeverity);
             assertEquals ("Text is the same", t, lastText);
-            lastText = null;
-            lastSeverity = -1;
+            clear();
         }
         
     } 

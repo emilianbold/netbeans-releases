@@ -46,10 +46,15 @@ package org.netbeans.modules.refactoring.api.impl;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.impl.CopyAction;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -87,7 +92,7 @@ public final class ActionsImplementationFactory {
                 return;
             }
         }
-        notifyOutOfContext("LBL_RenameRefactoring"); // NOI18N
+        notifyOutOfContext("LBL_RenameRefactoring", lookup); // NOI18N
     }
 
     public static boolean canFindUsages(Lookup lookup) {
@@ -112,7 +117,7 @@ public final class ActionsImplementationFactory {
                 return;
             }
         }
-        notifyOutOfContext("LBL_FindUsagesRefactoring"); // NOI18N
+        notifyOutOfContext("LBL_FindUsagesRefactoring", lookup); // NOI18N
     }
     public static boolean canDelete(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
@@ -136,7 +141,7 @@ public final class ActionsImplementationFactory {
                 return;
             }
         }
-        notifyOutOfContext("LBL_SafeDeleteRefactoring"); // NOI18N
+        notifyOutOfContext("LBL_SafeDeleteRefactoring", lookup); // NOI18N
     }
     
     public static void doMove(Lookup lookup) {
@@ -152,7 +157,7 @@ public final class ActionsImplementationFactory {
                 return;
             }
         }
-        notifyOutOfContext("LBL_MoveRefactoring"); // NOI18N
+        notifyOutOfContext("LBL_MoveRefactoring", lookup); // NOI18N
     }
     
     public static boolean canMove(Lookup lookup) {
@@ -177,7 +182,7 @@ public final class ActionsImplementationFactory {
                 return;
             }
         }
-        notifyOutOfContext("LBL_CopyRefactoring"); // NOI18N
+        notifyOutOfContext("LBL_CopyRefactoring", lookup); // NOI18N
     }
     
     public static boolean canCopy(Lookup lookup) {
@@ -189,10 +194,33 @@ public final class ActionsImplementationFactory {
         return false;
     }
 
-    private static void notifyOutOfContext(String refactoringNameKey) {
+    private static void notifyOutOfContext(String refactoringNameKey, Lookup context) {
+        for (Node node : context.lookupAll(Node.class)) {
+            for (FileObject file : node.getLookup().lookupAll(FileObject.class)) {
+                if (!isFileInOpenProject(file)) {
+                    DialogDisplayer.getDefault().notify(new Message(
+                            NbBundle.getMessage(CopyAction.class, "ERR_ProjectNotOpened", file.getNameExt())));
+                    return;
+                }
+            }
+        }
         String refactoringName = NbBundle.getMessage(CopyAction.class, refactoringNameKey);
         DialogDisplayer.getDefault().notify(new Message(
                 NbBundle.getMessage(CopyAction.class, "MSG_CantApplyRefactoring", refactoringName)));
     }
+
+    private static boolean isFileInOpenProject(FileObject file) {
+        assert file != null;
+        Project p = FileOwnerQuery.getOwner(file);
+        if (p == null) {
+            return false;
+        }
+        return isOpenProject(p);
+    }
+
+    private static boolean isOpenProject(Project p) {
+        return OpenProjects.getDefault().isProjectOpen(p);
+    }
+
     
 }

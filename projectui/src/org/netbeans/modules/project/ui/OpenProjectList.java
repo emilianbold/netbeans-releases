@@ -351,7 +351,10 @@ public final class OpenProjectList {
             });
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], lazilyOpenedProjects.toArray(new Project[0]));
-            INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
+            Project main = INSTANCE.mainProject;
+            if (main != null) { // else PROPERTY_MAIN_PROJECT would be fired spuriously
+                INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, main);
+            }
 
             log(Level.FINER, "updateGlobalState, done, notified"); // NOI18N
         }

@@ -72,6 +72,13 @@ public abstract class PhpModule {
     public abstract String getDisplayName();
 
     /**
+     * Get the project directory for this PHP module.
+     * @return the project directory, never <code>null</code>
+     * @since 1.50
+     */
+    public abstract FileObject getProjectDirectory();
+
+    /**
      * Get the source directory for this PHP module.
      * @return the source directory, never <code>null</code>
      */

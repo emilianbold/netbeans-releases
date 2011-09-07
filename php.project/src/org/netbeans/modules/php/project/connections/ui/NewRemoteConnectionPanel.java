@@ -48,6 +48,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -141,6 +142,8 @@ public final class NewRemoteConnectionPanel extends JPanel {
         String err = null;
         if (name.length() == 0) {
             err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionName");
+        } else if (name.length() > Preferences.MAX_NAME_LENGTH) {
+            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_LongConnectionName", Preferences.MAX_NAME_LENGTH);
         } else if (type.length() == 0) {
             err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionType");
         } else if (configManager.exists(config) || configManager.exists(oldConfig)) {

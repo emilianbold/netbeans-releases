@@ -53,70 +53,70 @@ public class FindTypesSupportTest extends TestCase {
 
     public void testIsCamelCase() {
         String str = "Camel";
-        List<Integer> l = FindTypesSupport.getTypeName(str);
+        List<Integer> l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals(str.length(), l.get(1).intValue());
         assertEquals("Camel", str.substring(l.get(0).intValue(), l.get(1).intValue()));
                 
         str = "CamelCase";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals(str.length(), l.get(1).intValue());
         assertEquals("CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "CamelCase.";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals("CamelCase".length(), l.get(1).intValue());
         assertEquals("CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "TripleCamelCase";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals(str.length(), l.get(1).intValue());
         assertEquals("TripleCamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "org.CamelCase";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals(str.length(), l.get(1).intValue());
         assertEquals("org.CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "org.camel.CamelCase";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals(str.length(), l.get(1).intValue());
         assertEquals("org.camel.CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = " CamelCase ";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(1, l.get(0).intValue());
         assertEquals("CamelCase".length() + 1, l.get(1).intValue());
         assertEquals("CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "\tCamelCase\t";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(1, l.get(0).intValue());
         assertEquals("CamelCase".length() + 1, l.get(1).intValue());
         assertEquals("CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "\nCamelCase\n";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(1, l.get(0).intValue());
         assertEquals("CamelCase".length()+1, l.get(1).intValue());
         assertEquals("CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = " org.camel.CamelCase ";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(1, l.get(0).intValue());
         assertEquals("org.camel.CamelCase".length() + 1, l.get(1).intValue());
@@ -125,7 +125,7 @@ public class FindTypesSupportTest extends TestCase {
         String prefix = " '";
         String sufix = "' ";
         str = prefix + "org.camel.CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "org.camel.CamelCase").length(), l.get(1).intValue());
@@ -134,7 +134,7 @@ public class FindTypesSupportTest extends TestCase {
         prefix = " \"";
         sufix = "\" ";
         str = prefix + "org.camel.CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "org.camel.CamelCase").length(), l.get(1).intValue());
@@ -143,7 +143,7 @@ public class FindTypesSupportTest extends TestCase {
         prefix = ".";
         sufix = ".";
         str = prefix + "CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "CamelCase").length(), l.get(1).intValue());
@@ -152,14 +152,14 @@ public class FindTypesSupportTest extends TestCase {
         prefix = ".";
         sufix = ".";
         str = prefix + "org.camel.CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(2, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "org.camel.CamelCase").length(), l.get(1).intValue());
         assertEquals("org.camel.CamelCase", str.substring(l.get(0).intValue(), l.get(1).intValue()));
         
         str = "CamelCase CamelCase";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(4, l.size());
         assertEquals(0, l.get(0).intValue());
         assertEquals("CamelCase".length(), l.get(1).intValue());
@@ -172,7 +172,7 @@ public class FindTypesSupportTest extends TestCase {
         sufix = " ";
         String mid = " ";
         str = prefix + "org.camel.CamelCase" + mid + "org.camel.CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(4, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "org.camel.CamelCase").length(), l.get(1).intValue());
@@ -185,7 +185,7 @@ public class FindTypesSupportTest extends TestCase {
         sufix = " a ";
         mid = " a a a a ";
         str = prefix + "org.camel.CamelCase" + mid + "org.camel.CamelCase" + sufix;
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertEquals(4, l.size());
         assertEquals(prefix.length(), l.get(0).intValue());
         assertEquals((prefix + "org.camel.CamelCase").length(), l.get(1).intValue());
@@ -196,15 +196,23 @@ public class FindTypesSupportTest extends TestCase {
         
         
         str = "camel";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertTrue(l.isEmpty());
         
         str = " camel camel ";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertTrue(l.isEmpty());
         
         str = " camel.camel ";
-        l = FindTypesSupport.getTypeName(str);
+        l = FindTypesSupport.getHighlightOffsets(str);
+        assertTrue(l.isEmpty());
+        
+        str = "camel.camel";
+        l = FindTypesSupport.getHighlightOffsets(str);
+        assertTrue(l.isEmpty());
+        
+        str = ".camel.camel.";
+        l = FindTypesSupport.getHighlightOffsets(str);
         assertTrue(l.isEmpty());
         
     }

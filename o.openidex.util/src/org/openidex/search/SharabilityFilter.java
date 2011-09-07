@@ -44,6 +44,7 @@
 
 package org.openidex.search;
 
+import java.io.File;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,36 +57,46 @@ final class SharabilityFilter implements FileObjectFilter {
 
     /**
      */
+    @Override
     public boolean searchFile(FileObject file)
             throws IllegalArgumentException {
         if (file.isFolder()) {
             throw new java.lang.IllegalArgumentException(
                     "file (not folder) expected");                      //NOI18N
         }
-
-        return SharabilityQuery.getSharability(FileUtil.toFile(file))
-               != SharabilityQuery.NOT_SHARABLE;
+        File f = FileUtil.toFile(file);
+        if (f == null && !file.canWrite()) {
+            // non-standard file objects, e.g. ZIP archive items.
+            return true;
+        } else {
+            return SharabilityQuery.getSharability(FileUtil.toFile(file))
+                    != SharabilityQuery.NOT_SHARABLE;
+        }
     }
 
     /**
      */
+    @Override
     public int traverseFolder(FileObject folder)
             throws IllegalArgumentException {
         if (!folder.isFolder()) {
             throw new java.lang.IllegalArgumentException(
                     "folder expected");                                 //NOI18N
         }
-
-        final int sharability = SharabilityQuery
-                                .getSharability(FileUtil.toFile(folder));
-        switch (sharability) {
-            case SharabilityQuery.NOT_SHARABLE:
-                return DO_NOT_TRAVERSE;
-            case SharabilityQuery.SHARABLE:
-                return TRAVERSE_ALL_SUBFOLDERS;
-            default:
-                return TRAVERSE;
+        File f = FileUtil.toFile(folder);
+        if (f == null && !folder.canWrite()) {
+            // non-standard file objects, e.g. ZIP archive items.
+            return TRAVERSE;
+        } else {
+            final int sharability = SharabilityQuery.getSharability(f);
+            switch (sharability) {
+                case SharabilityQuery.NOT_SHARABLE:
+                    return DO_NOT_TRAVERSE;
+                case SharabilityQuery.SHARABLE:
+                    return TRAVERSE_ALL_SUBFOLDERS;
+                default:
+                    return TRAVERSE;
+            }
         }
     }
-
 }

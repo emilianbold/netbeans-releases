@@ -46,6 +46,7 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
@@ -56,6 +57,7 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -100,9 +102,20 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String controllerPackage = (String) wizard.getProperty(WizardProperties.CONTROLLER_PACKAGE);
-        EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
+        List<String> entities = (List<String>) wizard.
+            getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.ENTITY_CLASS);
         final PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
     
+        /* 
+         * There should be ALL found entities but they needed to compute closure. 
+         * Persistence wizard already has computed closure. So there is no need 
+         * in all other entities.
+         * Current CTOR of builder and method <code>build</code> is not changed 
+         * for now but should be changed later after  review of its usage.
+         */
+        EntityResourceModelBuilder builder = new EntityResourceModelBuilder(
+                project, entities );
+        EntityResourceBeanModel model = builder.build();
         final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
         generator.initialize(model, project, targetFolder, targetPackage, 
                 resourcePackage, controllerPackage, pu);
@@ -133,6 +146,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)"; //NOI18N
         params[3] = "REST FROM ENTITY"; //NOI18N
         LogUtils.logWsWizard(params);
+        
+        RestUtils.configRestPackages(project, resourcePackage );
 
         progressDialog.open();   
         return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));

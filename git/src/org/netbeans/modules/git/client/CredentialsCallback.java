@@ -43,8 +43,8 @@ package org.netbeans.modules.git.client;
 
 import java.util.Arrays;
 import org.netbeans.libs.git.GitClientCallback;
-import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -57,6 +57,8 @@ public class CredentialsCallback implements GitClientCallback {
 
     private String username;
     private char[] password;
+    private String identityFile;
+    private char[] passphrase;
     private boolean credentialsReady;
     
     @Override
@@ -88,7 +90,24 @@ public class CredentialsCallback implements GitClientCallback {
 
     @Override
     public char[] getPassphrase (String uri, String prompt) {
-        return null;
+        if (!credentialsReady) {
+            getCredentials(uri);
+        }
+        char[] pwd = null;
+        if (passphrase != null) {
+            pwd = passphrase.clone();
+            Arrays.fill(passphrase, (char) 0);
+            credentialsReady = false;
+        }
+        return pwd;
+    }
+
+    @Override
+    public String getIdentityFile (String uri, String prompt) {
+        if (!credentialsReady) {
+            getCredentials(uri);
+        }
+        return identityFile;
     }
 
     @Override
@@ -99,18 +118,26 @@ public class CredentialsCallback implements GitClientCallback {
     }
     
     private void getCredentials (String uri) {
-        GitURI guri = GitModuleConfig.getDefault().getRecentUri(uri);
-        if (guri == null) {
+        ConnectionSettings settings = GitModuleConfig.getDefault().getConnectionSettings(uri);
+        if (settings == null) {
             if (uri.endsWith("/")) {
                 uri = uri.substring(0, uri.length() - 1);
             } else {
                 uri = uri + "/";
             }
-            guri = GitModuleConfig.getDefault().getRecentUri(uri);
+            settings = GitModuleConfig.getDefault().getConnectionSettings(uri);
         }
-        if (guri != null) {
-            username = guri.getUser();
-            password = guri.getPass() == null ? null : guri.getPass().toCharArray();
+        if (settings != null) {
+            username = settings.getUser();
+            if (settings.isPrivateKeyAuth()) {
+                identityFile = settings.getIdentityFile();
+                passphrase = settings.getPassphrase();
+                password = null;
+            } else {
+                password = settings.getPassword();
+                identityFile = null;
+                passphrase = null;
+            }
             credentialsReady = true;
         }
     }

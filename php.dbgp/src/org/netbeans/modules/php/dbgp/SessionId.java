@@ -74,16 +74,18 @@ public class SessionId {
     private URIMapper.MultiMapper uriMapper;
     private String id;
     private final FileObject sessionFileObject;
+    private final Project sessionProject;
 
-    public SessionId( FileObject fileObject ) {
+    public SessionId(FileObject fileObject, Project project) {
         id = getSessionPrefix();
         sessionFileObject = fileObject;
+        sessionProject = project;
     }
     public String getId() {
         return id;
     }
     public Project getProject(){
-        return FileOwnerQuery.getOwner( sessionFileObject );
+        return sessionProject;
     }
 
     synchronized void initialize(String uri, List<Pair<String, String>> pathMapping) {
@@ -115,7 +117,7 @@ public class SessionId {
      * Converts file in project directory to URI in document
      * root of web server (local or remote because both local|remote debugging
      * is supported now)
-     * @param localFile 
+     * @param localFile
      * @return uri URI in document root of web server
      */
     public String toWebServerURI( FileObject localFile ) {

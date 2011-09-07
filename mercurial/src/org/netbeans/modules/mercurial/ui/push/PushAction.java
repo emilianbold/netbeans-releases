@@ -50,9 +50,9 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -231,7 +231,13 @@ public class PushAction extends ContextAction {
             }
             List<HgLogMessage> messages = HgCommand.processLogMessages(root, null, listOutgoing);
 
-            boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1));
+            boolean bNoChanges = false;
+            for (ListIterator<String> it = listOutgoing.listIterator(listOutgoing.size()); it.hasPrevious(); ) {
+                bNoChanges = HgCommand.isNoChanges(it.previous());
+                if (bNoChanges) {
+                    break;
+                }
+            }
 
             if (bLocalPush) {
                 // Warn user if there are local changes which Push will overwrite
@@ -290,7 +296,7 @@ public class PushAction extends ContextAction {
 
             if (list != null && !list.isEmpty()) {
 
-                if (!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1))) {
+                if (!bNoChanges) {
                     logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_CHANGESETS_TO_PUSH")); // NOI18N
                     if(messages.size() > 0) {
                         for (HgLogMessage m : messages) {

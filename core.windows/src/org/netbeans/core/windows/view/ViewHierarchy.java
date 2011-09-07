@@ -393,6 +393,8 @@ final class ViewHierarchy {
         for(SlidingView curSv: addedViews) {
             desktop.addSlidingView(curSv);
         }
+        
+        desktop.updateCorners();
     }
     
     

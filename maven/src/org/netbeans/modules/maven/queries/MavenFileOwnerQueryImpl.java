@@ -58,6 +58,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -104,14 +105,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     public void registerProject(NbMavenProjectImpl project) {
         MavenProject model = project.getOriginalMavenProject();
-        String groupId = model.getGroupId();
-        String artifactId = model.getArtifactId();
-        if (groupId.equals("error") && artifactId.equals("error")) {
+        if (NbMavenProject.isErrorPlaceholder(model)) {
             LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
             return;
         }
         try {
-            registerCoordinates(groupId, artifactId, project.getProjectDirectory().getURL());
+            registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().getURL());
         } catch (FileStateInvalidException x) {
             LOG.log(Level.INFO, null, x);
         }

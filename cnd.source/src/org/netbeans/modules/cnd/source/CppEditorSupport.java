@@ -48,9 +48,6 @@ package org.netbeans.modules.cnd.source;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
@@ -58,9 +55,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.cnd.source.spi.CndMultiViewProvider;
+import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -104,6 +100,11 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             CppEditorSupport.this.saveDocument();
             CppEditorSupport.this.getDataObject().setModified(false);
         }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
+        }
     };
 
     private final InstanceContent ic;
@@ -114,10 +115,10 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public CppEditorSupport(SourceDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
         this.ic = obj.getInstanceContent();
+        this.ic.add(obj.getNodeDelegate());
     }
-
     /** 
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified
@@ -227,31 +228,16 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     
     @Override
     protected Pane createPane() {
-        DataObject dataObject = getDataObject();
-        if (dataObject != null && dataObject.isValid()) {
-            Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
-            if (!providers.isEmpty()) {
-                MultiViewDescription defaultOne = null;
-                List<MultiViewDescription> descriptions = new ArrayList<MultiViewDescription>();
-                descriptions.add(new StandardDescriptor());
-                for (CndMultiViewProvider provider : providers) {
-                    MultiViewDescription d = provider.addMultiViewDescriptions(dataObject, descriptions);
-                    if (d != null) {
-                        defaultOne = d;
-                    }
-                }
-                if (descriptions.size() > 1) {
-                    if (defaultOne == null && descriptions.size() > 0) {
-                        defaultOne = descriptions.get(0);
-                    }
-                    CloneableEditorSupport.Pane pane= (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
-                            descriptions.toArray(new MultiViewDescription[descriptions.size()]), defaultOne);
-                    return pane;
-                }
+
+        // if there is a CndPaneProvider, us it
+        CndPaneProvider paneProvider = Lookup.getDefault().lookup(CndPaneProvider.class);
+        if (paneProvider != null) {
+            Pane pane = paneProvider.createPane(this);
+            if (pane != null) {
+                return pane;
             }
         }
-//        return super.createPane();
-         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
     
     

@@ -1,21 +1,41 @@
 [b|, background, background:, 142]
+backface-visibility
 background
 background-attachment
+background-clip
 background-color
 background-image
+background-origin
 background-position
 background-repeat
+background-size
+baseline-shift
+bikeshedding
+bleed
+bookmark-label
+bookmark-level
+bookmark-state
+bookmark-target
 border
 border-bottom
 border-bottom-color
+border-bottom-left-radius
+border-bottom-right-radius
 border-bottom-style
 border-bottom-width
 border-collapse
 border-color
+border-image
+border-image-outset
+border-image-repeat
+border-image-slice
+border-image-source
+border-image-width
 border-left
 border-left-color
 border-left-style
 border-left-width
+border-radius
 border-right
 border-right-color
 border-right-style
@@ -25,19 +45,38 @@ border-style
 border-style-inner
 border-top
 border-top-color
+border-top-left-radius
+border-top-right-radius
 border-top-style
 border-top-width
 border-width
 bottom
+box-decoration-break
+box-shadow
+box-sizing
+break-after
+break-before
+break-inside
 End cursor position = 154
 [c|, clip, clip:, 168]
 caption-side
 clear
 clip
 color
+column-count
+column-fill
+column-gap
+column-rule
+column-rule-color
+column-rule-style
+column-rule-width
+column-span
+column-width
+columns
 content
 counter-increment
 counter-reset
+crop
 cue
 cue-after
 cue-before
@@ -45,10 +84,23 @@ cursor
 End cursor position = 174
 [font-s|, font-size, font-size:, 228]
 font-size
+font-size-adjust
+font-stretch
 font-style
+font-synthesis
 End cursor position = 239
 [caption{co|}, color, caption{color: }, 279]
 color
+column-count
+column-fill
+column-gap
+column-rule
+column-rule-color
+column-rule-style
+column-rule-width
+column-span
+column-width
+columns
 content
 counter-increment
 counter-reset
@@ -63,11 +115,16 @@ page
 page-break-after
 page-break-before
 page-break-inside
+page-policy
 pause
 pause-after
 pause-before
+perspective
+perspective-origin
 pitch
 pitch-range
 play-during
 position
+prefix
+presentation-level
 End cursor position = 387

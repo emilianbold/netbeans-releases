@@ -105,6 +105,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
@@ -932,6 +933,7 @@ public class BaseKit extends DefaultEditorKit {
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
                    new ActionFactory.ToggleHighlightSearchAction(),
+                   new ActionFactory.ToggleRectangularSelectionAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),
@@ -1114,6 +1116,26 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     final BaseDocument doc = (BaseDocument)target.getDocument();
+                    // Check rectangular selection => special mode
+                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                        doc.runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    List<Position> regions = RectangularSelectionUtils.regionsCopy(target);
+                                    if (regions != null) {
+                                        RectangularSelectionUtils.removeSelection(doc, regions);
+                                        RectangularSelectionUtils.insertText(doc, regions, cmd);
+                                    }
+                                } catch (BadLocationException ble) {
+                                    LOG.log(Level.FINE, null, ble);
+                                    target.getToolkit().beep();
+                                }
+                            }
+                        });
+                        return;
+                    }
+                    
                     final int insertionOffset = computeInsertionOffset(target.getCaret());
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
                             target, insertionOffset, cmd);
@@ -1748,7 +1770,13 @@ public class BaseKit extends DefaultEditorKit {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    if (!RectangularSelectionUtils.removeSelection(target)) {
+                                        RectangularSelectionUtils.removeChar(target, nextChar);
+                                    }
+                                } else {
+                                    doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                }
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
@@ -2144,6 +2172,11 @@ public class BaseKit extends DefaultEditorKit {
                         boolean select = selectionUpAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
+                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                if (caret instanceof BaseCaret) {
+                                    ((BaseCaret) caret).updateRectangularUpDownSelection();
+                                }
+                            }
                         } else {
                             caret.setDot(dot);
                         }
@@ -2189,6 +2222,11 @@ public class BaseKit extends DefaultEditorKit {
                         boolean select = selectionDownAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
+                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                if (caret instanceof BaseCaret) {
+                                    ((BaseCaret)caret).updateRectangularUpDownSelection();
+                                }
+                            }
                         } else {
                             caret.setDot(dot);
                         }
@@ -2343,7 +2381,11 @@ public class BaseKit extends DefaultEditorKit {
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
                     if (select) {
-                        caret.moveDot(dot);
+                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((BaseCaret)caret).extendRectangularSelection(true, false);
+                        } else {
+                            caret.moveDot(dot);
+                        }
                     } else {
                         caret.setDot(dot);
                     }
@@ -2490,7 +2532,11 @@ public class BaseKit extends DefaultEditorKit {
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Backward, SwingConstants.WEST, null);
                     if (select) {
-                        caret.moveDot(dot);
+                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((BaseCaret)caret).extendRectangularSelection(false, false);
+                        } else {
+                            caret.moveDot(dot);
+                        }
                     } else {
                         caret.setDot(dot);
                     }
@@ -2681,30 +2727,32 @@ public class BaseKit extends DefaultEditorKit {
 //            this(null);
 //        }
 
-        NextWordAction(String name) {
+        public NextWordAction(String name) {
             super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
+        }
+        
+        protected int getNextWordOffset(JTextComponent target) throws BadLocationException {
+            return Utilities.getNextWord(target, target.getCaretPosition());
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
                 try {
-                    int dotPos = caret.getDot();
-                    dotPos = Utilities.getNextWord(target, dotPos);
+                    int newDotOffset = getNextWordOffset(target);
                     boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
-                    if (caret instanceof BaseCaret){
-                        BaseCaret bCaret = (BaseCaret) caret;
-                        if (select) {
-                            bCaret.moveDot(dotPos);
+                    if (select) {
+                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((BaseCaret) caret).extendRectangularSelection(true, true);
                         } else {
-                            bCaret.setDot(dotPos, false);
+                            caret.moveDot(newDotOffset);
                         }
-                    }else {
-                        if (select) {
-                            caret.moveDot(dotPos);
+                    } else {
+                        if (caret instanceof BaseCaret) {
+                            ((BaseCaret)caret).setDot(newDotOffset, false);
                         } else {
-                            caret.setDot(dotPos);
+                            caret.setDot(newDotOffset);
                         }
                     }
                 } catch (BadLocationException ex) {
@@ -2727,29 +2775,32 @@ public class BaseKit extends DefaultEditorKit {
 //            this(null);
 //        }
 
-        PreviousWordAction(String name) {
+        public PreviousWordAction(String name) {
             super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
+        }
+
+        protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
+            return Utilities.getPreviousWord(target, target.getCaretPosition());
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
                 try {
-                    int dot = Utilities.getPreviousWord(target, caret.getDot());
+                    int newDotOffset = getPreviousWordOffset(target);
                     boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
-                    if (caret instanceof BaseCaret){
-                        BaseCaret bCaret = (BaseCaret) caret;
-                        if (select) {
-                            bCaret.moveDot(dot);
+                    if (select) {
+                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((BaseCaret) caret).extendRectangularSelection(false, true);
                         } else {
-                            bCaret.setDot(dot, false);
+                            caret.moveDot(newDotOffset);
                         }
-                    }else {
-                        if (select) {
-                            caret.moveDot(dot);
+                    } else {
+                        if (caret instanceof BaseCaret) {
+                            ((BaseCaret)caret).setDot(newDotOffset, false);
                         } else {
-                            caret.setDot(dot);
+                            caret.setDot(newDotOffset);
                         }
                     }
                 } catch (BadLocationException ex) {

@@ -81,11 +81,11 @@ public class JiraConfiguration {
         this.repository = repository;
         String value = System.getProperty("org.netbeans.modules.jira.datePattern"); // NOI18N
         if (value != null) {
-            client.getConfiguration().setDatePattern(value);
+            client.getLocalConfiguration().setDatePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.dateTimePattern"); // NOI18N
         if (value != null) {
-            client.getConfiguration().setDateTimePattern(value);
+            client.getLocalConfiguration().setDateTimePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.locale"); // NOI18N
         if (value != null) {
@@ -94,7 +94,7 @@ public class JiraConfiguration {
             String country = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             String variant = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             Locale locale = new Locale(language, country, variant);
-            client.getConfiguration().setLocale(locale);
+            client.getLocalConfiguration().setLocale(locale);
         }
     }
 
@@ -218,15 +218,15 @@ public class JiraConfiguration {
     }
 
     public int getWorkDaysPerWeek() {
-        return client.getConfiguration().getWorkDaysPerWeek();
+        return client.getLocalConfiguration().getWorkDaysPerWeek();
     }
 
     public int getWorkHoursPerDay() {
-        return client.getConfiguration().getWorkHoursPerDay();
+        return client.getLocalConfiguration().getWorkHoursPerDay();
     }
 
     public boolean supportsProjectIssueTypes(String version) {
-        return new JiraVersion(version).compareTo(JiraVersion.JIRA_3_12) > -1;
+        return new JiraVersion(version).compareTo(new JiraVersion("3.12")) > -1; 
     }
 
     public void ensureProjectLoaded(final Project project) {

@@ -44,6 +44,9 @@
 
 package org.netbeans.editor;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Composite;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -52,6 +55,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -70,6 +75,8 @@ import java.awt.event.InputEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -85,6 +92,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import javax.swing.event.ChangeListener;
@@ -94,6 +102,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.fold.Fold;
@@ -106,13 +115,13 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
-import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.netbeans.modules.editor.lib2.DocUtils;
+import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
+import org.netbeans.modules.editor.lib2.view.*;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -140,6 +149,12 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** @since 1.23 */
     public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+
+    /** Boolean property defining whether selection is being rectangular in a particular text component. */
+    private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
+
+    /** List of positions (with even size) defining regions of rectangular selection. Maintained by BaseCaret. */
+    private static final String RECTANGULAR_SELECTION_REGIONS_PROPERTY = "rectangular-selection-regions"; // NOI18N
 
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
@@ -303,6 +318,29 @@ AtomicLockListener, FoldHierarchyListener {
     
     private int minSelectionEndOffset;
     
+    private boolean rectangularSelection;
+    
+    /**
+     * Rectangle that corresponds to model2View of current point of selection.
+     */
+    private Rectangle rsDotRect;
+
+    /**
+     * Rectangle that corresponds to model2View of beginning of selection.
+     */
+    private Rectangle rsMarkRect;
+    
+    /**
+     * Rectangle marking rectangular selection.
+     */
+    private Rectangle rsPaintRect;
+    
+    /**
+     * List of start-pos and end-pos pairs that denote rectangular selection
+     * on the selected lines.
+     */
+    private List<Position> rsRegions;
+    
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
     }
@@ -325,7 +363,7 @@ AtomicLockListener, FoldHierarchyListener {
                 newWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
             }
 
-            FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
+            FontColorSettings fcs = MimeLookup.getLookup(DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
             if (fcs != null) {
                 if (overwriteMode) {
                     AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE); //NOI18N
@@ -372,7 +410,7 @@ AtomicLockListener, FoldHierarchyListener {
                         offset = doc.getLength();
                     }
                     if (doc != null) {
-                        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
+                        CharSequence docText = DocumentUtilities.getText(doc);
                         dotChar[0] = docText.charAt(offset);
                     }
                     Rectangle newCaretBounds;
@@ -499,7 +537,7 @@ AtomicLockListener, FoldHierarchyListener {
             // ideally the oldDoc param shouldn't exist and only listenDoc should be used
             assert (oldDoc == listenDoc);
 
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.removeDocumentListener(
+            DocumentUtilities.removeDocumentListener(
                     oldDoc, this, DocumentListenerPriority.CARET_UPDATE);
             oldDoc.removeAtomicLockListener(this);
 
@@ -519,7 +557,7 @@ AtomicLockListener, FoldHierarchyListener {
 
         if (newDoc != null) {
 
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.addDocumentListener(
+            DocumentUtilities.addDocumentListener(
                     newDoc, this, DocumentListenerPriority.CARET_UPDATE);
             listenDoc = newDoc;
             newDoc.addAtomicLockListener(this);
@@ -533,7 +571,7 @@ AtomicLockListener, FoldHierarchyListener {
                 Utilities.annotateLoggable(e);
             }
 
-            prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
+            prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
             if (prefs != null) {
                 weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
                 prefs.addPreferenceChangeListener(weakPrefsListener);
@@ -565,6 +603,35 @@ AtomicLockListener, FoldHierarchyListener {
         }
         if (caretBounds != null && isVisible() && blinkVisible) {
             paintCustomCaret(g);
+        }
+        if (rectangularSelection && rsPaintRect != null && g instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D) g;
+            Stroke stroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {4, 2}, 0);
+            Stroke origStroke = g2d.getStroke();
+            Color origColor = g2d.getColor();
+            try {
+                // Render translucent rectangle
+                Color selColor = c.getSelectionColor();
+                g2d.setColor(selColor);
+                Composite origComposite = g2d.getComposite();
+                try {
+                    g2d.setComposite(AlphaComposite.SrcOver.derive(0.2f));
+                    g2d.fill(rsPaintRect);
+                } finally {
+                    g2d.setComposite(origComposite);
+                }
+                // Paint stroked line around rectangular selection rectangle
+                g.setColor(c.getCaretColor());
+                g2d.setStroke(stroke);
+                Rectangle onePointSmallerRect = new Rectangle(rsPaintRect);
+                onePointSmallerRect.width--;
+                onePointSmallerRect.height--;
+                g2d.draw(onePointSmallerRect);
+
+            } finally {
+                g2d.setStroke(origStroke);
+                g2d.setColor(origColor);
+            }
         }
     }
 
@@ -793,6 +860,59 @@ AtomicLockListener, FoldHierarchyListener {
         return component.getToolkit().getSystemSelection();
     }
     
+    private void updateRectangularSelectionPositionBlocks() {
+        JTextComponent c = component;
+        if (rectangularSelection) {
+            if (listenDoc != null) {
+                listenDoc.readLock();
+                try {
+                    if (rsRegions == null) {
+                        rsRegions = new ArrayList<Position>();
+                        c.putClientProperty(RECTANGULAR_SELECTION_REGIONS_PROPERTY, rsRegions);
+                    }
+                    synchronized (rsRegions) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Rectangular-selection position regions:\n");
+                        }
+                        rsRegions.clear();
+                        if (rsPaintRect != null) {
+                            LockedViewHierarchy lvh = ViewHierarchy.get(c).lock();
+                            try {
+                                float rowHeight = lvh.getDefaultRowHeight();
+                                double y = rsPaintRect.y;
+                                double maxY = y + rsPaintRect.height;
+                                double minX = rsPaintRect.getMinX();
+                                double maxX = rsPaintRect.getMaxX();
+                                do {
+                                    int startOffset = lvh.viewToModel(minX, y, null);
+                                    int endOffset = lvh.viewToModel(maxX, y, null);
+                                    // They could be swapped due to RTL text
+                                    if (startOffset > endOffset) {
+                                        int tmp = startOffset; startOffset = endOffset; endOffset = tmp;
+                                    }
+                                    Position startPos = listenDoc.createPosition(startOffset);
+                                    Position endPos = listenDoc.createPosition(endOffset);
+                                    rsRegions.add(startPos);
+                                    rsRegions.add(endPos);
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.fine("  <" + startOffset + "," + endOffset + ">\n");
+                                    }
+                                    y += rowHeight;
+                                } while (y < maxY);
+                            } finally {
+                                lvh.unlock();
+                            }
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    listenDoc.readUnlock();
+                }
+            }
+        }
+    }
+
     /**
      * Redefine to Object.equals() to prevent defaulting to Rectangle.equals()
      * which would cause incorrect firing
@@ -1128,6 +1248,9 @@ AtomicLockListener, FoldHierarchyListener {
                         } finally {
                             hierarchy.unlock();
                         }
+                        if (rectangularSelection) {
+                            adjustRectangularSelectionToDotAndMark();
+                        }
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
@@ -1197,6 +1320,7 @@ AtomicLockListener, FoldHierarchyListener {
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (doc != null && offset >= 0 && offset <= doc.getLength()) {
+                doc.readLock();
                 try {
                     int oldCaretPos = getDot();
                     if (offset == oldCaretPos) { // no change
@@ -1205,12 +1329,24 @@ AtomicLockListener, FoldHierarchyListener {
                     Utilities.moveMark(doc, caretMark, offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
+                    }
+                    if (rectangularSelection) {
+                        Rectangle r = c.modelToView(offset);
+                        if (rsDotRect != null) {
+                            rsDotRect.y = r.y;
+                            rsDotRect.height = r.height;
+                        } else {
+                            rsDotRect = r;
                         }
+                        updateRectangularSelectionPaintRect();
+                    }
                 } catch (BadLocationException e) {
                     throw new IllegalStateException(e.toString());
                     // position is incorrect
                 } catch (InvalidMarkException e) {
                     throw new IllegalStateException(e.toString());
+                } finally {
+                    doc.readUnlock();
                 }
             }
             fireStateChanged();
@@ -1222,12 +1358,34 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
+            int offset = evt.getOffset();
+            int endOffset = offset + evt.getLength();
+            if (evt.getOffset() == 0) {
+                // Insert at offset 0 the marks would stay at offset == 0
+                if (getMark() == 0) {
+                    try {
+                        selectionMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (getDot() == 0) {
+                    try {
+                        caretMark.move(listenDoc, endOffset);
+                    } catch (InvalidMarkException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                     && component == Utilities.getLastActiveComponent()
-                    && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.getEventProperty(evt, "caretIgnore"))
+                    && !Boolean.TRUE.equals(DocumentUtilities.getEventProperty(evt, "caretIgnore"))
                ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset() + evt.getLength();
@@ -1237,8 +1395,7 @@ AtomicLockListener, FoldHierarchyListener {
                 typingModification = true;
             } else {
                 undoOffset = -1;
-                typingModification = org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.isTypingModification(component.getDocument());
+                typingModification = DocumentUtilities.isTypingModification(component.getDocument());
             }
 
             modified = true;
@@ -1255,8 +1412,7 @@ AtomicLockListener, FoldHierarchyListener {
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
                 && c == Utilities.getLastActiveComponent()
-                && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
-                    DocumentUtilities.getEventProperty(evt, "caretIgnore"))
+                && !Boolean.TRUE.equals(DocumentUtilities.getEventProperty(evt, "caretIgnore"))
             ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset();
@@ -1266,8 +1422,7 @@ AtomicLockListener, FoldHierarchyListener {
                 typingModification = true;
             } else { // Not undo or redo
                 undoOffset = -1;
-                typingModification = org.netbeans.lib.editor.util.swing.
-                        DocumentUtilities.isTypingModification(component.getDocument());
+                typingModification = DocumentUtilities.isTypingModification(component.getDocument());
 
             }
 
@@ -1284,6 +1439,15 @@ AtomicLockListener, FoldHierarchyListener {
                 if (undoOffset >= 0) { // last modification was undo => set the dot to undoOffset
                     setDot(undoOffset);
                 } else { // last modification was not undo
+                    BaseDocument doc = listenDoc;
+                    if (doc != null) {
+                        doc.readLock();
+                        try {
+                            updateRectangularSelectionPaintRect();
+                        } finally {
+                            doc.readUnlock();
+                        }
+                    }
                     fireStateChanged();
                     // Scroll to caret only for component with focus
                     dispatchUpdate(c.hasFocus() && typingModification);
@@ -1336,6 +1500,7 @@ AtomicLockListener, FoldHierarchyListener {
                     c.setDragEnabled(true);
                     if (evt.isShiftDown()) { // Select till offset
                         moveDot(offset);
+                        adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                         mouseState = MouseState.CHAR_SELECTION;
                     } else { // Regular press
                         // check whether selection drag is possible
@@ -1418,10 +1583,12 @@ AtomicLockListener, FoldHierarchyListener {
         switch (mouseState) {
             case DRAG_SELECTION_POSSIBLE:
                 setDot(offset);
+                adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                 break;
 
             case CHAR_SELECTION:
                 moveDot(offset); // Will do setDot() if no selection
+                adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                 break;
         }
         // Set DEFAULT state; after next mouse press the state may change
@@ -1526,6 +1693,7 @@ AtomicLockListener, FoldHierarchyListener {
                     
                     case CHAR_SELECTION:
                         moveDot(offset);
+                        adjustRectangularSelectionMouseX(evt.getX(), evt.getY());
                         break; // Use the offset under mouse pointer
 
                     
@@ -1558,6 +1726,178 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
     
+    private void adjustRectangularSelectionMouseX(int x, int y) {
+        if (!rectangularSelection) {
+            return;
+        }
+        JTextComponent c = component;
+        int offset = c.viewToModel(new Point(x, y));
+        Rectangle r = null;;
+        if (offset >= 0) {
+            try {
+                r = c.modelToView(offset);
+            } catch (BadLocationException ex) {
+                r = null;
+            }
+        }
+        if (r != null) {
+            float xDiff = x - r.x;
+            if (xDiff > 0) {
+                float charWidth;
+                LockedViewHierarchy lvh = ViewHierarchy.get(c).lock();
+                try {
+                    charWidth = lvh.getDefaultCharWidth();
+                } finally {
+                    lvh.unlock();
+                }
+                int n = (int) (xDiff / charWidth);
+                r.x += n * charWidth;
+                r.width = (int) charWidth;
+            }
+            rsDotRect.x = r.x;
+            rsDotRect.width = r.width;
+            updateRectangularSelectionPaintRect();
+            fireStateChanged();
+        }
+    }
+    
+    private void adjustRectangularSelectionToDotAndMark() {
+        int dotOffset = getDot();
+        int markOffset = getMark();
+        try {
+            rsDotRect = component.modelToView(dotOffset);
+            rsMarkRect = component.modelToView(markOffset);
+        } catch (BadLocationException ex) {
+            rsDotRect = rsMarkRect = null;
+        }
+        updateRectangularSelectionPaintRect();
+    }
+
+    public void updateRectangularUpDownSelection() {
+        JTextComponent c = component;
+        int dotOffset = getDot();
+        try {
+            Rectangle r = c.modelToView(dotOffset);
+            rsDotRect.y = r.y;
+            rsDotRect.height = r.height;
+        } catch (BadLocationException ex) {
+            // Leave rsDotRect unchanged
+        }
+    }
+    
+    /**
+     * Extend rectangular selection either by char in a specified selection
+     * or by word (if ctrl is pressed).
+     *
+     * @param toRight true for right or false for left.
+     * @param ctrl 
+     */
+    public void extendRectangularSelection(boolean toRight, boolean ctrl) {
+        JTextComponent c = component;
+        Document doc = c.getDocument();
+        int dotOffset = getDot();
+        Element lineRoot = doc.getDefaultRootElement();
+        int lineIndex = lineRoot.getElementIndex(dotOffset);
+        Element lineElement = lineRoot.getElement(lineIndex);
+        float charWidth;
+        LockedViewHierarchy lvh = ViewHierarchy.get(c).lock();
+        try {
+            charWidth = lvh.getDefaultCharWidth();
+        } finally {
+            lvh.unlock();
+        }
+        int newDotOffset = -1;
+        try {
+            int newlineOffset = lineElement.getEndOffset() - 1;
+            Rectangle newlineRect = c.modelToView(newlineOffset);
+            if (!ctrl) {
+                if (toRight) {
+                    if (rsDotRect.x < newlineRect.x) {
+                        newDotOffset = dotOffset + 1;
+                    } else {
+                        rsDotRect.x += charWidth;
+                    }
+                } else { // toLeft
+                    if (rsDotRect.x > newlineRect.x) {
+                        rsDotRect.x -= charWidth;
+                        if (rsDotRect.x < newlineRect.x) { // Fix on rsDotRect
+                            newDotOffset = newlineOffset;
+                        }
+                    } else {
+                        newDotOffset = Math.max(dotOffset - 1, lineElement.getStartOffset());
+                    }
+                }
+
+            } else { // With Ctrl
+                int numVirtualChars = 8; // Number of virtual characters per one Ctrl+Shift+Arrow press
+                if (toRight) {
+                    if (rsDotRect.x < newlineRect.x) {
+                        newDotOffset = Math.min(Utilities.getNextWord(c, dotOffset), lineElement.getEndOffset() - 1);
+                    } else { // Extend virtually
+                        rsDotRect.x += numVirtualChars * charWidth;
+                    }
+                } else { // toLeft
+                    if (rsDotRect.x > newlineRect.x) { // Virtually extended
+                        rsDotRect.x -= numVirtualChars * charWidth;
+                        if (rsDotRect.x < newlineRect.x) {
+                            newDotOffset = newlineOffset;
+                        }
+                    } else {
+                        newDotOffset = Math.max(Utilities.getPreviousWord(c, dotOffset), lineElement.getStartOffset());
+                    }
+                }
+            }
+
+            if (newDotOffset != -1) {
+                rsDotRect = c.modelToView(newDotOffset);
+                moveDot(newDotOffset); // updates rs and fires state change
+            } else {
+                updateRectangularSelectionPaintRect();
+                fireStateChanged();
+            }
+        } catch (BadLocationException ex) {
+            // Leave selection as is
+        }
+    }
+    
+    private void updateRectangularSelectionPaintRect() {
+        // Repaint current rect
+        JTextComponent c = component;
+        Rectangle repaintRect = rsPaintRect;
+        if (rsDotRect == null || rsMarkRect == null) {
+            return;
+        }
+        Rectangle newRect = new Rectangle();
+        if (rsDotRect.x < rsMarkRect.x) { // Swap selection to left
+            newRect.x = rsDotRect.x; // -1 to make the visual selection non-empty
+            newRect.width = rsMarkRect.x - newRect.x;
+        } else { // Extend or shrink on right
+            newRect.x = rsMarkRect.x;
+            newRect.width = rsDotRect.x - newRect.x;
+        }
+        if (rsDotRect.y < rsMarkRect.y) {
+            newRect.y = rsDotRect.y;
+            newRect.height = (rsMarkRect.y + rsMarkRect.height) - newRect.y;
+        } else {
+            newRect.y = rsMarkRect.y;
+            newRect.height = (rsDotRect.y + rsDotRect.height) - newRect.y;
+        }
+        if (newRect.width < 2) {
+            newRect.width = 2;
+        }
+        rsPaintRect = newRect;
+
+        // Repaint merged region with original rect
+        if (repaintRect == null) {
+            repaintRect = rsPaintRect;
+        } else {
+            repaintRect = repaintRect.union(rsPaintRect);
+        }
+        c.repaint(repaintRect);
+        
+        updateRectangularSelectionPositionBlocks();
+    }
+
     private void selectEnsureMinSelection(int mark, int dot, int newDot) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("selectEnsureMinSelection: mark=" + mark + ", dot=" + dot + ", newDot=" + newDot); // NOI18N
@@ -1653,7 +1993,6 @@ AtomicLockListener, FoldHierarchyListener {
     // PropertyChangeListener methods
     public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-
         if ("document".equals(propName)) { // NOI18N
             BaseDocument newDoc = (evt.getNewValue() instanceof BaseDocument)
                                   ? (BaseDocument)evt.getNewValue() : null;
@@ -1689,7 +2028,7 @@ AtomicLockListener, FoldHierarchyListener {
                     }
                 }
             }
-        } else if("enabled".equals(evt.getPropertyName())) {
+        } else if ("enabled".equals(propName)) {
             Boolean enabled = (Boolean) evt.getNewValue();
             if(component.isFocusOwner()) {
                 if(enabled == Boolean.TRUE) {
@@ -1702,9 +2041,22 @@ AtomicLockListener, FoldHierarchyListener {
                     setSelectionVisible(false);
                 }
             }
+        } else if (RECTANGULAR_SELECTION_PROPERTY.equals(propName)) {
+            boolean origRectangularSelection = rectangularSelection;
+            rectangularSelection = Boolean.TRUE.equals(component.getClientProperty(RECTANGULAR_SELECTION_PROPERTY));
+            if (rectangularSelection != origRectangularSelection) {
+                if (rectangularSelection) {
+                    adjustRectangularSelectionToDotAndMark();
+                    RectangularSelectionTransferHandler.install(component);
+
+                } else { // No rectangular selection
+                    RectangularSelectionTransferHandler.uninstall(component);
+                }
+                fireStateChanged();
+            }
         }
     }
-
+    
     // ActionListener methods
     /** Fired when blink timer fires */
     public @Override void actionPerformed(ActionEvent evt) {

@@ -175,17 +175,21 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
             fail("It has to be menu: " + o1);
         }
         JMenu m1 = (JMenu)o1;
+        simulateExpansionOfMenu(m1);
+        java.awt.Component[] content = m1.getPopupMenu().getComponents();
+        assertEquals("Now it has one child", 1, content.length);
+        
+        assertEquals("Still No removals in MenuBar", 0, remove);
+        assertEquals("Still Two additions in MenuBar", 2, add);
+    }
+
+    static void simulateExpansionOfMenu(JMenu m1) {
         // simulate expansion in the menu
         if (Utilities.isMac()) {
             m1.setSelected(true);
         } else {
             m1.setPopupMenuVisible(true);
         }
-        java.awt.Component[] content = m1.getPopupMenu().getComponents();
-        assertEquals("Now it has one child", 1, content.length);
-        
-        assertEquals("Still No removals in MenuBar", 0, remove);
-        assertEquals("Still Two additions in MenuBar", 2, add);
     }
 
     
@@ -218,13 +222,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         JMenu m1 = (JMenu)o1;
         
         assertEquals("We have the menu, but the content is still not computed", 0, MyAction.counter);
-        
-        // simulate expansion in the menu
-        if (Utilities.isMac()) {
-            m1.setSelected(true);
-        } else {
-            m1.setPopupMenuVisible(true);
-        }
+        simulateExpansionOfMenu(m1);
         java.awt.Component[] content = m1.getPopupMenu().getComponents();
         assertEquals("Now it has one child", 1, content.length);
         

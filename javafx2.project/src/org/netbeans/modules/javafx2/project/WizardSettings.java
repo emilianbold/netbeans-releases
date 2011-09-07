@@ -44,7 +44,7 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**
@@ -89,7 +89,7 @@ public class WizardSettings {
     }
 
     public static boolean getSetAsMain(WizardType wizardType) {
-        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIB);
+        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIBRARY);
     }
 
     public static void setSetAsMain(WizardType wizardType, boolean setAsMain) {

@@ -109,6 +109,25 @@ is the proper place.
 
   <changes>
 
+    <change id="NavigatorDisplayer">
+        <api name="navigator_api"/>
+        <summary>Added SPI interface NavigatorDisplayer</summary>
+        <version major="1" minor="19"/>
+        <date day="31" month="8" year="2011"/>
+        <author login="tpavek"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Added <a href="@TOP@/org/netbeans/spi/navigator/NavigatorDisplayer.html">NavigatorDisplayer</a>
+            interface that can be implemented to provide a different visualization of the navigator panels
+            than in the default Navigator window. Can be useful in a different app than NetBeans IDE. If an
+            implementation is provided (registered in META-INF/services) then the navigator needs to be
+            explicitly initialized by calling <a href="@TOP@/org/netbeans/spi/navigator/NavigatorHandler.html#activateNavigator()">
+            NavigatorHandler.activateNavigator()</a> method when the UI is shown.
+        </description>
+        <class package="org.netbeans.spi.navigator" name="NavigatorDisplayer"/>
+        <class package="org.netbeans.spi.navigator" name="NavigatorHandler"/>
+        <issue number="201246"/>
+    </change>
     <change id="panelsPolicy">
         <api name="navigator_api"/>
         <summary>Added SPI interface NavigatorLookupPanelsPolicy.</summary>

@@ -96,7 +96,6 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
-import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
@@ -292,7 +291,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             Set<FileObject> files = getAffectedFiles(generator, helper );
 
             RestUtils.ensureRestDevelopmentReady(project);
-            Set<Entity> entities = Util.getEntities(project, files);
+            Set<String> entities = Util.getEntities(project, files);
+            RestUtils.configRestPackages(project, 
+                    wizard.getProperty(WizardProperties.RESOURCE_PACKAGE).toString());
             
             if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
                 String targetPackage = null;
@@ -334,13 +335,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 }
 
                 EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
-                EntityResourceBeanModel model = builder.build(entities);
+                EntityResourceBeanModel model = builder.build();
                 Util.generateRESTFacades(project, entities,  model,
                         targetResourceFolder, resourcePackage);
 
             } else {    
                 EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
-                EntityResourceBeanModel model = builder.build(entities);
+                EntityResourceBeanModel model = builder.build();
 
                 PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
 

@@ -44,32 +44,14 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
 
-import javax.swing.plaf.basic.BasicToggleButtonUI;
-import java.awt.geom.AffineTransform;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicHTML;
-import javax.swing.plaf.metal.MetalToggleButtonUI;
-import javax.swing.text.View;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 
 /** 
@@ -93,6 +75,7 @@ public class NimbusSlidingButtonUI extends SlidingButtonUI {
     }    
     
     
+    @Override
     public void installDefaults (AbstractButton b) {
         super.installDefaults(b);
 	if(!defaults_initialized) {
@@ -105,11 +88,13 @@ public class NimbusSlidingButtonUI extends SlidingButtonUI {
 	}
     }
     
+    @Override
     protected void uninstallDefaults(AbstractButton b) {
 	super.uninstallDefaults(b);
 	defaults_initialized = false;
     }   
     
+    @Override
     public void paint(Graphics g, JComponent c) {
         ColorUtil.setupAntialiasing(g);
         
@@ -130,10 +115,12 @@ public class NimbusSlidingButtonUI extends SlidingButtonUI {
         super.paint(g, c);
     }
     
+    @Override
     protected void paintBackground (Graphics2D g, AbstractButton button) {
         hiddenToggle.paint(g);
     }
     
+    @Override
     protected void paintButtonPressed(Graphics g, AbstractButton b) {    
         hiddenToggle.paint(g);
     }

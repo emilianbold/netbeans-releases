@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -74,6 +75,8 @@ class HostsListTableModel extends AbstractTableModel {
     private boolean first;
 
     private Thread loaderThread;
+
+    private static final int PING_TIMEOUT = Integer.getInteger("ssh.ping.timeout", 3000); // NOI18N
 
     public HostsListTableModel() {
         this.phandle = ProgressHandleFactory.createHandle("Gathering hosts information"); //NOI18N
@@ -239,12 +242,25 @@ class HostsListTableModel extends AbstractTableModel {
     }
 
     private static boolean doPing(InetAddress addr, int port) {
+        Socket socket = null;
+
         try {
-            Socket socket = new Socket(addr, port);
-            socket.close();
+            socket = new Socket();
+            socket.setReuseAddress(true);
+            socket.setSoTimeout(PING_TIMEOUT);
+            socket.setKeepAlive(false);
+            InetSocketAddress address = new InetSocketAddress(addr, port);
+            socket.connect(address, PING_TIMEOUT);
             return true;
         } catch (IOException ex) {
             return false;
+        } finally {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                }
+            }
         }
     }
 }

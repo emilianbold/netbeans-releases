@@ -75,7 +75,7 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
         Map<String, String> props = new HashMap<String, String>();
         props.put(TestDeploymentManager.MULTIPLE_TARGETS, "false");
         props.put(TestDeploymentManager.WORK_DIR, getWorkDirPath());
-        registry.addInstance(URL, "user", "password", "TestInstance", true, props); // NOI18N
+        registry.addInstance(URL, "user", "password", "TestInstance", true, false, props); // NOI18N
     }
 
     @Override

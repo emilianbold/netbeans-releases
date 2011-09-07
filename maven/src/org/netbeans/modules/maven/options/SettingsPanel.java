@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.NbGlobalActionGoalProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -87,7 +88,7 @@ import org.openide.util.RequestProcessor;
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
     private static final String BUNDLED_RUNTIME_VERSION =
-            MavenSettings.getCommandLineMavenVersion(MavenSettings.getDefaultMavenHome());
+            MavenSettings.getCommandLineMavenVersion(EmbedderFactory.getDefaultMavenHome());
     private static final int RUNTIME_COUNT_LIMIT = 5;
     private boolean changed;
     private boolean valid;
@@ -179,7 +180,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         };
         initValues();
-        ((MyJTextField)txtLocalRepository).setHintText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "txt_default_repository"));
         listener = new ActionListenerImpl();
         comIndex.addActionListener(listener);
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
@@ -301,14 +301,13 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         lblCommandLine = new javax.swing.JLabel();
+        comMavenHome = new javax.swing.JComboBox();
         lblExternalVersion = new javax.swing.JLabel();
         lblOptions = new javax.swing.JLabel();
         txtOptions = new javax.swing.JTextField();
         btnOptions = new javax.swing.JButton();
         cbSkipTests = new javax.swing.JCheckBox();
-        lblLocalRepository = new javax.swing.JLabel();
-        txtLocalRepository = new MyJTextField();
-        btnLocalRepository = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
         lblBinaries = new javax.swing.JLabel();
         comBinaries = new javax.swing.JComboBox();
         lblJavadoc = new javax.swing.JLabel();
@@ -316,12 +315,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblSource = new javax.swing.JLabel();
         comSource = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         btnGoals = new javax.swing.JButton();
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
-        comMavenHome = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
 
@@ -336,14 +333,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSkipTests, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbSkipTests.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblLocalRepository, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblLocalRepository.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnLocalRepository, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnLocalRepository.text")); // NOI18N
-        btnLocalRepository.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLocalRepositoryActionPerformed(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
 
         lblBinaries.setLabelFor(comBinaries);
         org.openide.awt.Mnemonics.setLocalizedText(lblBinaries, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblBinaries.text")); // NOI18N
@@ -356,8 +346,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel3.text")); // NOI18N
         jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnGoals, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnGoals.text")); // NOI18N
         btnGoals.addActionListener(new java.awt.event.ActionListener() {
@@ -387,26 +375,25 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblCommandLine)
-                            .addComponent(lblOptions)
-                            .addComponent(lblLocalRepository))
+                            .addComponent(lblOptions))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(comSource, 0, 412, Short.MAX_VALUE)
-                                    .addComponent(comJavadoc, 0, 412, Short.MAX_VALUE)
-                                    .addComponent(comBinaries, 0, 412, Short.MAX_VALUE)
-                                    .addComponent(txtLocalRepository, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
-                                    .addComponent(txtOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
+                                .addComponent(txtOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnLocalRepository)
-                                    .addComponent(btnOptions)))
+                                .addComponent(btnOptions))
                             .addComponent(cbSkipTests)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(comMavenHome, 0, 403, Short.MAX_VALUE)
                                 .addGap(122, 122, 122))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(198, 198, 198)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(comSource, 0, 412, Short.MAX_VALUE)
+                            .addComponent(comJavadoc, 0, 412, Short.MAX_VALUE)
+                            .addComponent(comBinaries, 0, 412, Short.MAX_VALUE))
+                        .addGap(113, 113, 113))
                     .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
@@ -426,7 +413,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnIndex, btnLocalRepository, btnOptions});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnIndex, btnOptions});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -444,12 +431,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(btnOptions))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbSkipTests)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtLocalRepository, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnLocalRepository)
-                    .addComponent(lblLocalRepository))
-                .addGap(16, 16, 16)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -494,28 +476,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_btnIndexActionPerformed
     
-    private void btnLocalRepositoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLocalRepositoryActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setDialogTitle(NbBundle.getMessage(SettingsPanel.class, "TIT_Select"));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        String path = ((MyJTextField)txtLocalRepository).getRealText();
-        if (path.trim().length() == 0) {
-            path = new File(System.getProperty("user.home"), ".m2").getAbsolutePath(); //NOI18N
-        }
-        if (path.length() > 0) {
-            File f = new File(path);
-            if (f.exists()) {
-                chooser.setSelectedFile(f);
-            }
-        }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectDir = chooser.getSelectedFile();
-            ((MyJTextField)txtLocalRepository).setRealText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
-        }
-    }//GEN-LAST:event_btnLocalRepositoryActionPerformed
-
     private void btnGoalsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGoalsActionPerformed
         NbGlobalActionGoalProvider provider = null;
         for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
@@ -555,7 +515,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
-    private javax.swing.JButton btnLocalRepository;
     private javax.swing.JButton btnOptions;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comBinaries;
@@ -570,10 +529,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblExternalVersion;
     private javax.swing.JLabel lblIndex;
     private javax.swing.JLabel lblJavadoc;
-    private javax.swing.JLabel lblLocalRepository;
     private javax.swing.JLabel lblOptions;
     private javax.swing.JLabel lblSource;
-    private javax.swing.JTextField txtLocalRepository;
     private javax.swing.JTextField txtOptions;
     // End of variables declaration//GEN-END:variables
     
@@ -631,7 +588,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
         comMavenHome.removeActionListener(listItemChangedListener);
         mavenHomeDataModel.removeAllElements();
-        File command = MavenSettings.getDefault().getMavenHome();
+        File command = EmbedderFactory.getMavenHome();
         String bundled = null;
         for (String runtime : predefinedRuntimes) {
             boolean bundledRuntime = runtime.isEmpty();
@@ -661,8 +618,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         comMavenHome.addActionListener(listItemChangedListener);
         
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
-        String repo = MavenSettings.getDefault().getCustomLocalRepository();
-        ((MyJTextField)txtLocalRepository).setRealText(repo != null ? repo : "");
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
@@ -673,7 +628,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     public void applyValues() {
         MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
-        MavenSettings.getDefault().setCustomLocalRepository(((MyJTextField)txtLocalRepository).getRealText());
         
         // remember only user-defined runtimes of RUNTIME_COUNT_LIMIT count at the most
         List<String> runtimes = new ArrayList<String>();
@@ -693,9 +647,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         //MEVENIDE-553
         File command = (cl == null || cl.isEmpty()) ? null : new File(cl);
         if (command != null && command.isDirectory()) {
-            MavenSettings.getDefault().setMavenHome(command);
+            EmbedderFactory.setMavenHome(command);
         } else {
-            MavenSettings.getDefault().setMavenHome(null);
+            EmbedderFactory.setMavenHome(null);
         }
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());

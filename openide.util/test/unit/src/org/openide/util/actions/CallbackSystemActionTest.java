@@ -60,9 +60,6 @@ import javax.swing.text.DefaultEditorKit;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -164,7 +161,6 @@ public class CallbackSystemActionTest extends NbTestCase {
         
         ActionsInfraHid.setActionMap(other);
         try {
-            assertFalse("Disabled on other component", a.isEnabled());
             ActionsInfraHid.setActionMap(tc);
             assertTrue("MyAction is enabled", a.isEnabled());
             assertEquals("isEnabled called once", 1, myAction.cntEnabled);
@@ -192,41 +188,6 @@ public class CallbackSystemActionTest extends NbTestCase {
         assertGC("We are able to clear global action", ref);
         assertGC("Even our action", ref2);
         assertGC("Even our component", ref3);
-    }
-    
-    // http://www.netbeans.org/nonav/issues/show_bug.cgi?id=144684
-    public void testConcurrentModificationException () {
-        class MyAction extends AbstractAction {
-            public int cntEnabled;
-            public int cntPerformed;
-            
-            public boolean isEnabled() {
-                cntEnabled++;
-                return true;
-            }
-            
-            public void actionPerformed(ActionEvent ev) {
-                cntPerformed++;
-            }
-        }
-        MyAction myAction = new MyAction();
-
-        
-        final ActionMap other = new ActionMap();
-        ActionMap tc = new ActionMap() {
-            @Override
-            public Action get(Object key) {
-                ActionsInfraHid.setActionMaps(other, new ActionMap ());
-                return super.get (key);
-            }
-        };
-        ActionsInfraHid.setActionMaps(other, new ActionMap ());
-        SurviveFocusChgCallbackAction a = SurviveFocusChgCallbackAction.get (SurviveFocusChgCallbackAction.class);
-        assertTrue(a.isEnabled());
-        other.put(a.getActionMapKey(), myAction);
-        ActionsInfraHid.setActionMaps(tc, new ActionMap (), new ActionMap (), new ActionMap ());
-        assertTrue(a.isEnabled());
-        
     }
     
     /** Make sure that the performer system works and controls enablement.

@@ -54,9 +54,6 @@ import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jdesktop.layout.Baseline;
-import org.jdesktop.layout.LayoutStyle;
-
 import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
@@ -81,6 +78,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.SystemAction;
 
@@ -341,6 +339,7 @@ public class FormDesigner {
         Lookup explorerLookup; // lookup for EpxlorerManager
         Lookup plainContentLookup; // lookup with various fixed instances
         Lookup paletteLookup; // lookup for palette
+        Lookup saveCookieLookup; // to make sure Save action is enabled
         Lookup dataObjectLookup; // to make sure DO is in lookup even if no node selected
 
         if (lookup == null) {
@@ -363,8 +362,27 @@ public class FormDesigner {
             });
             plainContentLookup = new AbstractLookup(lookupContent);
 
-            FormDataObject formDataObject = formEditor.getFormDataObject();
+            final FormDataObject formDataObject = formEditor.getFormDataObject();
             paletteLookup = PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile());
+            
+            saveCookieLookup = new Lookup() {
+                @Override
+                public <T> T lookup(final Class<T> clazz) {
+                    if (clazz.isAssignableFrom(SaveCookie.class)) {
+                        return formDataObject.getLookup().lookup(clazz);
+                    } else {
+                        return null;
+                    }
+                }
+                @Override
+                public <T> Result<T> lookup(Template<T> template) {
+                    if (template.getType().isAssignableFrom(SaveCookie.class)) {
+                        return formDataObject.getLookup().lookup(template);
+                    } else {
+                        return Lookup.EMPTY.lookup(template);
+                    }
+                }
+            };
 
             dataObjectLookup = null;
         } else {
@@ -372,7 +390,8 @@ public class FormDesigner {
             explorerLookup = lookups[0];
             plainContentLookup = lookups[1];
             paletteLookup = lookups[2];
-            dataObjectLookup = lookups[3];
+            saveCookieLookup = lookups[3];
+            dataObjectLookup = lookups[4];
         }
 
         if (!initialized) {
@@ -389,7 +408,7 @@ public class FormDesigner {
         }
 
         lookup.setSubLookups(new Lookup[] {
-            explorerLookup, plainContentLookup, paletteLookup, dataObjectLookup
+            explorerLookup, plainContentLookup, paletteLookup, saveCookieLookup, dataObjectLookup
         });
     }
 
@@ -1971,7 +1990,7 @@ public class FormDesigner {
 
             if (baseLinePos == -1) {
                 if (comp != null) {
-                     baseLinePos = Baseline.getBaseline(comp, width, height);
+                     baseLinePos = comp.getBaseline(width, height);
                 } else {
                     baseLinePos = 0;
                 }
@@ -2011,8 +2030,8 @@ public class FormDesigner {
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert comp2Alignment == LEADING || comp2Alignment == TRAILING;
 
-            int type = paddingType == PaddingType.INDENT ? LayoutStyle.INDENT :
-                (paddingType == PaddingType.RELATED ? LayoutStyle.RELATED : LayoutStyle.UNRELATED);
+            LayoutStyle.ComponentPlacement type = paddingType == PaddingType.INDENT ? LayoutStyle.ComponentPlacement.INDENT :
+                (paddingType == PaddingType.RELATED ? LayoutStyle.ComponentPlacement.RELATED : LayoutStyle.ComponentPlacement.UNRELATED);
             int position = 0;
             if (dimension == HORIZONTAL) {
                 if (paddingType == PaddingType.INDENT) {
