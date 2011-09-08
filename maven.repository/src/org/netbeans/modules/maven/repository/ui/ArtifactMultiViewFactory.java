@@ -56,6 +56,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -100,31 +103,26 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
     private static final RequestProcessor RP = new RequestProcessor(ArtifactMultiViewFactory.class);
 
-    public TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos) {
+    @Override @NonNull public TopComponent createTopComponent(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos) {
         return createTopComponent(null, null, artifact, repos);
     }
-    public TopComponent createTopComponent(NBVersionInfo info) {
-        return createTopComponent(null, info, null, null);
+    @Override @NonNull public TopComponent createTopComponent(@NonNull NBVersionInfo info) {
+        return createTopComponent(null, info, RepositoryUtil.createArtifact(info), null);
     }
 
-    public TopComponent createTopComponent(Project prj) {
-        return createTopComponent(prj, null, null, null);
+    @Override @CheckForNull public TopComponent createTopComponent(@NonNull Project prj) {
+        NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
+        MavenProject mvn = mvPrj.getMavenProject();
+        Artifact artifact = mvn.getArtifact();
+        return artifact != null ? createTopComponent(prj, null, artifact, null) : null;
     }
 
-    private TopComponent createTopComponent(final Project prj, final NBVersionInfo info, Artifact artifact, final List<ArtifactRepository> fRepos) {
-        assert info != null || artifact != null || prj != null;
+    @NonNull private TopComponent createTopComponent(final @NullAllowed Project prj, final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
-        if (artifact == null && info != null) {
-            artifact = RepositoryUtil.createArtifact(info);
-        }
-        if (artifact == null && prj != null) {
-            NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
-            MavenProject mvn = mvPrj.getMavenProject();
+        if (prj != null) {
             ic.add(prj);
-            artifact = mvn.getArtifact();
         }
-        assert artifact != null;
         ic.add(artifact);
         if (info != null) {
             ic.add(info);

@@ -55,6 +55,8 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.util.IOUtil;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 
 /**
@@ -66,15 +68,15 @@ public final class RepositoryUtil {
     private RepositoryUtil() {
     }
 
-    public static Artifact createArtifact(NBVersionInfo info) {
+    public static @NonNull Artifact createArtifact(@NonNull NBVersionInfo info) {
         return createArtifact(info, null);
     }
 
-    public static Artifact createJavadocArtifact(NBVersionInfo info) {
+    public static @NonNull Artifact createJavadocArtifact(@NonNull NBVersionInfo info) {
         return createArtifact(info, "javadoc"); //NOI18N
     }
 
-    private static Artifact createArtifact(NBVersionInfo info, String classifier) {
+    private static @NonNull Artifact createArtifact(@NonNull NBVersionInfo info, @NullAllowed String classifier) {
         Artifact art;
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
         if (info.getClassifier() != null || classifier != null) {
