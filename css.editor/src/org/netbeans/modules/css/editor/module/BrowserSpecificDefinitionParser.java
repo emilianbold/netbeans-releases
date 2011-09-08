@@ -124,7 +124,9 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                             break;
 
                         default:
-                            throw new IllegalStateException(String.format("Parsing error: unexpected property value: '%s'", firstValueChar));
+                            //even standard property can be vendor specific (zoom for webkit)
+                            vendorSpecificProperties.add(new Property(propertyName, value));
+                            supportedPropertiesNames.add(propertyName);
 
                     }
 
