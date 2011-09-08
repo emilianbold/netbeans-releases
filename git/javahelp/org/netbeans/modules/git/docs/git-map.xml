@@ -10,9 +10,9 @@
 
 <!-- CSH -->
     <mapID target="org.netbeans.modules.git.ui.clone.RepositoryStep" url="csh/git_clone_wizard_p1.html"/>
-	<mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep " url="csh/git_clone_wizard_p2.html"/>
-	<mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep " url="csh/git_clone_wizard_p3.html"/>
-	<mapID target="org.netbeans.modules.git.ui.init.InitPanel " url="csh/git-init.html"/>
-	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep " url="csh/git-fetch-p1.html"/>
-	<mapID target="org.netbeans.modules.git.ui.fetch.FetchBranchesStep " url="csh/git-fetch-p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep" url="csh/git_clone_wizard_p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep" url="csh/git_clone_wizard_p3.html"/>
+	<mapID target="org.netbeans.modules.git.ui.init.InitPanel" url="csh/git-init.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep" url="csh/git-fetch-p1.html"/>
+	<mapID target="org.netbeans.modules.git.ui.fetch.FetchBranchesStep" url="csh/git-fetch-p2.html"/>
 </map>
