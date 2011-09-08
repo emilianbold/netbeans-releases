@@ -6,20 +6,5 @@
             <attr name="displayName" bundlevalue="org.netbeans.modules.maven.osgi.Bundle#Templates/OSGi"/>
             <attr name="position" intvalue="723"/>
         </folder>
-        <folder name="Project">
-            <folder name="Maven2">
-                <file name="OSGi">
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
-                    <attr name="position" intvalue="290"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.osgi.Bundle#template.project.OSGi"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="osgi-archetype"/>
-                    <attr name="version" stringvalue="1.3"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/OSGiDescription.html"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
-        </folder>
     </folder>
 </filesystem>

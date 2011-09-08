@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.newproject.ArchetypeWizardUtils;
 import org.netbeans.modules.maven.newproject.BasicWizardPanel;
+import org.netbeans.modules.maven.newproject.MavenWizardIterator;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -104,6 +105,19 @@ public class ArchetypeWizards {
 
     public static WizardDescriptor.Panel<WizardDescriptor> basicWizardPanel(ValidationGroup vg, boolean isFinish, @NullAllowed Archetype archetype) {
         return new BasicWizardPanel(vg, archetype, isFinish, false);
+    }
+
+    /**
+     * Wizard iterator using a predetermined archetype.
+     * @since 2.28
+     */
+    public static WizardDescriptor.InstantiatingIterator<?> definedArchetype(String groupId, String artifactId, String version, @NullAllowed String repository) {
+        Archetype arch = new Archetype();
+        arch.setGroupId(groupId);
+        arch.setArtifactId(artifactId);
+        arch.setVersion(version);
+        arch.setRepository(repository);
+        return new MavenWizardIterator(arch);
     }
 
 }
