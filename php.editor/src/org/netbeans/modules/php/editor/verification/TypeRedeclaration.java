@@ -101,14 +101,17 @@ public class TypeRedeclaration extends AbstractRule {
         }
     }
 
+    @Override
     public String getId() {
         return "Type.Redeclaration.Rule";//NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(AddUseImportRule.class, "TypeRedeclarationRuleDesc");
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(AddUseImportRule.class, "TypeRedeclarationRuleDispName");
     }

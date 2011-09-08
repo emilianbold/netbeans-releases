@@ -103,6 +103,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     
     public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
+        this.laState = LAState.empty();
     }
     
     /**
@@ -118,7 +119,6 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             this.inputSourceText = null;
             releaseLexerInputOperation();
         }
-        this.laState = LAState.empty();
     }
     
     public void releaseLexerInputOperation() {
@@ -136,15 +136,6 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         this.languagePath = languagePath;
     }
 
-    public boolean updateLanguagePath() {
-        Language<?> language = LexerSpiPackageAccessor.get().language(tokenHierarchyOperation.mutableTextInput());
-        if (language != null) {
-            setLanguagePath(LanguagePath.get(language));
-            return true;
-        }
-        return false;
-    }
-    
     public synchronized int tokenCount() {
         if (lexerInputOperation != null) { // still lexing
             tokenOrEmbeddingImpl(Integer.MAX_VALUE);

@@ -52,6 +52,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -69,7 +70,7 @@ import org.openide.util.Exceptions;
 
 /**
  * An SPI for project's classpaths modification.
- * A project can provide subclass of this class in its {@link org.netbeans.api.project.Project#getLookup lookup} to
+ * A project can provide subclass of this class in its {@link Project#getLookup lookup} to
  * allow clients to add or remove new classpath elements (JAR, folder, dependent project, or library) to its 
  * classpaths.
  * @since org.netbeans.modules.java.project/1 1.10
@@ -103,10 +104,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * Adds libraries into the project's classpath if the
      * libraries are not already included.
      * @param libraries to be added
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the library should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed (at least one library was added to the classpath),
      * the value false is returned when all the libraries are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -120,10 +121,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * Removes libraries from the project's classpath if the
      * libraries are included on it.
      * @param libraries to be removed
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the library should be removed from,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one library was removed from the classpath),
      * the value false is returned when none of the libraries was included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -136,10 +137,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * Adds archive files or folders into the project's classpath if the
      * entries are not already there.
      * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the root should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
      * the value false is returned when all the classpath roots are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -156,10 +157,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * {@link #addRoots(URL[], SourceGroup, String)}. It throws UnsupportedOperationException
      * if URIs are not absolute.
      * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder; URI can be relative
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the root should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
      * the value false is returned when all the classpath roots are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -206,10 +207,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * Removes archive files or folders from the project's classpath if the
      * entries are included on it.
      * @param classPathRoots roots to be removed, each root has to be either a root of an archive or a folder
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the root should be removed from,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one classpath root was removed from the classpath),
      * the value false is returned when none of the classpath roots was included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -226,10 +227,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * {@link #removeRoots(URL[], SourceGroup, String)}. It throws UnsupportedOperationException
      * if URIs are not absolute.
      * @param classPathRoots roots to be removed, each root has to be either a root of an archive or a folder; URI can be relative
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the root should be removed from,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one classpath root was removed from the classpath),
      * the value false is returned when none of the classpath roots was included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -247,10 +248,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
      * as artifacts. 
      * (must be owned by the artifact and be relative to it)
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the artifact should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
      * the value false is returned when all the artifacts are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -266,10 +267,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
      * as artifacts.
      * (must be owned by the artifact and be relative to it)
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the artifact should be removed from,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one artifact was removed from the classpath),
      * the value false is returned when none of the artifacts was included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -285,10 +286,10 @@ public abstract class ProjectClassPathModifierImplementation {
      * Other project types can override the behaviour.
      * @param projects to be added
      * (must be owned by the artifact and be relative to it)
-     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the artifact should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath#COMPILE}
+     * e.g. {@link ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
      * the value false is returned when all the artifacts are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
@@ -296,7 +297,7 @@ public abstract class ProjectClassPathModifierImplementation {
      * adding of an artifact to the classpath of the given type.
      * @since org.netbeans.modules.java.project/1 1.24
      */
-    protected boolean addProjects(Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+    protected boolean addProjects(Project[] projects, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
         List<AntArtifact> ants = new ArrayList<AntArtifact>();
         List<URI> antUris = new ArrayList<URI>();
         for (Project prj : projects) {
@@ -306,7 +307,7 @@ public abstract class ProjectClassPathModifierImplementation {
                 antUris.add(aa.getArtifactLocations()[0]);
             }
         }
-        return addAntArtifacts(ants.toArray(new AntArtifact[0]), antUris.toArray(new URI[0]), sg, classPathType);
+        return addAntArtifacts(ants.toArray(new AntArtifact[0]), antUris.toArray(new URI[0]), sourceGroup, type);
     }
 
     /**

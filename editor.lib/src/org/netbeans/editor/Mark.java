@@ -45,24 +45,17 @@
 package org.netbeans.editor;
 
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 /**
 * Marks hold the relative position in the document.
 *
 * @author Miloslav Metelka
 * @version 1.00
-*/
-
-
-/** Class defining basic type of mark. This is a mark used most frequently.
-* It's instances are inserted into the leaf plane of the tree.
+* @deprecated Use {@link Position} instead.
 */
 public class Mark {
 
@@ -71,8 +64,8 @@ public class Mark {
     /** Document to which this mark belongs. */
     private BaseDocument doc;
     
-    /** MultiMark to which this mark delegates. */
-    private MultiMark multiMark;
+    /** Position to which this mark delegates. */
+    private Position pos;
     
     /** Bias of the mark. It is either
      * {@link javax.swing.text.Position.Bias.Forward}
@@ -108,8 +101,8 @@ public class Mark {
 
         this.doc = doc;
         ldoc = this.doc;
-        synchronized (doc.marksStorage) {
-            if (multiMark != null) {
+        synchronized (ldoc) {
+            if (pos != null) {
                 throw new IllegalStateException("Mark already inserted: mark=" + this // NOI18N
                 + ", class=" + this.getClass()); // NOI18N
             }
@@ -134,23 +127,8 @@ public class Mark {
 				// represent a supplementary character.
 			}
 
-            multiMark = doc.marksStorage.createBiasMark(offset, bias);
-            doc.marksStorage.insert(multiMark);
-            ldoc.marks.put(multiMark, this);
-//            checkMarks(docMarks);
+            pos = doc.createPosition(offset, bias);
         }
-    }
-    
-    private void checkMarks(Map docMarks) {
-        for (Iterator it = docMarks.entrySet().iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry)it.next();
-            MultiMark mm = (MultiMark)me.getKey();
-            Mark m = (Mark)me.getValue();
-            
-            if (m.multiMark != mm) {
-                throw new IllegalStateException("m.class" + m.getClass() + " mapped to wrong mark=" + mm); // NOI18N
-            }
-        }            
     }
     
     void move(BaseDocument doc, int newOffset) throws InvalidMarkException, BadLocationException {
@@ -162,9 +140,9 @@ public class Mark {
     public final int getOffset() throws InvalidMarkException {
         BaseDocument ldoc = doc;
         if (ldoc != null) {
-            synchronized (doc.marksStorage) {
-                if (multiMark != null) {
-                    return multiMark.getOffset();
+            synchronized (ldoc) {
+                if (pos != null) {
+                    return pos.getOffset();
                 } else {
                     throw new InvalidMarkException();
                 }
@@ -178,9 +156,9 @@ public class Mark {
     public final int getLine() throws InvalidMarkException {
         BaseDocument ldoc = doc;
         if (ldoc != null) {
-            synchronized (doc.marksStorage) {
-                if (multiMark != null) {
-                    int offset = multiMark.getOffset();
+            synchronized (ldoc) {
+                if (pos != null) {
+                    int offset = pos.getOffset();
                     Element lineRoot = ldoc.getParagraphElement(0).getParentElement();
                     return lineRoot.getElementIndex(offset);
 
@@ -226,19 +204,10 @@ public class Mark {
     public final void dispose() {
         BaseDocument ldoc = doc;
         if (ldoc != null) {
-            synchronized (doc.marksStorage) {
-                if (multiMark != null) {
-                    if (ldoc.marks.remove(multiMark) != this) {
-                        throw new IllegalStateException("Mark cannot be disposed mark=" + this + ", class=" + getClass()); // NOI18N
-                    }
-
-                    multiMark.dispose();
-                    multiMark = null;
-
-//                    checkMarks(docMarks);
-
+            synchronized (ldoc) {
+                if (pos != null) {
+                    pos = null;
                     this.doc = null;
-                    
                     return;
                 }
             }
@@ -285,8 +254,8 @@ public class Mark {
     public final boolean isValid() {
         BaseDocument ldoc = doc;
         if (ldoc != null) {
-            synchronized (doc.marksStorage) {
-                return (multiMark != null && multiMark.isValid());
+            synchronized (ldoc) {
+                return (pos != null);
             }
         }
         
@@ -295,7 +264,7 @@ public class Mark {
 
     /** Get info about <CODE>Mark</CODE>. */
     public @Override String toString() {
-        return "offset=" + (isValid() ? Integer.toString(multiMark.getOffset()) : "<invalid>") // NOI18N
+        return "offset=" + (isValid() ? Integer.toString(pos.getOffset()) : "<invalid>") // NOI18N
                + ", bias=" + bias; // NOI18N
     }
 

@@ -239,7 +239,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             case 1: lastresult = ref.fastCheckParameters(); break;
             case 2:
                 lastresult = ref.preCheck(javac);
-                result = chainProblems(result, lastresult);
+                result = JavaPluginUtils.chainProblems(result, lastresult);
                 if (result != null && result.isFatal()) {
                     return result;
                 }
@@ -248,7 +248,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
                 break;
             }
             
-            result = chainProblems(result, lastresult);
+            result = JavaPluginUtils.chainProblems(result, lastresult);
             if (result != null && result.isFatal()) {
                 return result;
             }
@@ -256,24 +256,6 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         }
 
         return result;
-    }
-    
-    private static Problem chainProblems(Problem oldp, Problem newp) {
-        if (oldp == null) {
-            return newp;
-        } else if (newp == null) {
-            return oldp;
-        } else if (newp.isFatal()) {
-            newp.setNext(oldp);
-            return newp;
-        } else {
-            // [TODO] performance
-            Problem p = oldp;
-            while (p.getNext() != null)
-                p = p.getNext();
-            p.setNext(newp);
-            return oldp;
-        }
     }
 
     @Override

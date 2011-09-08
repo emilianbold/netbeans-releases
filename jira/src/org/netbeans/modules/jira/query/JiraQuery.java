@@ -313,14 +313,6 @@ public class JiraQuery extends Query {
                 IssueCache<TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
-                
-                try {
-                    // XXX hack to force mylyns clients side caching
-                    Jira.getInstance().storeTaskData(repository, taskData);
-                } catch (CoreException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex); 
-                }
-
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);
                 return;

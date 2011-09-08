@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
@@ -106,7 +107,16 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
-                GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
+                GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
+                final Message message = support.message;
+                if (message != null) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            setValid(true, message);
+                        }
+                    });
+                }
             }    
         } finally {
             support = null;
@@ -164,6 +174,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
         private final GitURI uri;
+        private Message message;
 
         public RepositoryStepProgressSupport(JPanel panel, GitURI uri) {
             super(panel, true);
@@ -177,10 +188,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 client.init(this);
                 branches = new HashMap<String, GitBranch>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
-            } catch (GitException ex) {
+            } catch (final GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                setValid(false, new Message(ex.getMessage(), false));
-                return;
+                message = new Message(ex.getMessage(), false);
+                setValid(false, message);
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
             }

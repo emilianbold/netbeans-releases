@@ -37,9 +37,6 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -48,7 +45,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,20 +57,17 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
     private static final String CAT_DEPLOYMENT = "Deployment"; // NOI18N
     
     private static JFXProjectProperties jfxProps = null;
-    
-//    public JFXProjectProperties getJFXProjectProperties() {
-//        return jfxProps;
-//    }
-    
+   
     @Override
     public Category createCategory(Lookup context) {
-        boolean fxEnabled = true;
+        boolean fxProjectEnabled = true;
         final Project project = context.lookup(Project.class);
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); //NOI18N
+            fxProjectEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")) //NOI18N
+                    && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.preloader")); //NOI18N
         }
-        if(fxEnabled) {
+        if(fxProjectEnabled) {
             jfxProps = JFXProjectProperties.getInstance(context);
             return ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
                     NbBundle.getMessage(JFXDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
@@ -84,48 +77,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-//        category.setOkButtonListener(new OkButtonListener(jfxProps, context.lookup(Project.class)));
-//        category.setStoreListener(new SavePropsListener(jfxProps, context.lookup(Project.class)));
         return new JFXDeploymentPanel(jfxProps);
     }
 
-//    private static class OkButtonListener implements ActionListener {
-//        
-//        private JFXProjectProperties jfxProps;
-//        private Project j2seProject;
-//        
-//        private OkButtonListener(JFXProjectProperties props, Project proj) {
-//            this.jfxProps = props;
-//            this.j2seProject = proj;
-//        }
-//        
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-////            try {
-////
-////            } catch (IOException ioe) {
-////                Exceptions.printStackTrace(ioe);
-////            }
-//        }
-//    }
-    
-//    private static class SavePropsListener implements ActionListener {
-//
-//        private JFXProjectProperties jfxProps;
-//        private Project jfxProject;
-//        
-//        public SavePropsListener(JFXProjectProperties props, Project proj) {
-//            jfxProps = props;
-//            jfxProject = proj;
-//        }
-//        
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            try {
-//                jfxProps.store();
-//            } catch (IOException ioe) {
-//                Exceptions.printStackTrace(ioe);
-//            }
-//        }
-//    }
 }

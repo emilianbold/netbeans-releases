@@ -94,13 +94,9 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 result.addAll(ecpImpl.getResources());
-                JavaPlatform jp = findActivePlatform ();
-                if (jp != null) {
-                    //TODO May also listen on CP, but from Platform it should be fixed.
-                    ClassPath cp = jp.getBootstrapLibraries();
-                    for (ClassPath.Entry entry : cp.entries()) {
-                        result.add (ClassPathSupport.createResource(entry.getURL()));
-                    }
+                //TODO May also listen on CP, but from Platform it should be fixed.
+                for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
+                    result.add(ClassPathSupport.createResource(entry.getURL()));
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }
@@ -116,7 +112,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         this.support.removePropertyChangeListener (listener);
     }
 
-    JavaPlatform findActivePlatform () {
+    @NonNull JavaPlatform findActivePlatform () {
         synchronized (LOCK) {
             activePlatformValid = true;
             if (platformManager == null) {

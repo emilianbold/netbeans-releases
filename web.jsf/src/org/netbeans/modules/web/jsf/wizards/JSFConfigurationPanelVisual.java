@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -99,7 +100,6 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -139,7 +139,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     // Jsf component libraries related
     private JSFComponentsTableModel jsfComponentsTableModel;
-    private JsfComponentCustomizer jsfComponentCustomizer;
+    private TreeMap<String, JsfComponentCustomizer> jsfComponentCustomizers = new TreeMap<String, JsfComponentCustomizer>();
 
     private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
             Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
@@ -1139,12 +1139,13 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         tURLPattern.setText(pattern);
     }
 
-    public JsfComponentCustomizer getJsfComponentCustomizer() {
-        return jsfComponentCustomizer;
+    public TreeMap<String, JsfComponentCustomizer> getJsfComponentCustomizers() {
+        return jsfComponentCustomizers;
     }
 
-    public void setJsfComponentCustomizer(JsfComponentCustomizer jsfComponentCustomizer) {
-        this.jsfComponentCustomizer = jsfComponentCustomizer;
+    public void addJsfComponentCustomizer(String jsfComponentName, JsfComponentCustomizer jsfComponentCustomizer) {
+        jsfComponentCustomizers.remove(jsfComponentName);
+        jsfComponentCustomizers.put(jsfComponentName, jsfComponentCustomizer);
     }
 
     public List<? extends JsfComponentImplementation> getActivedJsfDescriptors() {
@@ -1545,7 +1546,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 case 1: return item.getJsfComponent();
                 case 2:
                     if (item.isClickable()) {
-                        JButton button = new JButton("More...");
+                        JButton button = new JButton(
+                                NbBundle.getMessage(JSFConfigurationWizardPanelVisual.class, "LBL_MoreButton")); //NOI18N
                         if (!inCustomizer) {
                             button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
                         }
@@ -1553,8 +1555,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     } else {
                         return null;
                     }
+                default:
+                    return ""; //NOI18N
             }
-            return "";
         }
 
         public void setValueAt(Object value, int row, int column) {
@@ -1614,7 +1617,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                        setJsfComponentCustomizer(jsfCustomizer);
+                        addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
                         jsfCustomizer.saveConfiguration();
                     }
                 }

@@ -127,7 +127,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class B {\n"
                 + "}"));
         verifyContent(test,
-                new File("t/BTest", "package t;\n" // XXX: Why is there no extension?
+                new File("t/BTest", "package t;\n" // XXX: Why is there no java extension?
                 + "import junit.framework.TestCase;\n"
                 + "\n"
                 + "public class BTest extends TestCase {\n"
@@ -149,6 +149,227 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
                 new File("t/D.java", "class D { public void m(){};}"));
     }
+    
+    public void test195070() throws Exception { // #195070 - refactor/rename works wrong with override
+        writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
+        performRename(src.getFileObject("t/A.java"), 1, "bind", null);
+        verifyContent(src, new File("t/A.java", "class A { public void bind(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ super.bind();}}"));
+        
+        writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
+        performRename(src.getFileObject("t/A.java"), 1, "binding", null);
+        verifyContent(src, new File("t/A.java", "class A { public void binding(){}}"),
+                new File("t/B.java", "class B extends A { public void bind(){ binding();}}"));
+    }
+    
+    public void test104819() throws Exception{ // #104819 [Rename] Cannot rename inner class to same name as class in same package
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public int foo() {\n"
+                + "        return C.c;\n"
+                + "    }\n"
+                + "    public static class C {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "import t.A.C;"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return C.c;\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 2, "B", null);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public int foo() {\n"
+                + "        return B.c;\n"
+                + "    }\n"
+                + "    public static class B {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return A.B.c;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test104819_2() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public int foo() {\n"
+                + "        return C.c;\n"
+                + "    }\n"
+                + "    public static class C {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return A.C.c;\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 2, "B", null);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public int foo() {\n"
+                + "        return B.c;\n"
+                + "    }\n"
+                + "    public static class B {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return A.B.c;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test201610() throws Exception { // #201610 [rename class] introduces behavioral change
+        writeFilesAndWaitForScan(src, new File("p1/B.java", "package p1;\n"
+                + "import p2.*;\n"
+                + "public class B extends A {\n"
+                + "  public long k(){\n"
+                + "    return 0;\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/C.java", "package p2;\n"
+                + "import p1.*;\n"
+                + "public class C extends A {\n"
+                + "  public long m(){\n"
+                + "    return new B().k();\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "public class A {\n"
+                + "  protected long k(){\n"
+                + "    return 1;\n"
+                + "  }\n"
+                + "}"));
+        performRename(src.getFileObject("p1/B.java"), -1, "C", null);
+        verifyContent(src, new File("p1/B.java", "package p1;\n"
+                + "import p2.*;\n"
+                + "public class C extends A {\n"
+                + "  public long k(){\n"
+                + "    return 0;\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/C.java", "package p2;\n"
+                + "import p1.*;\n"
+                + "public class C extends A {\n"
+                + "  public long m(){\n"
+                + "    return new p1.C().k();\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "public class A {\n"
+                + "  protected long k(){\n"
+                + "    return 1;\n"
+                + "  }\n"
+                + "}"));
+    }
+    
+    public void test201608() throws Exception { // #201608 [rename class] introduces compilation error: Cycle detected: the type cannot extend/implement itself or one of its own member types
+        writeFilesAndWaitForScan(src,
+                new File("p2/C.java", "package p2;\n"
+                + "import p1.*;\n"
+                + "public class C extends B {\n"
+                + "}"),
+                new File("p1/B.java", "package p1;\n"
+                + "import p2.*;\n"
+                + "public class B extends A {\n"
+                + "  long k(  long a){\n"
+                + "    return 1;\n"
+                + "  }\n"
+                + "  protected long k(  int a){\n"
+                + "    return 0;\n"
+                + "  }\n"
+                + "  public long m(){\n"
+                + "    return new B().k(2);\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "public class A {\n"
+                + "}"));
+        performRename(src.getFileObject("p1/B.java"), -1, "C", null);
+        verifyContent(src,
+                new File("p2/C.java", "package p2;\n"
+                + "import p1.*;\n"
+                + "public class C extends p1.C {\n"
+                + "}"),
+                new File("p1/B.java", "package p1;\n"
+                + "import p2.*;\n"
+                + "public class C extends A {\n"
+                + "  long k(  long a){\n"
+                + "    return 1;\n"
+                + "  }\n"
+                + "  protected long k(  int a){\n"
+                + "    return 0;\n"
+                + "  }\n"
+                + "  public long m(){\n"
+                + "    return new C().k(2);\n"
+                + "  }\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "public class A {\n"
+                + "}"));
+    }
+    
+    public void testComments() throws Exception{
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /**\n"
+                + "     * @see A.C\n"
+                + "     */\n"
+                + "    public int foo() {\n"
+                + "        return C.c;\n"
+                + "    }\n"
+                + "    public static class C {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "import t.A.C;"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return C.c;\n"
+                + "    }\n"
+                + "}"));
+
+        performRename(src.getFileObject("t/A.java"), 2, "B", null);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /**\n"
+                + "     * @see A.B\n"
+                + "     */\n"
+                + "    public int foo() {\n"
+                + "        return B.c;\n"
+                + "    }\n"
+                + "    public static class B {\n"
+                + "        public static int c = 5;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int foo() {\n"
+                + "        return A.B.c;\n"
+                + "    }\n"
+                + "}"));
+    }
 
     private void performRename(FileObject source, final int position, final String newname, final JavaRenameProperties props, Problem... expectedProblems) throws Exception {
         final RenameRefactoring[] r = new RenameRefactoring[1];
@@ -168,12 +389,13 @@ public class RenameTest extends RefactoringTestBase {
                 TreePath tp = TreePath.getPath(cut, method);
                 r[0] = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
                 r[0].setNewName(newname);
+                r[0].setSearchInComments(true);
                 if(props != null) {
                     r[0].getContext().add(props);
                 }
             }
         }, true);
-
+        
         RefactoringSession rs = RefactoringSession.create("Rename");
         List<Problem> problems = new LinkedList<Problem>();
 

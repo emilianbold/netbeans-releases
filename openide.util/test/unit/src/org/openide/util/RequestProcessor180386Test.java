@@ -862,6 +862,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertEquals (r.runCount, 2);
     }
 
+    @RandomlyFails // NB-Core-Build #7085 expected:<5> but was:<6>
     public void testScheduleRepeatingSanityFixedRate() throws Exception {
         final CountDownLatch latch = new CountDownLatch(5);
         class C implements Runnable {

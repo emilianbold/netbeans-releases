@@ -68,19 +68,19 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_PROJECT_LOCATION = "projectLocation"; // NOI18N
     private PanelConfigureProject panel;
-    private NewJFXProjectWizardIterator.WizardType type;
+    private JavaFXProjectWizardIterator.WizardType type;
 
-    public PanelProjectLocationVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
-        initComponents();
+    PanelProjectLocationVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
         this.panel = panel;
         this.type = type;
+        initComponents();
+        postInitComponents();
+    }
+
+    private void postInitComponents() {
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
-    }
-
-    public String getProjectName() {
-        return this.projectNameTextField.getText();
     }
 
     /** This method is called from within the constructor to
@@ -214,21 +214,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (isIllegalName(projectNameTextField.getText())) {
+        if (JavaFXProjectWizardIterator.isIllegalProjectName(projectNameTextField.getText())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
         }
 
         File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
-        if (getCanonicalFile(f) == null) {
+        if (JavaFXProjectWizardIterator.getCanonicalFile(f) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         
         // not allow to create project on unix root folder, see #82339
-        File cfl = getCanonicalFile(new File(createdFolderTextField.getText()));
+        File cfl = JavaFXProjectWizardIterator.getCanonicalFile(new File(createdFolderTextField.getText()));
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectInRootNotSupported"); // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
@@ -236,7 +236,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
 
         final File destFolder = new File(createdFolderTextField.getText()).getAbsoluteFile();
-        if (getCanonicalFile(destFolder) == null) {
+        if (JavaFXProjectWizardIterator.getCanonicalFile(destFolder) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
@@ -309,13 +309,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String projectName = (String) settings.getProperty("name"); //NOI18N
         if (projectName == null) {
             switch (type) {
-                case APP:
+                case APPLICATION:
                     int baseCount = WizardSettings.getNewApplicationCount() + 1;
                     String formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaApplication"); // NOI18N
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                     break;
                 default:
                     baseCount = WizardSettings.getNewLibraryCount() + 1;
@@ -323,7 +323,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
             }
         }
         this.projectNameTextField.setText(projectName);
@@ -356,41 +356,23 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-        }
-        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_LOCATION, null, this.projectLocationTextField.getText());
-        }
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-        }
-        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_LOCATION, null, this.projectLocationTextField.getText());
-        }
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-        }
-        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_LOCATION, null, this.projectLocationTextField.getText());
-        }
     }
 
     /** Handles changes in the Project name and project directory
      */
     private void updateTexts(DocumentEvent e) {
         Document doc = e.getDocument();
-        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
+        if (doc.equals(projectNameTextField.getDocument()) || doc.equals(projectLocationTextField.getDocument())) {
             // Change in the project name
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
@@ -401,25 +383,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 createdFolderTextField.setText(projFolderPath + File.separator + projectName);
             }
         }
+        
         panel.fireChangeEvent(); // Notify that the panel changed        
-    }
-
-    static File getCanonicalFile(File file) {
-        try {
-            return file.getCanonicalFile();
-        } catch (IOException e) {
-            return null;
+        
+        if (this.projectNameTextField.getDocument().equals(e.getDocument())) {
+            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
         }
-    }
-
-    static boolean isIllegalName(final String name) {
-        return name.length() == 0      || 
-            name.indexOf('/')  >= 0 ||        //NOI18N
-            name.indexOf('\\') >= 0 ||        //NOI18N
-            name.indexOf(':')  >= 0 ||        //NOI18N
-            name.indexOf("\"") >= 0 ||        //NOI18N
-            name.indexOf('<')  >= 0 ||        //NOI18N
-            name.indexOf('>')  >= 0;          //NOI18N
+        if (this.projectLocationTextField.getDocument().equals(e.getDocument())) {
+            firePropertyChange(PROP_PROJECT_LOCATION, null, this.projectLocationTextField.getText());
+        }
     }
 
 }

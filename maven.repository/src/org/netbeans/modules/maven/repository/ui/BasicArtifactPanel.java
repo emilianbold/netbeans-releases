@@ -92,7 +92,6 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
     
-    private MultiViewElementCallback callback;
     private JToolBar toolbar;
 
     /** Creates new form BasicArtifactPanel */
@@ -111,11 +110,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     }
                     NBVersionInfo info = (NBVersionInfo) obj;
                     if (info != null) {
-                        int pos = callback.getTopComponent().getTabPosition();
                         ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
                         TopComponent tc = fact.createTopComponent(info);
-                        tc.openAtTabPosition(pos);
-                        callback.getTopComponent().close();
+                        tc.open();
                         tc.requestActive();
                     }
                 }
@@ -468,7 +465,6 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
     }
 
     public CloseOperationState canCloseElement() {

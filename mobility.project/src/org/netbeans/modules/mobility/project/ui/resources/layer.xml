@@ -176,6 +176,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.actions.Actions.createFindAction"/>
                         <attr name="position" intvalue="2700"/>
                     </file>
+                    <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
+                        <attr name="position" intvalue="2750"/>
+                    </file>
                     <file name="sep6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2800"/>

@@ -307,8 +307,8 @@ public class EditorOperatorTest extends JellyTestCase {
         String tooltip = Bundle.getStringTrimmed("org.netbeans.lib.editor.bookmarks.actions.Bundle", "bookmark-toggle");
         AbstractButtonOperator button1 = eo.getToolbarButton(tooltip);
         button1.push();
-        AbstractButtonOperator button2 = eo.getToolbarButton(11);
-        assertEquals("Toggle Bookmark button should have index 11",
+        AbstractButtonOperator button2 = eo.getToolbarButton(12);
+        assertEquals("Toggle Bookmark button should have index 12",
                 button1.getToolTipText(), button2.getToolTipText());
     }
 

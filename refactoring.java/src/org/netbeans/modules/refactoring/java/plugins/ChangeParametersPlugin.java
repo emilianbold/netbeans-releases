@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -63,6 +62,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -103,7 +103,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         
         Problem p = null;
         for (RenameRefactoring renameRefactoring : renameDelegates) {
-            p = chainProblems(p, renameRefactoring.fastCheckParameters());
+            p = JavaPluginUtils.chainProblems(p, renameRefactoring.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
@@ -115,200 +115,37 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     public Problem fastCheckParameters(final CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         ParameterInfo paramTable[] = refactoring.getParameterInfo();
+        
         final ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
         Problem p=null;
         boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
+        final Checks check = new Checks(javac);
         
-        // Check Method Name
-        final String methodName = refactoring.getMethodName();
-        if(methodName != null && !Utilities.isJavaIdentifier(methodName)) {
-            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", methodName)); // NOI18N
-        }
+        p = check.methodName(p, refactoring.getMethodName());
         
         TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
         List<? extends Element> allMembers = javac.getElements().getAllMembers(enclosingTypeElement);
-        // Check return type
+
         if(!isConstructor) {
-            String returnType = refactoring.getReturnType();
-            TypeMirror parseType;
-            if (returnType != null && returnType.length() < 1) {
-                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NoReturn", returnType)); // NOI18N
-            } else if (returnType != null) {
-                TypeElement typeElement = javac.getElements().getTypeElement(returnType);
-                parseType = typeElement == null ? null : typeElement.asType();
-                if(parseType == null) {
-                    boolean isGenericType = false;
-                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
-                    for (TypeParameterElement typeParameterElement : typeParameters) {
-                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
-                        if(returnType.equals(tpTree.getName().toString())) {
-                            isGenericType = true;
-                        }
-                    }
-                    if(!isGenericType) {
-                        parseType = javac.getTreeUtilities().parseType(returnType, enclosingTypeElement);
-                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
-                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolveReturn", returnType)); // NOI18N
-                        }
-                    }
-                }
-            }
-            // check duplicate method signature
-            List<ExecutableElement> methods = ElementFilter.methodsIn(allMembers);
-            for (ExecutableElement exMethod : methods) {
-                if(!exMethod.equals(method)) {
-                    if(exMethod.getSimpleName().equals(method.getSimpleName())
-                            && exMethod.getParameters().size() == paramTable.length) {
-                        boolean sameParameters = true;
-                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
-                            TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
-                            String type = paramTable[j].getType();
-                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                            if(!javac.getTypes().isSameType(exType, paramType)) {
-                                sameParameters = false;
-                            }
-                        }
-                        if(sameParameters) {
-                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
-                        }
-                    }
-                }
-            }
+            p = check.returnType(p, refactoring.getReturnType(), method, enclosingTypeElement);
+            p = check.duplicateSignature(p, paramTable, method, enclosingTypeElement, allMembers);
         } else {
-            List<ExecutableElement> constructors = ElementFilter.constructorsIn(allMembers);
-            for (ExecutableElement constructor : constructors) {
-                if(!constructor.equals(method)) {
-                    if(constructor.getParameters().size() == paramTable.length) {
-                        boolean sameParameters = true;
-                        for (int j = 0; j < constructor.getParameters().size(); j++) {
-                            TypeMirror exType = ((VariableElement)constructor.getParameters().get(j)).asType();
-                            String type = paramTable[j].getType();
-                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                            if(!javac.getTypes().isSameType(exType, paramType)) {
-                                sameParameters = false;
-                            }
-                        }
-                        if(sameParameters) {
-                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingConstructor", constructor.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
-                        }
-                    }
-                }
-            }
+            p = check.duplicateConstructor(p, paramTable, method, enclosingTypeElement, allMembers);
         }
         for (int i = 0; i< paramTable.length; i++) {
             ParameterInfo parameterInfo = paramTable[i];
-            
-            int originalIndex = parameterInfo.getOriginalIndex();
-            final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
-            
-            // check parameter name
-            String s;
-            s = parameterInfo.getName();
-            if ((s == null || s.length() < 1))
-                p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
-            else {
-                if (!Utilities.isJavaIdentifier(s)) {
-                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N
-                }
-            }
-            for (int j = 0; j < paramTable.length; j++) {
-                ParameterInfo pInfo = paramTable[j];
-                if(pInfo.getName().equals(s) && i != j) {
-                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ParamAlreadyUsed", s)); // NOI18N
-                }
-            }
 
-            TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
-
-                @Override
-                public Boolean visitVariable(VariableTree vt, String p) {
-                    super.visitVariable(vt, p);
-                    TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
-                    Element element = javac.getTrees().getElement(path);
-                    
-                    return vt.getName().contentEquals(p) && !element.equals(parameterElement);
-                }
-
-                @Override
-                public Boolean reduce(Boolean left, Boolean right) {
-                    return (left == null ? false : left) || (right == null ? false : right);
-                }
-            };
-
-            if (scanner.scan(javac.getTrees().getTree(method), s)) {
-                if (!isParameterBeingRemoved(method, s, paramTable)) {
-                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s)); // NOI18N
-                }
+            p = check.checkParameterName(p, parameterInfo.getName());
+            if (parameterInfo.getOriginalIndex() == -1) {
+                p = check.defaultValue(p, parameterInfo.getDefaultValue());
             }
-
-            // check parameter type
-            String t = parameterInfo.getType();
-            TypeMirror parseType = null;
-            if (t == null || t.length() < 1) {
-                p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
-            } else {
-                TypeElement typeElement = javac.getElements().getTypeElement(t);
-                parseType = typeElement == null ? null : typeElement.asType();
-                if(parseType == null) {
-                    boolean isGenericType = false;
-                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
-                    for (TypeParameterElement typeParameterElement : typeParameters) {
-                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
-                        if(t.equals(tpTree.getName().toString())) {
-                            isGenericType = true;
-                        }
-                    }
-                    if(!isGenericType) {
-                        parseType = javac.getTreeUtilities().parseType(t, enclosingTypeElement);
-                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
-                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolve", t, s)); // NOI18N
-                        }
-                    }
-                }
-            }
-
-            if (originalIndex == -1) {
-                // check the default value
-                s = parameterInfo.getDefaultValue();
-                if ((s == null || s.length() < 1)) {
-                    p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
-                }
-            } else {
-                // check if the changed type is assigneble
-                if(parseType != null) {
-                    if(!javac.getTypes().isAssignable(parseType, parameterElement.asType())) {
-                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), t)); // NOI18N
-                    }
-                }
-            }
-            
-            // check ...
-            if (parameterInfo.getType() != null && parameterInfo.getType().endsWith("...") && i != paramTable.length - 1) {//NOI18N
-                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[]{})); // NOI18N
-            }
+            p = check.duplicateParamName(p, paramTable, i);
+            p = check.duplicateLocalName(p, paramTable, i, method);
+            p = check.parameterType(p, paramTable, i, method, enclosingTypeElement);
         }
-        return p;    
+        return p;
     }
-
-    private boolean isParameterBeingRemoved(ExecutableElement method, String s, ParameterInfo[] paramTable) {
-        boolean beingRemoved = false;
-        for (int j = 0; j < method.getParameters().size(); j++) {
-            VariableElement variable = method.getParameters().get(j);
-            if (variable.getSimpleName().contentEquals(s)) {
-
-                boolean isInNewList = false;
-                for (ParameterInfo parameterInfo : paramTable) {
-                    if (parameterInfo.getOriginalIndex() == j) {
-                        isInNewList = true;
-                    }
-                }
-                beingRemoved = !isInNewList;
-                break;
-            }
-        }
-        return beingRemoved;
-    }
-
+    
     private static String newParMessage(String par) {
         return new MessageFormat(
                 getString("ERR_newpar")).format(new Object[] { getString(par) } // NOI18N
@@ -373,10 +210,15 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         initDelegates();
         fireProgressListenerStep();
         Problem problem = null;
-        ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring, allMethods);
+        ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring.getParameterInfo(),
+                                                                                      refactoring.getModifiers(),
+                                                                                      refactoring.getReturnType(),
+                                                                                      refactoring.isOverloadMethod(),
+                                                                                      refactoring.getContext().lookup(Javadoc.class),
+                                                                                      allMethods);
         if (!a.isEmpty()) {
             for (RenameRefactoring renameRefactoring : renameDelegates) {
-                problem = chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
+                problem = JavaPluginUtils.chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
                 if (problem != null && problem.isFatal()) {
                     fireProgressListenerStop();
                     return problem;
@@ -486,21 +328,215 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         renameDelegates = renameRefactoringsList.toArray(new RenameRefactoring[0]);
         inited = true;
     }
+    
+    static class Checks {
+        protected CompilationController javac;
 
-    private static Problem chainProblems(Problem p, Problem p1) {
-        Problem problem;
-
-        if (p == null) {
-            return p1;
+        public Checks(CompilationController javac) {
+            this.javac = javac;
         }
-        if (p1 == null) {
+        
+        Problem methodName(Problem p, String methodName) {
+            if(methodName != null && !Utilities.isJavaIdentifier(methodName)) {
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", methodName)); // NOI18N
+            }
             return p;
         }
-        problem = p;
-        while (problem.getNext() != null) {
-            problem = problem.getNext();
+
+        Problem defaultValue(Problem p, String defaultValue) {
+            if ((defaultValue == null || defaultValue.length() < 1)) {
+                p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
+            }
+            return p;
         }
-        problem.setNext(p1);
-        return p;
+        
+        Problem checkParameterName(Problem p, String s) {
+            if ((s == null || s.length() < 1))
+                p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
+            else {
+                if (!Utilities.isJavaIdentifier(s)) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N
+                }
+            }
+
+            return p;
+        }
+        
+        Problem duplicateParamName(Problem p, ParameterInfo[] paramTable, int index) {
+            String name = paramTable[index].getName();
+            for (int j = 0; j < paramTable.length; j++) {
+                ParameterInfo pInfo = paramTable[j];
+                if(pInfo.getName().equals(name) && index != j) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ParamAlreadyUsed", name)); // NOI18N
+                }
+            }
+            return p;
+        }
+
+
+        Problem returnType(Problem p, String returnType, ExecutableElement method, TypeElement enclosingTypeElement) {
+            TypeMirror parseType;
+            if (returnType != null && returnType.length() < 1) {
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NoReturn", returnType)); // NOI18N
+            } else if (returnType != null) {
+                TypeElement typeElement = javac.getElements().getTypeElement(returnType);
+                parseType = typeElement == null ? null : typeElement.asType();
+                if(parseType == null) {
+                    boolean isGenericType = false;
+                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+                    for (TypeParameterElement typeParameterElement : typeParameters) {
+                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
+                        if(returnType.equals(tpTree.getName().toString())) {
+                            isGenericType = true;
+                        }
+                    }
+                    if(!isGenericType) {
+                        parseType = javac.getTreeUtilities().parseType(returnType, enclosingTypeElement);
+                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolveReturn", returnType)); // NOI18N
+                        }
+                    }
+                }
+            }
+            return p;
+        }
+
+        Problem duplicateSignature(Problem p, ParameterInfo[] paramTable, final ExecutableElement method, TypeElement enclosingTypeElement, List<? extends Element> allMembers) {
+            List<ExecutableElement> methods = ElementFilter.methodsIn(allMembers);
+            for (ExecutableElement exMethod : methods) {
+                if(!exMethod.equals(method)) {
+                    if(exMethod.getSimpleName().equals(method.getSimpleName())
+                            && exMethod.getParameters().size() == paramTable.length) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
+                            String type = paramTable[j].getType();
+                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                            if(!javac.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if(sameParameters) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        }
+                    }
+                }
+            }
+            return p;
+        }
+
+        Problem parameterType(Problem p, ParameterInfo[] paramTable, int index, ExecutableElement method, TypeElement enclosingTypeElement) {
+            String type = paramTable[index].getType();
+            String name = paramTable[index].getName();
+            String[] split = type.split(" "); //NOI18N
+            type = split[split.length-1];
+            TypeMirror parseType = null;
+            if (type == null || type.length() < 1) {
+                p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
+            } else {
+                TypeElement typeElement = javac.getElements().getTypeElement(type);
+                parseType = typeElement == null ? null : typeElement.asType();
+                if(parseType == null) {
+                    boolean isGenericType = false;
+                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+                    for (TypeParameterElement typeParameterElement : typeParameters) {
+                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
+                        if(type.equals(tpTree.getName().toString())) {
+                            isGenericType = true;
+                        }
+                    }
+                    if(!isGenericType) {
+                        parseType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolve", type, name)); // NOI18N
+                        }
+                    }
+                }
+            }
+            // check if the changed type is assigneble
+            int originalIndex = paramTable[index].getOriginalIndex();
+            if(parseType != null && originalIndex > -1) {
+                final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
+                if(!javac.getTypes().isAssignable(parseType, parameterElement.asType())) {
+                    p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), type)); // NOI18N
+                }
+            }
+            // check ...
+            if (type != null && type.endsWith("...") && index != paramTable.length - 1) {//NOI18N
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[]{})); // NOI18N
+            }
+            return p;
+        }
+
+        Problem duplicateLocalName(Problem p, ParameterInfo[] paramTable, int index, ExecutableElement method) {
+            String name = paramTable[index].getName();
+            int originalIndex = paramTable[index].getOriginalIndex();
+            final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
+            TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
+
+                @Override
+                public Boolean visitVariable(VariableTree vt, String p) {
+                    super.visitVariable(vt, p);
+                    TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
+                    Element element = javac.getTrees().getElement(path);
+
+                    return vt.getName().contentEquals(p) && !element.equals(parameterElement);
+                }
+
+                @Override
+                public Boolean reduce(Boolean left, Boolean right) {
+                    return (left == null ? false : left) || (right == null ? false : right);
+                }
+            };
+
+            if (scanner.scan(javac.getTrees().getTree(method), name)) {
+                if (!isParameterBeingRemoved(method, name, paramTable)) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
+                }
+            }
+            return p;
+        }
+
+        Problem duplicateConstructor(Problem p, ParameterInfo[] paramTable, final ExecutableElement method, TypeElement enclosingTypeElement, List<? extends Element> allMembers) {
+            List<ExecutableElement> constructors = ElementFilter.constructorsIn(allMembers);
+            for (ExecutableElement constructor : constructors) {
+                if(!constructor.equals(method)) {
+                    if(constructor.getParameters().size() == paramTable.length) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < constructor.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement)constructor.getParameters().get(j)).asType();
+                            String type = paramTable[j].getType();
+                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                            if(!javac.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if(sameParameters) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingConstructor", constructor.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        }
+                    }
+                }
+            }
+            return p;
+        }
+
+        boolean isParameterBeingRemoved(ExecutableElement method, String s, ParameterInfo[] paramTable) {
+            boolean beingRemoved = false;
+            for (int j = 0; j < method.getParameters().size(); j++) {
+                VariableElement variable = method.getParameters().get(j);
+                if (variable.getSimpleName().contentEquals(s)) {
+
+                    boolean isInNewList = false;
+                    for (ParameterInfo parameterInfo : paramTable) {
+                        if (parameterInfo.getOriginalIndex() == j) {
+                            isInNewList = true;
+                        }
+                    }
+                    beingRemoved = !isInNewList;
+                    break;
+                }
+            }
+            return beingRemoved;
+        }
     }
 }

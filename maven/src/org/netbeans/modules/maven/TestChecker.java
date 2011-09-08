@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven;
 
-import java.util.Properties;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -73,23 +72,19 @@ public class TestChecker implements PrerequisitesChecker {
             ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
             "profile-tests".equals(action)) { //NOI18N - profile-tests is not really nice but well.
             if (!RunUtils.hasTestCompileOnSaveEnabled(config)) {
-                Properties props = config.getProperties();
-                String test = props.getProperty("test");
-                String method = props.getProperty(DefaultReplaceTokenProvider.METHOD_NAME);
+                String test = config.getProperties().get("test");
+                String method = config.getProperties().get(DefaultReplaceTokenProvider.METHOD_NAME);
                 if (test != null && method != null) {
-                    props.remove(DefaultReplaceTokenProvider.METHOD_NAME);
-                    props.setProperty("test", test + '#' + method);
-                    config.setProperties(props);
+                    config.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, null);
+                    config.setProperty("test", test + '#' + method);
         }
             }
         } else if (MavenSettings.getDefault().isSkipTests()) {
             if (config.getPreExecution() != null) {
                 checkRunConfig(config.getPreExecution());
             }
-            Properties props = config.getProperties();
-            if (!props.containsKey(PROP_SKIP_TEST)) {
-                props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
-                config.setProperties(props);
+            if (config.getProperties().get(PROP_SKIP_TEST) == null) {
+                config.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
             }
         }
         return true;

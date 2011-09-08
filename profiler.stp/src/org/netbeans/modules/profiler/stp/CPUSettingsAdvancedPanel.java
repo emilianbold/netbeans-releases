@@ -217,6 +217,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     private JTextField vmArgumentsTextField;
     private JTextField workingDirectoryTextField;
     private WeakReference<JFileChooser> workingDirectoryChooserReference;
+    
+    private int profilingType;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -229,6 +231,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     
     public void setProfilingType(int profilingType) {
+        this.profilingType = profilingType;
         if (profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING) {
             settingsPanel.removeAll();
             settingsPanel.add(samplSettingsPanel);
@@ -275,6 +278,10 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         if (!isPreset) {
             profileFrameworkCheckbox.setEnabled(true);
+        }
+        
+        if (isPreset) {
+            useCPUTimerCheckbox.setSelected(false);
         }
     }
 
@@ -378,6 +385,10 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         if (isPreset) {
             instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_LAZY);
         }
+        
+        if (isPreset) {
+            useCPUTimerCheckbox.setSelected(false);
+        }
 
         profileFrameworkCheckbox.setSelected(false);
         profileFrameworkCheckbox.setEnabled(false);
@@ -443,7 +454,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     }
 
     public boolean getUseCPUTimer() {
-        return useCPUTimerCheckbox.isSelected();
+        return profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING ||
+               useCPUTimerCheckbox.isSelected();
     }
 
     public void setVMArguments(String vmArguments) {

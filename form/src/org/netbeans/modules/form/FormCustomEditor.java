@@ -57,8 +57,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import javax.swing.*;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 
 /**
  *
@@ -223,21 +221,21 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createSequentialGroup()
             .addContainerGap()
-            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                .add(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createSequentialGroup()
-                    .add(modeLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(LayoutStyle.RELATED)
-                    .add(editorsCombo, GroupLayout.PREFERRED_SIZE, editorsCombo.getPreferredSize().width*5/4, GroupLayout.PREFERRED_SIZE)))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(modeLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(editorsCombo, GroupLayout.PREFERRED_SIZE, editorsCombo.getPreferredSize().width*5/4, GroupLayout.PREFERRED_SIZE)))
             .addContainerGap()
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
             .addContainerGap()
-            .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                .add(modeLabel)
-                .add(editorsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addPreferredGap(LayoutStyle.UNRELATED)
-            .add(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(modeLabel)
+                .addComponent(editorsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(borderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         CardLayout cl = (CardLayout) cardPanel.getLayout();

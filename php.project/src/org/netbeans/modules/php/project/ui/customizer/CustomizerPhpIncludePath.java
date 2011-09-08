@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.io.File;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -110,37 +111,30 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         setFocusTraversalPolicy(null);
 
         includePathScrollPane.setViewportView(includePathList);
-
-
-
-
         includePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathList.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_AddFolder")); // NOI18N
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_Remove"));
         Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveUp"));
         Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveDown"));
 
         includePathLabel.setLabelFor(includePathList);
-
         Mnemonics.setLocalizedText(includePathLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
 
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(includePathLabel)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(includePathLabel)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(moveDownButton)
-                            .addComponent(moveUpButton)
-                            .addComponent(removeButton)
-                            .addComponent(addFolderButton))))
-                .addGap(0, 0, 0))
+                    .addComponent(moveDownButton)
+                    .addComponent(moveUpButton)
+                    .addComponent(removeButton)
+                    .addComponent(addFolderButton)))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
@@ -159,7 +153,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
                         .addComponent(moveUpButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(moveDownButton))
-                    .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
+                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
 
@@ -175,6 +169,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveDownButton.AccessibleContext.accessibleDescription")); // NOI18N
         includePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleName")); // NOI18N
         includePathLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

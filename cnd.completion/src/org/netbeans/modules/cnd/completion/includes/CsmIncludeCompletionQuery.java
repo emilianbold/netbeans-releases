@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -75,9 +76,23 @@ public class CsmIncludeCompletionQuery {
         if (docFile == null) {
             docFile = CsmUtilities.getCsmFile(doc, false, false);
         }
+        FileObject baseFile = null;
+        if (docFile != null) {
+            baseFile = docFile.getFileObject();
+        }
+        if (baseFile == null) {
+            baseFile = CsmUtilities.getFileObject(doc);
+        }
+        if (baseFile == null) {
+            baseFile = NbEditorUtilities.getFileObject(doc);
+        }
+        if (baseFile == null || !baseFile.isValid()) {
+            // IZ#123039: NPE
+            return Collections.<CsmIncludeCompletionItem>emptyList();
+        }
         FileSystem docFileSystem;
         try {
-            docFileSystem = docFile.getFileObject().getFileSystem();
+            docFileSystem = baseFile.getFileSystem();
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
             return results.values();
@@ -95,14 +110,8 @@ public class CsmIncludeCompletionQuery {
         if (docFile != null) {
             usrPaths = getFileIncludes(docFile, false);
             sysPaths = getFileIncludes(docFile, true);
-        } else {
-            FileObject baseFile = CsmUtilities.getFileObject(doc);
-            if (baseFile == null || ! baseFile.isValid()) {
-                // IZ#123039: NPE
-                return Collections.<CsmIncludeCompletionItem>emptyList();
-            }
         }
-        FileObject usrDir = docFile.getFileObject().getParent();
+        FileObject usrDir = baseFile.getParent();
         if (usrDir != null && usrDir.isValid()) {
             if (usrInclude == null || usrInclude == Boolean.TRUE) {
                 addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N

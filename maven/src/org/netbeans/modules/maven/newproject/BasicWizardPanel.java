@@ -43,44 +43,30 @@
 package org.netbeans.modules.maven.newproject;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
     private WizardDescriptor wizardDescriptor;
     private BasicPanelVisual component;
 
-    private final String[] eeLevels;
-    private final Archetype[] archs;
     private final boolean isFinish;
     private boolean additional;
     private final ValidationGroup validationGroup;
     private Archetype arch;
     
-    public BasicWizardPanel(ValidationGroup vg, String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
-        this.archs = archs;
-        this.eeLevels = eeLevels;
+    public BasicWizardPanel(ValidationGroup vg, @NullAllowed Archetype arch, boolean isFinish, boolean additional) {
         this.isFinish = isFinish;
         this.additional = additional;
         this.validationGroup = vg;
-    }
-
-    public BasicWizardPanel(ValidationGroup vg) {
-        this(vg, new String[0], null, true, true);
-    }
-
-    public BasicWizardPanel(ValidationGroup vg, boolean isFinish) {
-        this(vg, new String[0], null, isFinish, false);
-    }
-
-    public BasicWizardPanel(ValidationGroup vg, boolean isFinish, Archetype arch) {
-        this(vg, new String[0], null, isFinish, false);
         this.arch = arch;
     }
 
@@ -88,10 +74,11 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
         return validationGroup;
     }
     
+    @Messages("LBL_CreateProjectStep2=Name and Location")
     public @Override BasicPanelVisual getComponent() {
         if (component == null) {
             component = new BasicPanelVisual(this, arch);
-            component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
+            component.setName(LBL_CreateProjectStep2());
         }
         return component;
     }
@@ -100,14 +87,6 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
         return additional;
     }
 
-    Archetype[] getArchetypes() {
-        return archs;
-    }
-
-    String[] getEELevels() {
-        return eeLevels;
-    }
-    
     public @Override HelpCtx getHelp() {
         return new HelpCtx(BasicWizardPanel.class);
     }

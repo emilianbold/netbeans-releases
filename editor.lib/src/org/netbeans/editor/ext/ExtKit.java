@@ -219,7 +219,6 @@ public class ExtKit extends BaseKit {
         ArrayList<Action> actions = new ArrayList<Action>();
 
         actions.add(new ExtDefaultKeyTypedAction());
-        actions.add(replaceActionDef);
         actions.add(gotoActionDef);
 // XXX: remove
 //        if (!ExtCaret.NO_HIGHLIGHT_BRACE_LAYER) {
@@ -228,6 +227,7 @@ public class ExtKit extends BaseKit {
 //        }
         actions.add(new CommentAction()); // to make ctrl-shift-T in Netbeans55 profile work
         actions.add(new UncommentAction()); // to make ctrl-shift-D in Netbeans55 profile work
+        actions.add(new BuildPopupMenuAction()); // normally gets overriden by NbEditorKit (by action registration)
                 
         return TextAction.augmentList(super.createActions(), actions.toArray(new Action[actions.size()]));
     }
@@ -264,10 +264,12 @@ public class ExtKit extends BaseKit {
     /** Called before the popup menu is shown to possibly rebuild
     * the popup menu.
     */
-    @EditorActionRegistration(
-            name = buildPopupMenuAction,
-            shortDescription = editorBundleHash + buildPopupMenuAction
-    )
+    // Do not use registration since another registrationn in NbEditorKit collides with this one
+    // in generated layers xmls.
+//    @EditorActionRegistration(
+//            name = buildPopupMenuAction,
+//            shortDescription = editorBundleHash + buildPopupMenuAction
+//    )
     public static class BuildPopupMenuAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =4257043398248915291L;

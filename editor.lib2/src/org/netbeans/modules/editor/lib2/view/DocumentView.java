@@ -173,14 +173,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     private Position endPos;
     
     /**
-     * Preferred width of document view.
+     * Current allocation of document view.
      */
-    private float width;
-
-    /**
-     * Preferred height of document view.
-     */
-    private float height;
+    private Rectangle2D.Float allocation = new Rectangle2D.Float();
 
     private final TabExpander tabExpander;
     
@@ -239,9 +234,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 }
                 float span;
                 if (axis == View.X_AXIS) {
-                    span = width;
+                    span = allocation.width;
                 } else { // Y_AXIS
-                    span = height;
+                    span = allocation.height;
                     // Add extra span when component in viewport
                     Component parent;
                     if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
@@ -306,10 +301,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public View getView(int index) {
-        if (LOG.isLoggable(Level.FINE)) {
-            checkDocumentLockedIfLogging();
-            checkMutexAcquiredIfLogging();
-        }
+        checkDocumentLockedIfLogging();
+        checkMutexAcquiredIfLogging();
         return (children != null) ? children.get(index) : null;
     }
 
@@ -427,12 +420,16 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      * Get current allocation of the document view by using size from last call
      * to {@link #setSize(float, float)}.
      * <br/>
-     * Returned instance may be mutated.
+     * Returned instance may not be mutated (use getAllocationMutable()).
      *
      * @return current allocation of document view.
      */
-    public Rectangle2D.Double getAllocation() {
-        return new Rectangle2D.Double(0, 0, width, height);
+    public Rectangle2D getAllocation() {
+        return allocation;
+    }
+    
+    public Rectangle2D.Double getAllocationMutable() {
+        return new Rectangle2D.Double(0d, 0d, allocation.getWidth(), allocation.getHeight());
     }
     
     /**
@@ -488,8 +485,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     boolean assignChildrenWidth() {
         float newWidth = children.width();
-        if (newWidth != this.width) {
-            this.width = newWidth;
+        if (newWidth != allocation.width) {
+            allocation.width = newWidth;
             return true;
         }
         return false;
@@ -497,8 +494,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     boolean assignChildrenHeight() {
         float newHeight = children.height();
-        if (newHeight != this.height) {
-            this.height = newHeight;
+        if (newHeight != allocation.height) {
+            allocation.height = newHeight;
             return true;
         }
         return false;
@@ -532,7 +529,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 }
                 if (op.isActive() && startOffset < endOffset && getViewCount() > 0) {
                     Rectangle2D repaintRect;
-                    Rectangle2D.Double docViewRect = getAllocation();
+                    Rectangle2D.Double docViewRect = getAllocationMutable();
                     int pViewIndex = getViewIndex(startOffset);
                     ParagraphView pView = getParagraphView(pViewIndex);
                     if (endOffset <= pView.getEndOffset()) {
@@ -618,13 +615,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     @Override
-    public String getToolTipTextChecked(double x, double y, Shape allocation) {
+    public String getToolTipTextChecked(double x, double y, Shape alloc) {
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging();
                 op.checkViewsInited();
                 if (op.isActive()) {
-                    return children.getToolTipTextChecked(this, x, y, allocation);
+                    return children.getToolTipTextChecked(this, x, y, alloc);
                 }
             } finally {
                 unlock();
@@ -634,13 +631,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     @Override
-    public JComponent getToolTip(double x, double y, Shape allocation) {
+    public JComponent getToolTip(double x, double y, Shape alloc) {
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging();
                 op.checkViewsInited();
                 if (op.isActive()) {
-                    return children.getToolTip(this, x, y, allocation);
+                    return children.getToolTip(this, x, y, alloc);
                 }
             } finally {
                 unlock();
@@ -670,26 +667,31 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
-        Rectangle2D.Double rect = ViewUtils.shape2Bounds(alloc);
-        Shape retShape = null;
         if (lock()) {
             try {
-                checkDocumentLockedIfLogging();
-                op.checkViewsInited();
-                if (op.isActive()) {
-                    retShape = children.modelToViewChecked(this, offset, alloc, bias);
-                } else if (children != null) {
-                    // Not active but attempt to find at least a reasonable y
-                    // The existing line views may not be updated for a longer time
-                    // but the binary search should find something and end in finite time.
-                    int index = getViewIndex(offset); // Must work without children inited
-                    if (index >= 0) {
-                        rect.y = getY(index); // Must work without children inited
-                        // Let the height to possibly be set to default line height later
-                    }
-                }
+                return modelToViewUnlocked(offset, alloc, bias);
             } finally {
                 unlock();
+            }
+        }
+        return null;
+    }
+
+    public Shape modelToViewUnlocked(int offset, Shape alloc, Bias bias) {
+        Rectangle2D.Double rect = ViewUtils.shape2Bounds(alloc);
+        Shape retShape = null;
+        checkDocumentLockedIfLogging();
+        op.checkViewsInited();
+        if (op.isActive()) {
+            retShape = children.modelToViewChecked(this, offset, alloc, bias);
+        } else if (children != null) {
+            // Not active but attempt to find at least a reasonable y
+            // The existing line views may not be updated for a longer time
+            // but the binary search should find something and end in finite time.
+            int index = getViewIndex(offset); // Must work without children inited
+            if (index >= 0) {
+                rect.y = getY(index); // Must work without children inited
+                // Let the height to possibly be set to default line height later
             }
         }
         if (retShape == null) {
@@ -758,17 +760,22 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
-        int retOffset = 0;
         if (lock()) {
             try {
-                checkDocumentLockedIfLogging();
-                op.checkViewsInited();
-                if (op.isActive()) {
-                    retOffset = children.viewToModelChecked(this, x, y, alloc, biasReturn);
-                }
+                return viewToModelUnlocked(x, y, alloc, biasReturn);
             } finally {
                 unlock();
             }
+        }
+        return 0;
+    }
+    
+    public int viewToModelUnlocked(double x, double y, Shape alloc, Bias[] biasReturn) {
+        int retOffset = 0;
+        checkDocumentLockedIfLogging();
+        op.checkViewsInited();
+        if (op.isActive()) {
+            retOffset = children.viewToModelChecked(this, x, y, alloc, biasReturn);
         }
         if (ViewHierarchyImpl.OP_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.OP_LOG, "viewToModel: [x,y]=" + x + "," + y + // NOI18N
@@ -860,19 +867,19 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     void checkDocumentLockedIfLogging() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkDocumentLocked();
         }
     }
     
     void checkDocumentLocked() {
         if (!DocumentUtilities.isReadLocked(getDocument())) {
-            LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
+            ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
         }
     }
     
     void checkMutexAcquiredIfLogging() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkLocked();
         }
     }
@@ -885,7 +892,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 String msg = (mutexThread == null)
                         ? "Mutex not acquired" // NOI18N
                         : "Mutex already acquired for different thread: " + mutexThread; // NOI18N
-                LOG.log(Level.INFO, msg + " for textComponent=" + textComponent, new Exception()); // NOI18N
+                ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, msg + " for textComponent=" + textComponent, new Exception()); // NOI18N
             }
         }
     }

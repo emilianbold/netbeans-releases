@@ -68,7 +68,7 @@ import org.openide.loaders.DataObject;
  */
 public class TestBase extends CslTestBase {
 
-    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+    private static final String EMPTY_STRING = "";
 
     public TestBase(String name) {
         super(name);
@@ -81,10 +81,7 @@ public class TestBase extends CslTestBase {
     }
 
     protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HtmlKit.HTML_MIME_TYPE);
-        doc.putProperty(PROP_MIME_TYPE, HtmlKit.HTML_MIME_TYPE);
-        doc.putProperty(Language.class, HTMLTokenId.language());
-        return doc;
+        return getDocument(EMPTY_STRING); 
     }
 
     protected Document[] createDocuments(String... fileName) {

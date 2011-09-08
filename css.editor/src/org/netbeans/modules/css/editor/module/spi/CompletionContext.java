@@ -48,19 +48,28 @@ import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 
 /**
+ * A code completion context. An instance of this class is passed to the CssModule.getCompletionProposals() method.
+ * The context is basically parser result based and contains lots of useful information for
+ * the completion result providers.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CompletionContext extends EditorFeatureContext {
 
     private final QueryType queryType;
-    private final int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset;
+    private final int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset, activeTokenDiff;
     private final String prefix;
     private final Node activeNode;
     private final TokenSequence<CssTokenId> tokenSequence;
     private final Node activeTokenNode;
 
-    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, TokenSequence<CssTokenId> tokenSequence, QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, int embeddedAnchorOffset, String prefix) {
+    /**
+     * @doto use class accessor so clients cannot instantiate this.
+     */
+    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, 
+            TokenSequence<CssTokenId> tokenSequence, int activeTokenDiff, 
+            QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, 
+            int embeddedAnchorOffset, String prefix) {
         super(result, caretOffset);
         this.tokenSequence = tokenSequence;
         this.activeNode = activeNode;
@@ -70,22 +79,35 @@ public class CompletionContext extends EditorFeatureContext {
         this.embeddedCaretOffset = embeddedCaretOffset;
         this.embeddedAnchorOffset = embeddedAnchorOffset;
         this.prefix = prefix;
+        this.activeTokenDiff = activeTokenDiff;
     }
 
     /**
      * 
      * @return a TokenSequence of Css tokens created on top of the *virtual* css source.
      * The TokenSequence is positioned on a token laying at the getAnchorOffset() offset.
+     * 
+     * Clients using the context must reposition the token sequence back to the original state
+     * before exiting!
+     * @todo - ensure this automatically or at least check it
      */
     @Override
     public TokenSequence<CssTokenId> getTokenSequence() {
         return tokenSequence;
     }
     
+    /**
+     * @return the top most parse tree node for the getEmbeddedCaretOffset() position. 
+     * The node is never of the NodeType.token type and is typically obtained by
+     * getActiveTokenNode().parent().
+     */
     public Node getActiveNode() {
         return activeNode;
     }
 
+    /**
+     * @return the top most parse tree node of NodeType.token for the getEmbeddedCaretOffset() position
+     */
     public Node getActiveTokenNode() {
         return activeTokenNode;
     }
@@ -113,11 +135,28 @@ public class CompletionContext extends EditorFeatureContext {
         return embeddedAnchorOffset;
     }
 
+    /**
+     * @return computed completion prefix. Some clients may ignore this and compute
+     * the prefix themselves. In such case the resulting CompletionProposal-s needs 
+     * to use non-default anchor.
+     */
     public String getPrefix() {
         return prefix;
     }
 
+    /**
+     * @return QueryType of the completion query.
+     */
     public QueryType getQueryType() {
         return queryType;
     }
+
+    /**
+     * @return a diff from the getEmbeddedCaretOffset() and the token found for the position. 
+     * Is result of getTokenSequence().move(getEmbeddedCaretOffset());
+     */
+    public int getActiveTokenDiff() {
+        return activeTokenDiff;
+    }
+    
 }

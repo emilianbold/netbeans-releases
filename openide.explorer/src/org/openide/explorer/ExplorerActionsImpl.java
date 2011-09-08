@@ -44,6 +44,7 @@
 
 package org.openide.explorer;
 
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -51,7 +52,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -61,7 +61,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Timer;
 import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,6 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -89,6 +89,9 @@ import org.openide.util.datatransfer.PasteType;
  * @author Jan Jancura, Petr Hamernik, Ian Formanek, Jaroslav Tulach
  */
 final class ExplorerActionsImpl {
+    /** background updater of actions */
+    private static final RequestProcessor RP = new RequestProcessor("Explorer Actions"); // NOI18N
+    
     /** copy action performer */
     private final CopyCutActionPerformer copyActionPerformer = new CopyCutActionPerformer(true);
 
@@ -167,8 +170,7 @@ final class ExplorerActionsImpl {
                 )
             );
         }
-
-        updateActions(true);
+        actionStateUpdater.schedule();
     }
 
     /** Detach from manager currently being listened on. */
@@ -187,7 +189,8 @@ final class ExplorerActionsImpl {
     }
 
     /** Stops listening on all actions */
-    private void stopActions() {
+    final void stopActions() {
+        assert EventQueue.isDispatchThread();
         if (copyActionPerformer != null) {
             copyActionPerformer.setEnabled(false);
             cutActionPerformer.setEnabled(false);
@@ -200,7 +203,8 @@ final class ExplorerActionsImpl {
     /** Updates the state of all actions.
      * @param path list of selected nodes
      */
-    private void updateActions(boolean updatePasteAction) {
+    final void updateActions(boolean updatePasteAction) {
+        assert !EventQueue.isDispatchThread();
         if (manager == null) {
             return;
         }
@@ -231,46 +235,46 @@ final class ExplorerActionsImpl {
 
             for (i = 0; i < k; i++) {
                 if (incest || !path[i].canCopy()) {
-                    copyActionPerformer.setEnabled(false);
+                    copyActionPerformer.toEnabled(false);
 
                     break;
                 }
             }
 
             if (i == k) {
-                copyActionPerformer.setEnabled(true);
+                copyActionPerformer.toEnabled(true);
             }
 
             for (i = 0; i < k; i++) {
                 if (incest || !path[i].canCut()) {
-                    cutActionPerformer.setEnabled(false);
+                    cutActionPerformer.toEnabled(false);
 
                     break;
                 }
             }
 
             if (i == k) {
-                cutActionPerformer.setEnabled(true);
+                cutActionPerformer.toEnabled(true);
             }
 
             for (i = 0; i < k; i++) {
                 if (incest || !path[i].canDestroy()) {
-                    deleteActionPerformerConfirm.setEnabled(false);
-                    deleteActionPerformerNoConfirm.setEnabled(false);
+                    deleteActionPerformerConfirm.toEnabled(false);
+                    deleteActionPerformerNoConfirm.toEnabled(false);
 
                     break;
                 }
             }
 
             if (i == k) {
-                deleteActionPerformerConfirm.setEnabled(true);
-                deleteActionPerformerNoConfirm.setEnabled(true);
+                deleteActionPerformerConfirm.toEnabled(true);
+                deleteActionPerformerNoConfirm.toEnabled(true);
             }
         } else { // k==0, i.e. no nodes selected
-            copyActionPerformer.setEnabled(false);
-            cutActionPerformer.setEnabled(false);
-            deleteActionPerformerConfirm.setEnabled(false);
-            deleteActionPerformerNoConfirm.setEnabled(false);
+            copyActionPerformer.toEnabled(false);
+            cutActionPerformer.toEnabled(false);
+            deleteActionPerformerConfirm.toEnabled(false);
+            deleteActionPerformerNoConfirm.toEnabled(false);
         }
 
         if (updatePasteAction) {
@@ -423,6 +427,17 @@ final class ExplorerActionsImpl {
         if (asu != null) {
             asu.update();
         }
+        if (EventQueue.isDispatchThread()) {
+            syncActions();
+        }
+    }
+    
+    final void syncActions() {
+        copyActionPerformer.syncEnable();
+        cutActionPerformer.syncEnable();
+        deleteActionPerformerConfirm.syncEnable();
+        deleteActionPerformerNoConfirm.syncEnable();
+        pasteActionPerformer.syncEnable();
     }
 
     private boolean actionsUpdateScheduled() {
@@ -470,7 +485,7 @@ final class ExplorerActionsImpl {
 
     /** Own implementation of paste action
      */
-    private class OwnPaste extends AbstractAction {
+    private class OwnPaste extends BaseAction {
         private PasteType[] pasteTypes;
 
         OwnPaste() {
@@ -488,7 +503,7 @@ final class ExplorerActionsImpl {
                 this.pasteTypes = arr;
             }
 
-            setEnabled(arr != null);
+            toEnabled(arr != null);
         }
 
         @Override
@@ -517,9 +532,25 @@ final class ExplorerActionsImpl {
             return super.getValue(s);
         }
     }
+    
+    private static abstract class BaseAction extends AbstractAction {
+        private volatile Boolean toEnable;
+        
+        public void toEnabled(boolean e) {
+            toEnable = e;
+        }
+        
+        public void syncEnable() {
+            assert EventQueue.isDispatchThread();
+            if (toEnable != null) {
+                setEnabled(toEnable);
+                toEnable = null;
+            }
+        }
+    }
 
     /** Class which performs copy and cut actions */
-    private class CopyCutActionPerformer extends AbstractAction {
+    private class CopyCutActionPerformer extends BaseAction {
         /** determine if adapter is used for copy or cut action. */
         private boolean copyCut;
 
@@ -530,12 +561,11 @@ final class ExplorerActionsImpl {
 
         @Override
         public boolean isEnabled() {
-            if (actionsUpdateScheduled()) {
-                updateActions(false);
-            }
+            updateActionsState();
             return super.isEnabled();
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             Transferable trans = null;
             ExplorerManager em = manager;
@@ -578,7 +608,7 @@ final class ExplorerActionsImpl {
     }
 
     /** Class which performs delete action */
-    private class DeleteActionPerformer extends AbstractAction implements Runnable {
+    private class DeleteActionPerformer extends BaseAction implements Runnable {
         private boolean confirmDelete;
 
         DeleteActionPerformer(boolean confirmDelete) {
@@ -587,12 +617,11 @@ final class ExplorerActionsImpl {
 
         @Override
         public boolean isEnabled() {
-            if (actionsUpdateScheduled()) {
-                updateActions(false);
-            }
+            updateActionsState();
             return super.isEnabled();
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             ExplorerManager em = manager;
             if (em == null) {
@@ -631,7 +660,9 @@ final class ExplorerActionsImpl {
 
         /** Disables the action.
          */
+        @Override
         public void run() {
+            assert EventQueue.isDispatchThread();
             setEnabled(false);
         }
 
@@ -684,14 +715,12 @@ final class ExplorerActionsImpl {
 
     /** Class which register changes in manager, and clipboard, coalesces
      * them if they are frequent and performs the update of actions state. */
-    private class ActionStateUpdater implements PropertyChangeListener, ClipboardListener, ActionListener, Runnable {
-        private final Timer timer;
+    private class ActionStateUpdater implements PropertyChangeListener, ClipboardListener, Runnable {
+        private final RequestProcessor.Task timer;
         private final PropertyChangeListener weakL;
 
         ActionStateUpdater(ExplorerManager m) {
-            timer = new Timer(200, this);
-            timer.setCoalesce(true);
-            timer.setRepeats(false);
+            timer = RP.create(this);
             weakL = WeakListeners.propertyChange(this, m);
             m.addPropertyChangeListener(weakL);
         }
@@ -701,41 +730,44 @@ final class ExplorerActionsImpl {
         }
 
         boolean updateScheduled() {
-            return timer.isRunning();
+            return timer.getDelay() > 0;
         }
 
         @Override
         public synchronized void propertyChange(PropertyChangeEvent e) {
-            timer.restart();
+            schedule();
         }
 
         @Override
         public void clipboardChanged(ClipboardEvent ev) {
             if (!ev.isConsumed()) {
-                Mutex.EVENT.readAccess(this);
+                schedule();
             }
         }
 
         @Override
         public void run() {
-            ExplorerManager em = manager;
-
-            if (em != null) {
-                updatePasteAction(em.getSelectedNodes());
+            if (EventQueue.isDispatchThread()) {
+                syncActions();
+            } else {
+                updateActions(true);
+                EventQueue.invokeLater(this);
             }
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            updateActions(true);
         }
 
         /** Updates actions states now if there is pending event. */
         public void update() {
-            if (timer.isRunning()) {
-                timer.stop();
-                updateActions(true);
-            }
+            timer.waitFinished();
+        }
+
+        private void schedule() {
+            copyActionPerformer.toEnabled(false);
+            cutActionPerformer.toEnabled(false);
+            deleteActionPerformerConfirm.toEnabled(false);
+            deleteActionPerformerNoConfirm.toEnabled(false);
+            pasteActionPerformer.toEnabled(false);
+            EventQueue.invokeLater(this);
+            timer.schedule(100);
         }
     }
 }

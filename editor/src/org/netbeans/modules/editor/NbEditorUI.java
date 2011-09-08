@@ -87,6 +87,7 @@ import org.netbeans.editor.StatusBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
+import org.netbeans.modules.editor.impl.SearchAndReplaceBarHandler;
 import org.netbeans.modules.editor.impl.StatusLineFactories;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
@@ -180,8 +181,8 @@ public class NbEditorUI extends EditorUI {
         super.installUI(c);
 
         if (!attached){
-            attachSystemActionPerformer(SearchBar.INCREMENTAL_SEARCH_FORWARD);
-            attachSystemActionPerformer(ExtKit.replaceAction);
+            attachSystemActionPerformer(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD);
+            attachSystemActionPerformer(SearchAndReplaceBarHandler.REPLACE_ACTION);
             attachSystemActionPerformer(ExtKit.gotoAction);
             attachSystemActionPerformer(ExtKit.showPopupMenuAction);
 

@@ -57,7 +57,6 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
@@ -114,7 +113,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         //pom profiles come first
         extractProfiles(profileIds);
         //Add settings file Properties
-        profileIds.addAll(NbCollections.checkedMapByFilter(MavenSettingsSingleton.getInstance().createUserSettingsModel().getProfilesAsMap(), String.class, org.apache.maven.settings.Profile.class, true).keySet());
+        profileIds.addAll(NbCollections.checkedMapByFilter(EmbedderFactory.getProjectEmbedder().getSettings().getProfilesAsMap(), String.class, org.apache.maven.settings.Profile.class, true).keySet());
 
         return new ArrayList<String>(profileIds);
     }
@@ -130,7 +129,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
             profileIds.add(profile.getId());
         }
         //read from Settings.xml
-        List<String> profileStrings = MavenSettingsSingleton.getInstance().createUserSettingsModel().getActiveProfiles();
+        List<String> profileStrings = EmbedderFactory.getProjectEmbedder().getSettings().getActiveProfiles();
         for (String profile : profileStrings) {
             profileIds.add(profile);
         }

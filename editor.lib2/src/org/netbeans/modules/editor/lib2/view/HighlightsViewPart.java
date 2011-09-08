@@ -204,8 +204,8 @@ public final class HighlightsViewPart extends EditorView {
     public View createFragment(int p0, int p1) {
         int startOffset = getStartOffset();
         ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + startOffset + "," + // NOI18N
+        if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+            ViewHierarchyImpl.BUILD_LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + startOffset + "," + // NOI18N
                     getEndOffset() + ">\n"); // NOI18N
         }
         return new HighlightsViewPart(fullView, shift + p0 - startOffset, p1 - p0);

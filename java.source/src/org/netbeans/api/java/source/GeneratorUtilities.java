@@ -49,11 +49,15 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -62,8 +66,12 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Scope.Entry;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
@@ -72,20 +80,24 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -95,6 +107,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 
@@ -165,7 +178,7 @@ public final class GeneratorUtilities {
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
             TreePath path = TreePath.getPath(compilationUnit, tree);
-            if ((path == null || !utils.isSynthetic(path)) && ClassMemberComparator.compare(member, tree) < 0) {
+            if ((path == null || !utils.isSynthetic(path)) && CLASS_MEMBER_COMPARATOR.compare(member, tree) < 0) {
                 if (gdoc == null)
                     break;
                 int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
@@ -512,6 +525,211 @@ public final class GeneratorUtilities {
         BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(clazz.getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
         return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
+    
+    /**
+     * Adds import statements for given elements to a compilation unit. The import section of the
+     * given compilation unit is modified according to the rules specified in the {@link CodeStyle}.
+     * <p><strong>Use TreeMaker.QualIdent, TreeMaker.Type or GeneratorUtilities.importFQNs
+     * instead of this method if possible. These methods will correctly resolve imports according
+     * to the user's preferences.</strong></p>
+     *
+     * @param cut the compilation unit to insert imports to
+     * @param toImport the elements to import. 
+     * @return the modified compilation unit
+     * @since 0.86
+     */
+    public CompilationUnitTree addImports(CompilationUnitTree cut, Set<? extends Element> toImport) {
+        assert cut != null && toImport != null && toImport.size() > 0;
+
+        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport);
+
+        Trees trees = copy.getTrees();
+        Elements elements = copy.getElements();
+        ElementUtilities elementUtilities = copy.getElementUtilities();
+        
+        CodeStyle cs = null;
+        try {
+            Document doc = copy.getDocument();
+            if (doc != null)
+                cs = (CodeStyle)doc.getProperty(CodeStyle.class);
+        } catch (IOException ioe) {}
+        if (cs == null) {
+            cs = CodeStyle.getDefault(copy.getFileObject());
+        }
+        
+        // check weather any conversions to star imports are needed
+        int treshold = cs.countForUsingStarImport();
+        int staticTreshold = cs.countForUsingStaticStarImport();        
+        Map<PackageElement, Integer> pkgCounts = new HashMap<PackageElement, Integer>();
+        pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
+        ExpressionTree packageName = cut.getPackageName();
+        if (packageName != null)
+            pkgCounts.put((PackageElement)trees.getElement(TreePath.getPath(cut, packageName)), -2);
+        Map<TypeElement, Integer> typeCounts = new HashMap<TypeElement, Integer>();
+        Scope scope = trees.getScope(new TreePath(cut));
+        for (Element e : elementsToImport) {
+            boolean isStatic = false;
+            Element el = null;
+            switch (e.getKind()) {
+                case PACKAGE:
+                    el = e;
+                    break;
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    if (e.getEnclosingElement().getKind() == ElementKind.PACKAGE)
+                        el = e.getEnclosingElement();
+                    break;
+                case METHOD:
+                case ENUM_CONSTANT:
+                case FIELD:
+                    isStatic = true;
+                    el = e.getEnclosingElement();
+                    assert e.getModifiers().contains(Modifier.STATIC) && trees.isAccessible(scope, e, (DeclaredType)el.asType()) : "Only static accessible members could be imported"; //NOI18N
+                    break;
+                default:
+                    assert false : "Illegal element kind: " + e.getKind(); //NOI18N
+            }
+            if (el != null) {
+                Integer cnt = isStatic ? typeCounts.get((TypeElement)el) : pkgCounts.get((PackageElement)el);
+                if (cnt == null)
+                    cnt = 0;
+                if (el == e) {
+                    cnt = -1;
+                } else if (cnt >= 0) {
+                    cnt++;
+                    if (isStatic ? cnt >= staticTreshold : cnt >= treshold)
+                        cnt = -1;
+                }
+                if (isStatic) {
+                    typeCounts.put((TypeElement)el, cnt);
+                } else {
+                    pkgCounts.put((PackageElement)el, cnt);
+                }
+            }
+        }
+        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
+        for (ImportTree imp : imports) {
+            Element e = getImportedElement(cut, imp, trees, elements);
+            Element el = imp.isStatic()
+                    ? e.getKind().isClass() || e.getKind().isInterface() ? e : elementUtilities.enclosingTypeElement(e)
+                    : e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
+            if (el != null) {
+                Integer cnt = imp.isStatic() ? typeCounts.get((TypeElement)el) : pkgCounts.get((PackageElement)el);
+                if (cnt != null) {
+                    if (el == e) {
+                        cnt = -2;
+                    } else if (cnt >= 0) {
+                        cnt++;
+                        if (imp.isStatic() ? cnt >= staticTreshold : cnt >= treshold)
+                            cnt = -1;
+                    }
+                    if (imp.isStatic()) {
+                        typeCounts.put((TypeElement)el, cnt);
+                    } else {
+                        pkgCounts.put((PackageElement)el, cnt);
+                    }
+                }
+            }
+        }
+        
+        // check for possible name clashes originating from adding the package imports
+        Set<Element> explicitNamedImports = new HashSet<Element>();
+        Map<Name, TypeElement> usedTypes = null;
+        JCCompilationUnit unit = (JCCompilationUnit) cut;
+        if (unit.starImportScope != null) {
+            for (Map.Entry<PackageElement, Integer> entry : pkgCounts.entrySet()) {
+                if (entry.getValue() == -1) {
+                    for (Element element : entry.getKey().getEnclosedElements()) {
+                        if (element.getKind().isClass() || element.getKind().isInterface()) {
+                            Entry starEntry = unit.starImportScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
+                            if (starEntry.scope != null) {
+                                if (usedTypes == null) {
+                                    usedTypes = getUsedTypes(cut, trees);
+                                }
+                                TypeElement te = usedTypes.get(element.getSimpleName());
+                                if (te != null) {
+                                    elementsToImport.add(te);
+                                    explicitNamedImports.add(te);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // sort the elements to import
+        ImportsComparator comparator = new ImportsComparator(cs, elements);
+        Collections.sort(elementsToImport, comparator);
+        
+        // merge the elements to import with the existing import statemetns
+        TreeMaker make = copy.getTreeMaker();
+        int currentToImport = elementsToImport.size() - 1;
+        int currentExisting = imports.size() - 1;
+        while (currentToImport >= 0) {
+            Element currentToImportElement = elementsToImport.get(currentToImport);
+            boolean isStatic = false;
+            Element el = null;
+            switch (currentToImportElement.getKind()) {
+                case PACKAGE:
+                    el = currentToImportElement;
+                    break;
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    if (currentToImportElement.getEnclosingElement().getKind() == ElementKind.PACKAGE)
+                        el = currentToImportElement.getEnclosingElement();
+                    break;
+                case METHOD:
+                case ENUM_CONSTANT:
+                case FIELD:
+                    isStatic = true;
+                    el = currentToImportElement.getEnclosingElement();
+                    break;
+            }
+            Integer cnt = el == null ? Integer.valueOf(0) : isStatic ? typeCounts.get((TypeElement)el) : pkgCounts.get((PackageElement)el);
+            if (explicitNamedImports.contains(currentToImportElement))
+                cnt = 0;
+            if (cnt == -2) {
+                currentToImport--;
+            } else {
+                if (cnt == -1) {
+                    currentToImportElement = el;
+                    if (isStatic) {
+                        typeCounts.put((TypeElement)el, -2);
+                    } else {
+                        pkgCounts.put((PackageElement)el, -2);
+                    }
+                }
+                boolean isStar = currentToImportElement.getKind() == ElementKind.PACKAGE
+                        || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
+                while (currentExisting >= 0) {
+                    ImportTree imp = imports.get(currentExisting);
+                    Element impElement = getImportedElement(cut, imp, trees, elements);
+                    el = imp.isStatic()
+                            ? impElement.getKind().isClass() || impElement.getKind().isInterface() ? impElement : elementUtilities.enclosingTypeElement(impElement)
+                            : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
+                    if (currentToImportElement == impElement || isStar && currentToImportElement == el) {
+                        imports.remove(currentExisting);                        
+                    } else if (comparator.compare(currentToImportElement, impElement) > 0) {
+                        break;
+                    }
+                    currentExisting--;
+                }
+                ExpressionTree qualIdent = qualIdentFor(currentToImportElement, elements, make);
+                if (isStar)
+                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
+                imports.add(currentExisting + 1, make.Import(qualIdent, isStatic));
+                currentToImport--;
+            }
+        }
+        
+        // return a copy of the unit with changed imports section
+        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+    }
 
     /**
      * Take a tree as a parameter, replace resolved fully qualified names with
@@ -675,10 +893,96 @@ public final class GeneratorUtilities {
 
         return copy.getTreeUtilities().translate(result, translate);
     }
+    
+    private Element getImportedElement(CompilationUnitTree cut, ImportTree imp, Trees trees, Elements elements) {
+        Tree qualIdent = imp.getQualifiedIdentifier();        
+        if (qualIdent.getKind() != Tree.Kind.MEMBER_SELECT) {
+            Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+            if (element == null)
+                element = elements.getTypeElement(qualIdent.toString());
+            return element;
+        }
+        Name name = ((MemberSelectTree)qualIdent).getIdentifier();
+        if ("*".contentEquals(name)) { //NOI18N
+            Element element = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
+            if (element == null) {
+                String fqn = ((MemberSelectTree)qualIdent).getExpression().toString();
+                element = elements.getTypeElement(fqn);
+                if (element == null)
+                    element = elements.getPackageElement(fqn);
+            }
+            return element;
+        }
+        if (imp.isStatic()) {
+            Element parent = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
+            if (parent == null)
+                parent = elements.getTypeElement(((MemberSelectTree)qualIdent).getExpression().toString());
+            if (parent != null && (parent.getKind().isClass() || parent.getKind().isInterface())) {
+                Scope s = trees.getScope(new TreePath(cut));
+                for (Element e : parent.getEnclosedElements()) {
+                    if (name == e.getSimpleName() && e.getModifiers().contains(Modifier.STATIC) && trees.isAccessible(s, e, (DeclaredType)parent.asType()));
+                        return e;
+                }
+                return parent;
+            }
+        }
+        Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+        if (element == null)
+            element = elements.getTypeElement(qualIdent.toString());
+        return element;
+    }
+    
+    private Map<Name, TypeElement> getUsedTypes(final CompilationUnitTree cut, final Trees trees) {
+        final Map<Name, TypeElement> map = new HashMap<Name, TypeElement>();
+        new TreePathScanner<Void, Void>() {
 
-    private static class ClassMemberComparator {
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                if (!map.containsKey(node.getName())) {
+                    Element element = trees.getElement(getCurrentPath());
+                    if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                        map.put(node.getName(), (TypeElement) element);
+                    }
+                }
+                return super.visitIdentifier(node, p);
+            }
 
-        public static int compare(Tree tree1, Tree tree2) {
+            @Override
+            public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+                scan(node.getPackageAnnotations(), p);
+                return scan(node.getTypeDecls(), p);
+            }
+        }.scan(cut, null);
+        return map;
+    }
+    
+    private ExpressionTree qualIdentFor(Element e, Elements elements, TreeMaker tm) {
+        if (e.getKind() == ElementKind.PACKAGE) {
+            String name = ((PackageElement)e).getQualifiedName().toString();
+            if (e instanceof Symbol) {
+                int lastDot = name.lastIndexOf('.');
+                if (lastDot < 0)
+                    return tm.Identifier(e);
+                return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot), elements, tm), e);
+            }
+            return qualIdentFor(name, elements, tm);
+        }
+        Element ee = e.getEnclosingElement();
+        if (e instanceof Symbol)
+            return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee, elements, tm), e) : tm.Identifier(e);
+        return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee, elements, tm), e.getSimpleName()) : tm.Identifier(e.getSimpleName());
+    }
+    private ExpressionTree qualIdentFor(String name, Elements elements, TreeMaker tm) {
+        int lastDot = name.lastIndexOf('.');
+        if (lastDot < 0)
+            return tm.Identifier(elements.getName(name));
+        return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot), elements, tm), elements.getName(name.substring(lastDot + 1)));
+    }
+
+    private static class ClassMemberComparator implements Comparator<Tree> {
+
+        @Override
+        public int compare(Tree tree1, Tree tree2) {
             if (tree1 == tree2)
                 return 0;
             return getSortPriority(tree1) - getSortPriority(tree2);
@@ -715,7 +1019,55 @@ public final class GeneratorUtilities {
             return ret;
         }
     }
+    
+    private static ClassMemberComparator CLASS_MEMBER_COMPARATOR = new ClassMemberComparator();
 
+    private static class ImportsComparator implements Comparator<Element> {
+
+        private CodeStyle.ImportGroups groups;
+        
+        private ImportsComparator(CodeStyle cs, Elements elements) {
+            this.groups = cs.getImportGroups();
+        }
+
+        @Override
+        public int compare(Element e1, Element e2) {
+            if (e1 == e2)
+                return 0;
+            
+            boolean isStatic1 = false;
+            StringBuilder sb1 = new StringBuilder();
+            if (e1.getKind().isField() || e1.getKind() == ElementKind.METHOD) {
+                sb1.append('.').append(e1.getSimpleName());
+                e1 = e1.getEnclosingElement();
+                isStatic1 = true;
+            }
+            if (e1.getKind().isClass() || e1.getKind().isInterface()) {
+                sb1.insert(0, ((TypeElement)e1).getQualifiedName());
+            } else if (e1.getKind() == ElementKind.PACKAGE) {
+                sb1.insert(0, ((PackageElement)e1).getQualifiedName());
+            }
+            String s1 = sb1.toString();
+                
+            boolean isStatic2 = false;
+            StringBuilder sb2 = new StringBuilder();
+            if (e2.getKind().isField() || e2.getKind() == ElementKind.METHOD) {
+                sb2.append('.').append(e2.getSimpleName());
+                e2 = e2.getEnclosingElement();
+            }
+            if (e2.getKind().isClass() || e2.getKind().isInterface()) {
+                sb2.insert(0, ((TypeElement)e2).getQualifiedName());
+            } else if (e2.getKind() == ElementKind.PACKAGE) {
+                sb2.insert(0, ((PackageElement)e2).getQualifiedName());
+            }
+            String s2 = sb2.toString();
+
+            int bal = groups.getGroupId(s1, isStatic1) - groups.getGroupId(s2, isStatic2);
+
+            return bal == 0 ? s1.compareTo(s2) : bal;
+        }
+    }
+    
     /**
      * Tags first method in the list, in order to select it later inside editor
      * @param methods list of methods to be implemented/overriden

@@ -93,9 +93,9 @@ public class LoginPanel extends javax.swing.JPanel {
     private URL getRegisterUrl() {
         try {
             if (kenai!=null) {
-            return new URL(kenai.getUrl().toString() + "/people/signup"); // NOI18N
+                return new URL(kenai.getUrl().toString() + "/people/new"); // NOI18N
             } else {
-                return new URL("https://netbeans.org/people/signup"); // NOI18N
+                return new URL("https://netbeans.org/people/new"); // NOI18N
             }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);

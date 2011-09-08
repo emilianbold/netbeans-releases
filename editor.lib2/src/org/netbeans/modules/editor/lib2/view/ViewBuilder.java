@@ -457,6 +457,15 @@ final class ViewBuilder {
             localReplace = null;
         }
 
+        // Check whether firstReplace replaces all views in the paragraph view with no added views.
+        // In such case remove whole pView since it would otherwise stay empty which would be wrong.
+        if (firstReplace != null && firstReplace.isMakingViewEmpty()) {
+            // Remove whole pView
+            docReplace.index--;
+            docReplace.removeCount++;
+            firstReplace = null;
+        }
+
         if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
             if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINEST)) {
                 // Log original docView state
@@ -718,7 +727,7 @@ final class ViewBuilder {
         docView.addChange(startY, endY, deltaY);
         
         // For accurate span force computation of text layouts
-        Rectangle2D.Double docViewRect = docView.getAllocation();
+        Rectangle2D.Double docViewRect = docView.getAllocationMutable();
         if (docView.op.isAccurateSpan()) {
             int pIndex = docReplace.index;
             int endIndex = docReplace.addEndIndex();

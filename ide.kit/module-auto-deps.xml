@@ -24,4 +24,27 @@
             </implies>
         </transformation>
     </transformationgroup>
+    <transformationgroup>
+        <description>libs.commons_codec and libs.commons_logging renamed</description>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <module-dependency codenamebase="org.netbeans.libs.commons_codec"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.apache.commons.codec" spec="1.3.0"/>
+                </result>
+            </implies>
+        </transformation>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <module-dependency codenamebase="org.netbeans.libs.commons_logging"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.apache.commons.logging" spec="1.1.0"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>    
 </transformations>

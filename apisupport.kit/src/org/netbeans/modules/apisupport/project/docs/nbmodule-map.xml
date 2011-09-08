@@ -165,7 +165,7 @@
 				<!-- Name and Location -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.project.NameAndLocationPanel" url="csh/Project_NameAndLocationPanel.html"/>
 
-    <!-- Window Component -->
+    <!-- Window -->
 				<!-- Basic Settings -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.winsys.BasicSettingsPanel" url="csh/BasicSettingsPanel.html"/>
 				<!-- Name, Icon and Location -->

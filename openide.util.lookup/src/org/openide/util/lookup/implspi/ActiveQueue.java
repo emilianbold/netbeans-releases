@@ -145,10 +145,11 @@ public final class ActiveQueue {
                 t.setDaemon(true);
                 t.start();
                 LOGGER.fine("starting thread");
+                count = 1;
             } else {
-                LOGGER.finer("enqueuing reference");
+                count++;
+                LOGGER.log(Level.FINER, "enqued references = {0}", count);
             }
-            count++;
         }
 
     }

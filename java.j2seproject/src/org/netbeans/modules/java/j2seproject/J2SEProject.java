@@ -75,6 +75,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -162,6 +163,17 @@ public final class J2SEProject implements Project {
     static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
 
+    private static final String[] EXTENSIBLE_TARGETS = new String[] {
+        "-do-init",             //NOI18N
+        "-init-check",          //NOI18N
+        "-post-clean",          //NOI18N
+        "-pre-pre-compile",     //NOI18N
+        "-do-compile",          //NOI18N
+        "-do-compile-single",   //NOI18N
+        "jar",                  //NOI18N
+        "-post-jar",            //NOI18N
+        "run"                   //NOI18N
+    };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
@@ -341,8 +353,6 @@ public final class J2SEProject implements Project {
     private Lookup createLookup(final AuxiliaryConfiguration aux,
             final J2SEActionProvider actionProvider) {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
-        @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
-            cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -366,7 +376,7 @@ public final class J2SEProject implements Project {
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
-            cpe,
+            ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
             new J2SEProjectOperations(this, actionProvider),
@@ -812,10 +822,7 @@ public final class J2SEProject implements Project {
         //add targets here as required by the external plugins..
         @Override
         public List<String> getExtensibleTargets() {
-            String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-post-jar" //NOI18N
-            };
-            return Arrays.asList(targets);
+            return Arrays.asList(EXTENSIBLE_TARGETS);
         }
 
         @Override

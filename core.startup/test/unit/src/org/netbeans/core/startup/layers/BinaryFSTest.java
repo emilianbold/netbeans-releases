@@ -44,10 +44,14 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import junit.framework.Test;
+import org.netbeans.Stamps;
+import org.netbeans.StampsTest;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.AttributesTestHidden;
 import org.openide.filesystems.FileObjectTestHid;
@@ -57,6 +61,7 @@ import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.TestUtilHid;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.filesystems.XMLFileSystemTestHid;
+import org.openide.util.Exceptions;
 
 /**
  *

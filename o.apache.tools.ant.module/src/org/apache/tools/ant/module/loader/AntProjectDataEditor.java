@@ -156,6 +156,10 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
         // Project name might have changed. See messageName().
         updateTitles();
     }
+
+    @Override protected boolean asynchronousOpen() {
+        return true;
+    }
     
     private static class AntEnv extends DataEditorSupport.Env implements SaveCookie {
 

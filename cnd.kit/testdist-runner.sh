@@ -37,13 +37,15 @@ if [ -z "${WORKSPACE}" ]; then
     exit
 fi
 
+BASE_REPO=${BASE_REPO:-cnd-build}
+
 if [ -n "${GET}" ]; then
     cd "${WORKSPACE}" && rm -rf *
 
     HUDSON_URL=${HUDSON_URL:-http://elif:8080/hudson/}
-    BUILD_NUM=${UPSTREAM_NO:-`wget -qO - ${HUDSON_URL}job/cnd-build/lastSuccessfulBuild/buildNumber`}
-    wget -q "${HUDSON_URL}job/cnd-build/${BUILD_NUM}/artifact/netbeans.zip"
-    wget -q "${HUDSON_URL}job/cnd-build/${BUILD_NUM}/artifact/testdist.zip"
+    BUILD_NUM=${UPSTREAM_NO:-`wget -qO - ${HUDSON_URL}job/${BASE_REPO}/lastSuccessfulBuild/buildNumber`}
+    wget -q "${HUDSON_URL}job/${BASE_REPO}/${BUILD_NUM}/artifact/netbeans.zip"
+    wget -q "${HUDSON_URL}job/${BASE_REPO}/${BUILD_NUM}/artifact/testdist.zip"
     unzip -qo netbeans.zip
     unzip -qo testdist.zip
 fi

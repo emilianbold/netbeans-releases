@@ -60,10 +60,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFi
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -215,50 +212,6 @@ public class JiraIssueTest extends NbTestCase {
         }
     }
 
-    public void testSyncSession() throws Throwable {
-        try {
-
-            // create
-            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
-            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
-
-            String taskId = rr.getTaskId();
-
-            TaskRepositoryManager trm = new TaskRepositoryManager();
-            trm.addRepository(JiraTestUtil.getTaskRepository());
-            trm.addRepositoryConnector(getRepositoryConnector());
-            TaskDataStore tds = new TaskDataStore(trm);
-
-            TaskList tl = new TaskList();
-            TaskActivityManager tam = new TaskActivityManager(trm, tl);
-            TaskDataManager tdm = new TaskDataManager(tds, trm, tl, tam);
-            tdm.setDataPath("/tmp/dilino");
-            SynchronizationSession ss = new SynchronizationSession(tdm);
-
-            // list
-            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
-            long t = System.currentTimeMillis();
-            List<TaskData> l = list(ss);
-            long n = System.currentTimeMillis();
-            System.out.println(" +++ " + (n - t));
-            for (TaskData taskData : l) {
-                tdm.putUpdatedTaskData(
-                    new TaskTask(JiraTestUtil.getTaskRepository().getConnectorKind(), JiraTestUtil.getTaskRepository().getUrl(), taskData.getTaskId()),
-                    taskData,
-                    true);
-            }
-            t = System.currentTimeMillis();
-            l = list(ss);
-            n = System.currentTimeMillis();
-            System.out.println(" +++ " + (n - t));
-            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
-
-        } catch (Exception exception) {
-            JiraTestUtil.handleException(exception);
-        }
-    }
-
     public void testJiraIssueWorklog() throws Throwable {
         try {
 
@@ -315,7 +268,7 @@ public class JiraIssueTest extends NbTestCase {
 
     private String addAttachement(JiraIssue issue, String comment) throws CoreException, JiraException, Exception {
         File f = getAttachmentFile(comment);
-        getClient().addAttachment(issue, comment, f.getName(), f, "text/plain", JiraTestUtil.nullProgressMonitor);
+        getClient().addAttachment(issue, comment, f.getName(), comment.getBytes(), JiraTestUtil.nullProgressMonitor);
         return f.getName();
     }
 
@@ -352,8 +305,9 @@ public class JiraIssueTest extends NbTestCase {
         assertEquals(1, attachments.length);
         Attachment attachment = attachments[0];
         assertNotNull(attachment);
-        byte[] bytes = getClient().getAttachment(issue, attachment, JiraTestUtil.nullProgressMonitor);
-        assertEquals(content, new String(bytes));
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getClient().getAttachment(issue, attachment, os, JiraTestUtil.nullProgressMonitor);
+        assertEquals(content, new String(os.toByteArray()));
     }
 
     private File getAttachmentFile(String content) throws Exception {

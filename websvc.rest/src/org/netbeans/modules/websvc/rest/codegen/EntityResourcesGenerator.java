@@ -170,20 +170,17 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         //
         configurePersistence();
 
-        Set<Entity> entities = new HashSet<Entity>();
-        List<String> fqnEntities = new ArrayList<String>( entities.size() );
+        Set<String> fqnEntities = new HashSet<String>();
         for (EntityClassInfo info : model.getEntityInfos()) {
-            Entity entity = info.getEntity();
-            if ( !entities.contains( entity )){
-                fqnEntities.add(entity.getClass2());
-                entities.add( entity );
+            if ( !fqnEntities.contains( info.getEntityFqn() )){
+                fqnEntities.add( info.getEntityFqn() );
+                Util.modifyEntity( info.getEntityFqn() , project);
             }
-            Util.modifyEntity( entity , project);
         }
         
-        preGenerate(fqnEntities);
+        preGenerate(new ArrayList<String>( fqnEntities ));
         
-        Util.generateRESTFacades(project, entities, model, resourceFolder, 
+        Util.generateRESTFacades(project, fqnEntities, model, resourceFolder, 
                 getResourcePackageName(), this);
 
         finishProgressReporting();

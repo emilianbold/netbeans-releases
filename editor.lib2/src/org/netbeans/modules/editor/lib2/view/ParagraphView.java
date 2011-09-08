@@ -432,7 +432,7 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         if (children != null) {
             children.appendViewInfo(this, sb);
             if (importantChildIndex != -1) {
-                children.appendChildrenInfo(this, sb, indent + 4, importantChildIndex);
+                children.appendChildrenInfo(this, sb, indent + 8, importantChildIndex);
             }
         } else {
             sb.append(", children=null");

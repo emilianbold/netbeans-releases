@@ -43,11 +43,12 @@
 package org.netbeans.modules.maven.newproject;
 
 import javax.swing.event.ChangeListener;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public class ChooseWizardPanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
@@ -57,10 +58,11 @@ public class ChooseWizardPanel implements WizardDescriptor.ValidatingPanel<Wizar
     public ChooseWizardPanel() {
     }
     
+    @Messages("LBL_CreateProjectStep=Maven Archetype")
     public @Override ChooseArchetypePanel getComponent() {
         if (component == null) {
             component = new ChooseArchetypePanel(this);
-            component.setName(NbBundle.getMessage(ChooseWizardPanel.class, "LBL_CreateProjectStep"));
+            component.setName(LBL_CreateProjectStep());
         }
         return component;
     }

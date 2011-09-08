@@ -103,7 +103,7 @@ public class StopTask extends BasicTask<OperationState> {
 
         String target = Util.computeTarget(ip);
 
-        if (null != target) {
+        if (!Util.isDefaultOrServerTarget(ip)) {
             // stop an instance/cluster
             return stopClusterOrInstance(target);
         }

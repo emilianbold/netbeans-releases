@@ -48,11 +48,9 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
@@ -147,13 +145,6 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
     public CsmClassifier getClassifier() {
         if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
             resolvedClassifier = getAncestorType().getClassifier();
-            if (resolvedClassifier != null) {
-                if (UIDProviderIml.isPersistable(UIDs.get(this)) &&
-                    UIDProviderIml.isPersistable(UIDs.get(resolvedClassifier)) &&
-                    CsmBaseUtilities.isValid(this)) {
-                    RepositoryUtils.put(this);
-                }
-            }
         }
         return resolvedClassifier;
     }

@@ -256,6 +256,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             for (;;) {
                 nue[0] = proposed + (suffix > 0 ? String.valueOf(suffix) : "");
                 Set<String> varInScope = ASTNodeUtilities.getVariablesInScope(info, caretOffset, new ASTNodeUtilities.VariableAcceptor() {
+                    @Override
                     public boolean acceptVariable(String variableName) {
                         return nue[0].equals(variableName);
                     }
@@ -283,7 +284,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPCodeTemplateProcessor.this.info = (PHPParseResult)resultIterator.getParserResult();;
+                    PHPCodeTemplateProcessor.this.info = (PHPParseResult)resultIterator.getParserResult();
                 }
             });
         } catch (ParseException ex) {
@@ -306,6 +307,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
     public static final class Factory implements CodeTemplateProcessorFactory {
 
+        @Override
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
             return new PHPCodeTemplateProcessor(request);
         }
@@ -327,7 +329,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             scan(beginNode);
             return this.node;
         }
-        
+
         @Override
         public void scan(ASTNode current) {
             if (this.node == null && current != null) {
@@ -336,7 +338,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
 
         @Override
-        public void visit(Assignment node) { 
+        public void visit(Assignment node) {
             if (node != null) {
                 if (node.getStartOffset() > offset) {
                     this.node = node;

@@ -20,7 +20,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="targetFolderLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="targetFolderTextField" pref="201" max="32767" attributes="0"/>
+              <Component id="targetFolderTextField" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="browseTargetFolderButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>

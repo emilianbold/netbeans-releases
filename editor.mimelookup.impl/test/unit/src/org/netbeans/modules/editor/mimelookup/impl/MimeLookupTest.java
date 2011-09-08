@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
@@ -106,6 +107,7 @@ public class MimeLookupTest extends NbTestCase {
     /** 
      * Looking up the class that has registered subfolder via Class2LayerFolder
      */
+    @RandomlyFails // NB-Core-Build #6979
     public void testRegisteredClassLookup() throws IOException{
         MimePath mp = MimePath.parse("text/x-java/text/xml");
         Lookup lookup = MimeLookup.getLookup(mp);

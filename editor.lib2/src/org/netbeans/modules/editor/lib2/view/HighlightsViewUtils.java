@@ -565,8 +565,9 @@ public class HighlightsViewUtils {
                 // Length must be > 0; BTW TextLayout can't be constructed with empty string.
                 boolean breakFailed = (breakPartEndOffset - breakPartStartOffset == 0) ||
                         (breakPartEndOffset - breakPartStartOffset >= partLength);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("HV.breakView(): <"  + partStartOffset + "," + (partStartOffset+partLength) + // NOI18N
+                if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchyImpl.BUILD_LOG.fine("HV.breakView(): <"  + partStartOffset + // NOI18N
+                            "," + (partStartOffset+partLength) + // NOI18N
                         "> => <" + breakPartStartOffset + "," + (partStartOffset+breakPartEndOffset) + // NOI18N
                         ">, x=" + x + ", len=" + len + // NOI18N
                         ", charIndexX=" + breakCharIndexX + "\n"); // NOI18N

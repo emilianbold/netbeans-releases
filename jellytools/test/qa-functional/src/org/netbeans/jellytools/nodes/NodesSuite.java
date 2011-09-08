@@ -53,6 +53,7 @@ public class NodesSuite {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+                addTest(FolderNodeTest.class, FolderNodeTest.tests).
                 addTest(HTMLNodeTest.class, HTMLNodeTest.tests).
                 addTest(ImageNodeTest.class, ImageNodeTest.tests).
                 addTest(NodeTest.class, NodeTest.tests).

@@ -71,6 +71,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /** Provides information about web services and clients in a project
  * Provides information used for build-impl generation
@@ -99,8 +100,23 @@ public final class JaxWsModelImpl implements JaxWsModel {
         if (fo != null) {
             try {
                 jaxws = org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs.createGraph(fo.getInputStream());
-            } catch (IOException ex) {
-                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "JaxWsModel creation failed", ex);
+            } 
+            catch (IOException ex) {
+                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, 
+                        "JaxWsModel creation failed", ex);      // NOI18N
+            }
+            /*
+             *  Fix for BZ#199704 - RuntimeException: 
+             *  DOM graph creation failed: org.netbeans.modules.schema2beans.Schema2BeansRuntimeException: 
+             *  Failed to create the XML-DOM Document. Check your XML to make sure it is correct. Prematur
+             *  
+             *  RuntimeException should be changed to the unchecked exception but 
+             *  org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs is auto-generated
+             *  class so it cannot be corrected. 
+             */
+            catch (RuntimeException ex) {
+                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, 
+                        "JaxWsModel creation failed", ex);      // NOI18N
             }
             final Project prj = project;
             fo.addFileChangeListener(new FileChangeAdapter() {
@@ -440,13 +456,15 @@ public final class JaxWsModelImpl implements JaxWsModel {
                 os = fo.getOutputStream(lock);
                 write(os);
                 os.close();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } finally {
+            } 
+            finally {
                 if (lock!=null) lock.releaseLock();
                 if (os != null) os.close();
             }
-        } else throw new IOException("No FileObject for writing specified"); //NOI18N
+        } 
+        else {
+            throw new IOException("No FileObject for writing specified"); //NOI18N
+        }
     }
     
     @Override
