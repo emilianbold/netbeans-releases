@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -871,24 +872,29 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (ev.isLocal()) {
             String exePath = Path.findCommand(executable);
             if (exePath == null) {
-                throw new IOException(getString("NOT_FOUND", executable));
+                throw new IOException(getString("NOT_FOUND", executable));  // NOI18N
             }
-            String arguments = "";
-            for (String s : args) {
-                arguments += " " + s; // NOI18N
-            }
+            List<String> arguments = new ArrayList<String>(args.length + 1);
+            arguments.add(exePath);
+            arguments.addAll(Arrays.asList(args));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             StringBuilder output = new StringBuilder();
-
+           
             try {
-                Process p0 = Runtime.getRuntime().exec(exePath + " " + arguments, env); // NOI18N
-                InputStream is = p0.getInputStream();
+                ProcessBuilder pb = new ProcessBuilder(arguments);
+                for(String envEntry: env) {
+                    String[] varValuePair = envEntry.split("=");  // NOI18N
+                    pb.environment().put(varValuePair[0], varValuePair[1]);
+                }
+                Process p = pb.start();
+                InputStream is = p.getInputStream();
                 InputStreamReader ist = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(ist);
                 String line;
                 while ((line = br.readLine()) != null) {
                     output.append(line).append("\n"); // NOI18N
                 }
+                p.waitFor();
                 br.close();
                 ist.close();
                 is.close();
@@ -896,6 +902,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 return new NativeExitStatus(0, output.toString(), "");
             } catch (IOException ioe) {
                 throw ioe;
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
             }
         } else {
             ServerRecord record = ServerList.get(ev);
