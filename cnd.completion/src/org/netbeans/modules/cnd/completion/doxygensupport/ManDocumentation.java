@@ -241,10 +241,14 @@ public class ManDocumentation {
                 exitStatus = np.execute("man", null, name); // NOI18N
             }
         } else {
-            if (Locale.getDefault().getLanguage().trim().isEmpty() || Locale.getDefault().getLanguage().equals("en")) {  // NOI18N
+            // Current host locale is used here, because user possibly wants to see man pages 
+            // in locale of his development host, not in remote's host one.
+            String currentHostLocale = Locale.getDefault().getLanguage().trim();
+            if (currentHostLocale.isEmpty() || currentHostLocale.equals("en")) {  // NOI18N
                 exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-S3", name); // NOI18N
             } else {
-                exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-L", Locale.getDefault().getLanguage() + ".UTF-8", "-S3", name); // NOI18N
+                final String DOT_UTF8 = ".UTF-8";
+                exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-L",  currentHostLocale.replace(DOT_UTF8, "") + DOT_UTF8, "-S3", name); // NOI18N
             }
         }
         StringReader sr;
