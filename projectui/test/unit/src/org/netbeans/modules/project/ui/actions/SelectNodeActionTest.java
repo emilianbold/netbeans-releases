@@ -74,7 +74,7 @@ public class SelectNodeActionTest extends NbTestCase {
     }
 
     public void testEnabledUpdated() throws Exception {
-        Action a = SelectNodeAction.inProjects(contextLookup);
+        Action a = SelectNodeAction.inProjects().createContextAwareInstance(contextLookup);
 
         assertFalse(a.isEnabled());
         contextLookup.change(testDO);
