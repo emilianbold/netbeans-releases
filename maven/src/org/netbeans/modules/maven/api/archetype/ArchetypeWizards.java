@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.newproject.ArchetypeWizardUtils;
@@ -61,6 +62,12 @@ import org.openide.filesystems.FileObject;
 public class ArchetypeWizards {
 
     private ArchetypeWizards() {}
+
+    /**
+     * Customary location of Maven project templates.
+     * @see TemplateRegistration#folder
+     */
+    public static final String TEMPLATE_FOLDER = "Project/Maven2";
 
     /**
      * Run a single archetype.
