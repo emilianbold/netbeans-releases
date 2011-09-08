@@ -56,6 +56,7 @@ import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -108,7 +109,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
             panels.add(new ChooseWizardPanel());
             steps.add(LBL_CreateProjectStep());
         }
-        panels.add(new BasicWizardPanel(vg));
+        panels.add(new BasicWizardPanel(vg, null, true, true));
         steps.add(LBL_CreateProjectStep2());
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
@@ -128,6 +129,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
         panels = null;
     }
     
+    @Messages("NameFormat={0} of {1}")
     public @Override String name() {
         return NameFormat(index + 1, panels.size());
     }

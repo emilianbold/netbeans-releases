@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.j2ee.newproject;
 
 import java.util.HashSet;
 import java.util.Iterator;

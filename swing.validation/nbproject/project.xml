@@ -30,6 +30,7 @@
                 <friend>org.netbeans.modules.javacard.spi</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.nodejs</friend>
                 <package>org.netbeans.api.validation.adapters</package>
                 <package>org.netbeans.validation.api</package>
