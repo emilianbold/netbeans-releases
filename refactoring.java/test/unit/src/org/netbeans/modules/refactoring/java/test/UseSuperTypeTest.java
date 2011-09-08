@@ -94,6 +94,38 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("u/Iface.java", "package u; public interface Iface { }"));
     }
 
+    public void test128676() throws Exception { // #128676 - [Use Supertype] Refactoring does not respect bound generic type
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { }"));
+        performUseSuperType(src.getFileObject("u/Main.java"));
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { }"));
+
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { public void subMethod(); }"));
+        performUseSuperType(src.getFileObject("u/Main.java"));
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Iface sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { public void subMethod(); }"));
+
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { }"));
+        performUseSuperType(src.getFileObject("u/Main.java"));
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { input.subMethod(); } }"),
+                new File("u/Iface.java", "package u; public interface Iface { }"));
+    }
+
     private void performUseSuperType(FileObject source, Problem... expectedProblems) throws Exception {
         final UseSuperTypeRefactoring[] r = new UseSuperTypeRefactoring[1];
 
