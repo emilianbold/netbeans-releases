@@ -808,31 +808,40 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null) {
-                CsmObject first = null;
-                Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
-                try {
-                    first = aResolver.resolve(Utils.splitQualifiedName(nameTokens[0].toString()), NAMESPACE);
-                } finally {
-                    ResolverFactory.releaseResolver(aResolver);
+                CsmNamespace ns = null;
+                String nsName = nameTokens[0].toString(); // NOI18N
+                int i;
+                for (i = 1; i < nameTokens.length; i++) {
+                    CsmObject nsObj = null;
+                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
+                    try {
+                        nsObj = aResolver.resolve(Utils.splitQualifiedName(nsName), NAMESPACE);
+                    } finally {
+                        ResolverFactory.releaseResolver(aResolver);
+                    }                    
+                    if (nsObj instanceof CsmNamespace) {
+                        ns = (CsmNamespace)nsObj;                                            
+                        CharSequence token = nameTokens[i];
+                        nsName = ns.getQualifiedName() + "::" + token; // NOI18N
+                    } else {
+                        break;
+                    }
                 }
-                if (first != null) {
-                    if (first instanceof CsmNamespace) {
-                        NamespaceImpl ns = (NamespaceImpl) first;
-                        StringBuilder sb = new StringBuilder(ns.getQualifiedName());
-                        for (int i = 1; i < nameTokens.length; i++) {
+                i--;
+                if (ns != null) {
+                    StringBuilder sb = new StringBuilder(ns.getQualifiedName());
+                    for (int j = i; j < nameTokens.length; j++) {
+                        sb.append("::"); // NOI18N
+                        sb.append(nameTokens[j]);
+                    }
+                    result = findClassifierUsedInFile(sb.toString());
+                    if (result == null) {
+                        sb = new StringBuilder(nameTokens[i]);
+                        for (int j = i + 1; j < nameTokens.length; j++) {
                             sb.append("::"); // NOI18N
-                            sb.append(nameTokens[i]);
+                            sb.append(nameTokens[j]);
                         }
-                        result = findClassifierUsedInFile(sb.toString());
-                        if (result == null) {
-                            sb = new StringBuilder(nameTokens[1]);
-                            for (int i = 2; i < nameTokens.length; i++) {
-                                sb.append("::"); // NOI18N
-                                sb.append(nameTokens[i]);
-                            }
-                            result = resolveInUsings(ns, sb.toString());
-                        }
-                    } else if (first instanceof CsmClass) {
+                        result = resolveInUsings(ns, sb.toString());
                     }
                 }
             }
