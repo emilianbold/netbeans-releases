@@ -590,13 +590,15 @@ public class MakeConfiguration extends Configuration {
         }
         for (Item item : folder.getItemsAsArray()) {
             ItemConfiguration itemConfiguration = (ItemConfiguration) makeConf.getAuxObject(item.getId());
-            if (itemConfiguration.getCCompilerConfiguration() != null) {
-                itemConfiguration.getCCompilerConfiguration().setMaster(folderConfiguration.getCCompilerConfiguration());
-                itemConfiguration.getCCompilerConfiguration().fixupMasterLinks(makeConf.getCCompilerConfiguration());
-            }
-            if (itemConfiguration.getCCCompilerConfiguration() != null) {
-                itemConfiguration.getCCCompilerConfiguration().setMaster(folderConfiguration.getCCCompilerConfiguration());
-                itemConfiguration.getCCCompilerConfiguration().fixupMasterLinks(makeConf.getCCCompilerConfiguration());
+            if (itemConfiguration != null) {
+                if (itemConfiguration.getCCompilerConfiguration() != null) {
+                    itemConfiguration.getCCompilerConfiguration().setMaster(folderConfiguration.getCCompilerConfiguration());
+                    itemConfiguration.getCCompilerConfiguration().fixupMasterLinks(makeConf.getCCompilerConfiguration());
+                }
+                if (itemConfiguration.getCCCompilerConfiguration() != null) {
+                    itemConfiguration.getCCCompilerConfiguration().setMaster(folderConfiguration.getCCCompilerConfiguration());
+                    itemConfiguration.getCCCompilerConfiguration().fixupMasterLinks(makeConf.getCCCompilerConfiguration());
+                }
             }
         }
         for (Folder subfolder : folder.getFoldersAsArray()) {
