@@ -75,6 +75,7 @@ import javax.swing.JToolBar;
 import javax.swing.JToolBar.Separator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -201,6 +202,7 @@ class ResultViewPanel extends JPanel{
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
         treeView.setBorder(BorderFactory.createEmptyBorder());
+        ResultTreeScrollController.register(treeView, tree);
 
         resultsPanel = new JPanel(resultViewCards = new CardLayout());
 
@@ -524,7 +526,23 @@ class ResultViewPanel extends JPanel{
     private JTree createTree(ResultTreeModel treeModel,
                                     NodeListener nodeListener,
                                     ArrowStatusUpdater arrowUpdater) {
-        JTree newTree = new JTree(treeModel);
+        JTree newTree = new JTree(treeModel) {
+
+            @Override
+            public String getToolTipText(MouseEvent evt) {
+                if (getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                    return null;
+                }
+                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                Object o = curPath.getLastPathComponent();
+
+                if (o instanceof MatchingObject) {
+                    return ((MatchingObject) o).getFileDisplayName();
+                } else {
+                    return null;
+                }
+            }
+        };
 
         TreeCellRenderer cellRenderer = new NodeRenderer(false);
         newTree.setCellRenderer(cellRenderer);
@@ -550,7 +568,9 @@ class ResultViewPanel extends JPanel{
 
         newTree.addMouseListener(arrowUpdater);
         newTree.addKeyListener(arrowUpdater);
-
+        
+        ToolTipManager.sharedInstance().registerComponent(newTree);
+        
         return newTree;
     }
 

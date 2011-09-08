@@ -49,10 +49,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -126,18 +123,42 @@ public class MoveTransformer extends RefactoringVisitor {
                     }
                 } else {
                     if (isThisFileMoving) {
-                        if (el.getKind() != ElementKind.PACKAGE
-                                && getPackageOf(el).toString().equals(originalPackage)
-                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                        if (el.getKind() != ElementKind.PACKAGE) {
+                            Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                            
+                            EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
+                            TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if(enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
+                            
+                            if(getPackageOf(el).toString().equals(originalPackage)
+                                && (!(containsAnyOf(el, neededMods))
+                                || (enclosingTypeElement!=null? !containsAnyOf(enclosingTypeElement, neededMods) : false))
                                 && !move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
+                        }
                     } else {
-                        if (el.getKind()!=ElementKind.PACKAGE
-                                && getPackageOf(el).toString().equals(originalPackage)
-                                && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
+                        if (el.getKind()!=ElementKind.PACKAGE) {
+                            Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+
+                            EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
+                            TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if(enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
+
+                            if(getPackageOf(el).toString().equals(originalPackage)
+                                && (!(containsAnyOf(el, neededMods))
+                                || (enclosingTypeElement!=null? !containsAnyOf(enclosingTypeElement, neededMods) : false))
                                 && move.filesToMove.contains(getFileObject(el))) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
+                        }
                         }
                     }
                 }
@@ -167,11 +188,23 @@ public class MoveTransformer extends RefactoringVisitor {
                             if (!RetoucheUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
                                 elementsToImport.add(el);
                         }
-                    } else if (el.getKind() != ElementKind.PACKAGE
-                            && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
-                            && getPackageOf(el).toString().equals(originalPackage)
-                            && move.filesToMove.contains(getFileObject(el))) {
-                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                } else if (el.getKind() != ElementKind.PACKAGE) {
+                        Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                        
+                        EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
+                        TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                        if(enclosingTypeElement != null && enclosingClass != null
+                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        }
+
+                        if (getPackageOf(el).toString().equals(originalPackage)
+                                && (!(containsAnyOf(el, neededMods))
+                                || (enclosingTypeElement!=null? !containsAnyOf(enclosingTypeElement, neededMods) : false))
+                                && move.filesToMove.contains(getFileObject(el))) {
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature", workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                        }
                     }
                 } else {
                     Boolean[] isElementMoving = new Boolean[1];
@@ -180,12 +213,24 @@ public class MoveTransformer extends RefactoringVisitor {
                         importToAdd.add(el.toString());
                         isThisFileReferencingOldPackage = true;
                     }
-                    if (el.getKind() != ElementKind.PACKAGE
-                            && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))
-                            && !isElementMoving(el, isElementMoving)
-                            && getPackageOf(el).toString().equals(originalPackage)
-                            && !move.filesToMove.contains(getFileObject(el))) {
-                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
+                    if (el.getKind() != ElementKind.PACKAGE) {
+                        Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                        
+                        EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
+                        TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                        if(enclosingTypeElement != null && enclosingClass != null
+                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        }
+                        
+                        if (getPackageOf(el).toString().equals(originalPackage)
+                                && (!(containsAnyOf(el, neededMods))
+                                || (enclosingTypeElement!=null? !containsAnyOf(enclosingTypeElement, neededMods) : false))
+                                && !isElementMoving(el, isElementMoving)
+                                && !move.filesToMove.contains(getFileObject(el))) {
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2", workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
+                        }
                     }
                 }
             }
@@ -371,6 +416,15 @@ public class MoveTransformer extends RefactoringVisitor {
             }
         }
         return super.visitImport(node, p);
+    }
+
+    private boolean containsAnyOf(Element el, EnumSet<Modifier> neededMods) {
+        for (Modifier mod : neededMods) {
+            if(el.getModifiers().contains(mod)) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

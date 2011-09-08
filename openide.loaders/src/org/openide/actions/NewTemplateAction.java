@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.netbeans.modules.openide.loaders.DataNodeUtils;
 import org.openide.awt.*;
 import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.*;
@@ -162,7 +163,7 @@ public class NewTemplateAction extends NodeAction {
     }
     
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
 
     /* Enables itself only when activates node is DataFolder.
@@ -680,7 +681,8 @@ public class NewTemplateAction extends NodeAction {
         private void updateKeys () {
             // updateKeys can be called while holding Children.MUTEX
             //   --> replan getNodes(true) to a new thread
-            RequestProcessor.getDefault().post(new Runnable() {
+            DataNodeUtils.reqProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     doSetKeys ();
                 }

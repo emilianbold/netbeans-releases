@@ -52,19 +52,15 @@ import org.codehaus.plexus.PlexusContainer;
  */
 class EmbedderConfiguration {
     private final PlexusContainer cont;
-    private final File local;
     private final Properties props;
     private final boolean offline;
+    private final File settingsXml;
 
-    EmbedderConfiguration(PlexusContainer cont, File local, Properties props, boolean offline) {
+    EmbedderConfiguration(PlexusContainer cont, Properties props, boolean offline, File settingsXml) {
         this.cont = cont;
-        this.local = local;
         this.props = props;
         this.offline = offline;
-    }
-
-    File getLocalRepository() {
-        return local;
+        this.settingsXml = settingsXml;
     }
 
     Properties getSystemProperties() {
@@ -77,6 +73,10 @@ class EmbedderConfiguration {
 
     public boolean isOffline() {
         return offline;
+    }
+
+    File getSettingsXml() {
+        return settingsXml;
     }
 
 }

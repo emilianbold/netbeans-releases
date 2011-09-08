@@ -174,14 +174,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public void checkout (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+    public void checkout (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         if (revision != null) {
-            ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
+            ResetCommand cmd = new ResetCommand(repository, revision, roots, recursively, monitor, this);
             cmd.execute();
         }
         if (!monitor.isCanceled()) {
-            CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, roots, monitor, this);
+            CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, roots, recursively, monitor, this);
             cmd.execute();
         }
     }
@@ -507,9 +507,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+    public void reset (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
-        ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
+        ResetCommand cmd = new ResetCommand(repository, revision, roots, recursively, monitor, this);
         cmd.execute();
     }
 

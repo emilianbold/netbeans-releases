@@ -33,6 +33,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 <mapID target="files.tasklist" url="files/files_tasklist.html" />
+<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
 
 
 
@@ -432,8 +433,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction" url="pending.html" />
 <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertToAction" url="pending.html" />
 
-<!-- TODO:  Request target for Diff Viewer: -->
-<!-- <mapID target="" url="local-history/csh/hist_diff_viewer.html" /> -->
+
+<mapID target="org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent" url="local-history/csh/local_hist_tc.html" />
 
 
 

@@ -51,10 +51,10 @@ class HgLogMessageChangedPath {
     private String copyPath;
     private char action;
     
-    public HgLogMessageChangedPath(String path, char action){
+    public HgLogMessageChangedPath(String path, String originalPath, char action){
         this.path = path;
         this.action = action;
-        this.copyPath = null;
+        this.copyPath = originalPath;
     }
     public String getPath(){
         return path;

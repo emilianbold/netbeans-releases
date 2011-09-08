@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -61,21 +60,20 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.modules.maven.options.MavenCommandSettings;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
+import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -83,7 +81,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -99,164 +97,52 @@ public class ArchetypeWizardUtils {
     /** {@code Map<String,String>} of custom archetype properties to define. */
     public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
 
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(ArchetypeWizardUtils.class.getName());
 
-    /**
-     * No instances, utility class.
-     */
     private ArchetypeWizardUtils() {
     }
 
-    static final Archetype[] WEB_APP_ARCHS;
-    static final Archetype[] EJB_ARCHS;
-    static final Archetype[] EAR_ARCHS;
-    static final Archetype[] APPCLIENT_ARCHS;
-    static final Archetype EA_ARCH;
-    
-    static final String[] EE_LEVELS = {
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
-        NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
-    };
-
-    static {
-        WEB_APP_ARCHS = new Archetype[3];
-
-        Archetype arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.4"); //NOI18N
-        arch.setArtifactId("webapp-javaee6"); //NOI18N
-        WEB_APP_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
-        arch.setArtifactId("webapp-jee5"); //NOI18N
-        WEB_APP_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
-        arch.setArtifactId("webapp-j2ee14"); //NOI18N
-        WEB_APP_ARCHS[2] = arch;
-
-        EJB_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.4"); //NOI18N
-        arch.setArtifactId("ejb-javaee6"); //NOI18N
-        EJB_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
-        arch.setArtifactId("ejb-jee5"); //NOI18N
-        EJB_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
-        arch.setArtifactId("ejb-j2ee14"); //NOI18N
-        EJB_ARCHS[2] = arch;
-
-        APPCLIENT_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-20110808.231428-2"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
-        arch.setArtifactId("appclient-javaee6"); //NOI18N
-        APPCLIENT_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-20110808.231333-2"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
-        arch.setArtifactId("appclient-jee5"); //NOI18N
-        APPCLIENT_ARCHS[1] = arch;
-        
-//        arch = new Archetype();
-//        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-//        arch.setVersion("1.0"); //NOI18N
-//        arch.setArtifactId("appclient-javaee14"); //NOI18N
-        APPCLIENT_ARCHS[2] = arch;
-
-        EAR_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.4"); //NOI18N
-        arch.setArtifactId("ear-javaee6"); //NOI18N
-        EAR_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("ear-jee5"); //NOI18N
-        EAR_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("ear-j2ee14"); //NOI18N
-        EAR_ARCHS[2] = arch;
-
-        EA_ARCH = new Archetype();
-        EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        EA_ARCH.setVersion("1.1"); //NOI18N
-        EA_ARCH.setArtifactId("pom-root"); //NOI18N
-    }
-
+    @Messages({
+        "RUN_Project_Creation=Project Creation",
+        "RUN_Maven=Create project"
+    })
     private static void runArchetype(File directory, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional) throws IOException {
-        Properties props = new Properties();
-
-        props.setProperty("artifactId", vi.artifactId); //NOI18N
-        props.setProperty("version", vi.version); //NOI18N
-        props.setProperty("groupId", vi.groupId); //NOI18N
+        BeanRunConfig config = new BeanRunConfig();
+        config.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
+        config.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
+        config.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
+        String repo = arch.getRepository();
+        config.setProperty("archetypeRepository", repo != null ? repo : RepositoryPreferences.REPO_CENTRAL); //NOI18N
+        config.setProperty("groupId", vi.groupId); //NOI18N
+        config.setProperty("artifactId", vi.artifactId); //NOI18N
+        config.setProperty("version", vi.version); //NOI18N
         final String pack = vi.packageName;
         if (pack != null && pack.trim().length() > 0) {
-            props.setProperty("package", pack); //NOI18N
+            config.setProperty("package", pack); //NOI18N
         }
-        props.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
-        props.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
-        props.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
-        props.setProperty("basedir", directory.getAbsolutePath());//NOI18N
+        config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
 
         if (additional != null) {
-            for (String key : additional.keySet()) {
-                props.setProperty(key, additional.get(key));
+            for (Map.Entry<String,String> entry : additional.entrySet()) {
+                config.setProperty(entry.getKey(), entry.getValue());
             }
         }
-        BeanRunConfig config = new BeanRunConfig();
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
-        config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
+        config.setExecutionName(RUN_Project_Creation());
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
-        String repo = arch.getRepository();
-        props.setProperty("archetypeRepository", repo != null ? repo : RepositoryPreferences.REPO_CENTRAL); //NOI18N
 
         //ExecutionRequest.setInteractive seems to have no influence on archetype plugin.
         config.setInteractive(false);
-        props.setProperty("archetype.interactive", "false");//NOI18N
-        config.setProperties(props);
+        config.setProperty("archetype.interactive", "false");//NOI18N
         //#136853 make sure to get the latest snapshot always..
         if (arch.getVersion().contains("SNAPSHOT")) { //NOI18N
             config.setUpdateSnapshots(true);
         }
 
-        config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
-        // setup executor now..
-        //hack - we need to setup the user.dir sys property..
-        String oldUserdir = System.getProperty(USER_DIR_PROP); //NOI18N
-        System.setProperty(USER_DIR_PROP, directory.getAbsolutePath()); //NOI18N
-        try {
-            ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
-            task.result();
-        } finally {
-            if (oldUserdir == null) {
-                System.getProperties().remove(USER_DIR_PROP); //NOI18N
-            } else {
-                System.setProperty(USER_DIR_PROP, oldUserdir); //NOI18N
-            }
-        }
+        config.setTaskDisplayName(RUN_Maven());
+        ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
+        task.result();
     }
 
     static Map<String, String> getAdditionalProperties(Artifact art) {
@@ -285,10 +171,10 @@ public class ArchetypeWizardUtils {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
             //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
         } catch (SAXException ex) {
-            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         } finally {
             if (jf != null) {
                 try {
@@ -302,9 +188,9 @@ public class ArchetypeWizardUtils {
     }
 
     /**
-     * Instantiates archetype stored in given wizard descriptor, with progress UI notification.
+     * Instantiates archetype stored in given wizard descriptor.
      */
-    static Set<FileObject> instantiate(ProgressHandle handle, WizardDescriptor wiz) throws IOException {
+    static Set<FileObject> instantiate(WizardDescriptor wiz) throws IOException {
         ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
 
         Archetype arch = (Archetype) wiz.getProperty("archetype"); //NOI18N
@@ -313,45 +199,11 @@ public class ArchetypeWizardUtils {
         @SuppressWarnings("unchecked")
         Map<String,String> additional = (Map<String,String>) wiz.getProperty(ADDITIONAL_PROPS);
 
-        try {
-            ProjectInfo ear_vi = (ProjectInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
-            if (ear_vi != null) {
-                // enterprise application wizard, multiple archetypes to run
-                ProjectInfo web_vi = (ProjectInfo)wiz.getProperty("web_versionInfo"); //NOI18N
-                ProjectInfo ejb_vi = (ProjectInfo)wiz.getProperty("ejb_versionInfo"); //NOI18N
-
-                handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
-                File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-                createFromArchetype(handle, rootFile, vi, arch, additional, 0, true);
-                File earFile = FileUtil.normalizeFile((File) wiz.getProperty("ear_projdir")); // NOI18N
-                createFromArchetype(handle, earFile, ear_vi, (Archetype) wiz.getProperty("ear_archetype"), null, 4, false); //NOI18N
-                int progressCounter = 6;
-                if (web_vi != null) {
-                    createFromArchetype(handle, FileUtil.normalizeFile((File)wiz.getProperty("web_projdir")), web_vi, //NOI18N
-                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter, false); //NOI18N
-                    progressCounter += 3;
-                }
-                if (ejb_vi != null) {
-                    createFromArchetype(handle, FileUtil.normalizeFile((File)wiz.getProperty("ejb_projdir")), ejb_vi, //NOI18N
-                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter, false); //NOI18N
-                    progressCounter += 3;
-                }
-                addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
-                Set<FileObject> projects = openProjects(rootFile, earFile);
-                handle.progress(++progressCounter);
-                return projects;
-            } else {
-                handle.start(4);
-                File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-                createFromArchetype(handle, projFile, vi, arch, additional, 0, true);
-                Set<FileObject> projects = openProjects(projFile, null);
-                handle.progress(4);
-                Templates.setDefinesMainProject(wiz, projects.size() > 1);
-                return projects;
-            }
-        } finally {
-            handle.finish();
-        }
+        File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        createFromArchetype(projFile, vi, arch, additional, true);
+        Set<FileObject> projects = openProjects(projFile, null);
+        Templates.setDefinesMainProject(wiz, projects.size() > 1);
+        return projects;
     }
 
     private static final String loggerName = "org.netbeans.ui.metrics.maven"; // NOI18N
@@ -365,19 +217,18 @@ public class ArchetypeWizardUtils {
         Logger.getLogger(loggerName).log(logRecord);
     }
     
-    public static void createFromArchetype(ProgressHandle handle, File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional, int progressCounter, boolean updateLastUsedProjectDir) throws IOException {
-        handle.progress(++progressCounter);
-
+    public static void createFromArchetype(File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additional, boolean updateLastUsedProjectDir) throws IOException {
         final File parent = projDir.getParentFile();
+        if (parent == null) {
+            throw new IOException("no parent of " + projDir);
+        }
         if (updateLastUsedProjectDir && parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        parent.mkdirs();
-        handle.progress(NbBundle.getMessage(MavenWizardIterator.class, "PRG_Processing_Archetype"), ++progressCounter);
-
+        if (!parent.isDirectory() && !parent.mkdirs()) {
+            throw new IOException("could not create " + parent);
+        }
         runArchetype(parent, vi, arch, additional);
-
-        handle.progress(++progressCounter);
     }
 
     public static Set<FileObject> openProjects(File dirF, File mainProjectDir) throws IOException {
@@ -423,25 +274,6 @@ public class ArchetypeWizardUtils {
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {
-        FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
-        if (earDirFO == null) {
-            return;
-        }
-        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
-        if (ejbVi != null) {
-            // EAR ---> ejb
-            operations.add(new AddDependencyOperation(ejbVi, "ejb"));
-        }
-        if (webVi != null) {
-            // EAR ---> war
-            operations.add(new AddDependencyOperation(webVi, "war"));
-        }
-
-        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
-        progressCounter++;
     }
 
     public static class AddDependencyOperation implements ModelOperation<POMModel> {

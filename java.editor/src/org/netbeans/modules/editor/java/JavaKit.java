@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
@@ -76,6 +77,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
+import org.netbeans.modules.java.editor.imports.ClipboardHandler;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
@@ -87,6 +89,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
 * Java editor kit with appropriate document
@@ -276,10 +279,10 @@ public class JavaKit extends NbEditorKit {
             new SelectCodeElementAction(selectNextElementAction, true),
             new SelectCodeElementAction(selectPreviousElementAction, false),
 
-            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new JavaNextWordAction(nextWordAction),
+            new JavaPreviousWordAction(previousWordAction),
+            new JavaNextWordAction(selectionNextWordAction),
+            new JavaPreviousWordAction(selectionPreviousWordAction),
             new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
             new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
 
@@ -288,6 +291,7 @@ public class JavaKit extends NbEditorKit {
 
             new GoToMarkOccurrencesAction(false),
             new GoToMarkOccurrencesAction(true),
+            new ClipboardHandler.JavaCutAction(),
         };
 
         return TextAction.augmentList(superActions, actions);
@@ -301,6 +305,12 @@ public class JavaKit extends NbEditorKit {
             }
         }
         return null;
+    }
+
+    @Override
+    public void install(JEditorPane c) {
+        super.install(c);
+        ClipboardHandler.install(c);
     }
 
     public static class JavaDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
@@ -949,5 +959,38 @@ public class JavaKit extends NbEditorKit {
         }
 
     }
-    
+
+    private static boolean isUsingCamelCase() {
+        return NbPreferences.root().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+    }
+
+    public static class JavaNextWordAction extends NextWordAction {
+
+        JavaNextWordAction(String name) {
+            super(name);
+        }
+        
+        @Override
+        protected int getNextWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.nextCamelCasePosition(target)
+                    : super.getNextWordOffset(target);
+        }
+
+    }
+
+    public static class JavaPreviousWordAction extends PreviousWordAction {
+
+        JavaPreviousWordAction(String name) {
+            super(name);
+        }
+
+        protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
+            return isUsingCamelCase()
+                    ? CamelCaseOperations.previousCamelCasePosition(target)
+                    : super.getPreviousWordOffset(target);
+        }
+
+    }
+
 }

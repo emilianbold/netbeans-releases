@@ -1,6 +1,4 @@
 Code completion result for source line:
 echo "class property: $this->|name\n";
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     getName()                       [PUBLIC]   Book
-METHOD     setName($name)                  [PUBLIC]   Book
 VARIABLE   ? name                          [PUBLIC]   Book

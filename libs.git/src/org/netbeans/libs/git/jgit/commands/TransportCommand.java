@@ -100,7 +100,11 @@ abstract class TransportCommand extends GitCommand {
             CredentialItem.Username itm = new CredentialItem.Username();
             credentialsProvider.get(uri, itm);
             if (itm.getValue() != null) {
-                uri = uri.setUser(itm.getValue());
+                if (itm.getValue().isEmpty()) {
+                    uri = uri.setUser(null);
+                } else {
+                    uri = uri.setUser(itm.getValue());
+                }
             }
         }
         return uri;

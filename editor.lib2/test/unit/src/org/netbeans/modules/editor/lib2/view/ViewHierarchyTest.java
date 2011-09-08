@@ -91,28 +91,28 @@ public class ViewHierarchyTest extends NbTestCase {
         setFilter(filter);
     }
 
-    private RandomTestContainer createContainer(boolean logOpAndDoc) throws Exception {
+    private RandomTestContainer createContainer() throws Exception {
         RandomTestContainer container = RootViewRandomTesting.createContainer();
         container.setName(this.getName());
-        container.setLogOp(logOpAndDoc);
-        DocumentTesting.setLogDoc(container, logOpAndDoc);
+        DocumentTesting.setLogDoc(container, false); // can be overriden if necessary
         return container;
     }
 
     @Override
     protected Level logLevel() {
-        return null;
+        return Level.INFO; // null;
 //        return Level.FINEST;
     }
 
     private static void loggingOn() {
         Level LOG_LEVEL = Level.FINEST;
         // FINEST throws ISE for integrity error in EditorView
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
+        Logger.getLogger("org.netbeans.editor.view.check").setLevel(Level.FINEST);
+//        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
+//        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
+//        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
         // Check gap-storage correctness
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
+//        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseCaret.EDT").setLevel(Level.FINE);
     }
@@ -224,24 +224,42 @@ public class ViewHierarchyTest extends NbTestCase {
         rootView.modelToView(0); // Force rebuild of VH
     }
     
+    public void testInsertNewlineIntoPartial() throws Exception {
+//        loggingOn();    
+        TestRootView rootView = new TestRootView();
+        Document doc = rootView.getDocument();
+        rootView.modelToView(0);
+        doc.insertString(0, "x\nya\n\nbc\nmorning", null);
+        rootView.setBounds(3, doc.getLength() - 3);
+        rootView.modelToView(0);
+        doc.insertString(8, "\n\n", null);
+        rootView.modelToView(0);
+    }
+    
     public void testRandom() throws Exception {
-//        loggingOn();
-        RandomTestContainer container = createContainer(true);
+        loggingOn();
+        RandomTestContainer container = createContainer();
         DocumentTesting.setLogDoc(container, false);
-        container.setLogOp(false);
         RandomTestContainer.Round round = RootViewRandomTesting.addRound(container);
+        round.setRatio(RootViewRandomTesting.CREATE_ROOT_VIEW, 0);
+        round.setRatio(RootViewRandomTesting.DESTROY_ROOT_VIEW, 0);
         RandomTestContainer.Context context = container.context();
         DocumentTesting.insert(context, 0, "test\n\nab\nxyz\n\nfd\nhjk");
         TestRootView rootView = RootViewRandomTesting.addNewRootView(context);
         rootView.setBounds(3, 10);
+        rootView = RootViewRandomTesting.addNewRootView(context);
+        rootView.setBounds(1, 5);
+        rootView = RootViewRandomTesting.addNewRootView(context);
+        rootView.setBounds(8, 15);
+
 //        round.setRatio(RootViewRandomTesting.CREATE_ROOT_VIEW, 0f); // No new root views
         round.setOpCount(500);
         container.runInit(1305718603094L);
-        container.runOps(94);
+        container.runOps(355);
         container.runOps(0);
 //        container.run(1305713030265L);
         container.runInit(1305643331093L);
-        container.runOps(104);
+        container.runOps(356);
         container.runOps(0);
         container.run(0L); // truly pseudo-random
     }

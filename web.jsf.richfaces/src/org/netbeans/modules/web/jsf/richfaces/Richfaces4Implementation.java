@@ -42,7 +42,10 @@
 package org.netbeans.modules.web.jsf.richfaces;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,13 +57,17 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -70,26 +77,23 @@ import org.openide.util.NbPreferences;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class Richfaces4Implementation implements JsfComponentImplementation {
-    
-    private final String name;
-    private final String description;    
-    
+
+    public static final Logger LOGGER = Logger.getLogger(Richfaces4Implementation.class.getName());
+
     private Richfaces4Customizer customizer;
-    
-    public static final String LIBRARY_NAME = "Richfaces 4.0.0"; //NOI18N
-    public static final Logger LOGGER = Logger.getLogger(Richfaces4Implementation.class.getName()); 
-    
+
+    private static final String RICHFACES_NAME = "RichFaces 4.0"; //NOI18N
+    private static final String richfacesUiPom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom";
+    private static final String richfacesCorePom ="https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/core/richfaces-core-impl/4.0.0.Final/richfaces-core-impl-4.0.0.Final.pom";
+
     public static final Map<String, String> RF_LIBRARIES = new HashMap<String, String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();
-    
+
     public static final String PREF_RICHFACES_NODE = "richfaces4"; //NOI18N
     public static final String PREF_RICHFACES_LIBRARY = "base-library"; //NOI18N
-    
-    
+
+
     public Richfaces4Implementation() {
-        this.name = NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces4"); //NOI18N
-        this.description = NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces4_Description");  //NOI18N
-     
         if (RF_LIBRARIES.isEmpty()) {
             RF_LIBRARIES.put("org.richfaces.application.Module", "richfaces-core-api-4.0.0.Final.jar"); //NOI18N
             RF_LIBRARIES.put("org.richfaces.application.ServiceLoader", "richfaces-core-impl-4.0.0.Final.jar"); //NOI18N
@@ -105,44 +109,76 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     @Override
     public String getName() {
-        return name;
+        return RICHFACES_NAME;
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces4_Description");  //NOI18N
     }
 
     @Override
     public void remove(WebModule wm) {
-    }    
-    
+    }
+
     @Override
     public Set<org.openide.filesystems.FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
-        FileObject[] javaSources =  webModule.getJavaSources();
+        // Add library to webmodule classpath
         try {
             List<Library> libraries = new ArrayList<Library>(1);
             Library rfLibrary = null;
-            
+
             // get the RF library from customizer
-            String chosenLibrary = ((Richfaces4CustomizerPanelVisual)jsfComponentCustomizer.getComponent()).getRichFacesLibrary();
-            rfLibrary = LibraryManager.getDefault().getLibrary(chosenLibrary);
-            
+            if (jsfComponentCustomizer != null) {
+                Richfaces4CustomizerPanelVisual panel = (Richfaces4CustomizerPanelVisual) jsfComponentCustomizer.getComponent();
+                rfLibrary = LibraryManager.getDefault().getLibrary(panel.getRichFacesLibrary());
+            }
+
+            // or search for library stored in Richfaces preferences
+            if (rfLibrary == null) {
+                Preferences preferences = getRichfacesPreferences();
+                rfLibrary = LibraryManager.getDefault().getLibrary(
+                        preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, "")); //NOI18N
+            }
+
             // otherwise search for any registered RF library in IDE
             if (rfLibrary == null) {
-                Preferences preferences = NbPreferences.forModule(Richfaces4Implementation.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
-                rfLibrary = LibraryManager.getDefault().getLibrary(preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, ""));
                 rfLibrary = Richfaces4Customizer.getRichfacesLibraries().get(0);
             }
 
-            libraries.add(rfLibrary);
-            ProjectClassPathModifier.addLibraries(libraries.toArray(new Library[1]), javaSources[0], ClassPath.COMPILE);
+            if (rfLibrary != null) {
+                FileObject[] javaSources = webModule.getJavaSources();
+                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
+
+                // in cases of Maven, update library to contains maven-pom references if needed
+                if (antArtifactProvider == null) {
+                    List<URI> pomArtifacts;
+                    try {
+                        pomArtifacts = Arrays.asList(
+                                new URI(richfacesUiPom),
+                                new URI(richfacesCorePom));
+                        rfLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(rfLibrary, pomArtifacts);
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                // add library to project dependencies
+                libraries.add(rfLibrary);
+                ProjectClassPathModifier.addLibraries(
+                        libraries.toArray(new Library[1]),
+                        javaSources[0],
+                        ClassPath.COMPILE);
+            } else {
+                LOGGER.log(Level.SEVERE, "No RichFaces library was found.");
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
-        
+
         return Collections.<FileObject>emptySet();
     }
 
@@ -158,17 +194,27 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
         for (Entry<String, String> entry : entrySet) {
             if (classpath.findResource(entry.getKey().replace('.', '/') + ".class") == null) { //NOI18N
                 return false;
-            } 
+            }
         }
         return true;
     }
-    
+
     @Override
     public JsfComponentCustomizer createJsfComponentCustomizer(WebModule webModule) {
         if (customizer == null) {
             customizer = new Richfaces4Customizer();
-        } 
+        }
         return customizer;
     }
-    
+
+    /**
+     * Gets {@link Preferences} for RichFaces4.
+     *
+     * @return {@code Preferences} of the RichFaces4
+     */
+    public static Preferences getRichfacesPreferences() {
+        return NbPreferences.forModule(Richfaces4Implementation.class).
+                node(Richfaces4Implementation.PREF_RICHFACES_NODE);
+    }
+
 }

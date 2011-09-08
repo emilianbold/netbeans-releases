@@ -164,45 +164,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderScrollPane = new JScrollPane();
         projectFolderTextArea = new JTextArea();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return projectFolderCheckBox;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return projectFolderCheckBox;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return projectFolderTextArea;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  projectFolderCheckBox){
-                    return projectFolderTextField;
-                }
-                if(aComponent ==  projectFolderBrowseButton){
-                    return projectFolderTextArea;
-                }
-                if(aComponent ==  projectFolderTextField){
-                    return projectFolderBrowseButton;
-                }
-                return projectFolderCheckBox;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  projectFolderTextField){
-                    return projectFolderCheckBox;
-                }
-                if(aComponent ==  projectFolderTextArea){
-                    return projectFolderBrowseButton;
-                }
-                if(aComponent ==  projectFolderBrowseButton){
-                    return projectFolderTextField;
-                }
-                return projectFolderTextArea;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         Mnemonics.setLocalizedText(projectFolderCheckBox, NbBundle.getMessage(ProjectFolder.class, "LBL_SeparateProjectFolder")); // NOI18N
 
@@ -233,27 +195,23 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("nb.warningForeground"));
         projectFolderTextArea.setEnabled(false);
         projectFolderScrollPane.setViewportView(projectFolderTextArea);
-
         projectFolderTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleName")); // NOI18N
         projectFolderTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleDescription")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(projectFolderScrollPane)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(projectFolderScrollPane, Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(projectFolderCheckBox)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(projectFolderCheckBox)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(projectFolderLabel)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
+                        .addComponent(projectFolderLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(projectFolderBrowseButton)))
-                .addGap(0, 0, 0))
+                        .addComponent(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(projectFolderBrowseButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -278,6 +236,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
         projectFolderScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleName")); // NOI18N
         projectFolderScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

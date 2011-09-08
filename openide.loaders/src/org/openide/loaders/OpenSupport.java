@@ -213,6 +213,11 @@ public abstract class OpenSupport extends CloneableOpenSupport {
             return obj;
         }
 
+        // #201696: useful if subclass implementing Savable
+        @Override public String toString() {
+            return obj.getPrimaryFile().getNameExt();
+        }
+
         /** Adds property listener.
          */
         public void addPropertyChangeListener(PropertyChangeListener l) {

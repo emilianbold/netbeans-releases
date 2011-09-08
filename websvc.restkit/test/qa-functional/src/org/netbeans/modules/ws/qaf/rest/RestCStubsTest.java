@@ -78,20 +78,24 @@ public class RestCStubsTest extends RestTestBase {
         super(name);
     }
 
+    public RestCStubsTest(String name, Server server) {
+        super(name, server);
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
         if (!haveProjects) {
-            File f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject() ? 
-                "FromEntities" : "MvnFromEntities"); //NOI18N
+            File f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject()
+                    ? "FromEntities" : "MvnFromEntities"); //NOI18N
             assertTrue("dependent project not found", f.exists() && f.isDirectory());
             Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
             assertNotNull(p);
             if (!OpenProjectList.getDefault().isOpen(p)) {
                 openProjects(f.getAbsolutePath());
             }
-            f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject() ?
-                "FromPatterns" : "MvnFromPatterns"); //NOI18N
+            f = new File(getProjectsRootDir(), getProjectType().isAntBasedProject()
+                    ? "FromPatterns" : "MvnFromPatterns"); //NOI18N
             assertTrue("dependent project not found", f.exists() && f.isDirectory());
             p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
             assertNotNull(p);

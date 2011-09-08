@@ -55,6 +55,7 @@ import junit.framework.Test;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.NbModuleSuite;
@@ -89,6 +90,7 @@ public class FindUsagesTest extends NbTestCase {
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
         projectDir = Utilities.openProject("SimpleJ2SEApp", getDataDir());
+        SourceUtils.waitScanFinished();
     }
     
     public void testFindUsages() throws IOException, InterruptedException, ExecutionException {
@@ -216,6 +218,7 @@ public class FindUsagesTest extends NbTestCase {
     
     public void test200230() throws IOException, InterruptedException, ExecutionException {
         Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/Main.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -238,6 +241,7 @@ public class FindUsagesTest extends NbTestCase {
     
     public void test200843() throws IOException, InterruptedException, ExecutionException {
         Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];

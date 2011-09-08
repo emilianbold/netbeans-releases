@@ -56,18 +56,16 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkleint
  */
-@ProjectServiceProvider(service={ProjectClassPathModifierImplementation.class, ProjectClassPathExtender.class},
+@ProjectServiceProvider(service=ProjectClassPathModifierImplementation.class,
 projectType="org-netbeans-modules-maven")
-public class CPExtender extends ProjectClassPathModifierImplementation implements ProjectClassPathExtender {
+public class CPExtender extends ProjectClassPathModifierImplementation {
     private static final String SL_15 = "1.5"; //NOI18N
     private Project project;
     /** Creates a new instance of CPExtender */
@@ -121,7 +119,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         return false;
     }
 
-    public boolean addLibrary(Library library) throws IOException {
+    private boolean addLibrary(Library library) throws IOException {
         if ("toplink".equals(library.getName())) { //NOI18N
             //TODO would be nice if the toplink lib shipping with netbeans be the same binary
             // then we could just copy the pieces to local repo.
@@ -139,12 +137,16 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         //shall not return true, needs processing by the fallback impl as well.
         return false;
     }
-    
-    public boolean addArchiveFile(FileObject arg0) throws IOException {
+
+    @Override protected boolean addRoots(URI[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
         return false;
     }
-    
-    public boolean addAntArtifact(AntArtifact arg0, URI arg1) throws IOException {
+
+    @Override protected boolean removeRoots(URI[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
+        return false;
+    }
+
+    @Override protected boolean addProjects(Project[] projects, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
         return false;
     }
     

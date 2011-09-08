@@ -54,7 +54,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.namespace.QName;
-import org.netbeans.api.progress.ProgressHandle;
+import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
@@ -63,7 +63,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -84,7 +83,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
-public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
 
     public static final String NBM_ARTIFACTID = "nbm_artifactId";
     
@@ -92,17 +91,17 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.8"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.9"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.9"); //NOI18N
+        NB_APP_ARCH.setVersion("1.10"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.5"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.6"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
@@ -154,30 +153,21 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     
     @Override
     public Set<FileObject> instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
-    }
-    
-    @Override
-    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
 
         ArchetypeWizards.logUsage(archetype.getGroupId(), archetype.getArtifactId(), archetype.getVersion());
 
-        try {
             String nbm_artifactId = (String) wiz.getProperty(NBM_ARTIFACTID);
-            int max = nbm_artifactId != null ? 7 : 4;
-            handle.start(max);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
             String version = (String) wiz.getProperty(NB_VERSION);
             Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
-            ArchetypeWizards.createFromArchetype(handle, projFile, vi, archetype, additional, 0, true);
+            ArchetypeWizards.createFromArchetype(projFile, vi, archetype, additional, true);
             if (nbm_artifactId != null && projFile.exists()) {
                 //NOW we have the nbm-Platform or nbm suite template
                 //create the nbm module
                 ProjectInfo nbm = new ProjectInfo(vi.groupId, nbm_artifactId, vi.version, vi.packageName);
                 File nbm_folder = FileUtil.normalizeFile(new File(projFile, nbm_artifactId));
-                ArchetypeWizards.createFromArchetype(handle, nbm_folder, nbm, NB_MODULE_ARCH, additional, 2, true);
+                ArchetypeWizards.createFromArchetype(nbm_folder, nbm, NB_MODULE_ARCH, additional, false);
                 trimInheritedFromNbmProject(nbm_folder);
                 if (archetype == NB_APP_ARCH) {
                     File appDir = new File(projFile, "application"); //NOI18N
@@ -189,9 +179,9 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 addNbmPluginOsgiParameter(projFile);
             }
             if (archetype == NB_SUITE_ARCH) {
-                FileObject settingsXml = FileUtil.toFileObject(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE);
+                FileObject settingsXml = FileUtil.toFileObject(MavenCli.DEFAULT_USER_SETTINGS_FILE);
                 if (settingsXml == null) {
-                    settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
+                    settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenCli.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
                 }
                 Utilities.performSettingsModelOperations(settingsXml, Collections.<ModelOperation<SettingsModel>>singletonList(new ModelOperation<SettingsModel>() {
                     public @Override void performOperation(SettingsModel model) {
@@ -228,11 +218,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 addSnapshotRepo(projFile);
             }
             Templates.setDefinesMainProject(wiz, projects.size() > 1);
-            handle.progress(max);
             return projects;
-        } finally {
-            handle.finish();
-        }
     }
     
     @Override

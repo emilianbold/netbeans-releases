@@ -46,14 +46,12 @@ import java.awt.EventQueue;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -62,7 +60,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -70,18 +67,19 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.api.MavenValidators;
+import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -93,7 +91,7 @@ import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -118,7 +116,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private BasicWizardPanel panel;
     private final Archetype arch;
 
-    private String lastProjectName = ""; //NOI18N
     private final ValidationGroup vg;
 
     private boolean changedPackage = false;
@@ -128,18 +125,31 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     
     /** Creates new form PanelProjectLocationVisual */
     @SuppressWarnings("unchecked")
+    @Messages({
+        "VAL_projectLocationTextField=Project Location",
+        "VAL_projectNameTextField=Project Name",
+        "VAL_ArtifactId=ArtifactId",
+        "VAL_Version=Version",
+        "VAL_GroupId=GroupId",
+        "VAL_Package=Package",
+        "ERR_Project_Folder_cannot_be_created=Project Folder cannot be created.",
+        "ERR_Project_Folder_is_not_valid_path=Project Folder is not a valid path.",
+        "ERR_Project_Folder_is_UNC=Project Folder cannot be located on UNC path.",
+        "ERR_old_maven=Maven {0} is too old, version 2.0.7 or newer is needed.",
+        "ERR_Project_Folder_exists=Project Folder already exists and is not empty."
+    })
     BasicPanelVisual(BasicWizardPanel panel, Archetype arch) {
         this.panel = panel;
         this.arch = arch;
 
         initComponents();
 
-        projectLocationTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectLocationTextField"));
-        projectNameTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectNameTextField"));
-        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_ArtifactId"));
-        txtVersion.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Version"));
-        txtGroupId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_GroupId"));
-        txtPackage.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Package"));
+        projectLocationTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_projectLocationTextField());
+        projectNameTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_projectNameTextField());
+        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_ArtifactId());
+        txtVersion.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_Version());
+        txtGroupId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_GroupId());
+        txtPackage.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_Package());
 
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -152,15 +162,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         lblAdditionalProps.setVisible(false);
         jScrollPane1.setVisible(false);
 
-        if (panel.getArchetypes() == null) {
-            lblEEVersion.setVisible(false);
-            comboEEVersion.setVisible(false);
-        }
-
         btnSetupNewer.setVisible(false);
 
-        getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
+        getAccessibleContext().setAccessibleDescription(LBL_CreateProjectStep2());
 
         txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
         vg = ValidationGroup.create();
@@ -183,16 +187,16 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                             projLoc = projLoc.getParentFile();
                         }
                         if (projLoc == null || !projLoc.canWrite()) {
-                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_cannot_be_created"));
+                            problems.add(ERR_Project_Folder_cannot_be_created());
                             return false;
                         }
                         if (FileUtil.toFileObject(projLoc) == null) {
-                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path"));
+                            problems.add(ERR_Project_Folder_is_not_valid_path());
                             return false;
                         }
                         //#167136
                         if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
-                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_UNC"));
+                            problems.add(ERR_Project_Folder_is_UNC());
                             return false;
                         }
                         return true;
@@ -205,15 +209,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 boolean tooOld = isMavenTooOld();
                 btnSetupNewer.setVisible(tooOld);
                 if (tooOld) {
-                    problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_old_maven",
-                                 getCommandLineMavenVersion()));
+                    problems.add(ERR_old_maven(getCommandLineMavenVersion()));
                     return false;
                 }
                 File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText().trim()), projectNameTextField.getText().trim()).getAbsoluteFile());
                 File[] kids = destFolder.listFiles();
                 if (destFolder.exists() && kids != null && kids.length > 0) {
                     // Folder exists and is not empty
-                    problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
+                    problems.add(ERR_Project_Folder_exists());
                     return false;
                 }
 
@@ -257,8 +260,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         jScrollPane1 = new javax.swing.JScrollPane();
         tblAdditionalProps = new javax.swing.JTable();
         btnSetupNewer = new javax.swing.JButton();
-        lblEEVersion = new javax.swing.JLabel();
-        comboEEVersion = new javax.swing.JComboBox();
 
         projectNameLabel.setLabelFor(projectNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_ProjectName")); // NOI18N
@@ -300,7 +301,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_Optional")); // NOI18N
 
         lblAdditionalProps.setLabelFor(tblAdditionalProps);
-        org.openide.awt.Mnemonics.setLocalizedText(lblAdditionalProps, "jLabel2");
+        org.openide.awt.Mnemonics.setLocalizedText(lblAdditionalProps, "<additional properties>"); // NOI18N
 
         tblAdditionalProps.setModel(createPropModel());
         tblAdditionalProps.setColumnSelectionAllowed(true);
@@ -321,11 +322,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             pnlAdditionalsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlAdditionalsLayout.createSequentialGroup()
                 .addComponent(lblAdditionalProps)
-                .addContainerGap(511, Short.MAX_VALUE))
+                .addContainerGap(379, Short.MAX_VALUE))
             .addGroup(pnlAdditionalsLayout.createSequentialGroup()
                 .addComponent(btnSetupNewer)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -339,48 +340,37 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         btnSetupNewer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.btnSetupNewer.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lblEEVersion.setLabelFor(comboEEVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_JavaEE")); // NOI18N
-
-        comboEEVersion.setModel(new DefaultComboBoxModel(panel.getEELevels()));
-        comboEEVersion.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboEEVersionActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(createdFolderLabel)
+                    .addComponent(projectLocationLabel)
+                    .addComponent(projectNameLabel)
                     .addComponent(lblPackage)
                     .addComponent(lblVersion)
                     .addComponent(lblGroupId)
-                    .addComponent(lblArtifactId)
-                    .addComponent(createdFolderLabel)
-                    .addComponent(projectLocationLabel)
-                    .addComponent(projectNameLabel))
+                    .addComponent(lblArtifactId))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(createdFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtPackage, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(txtPackage, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(createdFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                    .addComponent(projectNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(browseButton)
-                    .addComponent(jLabel1)))
-            .addComponent(pnlAdditionals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(browseButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addContainerGap())))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(lblEEVersion)
-                .addGap(18, 18, 18)
-                .addComponent(comboEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(253, 253, 253))
+                .addComponent(pnlAdditionals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -397,11 +387,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createdFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(createdFolderLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblEEVersion)
-                    .addComponent(comboEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(31, 31, 31)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtArtifactId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblArtifactId))
@@ -435,12 +421,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
+    @Messages("TIT_Select_Project_Location=Select Project Location")
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String command = evt.getActionCommand();
         if ("BROWSE".equals(command)) { //NOI18N
             JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle(NbBundle.getMessage(BasicPanelVisual.class, "TIT_Select_Project_Location"));
+            chooser.setDialogTitle(TIT_Select_Project_Location());
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
@@ -458,10 +445,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    private void comboEEVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEEVersionActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_comboEEVersionActionPerformed
-
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
         OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
         panel.getValidationGroup().validateAll();
@@ -471,14 +454,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JButton btnSetupNewer;
-    private javax.swing.JComboBox comboEEVersion;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAdditionalProps;
     private javax.swing.JLabel lblArtifactId;
-    private javax.swing.JLabel lblEEVersion;
     private javax.swing.JLabel lblGroupId;
     private javax.swing.JLabel lblPackage;
     private javax.swing.JLabel lblVersion;
@@ -506,11 +487,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
     }
 
+    @Messages("ERR_multibyte=Multibyte chars not permitted in project name or Maven coordinates.")
     static boolean containsMultiByte (String text, WizardDescriptor wd) {
         char[] textChars = text.toCharArray();
         for (int i = 0; i < textChars.length; i++) {
             if ((int)textChars[i] > 255) {
-                wd.putProperty(ERROR_MSG, NbBundle.getMessage(BasicPanelVisual.class, "ERR_multibyte"));
+                wd.putProperty(ERROR_MSG, ERR_multibyte());
                 return true;
             }
 
@@ -553,9 +535,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             }
             d.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, map);
         }
-        if (panel.getArchetypes() != null) {
-            d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
-        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 panel.getValidationGroup().removeValidationGroup(vg);
@@ -563,6 +542,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         });
     }
     
+    @Messages({
+        "TXT_MavenProjectName=mavenproject{0}",
+        "TXT_Checking1=Checking additional creation properties..."
+    })
     void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty("projdir"); //NOI18N
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
@@ -576,8 +559,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         if(projectName == null) {
             int baseCount = 1;
-            String formatter = NbBundle.getMessage(BasicPanelVisual.class,"TXT_MavenProjectName");
-            while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
+            while ((projectName = validFreeProjectName(projectLocation, TXT_MavenProjectName(baseCount))) == null) {
                 baseCount++;                
             }
         }
@@ -587,7 +569,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         // skip additional properties if direct known archetypes without additional props used
         if (panel.areAdditional()) {
             final Archetype arch = getArchetype(settings);
-            lblAdditionalProps.setText(NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking1"));
+            lblAdditionalProps.setText(TXT_Checking1());
             lblAdditionalProps.setVisible(true);
             tblAdditionalProps.setVisible(false);
             jScrollPane1.setVisible(false);
@@ -604,10 +586,15 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         });
     }
 
+    @Messages({
+        "COL_Key=Key",
+        "COL_Value=Value",
+        "TXT_Checking2=A&dditional Creation Properties:"
+    })
     private void prepareAdditionalProperties(Archetype arch) {
         final DefaultTableModel dtm = new DefaultTableModel();
-        dtm.addColumn(NbBundle.getMessage(BasicPanelVisual.class, "COL_Key"));
-        dtm.addColumn(NbBundle.getMessage(BasicPanelVisual.class, "COL_Value"));
+        dtm.addColumn(COL_Key());
+        dtm.addColumn(COL_Value());
         try {
             Artifact art = downloadArchetype(arch);
             File fil = art.getFile();
@@ -628,7 +615,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (dtm.getRowCount() > 0) {
-                    Mnemonics.setLocalizedText(lblAdditionalProps, NbBundle.getMessage(BasicPanelVisual.class, "TXT_Checking2"));
+                    Mnemonics.setLocalizedText(lblAdditionalProps, TXT_Checking2());
                     lblAdditionalProps.setVisible(true);
                     jScrollPane1.setVisible(true);
                     tblAdditionalProps.setModel(dtm);
@@ -646,14 +633,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (arch != null) {
             return arch;
         }
-        Archetype[] archs = panel.getArchetypes();
-        if (archs == null) {
-            return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
-        } else {
-            return archs[Math.max(0, comboEEVersion.getSelectedIndex())];
-        }
+        return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
     }
 
+    @Messages("Handle_Download=Downloading Archetype")
     private Artifact downloadArchetype(Archetype arch) throws ArtifactResolutionException, ArtifactNotFoundException {
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
         Artifact art = online.createArtifact(
@@ -700,7 +683,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             
             repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
         }
-        AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"),
+        AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Handle_Download(),
                 new ProgressContributor[] {
                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                 ProgressTransferListener.cancellable(), null);
@@ -793,8 +776,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
     }
     
-    private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+    private String validFreeProjectName(File parentFolder, String name) {
         File file = new File (parentFolder, name);
         return file.exists() ? null : name;
     }

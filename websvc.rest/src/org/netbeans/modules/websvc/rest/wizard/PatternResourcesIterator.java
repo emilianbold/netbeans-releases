@@ -121,6 +121,8 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
                     }
                 }
             });
+            RestUtils.configRestPackages(project, 
+                    wizard.getProperty(WizardProperties.RESOURCE_PACKAGE).toString());
             generatorTask.schedule(50);
 
             // logging usage of wizard

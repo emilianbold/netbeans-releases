@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +54,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -76,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -121,7 +120,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @Override
         public List<Node> keys() {
             if (project.hasConfigFiles()) {
-                return Collections.<Node>singletonList(new Nodes.DummyNode(new ImportantFilesRootNode(project)));
+                return Collections.<Node>singletonList(new Nodes.DummyNode(new ImportantFilesRootNode(project, new ImportantFilesChildFactory(project))));
             }
             return Collections.emptyList();
         }
@@ -161,8 +160,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static class ImportantFilesRootNode extends AbstractNode implements PropertyChangeListener {
 
-        public ImportantFilesRootNode(PhpProject project) {
-            super(new ImportantFilesChildFactory(project));
+        final ImportantFilesChildFactory childFactory;
+
+
+        public ImportantFilesRootNode(PhpProject project, ImportantFilesChildFactory childFactory) {
+            super(Children.create(childFactory, true));
+
+            this.childFactory = childFactory;
 
             ProjectPropertiesSupport.addWeakPropertyChangeListener(project, this);
         }
@@ -190,29 +194,22 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
-                // avoid deadlocks
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((ImportantFilesChildFactory) getChildren()).refreshNodes();
-                    }
-                });
+                childFactory.refresh();
             }
         }
     }
 
-    private static class ImportantFilesChildFactory extends Children.Keys<Pair<PhpFrameworkProvider, FileObject>> {
+    private static class ImportantFilesChildFactory extends ChildFactory.Detachable<Pair<PhpFrameworkProvider, FileObject>> {
+
         private static final RequestProcessor RP = new RequestProcessor(ImportantFilesChildFactory.class.getName(), Runtime.getRuntime().availableProcessors());
         static final int FILE_CHANGE_DELAY = 300; // ms
 
         private final PhpProject project;
         private final FileChangeListener fileChangeListener = new ImportantFilesListener();
-        // @GuardedBy(files)
-        final List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
         final RequestProcessor.Task fsChange = RP.create(new Runnable() {
             @Override
             public void run() {
-                refreshNodesImpl();
+                refresh();
             }
         });
 
@@ -221,67 +218,57 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         @Override
-        protected void addNotify() {
-            super.addNotify();
-            attachListener();
-            setKeys(getFiles());
+        protected boolean createKeys(List<Pair<PhpFrameworkProvider, FileObject>> toPopulate) {
+            toPopulate.addAll(getImportantFiles());
+            return true;
         }
 
         @Override
-        protected void removeNotify() {
-            setKeys(Collections.<Pair<PhpFrameworkProvider, FileObject>>emptyList());
-            clearFiles();
-            super.removeNotify();
-        }
-
-        @Override
-        protected Node[] createNodes(Pair<PhpFrameworkProvider, FileObject> key) {
+        protected Node createNodeForKey(Pair<PhpFrameworkProvider, FileObject> key) {
             try {
-                return new Node[] {new ImportantFileNode(key, ProjectPropertiesSupport.getSourcesDirectory(project))};
+                return new ImportantFileNode(key, ProjectPropertiesSupport.getSourcesDirectory(project));
             } catch (DataObjectNotFoundException ex) {
                 LOGGER.log(Level.WARNING, ex.getMessage(), ex);
             }
-            return new Node[0];
+            return null;
         }
 
-        List<Pair<PhpFrameworkProvider, FileObject>> getFiles() {
-            synchronized (files) {
-                List<Pair<PhpFrameworkProvider, FileObject>> list = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>(files);
-                if (!list.isEmpty()) {
-                    return list;
-                }
-                assert files.isEmpty() : project.getName() + ": " + files;
+        public void refresh() {
+            refresh(false);
+        }
 
-                final PhpModule phpModule = project.getPhpModule();
-                final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
-                for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
-                    for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
-                        final FileObject fileObject = FileUtil.toFileObject(file);
-                        // XXX non-existing files are simply ignored
-                        if (fileObject != null) {
-                            if (fileObject.isFolder()) {
-                                Exception ex = new IllegalStateException("No folders allowed among configuration files ["
-                                        + fileObject.getNameExt() + " for " + frameworkProvider.getIdentifier() + "]");
-                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                                continue;
-                            }
-                            if (phpVisibilityQuery.isVisible(fileObject)) {
-                                files.add(Pair.of(frameworkProvider, fileObject));
-                            } else {
-                                LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
-                            }
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            attachListener();
+        }
+
+        List<Pair<PhpFrameworkProvider, FileObject>> getImportantFiles() {
+            List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
+
+            final PhpModule phpModule = project.getPhpModule();
+            final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+                for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
+                    final FileObject fileObject = FileUtil.toFileObject(file);
+                    // XXX non-existing files are simply ignored
+                    if (fileObject != null) {
+                        if (fileObject.isFolder()) {
+                            Exception ex = new IllegalStateException("No folders allowed among configuration files ["
+                                    + fileObject.getNameExt() + " for " + frameworkProvider.getIdentifier() + "]");
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                            continue;
+                        }
+                        if (phpVisibilityQuery.isVisible(fileObject)) {
+                            files.add(Pair.of(frameworkProvider, fileObject));
+                        } else {
+                            LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
                         }
                     }
                 }
-
-                return new ArrayList<Pair<PhpFrameworkProvider, FileObject>>(files);
             }
-        }
 
-        private void clearFiles() {
-            synchronized (files) {
-                files.clear();
-            }
+            return files;
         }
 
         private void attachListener() {
@@ -295,27 +282,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         void refreshNodes() {
             fsChange.schedule(FILE_CHANGE_DELAY);
-        }
-
-        void refreshNodesImpl() {
-            // avoid deadlocks (during project delete)
-            ProjectManager.mutex().readAccess(new Runnable() {
-                @Override
-                public void run() {
-                    final List<Pair<PhpFrameworkProvider, FileObject>> oldFiles = getFiles();
-                    clearFiles();
-                    final List<Pair<PhpFrameworkProvider, FileObject>> newFiles = getFiles();
-                    if (!oldFiles.equals(newFiles)) {
-                        // avoid deadlocks
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                setKeys(newFiles);
-                            }
-                        });
-                    }
-                }
-            });
         }
 
         private class ImportantFilesListener extends FileChangeAdapter {

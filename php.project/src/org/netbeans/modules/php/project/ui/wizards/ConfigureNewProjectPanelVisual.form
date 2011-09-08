@@ -29,7 +29,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="0" pref="433" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" pref="398" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
@@ -44,10 +44,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                      <Component id="phpVersionComboBox" pref="297" max="32767" attributes="0"/>
-                      <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="2"/>
+                      <Component id="phpVersionComboBox" pref="249" max="32767" attributes="0"/>
+                      <Component id="projectNameTextField" alignment="0" pref="249" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="localServerComboBox" pref="221" max="32767" attributes="0"/>
+                          <Component id="localServerComboBox" pref="141" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -55,11 +55,11 @@
                           <Component id="localServerInfoLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
-                      <Component id="encodingComboBox" alignment="0" pref="297" max="32767" attributes="2"/>
+                      <Component id="encodingComboBox" alignment="0" pref="249" max="32767" attributes="2"/>
                   </Group>
               </Group>
           </Group>
-          <Component id="projectFolderPanel" alignment="0" pref="433" max="32767" attributes="0"/>
+          <Component id="projectFolderPanel" alignment="0" pref="398" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

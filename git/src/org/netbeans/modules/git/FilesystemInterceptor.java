@@ -50,9 +50,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,11 +62,13 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -119,7 +123,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             final File root = git.getRepositoryRoot(file);
             if (root == null) return false;
             try {
-                git.getClient(root).reset(new File[] { file }, "HEAD", ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).reset(new File[] { file }, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
             }
@@ -132,6 +136,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     public void afterCreate (final File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
         // There is no point in refreshing the cache for ignored files.
+        addToCreated(file);
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
@@ -225,6 +230,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (!cache.getStatus(from).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(from));
         }
+        addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
@@ -272,6 +278,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[] { from, to }); //NOI18N
         if (to == null) return;
 
+        addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
@@ -291,6 +298,15 @@ class FilesystemInterceptor extends VCSInterceptor {
     @Override
     public boolean isMutable(File file) {
         return GitUtils.isPartOfGitMetadata(file) || super.isMutable(file);
+    }
+
+    @Override
+    public Object getAttribute(File file, String attrName) {
+        if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new GitSearchHistorySupport(file);
+        } else {
+            return super.getAttribute(file, attrName);
+        }
     }
 
     /**
@@ -331,6 +347,43 @@ class FilesystemInterceptor extends VCSInterceptor {
             });
         } else {
             gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+        }
+    }
+
+    private final Map<File, Long> createdFolders = new LinkedHashMap<File, Long>() {
+
+        @Override
+        public Long put (File key, Long value) {
+            long t = System.currentTimeMillis();
+            for (Iterator<Map.Entry<File, Long>> it = entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<File, Long> e = it.next();
+                if (e.getValue() < t - 600000) { // keep for 10 minutes
+                    it.remove();
+                }
+            }
+            return super.put(key, value);
+        }
+        
+    };
+    private void addToCreated (File createdFile) {
+        if (!GitModuleConfig.getDefault().getAutoIgnoreFiles() || !createdFile.isDirectory()) {
+            // no need to keep files and no need to keep anything if auto-ignore-files is disabled
+            return;
+        }
+        synchronized (createdFolders) {
+            for (File f : createdFolders.keySet()) {
+                if (Utils.isAncestorOrEqual(f, createdFile)) {
+                    // just keep created roots, no children
+                    return;
+                }
+            }
+            createdFolders.put(createdFile, createdFile.lastModified());
+        }
+    }
+
+    Collection<File> getCreatedFolders () {
+        synchronized (createdFolders) {
+            return new HashSet<File>(createdFolders.keySet());
         }
     }
 
@@ -727,5 +780,19 @@ class FilesystemInterceptor extends VCSInterceptor {
                 refreshOpenFilesTask.schedule(3000);
             }
         }
+    }
+    
+    public class GitSearchHistorySupport extends SearchHistorySupport {
+        public GitSearchHistorySupport(File file) {
+            super(file);
+        }
+        @Override
+        protected boolean searchHistoryImpl(final int line) throws IOException {
+            assert line < 0 : "Search History a for specific not supported yet!"; // NOI18N
+            File file = getFile();
+            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), new File[] {file}, file.getName());
+            return true;
+        }
+
     }
 }

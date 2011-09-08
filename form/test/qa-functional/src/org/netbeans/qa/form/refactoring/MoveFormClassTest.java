@@ -160,7 +160,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         //p(path);
         Node formnode = new Node(prn, path ); // NOI18N
         formnode.setComparator(new Operator.DefaultStringComparator(true, false));
-        formnode.select();
+//        formnode.select();
 
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);

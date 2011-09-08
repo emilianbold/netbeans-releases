@@ -263,7 +263,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-editor-GlyphGutter.instance">
                 <attr name="position" intvalue="1000"/>
             </file>
-            <file name="org-netbeans-modules-editor-impl-SearchBar$Factory.instance">
+            <file name="org-netbeans-modules-editor-impl-SearchAndReplaceBarHandler$Factory.instance">
                 <attr name="location" stringvalue="South"/>
                 <attr name="position" intvalue="5000"/>
                 <attr name="scrollable" boolvalue="false"/>
@@ -305,6 +305,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="toggle-highlight-search">
                     <attr name="position" intvalue="9000"/>
+                </file>
+                <file name="toggle-rectangular-selection">
+                    <attr name="position" intvalue="9500"/>
                 </file>
                 <file name="Separator-after-toggle-highlight-search.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

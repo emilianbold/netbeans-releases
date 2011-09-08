@@ -119,7 +119,7 @@ public class ResultProcessor {
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] { revert, review, NotifyDescriptor.CANCEL_OPTION }, revert));
         if (o == revert) {
             LOG.log(Level.FINE, "Checking out paths from HEAD"); //NOI18N
-            client.checkout(localChanges, GitUtils.HEAD, pm);
+            client.checkout(localChanges, GitUtils.HEAD, true, pm);
             LOG.log(Level.FINE, "Cleanup new files"); //NOI18N
             client.clean(localChanges, pm);
             LOG.log(Level.FINE, "Checking out branch: {0}, second shot", revision); //NOI18N

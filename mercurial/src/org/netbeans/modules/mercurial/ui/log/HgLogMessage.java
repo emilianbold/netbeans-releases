@@ -80,17 +80,10 @@ public class HgLogMessage {
     private final String[] branches;
     private final String[] tags;
 
-    private void updatePaths(List<String> pathsStrings, String path, List<String> filesShortPaths, char status) {
-        if (filesShortPaths.isEmpty()) {
-            paths.add(new HgLogMessageChangedPath(path, status));
-            if(pathsStrings != null){
-                pathsStrings.add(path);
-            }
-        } else {
-            paths.add(new HgLogMessageChangedPath(path, status));
-            if(pathsStrings != null){
-                pathsStrings.add(path);
-            }
+    private void updatePaths(List<String> pathsStrings, String path, char status) {
+        paths.add(new HgLogMessageChangedPath(path, null, status));
+        if (pathsStrings != null){
+            pathsStrings.add(path);
         }
     }
 
@@ -118,33 +111,37 @@ public class HgLogMessage {
 
         // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
         if (fc != null && !fc.equals("")) {
-            for (String s : fc.split("\t")) {
-                updatePaths(cpathsStrings, s, filesShortPaths, HgCopyStatus);
+            String[] copyPaths = fc.split("\t");
+            for (int i = 0; i < copyPaths.length / 2; ++i) {
+                String path = copyPaths[i * 2];
+                String original = copyPaths[i * 2 + 1];
+                cpathsStrings.add(path);
+                paths.add(new HgLogMessageChangedPath(path, original, HgCopyStatus));
             }
         }
         if (fa != null && !fa.equals("")) {
             for (String s : fa.split("\t")) {
                 if(!cpathsStrings.contains(s)){
-                    updatePaths(apathsStrings, s, filesShortPaths, HgAddStatus);
+                    updatePaths(apathsStrings, s, HgAddStatus);
                 }
             }
         }
         if (fd != null && !fd.equals("")) {
             for (String s : fd.split("\t")) {
-                updatePaths(dpathsStrings, s, filesShortPaths, HgDelStatus);
+                updatePaths(dpathsStrings, s, HgDelStatus);
             }
         }
         if (fm != null && !fm.equals("")) {
             for (String s : fm.split("\t")) {
                 //#132743, incorrectly reporting files as added/modified, deleted/modified in same changeset
                 if (!apathsStrings.contains(s) && !dpathsStrings.contains(s) && !cpathsStrings.contains(s)) {
-                    updatePaths(null, s, filesShortPaths, HgModStatus);
+                    updatePaths(null, s, HgModStatus);
                 }
             }
         }
         if(fa == null && fc == null && fd == null && fm == null) {
             for (String fileSP : filesShortPaths) {
-                paths.add(new HgLogMessageChangedPath(fileSP, ' '));
+                paths.add(new HgLogMessageChangedPath(fileSP, null, ' '));
             }
         }
         if (branches.isEmpty()) {

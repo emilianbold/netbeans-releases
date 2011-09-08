@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.remote.ui;
 
+import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
@@ -107,10 +109,8 @@ public class OpenRemoteProjectAction extends SingleHostAction {
                 try {
                     ConnectionManager.getInstance().connectTo(env);
                     SwingUtilities.invokeLater(edtWorker);
-                } catch (IOException ex) {
-                    RemoteUtil.LOGGER.log(Level.INFO, "Error connecting " + env, ex);
-                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), 
-                            NbBundle.getMessage(OpenRemoteProjectAction.class, "ErrorConnectingHost", env.getDisplayName(), ex.getMessage()));
+                } catch (IOException ex) {                    
+                    showErrorConnectionDialog(env, ex);
                 } catch (CancellationException ex) {
                     // don't report CancellationException
                 } finally {
@@ -130,6 +130,22 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             }
         }        
     }
+    
+    private void showErrorConnectionDialog(final ExecutionEnvironment env, final IOException ex) throws HeadlessException, MissingResourceException {
+        RemoteUtil.LOGGER.log(Level.INFO, "Error connecting " + env, ex);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), 
+                        NbBundle.getMessage(OpenRemoteProjectAction.class, "ErrorConnectingHost", env.getDisplayName(), ex.getMessage()));
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }    
 
     @Override
     protected boolean enable(ExecutionEnvironment env) {

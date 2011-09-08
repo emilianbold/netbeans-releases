@@ -94,7 +94,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(CloneDestinationPanel.class);
+        return new HelpCtx(CloneDestinationStep.class);
     }
     
     @Override

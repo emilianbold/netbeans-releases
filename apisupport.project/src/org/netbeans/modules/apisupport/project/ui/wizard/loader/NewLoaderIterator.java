@@ -61,15 +61,16 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
@@ -80,12 +81,12 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=500,
     displayName="#template_loader",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLoader.png",
     description="../../resources/newLoader.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_loader=File Type")
 public final class NewLoaderIterator extends BasicWizardIterator {

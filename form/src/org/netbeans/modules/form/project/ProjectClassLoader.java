@@ -52,6 +52,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  * A class loader loading user classes from given project (execution classpath
@@ -92,7 +94,10 @@ class ProjectClassLoader extends ClassLoader {
     protected Class findClass(String name) throws ClassNotFoundException {
         if (name.startsWith("org.apache.commons.logging.")) { // NOI18N HACK: Issue 50642
             try {
-                return systemClassLoader.loadClass(name);
+                ClassLoader classLoader = getCommonsLoggingClassLoader();
+                if (classLoader != null) {
+                    return classLoader.loadClass(name);
+                }
             } catch (ClassNotFoundException cnfex) {
                 // The logging classes are not in the IDE, we can use ProjectClassLoader
             }
@@ -208,6 +213,21 @@ class ProjectClassLoader extends ClassLoader {
             urls.add(e.nextElement());
         }
         return Collections.enumeration(urls);
+    }
+
+    private ClassLoader commonsLoggingClassLoader;
+    private boolean commonsLoggingClassLoaderSearched = false;
+    private ClassLoader getCommonsLoggingClassLoader() {
+        if (!commonsLoggingClassLoaderSearched) {
+            for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (info.getCodeName().startsWith("o.apache.commons.logging")) { // NOI18N
+                    commonsLoggingClassLoader = info.getClassLoader();
+                    break;
+                }
+            }
+            commonsLoggingClassLoaderSearched = true;
+        }
+        return commonsLoggingClassLoader;
     }
 
 }

@@ -942,7 +942,7 @@ public final class TreeUtilities {
     }
 
     @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
-        ImmutableTreeTranslator itt = new ImmutableTreeTranslator() {
+        ImmutableTreeTranslator itt = new ImmutableTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
             private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(original2Translated);
             @Override
             public Tree translate(Tree tree) {
@@ -983,16 +983,13 @@ public final class TreeUtilities {
         @Override
         public void setCompilationUnit(CompilationUnitTree cut) {}
 
-        private List<? extends ImportTree> imports;
-
         @Override
         public void setImports(List<? extends ImportTree> importsToAdd) {
-            this.imports = importsToAdd;
         }
 
         @Override
-        public List<? extends ImportTree> getImports() {
-            return this.imports;
+        public Set<? extends Element> getImports() {
+            return Collections.emptySet();
         }
 
         @Override

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:fx="javafx:com.sun.javafx.tools.ant">
+    <description>JavaFX-specific ant calls</description>
+
+    <target name="-init-javafx">
+        <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+            uri="javafx:com.sun.javafx.tools.ant"
+            classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
+    </target>
+
+    <target name="check-jfx-deployment" depends="-init-javafx">
+        <condition property="jfx-deployment-available">
+            <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
+        </condition>
+        <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
+    </target>
+
+    <target name="check-project">
+        <condition property="main-class-available">
+            <isset property="javafx.main.class"/>
+        </condition>
+        <condition property="preloader-available">
+            <and>
+                <isset property="javafx.preloader.enabled"/>
+                <equals arg1="${javafx.preloader.enabled}" arg2="true"/>
+            </and>
+        </condition>
+        <condition property="app-with-preloader">
+            <and>
+                <istrue value="${preloader-available}"/>
+                <istrue value="${main-class-available}"/>
+            </and>
+        </condition>
+        <condition property="app-without-preloader">
+            <and>
+                <not>
+                    <istrue value="${preloader-available}"/>
+                </not>
+                <istrue value="${main-class-available}"/>
+            </and>
+        </condition>
+        <condition property="preloader-app">
+            <and>
+                <isset property="javafx.preloader"/>
+                <equals arg1="${javafx.preloader}" arg2="true"/>
+            </and>
+        </condition>
+
+        <echo message="main-class-available = ${main-class-available}" level="verbose"/>
+        <echo message="preloader-available = ${preloader-available}" level="verbose"/>
+        <echo message="app-with-preloader = ${app-with-preloader}" level="verbose"/>
+        <echo message="app-without-preloader = ${app-without-preloader}" level="verbose"/>
+        <echo message="preloader-app = ${preloader-app}" level="verbose"/>
+    </target>
+
+    <target name="jfx-deployment"
+        depends="check-jfx-deployment,check-project,deploy-app,deploy-app-nopreloader"
+        if="jfx-deployment-available">
+    </target>
+
+    <macrodef name="sign-with-new-cert">
+        <element name="jarfiles"/>
+        <sequential>
+            <delete file="${javafx.signing.keystore}"/>
+            <genkey alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                keystore="${javafx.signing.keystore}"
+                dname="CN=Deploy, OU=JavaFX Dev, O=Oracle, C=US"/>       
+            <signjar keystore="${javafx.signing.keystore}"
+                alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                verbose="true">
+                <jarfiles/>
+            </signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="fxsign-with-new-cert">
+        <element name="jarfiles"/>
+        <sequential>
+            <delete file="${javafx.signing.keystore}"/>
+            <genkey alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}"
+                keystore="${javafx.signing.keystore}"
+                dname="CN=Deploy, OU=JavaFX Dev, O=Oracle, C=US"/>       
+            <fx:signjar keystore="${javafx.signing.keystore}"
+                alias="TestAlias"
+                storepass="${javafx.signing.keystore.password}">
+                <jarfiles/>
+            </fx:signjar>
+        </sequential>
+    </macrodef>
+
+    <!-- project with preloader -->
+    <target name="deploy-app" if="app-with-preloader" unless="preloader-app">
+        <basename property="jfx.deployment.jar" file="${dist.jar}"/>
+        <property name="jfx.deployment.signed.jar" location="${dist.signed.jar}"/>
+        <property name="jfx.deployment.dir" location="${dist.dir}"/>
+
+        <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
+        <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
+        <delete file="${jfx.deployment.dir}/README.TXT"/>
+        <!-- hack end -->
+
+        <fx:application id="fxApp"
+            name="${application.title}"
+            mainClass="${javafx.main.class}"
+            preloaderClass="${javafx.preloader.class}"
+            fallbackClass="${javafx.fallback.class}"/>
+
+        <fx:resources id="appRes">
+            <fx:fileset requiredFor="preloader" dir="${jfx.deployment.dir}">
+                <include name="${javafx.preloader.jar}"/>
+            </fx:fileset>
+            <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
+                <include name="${jfx.deployment.jar}"/>
+                <include name="lib/*.jar"/>
+                <exclude name="**/jfxrt.jar"/>
+            </fx:fileset>
+        </fx:resources>
+
+        <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <fileset dir="${build.classes.dir}"/>
+
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${application.vendor}"/>
+                <attribute name="Implementation-Title" value="${application.title}"/>
+                <attribute name="Implementation-Version" value="1.0"/>
+            </manifest>
+        </fx:jar>
+        <!-- SIGNING -->
+<!--        <sign-with-new-cert>
+            <jarfiles>
+                <fileset file="${jfx.deployment.signed.jar}"/>
+            </jarfiles>
+        </sign-with-new-cert>-->
+
+        <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}"
+                  outdir="${jfx.deployment.dir}" embedJNLP="true"
+                  outfile="${application.title}">
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <info title="${application.title}" vendor="${application.vendor}"/>
+            <permissions elevated="true"/>
+        
+        <!-- PLATFORM -->
+<!--            <platform javafx="2.0+">
+                <property name="jnlp.fx.perf" value="true"/>
+            </platform>-->
+
+        <!-- TEMPLATE -->
+<!--            <template file="src/startup/startup_trace_template.html"
+                tofile="${jfx.deployed.dir}/StartupTrace/startup_trace.html"/>-->
+                
+        <!-- CALLBACKS -->
+<!--            <callbacks>
+                <callback name="onLoadHandler">
+                    ${javafx.jscallback.onLoadHandler}
+                </callback>
+            </callbacks>-->
+        </fx:deploy>
+    </target>
+
+    <target name="deploy-app-nopreloader" if="app-without-preloader" unless="preloader-app">
+        <basename property="jfx.deployment.jar" file="${dist.jar}"/>
+        <property name="jfx.deployment.signed.jar" location="${dist.signed.jar}"/>
+        <property name="jfx.deployment.dir" location="${dist.dir}"/>
+
+        <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
+        <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
+        <delete file="${jfx.deployment.dir}/README.TXT"/>
+        <!-- hack end -->
+
+        <fx:application id="fxApp"
+            name="${application.title}"
+            mainClass="${javafx.main.class}"
+            fallbackClass="${javafx.fallback.class}"/>
+
+        <fx:resources id="appRes">
+            <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
+                <include name="${jfx.deployment.jar}"/>
+                <include name="lib/*.jar"/>
+                <exclude name="**/jfxrt.jar"/>
+            </fx:fileset>
+        </fx:resources>
+
+        <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <fileset dir="${build.classes.dir}"/>
+
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${application.vendor}"/>
+                <attribute name="Implementation-Title" value="${application.title}"/>
+                <attribute name="Implementation-Version" value="1.0"/>
+            </manifest>
+        </fx:jar>
+
+        <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}"
+                  outdir="${jfx.deployment.dir}" embedJNLP="true"
+                  outfile="${application.title}">
+            <fx:application refId="fxApp"/>
+            <fx:resources refid="appRes"/>
+            <info title="${application.title}" vendor="${application.vendor}"/>
+            <permissions elevated="true"/>
+        </fx:deploy>
+    </target>
+
+</project>

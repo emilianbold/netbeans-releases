@@ -77,12 +77,6 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", System.getProperty("java.io.tmpdir"));
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         System.setProperty("netbeans.t9y.bugzilla.force.refresh.delay", "please!");
     }
 

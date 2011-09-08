@@ -67,6 +67,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -2687,6 +2688,9 @@ public class CasualDiff {
             copyTo(localPointer, removalBounds[0]);
             return removalBounds[1];
         }
+        CodeStyle.ImportGroups importGroups = newList.get(0).getKind() == Kind.IMPORT && diffContext.style.separateImportGroups()
+                ? diffContext.style.getImportGroups() : null;
+        int lastGroup = -1;
         int i = 0;
         // copy to start position
         int insertPos = estimator.getInsertPos(0);
@@ -2698,6 +2702,11 @@ public class CasualDiff {
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
+            int group = -1;
+            if (importGroups != null) {
+                Name name = printer.fullName(((JCImport)item.element).qualid);
+                group = importGroups != null && name != null ? importGroups.getGroupId(name.toString(), ((JCImport)item.element).staticImport) : -1;
+            }
             switch (item.operation) {
                 case MODIFY: {
                     int[] bounds = estimator.getPositions(i);
@@ -2708,10 +2717,14 @@ public class CasualDiff {
                     break;
                 }
                 case INSERT: {
-                    int pos = estimator.getInsertPos(i);
+                    boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
+                    int pos = importGroups != null ? i == 0 || insetBlankLine && i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]
+                            : estimator.getInsertPos(i);
                     if (pos > localPointer) {
                         copyTo(localPointer, localPointer = pos);
                     }
+                    if (insetBlankLine)
+                        printer.blankline();
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
                     if (oldPos > 0) {
@@ -2788,6 +2801,7 @@ public class CasualDiff {
                     break;
                 }
             }
+            lastGroup = group;
         }
         return localPointer;
     }

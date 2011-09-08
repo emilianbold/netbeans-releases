@@ -93,7 +93,7 @@ public class EntityClassInfo {
         }; 
     
     private EntityResourceModelBuilder builder;
-    private final Entity entity;
+    private final String entityFqn;
     private JavaSource entitySource;
     private String name;
     private String type;
@@ -102,8 +102,10 @@ public class EntityClassInfo {
     private FieldInfo idFieldInfo;
 
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(Entity entity, Project project, EntityResourceModelBuilder builder, JavaSource source) {
-        this.entity = entity;
+    public EntityClassInfo(String entityFqn, Project project, 
+            EntityResourceModelBuilder builder, JavaSource source) 
+    {
+        this.entityFqn = entityFqn;
         this.entitySource = source;
         this.fieldInfos = new ArrayList<FieldInfo>();
         this.builder = builder;
@@ -281,8 +283,8 @@ public class EntityClassInfo {
         return false;
     }
 
-    public Entity getEntity() {
-        return entity;
+    public String getEntityFqn() {
+        return entityFqn;
     }
 
     public String getName() {

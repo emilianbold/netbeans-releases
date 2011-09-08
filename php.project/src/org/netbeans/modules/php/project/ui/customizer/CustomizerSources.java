@@ -116,7 +116,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesVisual.setState(false);
-        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+        copyFilesPanel.add(BorderLayout.CENTER, copyFilesVisual);
 
         PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
             @Override
@@ -491,20 +491,20 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                             .addComponent(phpVersionLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(projectFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                            .addComponent(sourceFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                            .addComponent(projectFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                            .addComponent(sourceFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(testFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                                .addComponent(testFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(testFolderButton))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(webRootTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                                .addComponent(webRootTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(webRootButton))
-                            .addComponent(encodingComboBox, 0, 280, Short.MAX_VALUE)
-                            .addComponent(phpVersionComboBox, 0, 280, Short.MAX_VALUE)
+                            .addComponent(encodingComboBox, 0, 237, Short.MAX_VALUE)
+                            .addComponent(phpVersionComboBox, 0, 237, Short.MAX_VALUE)
                             .addComponent(phpVersionInfoLabel)))
-                    .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE))
+                    .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(aspTagsCheckBox)

@@ -39,36 +39,46 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.execute;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import static org.netbeans.modules.maven.execute.Bundle.*;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
-import org.netbeans.modules.maven.spi.lifecycle.MavenBuildPlanSupport;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -77,13 +87,31 @@ import org.openide.windows.OutputListener;
  * common code for MAvenExecutors, sharing tabs and actions..
  * @author mkleint
  */
-public abstract class AbstractMavenExecutor extends OutputTabMaintainer implements MavenExecutor, Cancellable {
+public abstract class AbstractMavenExecutor extends OutputTabMaintainer<AbstractMavenExecutor.TabContext> implements MavenExecutor, Cancellable {
+
+    static final class TabContext {
+        ReRunAction rerun;
+        ReRunAction rerunDebug;
+        ResumeAction resume;
+        StopAction stop;
+        OptionsAction options;
+        @Override protected TabContext clone() {
+            TabContext c = new TabContext();
+            c.rerun = rerun;
+            c.rerunDebug = rerunDebug;
+            c.resume = resume;
+            c.stop = stop;
+            c.options = options;
+            return c;
+        }
+    }
+
+    @Override protected Class<TabContext> tabContextType() {
+        return TabContext.class;
+    }
 
     protected RunConfig config;
-    protected ReRunAction rerun;
-    protected ReRunAction rerunDebug;
-    protected StopAction stop;
-    protected BuildPlanAction buildPlan;
+    private TabContext tabContext = new TabContext();
     private List<String> messages = new ArrayList<String>();
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
@@ -127,7 +155,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     }
 
 
-    public final void setTask(ExecutorTask task) {
+    @Override public final void setTask(ExecutorTask task) {
         synchronized (SEMAPHORE) {
             this.task = task;
             this.item = new MavenItem();
@@ -135,7 +163,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         }
     }
 
-    public final void addInitialMessage(String line, OutputListener listener) {
+    @Override public final void addInitialMessage(String line, OutputListener listener) {
         messages.add(line);
         listeners.add(listener);
     }
@@ -160,94 +188,72 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
 
     protected final void actionStatesAtStart() {
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                rerun.setEnabled(false);
-                rerunDebug.setEnabled(false);
-                if (AbstractMavenExecutor.this instanceof MavenCommandLineExecutor) {
-                    buildPlan.setEnabled(false);
-                } else {
-                    buildPlan.setEnabled(true);
-                }
-                stop.setEnabled(true);
+            @Override public void run() {
+                tabContext.rerun.setEnabled(false);
+                tabContext.rerunDebug.setEnabled(false);
+                tabContext.resume.setFinder(null);
+                tabContext.stop.setEnabled(true);
             }
         });
     }
 
-    protected final void actionStatesAtFinish() {
+    protected interface ResumeFromFinder {
+        @CheckForNull NbMavenProject find(@NonNull Project root);
+    }
+
+    protected final void actionStatesAtFinish(final @NullAllowed ResumeFromFinder resumeFromFinder) {
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                rerun.setEnabled(true);
-                rerunDebug.setEnabled(true);
-                stop.setEnabled(false);
+            @Override public void run() {
+                tabContext.rerun.setEnabled(true);
+                tabContext.rerunDebug.setEnabled(true);
+                tabContext.resume.setFinder(resumeFromFinder);
+                tabContext.stop.setEnabled(false);
             }
         });
     }
 
     @Override
-    protected void reassignAdditionalContext(Iterator vals) {
-        rerun = (ReRunAction) vals.next();
-        rerunDebug = (ReRunAction) vals.next();
-        stop = (StopAction) vals.next();
-        buildPlan = (BuildPlanAction) vals.next();
-        rerun.setConfig(config);
-        rerunDebug.setConfig(config);
-        buildPlan.setConfig(config);
-        stop.setExecutor(this);
+    protected void reassignAdditionalContext(TabContext tabContext) {
+        this.tabContext = tabContext;
+        tabContext.rerun.setConfig(config);
+        tabContext.rerunDebug.setConfig(config);
+        tabContext.resume.setConfig(config);
+        tabContext.stop.setExecutor(this);
     }
 
-    public static final Properties excludeNetBeansProperties(Properties props) {
+    @SuppressWarnings("element-type-mismatch")
+    public static Properties excludeNetBeansProperties(Properties props) {
         Properties toRet = new Properties();
-        Enumeration<String> en = (Enumeration<String>) props.propertyNames();
-        while (en.hasMoreElements()) {
-            String key = en.nextElement();
-            if (!forbidden.contains(key)) {
-                toRet.put(key, props.getProperty(key));
+        for (Map.Entry<Object,Object> entry : props.entrySet()) {
+            if (!forbidden.contains(entry.getKey())) {
+                toRet.put(entry.getKey(), entry.getValue());
             }
 
         }
         return toRet;
     }
 
-    @Override
-    protected final Collection createContext() {
-        Collection col = super.createContext();
-        col.add(rerun);
-        col.add(rerunDebug);
-        col.add(stop);
-        col.add(buildPlan);
-        return col;
+    @Override protected final TabContext createContext() {
+        return tabContext.clone();
     }
 
-    @Override
-    protected Action[] createNewTabActions() {
-        rerun = new ReRunAction(false);
-        rerunDebug = new ReRunAction(true);
-        stop = new StopAction();
-        buildPlan = new BuildPlanAction();
-        rerun.setConfig(config);
-        rerunDebug.setConfig(config);
-        buildPlan.setConfig(config);
-        stop.setExecutor(this);
-        Action[] actions;
-        if (! isEmbedded()) {
-            actions = new Action[]{
-                rerun,
-                rerunDebug,
-                stop
-            };
-        } else {
-            actions = new Action[]{
-                rerun,
-                rerunDebug,
-                buildPlan,
-                stop
-            };
-        }
-        return actions;
-    }
-
-    protected boolean isEmbedded() {
-        return false;
+    @Override protected Action[] createNewTabActions() {
+        tabContext.rerun = new ReRunAction(false);
+        tabContext.rerunDebug = new ReRunAction(true);
+        tabContext.resume = new ResumeAction();
+        tabContext.stop = new StopAction();
+        tabContext.options = new OptionsAction();
+        tabContext.rerun.setConfig(config);
+        tabContext.rerunDebug.setConfig(config);
+        tabContext.resume.setConfig(config);
+        tabContext.stop.setExecutor(this);
+        return new Action[] {
+            tabContext.rerun,
+            tabContext.rerunDebug,
+            tabContext.resume,
+            tabContext.stop,
+            tabContext.options,
+        };
     }
 
     static class ReRunAction extends AbstractAction {
@@ -255,13 +261,19 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         private RunConfig config;
         private boolean debug;
 
-        public ReRunAction(boolean debug) {
+        @Messages({
+            "TXT_Rerun_extra=Re-run with different parameters",
+            "TXT_Rerun=Re-run the goals.",
+            "TIP_Rerun_Extra=Re-run with different parameters",
+            "TIP_Rerun=Re-run the goals."
+        })
+        ReRunAction(boolean debug) {
             this.debug = debug;
             this.putValue(Action.SMALL_ICON, debug ? ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/refreshdebug.png", false) : //NOI18N
                     ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/refresh.png", false));//NOI18N
 
-            putValue(Action.NAME, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun_extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun"));
-            putValue(Action.SHORT_DESCRIPTION, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun_Extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun"));
+            putValue(Action.NAME, debug ? TXT_Rerun_extra() : TXT_Rerun());
+            putValue(Action.SHORT_DESCRIPTION, debug ? TIP_Rerun_Extra() : TIP_Rerun());
             setEnabled(false);
 
         }
@@ -270,10 +282,11 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
             this.config = config;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Messages("TIT_Run_maven=Run Maven")
+        @Override public void actionPerformed(ActionEvent e) {
             if (debug) {
                 RunGoalsPanel pnl = new RunGoalsPanel();
-                DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(AbstractMavenExecutor.class, "TIT_Run_maven"));
+                DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_maven());
                 pnl.readConfig(config);
                 Object retValue = DialogDisplayer.getDefault().notify(dd);
                 if (retValue == DialogDescriptor.OK_OPTION) {
@@ -289,15 +302,101 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         }
     }
 
+    private static class ResumeAction extends AbstractAction {
+
+        private static final RequestProcessor RP = new RequestProcessor(ResumeAction.class);
+        private RunConfig config;
+        private ResumeFromFinder finder;
+
+        @Messages("TIP_resume=Resume build starting from failed submodule.")
+        ResumeAction() {
+            setEnabled(false);
+            putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/forward.png", true));
+            putValue(SHORT_DESCRIPTION, TIP_resume());
+        }
+
+        void setConfig(RunConfig config) {
+            this.config = config;
+        }
+
+        void setFinder(ResumeFromFinder finder) {
+            this.finder = finder;
+            setEnabled(finder != null);
+        }
+
+        @Messages({
+            "ResumeAction_scanning=Searching for faulty module",
+            "ResumeAction_could_not_find_module=Could not determine module from which to resume build."
+        })
+        @Override public void actionPerformed(ActionEvent e) {
+            final Project p = config.getProject();
+            if (p == null) {
+                setFinder(null);
+                StatusDisplayer.getDefault().setStatusText(ResumeAction_could_not_find_module());
+                return;
+            }
+            final AtomicReference<Thread> t = new AtomicReference<Thread>();
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(ResumeAction_scanning(), new Cancellable() {
+                @Override public boolean cancel() {
+                    Thread _t = t.get();
+                    if (_t != null) {
+                        _t.interrupt();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    t.set(Thread.currentThread());
+                    handle.start();
+                    NbMavenProject nbmp;
+                    try {
+                        nbmp = finder.find(p);
+                    } finally {
+                        handle.finish();
+                    }
+                    t.set(null);
+                    if (nbmp == null || NbMavenProject.isErrorPlaceholder(nbmp.getMavenProject())) {
+                        setFinder(null);
+                        StatusDisplayer.getDefault().setStatusText(ResumeAction_could_not_find_module());
+                        return;
+                    }
+                    File root = config.getExecutionDirectory();
+                    File module = nbmp.getMavenProject().getBasedir();
+                    String rel = root != null && module != null ? FileUtilities.relativizeFile(root, module) : null;
+                    String id = rel != null ? rel : nbmp.getMavenProject().getGroupId() + ':' + nbmp.getMavenProject().getArtifactId();
+                    BeanRunConfig newConfig = new BeanRunConfig(config);
+                    List<String> goals = new ArrayList<String>(config.getGoals());
+                    int rf = goals.indexOf("--resume-from");
+                    if (rf != -1) {
+                        goals.set(rf + 1, id);
+                    } else {
+                        goals.add(0, "--resume-from");
+                        goals.add(1, id);
+                    }
+                    newConfig.setGoals(goals);
+                    RunUtils.executeMaven(newConfig);
+                }
+            });
+        }
+
+    }
+
     static class StopAction extends AbstractAction {
 
         private AbstractMavenExecutor exec;
 
+        @Messages({
+            "TXT_Stop_execution=Stop execution",
+            "TIP_Stop_Execution=Stop the currently executing build"
+        })
         StopAction() {
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/stop.png", false)); //NOi18N
 
-            putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Stop_execution"));
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Stop_Execution"));
+            putValue(Action.NAME, TXT_Stop_execution());
+            putValue(Action.SHORT_DESCRIPTION, TIP_Stop_Execution());
             setEnabled(false);
         }
 
@@ -305,72 +404,45 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
             exec = ex;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     exec.cancel();
                 }
             });
         }
     }
 
-    static class BuildPlanAction extends AbstractAction {
+    private static final class OptionsAction extends AbstractAction {
 
-        private MavenEmbedder embedder;
-        private RunConfig config;
-        private MavenBuildPlanSupport mbps;
-
-        BuildPlanAction() {
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/buildplangoals.png", false)); //NOi18N
-
-            putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Build_Plan"));
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Build_Plan_tip"));
-            mbps = Lookup.getDefault().lookup(MavenBuildPlanSupport.class);
-            setEnabled(false);
+        @Messages("LBL_OptionsAction=Maven Settings")
+        OptionsAction() {
+            super(LBL_OptionsAction(), ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/options.png", true));
+            putValue(Action.SHORT_DESCRIPTION, LBL_OptionsAction());
         }
 
-        @Override
-        public boolean isEnabled() {
-            return mbps != null && config!=null && config.getProject()!=null
-                    && super.isEnabled();
+        @Override public void actionPerformed(ActionEvent e) {
+            OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH);
         }
 
-        public void setConfig(RunConfig config) {
-            this.config = config;
-        }
-
-        public void setEmbedder(MavenEmbedder embedder) {
-            this.embedder = embedder;
-            setEnabled(embedder != null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            //
-            if (embedder != null && config != null && config.getProject() != null) {
-                NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
-                mbps.openBuildPlanView(embedder,
-                        prj.getMavenProject(),
-                        config.getGoals().toArray(new String[0]));
-            }
-        }
     }
 
     private class MavenItem implements BuildExecutionSupport.Item {
 
-        public String getDisplayName() {
+        @Override public String getDisplayName() {
             return config.getTaskDisplayName();
         }
 
-        public void repeatExecution() {
+        @Override public void repeatExecution() {
             RunUtils.executeMaven(config);
         }
 
-        public boolean isRunning() {
+        @Override public boolean isRunning() {
             return !task.isFinished();
         }
 
-        public void stopRunning() {
+        @Override public void stopRunning() {
             AbstractMavenExecutor.this.cancel();
         }
 

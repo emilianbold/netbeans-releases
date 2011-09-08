@@ -181,3 +181,4 @@ derby\.log
 \.orig\..*$
 \.chg\..*$
 \.conflict\~$
+^nbbuild/jna\.keystore$

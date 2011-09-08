@@ -155,7 +155,7 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         round.setRatio(DocumentTesting.REDO, 1);
         round.setRatio(Op.NAME, 0.5d);
         container.run(1213202006348L);
-        container.run(0L); // Random operation
+//        container.run(0L); // Random operation
 
     }
 

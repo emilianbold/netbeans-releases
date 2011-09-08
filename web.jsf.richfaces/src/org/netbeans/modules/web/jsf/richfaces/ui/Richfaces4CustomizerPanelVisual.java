@@ -51,11 +51,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -72,7 +72,6 @@ import org.netbeans.modules.web.jsf.richfaces.Richfaces4Customizer;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -114,8 +113,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
 
     public void initLibraries(final boolean firstInit) {
         long time = System.currentTimeMillis();
-
-        final Vector<String> registeredRichfaces = new Vector<String>();
+        final List<String> registeredRichfaces = new ArrayList<String>();
 
         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -132,7 +130,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
                     public void run() {
                         setLibrariesComboBox(richfacesComboBox, registeredRichfaces);
 
-                        if (firstInit) {
+                        if (firstInit && !richfacesLibraries.isEmpty()) {
                             setDefaultComboBoxValues();
                         } else {
                             changeSupport.fireChange();
@@ -142,16 +140,17 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
             }
         });
 
-        LOGGER.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms", new Object[]{this.getClass().getName(), System.currentTimeMillis() - time});   //NOI18N
+        LOGGER.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms", //NOI18N
+                new Object[]{this.getClass().getName(), System.currentTimeMillis() - time});   //NOI18N
     }
 
     private void setDefaultComboBoxValues() {
-        Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
+        Preferences preferences = Richfaces4Implementation.getRichfacesPreferences();
         richfacesComboBox.setSelectedItem(preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, ""));
     }
 
-    private void setLibrariesComboBox(JComboBox comboBox, Vector<String> items) {
-        comboBox.setModel(new DefaultComboBoxModel(items));
+    private void setLibrariesComboBox(JComboBox comboBox, List<String> items) {
+        comboBox.setModel(new DefaultComboBoxModel(items.toArray()));
         comboBox.setEnabled(!items.isEmpty());
     }
 
@@ -261,6 +260,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
 
     private void newLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newLibraryButtonActionPerformed
         LibrariesCustomizer.showCreateNewLibraryCustomizer(LibraryManager.getDefault());
+        initLibraries(false);
     }//GEN-LAST:event_newLibraryButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

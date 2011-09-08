@@ -97,7 +97,7 @@ public class ModelUtilsTest extends TestCase {
         result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
-        assertEquals("http://repository.jboss.org/maven2", result.getRepoRoot());
+        assertEquals("http://repository.jboss.org/maven2/", result.getRepoRoot());
         assertEquals("junit", result.getGroupId());
         assertEquals("junit", result.getArtifactId());
         assertEquals("3.8.2", result.getVersion());
@@ -119,7 +119,7 @@ public class ModelUtilsTest extends TestCase {
         result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
-        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result.getRepoRoot());
+        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/", result.getRepoRoot());
         assertEquals("org.eclipse.persistence", result.getGroupId());
         assertEquals("javax.persistence", result.getArtifactId());
         assertEquals("2.0.0-M12", result.getVersion());
@@ -133,6 +133,23 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("glassfish-embedded-all", result.getArtifactId());
         assertEquals("3.0", result.getVersion());
         
+        pom = new URL("http://download.eclipse.org/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.3.0/eclipselink-2.3.0.pom");
+        result = ModelUtils.checkLibrary(pom);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://download.eclipse.org/rt/eclipselink/maven.repo/", result.getRepoRoot());
+        assertEquals("org.eclipse.persistence", result.getGroupId());
+        assertEquals("eclipselink", result.getArtifactId());
+        assertEquals("2.3.0", result.getVersion());
+
+        pom = new URL("https://repository.jboss.org/nexus/content/groups/public-jboss/org/richfaces/ui/richfaces-components-ui/4.0.0.Final/richfaces-components-ui-4.0.0.Final.pom");
+        result = ModelUtils.checkLibrary(pom);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("https://repository.jboss.org/nexus/content/groups/public-jboss/", result.getRepoRoot());
+        assertEquals("org.richfaces.ui", result.getGroupId());
+        assertEquals("richfaces-components-ui", result.getArtifactId());
+        assertEquals("4.0.0.Final", result.getVersion());
     }
     
 }

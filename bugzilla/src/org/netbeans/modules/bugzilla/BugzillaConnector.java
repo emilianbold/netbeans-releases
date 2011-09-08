@@ -64,6 +64,10 @@ public class BugzillaConnector extends BugtrackingConnector {
 
     private BugzillaIssueFinder issueFinder;
 
+    public BugzillaConnector() {
+        System.out.println("");
+    }
+
     @Override
     public String getID() {
         return "org.netbeans.modules.bugzilla";                                 //  NOI18N

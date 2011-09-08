@@ -107,6 +107,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsPanel;
+import org.netbeans.modules.java.hints.options.HintsPanelLogic;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -158,13 +159,15 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         DataObject dob = context.lookup(DataObject.class);
         Icon prj = null;
         ProjectInformation pi=null;
-        if (dob!=null) {
+        if (dob != null) {
             FileObject file = context.lookup(FileObject.class);
-            Project owner = FileOwnerQuery.getOwner(file);
-            if (owner!=null) {
-                fileObject = file;
-                pi = ProjectUtils.getInformation(owner);
-                prj = pi.getIcon();
+            if (file != null) {
+                Project owner = FileOwnerQuery.getOwner(file);
+                if (owner != null) {
+                    fileObject = file;
+                    pi = ProjectUtils.getInformation(owner);
+                    prj = pi.getIcon();
+                }
             }
         }
         
@@ -286,21 +289,26 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(refactorUsingLabel)
+                    .addComponent(inspectLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(configurationRadio)
-                            .addComponent(inspectLabel)
                             .addComponent(singleRefactorRadio))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(scopeCombo, 0, 82, Short.MAX_VALUE)
-                            .addComponent(singleRefactoringCombo, 0, 82, Short.MAX_VALUE)
-                            .addComponent(configurationCombo, 0, 82, Short.MAX_VALUE))
+                            .addComponent(singleRefactoringCombo, 0, 33, Short.MAX_VALUE)
+                            .addComponent(configurationCombo, 0, 33, Short.MAX_VALUE))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
-                            .addComponent(customScopeButton)
                             .addComponent(manageSingleRefactoring, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(manageConfigurations, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(manageConfigurations, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scopeCombo, 0, 179, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(customScopeButton)
+                        .addGap(43, 43, 43)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -312,12 +320,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                     .addComponent(scopeCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(customScopeButton))
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(refactorUsingLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(configurationRadio)
                     .addComponent(configurationCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(manageConfigurations))
+                    .addComponent(manageConfigurations)
+                    .addComponent(refactorUsingLabel))
                 .addGap(1, 1, 1)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(singleRefactoringCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -375,8 +382,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(todo, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
                 break;
             case 1:
-                //current project
-                customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                if (fileObject!=null) {
+                    //current project
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                } else {
+                    //custom
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                }
                 break;
             case 2:
                 //current package
@@ -434,11 +446,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
             for (HintMetadata hint:config.getHints()) {
-                for (HintDescription desc: RulesManager.getInstance().allHints.get(hint)) {
-                    if (desc.getTrigger() instanceof PatternDescription) {
-                        hintsToApply.add(desc);
-                    }
-                }
+                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
@@ -585,7 +593,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 pane.setContentType("text/html");  //NOI18N
                 pane.setEditable(false);
                 JScrollPane scrollPane = new JScrollPane(pane);
-                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                 scrollPane.setPreferredSize(menu.getSize());
                 Dimension size = menu.getSize();
                 Point location = menu.getLocationOnScreen();
@@ -598,7 +606,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                             Object elementAt = singleRefactoringCombo.getModel().getElementAt(context.getAccessibleIndexInParent());
                             if (elementAt instanceof HintMetadata) {
                                 HintMetadata item = (HintMetadata) elementAt;
-                                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                                pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                                 pane.setCaretPosition(0);
                             }
                         }

@@ -101,12 +101,13 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
 
         kenai.login(username, password.toCharArray(), false);
         
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // XXX MYLYN
+//        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
         System.setProperty("netbeans.t9y.bugzilla.force.refresh.delay", "please!");
     }
 

@@ -56,8 +56,10 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
+import org.netbeans.modules.web.beans.hints.EditorAnnotationsHelper;
 import org.openide.util.NbBundle;
 
 
@@ -96,6 +98,11 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
                     return;
                 }
                 checkDelegateType(param, i, element, parent, result );
+                VariableElement var = CdiEditorAnalysisFactory.resolveParameter(
+                        param, element, result.getInfo());
+                EditorAnnotationsHelper helper = EditorAnnotationsHelper.
+                    getInstance(result);
+                helper.addInjectionPoint(result, var);  
             }
             i++;
         }

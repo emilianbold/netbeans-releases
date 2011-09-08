@@ -117,6 +117,13 @@ public class ReactorCheckerTest extends NbTestCase {
         assertEquals(m, ReactorChecker.findReactor(m));
     }
 
+    public void testFindReactorNonexistentSiteParent() throws Exception {
+        project(null, "<parent><groupId>site</groupId><artifactId>parent</artifactId><version>0</version></parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging><modules><module>m</module></modules>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>m</artifactId>");
+        NbMavenProject p = load(null);
+        assertEquals(p, ReactorChecker.findReactor(load("m")));
+    }
+
     public void testFindReactorNonAggregatorParent() throws Exception {
         project("parent", "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging>");
         project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version><relativePath>../parent/pom.xml</relativePath></parent><artifactId>m</artifactId>");

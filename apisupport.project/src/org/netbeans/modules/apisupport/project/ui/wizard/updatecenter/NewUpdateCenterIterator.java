@@ -47,11 +47,12 @@ package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.api.LayerHandle;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -60,12 +61,12 @@ import org.openide.util.NbBundle.Messages;
  * @author Jiri Rechtacek
  */
 @TemplateRegistration(
-    folder="NetBeansModuleDevelopment",
+    folder=UIUtil.TEMPLATE_FOLDER,
     position=600,
     displayName="#template_updatecenter",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.png",
     description="../../resources/newUpdateCenter.html",
-    category="nbm-specific"
+    category=UIUtil.TEMPLATE_CATEGORY
 )
 @Messages("template_updatecenter=Update Center")
 public final class NewUpdateCenterIterator extends BasicWizardIterator {

@@ -97,7 +97,7 @@ public class StopServerAction extends NodeAction {
         return commonSupport.getServerState() == ServerState.RUNNING &&
                 (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ||
                 // there is a target part of this server's url AND the das is running
-                (null != Util.computeTarget(commonSupport.getInstanceProperties()) &&
+                (!Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties()) &&
                  ((CommonServerSupport) commonSupport).isReallyRunning()));
     }
     

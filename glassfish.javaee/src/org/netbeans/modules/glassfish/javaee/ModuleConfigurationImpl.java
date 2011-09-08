@@ -96,7 +96,7 @@ public class ModuleConfigurationImpl implements
         }
     }
     
-    static ModuleConfigurationImpl get(J2eeModule j2eemodule) {
+    static public ModuleConfigurationImpl get(J2eeModule j2eemodule) {
         synchronized (configs) {
             return configs.get(j2eemodule);
         }

@@ -29,8 +29,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="0" pref="478" max="32767" attributes="0"/>
-          <Component id="projectFolderPanel" alignment="0" pref="478" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" pref="386" max="32767" attributes="0"/>
+          <Component id="projectFolderPanel" alignment="0" pref="386" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="encodingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -45,15 +45,15 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                      <Component id="phpVersionComboBox" pref="341" max="32767" attributes="0"/>
+                      <Component id="phpVersionComboBox" pref="249" max="32767" attributes="0"/>
                       <Component id="sourcesInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="sourcesTextField" pref="233" max="32767" attributes="0"/>
+                          <Component id="sourcesTextField" pref="141" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sourcesBrowseButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="projectNameTextField" alignment="1" pref="341" max="32767" attributes="2"/>
-                      <Component id="encodingComboBox" alignment="0" pref="341" max="32767" attributes="2"/>
+                      <Component id="projectNameTextField" alignment="1" pref="249" max="32767" attributes="2"/>
+                      <Component id="encodingComboBox" alignment="0" pref="249" max="32767" attributes="2"/>
                   </Group>
               </Group>
           </Group>

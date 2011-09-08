@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -366,7 +366,8 @@ public final class ModuleUpdater extends Thread {
                     jarFile = new JarFile (nbm);
                     Enumeration<JarEntry> entries = jarFile.entries();
                     final Manifest manifest = jarFile.getManifest();
-                    if (manifest != null && manifest.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                    String symbolicName = manifest != null ? ModuleUpdate.extractCodeName(manifest.getMainAttributes()) : null;
+                    if (symbolicName != null) {
                         //OSGi bundle
                         File osgiJar = nbm;
                         
@@ -685,7 +686,7 @@ public final class ModuleUpdater extends Thread {
       * @param s string to be quoted
       * @return correctly quoted string
       */
-     public static final String quoteString(String s) {
+     public static String quoteString(String s) {
          if ( s.indexOf( SPACE ) > -1 ) {
              StringBuilder sb = new StringBuilder(s);
              int i = 0;
@@ -805,6 +806,7 @@ public final class ModuleUpdater extends Thread {
          int INPARAMPENDING = 0x2; // INPARAM + \
          int STICK = 0x4; // INPARAM + " or STICK + non_" // NOI18N
          int STICKPENDING = 0x8; // STICK + \
+        @SuppressWarnings("UseOfObsoleteCollectionType")
          Vector<String> params = new Vector<String>(5,5);
          char c;
  
@@ -973,6 +975,7 @@ public final class ModuleUpdater extends Thread {
         }
         
         /** read jvm parameters from jvm parameters file */
+        @SuppressWarnings("empty-statement")
         private boolean readParms(String spath) {
             Properties details = new Properties();
             FileInputStream fis = null;
@@ -1061,8 +1064,9 @@ public final class ModuleUpdater extends Thread {
     public static Set<File> getModulesToInstall (File cluster) {
         
         class NbmFilter implements java.io.FilenameFilter {
+            @Override
             public boolean accept (File dir, String name) {
-                return name.endsWith (ModuleUpdater.NBM_EXTENSION);
+                return name.endsWith (ModuleUpdater.NBM_EXTENSION) || name.endsWith (ModuleUpdater.JAR_EXTENSION);
             }
         }
         

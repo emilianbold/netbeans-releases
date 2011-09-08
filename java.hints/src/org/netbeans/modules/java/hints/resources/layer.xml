@@ -56,15 +56,6 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.analyzer.ui.Bundle#CTL_AnalyzerAction"/>
             </file>
         </folder>
-        <folder name="Refactoring">
-            <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.jackpot.impl.refactoring.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.java.hints.jackpot.impl.refactoring.ApplyPatternAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.java.hints.jackpot.impl.refactoring.Bundle#CTL_ApplyPatternAction"/>
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" boolvalue="false"/>
-            </file>
-    </folder>
     </folder>
         
     <folder name="Menu">
@@ -82,10 +73,6 @@ made subject to such option by the copyright holder.
             <file name="Jackpot.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1840"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
-                <attr name="position" intvalue="1850"/>
             </file>
         </folder>
 
@@ -175,7 +162,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance"/>
                 <folder name="AnnotationProcessors">
-                    <file name="org-netbeans-modules-java-hints-infrastructure-SuppressWarningsCompletion.instance" />
+                    <file name="org-netbeans-modules-java-hints-infrastructure-SuppressWarningsCompletion.instance"/>
                 </folder>
                 <folder name="FontsColors">
                     <folder name="NetBeans">

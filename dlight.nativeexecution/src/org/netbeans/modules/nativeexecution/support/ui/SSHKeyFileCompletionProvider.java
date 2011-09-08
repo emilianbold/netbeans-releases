@@ -75,6 +75,11 @@ public final class SSHKeyFileCompletionProvider extends FileNamesCompletionProvi
         }
 
         final File[] listFiles = dirFile.listFiles(SSHKeyFileFilter.getInstance());
+
+        if (listFiles == null) {
+            return Collections.emptyList();
+        }
+
         List<String> result = new ArrayList<String>(listFiles.length);
         int idx = dirFile.getAbsolutePath().length();
 

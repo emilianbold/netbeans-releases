@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -67,11 +66,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
@@ -198,7 +198,7 @@ public class CodeUtils {
         }
         return sb.toString();
     }
-    
+
     public static Identifier extractUnqualifiedIdentifier(NamespaceName name) {
         if (name instanceof NamespaceName) {
             NamespaceName namespaceName = (NamespaceName) name;
@@ -232,24 +232,24 @@ public class CodeUtils {
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
     }
-    
+
     private static class VariableNameVisitor extends DefaultVisitor {
-        
+
         private String name = null;
         private boolean isDollared = false;
-        
+
         private VariableNameVisitor () {
-            
+
         }
-        
-        private static class SingletonHolder { 
+
+        private static class SingletonHolder {
             public static final VariableNameVisitor INSTANCE = new VariableNameVisitor();
         }
 
         public static VariableNameVisitor getInstance() {
             return SingletonHolder.INSTANCE;
         }
-        
+
         public String findName(Variable var) {
             name = null;
             scan(var);
@@ -279,10 +279,10 @@ public class CodeUtils {
         @Override
         public void visit(ArrayAccess node) {
             scan(node.getName());
-        }  
+        }
     }
-        
-    
+
+
     @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
         return VariableNameVisitor.getInstance().findName(var);
@@ -368,43 +368,50 @@ public class CodeUtils {
     public static String getParamDefaultValue(FormalParameter param) {
         Expression expr = param.getDefaultValue();
         //TODO: can be improved
+        Operator operator = null;
+        if (expr instanceof UnaryOperation) {
+            UnaryOperation unaryExpr = (UnaryOperation) expr;
+            operator = unaryExpr.getOperator();
+            expr = unaryExpr.getExpression();
+        }
         if (expr instanceof Scalar) {
             Scalar scalar = (Scalar) expr;
-                return scalar.getStringValue();
+            String returnValue = scalar.getStringValue();
+            return Operator.MINUS.equals(operator) ? "-" + returnValue : returnValue; // NOI18N
         } else if (expr instanceof ArrayCreation) {
             return "array()";//NOI18N
         } else if (expr instanceof StaticConstantAccess) {
             StaticConstantAccess staticConstantAccess = (StaticConstantAccess) expr;
             Expression className = staticConstantAccess.getClassName();
-            
+
             if (className instanceof Identifier) {
                 Identifier i = (Identifier) className;
-                
+
                 return i.getName() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
             } else if (className instanceof NamespaceName) {
                 NamespaceName namespace = (NamespaceName) className;
                 List<Identifier> segments = namespace.getSegments();
                 StringBuilder sb = new StringBuilder();
-                
+
                 if (namespace.isGlobal()) {
                     sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
                 }
-                
+
                 for (Iterator<Identifier> iter = segments.iterator(); iter.hasNext(); ) {
                     Identifier namespaceSegment = iter.next();
                     sb.append(namespaceSegment.getName());
-                    
+
                     if (iter.hasNext()) {
                         sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
                     }
                 }
-                
+
                 return sb.toString() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
             }
         }
         return expr == null ? null : " ";//NOI18N
     }
-    
+
     public static String getParamDisplayName(FormalParameter param) {
         Expression paramNameExpr = param.getParameterName();
         StringBuilder paramName = new StringBuilder();

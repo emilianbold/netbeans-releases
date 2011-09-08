@@ -86,21 +86,24 @@
                       <Component id="completeLabel" min="-2" max="-2" attributes="0"/>
                       <Component id="completeField" min="-2" pref="80" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="gainLabel" min="-2" max="-2" attributes="0"/>
-                      <Component id="gainField" min="-2" pref="80" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="completeWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="deadlineField" min="-2" pref="113" max="-2" attributes="1"/>
-                          <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                          <Component id="gainField" min="-2" pref="80" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="gainWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="deadlineField" alignment="0" min="-2" pref="113" max="-2" attributes="1"/>
+                              <Component id="deadlineLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="deadlineWarning" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="deadlineLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="gainLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -108,8 +111,6 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="deadlineLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="gainLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="completeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
@@ -137,13 +138,25 @@
                       <Component id="completeField" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel7" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="actualField" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="deadlineField" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="estimatedWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                      <Component id="gainField" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="remainingWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="workedWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="workedSumField" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="completeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="gainLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="gainField" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="gainWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="deadlineLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="deadlineField" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -283,6 +296,10 @@
         <Component class="javax.swing.JLabel" name="actualWarning">
         </Component>
         <Component class="javax.swing.JLabel" name="deadlineWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="completeWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="gainWarning">
         </Component>
       </SubComponents>
     </Container>
@@ -599,7 +616,7 @@
                   <Component id="statusWhiteboardField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusWhiteboardWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="timetrackingLabel" min="-2" max="-2" attributes="0"/>
@@ -608,7 +625,7 @@
                   </Group>
                   <Component id="dummyTimetrackingPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
@@ -643,7 +660,7 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" pref="26" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

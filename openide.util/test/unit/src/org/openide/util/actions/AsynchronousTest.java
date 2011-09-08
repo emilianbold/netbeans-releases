@@ -44,25 +44,11 @@
 
 package org.openide.util.actions;
 
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.awt.image.PixelGrabber;
-import java.util.Date;
 import java.util.logging.Level;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import junit.textui.TestRunner;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /** Test general aspects of system actions.
  * Currently, just the icon.
@@ -76,10 +62,12 @@ public class AsynchronousTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
 
+    @Override
     protected void setUp() {
         err = Log.enable("", Level.ALL);
     }
@@ -104,6 +92,7 @@ public class AsynchronousTest extends NbTestCase {
         DoesOverrideAndReturnsTrue action = (DoesOverrideAndReturnsTrue)DoesOverrideAndReturnsTrue.get(DoesOverrideAndReturnsTrue.class);
         
         synchronized (action) {
+            action.finished = false;
             action.actionPerformed(new ActionEvent(this, 0, ""));
             Thread.sleep(500);
             assertFalse("Not yet finished", action.finished);
@@ -145,14 +134,17 @@ public class AsynchronousTest extends NbTestCase {
     public static class DoesNotOverride extends CallableSystemAction {
         boolean finished;
         
+        @Override
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
         
+        @Override
         public String getName() {
             return "Should warn action";
         }
         
+        @Override
         public synchronized void performAction() {
             notifyAll();
             finished = true;
@@ -161,12 +153,14 @@ public class AsynchronousTest extends NbTestCase {
     }
     
     public static class DoesOverrideAndReturnsTrue extends DoesNotOverride {
+        @Override
         public boolean asynchronous() {
             return true;
         }
     }
     
     public static final class DoesOverrideAndReturnsFalse extends DoesOverrideAndReturnsTrue {
+        @Override
         public boolean asynchronous() {
             return false;
         }

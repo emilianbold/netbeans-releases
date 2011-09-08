@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -50,11 +50,11 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class OccurrencesFinderImplTest extends TestBase {
-    
+
     public OccurrencesFinderImplTest(String testName) {
         super(testName);
-    }            
-           
+    }
+
     public void testGotoLabel() throws Exception {
         checkOccurrences(getTestPath(), "goto en^d;", true);
     }
@@ -336,27 +336,74 @@ public class OccurrencesFinderImplTest extends TestBase {
         //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
     }
-    
+
     public void testMagicMethod171249() throws Exception {
         checkOccurrences(getTestPath(), "class OldC^lass {", true);
     }
-    
+
     public void testInstanceof198909_01() throws Exception {
         checkOccurrences(getTestPath(), "$mExpectedE^xception = null", true);
     }
-    
+
     public void testInstanceof198909_02() throws Exception {
         checkOccurrences(getTestPath(), "} catch (Exception $^e) {", true);
     }
-    
+
     public void testInstanceof198909_03() throws Exception {
         checkOccurrences(getTestPath(), "$e instanceof $mExpect^edException", true);
     }
-    
+
     public void testIssue198449_01() throws Exception {
         checkOccurrences(getTestPath(), "$cl^ass = 'StdClass';", true);
     }
-    
+
+    public void testIssue201429_01() throws Exception {
+        checkOccurrences(getTestPath(), "protected static function test($keyC^losure)", true);
+    }
+
+    public void testIssue200399_01() throws Exception {
+        checkOccurrences(getTestPath(), "function functionName(Character\\Ma^nager", true);
+    }
+
+    public void testIssue201671() throws Exception {
+        checkOccurrences(getTestPath(), "$array as $my^Key", true);
+    }
+
+    public void testIssue133465_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $U^RL;", true);
+    }
+
+    public void testIssue133465_02() throws Exception {
+        checkOccurrences(getTestPath(), "st $this->$U^RL", true);
+    }
+
+    public void testIssue133465_03() throws Exception {
+        checkOccurrences(getTestPath(), "return $this->$U^RL;", true);
+    }
+
+    public void testIssue197283_01() throws Exception {
+        checkOccurrences(getTestPath(), "$fu^nc = 'someFunc';", true);
+    }
+
+    public void testIssue197283_02() throws Exception {
+        checkOccurrences(getTestPath(), "$fu^nc();", true);
+    }
+
+    public void testIssue197283_03() throws Exception {
+        checkOccurrences(getTestPath(), "$o^bj = 'MyObj';", true);
+    }
+
+    public void testIssue197283_04() throws Exception {
+        checkOccurrences(getTestPath(), "$x = new $o^bj;", true);
+    }
+
+    public void testIssue197283_05() throws Exception {
+        checkOccurrences(getTestPath(), "$another^Obj = 'AnotherObj';", true);
+    }
+
+    public void testIssue197283_06() throws Exception {
+        checkOccurrences(getTestPath(), "$y = new $another^Obj();", true);
+    }
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

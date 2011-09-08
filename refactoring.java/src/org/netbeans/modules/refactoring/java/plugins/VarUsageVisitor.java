@@ -24,12 +24,8 @@ made subject to such option by the copyright holder.
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.*;
 import org.netbeans.modules.refactoring.java.api.*;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
@@ -43,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -71,6 +68,36 @@ class VarUsageVisitor extends RefactoringVisitor {
     }
 
     @Override
+    public Tree visitReturn(ReturnTree node, Element p) {
+        ExpressionTree expression = node.getExpression();
+        checkReturnType(expression, p);
+        return super.visitReturn(node, p);
+    }
+
+    private void checkReturnType(ExpressionTree expression, Element p) {
+        if(expression == null || p == null) { return; }
+        if(expression.getKind() == Tree.Kind.IDENTIFIER) {
+            IdentifierTree ident = (IdentifierTree) expression;
+            checkReturnType(ident, p);
+        } else if(expression.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {
+            ConditionalExpressionTree cet = (ConditionalExpressionTree) expression;
+            checkReturnType(cet.getFalseExpression(), p);
+            checkReturnType(cet.getTrueExpression(), p);
+        }
+    }
+
+    private void checkReturnType(IdentifierTree ident, Element p) {
+        Element el = asElement(ident);
+        if(el.equals(p)) {
+            MethodTree method = (MethodTree) JavaPluginUtils.findMethod(getCurrentPath()).getLeaf();
+            TypeMirror returnType = workingCopy.getTrees().getTypeMirror(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), method.getReturnType()));
+            if(!workingCopy.getTypes().isSubtype(superTypeElement.asType(), returnType)) {
+                isReplCandidate = false;
+            }
+        }
+    }
+
+    @Override
     public Tree visitMemberSelect(MemberSelectTree memSelectTree, Element refVarElem) {
 
         Element methodElement = this.asElement(memSelectTree);
@@ -85,6 +112,35 @@ class VarUsageVisitor extends RefactoringVisitor {
             isReplCandidate = false;
         }
         return super.visitMemberSelect(memSelectTree, refVarElem);
+    }
+
+    @Override
+    public Tree visitMethodInvocation(MethodInvocationTree node, Element p) {
+        List<? extends ExpressionTree> arguments = node.getArguments();
+        for (int i = 0; i < arguments.size(); i++) {
+            ExpressionTree argument = arguments.get(i);
+            Element argElement = asElement(argument); // TODO: Slow and misses ternary expressions
+            if(p.equals(argElement)) {
+                ExecutableElement method = (ExecutableElement) asElement(node);
+                VariableElement parameter = method.getParameters().get(i);
+                Types types = workingCopy.getTypes();
+                TypeMirror parameterType = parameter.asType();
+                if(parameterType.getKind().equals(TypeKind.TYPEVAR)) {
+                    TypeVariable typeVariable = (TypeVariable) parameterType;
+                    TypeMirror upperBound = typeVariable.getUpperBound();
+                    TypeMirror lowerBound = typeVariable.getLowerBound();
+                    if(upperBound != null && !types.isSubtype(superTypeElement.asType(), upperBound)) {
+                        isReplCandidate = false;
+                    }
+                    if(lowerBound != null && !types.isSubtype(lowerBound, superTypeElement.asType())) {
+                        isReplCandidate = false;
+                    }
+                } else if(!types.isAssignable(superTypeElement.asType(), parameterType)) {
+                    isReplCandidate = false;
+                }
+            }
+        }
+        return super.visitMethodInvocation(node, p);
     }
 
     @Override

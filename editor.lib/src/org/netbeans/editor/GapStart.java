@@ -68,6 +68,8 @@ package org.netbeans.editor;
  *
  * @author Miloslav Metelka
  * @version 1.00
+ * @deprecated deprecated without replacement. Possibly use document's view as CharSequence
+ *  by {@link org.netbeans.lib.editor.util.swing.DocumentUtilities#getText(javax.swing.text.Document)}.
  */
 
 public interface GapStart {

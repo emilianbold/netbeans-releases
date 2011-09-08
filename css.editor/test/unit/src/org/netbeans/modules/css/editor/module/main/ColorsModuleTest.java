@@ -58,22 +58,22 @@ public class ColorsModuleTest extends CslTestBase {
     }
 
     public void testPropertyDescriptors() throws ParseException {
-        PropertyModel color = CssModuleSupport.getProperty("color");
+        PropertyModel color = CssModuleSupport.getPropertyModel("color");
         assertNotNull(color);
 
-        assertNotNull(CssModuleSupport.getProperty("-rgb"));
-        assertNotNull(CssModuleSupport.getProperty("-colors-list"));
-        assertNotNull(CssModuleSupport.getProperty("-system-color"));
+        assertNotNull(CssModuleSupport.getPropertyModel("@rgb"));
+        assertNotNull(CssModuleSupport.getPropertyModel("@colors-list"));
+        assertNotNull(CssModuleSupport.getPropertyModel("@system-color"));
     }
 
     public void testTextValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "red").success());
         assertTrue(new PropertyValue(p, "buttonface").success());
     }
 
     public void testRGBValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "rgb(10,20,30)").success());
         assertTrue(new PropertyValue(p, "rgb(10%,20,30)").success());
         assertFalse(new PropertyValue(p, "rgb(,20,30)").success());
@@ -82,14 +82,14 @@ public class ColorsModuleTest extends CslTestBase {
     }
 
     public void testHashValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "#ffaa00").success());
         assertTrue(new PropertyValue(p, "#fb0").success());
         assertFalse(new PropertyValue(p, "#fa001").success());
     }
 
     public void testRGBaValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "rgba(255,0,0,1)").success());
         assertTrue(new PropertyValue(p, "rgba(100%,0%,0%,1)").success());
         assertTrue(new PropertyValue(p, "rgba(0,0,255,0.5)").success());
@@ -97,7 +97,7 @@ public class ColorsModuleTest extends CslTestBase {
     
 
     public void testHSLValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "hsl(0, 100%, 50%)").success());
         assertTrue(new PropertyValue(p, "hsl(120, 100%, 50%").success());
         assertTrue(new PropertyValue(p, "hsl(120, 100%, 25%)").success());
@@ -107,15 +107,15 @@ public class ColorsModuleTest extends CslTestBase {
     }
     
     public void testHSLaValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
         assertTrue(new PropertyValue(p, "hsla(120, 100%, 50%, 1)").success());
         assertTrue(new PropertyValue(p, "hsla(240, 100%, 50%, 0.5)").success());
         assertTrue(new PropertyValue(p, "hsla(30, 100%, 50%, 0.1)").success());
     }
     
     public void testSpecialValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
-        assertTrue(new PropertyValue(p, "inherit").success());
+        PropertyModel p = CssModuleSupport.getPropertyModel("color");
+//        assertTrue(new PropertyValue(p, "inherit").success());
         assertTrue(new PropertyValue(p, "currentColor").success());
         assertTrue(new PropertyValue(p, "transparent").success());
     }

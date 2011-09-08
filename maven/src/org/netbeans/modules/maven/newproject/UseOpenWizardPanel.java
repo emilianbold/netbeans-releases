@@ -44,9 +44,10 @@ package org.netbeans.modules.maven.newproject;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Panel just asking for basic info.
@@ -60,10 +61,11 @@ public class UseOpenWizardPanel implements WizardDescriptor.Panel {
     public UseOpenWizardPanel() {
     }
     
+    @Messages("TIT_UseOpenProjectStep=Open Maven project with Existing POM")
     public Component getComponent() {
         if (component == null) {
             component = new UseOpenPanel();
-            component.setName(NbBundle.getMessage(ChooseWizardPanel.class, "TIT_UseOpenProjectStep"));
+            component.setName(TIT_UseOpenProjectStep());
         }
         return component;
     }

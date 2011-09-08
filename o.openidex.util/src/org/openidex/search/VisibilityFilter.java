@@ -46,26 +46,51 @@ package org.openidex.search;
 
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
-/**
- *
+/** Visiblity filter that uses VisibilityQuery and check for primary files.
+ *  
  * @author  Marian Petras
  */
 final class VisibilityFilter implements FileObjectFilter {
 
     /**
      */
+    @Override
     public boolean searchFile(FileObject file)
             throws IllegalArgumentException {
         if (file.isFolder()) {
             throw new java.lang.IllegalArgumentException(
                     "file (not folder) expected");                      //NOI18N
+        } else {
+            return isPermittedByQuery(file) && isPrimaryFile(file);
         }
-        return VisibilityQuery.getDefault().isVisible(file);
     }
 
+    /** Test that all visibility queries allow showing a file object. */
+    private boolean isPermittedByQuery(FileObject file) {
+        return VisibilityQuery.getDefault().isVisible(file);
+    }
+    
+    /** Test that a file is the primary file of its DataObject. */
+    private boolean isPrimaryFile(FileObject file) 
+            throws IllegalArgumentException {
+        try {
+            DataObject dob = DataObject.find(file);
+            if (dob.getPrimaryFile().equals(file)) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (DataObjectNotFoundException ex) {
+            throw new IllegalArgumentException("File not found:" + file, ex);
+        }
+    }
+    
     /**
      */
+    @Override
     public int traverseFolder(FileObject folder)
             throws IllegalArgumentException {
         if (!folder.isFolder()) {

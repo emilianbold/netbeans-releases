@@ -286,6 +286,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.javafx2.platform</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
                 <friend>org.netbeans.modules.projectimport.jbuilder</friend>
                 <package>org.netbeans.modules.java.j2seplatform.api</package>

@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.settings.FontColorNames;
@@ -482,6 +483,19 @@ public final class EditorFindSupport {
         }
     }
     
+    private boolean findMatches(String text, Map<String, Object> props) {
+        if(text == null)
+            return false;
+        try {
+            PlainDocument plainDocument = new PlainDocument();
+            plainDocument.insertString(0, text, null);
+            int[] find = DocumentFinder.find(plainDocument, 0, text.length(), props , false);
+            return find[0] != -1;
+        } catch (BadLocationException ex) {
+            return false;
+        }
+    }
+    
     private FindReplaceResult findReplaceImpl(String replaceExp, 
             Map<String, Object> props, boolean oppositeDir, JTextComponent c) {
         incSearchReset();
@@ -497,7 +511,7 @@ public final class EditorFindSupport {
             ComponentUtils.clearStatusText(c);
             Caret caret = c.getCaret();
             int dotPos = caret.getDot();
-            if (findWhat.equals(c.getSelectedText())) {
+            if (findMatches(c.getSelectedText(), props)) {
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;
 

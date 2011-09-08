@@ -51,6 +51,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
+import org.netbeans.modules.openide.loaders.DataNodeUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -127,7 +128,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     }
 
     static void waitRefresh() {
-        DataNode.RP.post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
+        DataNodeUtils.reqProcessor().post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
     }
 
     /** If the folder changed its children we change our nodes.
@@ -201,7 +202,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             run.run();
         } else {
             run.op = operation;
-            refTask = DataNode.RP.post(run);
+            refTask = DataNodeUtils.reqProcessor().post(run);
         }
     }
 
@@ -416,7 +417,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             an.setName(pair.primaryFile.getNameExt());
             an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
             
-            task = DataNode.RP.post(this);
+            task = DataNodeUtils.reqProcessor().post(this);
         }
         
         @Override

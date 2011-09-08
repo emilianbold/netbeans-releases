@@ -68,7 +68,8 @@ public class RunJarPrereqCheckerTest extends NbTestCase {
 
     public void testWriteMapping() throws Exception {
         TestFileUtils.writeFile(d, "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
+                "<project>\n" +
+                "    <modelVersion>4.0.0</modelVersion>\n" +
                 "    <groupId>testgrp</groupId>\n" +
                 "    <artifactId>testart</artifactId>\n" +
                 "    <version>1.0</version>\n" +

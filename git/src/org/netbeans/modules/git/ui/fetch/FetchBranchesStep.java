@@ -66,6 +66,7 @@ import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -117,6 +118,11 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     @Override
     protected final JComponent getJComponent () {
         return branches.getPanel();
+    }
+    
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx(FetchBranchesStep.class);
     }
 
     public void setFetchUri (String fetchUri, boolean loadRemoteBranches) {

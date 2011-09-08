@@ -450,11 +450,11 @@ public final class Utilities {
         return refs;
     }
     
-    public static List<String> varNamesSuggestions(TypeMirror type, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
+    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
         List<String> result = new ArrayList<String>();
         if (type == null)
             return result;
-        List<String> vnct = varNamesForType(type, types, elements, prefix);
+        List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
@@ -671,6 +671,17 @@ public final class Utilities {
             } else {
                 return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
+        }
+
+        @Override
+        public StringBuilder visitUnion(UnionType t, Boolean p) {
+            Iterator<? extends TypeMirror> it = t.getAlternatives().iterator();
+            while(it.hasNext()) {
+                visit(it.next(), p);
+                if (it.hasNext())
+                    DEFAULT_VALUE.append(" | "); //NOI18N
+            }
+            return DEFAULT_VALUE;
         }
                         
         @Override

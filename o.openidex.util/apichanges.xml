@@ -107,6 +107,26 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+
+      <change id="SearchGroup.onStopSearch">
+        <api name="search"/>
+        <summary>Added method <code>SearchGroup.onStopSearch</code></summary>
+        <version major="3" minor="31"/>
+        <date day="2" month="9" year="2011"/>
+        <author login="jhavlin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Class <code>SearchGroup</code> now contains method 
+                <code>onStopSearch</code>, that can be overriden in subclasses 
+                to perform some custom operations that are needed to stop the
+                search, e.g. terminate internal tasks.
+            </p>
+        </description>
+        <class package="org.openidex.search" name="SearchGroup"/>
+        <issue number="193361"/>
+      </change>
+
        <change id="SearchUtils">
         <api name="search"/>
         <summary>Added utility class <code>Utils</code></summary>

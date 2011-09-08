@@ -169,7 +169,6 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         } finally {
             attachedAnnotationsLock.writeLock().unlock();
         }
-        attachedAnnotations.clear();
         // Remember pendingAnnotations and set it to null
         Collection<BaseAnnotation> toAdd;
         synchronized (pendingAnnotationsLock) {
@@ -184,12 +183,13 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
                 //System.err.println("Cancelled after adding " + attachedAnnotations.size() + " from " + toAdd.size() + "; took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");
                 return;
             }
-            a.attach();
-            attachedAnnotationsLock.writeLock().lock();
-            try {
-                attachedAnnotations.add(a);
-            } finally {
-                attachedAnnotationsLock.writeLock().unlock();
+            if (a.attach()) {
+                attachedAnnotationsLock.writeLock().lock();
+                try {
+                    attachedAnnotations.add(a);
+                } finally {
+                    attachedAnnotationsLock.writeLock().unlock();
+                }
             }
         }
         //System.err.println("Adding " + toAdd.size() + " annotations took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");

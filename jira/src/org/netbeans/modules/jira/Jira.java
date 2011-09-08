@@ -43,23 +43,16 @@
 package org.netbeans.modules.jira;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraCorePlugin;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
@@ -79,7 +72,6 @@ public class Jira {
     private Set<JiraRepository> repositories;
 
     private static final Object REPOSITORIES_LOCK = new Object();
-    private static String REPOSITORIES_STORE;
 
     private JiraRepositoryConnector jrc;
     private static Jira instance;
@@ -89,20 +81,10 @@ public class Jira {
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
-    private final JiraCorePlugin jcp;
     private JiraConnector connector;
     
     private Jira() {
-        BugtrackingRuntime.init();
-
         ModuleLifecycleManager.instantiated = true;
-        jcp = new JiraCorePlugin();
-        try {
-            jcp.start(null);
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Error while starting jira client", ex);
-        }
-        BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
 
     public KenaiSupport getKenaiSupport() {
@@ -115,9 +97,6 @@ public class Jira {
     public static synchronized Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
-            REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
-            new File(REPOSITORIES_STORE).getParentFile().mkdirs();
-
             // lazy ping tasklist issue provider to load issues ...
             instance.getRequestProcessor().post(new Runnable() {
                 @Override
@@ -131,16 +110,6 @@ public class Jira {
 
     static void init() {
         getInstance();
-    }
-
-    public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {
-        BugtrackingRuntime.getInstance().getTaskDataManager().putUpdatedTaskData(
-                new TaskTask(
-                    getRepositoryConnector().getConnectorKind(),
-                    repository.getUrl(),
-                    data.getTaskId()),
-                    data,
-                    true);
     }
 
     /**
@@ -181,8 +150,6 @@ public class Jira {
             repos.remove(repository);
             newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             JiraConfig.getInstance().removeRepository(repository.getID());
-            BugtrackingRuntime br = BugtrackingRuntime.getInstance();
-            br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
         getConnector().fireRepositoriesChanged(oldRepos, newRepos);
         JiraIssueProvider.getInstance().removeAllFor(repository);
@@ -244,19 +211,14 @@ public class Jira {
         JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
-    void shutdown () {
-        try {
-            jcp.stop(null);
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Error while stoping jira client", ex);
-        }
-        getStorageManager().shutdown();
-    }
-
     public JiraStorageManager getStorageManager () {
         if (storageManager == null) {
             storageManager = JiraStorageManager.getInstance();
         }
         return storageManager;
     }
+    
+    void shutdown () {
+        getStorageManager().shutdown();
+    }    
 }
