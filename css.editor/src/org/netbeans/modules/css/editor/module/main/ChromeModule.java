@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.netbeans.modules.css.editor.module.spi.Property;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,12 +55,12 @@ import org.openide.util.lookup.ServiceProvider;
 public class ChromeModule extends BrowserSupportModule {
 
     public ChromeModule() {
-        super(new DefaultBrowser("Chrome", "Goodle", "webkit", "", "chrome20"));
+        super(new DefaultBrowser("Chrome", "Goodle", "webkit", "", "chrome20"), "webkit");
     }
 
     @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
+    public Collection<Property> getProperties() {
+        return Collections.emptyList(); //properties are provided by safari - webkit is the common renderer
     }
-      
+    
 }
