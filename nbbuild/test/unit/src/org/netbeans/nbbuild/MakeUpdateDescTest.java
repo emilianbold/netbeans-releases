@@ -67,7 +67,8 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "com.jcraft.jzlib;resolution:=optional, " +
                 "org.openide.actions;bundle-version=\"[6.15,100)\"," +
                 "javax.xml.rpc;bundle-version=1.1.0, " +
-                "org.apache.xerces;bundle-version=\"[2.8.0,3.0.0)\";resolution:=optional");
+                "org.apache.xerces;bundle-version=\"[2.8.0,3.0.0)\";resolution:=optional, " + 
+                "org.eclipse.osgi;bundle-version=\"[3.5.0,4.0.0)\";visibility:=reexport");
         Properties localization = new Properties();
         localization.setProperty("OpenIDE-Module-Name", "My Bundle");
         localization.setProperty("OpenIDE-Module-Display-Category", "hello");
@@ -83,7 +84,9 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "com.jcraft.jsch &gt; 0.1.37, " +
                 "org.openide.actions &gt; 6.15, " +
                 "javax.xml.rpc &gt; 1.1.0' " +
-                "OpenIDE-Module-Name='My Bundle' OpenIDE-Module-Short-Description='Hello there!' " +
+                "OpenIDE-Module-Name='My Bundle' " +
+                "OpenIDE-Module-Needs='org.netbeans.Netbinox' " +
+                "OpenIDE-Module-Short-Description='Hello there!' " +
                 "OpenIDE-Module-Specification-Version='0'/> " +
                 "</module> ", baos.toString().replace('"', '\'').replaceAll("\\s+", " "));
     }

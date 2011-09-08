@@ -276,25 +276,32 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    /** Copied from org.netbeans:nexus-for-netbeans. Workaround for anomalous classifier behavior of nbm-maven-plugin. */
+    /** Adapted from org.netbeans:nexus-for-netbeans. */
     public static final class CustomArtifactContextProducer extends DefaultArtifactContextProducer {
         @Override public ArtifactContext getArtifactContext(IndexingContext context, File file) {
             ArtifactContext ac = super.getArtifactContext(context, file);
             if (ac != null) {
                 ArtifactInfo ai = ac.getArtifactInfo();
-                if ("nbm".equals(ai.fextension)) {
-                    return new ArtifactContext(ac.getPom(), ac.getArtifact(), ac.getMetadata(), new ArtifactInfo(ai.repository, ai.groupId, ai.artifactId, ai.version, null) {
-                        private String uinfo = null;
-                        public @Override String getUinfo() {
-                            if (uinfo == null) {
-                                uinfo = new StringBuilder().append(groupId).append(FS).append(artifactId).append(FS).append(version).append(FS)
-                                        .append(NA) // no classifier in this case
-                                        .append(FS).append(packaging) // would otherwise omit this
-                                        .toString();
+                String fext = ai.fextension;
+                if (fext != null) {
+                    if (fext.endsWith(".lastUpdated")) { // #197670: why is this even considered?
+                        return null;
+                    }
+                    // Workaround for anomalous classifier behavior of nbm-maven-plugin:
+                    if (fext.equals("nbm")) {
+                        return new ArtifactContext(ac.getPom(), ac.getArtifact(), ac.getMetadata(), new ArtifactInfo(ai.repository, ai.groupId, ai.artifactId, ai.version, null) {
+                            private String uinfo = null;
+                            public @Override String getUinfo() {
+                                if (uinfo == null) {
+                                    uinfo = new StringBuilder().append(groupId).append(FS).append(artifactId).append(FS).append(version).append(FS)
+                                            .append(NA) // no classifier in this case
+                                            .append(FS).append(packaging) // would otherwise omit this
+                                            .toString();
+                                }
+                                return uinfo;
                             }
-                            return uinfo;
-                        }
-                    }, ac.getGav());
+                        }, ac.getGav());
+                    }
                 }
             }
             return ac;

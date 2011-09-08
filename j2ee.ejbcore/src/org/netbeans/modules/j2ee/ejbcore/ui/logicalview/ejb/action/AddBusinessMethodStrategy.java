@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -66,20 +68,21 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Pavel Buzek
  * @author Martin Adamek
  */
 public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
-    
+
     public AddBusinessMethodStrategy(String name) {
         super(name);
     }
     public AddBusinessMethodStrategy() {
         super(NbBundle.getMessage(AddBusinessMethodStrategy.class, "LBL_AddBusinessMethodAction"));
     }
-    
+
     protected MethodModel getPrototypeMethod() {
         return MethodModel.create(
                 "businessMethod",
@@ -90,7 +93,7 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.<Modifier>emptySet()
                 );
     }
-    
+
     protected MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
@@ -109,21 +112,30 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }
-    
+
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.BUSINESS;
     }
-    
-    protected void generateMethod(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote,
-            String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException {
-        BusinessMethodGenerator generator = BusinessMethodGenerator.create(ejbClass, ejbClassFO);
-        generator.generate(method, publishToLocal, publishToRemote);
+
+    protected void generateMethod(final MethodModel method, boolean isOneReturn, final boolean publishToLocal,
+            final boolean publishToRemote, String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException {
+        final BusinessMethodGenerator generator = BusinessMethodGenerator.create(ejbClass, ejbClassFO);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    generator.generate(method, publishToLocal, publishToRemote);
+                } catch (IOException ioe) {
+                    Logger.getLogger(AddBusinessMethodStrategy.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
     }
-    
+
     public boolean supportsEjb(FileObject fileObject, final String className) {
 
         boolean isEntityOrSession = false;
-        
+
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
@@ -138,7 +150,7 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
+
         return isEntityOrSession;
 
     }

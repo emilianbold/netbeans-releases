@@ -5,32 +5,6 @@
         <folder name="OSGi">
             <attr name="displayName" bundlevalue="org.netbeans.modules.maven.osgi.Bundle#Templates/OSGi"/>
             <attr name="position" intvalue="723"/>
-            <file name="Activator.java" url="templates/activator.java.template">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.maven.osgi.Bundle#Templates/OSGi/Activator.java"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/maven/osgi/templates/new_OSGi_file_16.png"/>
-                <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="simple" boolvalue="false"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.maven.osgi.ActivatorIterator"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/new_OSGi_activator.html"/>
-                <attr name="templateCategory" stringvalue="osgi"/>
-            </file>
-        </folder>
-        <folder name="Project">
-            <folder name="Maven2">
-                <file name="OSGi">
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
-                    <attr name="position" intvalue="290"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.osgi.Bundle#template.project.OSGi"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="osgi-archetype"/>
-                    <attr name="version" stringvalue="1.3"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/OSGiDescription.html"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
         </folder>
     </folder>
 </filesystem>

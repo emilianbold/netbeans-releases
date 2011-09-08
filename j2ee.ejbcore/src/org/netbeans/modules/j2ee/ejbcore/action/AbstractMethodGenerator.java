@@ -66,20 +66,22 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AbstractAddMethodStrategy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Martin Adamek
  */
 public abstract class AbstractMethodGenerator {
-    
+
     protected final String ejbClass;
     protected final FileObject ejbClassFileObject;
     protected final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
-    
+
     protected AbstractMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
         Parameters.notNull("ejbClass", ejbClass);
         Parameters.notNull("ejbClassFileObject", ejbClassFileObject);
@@ -87,21 +89,31 @@ public abstract class AbstractMethodGenerator {
         this.ejbClassFileObject = ejbClassFileObject;
         this.ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbClassFileObject);
     }
-    
+
     /**
      * Founds business interface if exists and adds method there, adds method into interface <code>className</code> otherwise
      */
-    protected void addMethodToInterface(MethodModel methodModel, String className) throws IOException {
-        String commonInterface = findCommonInterface(ejbClass, className);
-        if (commonInterface == null) { // there is no 'business' interface
-            commonInterface = className;
-        }
-        FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, commonInterface);
-        addMethod(methodModel, fileObject, commonInterface);
+    protected void addMethodToInterface(final MethodModel methodModel, String className) throws IOException {
+        String ci = findCommonInterface(ejbClass, className);
+        // ci == null if there is no 'business' interface
+        final String commonInterface = (ci != null) ? ci : className;
+        final FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, commonInterface);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    addMethod(methodModel, fileObject, commonInterface);
+                } catch (IOException ioe) {
+                    Logger.getLogger(AbstractAddMethodStrategy.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
     }
-    
+
     /**
-     * Adds method to class
+     * Adds method to class.
+     * <p>
+     * <b>Should be called outside EDT.</b>
      */
     protected static void addMethod(final MethodModel methodModel, FileObject fileObject, final String className) throws IOException {
         if (fileObject != null && methodModel != null){
@@ -119,15 +131,15 @@ public abstract class AbstractMethodGenerator {
             }).commit();
         }
     }
-    
-    protected void saveXml() throws IOException {
+
+    protected synchronized void saveXml() throws IOException {
         FileObject ddFileObject = ejbModule.getDeploymentDescriptor();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject); // EJB 2.1
         if (ejbJar != null) {
-            ejbJar.write(ddFileObject);
+                ejbJar.write(ddFileObject);
         }
     }
-    
+
     /**
      * Returns map of EJB interface class names, where keys are appropriate constants from {@link EntityAndSession}
      */
@@ -152,10 +164,10 @@ public abstract class AbstractMethodGenerator {
             return Collections.<String, String>emptyMap();
         }
     }
-    
+
     private static String findCommonInterface(final String className1, final String className2) throws IOException {
         //TODO: RETOUCHE
         return null;
     }
-    
+
 }

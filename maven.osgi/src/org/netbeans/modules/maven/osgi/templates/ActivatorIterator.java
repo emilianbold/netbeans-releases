@@ -42,25 +42,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.maven.osgi;
+package org.netbeans.modules.maven.osgi.templates;
 
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.openide.filesystems.FileObject;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -71,10 +68,16 @@ import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.osgi.OSGIConstants;
+import static org.netbeans.modules.maven.osgi.templates.Bundle.*;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle.Messages;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -84,6 +87,8 @@ import org.openide.loaders.TemplateWizard;
  *
  * @author mkleint
  */
+@TemplateRegistration(folder="OSGi", position=100, content="Activator.java.template", scriptEngine="freemarker", displayName="#template.activator", iconBase="org/netbeans/modules/maven/osgi/templates/new_OSGi_file_16.png", description="new_OSGi_activator.html", category="osgi")
+@Messages("template.activator=Bundle Activator")
 public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiatingIterator<WizardDescriptor> {
     private static final Logger LOG = Logger.getLogger(ActivatorIterator.class.getName());
     
@@ -252,9 +257,9 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
     // few more options for customization. If you e.g. want to make panels appear
     // or disappear dynamically, go ahead.
 
+    @Messages("TITLE_x_of_y={0} of {1}")
     public String name () {
-        return NbBundle.getMessage(ActivatorIterator.class, "TITLE_x_of_y",
-            index + 1, panels.size());
+        return TITLE_x_of_y(index + 1, panels.size());
     }
     
     public boolean hasNext () {

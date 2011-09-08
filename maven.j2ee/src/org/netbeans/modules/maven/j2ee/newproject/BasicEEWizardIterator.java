@@ -80,19 +80,19 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         this.archs = archs;
     }
 
-    @TemplateRegistration(folder = "Project/Maven2", position = 200, displayName = "#template.WebApp", iconBase = "org/netbeans/modules/maven/j2ee/web/maven_web_application_16.png", description = "WebAppDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=200, displayName="#template.WebApp", iconBase="org/netbeans/modules/maven/j2ee/web/maven_web_application_16.png", description="WebAppDescription.html")
     @Messages("template.WebApp=Web Application")
     public static BasicEEWizardIterator createWebAppIterator() {
         return new BasicEEWizardIterator(EAWizardIterator.WEB_APP_ARCHS);
     }
 
-    @TemplateRegistration(folder = "Project/Maven2", position = 250, displayName = "#template.EJB", iconBase = "org/netbeans/modules/maven/j2ee/ejb/maven_ejb_module_16.png", description = "EjbDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=250, displayName="#template.EJB", iconBase="org/netbeans/modules/maven/j2ee/ejb/maven_ejb_module_16.png", description="EjbDescription.html")
     @Messages("template.EJB=EJB Module")
     public static BasicEEWizardIterator createEJBIterator() {
         return new BasicEEWizardIterator(EAWizardIterator.EJB_ARCHS);
     }
     
-    @TemplateRegistration(folder = "Project/Maven2", position = 277, displayName = "#template.APPCLIENT", iconBase = "org/netbeans/modules/maven/j2ee/appclient/appclient.png", description = "AppClientDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=277, displayName="#template.APPCLIENT", iconBase="org/netbeans/modules/maven/j2ee/appclient/appclient.png", description="AppClientDescription.html")
     @Messages("template.APPCLIENT=Enterprise Application Client")
     public static BasicEEWizardIterator createAppClientIterator() {
         return new BasicEEWizardIterator(EAWizardIterator.APPCLIENT_ARCHS);

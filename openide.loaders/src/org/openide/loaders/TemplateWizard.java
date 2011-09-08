@@ -126,7 +126,7 @@ public class TemplateWizard extends WizardDescriptor {
     
     /** Creates new TemplateWizard */
     public TemplateWizard () {
-        this (new TemplateWizardIteratorWrapper.InstantiatingIterator (new TemplateWizardIterImpl ()));
+        this (new TemplateWizardIteratorWrapper(new TemplateWizardIterImpl ()));
     }
      
     /** Constructor to be called from public default one.
@@ -509,6 +509,9 @@ public class TemplateWizard extends WizardDescriptor {
             d.setVisible(true);
         } catch (IllegalStateException ise) {
             thrownMessage = ise;
+        }
+        if (getValue() == CLOSED_OPTION || getValue() == CANCEL_OPTION) {
+            return null;
         }
         // here can return newObjects because instantiateNewObjects() was called
         // from WizardDescriptor before close dialog (on Finish)

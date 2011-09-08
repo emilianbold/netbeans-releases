@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -73,6 +74,23 @@ import org.openide.util.lookup.Lookups;
 /** 
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+@RandomlyFails /* NB-Core-Build #7095 deadlock:
+Thread Test Watch Dog: testClose
+    at org.openide.util.RequestProcessor$Task.waitFinished(RequestProcessor.java:1681)
+    at org.netbeans.modules.project.ui.OpenProjectList$LoadOpenProjects.waitFinished(OpenProjectList.java:285)
+    at org.netbeans.modules.project.ui.OpenProjectList.close(OpenProjectList.java:739)
+    at org.netbeans.modules.project.ui.OpenProjectsTrampolineImpl.closeAPI(OpenProjectsTrampolineImpl.java:79)
+    at org.netbeans.api.project.ui.OpenProjects.close(OpenProjects.java:238)
+    at org.netbeans.modules.project.ui.CloseProjectsTest.testClose(CloseProjectsTest.java:134)
+Thread Load Open Projects
+    at java.util.concurrent.CountDownLatch.await(CountDownLatch.java:207)
+    at org.netbeans.modules.project.ui.CloseProjectsTest$TestProjectOpenedHookImpl.projectOpened(CloseProjectsTest.java:223)
+    at org.netbeans.spi.project.ui.ProjectOpenedHook$1.projectOpened(ProjectOpenedHook.java:84)
+    at org.netbeans.modules.project.ui.OpenProjectList.notifyOpened(OpenProjectList.java:1115)
+    at org.netbeans.modules.project.ui.OpenProjectList.access$1600(OpenProjectList.java:131)
+    at org.netbeans.modules.project.ui.OpenProjectList$LoadOpenProjects.loadOnBackground(OpenProjectList.java:431)
+    at org.netbeans.modules.project.ui.OpenProjectList$LoadOpenProjects.run(OpenProjectList.java:304)
  */
 public class CloseProjectsTest extends NbTestCase {
     CountDownLatch down;

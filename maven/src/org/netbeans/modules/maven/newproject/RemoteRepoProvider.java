@@ -39,8 +39,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.newproject;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,35 +53,45 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 
-/**
- *
- * @author mkleint
- */
-@SuppressWarnings("deprecation")
 public class RemoteRepoProvider implements ArchetypeProvider {
 
-    public List<Archetype> getArchetypes() {
+    @Override public List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
         List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        boolean searchedSomeRepo = false;
         for (RepositoryInfo info : infos) {
             if (RepositoryPreferences.LOCAL_REPO_ID.equals(info.getId())) {
                 continue;
             }
-            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(Collections.singletonList(info));
-            if (archs == null) {
-                continue;
-            }
-            for (NBVersionInfo art : archs) {
-                Archetype arch = new Archetype(false);
-                arch.setArtifactId(art.getArtifactId());
-                arch.setGroupId(art.getGroupId());
-                arch.setVersion(art.getVersion());
-                arch.setName(art.getProjectName());
-                arch.setDescription(art.getProjectDescription());
-                arch.setRepository(info.getRepositoryUrl());
-                lst.add(arch);
+            searchedSomeRepo = true;
+            search(info, lst);
+        }
+        if (!searchedSomeRepo) { // #201821
+            try {
+                RepositoryPreferences.getInstance().addTransientRepository(this, "central", "central", RepositoryPreferences.REPO_CENTRAL);
+                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("central");
+                assert info != null;
+                search(info, lst);
+            } catch (URISyntaxException x) {
+                assert false : x;
+            } finally {
+                RepositoryPreferences.getInstance().removeTransientRepositories(this);
             }
         }
         return lst;
     }
+
+    private void search(RepositoryInfo info, List<Archetype> lst) {
+        for (NBVersionInfo art : RepositoryQueries.findArchetypes(Collections.singletonList(info))) {
+            Archetype arch = new Archetype(false);
+            arch.setArtifactId(art.getArtifactId());
+            arch.setGroupId(art.getGroupId());
+            arch.setVersion(art.getVersion());
+            arch.setName(art.getProjectName());
+            arch.setDescription(art.getProjectDescription());
+            arch.setRepository(info.getRepositoryUrl());
+            lst.add(arch);
+        }
+    }
+
 }

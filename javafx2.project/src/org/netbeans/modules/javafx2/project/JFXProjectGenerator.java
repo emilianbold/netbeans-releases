@@ -70,7 +70,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.javafx2.project.JFXProjectProperties.PreloaderSourceType;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -92,6 +91,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -331,7 +331,9 @@ public class JFXProjectGenerator {
         Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        
+        final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+        explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+        data.appendChild(explicitPlatformEl);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
         if (srcRoot != null) {
@@ -387,14 +389,14 @@ public class JFXProjectGenerator {
             }
 
             if (preloader != null && preloader.length() > 0) { // this project uses preloader
-                String preloaderJar = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
-                        + File.separatorChar + preloader + "\\dist\\" + preloader + ".jar"; // NOI18N
+                String preloaderProj = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
+                        + File.separatorChar + preloader; // NOI18N
+                String preloaderJar = preloaderProj + "\\dist\\" + preloader + ".jar"; // NOI18N
                 String preloaderSrc = preloader + "\\src"; // NOI18N
 
                 ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
                 ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_preloader")}, false); // NOI18N
-                ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE_TYPE, PreloaderSourceType.PROJECT.getString());
-                ep.setProperty(JFXProjectProperties.PRELOADER_SOURCE, preloaderSrc);
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProj);
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader)); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR, preloaderJar);
             }

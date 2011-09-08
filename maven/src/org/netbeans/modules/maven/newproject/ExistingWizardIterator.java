@@ -51,6 +51,8 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -61,18 +63,14 @@ import org.openide.util.RequestProcessor;
  *
  *@author mkleint
  */
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=1000, displayName="#template.existing", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="ExistingDescription.html")
+@Messages("template.existing=Project with Existing POM")
 public class ExistingWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    
-    private ExistingWizardIterator() {}
-    
-    public static ExistingWizardIterator createIterator() {
-        return new ExistingWizardIterator();
-    }
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {

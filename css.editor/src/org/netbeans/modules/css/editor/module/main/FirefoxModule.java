@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -53,7 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class FirefoxModule extends BrowserSupportModule {
     
     public FirefoxModule() {
-        super(new DefaultBrowser("Firefox", "Mozilla", "gecko", "moz", "firefox20"));
+        super(new DefaultBrowser("Firefox", "Mozilla", "gecko", "moz", "firefox20"), "firefox");
     }
 
 }
