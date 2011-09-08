@@ -70,17 +70,22 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public final class BusinessMethodGenerator extends AbstractMethodGenerator {
-    
+
     private BusinessMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
         super(ejbClass, ejbClassFileObject);
     }
-    
+
     public static BusinessMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
         return new BusinessMethodGenerator(ejbClass, ejbClassFileObject);
     }
-    
+
+    /**
+     * Generates methods for local/remote interfaces.
+     * <p>
+     * <b>Should be called outside EDT.</b>
+     */
     public void generate(final MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
-        
+
         Map<String, String> interfaces = getInterfaces();
         String local = interfaces.get(EntityAndSession.LOCAL);
         final String remote = interfaces.get(EntityAndSession.REMOTE);
@@ -97,10 +102,10 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                     );
             addMethodToInterface(methodModelCopy, local);
         }
-        
+
         // remote interface, add RemoteException if it's not there (in EJB 2.1)
         if (generateRemote && remote != null) {
-            
+
             final List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
 
             MetadataModel<EjbJarMetadata> metadataModel = EjbJar.getEjbJar(ejbClassFileObject).getMetadataModel();
@@ -110,7 +115,7 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                 }
             });
             final boolean isEjb2x = (version != null && version.doubleValue() <= 2.1);
-            
+
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
@@ -132,7 +137,7 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                     }
                 }
             }, true);
-            
+
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
                     methodModel.getReturnType(),
@@ -143,7 +148,7 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                     );
             addMethodToInterface(methodModelCopy, remote);
         }
-        
+
         // ejb class
         // add all specified annothations and join Override if has local, remote interfaces
         List<MethodModel.Annotation> annotations = new ArrayList<MethodModel.Annotation>();
@@ -163,9 +168,9 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                 Collections.singleton(Modifier.PUBLIC),
                 annotations
                 );
-        
+
         addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
-        
+
     }
-    
+
 }

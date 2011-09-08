@@ -69,12 +69,12 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  */
 public final class CreateMethodGenerator extends AbstractMethodGenerator {
-    
+
     private final String local;
     private final String localHome;
     private final String remote;
     private final String remoteHome;
-    
+
     private CreateMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
         super(ejbClass, ejbClassFileObject);
         Map<String, String> interfaces = new HashMap<String, String>(4);
@@ -88,13 +88,18 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
         this.remote = interfaces.get(EntityAndSession.REMOTE);
         this.remoteHome = interfaces.get(EntityAndSession.HOME);
     }
-    
+
     public static CreateMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
         return new CreateMethodGenerator(ejbClass, ejbClassFileObject);
     }
-    
+
+    /**
+     * Generates create method.
+     * <p>
+     * <b>Should be called outside EDT.</b>
+     */
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
-        
+
         MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
         String ejbType = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
             public String run(EjbJarMetadata metadata) throws Exception {
@@ -107,21 +112,21 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                 return null;
             }
         });
-        
+
         if (EnterpriseBeans.SESSION.equals(ejbType)) {
             generateSession(methodModel, generateLocal, generateRemote);
         } else if (EnterpriseBeans.ENTITY.equals(ejbType)) {
             generateEntity(methodModel, generateLocal, generateRemote);
         }
-        
+
     }
-    
+
     private void generateSession(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
-        
+
         if (!methodModel.getName().startsWith("create")) {
             throw new IllegalArgumentException("The method name must have create as its prefix.");
         }
-        
+
         // local interface
         if (generateLocal && local != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
@@ -150,7 +155,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         }
-        
+
         // remote interface
         if (generateRemote && remote != null) {
             List<String> exceptions = exceptions = new ArrayList<String>(methodModel.getExceptions());
@@ -182,7 +187,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         }
-        
+
         // ejb class
         List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
         if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
@@ -197,15 +202,15 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                 Collections.singleton(Modifier.PUBLIC)
                 );
         addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
-        
+
     }
-    
+
     private void generateEntity(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
-        
+
         if (!methodModel.getName().startsWith("create")) {
             throw new IllegalArgumentException("The method name must have create as its prefix.");
         }
-        
+
         // local interface
         if (generateLocal && local != null && localHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
@@ -222,9 +227,9 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
             addMethod(methodModelCopy, fileObject, localHome);
-            
+
         }
-        
+
         // remote interface
         if (generateRemote && remote != null && remoteHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
@@ -245,7 +250,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
             addMethod(methodModelCopy, fileObject, remoteHome);
         }
-        
+
         // ejb class
         List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
         if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
@@ -278,5 +283,5 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                 );
         addMethod(postCreateMethodModel, ejbClassFileObject, ejbClass);
     }
-    
+
 }
