@@ -600,25 +600,29 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         if (j2ee != null && (Profile.JAVA_EE_6_FULL.equals(j2ee) || Profile.JAVA_EE_6_WEB.equals(j2ee))) {
             sourceLevel = "1.6"; // NOI18N
         }
-        try {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
-            Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
-            // make sure that chosen source level is suported by server:
-            if (!jdks.contains(sourceLevel)) {
-                if ("1.5".equals(sourceLevel) && jdks.contains("1.6")) {
-                    sourceLevel = "1.6";
-                } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
-                    sourceLevel = "1.5";
-                } else {
-                    // well, choose anything apart from 1.4:
-                    jdks.remove("1.4");
-                    if (jdks.size() > 0) {
-                        sourceLevel = (String)jdks.iterator().next();
+        
+        // serverInstanceId is null, when there is no installed server
+        if (serverInstanceId != null) {
+            try {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
+                // make sure that chosen source level is suported by server:
+                if (!jdks.contains(sourceLevel)) {
+                    if ("1.5".equals(sourceLevel) && jdks.contains("1.6")) {
+                        sourceLevel = "1.6";
+                    } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
+                        sourceLevel = "1.5";
+                    } else {
+                        // well, choose anything apart from 1.4:
+                        jdks.remove("1.4");
+                        if (jdks.size() > 0) {
+                            sourceLevel = (String)jdks.iterator().next();
+                        }
                     }
                 }
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (InstanceRemovedException ex) {
-            Exceptions.printStackTrace(ex);
         }
         
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
