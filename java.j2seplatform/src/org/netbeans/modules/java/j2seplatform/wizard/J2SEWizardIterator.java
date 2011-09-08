@@ -54,12 +54,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -146,20 +143,14 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         Set<JavaPlatform> result = new HashSet<JavaPlatform> ();
         for (NewJ2SEPlatform platform : getPlatforms()) {
             if (platform.isValid()) {
-                final String systemName = platform.getAntName();
-                FileObject platformsFolder = FileUtil.getConfigFile(
-                        "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
-                if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
-                    String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
-                    throw (IllegalStateException)ErrorManager.getDefault().annotate(
-                        new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
-                }                       
-                DataObject dobj = PlatformConvertor.create(platform, DataFolder.findFolder(platformsFolder),systemName);
-                result.add(dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class));
+                try {
+                    result.add(PlatformConvertor.create(platform));
+                } catch (IllegalArgumentException iae) {
+                    throw new IllegalStateException(NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName"));
+                }
             }
-        }        
+        }
         return Collections.unmodifiableSet(result);
-        
     }
 
     @Override
