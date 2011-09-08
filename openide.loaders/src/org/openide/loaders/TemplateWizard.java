@@ -126,7 +126,7 @@ public class TemplateWizard extends WizardDescriptor {
     
     /** Creates new TemplateWizard */
     public TemplateWizard () {
-        this (new TemplateWizardIteratorWrapper.InstantiatingIterator (new TemplateWizardIterImpl ()));
+        this (new TemplateWizardIteratorWrapper(new TemplateWizardIterImpl ()));
     }
      
     /** Constructor to be called from public default one.
