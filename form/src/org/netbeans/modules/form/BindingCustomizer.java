@@ -215,8 +215,12 @@ public class BindingCustomizer extends JPanel {
 
     private void configurePropertyPanel(PropertyPanel propertyPanel) {
         // Issue 197643, hack that ensures correct property displayer
-        propertyPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
-        propertyPanel.setPreferences(0);
+        if (boolean.class.equals(bindingDescriptor.getValueType())) {
+            // Custom code for boolean property is lost somehow when using PREF_INPUT_STATE or 0
+            propertyPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
+        } else {
+            propertyPanel.setPreferences(PropertyPanel.PREF_INPUT_STATE);
+        }
     }
 
     /**
