@@ -77,7 +77,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
@@ -705,10 +704,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             ProgressTransferListener.clearAggregateHandle();
         }
         //#154913
-        RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-        if (info != null) {
-            RepositoryIndexer.updateIndexWithArtifacts(info, Collections.singletonList(art));
-        }
+        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(art));
         return art;
     }
     
