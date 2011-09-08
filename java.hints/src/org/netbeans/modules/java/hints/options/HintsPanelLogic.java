@@ -188,7 +188,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         severityComboBox.removeActionListener(this);
         tasklistCheckBox.removeChangeListener(this);
         configCombo.removeItemListener(this);
-                
+        
         componentsSetEnabled( false );
     }
     
@@ -320,7 +320,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             // Enable components
             componentsSetEnabled(true);
             
-            editScript.setEnabled(hint.category.equals("custom"));
+            editScript.setEnabled(hint.category.equals(HintCategory.CUSTOM_CATEGORY));
             
             // Set proper values to the componetnts
             
@@ -344,7 +344,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             tasklistCheckBox.setSelected(toTasklist);
             
             String description = hint.description;
-            descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
+            descriptionTextArea.setText( description == null ? "" : wrapDescription(description, hint)); // NOI18N
                                     
             // Optionally show the customizer
             customizerPanel.removeAll();
@@ -368,7 +368,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             componentsSetEnabled(false);
             severityComboBox.setEnabled(true);
             descriptionTextArea.setEnabled(true);
-            descriptionTextArea.setText(wrapDescription(depScanningDescription));
+            descriptionTextArea.setText(wrapDescription(depScanningDescription, null));
             descriptionTextArea.setCaretPosition(0);
             if (dt != DependencyTracking.DISABLED)
                 severityComboBox.setSelectedIndex(deptracking2index.get(dt));
@@ -411,8 +411,16 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
    
     // Private methods ---------------------------------------------------------
 
-    private String wrapDescription( String description ) {
-        return new StringBuffer( DESCRIPTION_HEADER ).append(description).append(DESCRIPTION_FOOTER).toString();        
+    private String wrapDescription( String description, HintMetadata hint ) {
+        return new StringBuffer( DESCRIPTION_HEADER ).append(description).append(getQueryWarning(hint)).append(DESCRIPTION_FOOTER).toString();        
+    }
+    
+    public static String getQueryWarning(HintMetadata hint) {
+        if (hint==null || !hint.options.contains(HintMetadata.Options.QUERY)) {
+            return "";
+        }
+        return NbBundle.getMessage(HintsPanelLogic.class, "NO_REFACTORING");
+        
     }
     
     private HintSeverity index2severity( int index ) {
@@ -509,6 +517,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
     public static final class HintCategory {
         private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
+        public static final String CUSTOM_CATEGORY ="custom";
 
         public final String codeName;
         public final String displayName;
@@ -516,7 +525,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         public HintCategory(String codeName) {
             this.codeName = codeName;
             FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + codeName);
-            this.displayName = catFO != null ? HintsPanel.getFileObjectLocalizedName(catFO) : codeName;
+            this.displayName = catFO != null ? HintsPanel.getFileObjectLocalizedName(catFO) :
+             CUSTOM_CATEGORY.equals(codeName)?NbBundle.getBundle("org.netbeans.modules.java.hints.resources.Bundle").getString("org-netbeans-modules-java-hints/rules/hints/custom"):codeName;
         }
 
     }

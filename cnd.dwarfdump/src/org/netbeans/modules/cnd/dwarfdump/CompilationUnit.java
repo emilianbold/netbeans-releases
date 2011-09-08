@@ -96,6 +96,8 @@ public class CompilationUnit {
     private DwarfLineInfoSection lineInfoSection = null;
     private DwarfMacinfoTable macrosTable = null;
     private DwarfNameLookupTable pubnamesTable = null;
+    private DwarfRelaDebugInfoSection rela = null;
+
     private long debugInfoOffset;
     
     private final Map<Long, Long> specifications = new HashMap<Long, Long>();
@@ -370,8 +372,6 @@ public class CompilationUnit {
         return unit_total_length;
     }
 
-    private DwarfRelaDebugInfoSection rela;
-
     private void readCompilationUnitHeader() throws IOException {
         reader.seek(debugInfoSectionOffset + unit_offset);
         
@@ -399,9 +399,15 @@ public class CompilationUnit {
 
         reader.setAddressSize(address_size);
         
+        rela = (DwarfRelaDebugInfoSection)reader.getSection(SECTIONS.RELA_DEBUG_INFO);
+        if (rela != null) {
+            Long abbrAddend = rela.getAbbrAddend(unit_offset + 6);
+            if (abbrAddend != null) {
+                debug_abbrev_offset += abbrAddend;
+            }
+        }
         DwarfAbbriviationTableSection abbrSection = (DwarfAbbriviationTableSection)reader.getSection(SECTIONS.DEBUG_ABBREV);
         abbr_table = abbrSection.getAbbriviationTable(debug_abbrev_offset);
-        rela = (DwarfRelaDebugInfoSection)reader.getSection(SECTIONS.RELA_DEBUG_INFO);
     }
     
     public DwarfStatementList getStatementList() throws IOException {
@@ -500,7 +506,11 @@ public class CompilationUnit {
                 String s = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(replace.longValue());
                 entry.addValue(s);
             } else {
-                entry.addValue(reader.readAttrValue(attr));
+                Object readAttrValue = reader.readAttrValue(attr);
+                //if (replace != null) {
+                //    readAttrValue = replace; 
+                //}
+                entry.addValue(readAttrValue);
             }
         }
         return entry;
@@ -527,7 +537,7 @@ public class CompilationUnit {
         if (root == null) {
             return;
         }
-        
+        //System.out.println(root);
         Number statementListOffset = (Number)root.getAttributeValue(ATTR.DW_AT_stmt_list);
         if (statementListOffset != null) {
             statement_list = lineInfoSection.getStatementList(statementListOffset.longValue());

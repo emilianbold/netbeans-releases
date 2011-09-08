@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -106,7 +107,7 @@ public class MakeListOfNBM extends Task {
         }
     }
 
-    public ArrayList getLocales () {
+    public List<String> getLocales () {
         return this.locales;
     }
 
@@ -119,7 +120,7 @@ public class MakeListOfNBM extends Task {
         }
     }
 
-    public ArrayList getBrandings () {
+    public List<String> getBrandings () {
         return this.brandings;
     }
 
@@ -151,21 +152,13 @@ public class MakeListOfNBM extends Task {
                 }
             }
 
-        boolean osgi = false;
-        String codename = attr.getValue("OpenIDE-Module"); //NOI18N
-        String versionTag = "OpenIDE-Module-Specification-Version"; // NOI18N
-        if (codename == null) {
-            codename = attr.getValue("Bundle-SymbolicName"); // NOI18N
-            versionTag = "Bundle-Version"; // NOI18N
-            if (codename != null) {
-                osgi = true;
-                codename = codename.replace('-', '_');
-            }
-        }
+        boolean[] osgi = new boolean[1];
+        String codename = JarWithModuleAttributes.extractCodeName(attr, osgi);
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
 
+        String versionTag = osgi[0] ? "Bundle-Version" : "OpenIDE-Module-Specification-Version"; // NOI18N
         String versionSpecNum = attr.getValue(versionTag);
         if (versionSpecNum == null) {
             log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag " + versionTag);
@@ -275,7 +268,7 @@ public class MakeListOfNBM extends Task {
         log("Including files " + Arrays.toString(include), Project.MSG_VERBOSE);
         for( int j=0; j < include.length; j++ ){
             String path = include[j].replace(File.separatorChar, '/');
-            if (osgi && !path.equals(moduleName) &&
+            if (osgi[0] && !path.equals(moduleName) &&
                     !path.equals("config/Modules/" + codename.replaceFirst("/\\d+$", "").replace('.', '-') + ".xml")) {
                 throw new BuildException("Cannot include other files with an OSGi bundle: " + path, getLocation());
             }

@@ -156,7 +156,11 @@ public class LocalHistoryFileView implements VersioningListener {
     private void refreshTablePanel(long toSelect) {                  
         RequestProcessor.Task refreshTask = rp.create(new RefreshTable(toSelect));                    
         refreshTask.schedule(100);
-    }    
+    }
+
+    void requestActive() {
+         tablePanel.requestActivate();
+    }
                      
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
@@ -285,6 +289,10 @@ public class LocalHistoryFileView implements VersioningListener {
 
         public ExplorerManager getExplorerManager() {
             return manager;
+        }
+
+        private void requestActivate() {
+            treeView.requestFocusInWindow();
         }
 
         private class BrowserTreeTableView extends OutlineView {    

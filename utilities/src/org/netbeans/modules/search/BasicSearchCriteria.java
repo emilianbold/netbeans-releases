@@ -66,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openidex.search.SearchPattern;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -91,6 +92,13 @@ final class BasicSearchCriteria {
 
     /** array of searchable application/x-<em>suffix</em> MIME-type suffixes */
     private static final Collection<String> searchableXMimeTypes;
+
+    /** List of currently processed searches. */
+    private List<BufferedCharSequence> currentlyProcessedSequences =
+            new ArrayList<BufferedCharSequence>(1);
+    
+    /** Termination flag */
+    private boolean terminated = false;
     
     static {
         searchableXMimeTypes = new HashSet<String>(17);
@@ -670,6 +678,10 @@ final class BasicSearchCriteria {
         
         assert !textPatternValid || (textPattern != null);
         assert !fileNamePatternValid || (fileNamePattern != null);
+        synchronized (this) {
+            terminated = false;
+            currentlyProcessedSequences.clear();
+        }
     }
     
     /**
@@ -691,6 +703,12 @@ final class BasicSearchCriteria {
         lastCharset = null;
 
         if (!fileObj.isValid()) {
+            return false;
+        }
+        
+        /* If replacing, skip read-only files  (including files in archives): */
+        if (!fileObj.canWrite() && isSearchAndReplace()) {
+            LOG.log(Level.INFO, "Read-only file {0} was skipped", fileObj);
             return false;
         }
         
@@ -767,13 +785,16 @@ final class BasicSearchCriteria {
      */
     private boolean checkFileContent(FileObject fo) {
         assert fo != null;
+        assureMemory(fo);
         lastCharset = FileEncodingQuery.getEncoding(fo);
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
         try {         
             InputStream stream = fo.getInputStream();
             bcs = new BufferedCharSequence(stream, lastCharset, fo.getSize());
+            registerProcessedSequence(bcs);
             ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
+            unregisterProcessedSequence(bcs);
             if (txtDetails.isEmpty()){                
                 return false;
             }            
@@ -818,6 +839,53 @@ final class BasicSearchCriteria {
         return false;
     }
 
+    /** Assure that there is enough available memory for searching in file.
+     * Idea and code copied from org.openidex.search.DataObjectSearchGroup.
+     * Uses rough estimate of memory requirements based on file size. 
+     */
+    private void assureMemory(FileObject fo) {
+
+        long fileSize = fo.getSize();
+        long requiredEstimate = fileSize * 3;
+        if ((int) requiredEstimate < 0) {
+            // Integer overflow.
+            throwNoMemoryExeption(fo, fileSize);
+        }
+        if (getAvailableMemory() < requiredEstimate) {
+            System.gc();
+            try {
+                byte[] gcProvocation = new byte[(int) requiredEstimate];
+                gcProvocation[(int) fileSize] = 42;
+                gcProvocation = null;
+            } catch (OutOfMemoryError ooe) {
+                throwNoMemoryExeption(fo, fileSize);
+            }
+        }
+    }
+
+    /** Get approximation of available memory in bytes. */
+    private long getAvailableMemory() {
+
+        Runtime rt = Runtime.getRuntime();
+
+        long max = rt.maxMemory();
+        long free = rt.freeMemory();
+        long total = rt.totalMemory();
+
+        long available = (max - total) + free;
+        return available;
+    }
+
+    /** Throw an exception telling that there is not enough memory for searching
+     * in a file. 
+     */
+    private void throwNoMemoryExeption(FileObject fo, long fileSize) {
+        String text = NbBundle.getMessage(
+                BasicSearchCriteria.class, "TEXT_MSG_NOT_ENOUGH_MEMORY",
+                fo.getNameExt(), fileSize / 1024);
+        throw new RuntimeException(text);
+    }
+
     private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
                                                  FileObject fo,
                                                  SearchPattern sp)
@@ -827,8 +895,9 @@ final class BasicSearchCriteria {
         ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
         FindState fs = new FindState(bcs);
 
+        final int limit = ResultModel.Limit.MATCHES_COUNT_LIMIT.getValue();
         Matcher matcher = textPattern.matcher(bcs);
-        while (matcher.find()) {
+        while (matcher.find() && txtDetails.size() < limit) {
             int matcherStart = matcher.start();
 
             int column = fs.calcColumn(matcherStart);
@@ -1027,4 +1096,29 @@ final class BasicSearchCriteria {
         }
     } // FindState
 
+    /** Register BufferedCharSequence that is being processed by this object.
+     * It is used when user needs to terminate the current search. */
+    private synchronized void registerProcessedSequence(
+            BufferedCharSequence bcs) throws IOException {
+        if (terminated) {
+            bcs.close();
+        } else {
+            currentlyProcessedSequences.add(bcs);
+        }
+    }
+
+    /** Unregister a BufferedCharSequence after it was processed. */
+    private synchronized void unregisterProcessedSequence(
+            BufferedCharSequence bcc) {
+        currentlyProcessedSequences.remove(bcc);
+    }
+
+    /** Stop all searches that are processed by this instance. */
+    synchronized void terminateCurrentSearches() throws IOException {
+        for (BufferedCharSequence bcs: currentlyProcessedSequences) {
+            bcs.close();
+        }
+        currentlyProcessedSequences.clear();
+        terminated = true;
+    }
 }

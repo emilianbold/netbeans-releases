@@ -147,7 +147,9 @@ public class CompileSupport extends CompileOptionsProvider {
                 outputStream = new PrintStream(properties.getOutputStream(lock), false, "UTF-8"); // NOI18N
                 while(it.hasNext()){
                     String next = it.next();
-                    outputStream.println(next);
+                    if (next != null && next.length()>0) {
+                        outputStream.println(next);
+                    }
                 }
                 
             } catch (IOException ex) {

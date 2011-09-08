@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -99,8 +98,9 @@ public class IntroduceParameterUI implements RefactoringUI {
         Problem problem = null;
         refactoring.setFinal(panel.isDeclareFinal());
         refactoring.setParameterName(panel.getParameterName());
-        refactoring.setCompatible(panel.isCompatible());
+        refactoring.setOverloadMethod(panel.isCompatible());
         refactoring.setReplaceAll(panel.isReplaceAll());
+        refactoring.getContext().add(panel.getJavadoc());
         if (checkOnly) {
             problem = refactoring.fastCheckParameters();
         } else {
@@ -110,7 +110,7 @@ public class IntroduceParameterUI implements RefactoringUI {
     }
     
     public String getName() {
-        return NbBundle.getMessage(ChangeParametersUI.class, "LBL_IntroduceParameter");
+        return NbBundle.getMessage(IntroduceParameterUI.class, "LBL_IntroduceParameter");
     }
     
     public Problem checkParameters() {
@@ -126,6 +126,6 @@ public class IntroduceParameterUI implements RefactoringUI {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx(IntroduceParameterUI.class);
     }
 }

@@ -117,6 +117,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -422,8 +423,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             TreePath value = resolved.getLeaf().getKind() != Kind.VARIABLE ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
             boolean isConstant = checkConstantExpression(info, value) && !expressionStatement;
             boolean isVariable = findStatement(resolved) != null && method != null && resolved.getLeaf().getKind() != Kind.VARIABLE;
-            Set<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel, null).keySet() : null;
-            Set<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel, null).keySet();// : null;
+            Set<TreePath> duplicatesForVariable = isVariable ? SourceUtils.computeDuplicates(info, resolved, method, cancel) : null;
+            Set<TreePath> duplicatesForConstant = /*isConstant ? */SourceUtils.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
             Scope scope = info.getTrees().getScope(resolved);
             boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
             String guessedName = Utilities.guessName(info, resolved);
@@ -1355,7 +1356,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             returnValueComputed = true;
                         } else {
                             if (returnValue != null && currentReturnValue != null) {
-                                Set<TreePath> candidates = CopyFinder.computeDuplicates(info, returnValue, currentReturnValue, cancel, null).keySet();
+                                Set<TreePath> candidates = SourceUtils.computeDuplicates(info, returnValue, currentReturnValue, cancel);
 
                                 if (candidates.size() != 1 || candidates.iterator().next().getLeaf() != rt.getExpression()) {
                                     return "ERR_Different_Return_Values"; // NOI18N
@@ -1514,7 +1515,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
 
                             if (replaceAll) {
-                                for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean(), null).keySet()) {
+                                for (TreePath p : SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
                                     parameter.rewrite(p.getLeaf(), make.Identifier(name));
                                 }
                             }
@@ -1530,7 +1531,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             int       index;
 
                             if (replaceAll) {
-                                Set<TreePath> candidates = CopyFinder.computeDuplicates(parameter, resolved, method, new AtomicBoolean(), null).keySet();
+                                Set<TreePath> candidates = SourceUtils.computeDuplicates(parameter, resolved, method, new AtomicBoolean());
                                 for (TreePath p : candidates) {
                                     Tree leaf = p.getLeaf();
 
@@ -1666,7 +1667,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     boolean isAnyOccurenceStatic = false;
 
                     if (replaceAll) {
-                        for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean(), null).keySet()) {
+                        for (TreePath p : SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
                             parameter.rewrite(p.getLeaf(), make.Identifier(name));
                             Scope occurenceScope = parameter.getTrees().getScope(p);
                             if(parameter.getTreeUtilities().isStaticContext(occurenceScope))

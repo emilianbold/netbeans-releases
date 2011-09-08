@@ -350,12 +350,15 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 } else if (name != null) {
                     ve = staticInstanceOf((String)entry.getValue(), name);
                     if (ve != null) {
-                        param2hints.put(param, INSTANCE_OF);
                         TypeMirror tm = ve.getEnclosingElement().asType();
                         tm = cInfo.getTypes().erasure(tm);
-                        if (containsDeclaredType(tm))
-                            param2types.put(param, tm);
-                        return Utilities.getTypeName(cInfo, tm, true) + "." + ve.getSimpleName();
+                        String value = tm != null ? Utilities.getTypeName(cInfo, tm, true) + "." + ve.getSimpleName() : null;
+                        if (value != null) {
+                            param2hints.put(param, INSTANCE_OF);
+                            if (containsDeclaredType(tm))
+                                param2types.put(param, tm);
+                            return value;
+                        }
                     } else {
                         return valueOf((String)entry.getValue());
                     }                    
@@ -445,7 +448,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             } else if (NEW_VAR_NAME.equals(entry.getKey())) {
                 param2hints.put(param, NEW_VAR_NAME);
-                return newVarName(param.getInsertTextOffset() + 1);
+                return newVarName(param.getInsertTextOffset() + 1, (String) entry.getValue());
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
                 return owningClassName();
@@ -745,7 +748,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         return null;
     }
     
-    private String newVarName(int caretOffset) {
+    private String newVarName(int caretOffset, String suggestedName) {
         try {
             if (cInfo != null) {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
@@ -800,7 +803,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                         }
                     };
-                    Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
                     if (names.hasNext())
                         return names.next();
                 }

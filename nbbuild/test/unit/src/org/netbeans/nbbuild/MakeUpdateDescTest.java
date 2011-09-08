@@ -56,7 +56,7 @@ public class MakeUpdateDescTest extends NbTestCase {
 
     public void testFakeOSGiInfoXml() throws Exception {
         Attributes attr = new Attributes();
-        attr.putValue("Bundle-SymbolicName", "bundle");
+        attr.putValue("Bundle-SymbolicName", "bundle;singleton:=true");
         attr.putValue("Bundle-Name", "%OpenIDE-Module-Name");
         attr.putValue("Bundle-Category", "%OpenIDE-Module-Display-Category");
         attr.putValue("Bundle-Description", "%OpenIDE-Module-Short-Description");
@@ -65,12 +65,14 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "org.netbeans.modules.options.api;bundle-version=\"[1.17,200)\", " +
                 "com.jcraft.jsch;bundle-version=\"[0.1.37,0.2.0)\", " +
                 "com.jcraft.jzlib;resolution:=optional, " +
-                "org.openide.actions;bundle-version=\"[6.15,100)\"");
+                "org.openide.actions;bundle-version=\"[6.15,100)\"," +
+                "javax.xml.rpc;bundle-version=1.1.0, " +
+                "org.apache.xerces;bundle-version=\"[2.8.0,3.0.0)\";resolution:=optional");
         Properties localization = new Properties();
         localization.setProperty("OpenIDE-Module-Name", "My Bundle");
         localization.setProperty("OpenIDE-Module-Display-Category", "hello");
         localization.setProperty("OpenIDE-Module-Short-Description", "Hello there!");
-        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization);
+        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(e, baos);
         assertEquals("<module codenamebase='bundle' distribution='' downloadsize='0'> <manifest " +
@@ -79,8 +81,8 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "OpenIDE-Module-Module-Dependencies='org.netbeans.api.progress/1 &gt; 1.19, " +
                 "org.netbeans.modules.options.api/0-1 &gt; 1.17, " +
                 "com.jcraft.jsch &gt; 0.1.37, " +
-                "com.jcraft.jzlib, " +
-                "org.openide.actions &gt; 6.15' " +
+                "org.openide.actions &gt; 6.15, " +
+                "javax.xml.rpc &gt; 1.1.0' " +
                 "OpenIDE-Module-Name='My Bundle' OpenIDE-Module-Short-Description='Hello there!' " +
                 "OpenIDE-Module-Specification-Version='0'/> " +
                 "</module> ", baos.toString().replace('"', '\'').replaceAll("\\s+", " "));

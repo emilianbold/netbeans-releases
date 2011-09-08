@@ -94,6 +94,7 @@ public class WLMessageDestinationDeployment implements MessageDestinationDeploym
             }
 
             WLMessageDestination wLMessageDestination = (WLMessageDestination) destination;
+            // FIXME this is checking only JNDI name collisison, check also module name ???
             String name = wLMessageDestination.getName();
             if (deployed.keySet().contains(name)) { // conflicting ds found
                 MessageDestination deployedMessageDestination = deployed.get(name);

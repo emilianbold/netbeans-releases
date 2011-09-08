@@ -102,7 +102,6 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.JavaEE6EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
-import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
@@ -531,7 +530,7 @@ public class Util {
         return false;
     }
     
-    public static void generateRESTFacades(Project project, Set<Entity> entities,
+    public static void generateRESTFacades(Project project, Set<String> entities,
             EntityResourceBeanModel model, FileObject targetFolder, 
             String resourcePackage ) throws IOException
     {
@@ -539,7 +538,7 @@ public class Util {
                 resourcePackage, FACADE_GENERATOR.createGenerator());
     }
     
-    public static void generateRESTFacades(Project project, Set<Entity> entities,
+    public static void generateRESTFacades(Project project, Set<String> entities,
             EntityResourceBeanModel model, FileObject targetFolder, 
             String resourcePackage, FacadeGenerator generator ) throws IOException
     {
@@ -552,12 +551,9 @@ public class Util {
         }
 
         Map<String, String> selectedEntityNames = new HashMap<String, String>();
-        Iterator<Entity> it = entities.iterator();
-        while (it.hasNext()) {
-            Entity entity = it.next();
-            String primaryKeyType = beanMap.get(entity.getClass2());
-            selectedEntityNames.put(
-                    entity.getClass2(),
+        for( String entity : entities ){
+            String primaryKeyType = beanMap.get(entity);
+            selectedEntityNames.put(entity,
                     (primaryKeyType == null ? String.class.getName() : primaryKeyType)); 
         }
         
@@ -570,10 +566,10 @@ public class Util {
         }
     }
     
-    public static Set<Entity> getEntities(Project project, Set<FileObject> files) 
+    public static Set<String> getEntities(Project project, Set<FileObject> files) 
         throws IOException 
     {
-        final Set<Entity> entities = new HashSet<Entity>();
+        final Set<String> entities = new HashSet<String>();
         for (FileObject file : files) {
             JavaSource source = JavaSource.forFileObject(file);
             source.runUserActionTask(new Task<CompilationController>() {
@@ -599,7 +595,7 @@ public class Util {
                             }
                         }
                         if (entityName != null) {
-                            entities.add(new RuntimeJpaEntity(classElement, entityName));
+                            entities.add(classElement.getQualifiedName().toString());
                         }
                     }
                 }
@@ -638,10 +634,10 @@ public class Util {
         return entityNames;
     }
     
-    public static void modifyEntity( final Entity entity , Project project) {
+    public static void modifyEntity( final String entityFqn , Project project) {
         try {
             FileObject entityFileObject = SourceGroupSupport.
-                getFileObjectFromClassName(entity.getClass2(), project);
+                getFileObjectFromClassName(entityFqn, project);
 
             if (entityFileObject == null) {
                 return;

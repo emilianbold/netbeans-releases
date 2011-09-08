@@ -113,6 +113,9 @@ public class POMDataObject extends MultiDataObject {
             public @Override void save() throws IOException {
                 saveDocument();
             }
+            @Override public String toString() {
+                return getPrimaryFile().getNameExt();
+            }
         };
 
         private final FileChangeListener listener = new FileChangeAdapter() {

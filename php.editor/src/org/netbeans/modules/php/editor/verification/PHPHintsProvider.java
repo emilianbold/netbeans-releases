@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -74,6 +74,7 @@ public class PHPHintsProvider implements HintsProvider {
     private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
     enum Kind {HINT, SUGGESTION, SELECTION, ERROR};
 
+    @Override
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
         long startTime = (LOGGER.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         ParserResult info = context.parserResult;
@@ -109,6 +110,7 @@ public class PHPHintsProvider implements HintsProvider {
         }
     }
 
+    @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(true, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
@@ -135,10 +137,12 @@ public class PHPHintsProvider implements HintsProvider {
         }
     }
 
+    @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-        
+
     }
 
+    @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<org.netbeans.modules.csl.api.Error> unhandled) {
         ParserResult parserResult = context.parserResult;
         if (parserResult != null) {
@@ -160,7 +164,7 @@ public class PHPHintsProvider implements HintsProvider {
     }
 
     public void cancel() {
-        
+
     }
 
     public List<Rule> getBuiltinRules() {

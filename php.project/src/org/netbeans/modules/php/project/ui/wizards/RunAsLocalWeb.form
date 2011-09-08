@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -35,7 +35,7 @@
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="copyFilesPanel" alignment="0" pref="305" max="32767" attributes="0"/>
+                  <Component id="copyFilesPanel" alignment="0" pref="210" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
@@ -43,10 +43,10 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="runAsCombo" alignment="1" pref="220" max="32767" attributes="2"/>
-                          <Component id="urlTextField" alignment="0" pref="220" max="32767" attributes="2"/>
+                          <Component id="runAsCombo" alignment="1" pref="112" max="32767" attributes="2"/>
+                          <Component id="urlTextField" alignment="0" pref="112" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="indexFileTextField" pref="125" max="32767" attributes="0"/>
+                              <Component id="indexFileTextField" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="indexFileBrowseButton" min="-2" max="-2" attributes="0"/>
                           </Group>

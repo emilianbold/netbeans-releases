@@ -172,7 +172,7 @@ public class StartTask extends BasicTask<OperationState> {
 
         if (support.isRemote()) {
             if (support.isReallyRunning()) {
-                if (null == Util.computeTarget(ip)) {
+                if (Util.isDefaultOrServerTarget(ip)) {
                     return restartDAS(adminHost,adminPort,start);
                 } else {
                     return startClusterOrInstance(adminHost,adminPort);
@@ -393,7 +393,7 @@ public class StartTask extends BasicTask<OperationState> {
 
         private OperationState startClusterOrInstance(String adminHost, int adminPort) {
             String target = Util.computeTarget(ip);
-            if (null == target) {
+            if (Util.isDefaultOrServerTarget(ip)) {
                 return fireOperationStateChanged(OperationState.COMPLETED,
                         "MSG_SERVER_STARTED", instanceName); // NOI18N
             } else {

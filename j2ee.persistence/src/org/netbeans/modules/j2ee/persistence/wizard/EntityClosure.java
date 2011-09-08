@@ -56,7 +56,11 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
@@ -324,13 +328,43 @@ public class EntityClosure {
         source.runUserActionTask(new Task<CompilationController>() {
             @Override
             public void run(CompilationController parameter) throws Exception {
+                List<Entity> entities = readHelper.getResult();
+                Set<String> entitiesFqn = new HashSet<String>();
+                for( Entity entity : entities){
+                    entitiesFqn.add( entity.getClass2());  
+                }
+                
                 TypeElement entity = parameter.getElements().getTypeElement(entityClass);
-                for (Element element : entity.getEnclosedElements()){
-                    if (ElementKind.METHOD.equals(element.getKind()) || ElementKind.FIELD.equals(element.getKind())){
-                        String typeClass = element.asType().toString();
-                        if (readHelper.getResult().contains(typeClass)){
-                            result.add(typeClass);
+                for (Element element : parameter.getElements().getAllMembers(entity)){
+                    if (ElementKind.METHOD.equals(element.getKind())){
+                        ExecutableType methodType = (ExecutableType)parameter.getTypes().
+                                asMemberOf((DeclaredType)entity.asType(), element);
+                         TypeMirror returnType = methodType.getReturnType();
+                         addTypeMirror(result, parameter, returnType, entitiesFqn);
+                         List<? extends TypeMirror> parameterTypes = 
+                             methodType.getParameterTypes();
+                         for (TypeMirror paramType : parameterTypes) {
+                             addTypeMirror(result, parameter, paramType, entitiesFqn);
                         }
+                    }
+                    else if  (ElementKind.FIELD.equals(element.getKind())){
+                        TypeMirror typeMirror = parameter.getTypes().
+                                asMemberOf((DeclaredType)entity.asType(), element);
+                        addTypeMirror(result, parameter, typeMirror, entitiesFqn );
+                    }
+                }
+            }
+
+            private void addTypeMirror( final Set<String> result,
+                    CompilationController parameter, TypeMirror typeMirror , 
+                    Set<String> allEntitiesFqn ) throws Exception
+            {
+                Element typeElement = parameter.getTypes().asElement(
+                        typeMirror );
+                if ( typeElement instanceof TypeElement ){
+                    String fqn = ((TypeElement)typeElement).getQualifiedName().toString();
+                    if ( allEntitiesFqn.contains( fqn )){
+                        result.add( fqn );
                     }
                 }
             }

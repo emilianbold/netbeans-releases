@@ -46,6 +46,8 @@ package org.netbeans.modules.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -55,7 +57,9 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.spi.navigator.NavigatorDisplayer;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
@@ -72,7 +76,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-public final class NavigatorTC extends TopComponent {
+public final class NavigatorTC extends TopComponent implements NavigatorDisplayer {
     
     /** singleton instance */
     private static NavigatorTC instance;
@@ -80,13 +84,15 @@ public final class NavigatorTC extends TopComponent {
     /** Currently active panel in navigator (or null if empty) */
     private NavigatorPanel selectedPanel;
     /** A list of panels currently available (or null if empty) */
-    private List<NavigatorPanel> panels;
+    private List<? extends NavigatorPanel> panels;
     /** Controller, controls behaviour and reacts to user actions */
     private NavigatorController controller;
     /** label signalizing no available providers */
     private final JLabel notAvailLbl = new JLabel(
             NbBundle.getMessage(NavigatorTC.class, "MSG_NotAvailable")); //NOI18N
-    
+    /** Listener for the panel selector combobox */
+    private ActionListener panelSelectionListener;
+
     /** Creates new NavigatorTC, singleton */
     private NavigatorTC() {
         initComponents();
@@ -109,9 +115,20 @@ public final class NavigatorTC extends TopComponent {
         notAvailLbl.setOpaque(true);
 
         holderPanel.setOpaque(false);
-        
-        getController().installActions();
-        
+
+        panelSelectionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int idx = panelSelector.getSelectedIndex();
+                if (panels != null && idx >= 0 && idx < panels.size()
+                        && panels.get(idx) != selectedPanel) {
+                    NavigatorTC.this.firePropertyChange(PROP_PANEL_SELECTION,
+                            selectedPanel, panels.get(idx));
+                }
+            }
+        };
+        panelSelector.addActionListener(panelSelectionListener);
+
         associateLookup(
             new ProxyLookup(
                 new Lookup [] { 
@@ -158,8 +175,19 @@ public final class NavigatorTC extends TopComponent {
         return instance;
     }
 
+    @Override
+    public boolean allowAsyncUpdate() {
+        return true;
+    }
+
+    @Override
+    public TopComponent getTopComponent() {
+        return this;
+    }
+
     /** Shows given navigator panel's component
      */
+    @Override
     public void setSelectedPanel (NavigatorPanel panel) {
         int panelIdx = panels.indexOf(panel);
         assert panelIdx != -1 : "Panel to select is not available"; //NOI18N
@@ -184,21 +212,24 @@ public final class NavigatorTC extends TopComponent {
             revalidate();
             repaint();
         }
+        panelSelector.removeActionListener(panelSelectionListener);
         // #93123: follow-up, synchronizing combo selection with content area selection
         panelSelector.setSelectedIndex(panelIdx);
+        panelSelector.addActionListener(panelSelectionListener);
     }
     
     /** Returns panel currently selected.
      * @return Panel currently selected or null if navigator is empty
      */
+    @Override
     public NavigatorPanel getSelectedPanel () {
         return selectedPanel;
     }
     
-    /** List of panels currently contained in navigator component.
+    /** Only for tests. List of panels currently contained in navigator component.
      * @return List of NavigatorPanel instances or null if navigator is empty
      */
-    public List<NavigatorPanel> getPanels () {
+    public List<? extends NavigatorPanel> getPanels () {
         return panels;
     }
     
@@ -206,7 +237,8 @@ public final class NavigatorTC extends TopComponent {
      * @param panels List of panels
      * @param select Panel to be selected, shown
      */ 
-    public void setPanels (List<NavigatorPanel> panels, NavigatorPanel select) {
+    @Override
+    public void setPanels (List<? extends NavigatorPanel> panels, NavigatorPanel select) {
         this.panels = panels;
         int panelsCount = panels == null ? -1 : panels.size();
         selectedPanel = null;
@@ -215,6 +247,7 @@ public final class NavigatorTC extends TopComponent {
             setToEmpty();
         } else {
             // clear regular content 
+            panelSelector.removeActionListener(panelSelectionListener);
             contentArea.removeAll();
             panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
@@ -228,6 +261,7 @@ public final class NavigatorTC extends TopComponent {
                 }
                 i++;
             }
+            panelSelector.addActionListener(panelSelectionListener);
             if (selectFound) {
                 setSelectedPanel(select);
             } else {
@@ -238,8 +272,8 @@ public final class NavigatorTC extends TopComponent {
         }
     }
     
-    /** Returns combo box, UI for selecting proper panels */
-    public JComboBox getPanelSelector () {
+    /** Returns combo box, UI for selecting proper panels. For tests only. */
+    JComboBox getPanelSelector () {
         return panelSelector;
     }
     
@@ -281,23 +315,14 @@ public final class NavigatorTC extends TopComponent {
         return new HelpCtx("navigator.java");
     }
 
-    /** Just delegates to controller */
-    @Override
-    public void componentOpened () {
-        getController().navigatorTCOpened();
-    }
-    
-    /** Just delegates to controller */
-    @Override
-    public void componentClosed () {
-        getController().navigatorTCClosed();
-    }
-    
     // << Window system
 
     @Override
     public UndoRedo getUndoRedo() {
-        return getController().getUndoRedo();
+        if (selectedPanel == null || !(selectedPanel instanceof NavigatorPanelWithUndo)) {
+            return UndoRedo.NONE;
+        }
+        return ((NavigatorPanelWithUndo)selectedPanel).getUndoRedo();
     }
     
     /** Accessor for controller which controls UI behaviour */

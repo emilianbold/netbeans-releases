@@ -98,7 +98,7 @@ public class DebugAction extends NodeAction {
     private static boolean enableImpl(GlassfishModule commonSupport) {
         return commonSupport.getServerState() == ServerState.STOPPED &&
                 null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) &&
-                null == Util.computeTarget(commonSupport.getInstanceProperties());
+                Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties());
     }
 
     @Override

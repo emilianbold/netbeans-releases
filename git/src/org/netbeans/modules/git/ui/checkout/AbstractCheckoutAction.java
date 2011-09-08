@@ -165,7 +165,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                     } else if (o == revert) {
                         GitClient client = getClient();
                         LOG.log(Level.FINE, "Checking out paths from HEAD"); //NOI18N
-                        client.checkout(conflicts, GitUtils.HEAD, this);
+                        client.checkout(conflicts, GitUtils.HEAD, true, this);
                         LOG.log(Level.FINE, "Cleanup new files"); //NOI18N
                         client.clean(conflicts, this);
                         LOG.log(Level.FINE, "Checking out branch: {0}, second shot", revision); //NOI18N

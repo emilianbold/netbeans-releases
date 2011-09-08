@@ -3462,7 +3462,7 @@ public class Reformatter implements ReformatTask {
                             currWSPos = i;
                             if (col > cs.getRightMargin() && cs.wrapCommentText() && !noFormat && lastWSPos >= 0) {
                                 int endOff = pendingDiff != null ? pendingDiff.getEndOffset() - offset : lastWSPos + 1;
-                                String s = NEWLINE + lineStartString;
+                                String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
                                 col = getCol(lineStartString) + i - endOff;
                                 if (align > 0) {
                                     int num = align - lineStartString.length();
@@ -3474,7 +3474,10 @@ public class Reformatter implements ReformatTask {
                                 if (!s.equals(text.substring(lastWSPos, endOff)))
                                     addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                             } else if (pendingDiff != null) {
-                                addDiff(pendingDiff);
+                                String sub = text.substring(pendingDiff.start - offset, i);
+                                if (!sub.equals(pendingDiff.text)) {
+                                    addDiff(pendingDiff);
+                                }
                                 col++;
                             } else {
                                 col++;
@@ -3582,8 +3585,7 @@ public class Reformatter implements ReformatTask {
                                     col++;
                                     c = text.charAt(i);
                                     if (c == '\n') {
-                                        pendingDiff.start++;
-                                        pendingDiff.text = blankLineString;
+                                        pendingDiff.text = NEWLINE + blankLineString;
                                         preserveNewLines = true;
                                         lastNewLinePos = i;
                                         break;
@@ -3592,12 +3594,7 @@ public class Reformatter implements ReformatTask {
                                     }
                                 }
                                 if (pendingDiff != null) {
-                                    String sub = text.substring(pendingDiff.start - offset, i);
-                                    if (sub.equals(pendingDiff.text)) {
-                                        pendingDiff = null;
-                                    } else {
-                                        pendingDiff.end = offset + i;
-                                    }
+                                    pendingDiff.end = offset + i;
                                 }
                             }
                         } else {

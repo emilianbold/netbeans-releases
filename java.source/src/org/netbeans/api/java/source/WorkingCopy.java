@@ -46,7 +46,6 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -71,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
@@ -329,6 +329,10 @@ public class WorkingCopy extends CompilationController {
     class Translator extends ImmutableTreeTranslator {
         private Map<Tree, Tree> changeMap;
 
+        public Translator() {
+            super(WorkingCopy.this);
+        }
+
         Tree translate(Tree tree, Map<Tree, Tree> changeMap) {
             this.changeMap = new HashMap<Tree, Tree>(changeMap);
             return translate(tree);
@@ -491,10 +495,11 @@ public class WorkingCopy extends CompilationController {
         }
 
         if (fillImports) {
-            List<? extends ImportTree> nueImports = ia.getImports();
+            Set<? extends Element> nueImports = ia.getImports();
 
-            if (nueImports != null) { //may happen if no changes, etc.
-                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), nueImports, userInfo, tree2Tag, tag2Span, oldTrees));
+            if (nueImports != null && !nueImports.isEmpty()) { //may happen if no changes, etc.
+                CompilationUnitTree ncut = GeneratorUtilities.get(this).addImports(diffContext.origUnit, nueImports);
+                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tag2Span, oldTrees));
             }
         }
         

@@ -210,7 +210,15 @@ public abstract class ServerCommand {
             result = true;
         } else {
             // !PW FIXME Need to pass this message back.  Need <Result> object?
-            String message = m.getMainAttributes().getValue("message"); // NOI18N
+            String message = null;
+            try {
+                String tmp = m.getMainAttributes().getValue("message"); // NOI18N
+                if (null != tmp) {
+                    message = URLDecoder.decode(tmp , "UTF-8"); // NOI18N
+                }
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8");
+            }
 
             // If server is not currently available for processing commands,
             // set the retry flag.
@@ -299,8 +307,15 @@ public abstract class ServerCommand {
                         "info is null for GetProperty command with \"{0}\"",query); // NOI18N
                 return false;
             }
-
-            for (String key : info.getEntries().keySet()) {
+            for (String encodedkey : info.getEntries().keySet()) {
+                String key = "";
+                try {
+                    if (null != encodedkey) {
+                        key = URLDecoder.decode(encodedkey, "UTF-8"); // NOI18N
+                    }
+                } catch (UnsupportedEncodingException uee) {
+                    Logger.getLogger("glassfish").log(Level.INFO, encodedkey, uee);
+                }
                 int equalsIndex = key.indexOf('=');
                 if(equalsIndex >= 0) {
                     String keyPart = key.substring(0, equalsIndex);

@@ -215,6 +215,7 @@ public final class DesktopImpl {
             constraint.gridx = 1;
             constraint.gridy = 0;
             constraint.gridheight = 1;
+            constraint.gridwidth = 2;
             constraint.anchor = GridBagConstraints.NORTHWEST;
         }
         desktop.add(view.getComponent(), constraint);
@@ -486,7 +487,34 @@ public final class DesktopImpl {
         }
         return slidingViews;
     }
-    
+
+    public void updateCorners() {
+        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            return;
+        
+        SlidingView leftSlide = null;
+        SlidingView topSlide = null;
+        for( SlidingView view : slidingViews ) {
+            if( Constants.LEFT.equals(view.getSide()) ) {
+                leftSlide = view;
+            }
+            if( Constants.TOP.equals(view.getSide()) ) {
+                topSlide = view;
+            }
+        }
+        if( null == leftSlide || null == topSlide )
+            return;
+
+        desktop.setOpaque(true);
+        if( !leftSlide.getTopComponents().isEmpty() || !topSlide.getTopComponents().isEmpty() ) {
+            desktop.setBackground(new JPanel().getBackground());
+        } else {
+            Color bkColor = UIManager.getColor("NbSplitPane.background"); //NOI18N
+            if( null != bkColor ) {
+                desktop.setBackground(bkColor);
+            }
+        }
+    }
     
     /** Special layout manager for layered pane, just keeps desktop panel
      * coreving whole layered pane and if sliding is in progress, it keeps

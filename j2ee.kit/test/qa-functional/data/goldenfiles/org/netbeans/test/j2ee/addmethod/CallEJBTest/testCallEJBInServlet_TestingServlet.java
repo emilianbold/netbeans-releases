@@ -8,13 +8,13 @@ package test;
 
 import java.io.*;
 import java.net.*;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 

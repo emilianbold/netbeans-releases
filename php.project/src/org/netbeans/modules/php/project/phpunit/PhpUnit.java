@@ -122,7 +122,6 @@ public abstract class PhpUnit extends PhpProgram {
     public static final File COVERAGE_LOG;
 
     // suite file
-    public static final File SUITE;
     public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
     public static final String SUITE_RUN = "run=%s"; // NOI18N
     private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
@@ -147,11 +146,11 @@ public abstract class PhpUnit extends PhpProgram {
      */
     static volatile int[] version = null;
 
+    // #200489
+    private static volatile File suite; // ok if it is fetched more times
+
+
     static {
-        SUITE = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.project", false);  // NOI18N
-        if (SUITE == null || !SUITE.isFile()) {
-            throw new IllegalStateException("Could not locate file " + SUITE_REL_PATH);
-        }
         // output files, see #200775
         String logDirName = System.getProperty("java.io.tmpdir"); // NOI18N
         String userLogDirName = System.getProperty("nb.php.phpunit.logdir"); // NOI18N
@@ -171,6 +170,13 @@ public abstract class PhpUnit extends PhpProgram {
 
     PhpUnit(String command) {
         super(command);
+    }
+
+    public static File getNbSuite() {
+        if (suite == null) {
+            suite = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.project", false);  // NOI18N
+        }
+        return suite;
     }
 
     public static PhpUnit getDefault() throws InvalidPhpProgramException {

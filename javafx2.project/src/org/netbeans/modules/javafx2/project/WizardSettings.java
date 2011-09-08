@@ -44,11 +44,11 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**
- * Storage of information application to the new Java FX Wizard.
+ * Storage of information application to the new JavaFX Wizard.
  */
 public class WizardSettings {
 
@@ -88,11 +88,11 @@ public class WizardSettings {
         getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
-    public static boolean getSetAsMain(WizardType wizardType) {
-        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIB);
+    static boolean getSetAsMain(WizardType wizardType) {
+        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIBRARY);
     }
 
-    public static void setSetAsMain(WizardType wizardType, boolean setAsMain) {
+    static void setSetAsMain(WizardType wizardType, boolean setAsMain) {
         getPreferences().putBoolean(SET_AS_MAIN + wizardType, setAsMain);
     }
 }

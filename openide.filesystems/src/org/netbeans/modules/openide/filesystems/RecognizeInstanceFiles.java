@@ -38,6 +38,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,8 +80,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
     public <T> T lookupObject(String path, Class<T> type) {
         FileObject fo = FileUtil.getConfigFile(path);
         if (fo != null && fo.isData()) {
-            Object res = FOItem.createInstanceFor(fo, Object.class);
-            return type.isInstance(res) ? type.cast(res) : null;
+            return FOItem.createInstanceFor(fo, type);
         }
         return null;
     }        
@@ -215,7 +215,22 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             if (r != null) {
                 return c.isInstance(r);
             } else {
-                return c.isAssignableFrom(getType());
+                String instanceOf = (String) fo.getAttribute("instanceOf");
+                if (instanceOf != null) {
+                    for (String xface : instanceOf.split(",")) {
+                        try {
+                            if (c.isAssignableFrom(Class.forName(xface, false, loader()))) {
+                                return true;
+                            }
+                        } catch (ClassNotFoundException x) {
+                            // Not necessarily a problem, e.g. from org-netbeans-lib-commons_net-antlibrary.instance
+                            LOG.log(Level.FINE, "could not load " + xface + " for " + fo.getPath(), x);
+                        }
+                    }
+                    return false;
+                } else {
+                    return c.isAssignableFrom(getType());
+                }
             }
         }
 
@@ -239,6 +254,9 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             if (r == null) {
                 try {
                     Class<?> type = findTypeFor(f);
+                    if (type == null) {
+                        return null;
+                    }
                     if (SharedClassObject.class.isAssignableFrom(type)) {
                         r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
                     } else {
@@ -254,19 +272,20 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
 
         public Class<? extends Object> getType() {
-            return findTypeFor(fo);
+            Class<? extends Object> type = findTypeFor(fo);
+            return type != null ? type : Void.class;
         }
 
         private static Class<? extends Object> findTypeFor(FileObject f) {
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = FOItem.class.getClassLoader();
+            String clazz = getClassName(f);
+            if (clazz == null) {
+                return null;
             }
             try {
-                return Class.forName(getClassName(f), false, l);
+                return Class.forName(clazz, false, loader());
             } catch (ClassNotFoundException ex) {
                 LOG.log(Level.INFO, ex.getMessage(), ex);
-                return Object.class;
+                return null;
             }
         }
 
@@ -302,6 +321,14 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             attr = fo.getAttribute("instanceCreate");
             if (attr != null) {
                 return attr.getClass().getName();
+            } else {
+                Enumeration<String> attributes = fo.getAttributes();
+                while (attributes.hasMoreElements()) {
+                    if (attributes.nextElement().equals("instanceCreate")) {
+                        // It was specified, just unloadable (usually a methodvalue).
+                        return null;
+                    }
+                }
             }
 
             // otherwise extract the name from the filename
@@ -348,6 +375,14 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             hash = 11 * hash + (this.fo != null ? this.fo.hashCode()
                                                 : 0);
             return hash;
+        }
+
+        private static ClassLoader loader() {
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = FOItem.class.getClassLoader();
+            }
+            return l;
         }
 
     } // end of FOItem

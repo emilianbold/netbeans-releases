@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.util.Map;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,7 +65,9 @@ public final class ModelRunConfig extends BeanRunConfig {
         String label = ProjectUtils.getInformation(proj).getDisplayName();
         setExecutionName(label);
         setTaskDisplayName(label);
-        setProperties(model.getProperties());
+        for (Map.Entry<?,?> entry : model.getProperties().entrySet()) {
+            setProperty((String) entry.getKey(), (String) entry.getValue());
+        }
         setGoals(model.getGoals());
         setExecutionDirectory(ActionToGoalUtils.resolveProjectExecutionBasedir(mod, proj));
         setRecursive(mod.isRecursive());

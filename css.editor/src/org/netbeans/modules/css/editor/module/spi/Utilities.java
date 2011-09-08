@@ -45,19 +45,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
+import org.netbeans.modules.css.editor.csl.CssPropertyElement;
+import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,13 +119,70 @@ public class Utilities {
     }
 
       public static  List<CompletionProposal> createRAWCompletionProposals(Collection<String> props, ElementKind kind, int anchor) {
+          return createRAWCompletionProposals(props, kind, anchor, null);
+      }
+      
+      public static  List<CompletionProposal> createRAWCompletionProposals(Collection<String> props, ElementKind kind, int anchor, String addPrefix) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (String value : props) {
+            if(addPrefix != null) {
+                value = addPrefix + value;
+            }
             CssElement handle = new CssElement(value);
             CompletionProposal proposal = CssCompletionItem.createRAWCompletionItem(handle, value, kind, anchor, false);
             proposals.add(proposal);
         }
         return proposals;
     }
+ 
+    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (Property p : props) {
+            //filter out non-public properties
+            if (!GrammarParser.isArtificialElementName(p.getName())) {
+                CssElement handle = new CssPropertyElement(p);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
+                proposals.add(proposal);
+            }
+        }
+        return proposals;
+    }
     
+    /**
+     * Utility method which creates a collection of PropertyDescriptor-s for 
+     * a properties file defining the css properties
+     * 
+     * the syntax of the file:
+     * 
+     * propertyName=valueGrammar
+     * 
+     * Example:
+     * 
+     * outline-style=auto | <border-style>
+     * 
+     * @param sourcePath - an absolute path to the resource properties file relative to the module base
+     */
+    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath) {
+        Collection<Property> properties = new ArrayList<Property>();
+        ResourceBundle bundle = NbBundle.getBundle(sourcePath);
+
+        Enumeration<String> keys = bundle.getKeys();
+        while (keys.hasMoreElements()) {
+            String name = keys.nextElement();
+            String value = bundle.getString(name);
+
+            //parse bundle key - there might be more properties separated by semicolons
+            StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
+
+            while (nameTokenizer.hasMoreTokens()) {
+                String parsed_name = nameTokenizer.nextToken().trim();
+                Property prop = new Property(parsed_name, value);
+                properties.add(prop);
+            }
+
+        }
+
+        return properties;
+    }
+
 }

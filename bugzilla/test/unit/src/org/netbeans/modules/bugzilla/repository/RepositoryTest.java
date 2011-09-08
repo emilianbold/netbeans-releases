@@ -83,12 +83,6 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         // cleanup repositories
         String[] repos = BugzillaConfig.getInstance().getRepositories();
         for (String id : repos) {

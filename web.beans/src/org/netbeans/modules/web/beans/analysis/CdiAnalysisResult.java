@@ -43,9 +43,11 @@
 package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,6 +62,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.hints.CDIAnnotation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -88,6 +91,7 @@ public class CdiAnalysisResult {
     public CdiAnalysisResult( CompilationInfo info ){
         myInfo = info;
         myProblems = new LinkedList<ErrorDescription>();
+        myCollectedAnnotations = new LinkedList<CDIAnnotation>();
     }
 
     public void addError( Element subject, String message ) {
@@ -141,6 +145,14 @@ public class CdiAnalysisResult {
             addError(element, NbBundle.getMessage(CdiAnalysisResult.class, 
                 "ERR_RequireWebBeans"), fix );        // NOI18N
         }
+    }
+    
+    public void addAnnotation( CDIAnnotation annotation ) {
+        myCollectedAnnotations.add(annotation);
+    }
+    
+    public List<CDIAnnotation> getAnnotations(){
+        return Collections.unmodifiableList(myCollectedAnnotations);
     }
     
     protected boolean isCdiEnabled(Project project){
@@ -201,4 +213,6 @@ public class CdiAnalysisResult {
     private CompilationInfo myInfo ;
     private List<ErrorDescription> myProblems;
     private boolean isCdiRequired;
+    private List<CDIAnnotation> myCollectedAnnotations;
+
 }

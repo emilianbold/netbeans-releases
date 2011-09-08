@@ -53,11 +53,11 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import javax.swing.GroupLayout;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -332,15 +332,15 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         Component delComp = delegateEditor.getCustomEditor();
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
-        layout.setAutocreateGaps(true);
+        layout.setAutoCreateGaps(true);
         layout.setHorizontalGroup(layout.createParallelGroup()
-                .add(delComp)
-                .add(layout.createSequentialGroup()
-                    .addPreferredGap(LayoutStyle.RELATED)
-                    .add(resourcePanelGUI)
-                    .addPreferredGap(LayoutStyle.RELATED)));
+                .addComponent(delComp)
+                .addGroup(layout.createSequentialGroup()
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(resourcePanelGUI)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)));
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .add(delComp).addPreferredGap(LayoutStyle.UNRELATED).add(resourcePanelGUI));
+                .addComponent(delComp).addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addComponent(resourcePanelGUI));
 
         return panel;
     }

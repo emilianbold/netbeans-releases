@@ -546,10 +546,18 @@ public final class TreeMaker {
     }
     
     /**
-     * Creates a new IdentifierTree.
+     * Creates a new IdentifierTree. The generated code will contain given {@code name}
+     * exactly as passed to this method. No checks will be performed on the given {@code name}.
+     * Imports won't we resolved for fully qualified names. Consider using {@link #QualIdent(Element)},
+     * {@link #QualIdent(String)}, {@link #Type(String)} or {@link #Type(TypeMirror)} to
+     * get automatically resolved imports for fully qualified names or types.
      *
      * @param name the name of the identifier.
      * @see com.sun.source.tree.IdentifierTree
+     * @see #QualIdent(Element)
+     * @see #QualIdent(String)
+     * @see #Type(String)
+     * @see #Type(TypeMirror)
      */
     public IdentifierTree Identifier(CharSequence name) {
         return delegate.Identifier(name);
@@ -844,7 +852,8 @@ public final class TreeMaker {
     }
     
     /**
-     * Creates a qualified identifier from an element.
+     * Creates a qualified identifier from an element. Simple name will automatically
+     * be used if appropriate, adding any needed imports, following user's preferences.
      *
      * @param element the element to use.
      */
@@ -854,7 +863,8 @@ public final class TreeMaker {
     }
 
     /**
-     * Creates a qualified identifier for a given String.
+     * Creates a qualified identifier for a given String. Simple name will automatically
+     * be used if appropriate, adding any needed imports, following user's preferences.
      *
      * @param name FQN for which to create the QualIdent
      * @since 0.65

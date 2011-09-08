@@ -44,11 +44,17 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Point;
+import java.awt.Shape;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.plaf.TextUI;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.lib.editor.util.ListenerList;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -115,6 +121,12 @@ public final class ViewHierarchyImpl {
      * <br/>
      */
     static final Logger CHECK_LOG = Logger.getLogger("org.netbeans.editor.view.check"); // -J-Dorg.netbeans.editor.view.check.level=FINE
+    
+    /**
+     * Logger related to any settings being used in view hierarchy.
+     * <br/>
+     */
+    static final Logger SETTINGS_LOG = Logger.getLogger("org.netbeans.editor.view.settings"); // -J-Dorg.netbeans.editor.view.settings.level=FINE
     
     /**
      * Logger for tracking view hierarchy locking.
@@ -195,17 +207,74 @@ public final class ViewHierarchyImpl {
 
     public double modelToY(LockedViewHierarchy lock, int offset) {
         ensureLocker(lock);
-        return docView.modelToYUnlocked(offset);
+        if (docView != null) {
+            return docView.modelToYUnlocked(offset);
+        } else { // Fallback behavior
+            return fallBackModelToY(offset);
+        }
+    }
+    
+    private double fallBackModelToY(int offset) {
+        Shape s;
+        try {
+            s = textComponent.modelToView(offset);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            s = null;
+        }
+
+        if (s != null) {
+            return s.getBounds().y;
+        } else {
+            return 0d;
+        }
     }
     
     public double[] modelToY(LockedViewHierarchy lock, int[] offsets) {
         ensureLocker(lock);
-        return docView.modelToYUnlocked(offsets);
+        if (docView != null) {
+            return docView.modelToYUnlocked(offsets);
+        } else { // Fallback behavior
+            double[] ys = new double[offsets.length];
+            for (int i = 0; i < offsets.length; i++) {
+                ys[i] = fallBackModelToY(offsets[i]);
+            }
+            return ys;
+        }
+    }
+
+    public Shape modelToView(int offset, Position.Bias bias) {
+        ensureLocker(lock);
+        if (docView != null) {
+            return docView.modelToViewUnlocked(offset, docView.getAllocation(), bias);
+        } else {
+            TextUI ui = textComponent.getUI();
+            try {
+                return (ui != null) ? ui.modelToView(textComponent, offset, bias) : null;
+            } catch (BadLocationException ex) {
+                return null;
+            }
+        }
+    }
+
+    public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
+        ensureLocker(lock);
+        if (docView != null) {
+            return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);
+        } else {
+            TextUI ui = textComponent.getUI();
+            return (ui != null) ? ui.viewToModel(textComponent, new Point((int)x, (int)y), biasReturn) : null;
+        }
     }
 
     public float getDefaultRowHeight(LockedViewHierarchy lock) {
         ensureLocker(lock);
         return docView.op.getDefaultRowHeight();
+    }
+
+    public float getDefaultCharWidth(LockedViewHierarchy lock) {
+        ensureLocker(lock);
+        return docView.op.getDefaultCharWidth();
     }
 
     public void addViewHierarchyListener(ViewHierarchyListener l) {

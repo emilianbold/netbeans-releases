@@ -210,16 +210,16 @@ made subject to such option by the copyright holder.
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtComments.getController"/>
                           <attr name="position" intvalue="700"/>
                       </file>
+                      <file name="Imports.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtImports.getController"/>
+                          <attr name="position" intvalue="800"/>
+                      </file>
 <!--
                       <file name="CodeGeneration.instance">
                           <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtCodeGeneration.getController"/>
                           <attr name="position" intvalue="700"/>
-                      </file>
-                      <file name="Imports.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtImports.getController"/>
-                          <attr name="position" intvalue="800"/>
                       </file>
 -->
                   </folder>

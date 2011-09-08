@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
+import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.modules.project.ui.ProjectTemplatePanel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -130,13 +131,13 @@ public class NewProject extends BasicAction {
         FileObject fo = FileUtil.getConfigFile( "Templates/Project" ); //NOI18N
         final NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
-        
-        SwingUtilities.invokeLater( new Runnable() {
-            
-            public void run() {
-                try {
-                    
-                    Set newObjects = wizard.instantiate();
+        final Set newObjects;
+        try {
+            newObjects = wizard.instantiate();
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
+        }
                     // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
                     Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
                     String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
@@ -147,15 +148,19 @@ public class NewProject extends BasicAction {
                             prjDir.delete();
                         }
                     }
-                    
+
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
+        
+        SwingUtilities.invokeLater( new Runnable() {
+            
+            public void run() {
                     ProjectUtilities.WaitCursor.show();
                     
                     if ( newObjects != null && !newObjects.isEmpty() ) {
                         // First. Open all returned projects in the GUI.
 
-                        LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
+                        final LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
                         List<Project> projectsToOpen = new LinkedList<Project>();
 
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
@@ -197,7 +202,7 @@ public class NewProject extends BasicAction {
                             }
                         }
                         
-                        Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
+                        final Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
                         
                         Project mainProject = null;
                         if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
@@ -208,21 +213,22 @@ public class NewProject extends BasicAction {
                         
                         // Show the project tab to show the user we did something
                         ProjectUtilities.makeProjectTabVisible();
-                        
-                        if (lastProject != null) {
-                            // Just select and expand the project node
-                            ProjectUtilities.selectAndExpandProject(lastProject);
-                        }
-                        // Second open the files
-                        for (DataObject d : filesToOpen) { // Open the files
-                            ProjectUtilities.openAndSelectNewObject(d);
-                        }
+
+                        ProjectTab.RP.post(new Runnable() {
+                            public @Override void run() {
+                                if (lastProject != null) {
+                                    // Just select and expand the project node
+                                    ProjectUtilities.selectAndExpandProject(lastProject);
+                                }
+                                // Second open the files
+                                for (DataObject d : filesToOpen) { // Open the files
+                                    ProjectUtilities.openAndSelectNewObject(d);
+                                }
+                            }
+                        }, 500);
                         
                     }
                     ProjectUtilities.WaitCursor.hide();
-                } catch ( IOException e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                }
             }
             
         } );

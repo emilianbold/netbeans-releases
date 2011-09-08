@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,7 +87,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
@@ -127,6 +127,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
@@ -205,7 +206,6 @@ public class EjbJarProject implements Project, FileChangeListener {
     private EjbProjectJAXWSClientSupport jaxWsClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    private final ClassPathExtender classPathExtender; 
     private final ClassPathModifier classPathModifier; 
     private PropertyChangeListener j2eePlatformListener;
     private AntBuildExtender buildExtender;
@@ -308,7 +308,6 @@ public class EjbJarProject implements Project, FileChangeListener {
         classPathModifier = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
             getClassPathUiSupportCallback());
-        classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
@@ -448,7 +447,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 encodingQuery,
                 new RecommendedTemplatesImpl(updateHelper),
                 refHelper,
-                classPathExtender,
+                ProjectClassPathModifier.extenderForModifier(classPathModifier),
                 classPathModifier,
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
@@ -691,7 +690,7 @@ public class EjbJarProject implements Project, FileChangeListener {
         
         if (fo.getParent ().equals (libFolder)) {
             try {
-                classPathExtender.addArchiveFile(fo);
+                classPathModifier.addRoots(new URL[] {FileUtil.getArchiveRoot(fo.getURL())}, ProjectProperties.JAVAC_CLASSPATH);
             }
             catch (IOException e) {
                 Exceptions.printStackTrace(e);
@@ -770,15 +769,15 @@ public class EjbJarProject implements Project, FileChangeListener {
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     libFolder = helper.resolveFileObject(libFolderName);
                         FileObject[] children = libFolder.getChildren ();
-                        List<FileObject> libs = new LinkedList<FileObject>();
+                        List<URL> libs = new LinkedList<URL>();
                         for (int i = 0; i < children.length; i++) {
                             if (FileUtil.isArchiveFile(children[i])) {
-                                libs.add(children[i]);
+                                libs.add(FileUtil.getArchiveRoot(children[i].getURL()));
                             }
                         }
                         FileObject[] libsArray = new FileObject[libs.size()];
                         libs.toArray(libsArray);
-                        classPathExtender.addArchiveFiles(ProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+                        classPathModifier.addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                         libFolder.addFileChangeListener (EjbJarProject.this);
                 }
                 

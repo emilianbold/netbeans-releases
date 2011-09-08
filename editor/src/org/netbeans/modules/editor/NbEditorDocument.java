@@ -196,8 +196,10 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         return editorUI.getExtComponent();
     }
 
+    @Override
     public JToolBar createToolbar(JEditorPane j) {
-        return Utilities.getEditorUI(j).getToolBarComponent();
+        final EditorUI ui = Utilities.getEditorUI(j);
+        return ui != null ? ui.getToolBarComponent() : new JToolBar();
     }
     
     /** Add annotation to the document. For annotation of whole line

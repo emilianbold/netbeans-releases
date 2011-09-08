@@ -60,14 +60,20 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
@@ -233,11 +239,15 @@ public class FmtOptions {
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     
     public static final String useSingleClassImport = "useSingleClassImport"; //NOI18N
+    public static final String usePackageImport = "usePackageImport"; //NOI18N
     public static final String useFQNs = "useFQNs"; //NOI18N
+    public static final String importInnerClasses = "importInnerClasses"; //NOI18N
     public static final String countForUsingStarImport = "countForUsingStarImport"; //NOI18N
     public static final String countForUsingStaticStarImport = "countForUsingStaticStarImport"; //NOI18N
     public static final String packagesForStarImport = "packagesForStarImport"; //NOI18N
-    public static final String importsOrder = "importsOrder"; //NOI18N
+    public static final String separateStaticImports = "separateStaticImports"; //NOI18N
+    public static final String importGroupsOrder = "importGroupsOrder"; //NOI18N
+    public static final String separateImportGroups = "separateImportGroups"; //NOI18N
     
     public static final String enableCommentFormatting = "enableCommentFormatting"; //NOI18N
     public static final String wrapCommentText = "wrapCommentText"; //NOI18N
@@ -484,11 +494,15 @@ public class FmtOptions {
             { spaceAfterTypeCast, TRUE}, //NOI18N
 
             { useSingleClassImport, TRUE}, //NOI18N
+            { usePackageImport, FALSE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N
+            { importInnerClasses, FALSE}, //NOI18N
             { countForUsingStarImport, "5"}, //NOI18N
-            { countForUsingStaticStarImport, "3"}, //NOI18N // XXX
-            { packagesForStarImport, ""}, //NOI18N // XXX
-            { importsOrder, ""}, //NOI18N // XXX
+            { countForUsingStaticStarImport, "3"}, //NOI18N
+            { packagesForStarImport, ""}, //NOI18N
+            { separateStaticImports, FALSE}, //NOI18N
+            { importGroupsOrder, ""}, //NOI18N
+            { separateImportGroups, TRUE}, //NOI18N
             
             { enableCommentFormatting, TRUE}, //NOI18N
             { wrapCommentText, TRUE}, //NOI18N
@@ -514,10 +528,10 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
+    public static class CategorySupport implements ActionListener, ChangeListener, TableModelListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
         public static final String OPTION_ID = "org.netbeans.modules.java.ui.FormatingOptions.ID";
-                
+
         private static final int LOAD = 0;
         private static final int STORE = 1;
         private static final int ADD_LISTENERS = 2;
@@ -540,7 +554,7 @@ public class FmtOptions {
                 new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
             };
         
-        private final String previewText;
+        protected final String previewText;
 //        private String forcedOptions[][];
         
 //        private boolean changed = false;
@@ -550,8 +564,8 @@ public class FmtOptions {
         private final List<JComponent> components = new LinkedList<JComponent>();                
         private JEditorPane previewPane;
         
-        private final Preferences preferences;
-        private final Preferences previewPrefs;
+        protected final Preferences preferences;
+        protected final Preferences previewPrefs;
     
         protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
             this.preferences = preferences;
@@ -598,6 +612,12 @@ public class FmtOptions {
             storeTo(preferences);
             refreshPreview();
         }
+        
+        protected void loadTableData(final JTable table, final String optionID, final Preferences p) {
+        }
+
+        protected void storeTableData(final JTable table, final String optionID, final Preferences node) {            
+        }
 
         // ActionListener implementation ---------------------------------------
         
@@ -605,6 +625,20 @@ public class FmtOptions {
             notifyChanged();
         }
         
+        // ChangeListener implementation ---------------------------------------
+        
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            notifyChanged();
+        }
+        
+        // TableModelListener implementation -----------------------------------
+        
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            notifyChanged();
+        }
+
         // DocumentListener implementation -------------------------------------
         
         public void insertUpdate(DocumentEvent e) {
@@ -676,7 +710,7 @@ public class FmtOptions {
         public HelpCtx getHelpCtx() {
             return null;
         }
-        
+
         // PreferencesCustomizer.Factory implementation ------------------------
 
         public static final class Factory implements PreferencesCustomizer.Factory {
@@ -755,12 +789,16 @@ public class FmtOptions {
                 JTextField field = (JTextField)jc;                
                 field.setText( node.get(optionID, getDefaultAsString(optionID)) );
             }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
+            else if ( jc instanceof JSpinner ) {
+                JSpinner js = (JSpinner)jc;
+                js.setValue(node.getInt(optionID, getDefaultAsInt(optionID)));
+            }
+            else if ( jc instanceof JToggleButton ) {
+                JToggleButton toggle = (JToggleButton)jc;
                 boolean df = getDefaultAsBoolean(optionID);
-                checkBox.setSelected( node.getBoolean(optionID, df));                
+                toggle.setSelected( node.getBoolean(optionID, df));                
             } 
-            else if ( jc instanceof JComboBox) {
+            else if ( jc instanceof JComboBox ) {
                 JComboBox cb  = (JComboBox)jc;
                 String value = node.get(optionID, getDefaultAsString(optionID) );
                 ComboBoxModel model = createModel(value);
@@ -768,7 +806,9 @@ public class FmtOptions {
                 ComboItem item = whichItem(value, model);
                 cb.setSelectedItem(item);
             }
-            
+            else if ( jc instanceof JTable ) {
+                loadTableData((JTable)jc, optionID, node);
+            }
         }
 
         private void storeData( JComponent jc, String optionID, Preferences node ) {
@@ -801,14 +841,22 @@ public class FmtOptions {
                     node.put(optionID, text);
                 }
             }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+            else if ( jc instanceof JSpinner ) {
+                JSpinner js = (JSpinner)jc;
+                Object value = js.getValue();
+                if (getDefaultAsInt(optionID) == ((Integer)value).intValue())
                     node.remove(optionID);
                 else
-                    node.putBoolean(optionID, checkBox.isSelected());
-            } 
-            else if ( jc instanceof JComboBox) {
+                    node.putInt(optionID, ((Integer)value).intValue());
+            }
+            else if ( jc instanceof JToggleButton ) {
+                JToggleButton toggle = (JToggleButton)jc;
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == toggle.isSelected())
+                    node.remove(optionID);
+                else
+                    node.putBoolean(optionID, toggle.isSelected());
+            }
+            else if ( jc instanceof JComboBox ) {
                 JComboBox cb  = (JComboBox)jc;
                 // Logger.global.info( cb.getSelectedItem() + " " + optionID);
                 String value = ((ComboItem) cb.getSelectedItem()).value;
@@ -816,7 +864,10 @@ public class FmtOptions {
                     node.remove(optionID);
                 else
                     node.put(optionID,value);
-            }         
+            }
+            else if ( jc instanceof JTable ) {
+                storeTableData((JTable)jc, optionID, node);
+            }
         }
         
         private void addListener( JComponent jc ) {
@@ -825,14 +876,22 @@ public class FmtOptions {
                 field.addActionListener(this);
                 field.getDocument().addDocumentListener(this);
             }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                checkBox.addActionListener(this);
-            } 
+            else if ( jc instanceof JSpinner ) {
+                JSpinner spinner = (JSpinner)jc;
+                spinner.addChangeListener(this);
+            }
+            else if ( jc instanceof JToggleButton ) {
+                JToggleButton toggle = (JToggleButton)jc;
+                toggle.addActionListener(this);
+            }
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 cb.addActionListener(this);
-            }         
+            }
+            else if ( jc instanceof JTable) {
+                JTable jt = (JTable)jc;
+                jt.getModel().addTableModelListener(this);
+            }
         }
         
             
@@ -872,7 +931,7 @@ public class FmtOptions {
             }    
             return null;
         }
-
+        
         private static class ComboItem {
             
             String value;

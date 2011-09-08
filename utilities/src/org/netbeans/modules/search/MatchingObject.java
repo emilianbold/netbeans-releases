@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.filesystems.FileUtil;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,6 +64,7 @@ import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.SEVERE;
+import org.openide.nodes.Node;
 
 /**
  * Data structure holding a reference to the found object and information
@@ -82,7 +84,15 @@ final class MatchingObject
     /** */
     private final FileObject fileObject;
     /** */
+    private DataObject dataObject;
+    /** */
     private final long timestamp;
+    /** */
+    private int matchesCount = 0;
+    /** */
+    private Node nodeDelegate = null;
+    /** */
+    private String relativeSearchPath = null;
     
     /**
      * matching object as returned by the {@code SearchGroup}
@@ -147,6 +157,9 @@ final class MatchingObject
      *             if the passed {@code object} is {@code null}
      */
     MatchingObject(ResultModel resultModel, Object object, Charset charset) {
+
+        assert object instanceof FileObject || object instanceof DataObject;
+
         if (resultModel == null) {
             throw new IllegalArgumentException("resultModel = null");   //NOI18N
         }
@@ -158,36 +171,41 @@ final class MatchingObject
         this.object = object;
         this.charset = charset;
         
+        dataObject = dataObject();
         fileObject = fileObject();
-        timestamp =  fileObject.lastModified().getTime();        
+        timestamp = fileObject.lastModified().getTime();
         valid = (timestamp != 0L);
-        
+
+        if (dataObject != null) {
+            matchesCount = computeMatchesCount();
+            nodeDelegate = dataObject.getNodeDelegate();
+            relativeSearchPath = computeRelativeSearchPath();
+        }
         setUpDataObjValidityChecking();
     }
     
     /**
      */
     private void setUpDataObjValidityChecking() {
-        final DataObject dataObj = (DataObject) getDataObject();
-        if (dataObj != null && dataObj.isValid()) {
-            dataObj.addPropertyChangeListener(this);
+        if (dataObject != null && dataObject.isValid()) {
+            dataObject.addPropertyChangeListener(this);
         }
     }
     
     /**
      */
     void cleanup() {
-        final DataObject dataObj = (DataObject) getDataObject();
-        if(dataObj != null) {
-            dataObj.removePropertyChangeListener(this);
+        if(dataObject != null) {
+            dataObject.removePropertyChangeListener(this);
         }
+        dataObject = null;
+        nodeDelegate = null;
     }
     
     @Override
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
-            final DataObject dataObject = (DataObject) getDataObject();
             if(dataObject != null) {
                 assert e.getSource() == dataObject;
                 dataObject.removePropertyChangeListener(this);
@@ -204,14 +222,14 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        DataObject data = getDataObject();
-        return valid && data != null ? data.isValid() : false; // #190819
+        // #190819
+        return valid && dataObject != null ? dataObject.isValid() : false;
     }
     
     private FileObject fileObject() {
         return object instanceof FileObject ?
             (FileObject) object :
-            ((DataObject) getDataObject()).getPrimaryFile();
+            dataObject.getPrimaryFile();
     }
 
     /**
@@ -391,9 +409,8 @@ final class MatchingObject
             // TODO return HTML text instead of plain text
             return getFileObject().getNameExt();
         }
-        DataObject data = (DataObject)getDataObject();
-        if(data != null) {
-            name = data.getNodeDelegate().getHtmlDisplayName();
+        if(dataObject != null) {
+            name = dataObject.getNodeDelegate().getHtmlDisplayName();
         }
         return name;
     }
@@ -447,11 +464,9 @@ final class MatchingObject
             return getName().compareToIgnoreCase(o.getName()); // locale?
     }
 
-    /**
-     * @return the object
-     */
-    public DataObject getDataObject() {
-        try {
+    /** Initialize DataObject from object. */
+    private DataObject dataObject() {
+         try {
             if (object instanceof DataObject) {
                 return (DataObject) object;
             } else if (object instanceof FileObject) {
@@ -463,6 +478,10 @@ final class MatchingObject
             valid = false;
             return null;
         }
+    }
+
+    public DataObject getDataObject() {
+        return dataObject;
     }
 
     /**
@@ -720,9 +739,9 @@ final class MatchingObject
     /**
      */
     private void log(Level logLevel, String msg) {
-        String id = (getDataObject() instanceof DataObject)
-                    ? ((DataObject) getDataObject()).getName()
-                    : getDataObject().toString();
+        String id = dataObject != null
+                    ? dataObject.getName()
+                    : fileObject.toString();
         if (LOG.isLoggable(logLevel)) {
             LOG.log(logLevel, "{0}: {1}", new Object[]{id, msg});       //NOI18N
         }
@@ -758,4 +777,40 @@ final class MatchingObject
         return hash;
     }
 
+    /** Get number of matches in this matching object.  */
+    private int computeMatchesCount() {
+        return resultModel.getDetailsCount(this);
+    }
+
+    private String computeRelativeSearchPath() {
+
+        FileObject searchRoot = resultModel.getCommonSearchFolder();
+        FileObject fileFolder = fileObject.getParent();
+
+        if (searchRoot == null) {
+            return FileUtil.getFileDisplayName(fileFolder);
+        } else {
+            return FileUtil.getRelativePath(searchRoot, fileFolder);
+        }
+    }
+
+    /** Get file display name, e.g. for JTree tooltip. */
+    String getFileDisplayName() {
+        return FileUtil.getFileDisplayName(fileObject);
+    }
+
+    /** Return pre-computed matches count. */
+    int getMatchesCount() {
+        return matchesCount;
+    }
+
+    /** Return pre-computed search path. */
+    String getRelativeSearchPath() {
+        return relativeSearchPath;
+    }
+
+    /** Return node delegate. */
+    Node getNodeDelegate() {
+        return nodeDelegate;
+    }
 }

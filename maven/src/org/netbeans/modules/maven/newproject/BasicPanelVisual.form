@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
@@ -23,36 +23,36 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="createdFolderLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectLocationLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="lblPackage" min="-2" max="-2" attributes="0"/>
                   <Component id="lblVersion" min="-2" max="-2" attributes="0"/>
                   <Component id="lblGroupId" min="-2" max="-2" attributes="0"/>
                   <Component id="lblArtifactId" min="-2" max="-2" attributes="0"/>
-                  <Component id="createdFolderLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="projectLocationLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectNameTextField" alignment="1" pref="316" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="1" pref="316" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="1" pref="316" max="32767" attributes="0"/>
-                  <Component id="txtPackage" pref="316" max="32767" attributes="0"/>
-                  <Component id="txtVersion" pref="316" max="32767" attributes="0"/>
-                  <Component id="txtGroupId" pref="316" max="32767" attributes="0"/>
-                  <Component id="txtArtifactId" pref="316" max="32767" attributes="0"/>
+                  <Component id="txtArtifactId" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="txtGroupId" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="txtVersion" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="txtPackage" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="0" pref="322" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="0" pref="322" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="browseButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
-          <Component id="pnlAdditionals" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="lblEEVersion" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="comboEEVersion" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="253" max="-2" attributes="0"/>
+              <Component id="pnlAdditionals" max="32767" attributes="0"/>
+              <EmptySpace pref="12" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,12 +74,7 @@
                   <Component id="createdFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="createdFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lblEEVersion" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="comboEEVersion" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="txtArtifactId" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lblArtifactId" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -278,13 +273,13 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Component id="lblAdditionalProps" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="511" max="32767" attributes="0"/>
+                  <EmptySpace pref="379" max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="btnSetupNewer" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
-              <Component id="jScrollPane1" alignment="0" pref="562" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" alignment="0" pref="550" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -305,7 +300,7 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tblAdditionalProps"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="jLabel2"/>
+            <Property name="text" type="java.lang.String" value="&lt;additional properties&gt;" noResource="true"/>
           </Properties>
         </Component>
         <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -353,25 +348,5 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="lblEEVersion">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="comboEEVersion"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/newproject/Bundle.properties" key="LBL_JavaEE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="comboEEVersion">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new DefaultComboBoxModel(panel.getEELevels())" type="code"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="comboEEVersionActionPerformed"/>
-      </Events>
-    </Component>
   </SubComponents>
 </Form>

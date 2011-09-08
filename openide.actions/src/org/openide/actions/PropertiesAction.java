@@ -190,7 +190,16 @@ public class PropertiesAction extends NodeAction {
 
                 return mi;
             } else {
-                return prop;
+                for (Node n : nodes()) {
+                    for (Node.PropertySet ps : n.getPropertySets()) {
+                        if (ps.getProperties().length > 0) {
+                            // OK, we have something to show!
+                            return prop;
+                        }
+                    }
+                }
+                // else nothing to show, so show nothing
+                return new JInlineMenu();
             }
         }
 

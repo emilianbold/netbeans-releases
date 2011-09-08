@@ -123,23 +123,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * when MTI.language() will provide a valid language).
      */
     private Activity activity;
-
-    /**
-     * Primary token hierarchy for snapshot.
-     */
-//    private TokenHierarchyOperation<I,T> liveTokenHierarchyOperation;
     
-    /**
-     * References to active snapshots.
-     */
-//    private List<SnapshotRef> snapshotRefs;
+    private LanguagePath lastActiveLanguagePath;
 
     /**
      * Listener list solely for token change listeners.
      */
     private EventListenerList listenerList;
-    
-//    private boolean snapshotReleased;
     
     private Set<LanguagePath> languagePaths;
     
@@ -304,32 +294,38 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 incTokenList.incrementModCount();
             }
             if (active) { // Wishing to be active
-                if (incTokenList.updateLanguagePath()) {
+                if (lastActiveLanguagePath != null) {
+                    incTokenList.setLanguagePath(lastActiveLanguagePath);
+                    change = TokenListChange.createRebuildChange(incTokenList);
+                    incTokenList.replaceTokens(change, eventInfo, true);
+                    CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
+                    eventInfo.setMaxAffectedEndOffset(text.length());
                     invalidatePath2TokenListList();
-                    incTokenList.reinit(); // Initialize lazy lexing
-                    change = doFire ? new TokenListChange<T>(incTokenList) : null;
-                } else { // No valid top language => no change in activity
-                    return;
+                } else { // Was not yet active
+                    Language<?> language = LexerSpiPackageAccessor.get().language(mutableTextInput());
+                    if (language != null) {
+                        incTokenList.setLanguagePath((language != null) ? LanguagePath.get(language) : null);
+                        change = TokenListChange.createEmptyChange(incTokenList);
+                    } else { // No valid top language => no change in activity
+                        return;
+                    }
                 }
+                incTokenList.reinit(); // Initialize lazy lexing
             } else { // Wishing to be inactive
-                change = TokenListChange.createRebuildChange(incTokenList);
-                incTokenList.replaceTokens(change, eventInfo, true);
-                incTokenList.setLanguagePath(null); // Make incTokenList inactive by assigning null LP
-                incTokenList.reinit();
+                change = TokenListChange.createEmptyChange(incTokenList);
             }
+            eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
 
             activity = newActivity;
             if (doFire) { // Only if there are already listeners
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N
                 }
-                CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
-                eventInfo.setMaxAffectedEndOffset(text.length());
-                if (activity == Activity.INACTIVE) { // Notify the tokens being removed
-                    eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
-                    invalidatePath2TokenListList();
+                fireTokenHierarchyChanged(eventInfo); // Retain valid languagePath during firing if becoming inactive
+                if (!active) { // Becoming inactive
+                    lastActiveLanguagePath = incTokenList.languagePath();
+                    incTokenList.setLanguagePath(null); // Make incTokenList inactive by assigning null LP
                 }
-                fireTokenHierarchyChanged(eventInfo);
             }
         }
     }

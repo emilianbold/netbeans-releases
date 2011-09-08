@@ -43,48 +43,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Templates">
-        <folder name="Project">
-            <folder name="Maven2">
-                <file name="WebApp">
-                    <attr name="position" intvalue="200"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.j2ee.Bundle#template.WebApp"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createWebAppIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/j2ee/WebAppDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_web_application_16.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="EJB">
-                    <attr name="position" intvalue="250"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.j2ee.Bundle#template.EJB"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createEJBIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/j2ee/EjbDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_ejb_module_16.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="EA">
-                    <attr name="position" intvalue="270"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.j2ee.Bundle#template.EA"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.EAWizardIterator.createIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/j2ee/EADescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="APPCLIENT">
-                    <attr name="position" intvalue="277"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.j2ee.Bundle#template.APPCLIENT"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createAppClientIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/j2ee/AppClientDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/appclient.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="org-netbeans-modules-java-hints">
         <folder name="rules">
             <folder name="hints">
