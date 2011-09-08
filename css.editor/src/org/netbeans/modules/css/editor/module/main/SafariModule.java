@@ -53,13 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class SafariModule extends BrowserSupportModule {
 
     public SafariModule() {
-        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20"));
+        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20"), "webkit");
     }
 
-    @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
-    }
-
-      
 }

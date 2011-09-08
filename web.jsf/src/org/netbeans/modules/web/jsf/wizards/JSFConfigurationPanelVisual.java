@@ -1391,6 +1391,10 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private void initJsfComponentLibraries(JSFVersion version) {
         List<JsfComponentImplementation> descriptors = componentsMap.get(version);
+        if (descriptors == null) {
+            return;
+        }
+
         for (int i = 0; i < descriptors.size(); i++) {
             JsfComponentImplementation jsfComponentDescriptor = descriptors.get(i);
             if (jsfComponentDescriptor.isInWebModule(panel.getWebModule())) {

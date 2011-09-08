@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
-import java.util.List;
-import org.netbeans.modules.j2ee.common.method.MethodModel.Annotation;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
@@ -76,20 +74,21 @@ import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.TimerOptions;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Generator of Session EJBs for EJB 2.1 and 3.0
- * 
+ *
  * @author Martin Adamek
  */
 public final class SessionGenerator {
-    
+
     public static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/SessionEjbClass.java"; // NOI18N
     public static final String EJB21_LOCAL = "Templates/J2EE/EJB21/SessionLocal.java"; // NOI18N
     public static final String EJB21_LOCALHOME = "Templates/J2EE/EJB21/SessionLocalHome.java"; // NOI18N
     public static final String EJB21_REMOTE = "Templates/J2EE/EJB21/SessionRemote.java"; // NOI18N
     public static final String EJB21_REMOTEHOME = "Templates/J2EE/EJB21/SessionRemoteHome.java"; // NOI18N
-    
+
     public static final String EJB30_STATELESS_EJBCLASS = "Templates/J2EE/EJB30/StatelessEjbClass.java"; // NOI18N
     public static final String EJB30_STATEFUL_EJBCLASS = "Templates/J2EE/EJB30/StatefulEjbClass.java"; // NOI18N
     public static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
@@ -112,7 +111,7 @@ public final class SessionGenerator {
 //    private final boolean hasBusinessInterface;
     private final boolean isXmlBased;
     private final TimerOptions timerOptions;
-    
+
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
     private final String ejbName;
@@ -122,7 +121,7 @@ public final class SessionGenerator {
     private final String localName;
     private final String localHomeName;
     private final String displayName;
-    
+
     private final String packageName;
     private final String packageNameWithDot;
 
@@ -132,8 +131,8 @@ public final class SessionGenerator {
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions) {
         return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, timerOptions, false);
     }
-    
-    protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+
+    protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions, boolean isTest) {
         this.pkg = pkg;
         this.remotePkg = pkg;
@@ -171,7 +170,7 @@ public final class SessionGenerator {
     public void initRemoteInterfacePackage(Project projectForRemoteInterface, String remoteInterfacePackageName, FileObject ejbSourcePackage) throws IOException {
         remotePkg = SessionGenerator.createRemoteInterfacePackage(projectForRemoteInterface, remoteInterfacePackageName, ejbSourcePackage);
     }
-    
+
     public static FileObject createRemoteInterfacePackage(Project projectForRemoteInterface, String remoteInterfacePackageName, FileObject ejbSourcePackage) throws IOException {
         assert ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0;
         FileObject root = ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)[0].getRootFolder();
@@ -195,7 +194,7 @@ public final class SessionGenerator {
         FileObject resultFileObject = null;
         if (isSimplified) {
             resultFileObject = generateEJB30Classes();
-            
+
             //put these lines in a common function at the appropriate place after EA1
             //something like public EjbJar getEjbJar()
             //This method will be used whereever we construct/get DD object graph to ensure
@@ -237,7 +236,7 @@ public final class SessionGenerator {
         }
         return ejbClassFO;
     }
-    
+
     private FileObject generateEJB30Classes() throws IOException {
         String ejbClassTemplateName = "";
         if (sessionType.equals(Session.SESSION_TYPE_STATELESS)){
@@ -312,7 +311,7 @@ public final class SessionGenerator {
             session.setLocal(packageNameWithDot + localName);
             session.setLocalHome(packageNameWithDot + localHomeName);
         }
-        
+
         session.setSessionType(sessionType);
         session.setTransactionType("Container"); // NOI18N
         beans.addSession(session);
@@ -331,32 +330,36 @@ public final class SessionGenerator {
         assemblyDescriptor.addContainerTransaction(containerTransaction);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
     }
-    
+
     private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
 
     private void generateTimerMethodForBean(FileObject bean, String methodName, TimerOptions timerOptions) {
-        try {
-            MethodModel.Annotation annotation = MethodModel.Annotation.create(
-                    "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
-            MethodModel method = MethodModel.create(
-                    methodName,
-                    "void", // NOI18N
-                    "System.out.println(\"Timer event: \" + new java.util.Date());", // NOI18N
-                    Collections.<MethodModel.Variable>emptyList(),
-                    Collections.<String>emptyList(),
-                    Collections.<Modifier>emptySet(), 
-                    Collections.singletonList(annotation)
-                    );
+        MethodModel.Annotation annotation = MethodModel.Annotation.create(
+                "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
+        final MethodModel method = MethodModel.create(
+                methodName,
+                "void", // NOI18N
+                "System.out.println(\"Timer event: \" + new java.util.Date());", // NOI18N
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet(),
+                Collections.singletonList(annotation)
+                );
 
-                BusinessMethodGenerator generator = BusinessMethodGenerator.create(packageNameWithDot + ejbClassName, bean);
-                generator.generate(method, hasLocal, hasRemote);
-        } catch (IOException ex) {
-            Logger.getLogger(SessionGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        final BusinessMethodGenerator generator = BusinessMethodGenerator.create(packageNameWithDot + ejbClassName, bean);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    generator.generate(method, hasLocal, hasRemote);
+                } catch (IOException ioe) {
+                    Logger.getLogger(SessionGenerator.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
     }
-    
+
       //TODO: RETOUCHE WS
 //    /**
 //     * Special case for generating a Session implementation bean for web services
@@ -371,11 +374,11 @@ public final class SessionGenerator {
 //        if (pkgName!=null) {
 //            b.setClassnamePackage(pkgName);
 //        }
-//        
+//
 //        // generate bean class
 //        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
 //        boolean simplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
 //        return null;//genUtil.generateBeanClass(simplified ? SESSION_TEMPLATE_WS_JAVAEE5 : SESSION_TEMPLATE, b, pkgName, pkg);
 //    }
-    
+
 }
