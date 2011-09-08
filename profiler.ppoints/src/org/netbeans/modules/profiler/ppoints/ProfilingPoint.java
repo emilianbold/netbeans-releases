@@ -199,14 +199,14 @@ public abstract class ProfilingPoint {
     }
 
     // Opens customizer for the Profiling Point
-    public void customize(boolean deleteOnCancel) {
+    public void customize(boolean deleteOnCancel, boolean focusToEditor) {
         final ValidityAwarePanel customizer = getCustomizer();
         if (!ProfilingPointsManager.getDefault().customize(customizer,
             new Runnable() {
                 public void run() {
                     setValues(customizer);
                 }
-            }) && deleteOnCancel)
+            }, focusToEditor) && deleteOnCancel)
             ProfilingPointsManager.getDefault().removeProfilingPoint(this);
     }
 

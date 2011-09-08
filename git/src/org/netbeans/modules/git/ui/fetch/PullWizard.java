@@ -135,7 +135,7 @@ class PullWizard  implements ChangeListener {
 
         @Override
         protected Panel<WizardDescriptor>[] initializePanels () {
-            selectUriStep = new SelectUriStep(repository, remotes);
+            selectUriStep = new SelectUriStep(repository, remotes, SelectUriStep.Mode.PULL);
             selectUriStep.addChangeListener(PullWizard.this);
             pullBranchesStep = new PullBranchesStep(repository);
             pullBranchesStep.addChangeListener(PullWizard.this);
