@@ -43,6 +43,8 @@ package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ObjectReference;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
@@ -66,16 +68,16 @@ import org.openide.util.Exceptions;
  *
  * @author martin
  */
-public class AWTComponentBreakpointImpl {
+public class AWTComponentBreakpointImpl extends ComponentBreakpointImpl implements PropertyChangeListener {
     
     private AWTComponentBreakpoint cb;
     private JPDADebugger debugger;
-    private final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
 
     public AWTComponentBreakpointImpl(AWTComponentBreakpoint cb, JPDADebugger debugger) {
         this.cb = cb;
         this.debugger = debugger;
         initServiceBreakpoints();
+        cb.addPropertyChangeListener(this);
     }
     
     private void initServiceBreakpoints() {
@@ -154,31 +156,18 @@ public class AWTComponentBreakpointImpl {
         }
     }
 
-    void notifyRemoved() {
-        for (Breakpoint b : serviceBreakpoints) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (Breakpoint.PROP_ENABLED.equals(propertyName)) {
+            if (cb.isEnabled()) {
+                enable();
+            } else {
+                disable();
+            }
+        } else if (JPDABreakpoint.PROP_SUSPEND.equals(propertyName)) {
+            setSuspend(cb.getSuspend());
         }
-        serviceBreakpoints.clear();
     }
 
-    void enable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.enable();
-        }
-    }
-
-    void disable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.disable();
-        }
-        
-    }
-    
-    void setSuspend(int suspend) {
-        for (JPDABreakpoint b : serviceBreakpoints) {
-            b.setSuspend(suspend);
-        }
-    }
-    
-    
 }

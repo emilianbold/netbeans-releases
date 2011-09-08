@@ -39,28 +39,46 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Martin Entlicher
  */
-@ServiceProvider(service = CssModule.class)
-public class InternetExplorerModule extends BrowserSupportModule {
-
-    public InternetExplorerModule() {
-        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", "ms", "ie20"), "internet_explorer");
+public abstract class ComponentBreakpointImpl {
+    
+    protected final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
+    
+    void notifyRemoved() {
+        for (Breakpoint b : serviceBreakpoints) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+        }
+        serviceBreakpoints.clear();
     }
 
-    @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
+    void enable() {
+        for (Breakpoint b : serviceBreakpoints) {
+            b.enable();
+        }
     }
 
-      
+    void disable() {
+        for (Breakpoint b : serviceBreakpoints) {
+            b.disable();
+        }
+        
+    }
+    
+    void setSuspend(int suspend) {
+        for (JPDABreakpoint b : serviceBreakpoints) {
+            b.setSuspend(suspend);
+        }
+    }
+    
 }

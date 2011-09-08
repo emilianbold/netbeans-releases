@@ -261,7 +261,11 @@ public class WebBeansActionHelper {
         else {
             path = path+".class";                   // NOI18N
         }
-        return classPath.findResource(path)!=null;
+        if (classPath == null) {
+            return false;
+        }
+        
+        return classPath.findResource(path) != null;
     }
     
     /**

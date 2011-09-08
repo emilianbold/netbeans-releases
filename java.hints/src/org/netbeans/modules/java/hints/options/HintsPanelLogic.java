@@ -482,7 +482,6 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             DependencyTracking value = getCurrentDependencyTracking();
             depScn = value != DependencyTracking.DISABLED ? DependencyTracking.DISABLED : index2deptracking(severityComboBox.getSelectedIndex());
             model.nodeChanged(node);
-            model.nodeChanged(node.getParent());
         }
 
         return false;

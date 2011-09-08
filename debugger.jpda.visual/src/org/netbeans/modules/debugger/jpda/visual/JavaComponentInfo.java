@@ -732,6 +732,11 @@ abstract public class JavaComponentInfo implements ComponentInfo {
             public int getLineNumber() {
                 return lineNumber;
             }
+
+            @Override
+            public String toString() {
+                return "Frame "+className+"."+methodName+"("+fileName+":"+lineNumber+")";
+            }
         }
     }
     

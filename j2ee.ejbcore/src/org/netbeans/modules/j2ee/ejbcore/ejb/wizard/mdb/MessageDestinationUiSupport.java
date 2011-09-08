@@ -59,6 +59,7 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
@@ -90,23 +91,32 @@ public abstract class MessageDestinationUiSupport {
         assert j2eeModuleProvider != null;
         final DestinationsHolder holder = new DestinationsHolder();
         
-        // fetch references & datasources asynchronously
-        ProgressSupport.Action action = new ProgressSupport.BackgroundAction() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            // fetch references & datasources asynchronously
+            ProgressSupport.Action action = new ProgressSupport.BackgroundAction() {
 
-            public void run(Context actionContext) {
-                String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_RetrievingDestinations");
-                actionContext.progress(msg);
-                try {
-                    holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
-                    holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
-                } catch (ConfigurationException ex) {
-                    Exceptions.printStackTrace(ex);
+                public void run(Context actionContext) {
+                    String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_RetrievingDestinations");
+                    actionContext.progress(msg);
+                    try {
+                        holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+                        holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
+                    } catch (ConfigurationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+            };
+
+            Collection<ProgressSupport.Action> asyncActions = Collections.singleton(action);
+            ProgressSupport.invoke(asyncActions);
+        } else {
+            try {
+                holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+                holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
+            } catch (ConfigurationException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        };
-        
-        Collection<ProgressSupport.Action> asyncActions = Collections.singleton(action);
-        ProgressSupport.invoke(asyncActions);
+        }
         
         return holder;
     }
@@ -230,24 +240,25 @@ public abstract class MessageDestinationUiSupport {
         private Set<MessageDestination> serverDestinations;
         
         public DestinationsHolder() {
+            super();
         }
 
-        public void setModuleDestinations(final Set<MessageDestination> moduleDestinations) {
+        public synchronized void setModuleDestinations(final Set<MessageDestination> moduleDestinations) {
             this.moduleDestinations = moduleDestinations;
         }
 
-        public void setServerDestinations(final Set<MessageDestination> serverDestinations) {
+        public synchronized void setServerDestinations(final Set<MessageDestination> serverDestinations) {
             this.serverDestinations = serverDestinations;
         }
 
-        public Set<MessageDestination> getModuleDestinations() {
+        public synchronized Set<MessageDestination> getModuleDestinations() {
             if (moduleDestinations == null) {
                 moduleDestinations = new HashSet<MessageDestination>();
             }
             return moduleDestinations;
         }
 
-        public Set<MessageDestination> getServerDestinations() {
+        public synchronized Set<MessageDestination> getServerDestinations() {
             if (serverDestinations == null) {
                 serverDestinations = new HashSet<MessageDestination>();
             }

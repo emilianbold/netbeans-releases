@@ -46,6 +46,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -61,13 +63,16 @@ import org.netbeans.modules.j2ee.ejbcore.action.CmFieldGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.omg.CORBA.Request;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import sun.print.RasterPrinterJob;
 
 /**
  * Action that can always be invoked and work procedurally.
@@ -76,7 +81,7 @@ import org.openide.util.actions.NodeAction;
 public class AddCmpFieldAction extends NodeAction {
 
     private final String NAME = NbBundle.getMessage(AddCmpFieldAction.class, "LBL_AddCmpFieldAction");
-    
+
     public String getName() {
         return NAME;
     }
@@ -144,11 +149,11 @@ public class AddCmpFieldAction extends NodeAction {
     }
 
     private static boolean addCmpField(EntityMethodController emc, FileObject ddFile, MethodModel.Variable field) throws IOException {
-        
+
         final String ejbClass = emc.getBeanClass();
         final Entity[] entity = new Entity[1];
         final FileObject[] ejbClassFO = new FileObject[1];
-        
+
         MetadataModel<EjbJarMetadata> metadataModel = EjbJar.getEjbJar(ddFile).getMetadataModel();
         metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
             public Void run(EjbJarMetadata metadata) {
@@ -157,14 +162,24 @@ public class AddCmpFieldAction extends NodeAction {
                 return null;
             }
         });
-        
-        FieldCustomizer customizer = new FieldCustomizer(entity[0], field, "", 
+
+        final FieldCustomizer customizer = new FieldCustomizer(entity[0], field, "",
                 emc.getLocal() != null, emc.getRemote() != null, true, true, false, false);
         if (customizer.customizeField()) {
-            MethodModel.Variable customizedField = customizer.getField();
-            CmFieldGenerator generator = CmFieldGenerator.create(emc.getBeanClass(), ejbClassFO[0]);
-            generator.addCmpField(customizedField, customizer.isLocalGetter(), customizer.isLocalSetter(),
-                    customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
+            final MethodModel.Variable customizedField = customizer.getField();
+            final CmFieldGenerator generator = CmFieldGenerator.create(emc.getBeanClass(), ejbClassFO[0]);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        generator.addCmpField(customizedField, customizer.isLocalGetter(), customizer.isLocalSetter(),
+                            customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
+                    } catch (IOException ioe) {
+                        Logger.getLogger(AddCmpFieldAction.class.getName()).log(Level.WARNING, null, ioe);
+                    }
+                }
+            });
+
             return true;
         }
         return false;

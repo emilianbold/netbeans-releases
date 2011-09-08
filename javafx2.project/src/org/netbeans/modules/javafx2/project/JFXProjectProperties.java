@@ -112,8 +112,7 @@ public final class JFXProjectProperties {
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
     public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
-    public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N
-    public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
+    public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
     public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
     
@@ -431,6 +430,16 @@ public final class JFXProjectProperties {
                  value.equalsIgnoreCase("on"));     //NOI18N
     }
 
+    public static boolean isEqual(final String s1, final String s2) {
+        return (s1 == null && s2 == null) ||
+                (s1 != null && s2 != null && s1.equals(s2));
+    }                                   
+
+    public static boolean isEqualIgnoreCase(final String s1, final String s2) {
+        return (s1 == null && s2 == null) ||
+                (s1 != null && s2 != null && s1.equalsIgnoreCase(s2));
+    }                                   
+
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
@@ -513,7 +522,7 @@ public final class JFXProjectProperties {
         } catch (IOException ex) {
             // can be ignored
         }
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
@@ -701,7 +710,7 @@ public final class JFXProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
                                         RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
@@ -802,8 +811,19 @@ public final class JFXProjectProperties {
                 saveToFile(privatePath, privateCfgProps);
             }
         }
+        updatePreloaderDependencies();
     }
     
+    private void updatePreloaderDependencies() {
+        // depeding on the currently (de)selected preloader update project dependencies,
+        // i.e., remove deselected preloader project dependency and add selected preloader project dependency
+        
+        //TODO
+//            final Project[] p = new Project[] {ProjectManager.getDefault().findProject(preloaderDirFO)};
+//            FileObject ownerSourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
+//            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
+    }
+
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
 //        // store descriptor type
 //        DescType descType = getSelectedDescType();
@@ -1109,38 +1129,78 @@ public final class JFXProjectProperties {
     }
 
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
+        
+        private boolean filling = false;
               
         public PreloaderClassComboBoxModel() {
+            fillNoPreloaderAvailable();
+        }
+        
+        public final void fillNoPreloaderAvailable() {
             removeAllElements();
             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
         }
         
-        public void fillFromProject(Project project) {
+        public void fillFromProject(final Project project, final String select, final Map<String,String> config) {
             final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
-                    removeAllElements();
-                    if(appClassNames.isEmpty()) {
-                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
-                    } else {
-                        addElements(appClassNames);
+                    if(!filling) {
+                        filling = true;
+                        removeAllElements();
+                        if(project == null) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                            return;
+                        }
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
+                        if(appClassNames.isEmpty()) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                        } else {
+                            addElements(appClassNames);
+                            if(select != null) {
+                                setSelectedItem(select);
+                            }
+                            if(config != null) {
+                                String verify = (String)getSelectedItem();
+                                if(!JFXProjectProperties.isEqual(select, verify)) {
+                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                }
+                            }
+                        }
+                        filling = false;
                     }
                 }
             });            
         }
 
-        public void fillFromJAR(final FileObject jarFile) {
+        public void fillFromJAR(final FileObject jarFile, final String select, final Map<String,String> config) {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
-                    removeAllElements();
-                    if(appClassNames.isEmpty()) {
-                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
-                    } else {
-                        addElements(appClassNames);
+                    if(!filling) {
+                        filling = true;
+                        removeAllElements();
+                        if(jarFile == null) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                            return;
+                        }
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                        if(appClassNames.isEmpty()) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                        } else {
+                            addElements(appClassNames);
+                            if(select != null) {
+                                setSelectedItem(select);
+                            }
+                            if(config != null) {
+                                String verify = (String)getSelectedItem();
+                                if(!JFXProjectProperties.isEqual(select, verify)) {
+                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                }
+                            }
+                        }
+                        filling = false;
                     }
                 }
             });            

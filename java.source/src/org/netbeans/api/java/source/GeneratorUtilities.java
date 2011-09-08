@@ -74,6 +74,7 @@ import com.sun.tools.javac.code.Scope.Entry;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -611,7 +612,7 @@ public final class GeneratorUtilities {
         }
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         for (ImportTree imp : imports) {
-            Element e = getImportedElement(cut, imp, trees, elements);
+            Element e = getImportedElement(cut, imp);
             Element el = imp.isStatic()
                     ? e.getKind().isClass() || e.getKind().isInterface() ? e : elementUtilities.enclosingTypeElement(e)
                     : e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
@@ -646,7 +647,7 @@ public final class GeneratorUtilities {
                             Entry starEntry = unit.starImportScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
                             if (starEntry.scope != null) {
                                 if (usedTypes == null) {
-                                    usedTypes = getUsedTypes(cut, trees);
+                                    usedTypes = getUsedTypes(cut);
                                 }
                                 TypeElement te = usedTypes.get(element.getSimpleName());
                                 if (te != null) {
@@ -661,7 +662,7 @@ public final class GeneratorUtilities {
         }
 
         // sort the elements to import
-        ImportsComparator comparator = new ImportsComparator(cs, elements);
+        ImportsComparator comparator = new ImportsComparator(cs);
         Collections.sort(elementsToImport, comparator);
         
         // merge the elements to import with the existing import statemetns
@@ -708,7 +709,7 @@ public final class GeneratorUtilities {
                         || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
                 while (currentExisting >= 0) {
                     ImportTree imp = imports.get(currentExisting);
-                    Element impElement = getImportedElement(cut, imp, trees, elements);
+                    Element impElement = getImportedElement(cut, imp);
                     el = imp.isStatic()
                             ? impElement.getKind().isClass() || impElement.getKind().isInterface() ? impElement : elementUtilities.enclosingTypeElement(impElement)
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
@@ -719,7 +720,7 @@ public final class GeneratorUtilities {
                     }
                     currentExisting--;
                 }
-                ExpressionTree qualIdent = qualIdentFor(currentToImportElement, elements, make);
+                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
                 if (isStar)
                     qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
                 imports.add(currentExisting + 1, make.Import(qualIdent, isStatic));
@@ -894,33 +895,34 @@ public final class GeneratorUtilities {
         return copy.getTreeUtilities().translate(result, translate);
     }
     
-    private Element getImportedElement(CompilationUnitTree cut, ImportTree imp, Trees trees, Elements elements) {
+    private Element getImportedElement(CompilationUnitTree cut, ImportTree imp) {
+        Trees trees = copy.getTrees();
         Tree qualIdent = imp.getQualifiedIdentifier();        
         if (qualIdent.getKind() != Tree.Kind.MEMBER_SELECT) {
             Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
-            if (element == null)
-                element = elements.getTypeElement(qualIdent.toString());
+            if (element == null) {
+                String fqn = qualIdent.toString();
+                if (fqn.endsWith(".*")) //NOI18N
+                    fqn = fqn.substring(0, fqn.length() - 2);
+                element = getElementByFQN(fqn);
+            }
             return element;
         }
         Name name = ((MemberSelectTree)qualIdent).getIdentifier();
         if ("*".contentEquals(name)) { //NOI18N
             Element element = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
-            if (element == null) {
-                String fqn = ((MemberSelectTree)qualIdent).getExpression().toString();
-                element = elements.getTypeElement(fqn);
-                if (element == null)
-                    element = elements.getPackageElement(fqn);
-            }
+            if (element == null)
+                element = getElementByFQN(((MemberSelectTree)qualIdent).getExpression().toString());
             return element;
         }
         if (imp.isStatic()) {
             Element parent = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
             if (parent == null)
-                parent = elements.getTypeElement(((MemberSelectTree)qualIdent).getExpression().toString());
+                parent = getElementByFQN(((MemberSelectTree)qualIdent).getExpression().toString());
             if (parent != null && (parent.getKind().isClass() || parent.getKind().isInterface())) {
                 Scope s = trees.getScope(new TreePath(cut));
                 for (Element e : parent.getEnclosedElements()) {
-                    if (name == e.getSimpleName() && e.getModifiers().contains(Modifier.STATIC) && trees.isAccessible(s, e, (DeclaredType)parent.asType()));
+                    if (name == e.getSimpleName() && e.getModifiers().contains(Modifier.STATIC) && trees.isAccessible(s, e, (DeclaredType)parent.asType()))
                         return e;
                 }
                 return parent;
@@ -928,11 +930,22 @@ public final class GeneratorUtilities {
         }
         Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
         if (element == null)
-            element = elements.getTypeElement(qualIdent.toString());
+            element = getElementByFQN(qualIdent.toString());
         return element;
     }
     
-    private Map<Name, TypeElement> getUsedTypes(final CompilationUnitTree cut, final Trees trees) {
+    private Element getElementByFQN(String fqn) {
+        Elements elements = copy.getElements();
+        Element element = elements.getTypeElement(fqn);
+        if (element == null)
+            element = elements.getPackageElement(fqn);
+        if (element == null)
+            element = ClassReader.instance(copy.impl.getJavacTask().getContext()).enterClass((com.sun.tools.javac.util.Name)elements.getName(fqn));
+        return element;
+    }
+    
+    private Map<Name, TypeElement> getUsedTypes(final CompilationUnitTree cut) {
+        final Trees trees = copy.getTrees();
         final Map<Name, TypeElement> map = new HashMap<Name, TypeElement>();
         new TreePathScanner<Void, Void>() {
 
@@ -956,27 +969,32 @@ public final class GeneratorUtilities {
         return map;
     }
     
-    private ExpressionTree qualIdentFor(Element e, Elements elements, TreeMaker tm) {
+    private ExpressionTree qualIdentFor(Element e) {
+        Elements elements = copy.getElements();
+        TreeMaker tm = copy.getTreeMaker();
         if (e.getKind() == ElementKind.PACKAGE) {
             String name = ((PackageElement)e).getQualifiedName().toString();
             if (e instanceof Symbol) {
                 int lastDot = name.lastIndexOf('.');
                 if (lastDot < 0)
                     return tm.Identifier(e);
-                return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot), elements, tm), e);
+                return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot)), e);
             }
-            return qualIdentFor(name, elements, tm);
+            return qualIdentFor(name);
         }
         Element ee = e.getEnclosingElement();
         if (e instanceof Symbol)
-            return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee, elements, tm), e) : tm.Identifier(e);
-        return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee, elements, tm), e.getSimpleName()) : tm.Identifier(e.getSimpleName());
+            return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee), e) : tm.Identifier(e);
+        return ee.getSimpleName().length() > 0 ? tm.MemberSelect(qualIdentFor(ee), e.getSimpleName()) : tm.Identifier(e.getSimpleName());
     }
-    private ExpressionTree qualIdentFor(String name, Elements elements, TreeMaker tm) {
+    
+    private ExpressionTree qualIdentFor(String name) {
+        Elements elements = copy.getElements();
+        TreeMaker tm = copy.getTreeMaker();
         int lastDot = name.lastIndexOf('.');
         if (lastDot < 0)
             return tm.Identifier(elements.getName(name));
-        return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot), elements, tm), elements.getName(name.substring(lastDot + 1)));
+        return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot)), elements.getName(name.substring(lastDot + 1)));
     }
 
     private static class ClassMemberComparator implements Comparator<Tree> {
@@ -1026,7 +1044,7 @@ public final class GeneratorUtilities {
 
         private CodeStyle.ImportGroups groups;
         
-        private ImportsComparator(CodeStyle cs, Elements elements) {
+        private ImportsComparator(CodeStyle cs) {
             this.groups = cs.getImportGroups();
         }
 

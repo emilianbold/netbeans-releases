@@ -363,6 +363,9 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
 
         @Override
         public Object getTargetValue() throws IllegalAccessException, InvocationTargetException {
+            if (getValueType().equals(boolean.class) && (value==null)) {
+                return false;
+            }
             return value;
         }
 
