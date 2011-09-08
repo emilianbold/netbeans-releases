@@ -117,7 +117,7 @@ public class AWTComponentBreakpointActionProvider extends ActionsProviderSupport
         
     }
 
-    private static AWTComponentBreakpoint findBreakpoint (ObjectReference component) {
+    public static AWTComponentBreakpoint findBreakpoint (ObjectReference component) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (int i = 0; i < breakpoints.length; i++) {
             if (!(breakpoints[i] instanceof AWTComponentBreakpoint)) {
