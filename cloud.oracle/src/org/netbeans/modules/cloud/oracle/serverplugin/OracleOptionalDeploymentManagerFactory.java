@@ -41,14 +41,24 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementation;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -74,7 +84,7 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
     
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -87,6 +97,91 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
         OracleJ2EEServerInstanceProvider.getProvider().refreshServers();
     }
 
+    @Override
+    public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
+        return new ServerLibraryManagerImpl();
+    }
+    
+    private static final class ServerLibraryManagerImpl implements ServerLibraryManager {
+
+        @Override
+        public Set<ServerLibrary> getDeployableLibraries() {
+            return Collections.<ServerLibrary>emptySet();
+        }
+
+        @Override
+        public Set<ServerLibrary> getDeployedLibraries() {
+            
+            // list of libraries seems to be fixed for WLS in cloud; 
+            // check WSL console for full list; this is jsut subset relevant for NetBeans
+            
+            Set<ServerLibrary> res = new HashSet<ServerLibrary>();
+            res.add(ServerLibraryFactory.createServerLibrary(
+                    new ServerLibraryImpl("JavaServer Faces", "JSF Reference Implementation", "1.2", "1.2.9.0", "jsf"))); // NOI18N
+            res.add(ServerLibraryFactory.createServerLibrary(
+                    new ServerLibraryImpl("JavaServer Pages Standard Tag Library (JSTL)", "JSTL Reference Implementation", "1.2", "1.2.0.1", "jstl"))); // NOI18N
+            return res;
+        }
+
+        @Override
+        public Set<ServerLibraryDependency> getMissingDependencies(Set<ServerLibraryDependency> dependencies) {
+            return Collections.<ServerLibraryDependency>emptySet();
+        }
+
+        @Override
+        public Set<ServerLibraryDependency> getDeployableDependencies(Set<ServerLibraryDependency> dependencies) {
+            return Collections.<ServerLibraryDependency>emptySet();
+        }
+
+        @Override
+        public void deployLibraries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
+        }
+
+    }
+    
+    private static final class ServerLibraryImpl implements ServerLibraryImplementation {
+
+        private String spec;
+        private String impl;
+        private Version specVer;
+        private Version implVer;
+        private String name;
+
+        public ServerLibraryImpl(String spec, String impl, String specVer, String implVer, String name) {
+            this.spec = spec;
+            this.impl = impl;
+            this.specVer = Version.fromDottedNotationWithFallback(specVer);
+            this.implVer = Version.fromDottedNotationWithFallback(implVer);
+            this.name = name;
+        }
+        
+        @Override
+        public String getSpecificationTitle() {
+            return spec;
+        }
+
+        @Override
+        public String getImplementationTitle() {
+            return  impl;
+        }
+
+        @Override
+        public Version getSpecificationVersion() {
+            return specVer;
+        }
+
+        @Override
+        public Version getImplementationVersion() {
+            return implVer;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+        
+    }
+    
     public static final class OracleStartServer extends StartServer {
 
         @Override
@@ -101,27 +196,27 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
 
         @Override
         public ProgressObject startDeploymentManager() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
         public ProgressObject stopDeploymentManager() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
         public boolean needsStartForConfigure() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
         public boolean needsStartForTargetList() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
         public boolean needsStartForAdminConfig() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
@@ -136,7 +231,7 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
 
         @Override
         public ProgressObject startDebugging(Target target) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
