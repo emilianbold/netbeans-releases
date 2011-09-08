@@ -510,6 +510,9 @@ public class TemplateWizard extends WizardDescriptor {
         } catch (IllegalStateException ise) {
             thrownMessage = ise;
         }
+        if (getValue() == CLOSED_OPTION || getValue() == CANCEL_OPTION) {
+            return null;
+        }
         // here can return newObjects because instantiateNewObjects() was called
         // from WizardDescriptor before close dialog (on Finish)
         Union2<Set<DataObject>,IOException> val;
