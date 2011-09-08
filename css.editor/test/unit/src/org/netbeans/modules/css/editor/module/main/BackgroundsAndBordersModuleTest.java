@@ -92,10 +92,13 @@ public class BackgroundsAndBordersModuleTest extends CslTestBase {
 //        assertTrue(new PropertyValue(prop, "left      top 15px").success());
         
     }
-
-    public void testIt() {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("@bg-position");
-        PropertyValue pv = new PropertyValue(prop, "left     top 15px");
-        PropertyModelTest.dumpResult(pv);
+    
+    public void testIssue201769() {
+        PropertyModel prop = CssModuleSupport.getPropertyModel("background-position");
+        PropertyValue pv = new PropertyValue(prop, "center top");
+//        PropertyModelTest.dumpResult(pv);
+        assertTrue(pv.success());
     }
+    
+    
 }
