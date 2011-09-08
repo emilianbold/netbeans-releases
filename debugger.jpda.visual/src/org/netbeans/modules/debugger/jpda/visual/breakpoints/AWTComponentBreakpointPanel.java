@@ -48,6 +48,7 @@
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -55,9 +56,12 @@ import org.netbeans.modules.debugger.jpda.ui.breakpoints.ActionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ConditionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint.ComponentDescription;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,7 +75,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     private LineBreakpoint              fakeActionsBP;
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
-    private Controller                  controller = new CBController();
+    private CBController                controller = new CBController();
     private boolean                     createBreakpoint = false;
     
     private static AWTComponentBreakpoint createBreakpoint () {
@@ -137,7 +141,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         actionsPanel = new ActionsPanel (fakeActionsBP);
         aPanel.add (actionsPanel, "Center");  // NOI18N
 
-        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                controller.checkValid();
+            }
+        });
     }
 
     @Override
@@ -242,18 +250,6 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(aPanel, gridBagConstraints);
-
-        javax.swing.GroupLayout pushPanelLayout = new javax.swing.GroupLayout(pushPanel);
-        pushPanel.setLayout(pushPanelLayout);
-        pushPanelLayout.setHorizontalGroup(
-            pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 366, Short.MAX_VALUE)
-        );
-        pushPanelLayout.setVerticalGroup(
-            pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 168, Short.MAX_VALUE)
-        );
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -276,8 +272,16 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
 
     private class CBController implements Controller {
 
+        private boolean valid;
+        private String errMsg = null;
+
         @Override
         public boolean ok() {
+            if (!valid) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errMsg));
+                return false;
+            }
+            actionsPanel.ok ();
             int type =
                     (addRemoveCheckBox.isSelected() ? (AWTComponentBreakpoint.TYPE_ADD | AWTComponentBreakpoint.TYPE_REMOVE) : 0) |
                     (showHideCheckBox.isSelected() ? (AWTComponentBreakpoint.TYPE_SHOW | AWTComponentBreakpoint.TYPE_HIDE) : 0) |
@@ -297,19 +301,41 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
             return true;
         }
 
+        private void setValid(boolean valid) {
+            this.valid = valid;
+            firePropertyChange(PROP_VALID, !valid, valid);
+        }
+
+        private void checkValid() {
+            ComponentDescription component = breakpoint.getComponent();
+            if (component == null || component.getComponentInfo() == null) {
+                setErrorMessage(NbBundle.getMessage(AWTComponentBreakpointPanel.class, "MSG_No_Component_Spec"));
+                setValid(false);
+            } else {
+                setValid(true);
+            }
+        }
+        
+        private void setErrorMessage(String msg) {
+            errMsg = msg;
+            firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, msg);
+        }
+
         @Override
         public boolean isValid() {
-            return true;
+            return valid;
         }
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
+            AWTComponentBreakpointPanel.this.addPropertyChangeListener(l);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
+            AWTComponentBreakpointPanel.this.removePropertyChangeListener(l);
         }
-        
+
 
     }
 }

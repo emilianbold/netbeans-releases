@@ -221,7 +221,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                 if (value != null) {
                     WatchpointRequestWrapper.addInstanceFilter(wr, value);
                 } else {
-                    Logger.getLogger(FieldBreakpointImpl.class.getName()).log(Level.CONFIG, null,
+                    Logger.getLogger(FieldBreakpointImpl.class.getName()).log(Level.CONFIG, "",
                         new IllegalStateException("Null instance filter of breakpoint "+breakpoint+", v = "+v));
                 }
             }

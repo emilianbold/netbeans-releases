@@ -76,17 +76,17 @@ public class AWTComponentBreakpoint extends Breakpoint {
     private ComponentDescription component;
     private int type = 15;
     private boolean enabled = true;
-    private DebuggerManagerListener serviceBreakpointListener;
-    private DebuggerManagerListener serviceBreakpointListenerWeak;
-    private final Map<Session, AWTComponentBreakpointImpl> impls =
-            new HashMap<Session, AWTComponentBreakpointImpl>();
+    //private DebuggerManagerListener serviceBreakpointListener;
+    //private DebuggerManagerListener serviceBreakpointListenerWeak;
+    //private final Map<Session, AWTComponentBreakpointImpl> impls =
+    //        new HashMap<Session, AWTComponentBreakpointImpl>();
     private String condition = "";
     private int suspend;
     private String printText;
     
     public AWTComponentBreakpoint(ComponentDescription component) {
         this.component = component;
-        serviceBreakpointListener = new ServiceBreakpointListener();
+        /*serviceBreakpointListener = new ServiceBreakpointListener();
         serviceBreakpointListenerWeak = WeakListeners.create(
                 DebuggerManagerListener.class,
                 serviceBreakpointListener,
@@ -95,7 +95,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session s : sessions) {
             serviceBreakpointListener.sessionAdded(s);
-        }
+        }*/
         suspend = LineBreakpoint.create("", 0).getSuspend();
     }
     
@@ -111,7 +111,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
         this.type = type;
     }
     
-    private void notifyRemoved() {
+    /*private void notifyRemoved() {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(serviceBreakpointListenerWeak);
         Collection<AWTComponentBreakpointImpl> cbImpls;
         synchronized(impls) {
@@ -121,7 +121,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
         for (AWTComponentBreakpointImpl impl : cbImpls) {
             impl.notifyRemoved();
         }
-    }
+    }*/
 
     @Override
     public boolean isEnabled () {
@@ -132,13 +132,6 @@ public class AWTComponentBreakpoint extends Breakpoint {
     public void enable () {
         if (enabled) return;
         enabled = true;
-        Collection<AWTComponentBreakpointImpl> cbImpls;
-        synchronized(impls) {
-            cbImpls = new ArrayList<AWTComponentBreakpointImpl>(impls.values());
-        }
-        for (AWTComponentBreakpointImpl impl : cbImpls) {
-            impl.enable();
-        }
         firePropertyChange 
             (PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
     }
@@ -148,12 +141,6 @@ public class AWTComponentBreakpoint extends Breakpoint {
         if (!enabled) return;
         enabled = false;
         Collection<AWTComponentBreakpointImpl> cbImpls;
-        synchronized(impls) {
-            cbImpls = new ArrayList<AWTComponentBreakpointImpl>(impls.values());
-        }
-        for (AWTComponentBreakpointImpl impl : cbImpls) {
-            impl.disable();
-        }
         firePropertyChange 
             (PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
     }
@@ -173,15 +160,12 @@ public class AWTComponentBreakpoint extends Breakpoint {
             if (suspend == oldSuspend) return ;
             this.suspend = suspend;
         }
-        Collection<AWTComponentBreakpointImpl> cbImpls;
-        synchronized(impls) {
-            cbImpls = new ArrayList<AWTComponentBreakpointImpl>(impls.values());
-        }
-        for (AWTComponentBreakpointImpl impl : cbImpls) {
-            impl.setSuspend(suspend);
-        }
         firePropertyChange 
             (JPDABreakpoint.PROP_SUSPEND, oldSuspend, suspend);
+    }
+    
+    int getSuspend() {
+        return suspend;
     }
 
     void setPrintText(String printText) {
@@ -221,6 +205,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
         }
     }
     
+    /*
     private class ServiceBreakpointListener implements DebuggerManagerListener {
 
         @Override
@@ -280,5 +265,6 @@ public class AWTComponentBreakpoint extends Breakpoint {
         public void propertyChange(PropertyChangeEvent evt) {}
         
     }
+     */
 
 }

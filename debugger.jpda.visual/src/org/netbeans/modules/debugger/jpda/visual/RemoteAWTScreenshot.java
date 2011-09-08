@@ -561,13 +561,17 @@ public class RemoteAWTScreenshot {
                 return new SystemAction[] { GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class),
                                             GoToSourceAction.get(GoToSourceAction.class),
                                             GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
+                                            null,
                                             ShowListenersAction.get(ShowListenersAction.class),
+                                            null,
                                             ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
                 
             } else {
                 return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
                                             GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
+                                            null,
                                             ShowListenersAction.get(ShowListenersAction.class),
+                                            null,
                                             ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
             }
         }
