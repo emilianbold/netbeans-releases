@@ -79,8 +79,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.setVisible(SHOW_CLOUD_URLS);
         
         if (SHOW_CLOUD_URLS) {
-            serviceNameTextField.setText("localhost"); // NOI18N
-            tenantIdTextField.setText("oracle"); // NOI18N
+            serviceInstanceTextField.setText("localhost"); // NOI18N
+            serviceGroupTextField.setText("oracle"); // NOI18N
             userNameTextField.setText("system");
             passwordField.setText("welcome1");
             adminURLTextField.setText("http://adc2101039.us.oracle.com:7003/");
@@ -99,8 +99,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         userNameTextField.getDocument().addDocumentListener(this);
-        tenantIdTextField.getDocument().addDocumentListener(this);
-        serviceNameTextField.getDocument().addDocumentListener(this);
+        serviceGroupTextField.getDocument().addDocumentListener(this);
+        serviceInstanceTextField.getDocument().addDocumentListener(this);
     }
     
     public void attachSingleListener(ChangeListener l) {
@@ -126,9 +126,9 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         jLabel5 = new javax.swing.JLabel();
         sdkLabel = new javax.swing.JLabel();
         sdkComboBox = new javax.swing.JComboBox();
-        serviceNameTextField = new javax.swing.JTextField();
+        serviceInstanceTextField = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        tenantIdTextField = new javax.swing.JTextField();
+        serviceGroupTextField = new javax.swing.JTextField();
         instanceLabel = new javax.swing.JLabel();
         instanceURLTextField = new javax.swing.JTextField();
         cloudLabel = new javax.swing.JLabel();
@@ -187,21 +187,21 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(serviceNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(tenantIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
+                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(serviceGroupTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(serviceNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
                 .addGap(0, 0, 0)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tenantIdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(serviceGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -254,8 +254,8 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JComboBox sdkComboBox;
     private javax.swing.JLabel sdkLabel;
-    private javax.swing.JTextField serviceNameTextField;
-    private javax.swing.JTextField tenantIdTextField;
+    private javax.swing.JTextField serviceGroupTextField;
+    private javax.swing.JTextField serviceInstanceTextField;
     private javax.swing.JTextField userNameTextField;
     // End of variables declaration//GEN-END:variables
 
@@ -279,12 +279,12 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return new String(passwordField.getPassword());
     }
     
-    public String getSystem() {
-        return tenantIdTextField.getText();
+    public String getServiceGroup() {
+        return serviceGroupTextField.getText();
     }
 
-    public String getService() {
-        return serviceNameTextField.getText();
+    public String getServiceInstance() {
+        return serviceInstanceTextField.getText();
     }
 
     @Override
@@ -307,9 +307,9 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
             l.stateChanged(new ChangeEvent(this));
         }
         if (ADMIN_URL.equals(adminURLTextField.getText()) && 
-                (e.getDocument() == serviceNameTextField.getDocument() ||
-                 e.getDocument() == tenantIdTextField.getDocument())) {
-            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getService(), getSystem()));
+                (e.getDocument() == serviceInstanceTextField.getDocument() ||
+                 e.getDocument() == serviceGroupTextField.getDocument())) {
+            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getServiceInstance(), getServiceGroup()));
         }
     }
 }

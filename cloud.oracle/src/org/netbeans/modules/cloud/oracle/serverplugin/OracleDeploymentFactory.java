@@ -55,8 +55,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
 
     public static final String ORACLE_URI = "oracle:";  // NOI18N
 
-    public static final String IP_SYSTEM = "system";  // NOI18N
-    public static final String IP_SERVICE = "service";  // NOI18N
+    public static final String IP_SERVICE_GROUP = "service-group";  // NOI18N
+    public static final String IP_SERVICE_INSTANCE = "service-instance";  // NOI18N
     public static final String IP_ADMIN_URL = "admin-url";  // NOI18N
     public static final String IP_INSTANCE_URL = "instance-url";  // NOI18N
     public static final String IP_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
@@ -75,8 +75,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                     props.getProperty(IP_ADMIN_URL), 
                     username,
                     password),
-                props.getProperty(IP_SYSTEM),
-                props.getProperty(IP_SERVICE),
+                props.getProperty(IP_SERVICE_GROUP),
+                props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }
@@ -86,8 +86,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
         return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
                 null,
-                props.getProperty(IP_SYSTEM),
-                props.getProperty(IP_SERVICE),
+                props.getProperty(IP_SERVICE_GROUP),
+                props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }

@@ -65,8 +65,8 @@ public class OracleInstanceManager {
     private static final String ADMIN_URL = "admin-url"; // NOI18N
     private static final String INSTANCE_URL = "instance-url"; // NOI18N
     private static final String CLOUD_URL = "cloud-url"; // NOI18N
-    private static final String SYSTEM = "system"; // NOI18N
-    private static final String SERVICE = "service-name"; // NOI18N
+    private static final String SERVICE_GROUP = "service-group"; // NOI18N
+    private static final String SERVICE_INSTANCE = "service-instance"; // NOI18N
     private static final String ON_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     private static OracleInstanceManager instance;
@@ -113,8 +113,8 @@ public class OracleInstanceManager {
         props.putString(ADMIN_URL, ai.getAdminURL());
         props.putString(INSTANCE_URL, ai.getInstanceURL());
         props.putString(CLOUD_URL, ai.getCloudURL());
-        props.putString(SYSTEM, ai.getSystem());
-        props.putString(SERVICE, ai.getService());
+        props.putString(SERVICE_GROUP, ai.getServiceGroup());
+        props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
         props.putString(NAME, ai.getName());
         if (ai.getOnPremiseServerInstanceId() != null) {
             props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
@@ -128,8 +128,8 @@ public class OracleInstanceManager {
                 props.putString(ADMIN_URL, ai.getAdminURL());
                 props.putString(INSTANCE_URL, ai.getInstanceURL());
                 props.putString(CLOUD_URL, ai.getCloudURL());
-                props.putString(SYSTEM, ai.getSystem());
-                props.putString(SERVICE, ai.getService());
+                props.putString(SERVICE_GROUP, ai.getServiceGroup());
+                props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
                 if (ai.getOnPremiseServerInstanceId() == null) {
                     props.removeKey(ON_PREMISE_SERVICE_INSTANCE_ID);
                 } else {
@@ -170,8 +170,8 @@ public class OracleInstanceManager {
             }
             String password = new String(ch);
             assert password != null : "password is missing for "+name; // NOI18N
-            String tenant = props.getString(SYSTEM, "undefined"); // NOI18N
-            String service = props.getString(SERVICE, "undefined"); // NOI18N
+            String tenant = props.getString(SERVICE_GROUP, "undefined"); // NOI18N
+            String service = props.getString(SERVICE_INSTANCE, "undefined"); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
             result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise));
         }

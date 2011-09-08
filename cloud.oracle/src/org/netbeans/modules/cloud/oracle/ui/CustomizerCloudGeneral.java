@@ -65,8 +65,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         initComponents();
     
         this.instance = instance;
-        serviceField.setText(instance.getService());
-        systemField.setText(instance.getSystem());
+        serviceInstanceField.setText(instance.getServiceInstance());
+        serviceGroupField.setText(instance.getServiceGroup());
         adminUrlField.setText(instance.getAdminURL());
         instanceUrlField.setText(instance.getInstanceURL());
         cloudUrlField.setText(instance.getCloudURL());
@@ -152,9 +152,9 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
         serviceLabel = new javax.swing.JLabel();
-        serviceField = new javax.swing.JTextField();
+        serviceInstanceField = new javax.swing.JTextField();
         systemLabel = new javax.swing.JLabel();
-        systemField = new javax.swing.JTextField();
+        serviceGroupField = new javax.swing.JTextField();
 
         adminUrlLabel.setLabelFor(adminUrlField);
         org.openide.awt.Mnemonics.setLocalizedText(adminUrlLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.adminUrlLabel.text")); // NOI18N
@@ -171,15 +171,15 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.passwordLabel.text")); // NOI18N
 
-        serviceLabel.setLabelFor(serviceField);
+        serviceLabel.setLabelFor(serviceInstanceField);
         org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.serviceLabel.text")); // NOI18N
 
-        serviceField.setEditable(false);
+        serviceInstanceField.setEditable(false);
 
-        systemLabel.setLabelFor(systemField);
+        systemLabel.setLabelFor(serviceGroupField);
         org.openide.awt.Mnemonics.setLocalizedText(systemLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.systemLabel.text")); // NOI18N
 
-        systemField.setEditable(false);
+        serviceGroupField.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -202,8 +202,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(usernameField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE))
-                    .addComponent(systemField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                    .addComponent(serviceField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                    .addComponent(serviceGroupField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -212,11 +212,11 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serviceLabel)
-                    .addComponent(serviceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(systemLabel)
-                    .addComponent(systemField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(serviceGroupField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminUrlLabel)
@@ -249,9 +249,9 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     private javax.swing.JLabel instanceUrlLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JTextField serviceField;
+    private javax.swing.JTextField serviceGroupField;
+    private javax.swing.JTextField serviceInstanceField;
     private javax.swing.JLabel serviceLabel;
-    private javax.swing.JTextField systemField;
     private javax.swing.JLabel systemLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;

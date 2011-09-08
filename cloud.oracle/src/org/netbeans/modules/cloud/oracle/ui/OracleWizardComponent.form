@@ -45,8 +45,8 @@
                   <Component id="passwordField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="userNameTextField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="serviceNameTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="tenantIdTextField" alignment="0" pref="229" max="32767" attributes="0"/>
+                  <Component id="serviceInstanceTextField" alignment="0" pref="229" max="32767" attributes="0"/>
+                  <Component id="serviceGroupTextField" alignment="0" pref="229" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
@@ -56,14 +56,14 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="serviceNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceInstanceTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tenantIdTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceGroupTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -153,7 +153,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="serviceNameTextField">
+    <Component class="javax.swing.JTextField" name="serviceInstanceTextField">
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel7">
       <Properties>
@@ -162,7 +162,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="tenantIdTextField">
+    <Component class="javax.swing.JTextField" name="serviceGroupTextField">
     </Component>
     <Component class="javax.swing.JLabel" name="instanceLabel">
       <Properties>

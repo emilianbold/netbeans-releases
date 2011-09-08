@@ -70,17 +70,17 @@ import org.openide.util.NbBundle;
 public class OracleDeploymentManager implements DeploymentManager2 {
 
     private ApplicationManager pm;
-    private String tenantId;
-    private String serviceName;
+    private String serviceGroup;
+    private String serviceInstance;
     private String instanceUrl;
     private String cloudInstanceName;
     private  String onPremiseServiceInstanceId;
 
-    public OracleDeploymentManager(String instanceUrl, ApplicationManager pm, String tenantId, 
-          String serviceName, String cloudInstanceName, String onPremiseServiceInstanceId) {
+    public OracleDeploymentManager(String instanceUrl, ApplicationManager pm, String serviceGroup, 
+          String serviceInstance, String cloudInstanceName, String onPremiseServiceInstanceId) {
         this.pm = pm;
-        this.tenantId = tenantId;
-        this.serviceName = serviceName;
+        this.serviceGroup = serviceGroup;
+        this.serviceInstance = serviceInstance;
         this.instanceUrl = instanceUrl;
         this.cloudInstanceName = cloudInstanceName;
         this.onPremiseServiceInstanceId = onPremiseServiceInstanceId;
@@ -99,7 +99,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(NbBundle.getMessage(OracleDeploymentManager.class, "OracleDeploymentManager.distributing"), false);
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, tenantId, serviceName, po, cloudInstanceName, onPremiseServiceInstanceId);
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, serviceGroup, serviceInstance, po, cloudInstanceName, onPremiseServiceInstanceId);
         return po;
     }
 
