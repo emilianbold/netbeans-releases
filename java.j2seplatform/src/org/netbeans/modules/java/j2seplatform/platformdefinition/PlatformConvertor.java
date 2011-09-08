@@ -95,7 +95,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         // Might be used, though currently not (cf. #46901):
         "javadoc", // NOI18N
     };
-    
+
+    private static final String PLATFORM_STOREGE = "Services/Platforms/org-netbeans-api-java-Platform"; //NOI18N
     private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class.getName(), 1, false, false);
 
@@ -274,7 +275,21 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     public Class<Node> type(Class<Node> key) {
         return key;
     }
-    
+
+    public static JavaPlatform create (final JavaPlatform prototype) throws IOException, IllegalArgumentException {
+        Parameters.notNull("prototype", prototype);
+        final String systemName = prototype.getProperties().get(J2SEPlatformImpl.PLAT_PROP_ANT_NAME);
+        if (systemName == null) {
+            throw new IllegalArgumentException(J2SEPlatformImpl.PLAT_PROP_ANT_NAME);
+        }
+        final FileObject platformsFolder = FileUtil.getConfigFile(PLATFORM_STOREGE);
+        if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
+            throw new IllegalArgumentException(systemName);
+        }
+        final DataObject dobj = create(prototype, DataFolder.findFolder(platformsFolder),systemName);
+        return dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
+    }
+
     public static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
