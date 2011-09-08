@@ -209,11 +209,12 @@ public abstract class BaseAnnotation extends Annotation {
         return baseDescr;
     }
     
-    public void attach() {
+    public boolean attach() {
         if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
-            return;
+            return false;
         }
          NbDocument.addAnnotation(document, pos, -1, this);
+         return true;
     }
     
     public void detachImpl() {

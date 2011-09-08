@@ -386,7 +386,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
                             });
                     }
 
-                    ppoint.customize(true);
+                    ppoint.customize(true, true);
                 }
             }
         }
