@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Document;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.platform.api.PlatformDetector;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -65,16 +67,23 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
+    
 /**
  * @author  phrebejk, Anton Chechel
  */
-public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener, DocumentListener {
+public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+
+    private RequestProcessor.Task task;
+    private DetectPlatformTask detectPlatformTask;
     
     private final JavaFXProjectWizardIterator.WizardType type;
     private PanelConfigureProject panel;
@@ -88,11 +97,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
     private boolean isMainClassValid;
     private boolean isPreloaderNameValid;
-
+    
     PanelOptionsVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
         this.panel = panel;
         this.type = type;
 
+        detectPlatformTask = new DetectPlatformTask();
+        
         preInitComponents();
         initComponents();
         postInitComponents();
@@ -110,14 +121,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
         
-        // Select first JavaFX enabled platform
-        for (int i = 0; i < platformsModel.getSize(); i++) {
-            JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
-            if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
-                platformComboBox.setSelectedIndex(i);
-                break;
-            }
-        }
+        selectJavaFXEnabledPlatform();
 
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
         txtLibFolder.setText(currentLibrariesLocation);
@@ -255,6 +259,16 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         Object selectedItem = this.platformComboBox.getSelectedItem();
         JavaPlatform platform = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
         return platform;
+    }
+
+    private void selectJavaFXEnabledPlatform() {
+        for (int i = 0; i < platformsModel.getSize(); i++) {
+            JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
+            if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                platformComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
     /** This method is called from within the constructor to
@@ -522,6 +536,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     void read(WizardDescriptor d) {
+        // test it and uncomment
+//        checkPlatforms();
     }
 
     @Override
@@ -586,15 +602,65 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         isPreloaderNameValid = !JavaFXProjectWizardIterator.isIllegalProjectName(name);
         panel.fireChangeEvent();
     }
-    
-    private class JavaPlatformChangeListener implements PropertyChangeListener {
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-//            if (evt.getPropertyName().equals(JavaFXPlatformUtils.PROPERTY_JAVA_FX)) {
-                PanelOptionsVisual.this.panel.fireChangeEvent();
-//            }
+    // TODO show popup window with detection message ?
+    private void checkPlatforms() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        boolean fxPlatformExists = false;
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                fxPlatformExists = true;
+                break;
+            }
         }
         
+        if (!fxPlatformExists) {
+            if (task != null) {
+                task.removeTaskListener(this);
+            }
+            task = RequestProcessor.getDefault().create(detectPlatformTask);
+            task.addTaskListener(this);
+            task.schedule(0);
+        }
     }
+
+    @Override
+    public void taskFinished(Task task) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                JavaPlatform platform = detectPlatformTask.getPlatform();
+                if (platform != null) {
+                    // reload platform combo box model
+                    platformComboBox.setModel(null);
+                    platformComboBox.setModel(platformsModel);
+
+                    // select javafx platform
+                    selectJavaFXEnabledPlatform();
+                }
+            }
+        });
+    }
+    
+    private class JavaPlatformChangeListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            PanelOptionsVisual.this.panel.fireChangeEvent();
+        }
+    }
+    
+    private class DetectPlatformTask implements Runnable {
+        private JavaPlatform platform;
+
+        public JavaPlatform getPlatform() {
+            return platform;
+        }
+
+        @Override
+        public void run() {
+            platform = PlatformDetector.getInstance().detectJavaFXPlatform();
+        }
+    }
+
 }

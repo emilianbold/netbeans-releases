@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.platform.registration;
+package org.netbeans.modules.javafx2.platform.api;
 
+import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.Utils;
@@ -50,34 +51,80 @@ import org.netbeans.modules.javafx2.platform.Utils;
  * @author Anton Chechel
  */
 public class PlatformDetector {
-    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
-    
-    private static final String[] KNOWN_LOCATIONS = new String[] {
-        "C:\\Program Files\\Oracle",        // NOI18N
-        "C:\\Program Files (x86)\\Oracle",  //NOI18N
-        "<mac path>"                        //NOI18N
-    };
 
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    private static final String[] KNOWN_LOCATIONS = new String[]{
+        "C:\\Program Files\\Oracle",        // NOI18N
+        "C:\\Program Files (x86)\\Oracle",  // NOI18N
+        "<mac path>"                        // NOI18N
+    };
     private static volatile PlatformDetector instance;
-    
-    public synchronized PlatformDetector getInstance() {
+
+    public static synchronized PlatformDetector getInstance() {
         if (instance == null) {
             instance = new PlatformDetector();
         }
         return instance;
     }
-    
+
     private PlatformDetector() {
     }
 
     public JavaPlatform detectJavaFXPlatform() {
-        // TODO detect
+        // TODO detect javadoc & src
         String sdkPath = null;
         String runtimePath = null;
         String javadocPath = null;
         String srcPath = null;
-        
-        return Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, null, null);
+
+        for (String path : KNOWN_LOCATIONS) {
+            if (sdkPath == null) {
+                sdkPath = predictSDKLocation(path);
+            }
+            if (runtimePath == null) {
+                runtimePath = predictRuntimeLocation(path);
+            }
+            if (sdkPath != null && runtimePath != null) {
+                break;
+            }
+        }
+
+        if (sdkPath != null && runtimePath != null) {
+            return Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, null, null);
+        }
+
+        return null;
     }
-    
+
+    private String predictSDKLocation(String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                if (child.getName().equalsIgnoreCase("SDK")) { // NOI18N
+                    File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                    if (toolsJar.exists()) {
+                        return child.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String predictRuntimeLocation(String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                if (child.getName().equalsIgnoreCase("Runtime")) { // NOI18N
+                    File rtJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+                    if (rtJar.exists()) {
+                        return child.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
