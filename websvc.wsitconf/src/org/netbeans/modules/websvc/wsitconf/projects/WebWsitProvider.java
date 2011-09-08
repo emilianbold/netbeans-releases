@@ -99,12 +99,12 @@ public class WebWsitProvider extends WsitProvider {
     }
 
     @Override
-    public FileObject getConfigFilesFolder(boolean client) {
+    public FileObject getConfigFilesFolder(boolean client, boolean create ) {
         if (!client) {
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
             return wm.getWebInf();
         } else {
-            return super.getConfigFilesFolder(client);
+            return super.getConfigFilesFolder(client, create );
         }
     }
 
