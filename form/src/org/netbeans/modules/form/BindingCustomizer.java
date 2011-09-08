@@ -70,6 +70,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -179,10 +180,12 @@ public class BindingCustomizer extends JPanel {
         displayExpressionCombo.setVisible(showDisplayExpression);
 
         nullValueProperty = property.getNullValueProperty();
+        configurePropertyPanel(nullValuePanel);
         if (nullValueProperty != null) {
             nullValuePanel.setProperty(nullValueProperty);
         }
         incompletePathValueProperty = property.getIncompleteValueProperty();
+        configurePropertyPanel(incompletePathValuePanel);
         if (incompletePathValueProperty != null) {
             incompletePathValuePanel.setProperty(incompletePathValueProperty);
         }
@@ -208,6 +211,16 @@ public class BindingCustomizer extends JPanel {
         conversionLabel.setMaximumSize(conversionLabel.getPreferredSize());
         validatorLabel.setMaximumSize(validatorLabel.getPreferredSize());
         specialValuesLabel.setMaximumSize(specialValuesLabel.getPreferredSize());
+    }
+
+    private void configurePropertyPanel(PropertyPanel propertyPanel) {
+        // Issue 197643, hack that ensures correct property displayer
+        if (boolean.class.equals(bindingDescriptor.getValueType())) {
+            // Custom code for boolean property is lost somehow when using PREF_INPUT_STATE or 0
+            propertyPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
+        } else {
+            propertyPanel.setPreferences(PropertyPanel.PREF_INPUT_STATE);
+        }
     }
 
     /**
@@ -699,11 +712,11 @@ public class BindingCustomizer extends JPanel {
         detailPanel.setLayout(detailPanelLayout);
         detailPanelLayout.setHorizontalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 450, Short.MAX_VALUE)
+            .addGap(0, 307, Short.MAX_VALUE)
         );
         detailPanelLayout.setVerticalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 286, Short.MAX_VALUE)
+            .addGap(0, 297, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout bindingPanelLayout = new javax.swing.GroupLayout(bindingPanel);
@@ -713,7 +726,7 @@ public class BindingCustomizer extends JPanel {
             .addGroup(bindingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                    .addComponent(infoLabel)
                     .addGroup(bindingPanelLayout.createSequentialGroup()
                         .addGroup(bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(displayExpressionLabel)
@@ -722,13 +735,13 @@ public class BindingCustomizer extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(bindingPanelLayout.createSequentialGroup()
-                                .addComponent(sourceCombo, 0, 99, Short.MAX_VALUE)
+                                .addComponent(sourceCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(importDataButton))
-                            .addComponent(treeCombo, 0, 298, Short.MAX_VALUE)
-                            .addComponent(treeCombo2, 0, 298, Short.MAX_VALUE)))
+                            .addComponent(treeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(treeCombo2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(detailPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(10, 10, 10))
+                .addContainerGap())
         );
         bindingPanelLayout.setVerticalGroup(
             bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -771,30 +784,34 @@ public class BindingCustomizer extends JPanel {
         updateWhenLabel.setLabelFor(updateWhenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(updateWhenLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateWhen")); // NOI18N
 
-        nullValuePanel.setEnabled(false);
+        if (false) {
+            nullValuePanel.setEnabled(false);
+        }
 
         javax.swing.GroupLayout nullValuePanelLayout = new javax.swing.GroupLayout(nullValuePanel);
         nullValuePanel.setLayout(nullValuePanelLayout);
         nullValuePanelLayout.setHorizontalGroup(
             nullValuePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 262, Short.MAX_VALUE)
+            .addGap(0, 160, Short.MAX_VALUE)
         );
         nullValuePanelLayout.setVerticalGroup(
             nullValuePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
+            .addGap(0, 24, Short.MAX_VALUE)
         );
 
-        incompletePathValuePanel.setEnabled(false);
+        if (false) {
+            incompletePathValuePanel.setEnabled(false);
+        }
 
         javax.swing.GroupLayout incompletePathValuePanelLayout = new javax.swing.GroupLayout(incompletePathValuePanel);
         incompletePathValuePanel.setLayout(incompletePathValuePanelLayout);
         incompletePathValuePanelLayout.setHorizontalGroup(
             incompletePathValuePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 262, Short.MAX_VALUE)
+            .addGap(0, 160, Short.MAX_VALUE)
         );
         incompletePathValuePanelLayout.setVerticalGroup(
             incompletePathValuePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
+            .addGap(0, 24, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(nullValueCheckBox, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_NullValue")); // NOI18N
@@ -827,11 +844,11 @@ public class BindingCustomizer extends JPanel {
         converterPanel.setLayout(converterPanelLayout);
         converterPanelLayout.setHorizontalGroup(
             converterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 304, Short.MAX_VALUE)
+            .addGap(0, 197, Short.MAX_VALUE)
         );
         converterPanelLayout.setVerticalGroup(
             converterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
+            .addGap(0, 24, Short.MAX_VALUE)
         );
 
         if (false) {
@@ -842,11 +859,11 @@ public class BindingCustomizer extends JPanel {
         validatorPanel.setLayout(validatorPanelLayout);
         validatorPanelLayout.setHorizontalGroup(
             validatorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 304, Short.MAX_VALUE)
+            .addGap(0, 197, Short.MAX_VALUE)
         );
         validatorPanelLayout.setVerticalGroup(
             validatorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
+            .addGap(0, 24, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(specialValuesLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_SpecialValues")); // NOI18N
@@ -870,11 +887,11 @@ public class BindingCustomizer extends JPanel {
         namePanel.setLayout(namePanelLayout);
         namePanelLayout.setHorizontalGroup(
             namePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 304, Short.MAX_VALUE)
+            .addGap(0, 197, Short.MAX_VALUE)
         );
         namePanelLayout.setVerticalGroup(
             namePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
+            .addGap(0, 24, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(ignoreAdjustingChoice, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_IgnoreAdjusting")); // NOI18N
@@ -896,8 +913,8 @@ public class BindingCustomizer extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(advancedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(namePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(updateModeCombo, 0, 304, Short.MAX_VALUE)
-                            .addComponent(updateWhenCombo, 0, 304, Short.MAX_VALUE)
+                            .addComponent(updateModeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(updateWhenCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(converterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(validatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(advancedPanelLayout.createSequentialGroup()
@@ -1011,11 +1028,11 @@ public class BindingCustomizer extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+            .addComponent(tabbedPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
+            .addComponent(tabbedPane)
         );
 
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ACSD")); // NOI18N
