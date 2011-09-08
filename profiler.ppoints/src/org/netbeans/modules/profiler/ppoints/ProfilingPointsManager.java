@@ -62,14 +62,17 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.Annotatable;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
@@ -106,6 +109,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -788,7 +792,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     // Returns true if customizer was opened and then submitted by OK button
-    boolean customize(final ValidityAwarePanel customizer, Runnable updater) {
+    boolean customize(final ValidityAwarePanel customizer, Runnable updater, boolean focusToEditor) {
         ValidityAwarePanel showingCustomizer = getShowingCustomizer();
 
         if (showingCustomizer != null) {
@@ -829,6 +833,19 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
                     }
                 }
             });
+            
+            if (focusToEditor) {
+                Dimension dim = d.getPreferredSize();
+                Component masterComponent = WindowManager.getDefault().getRegistry().getActivated();
+                if (masterComponent != null) {
+                    Rectangle b = masterComponent.getBounds();
+                    Point location = new Point((b.x + (b.width / 2)) - (dim.width / 2),
+                                               (b.y + (b.height / 2)) - (dim.height / 2));
+                    SwingUtilities.convertPointToScreen(location, masterComponent);
+                    d.setLocation(location);
+                }
+            }
+            
             d.setVisible(true);
             
             if (dd.getValue() == cb) {

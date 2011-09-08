@@ -360,6 +360,10 @@ public class JFXProjectGenerator {
         ep.setProperty("jnlp.enabled", "false"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        
+        ep.setProperty(JFXProjectProperties.BACKGROUND_UPDATE_CHECK, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
