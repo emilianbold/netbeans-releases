@@ -53,11 +53,12 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class SelectNodeAction extends LookupSensitiveAction {
+public class SelectNodeAction extends LookupSensitiveAction implements ContextAwareAction {
     
     private static final Icon SELECT_IN_PROJECTS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/projectTab.png", false); //NOI18N
     private static final Icon SELECT_IN_FILES_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/filesTab.png", false); //NOI18N
@@ -65,7 +66,7 @@ public class SelectNodeAction extends LookupSensitiveAction {
     private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInProjectsAction_MainMenuName"); // NOI18N
     private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInFilesAction_MainMenuName"); // NOI18N
     
-    private String findIn;
+    private final String findIn;
     
     @ActionID(id = "org.netbeans.modules.project.ui.SelectInProjects", category = "Window/SelectDocumentNode")
     @ActionRegistration(displayName = "#LBL_SelectInProjectsAction_MainMenuName")
@@ -75,15 +76,7 @@ public class SelectNodeAction extends LookupSensitiveAction {
         @ActionReference(path = "Editors/TabActions", position = 100)
     })
     public static SelectNodeAction inProjects() {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME );
-        a.findIn = ProjectTab.ID_LOGICAL;
-        return a;
-    }
-    /** for test */
-    static Action inProjects(Lookup lookup) {
-        SelectNodeAction a = new SelectNodeAction(SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, lookup);
-        a.findIn = ProjectTab.ID_LOGICAL;
-        return a;
+        return new SelectNodeAction(SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, ProjectTab.ID_LOGICAL, null);
     }
     
     @ActionID(id = "org.netbeans.modules.project.ui.SelectInFiles", category = "Window/SelectDocumentNode")
@@ -93,16 +86,12 @@ public class SelectNodeAction extends LookupSensitiveAction {
         @ActionReference(path = "Menu/GoTo", position = 2700)
     })
     public static SelectNodeAction inFiles() {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME );
-        a.findIn = ProjectTab.ID_PHYSICAL;
-        return a;
+        return new SelectNodeAction(SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME, ProjectTab.ID_PHYSICAL, null);
     }
     
-    public SelectNodeAction( Icon icon, String name ) {
-        this(icon, name, null);
-    }
-    private SelectNodeAction(Icon icon, String name, Lookup lookup) {
+    private SelectNodeAction(Icon icon, String name, String findIn, Lookup lookup) {
         super( icon, lookup, new Class<?>[] { DataObject.class, FileObject.class } );
+        this.findIn = findIn;
         this.setDisplayName( name );
     }
        
@@ -129,6 +118,10 @@ public class SelectNodeAction extends LookupSensitiveAction {
         DataObject dobj = context.lookup(DataObject.class);
         
         return dobj == null ? null : dobj.getPrimaryFile();
+    }
+
+    @Override public Action createContextAwareInstance(Lookup context) {
+        return new SelectNodeAction((Icon) getValue(SMALL_ICON), (String) getValue(NAME), findIn, context);
     }
     
 }

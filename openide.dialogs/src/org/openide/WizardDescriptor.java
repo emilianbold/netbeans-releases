@@ -1876,7 +1876,7 @@ public class WizardDescriptor extends DialogDescriptor {
          * @throws IOException when instantiate fails
          * @return a set of objects created (the exact type is at the discretion of the caller)
          */
-        public Set/*<?>*/ instantiate () throws IOException;
+        @Override public Set/*<?>*/ instantiate () throws IOException;
 
     }
 
@@ -1894,7 +1894,7 @@ public class WizardDescriptor extends DialogDescriptor {
          * @return a set of objects created (the exact type is at the discretion of the caller)
          * @throws IOException when instantiate fails
          */
-        Set/*<?>*/ instantiate() throws IOException;
+        @Override Set/*<?>*/ instantiate() throws IOException;
     }
 
     /**

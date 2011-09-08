@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.execute.NbGlobalActionGoalProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.DialogDescriptor;
@@ -463,15 +462,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() {
             public void run() {
                 //TODO shall we iterate all "local" repositories??
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                if (info != null) {
-                    RepositoryIndexer.indexRepo(info);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            btnIndex.setEnabled(true);
-                        }
-                    });
-                }
+                RepositoryIndexer.indexRepo(RepositoryPreferences.getInstance().getLocalRepository());
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        btnIndex.setEnabled(true);
+                    }
+                });
             }
         });
     }//GEN-LAST:event_btnIndexActionPerformed
