@@ -89,12 +89,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     private final Mode mode;
 
     public static enum Mode {
-        PUSH,
-        FETCH
-    }
-    
-    public SelectUriStep (File repositoryFile, Map<String, GitRemoteConfig> remotes) {
-        this(repositoryFile, remotes, Mode.FETCH);
+        PULL("pull"), //NOI18N
+        PUSH("push"), //NOI18N
+        FETCH("fetch"); //NOI18N
+
+        private String helpId;
+        
+        Mode (String helpId) {
+            this.helpId = helpId;
+        }
     }
 
     public SelectUriStep (File repositoryFile, Map<String, GitRemoteConfig> remotes, Mode mode) {
@@ -194,7 +197,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-            if (valid && mode == Mode.FETCH && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
+            if (valid && mode != Mode.PUSH && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
             }
@@ -252,7 +255,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     @Override
     public HelpCtx getHelp () {
-        return new HelpCtx(SelectUriStep.class);
+        return new HelpCtx(SelectUriStep.class.getName() + "." + mode.helpId);
     }
 
     public String getSelectedUri () {
