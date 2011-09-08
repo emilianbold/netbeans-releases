@@ -44,15 +44,15 @@ package org.netbeans.modules.java.j2seplatform.api;
 
 import java.io.IOException;
 import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import org.openide.util.Parameters;
 
 /**
  * Creates a new platform definition.
@@ -68,38 +68,70 @@ public class J2SEPlatformCreator {
      * @return the newly created platform
      * @throws IOException if the platform was invalid or its definition could not be stored
      */
-    public static JavaPlatform createJ2SEPlatform(FileObject installFolder) throws IOException {
+    @NonNull
+    public static JavaPlatform createJ2SEPlatform(@NonNull final FileObject installFolder) throws IOException {
+        Parameters.notNull("installFolder", installFolder); //NOI18N
+        return createJ2SEPlatformImpl(installFolder, null);
+    }
+
+    /**
+     * Create a new J2SE platform definition with given display name.
+     * @param installFolder the installation folder of the JDK
+     * @param platformName  the desired display name
+     * @return the newly created platform
+     * @throws IOException if the platform was invalid or its definition could not be stored
+     * @throws IllegalArgumentException if a platform of given display name already exists
+     * @since 1.23
+     */
+    @NonNull
+    public static JavaPlatform createJ2SEPlatform(
+            @NonNull final FileObject installFolder,
+            @NonNull final String platformName) throws IOException , IllegalArgumentException {
+        Parameters.notNull("installFolder", installFolder);  //NOI18N
+        Parameters.notNull("platformName", platformName);    //NOI18N
+        for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (platformName.equals(jp.getDisplayName())) {
+                throw new IllegalArgumentException(platformName);
+            }
+        }
+        return createJ2SEPlatformImpl(installFolder, platformName);
+    }
+
+    @NonNull
+    private static JavaPlatform createJ2SEPlatformImpl(
+            @NonNull final FileObject installFolder,
+            @NullAllowed String displayName) throws IOException {
         NewJ2SEPlatform plat = NewJ2SEPlatform.create(installFolder);
         plat.run();
         if (!plat.isValid()) {
             throw new IOException("Invalid J2SE platform in " + installFolder); // NOI18N
         }
-        String displayName = createPlatformDisplayName(plat);
-        String antName = createPlatformAntName(displayName);
+        if (displayName == null) {
+            displayName = createPlatformDisplayName(plat);
+        }
+        final String antName = createPlatformAntName(displayName);
         plat.setDisplayName(displayName);
         plat.setAntName(antName);
-        FileObject platformsFolder = FileUtil.getConfigFile(
-                "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
-        assert platformsFolder != null;
-        DataObject dobj = PlatformConvertor.create(plat, DataFolder.findFolder(platformsFolder), antName);
-        return dobj.getLookup().lookup(JavaPlatform.class);
+        return PlatformConvertor.create(plat);
     }
 
-    private static String createPlatformDisplayName(JavaPlatform plat) {
-        Map<String, String> m = plat.getSystemProperties();
-        String vmVersion = m.get("java.specification.version"); // NOI18N
-        StringBuffer displayName = new StringBuffer("JDK "); // NOI18N
+    @NonNull
+    private static String createPlatformDisplayName(@NonNull final JavaPlatform plat) {
+        final Map<String, String> m = plat.getSystemProperties();
+        final String vmVersion = m.get("java.specification.version"); // NOI18N
+        final StringBuilder displayName = new StringBuilder("JDK "); // NOI18N
         if (vmVersion != null) {
             displayName.append(vmVersion);
         }
         return displayName.toString();
     }
 
-    private static String createPlatformAntName(String displayName) {
+    @NonNull
+    private static String createPlatformAntName(@NonNull final String displayName) {
         assert displayName != null && displayName.length() > 0;
         String antName = PropertyUtils.getUsablePropertyName(displayName);
         if (platformExists(antName)) {
-            String baseName = antName;
+            final String baseName = antName;
             int index = 1;
             antName = baseName + Integer.toString(index);
             while (platformExists(antName)) {
@@ -113,10 +145,10 @@ public class J2SEPlatformCreator {
     /**
      * Checks if the platform of given antName is already installed
      */
-    private static boolean platformExists(String antName) {
+    private static boolean platformExists(@NonNull final String antName) {
         assert antName != null && antName.length() > 0;
         for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-            String otherName = p.getProperties().get("platform.ant.name");  // NOI18N
+            final String otherName = p.getProperties().get("platform.ant.name");  // NOI18N
             if (antName.equals(otherName)) {
                 return true;
             }

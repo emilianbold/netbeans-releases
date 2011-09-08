@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -65,6 +67,7 @@ public abstract class FileNamesCompletionProvider implements AutocompletionProvi
     private final Task cleanUpTask;
     private final AtomicBoolean enabled = new AtomicBoolean();
     private final ConnectionListener listener = new Listener();
+    private final static Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
 
     public FileNamesCompletionProvider(final ExecutionEnvironment env) {
         this.env = env;
@@ -123,7 +126,19 @@ public abstract class FileNamesCompletionProvider implements AutocompletionProvi
             }
         }
 
-        List<String> content = listDir(dir);
+        List<String> content = null;
+
+        try {
+            content = listDir(dir);
+        } catch (Throwable th) {
+            if (log.isLoggable(Level.WARNING)) {
+                log.log(Level.WARNING, "Exception in " + getClass().getName() + ".listDir(" + dir + ")", th); // NOI18N
+            }
+        }
+
+        if (content == null) {
+            content = Collections.emptyList();
+        }
 
         synchronized (cache) {
             cache.add(new CachedValue(dir, content));

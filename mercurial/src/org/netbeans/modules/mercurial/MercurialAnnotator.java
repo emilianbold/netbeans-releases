@@ -402,7 +402,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                             : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
-                actions.add(new ShareMenu());
+                actions.add(new ShareMenu(context));
                 actions.add(new BranchMenu(context));
                 actions.add(new TagMenu(context));
                 actions.add(null);
