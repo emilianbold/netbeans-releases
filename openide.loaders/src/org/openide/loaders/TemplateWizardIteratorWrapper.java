@@ -46,6 +46,7 @@ package org.openide.loaders;
 
 import java.io.IOException;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
@@ -54,12 +55,11 @@ import org.openide.WizardDescriptor;
  *
  * @author Jiri Rechtacek
  */
-class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {
+class TemplateWizardIteratorWrapper implements WizardDescriptor.InstantiatingIterator<WizardDescriptor>, ChangeListener {
 
-    private TemplateWizardIterImpl iterImpl;
+    protected TemplateWizardIterImpl iterImpl;
     
-    /** Creates a new instance of TemplateWizardIteratorWrapper */
-    private TemplateWizardIteratorWrapper (TemplateWizardIterImpl iterImpl) {
+    TemplateWizardIteratorWrapper(TemplateWizardIterImpl iterImpl) {
         this.iterImpl = iterImpl;
     }
     
@@ -88,7 +88,7 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardD
     /** Get the current panel.
      * @return the panel
      */
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
+    @Override public WizardDescriptor.Panel<WizardDescriptor> current() {
         return iterImpl.current ();
     }
 
@@ -96,21 +96,21 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardD
     /** Get the name of the current panel.
      * @return the name
      */
-    public String name() {
+    @Override public String name() {
         return iterImpl.name ();
     }
 
     /** Test whether there is a next panel.
      * @return <code>true</code> if so
      */
-    public boolean hasNext() {
+    @Override public boolean hasNext() {
         return iterImpl.hasNext ();
     }
 
     /** Test whether there is a previous panel.
      * @return <code>true</code> if so
      */
-    public boolean hasPrevious() {
+    @Override public boolean hasPrevious() {
         return iterImpl.hasPrevious ();
     }
 
@@ -118,7 +118,7 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardD
      * I.e. increment its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
-    public void nextPanel() {
+    @Override public void nextPanel() {
         iterImpl.nextPanel ();
     }
 
@@ -126,71 +126,58 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardD
      * I.e. decrement its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
-    public void previousPanel() {
+    @Override public void previousPanel() {
         iterImpl.previousPanel ();
     }
 
     /** Refires the info to listeners */
-    public void stateChanged(final javax.swing.event.ChangeEvent p1) {
+    @Override public void stateChanged(final ChangeEvent p1) {
         iterImpl.stateChanged (p1);
     }
 
     /** Registers ChangeListener to receive events.
      *@param listener The listener to register.
      */
-    public synchronized void addChangeListener(javax.swing.event.ChangeListener listener) {
+    @Override public void addChangeListener(ChangeListener listener) {
         iterImpl.addChangeListener (listener);
     }
     /** Removes ChangeListener from the list of listeners.
      *@param listener The listener to remove.
      */
-    public synchronized void removeChangeListener (javax.swing.event.ChangeListener listener) {
+    @Override public void removeChangeListener(ChangeListener listener) {
         iterImpl.removeChangeListener (listener);
     }
     
-    public void initialize (WizardDescriptor wiz) {
+    @Override public void initialize(WizardDescriptor wiz) {
         iterImpl.initialize (wiz);
     }
     
-    public void uninitialize() {
-        iterImpl.uninitialize ();
+    @Override public void uninitialize(WizardDescriptor wiz) {
+        iterImpl.uninitialize();
     }
     
-    public void uninitialize (WizardDescriptor wiz) {
-        iterImpl.uninitialize (wiz);
-    }
-    
-    public Set<DataObject> instantiate () throws IOException {
+    @Override public Set<DataObject> instantiate () throws IOException {
         return iterImpl.instantiate ();
     }
     
-    public Set<DataObject> instantiate (ProgressHandle handle) throws IOException {
-        return iterImpl.instantiate (handle);
-    }
-    
-    static class InstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
-        public InstantiatingIterator (TemplateWizardIterImpl it) {
-            super (it);
-        }
-    }
-    
-    static class AsynchronousInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
-        public AsynchronousInstantiatingIterator (TemplateWizardIterImpl it) {
+    static class AsynchronousInstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+        AsynchronousInstantiatingIterator(TemplateWizardIterImpl it) {
             super (it);
         }
     }
 
-    static class BackgroundInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
-        public BackgroundInstantiatingIterator (TemplateWizardIterImpl it) {
+    static class BackgroundInstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
+        BackgroundInstantiatingIterator(TemplateWizardIterImpl it) {
             super (it);
         }
     }
 
-    static class ProgressInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
-        private TemplateWizardIterImpl itImpl;
-        public ProgressInstantiatingIterator (TemplateWizardIterImpl it) {
+    static class ProgressInstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+        ProgressInstantiatingIterator(TemplateWizardIterImpl it) {
             super (it);
-            itImpl = it;
+        }
+        @Override public Set<DataObject> instantiate (ProgressHandle handle) throws IOException {
+            return iterImpl.instantiate (handle);
         }
     }
     

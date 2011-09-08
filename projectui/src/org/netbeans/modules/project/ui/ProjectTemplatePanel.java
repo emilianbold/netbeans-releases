@@ -85,6 +85,7 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     
     public void readSettings(WizardDescriptor settings) {
         this.wizard = settings;
+        panel.setWizardDescriptor(wizard);
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (0));
         wd.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] {
@@ -178,6 +179,7 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         if (this.panel == null) {
             TemplatesPanelGUI.Builder firer = new Builder();
             this.panel = new TemplatesPanelGUI (firer);
+            panel.setWizardDescriptor(wizard);
             Utilities.attachInitJob (panel, getWarmUp());
             this.warmUpActive = true;
             this.panel.setName (NbBundle.getBundle (ProjectTemplatePanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N

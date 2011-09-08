@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
  *
  *@author Dafe Simonek
  */
-@TemplateRegistration(folder = "Project/Maven2", position = 270, displayName = "#template.EA", iconBase = "org/netbeans/modules/maven/j2ee/ear/maven_enterprise_application_16.png", description = "EADescription.html")
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=270, displayName="#template.EA", iconBase="org/netbeans/modules/maven/j2ee/ear/maven_enterprise_application_16.png", description="EADescription.html")
 @Messages("template.EA=Enterprise Application")
 public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     

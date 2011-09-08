@@ -64,9 +64,9 @@ public class BrowserSupportModule extends CssModule {
     
     private final String DEFINITION_FILES_BASE = "org/netbeans/modules/css/editor/module/main/browsers/"; //NOI18N
 
-    public BrowserSupportModule(Browser browser) {
+    public BrowserSupportModule(Browser browser, String propertiesDefinitionFileName) {
         this.browser = browser;
-        parser = new BrowserSpecificDefinitionParser(DEFINITION_FILES_BASE + browser.getName().toLowerCase().replaceAll(" ", "_"), browser);
+        parser = new BrowserSpecificDefinitionParser(DEFINITION_FILES_BASE + propertiesDefinitionFileName, browser);
     }
 
     protected Browser getBrowser() {
@@ -101,7 +101,7 @@ public class BrowserSupportModule extends CssModule {
             public String getHelp(Property property) {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
                     //XXX will be removed
-                    return getBrowser().getDescription() + "experimental property. No documentation found.";
+                    return getBrowser().getRenderingEngineId() + " experimental property. No documentation found.";
                 } else {
                     return null;
                 }

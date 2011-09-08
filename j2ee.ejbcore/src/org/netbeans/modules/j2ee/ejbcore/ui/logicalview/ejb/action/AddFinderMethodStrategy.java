@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -65,20 +67,21 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Pavel Buzek
  * @author Martin Adamek
  */
 public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
-    
+
     public AddFinderMethodStrategy (String name) {
         super(name);
     }
     public AddFinderMethodStrategy () {
         super (NbBundle.getMessage(AddFinderMethodStrategy.class, "LBL_AddFinderMethodAction"));
     }
-    
+
     protected MethodModel getPrototypeMethod() {
         return getFinderPrototypeMethod();
     }
@@ -90,17 +93,26 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.FINDER;
     }
-    
-    protected void generateMethod(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote, 
-            String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException {
-        FinderMethodGenerator generator = FinderMethodGenerator.create(ejbClass, ejbClassFO);
-        generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
+
+    protected void generateMethod(final MethodModel method, final boolean isOneReturn, final boolean publishToLocal,
+            final boolean publishToRemote, final String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException {
+        final FinderMethodGenerator generator = FinderMethodGenerator.create(ejbClass, ejbClassFO);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
+                } catch (IOException ioe) {
+                    Logger.getLogger(AddFinderMethodStrategy.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
     }
 
     public boolean supportsEjb(FileObject fileObject, final String className) {
-        
+
         boolean isEntity = false;
-        
+
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
@@ -115,9 +127,9 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
+
         return isEntity;
-        
+
     }
 
     private static MethodModel getFinderPrototypeMethod() {
@@ -130,7 +142,7 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.<Modifier>emptySet()
                 );
     }
-    
+
     private MethodCustomizer createFinderDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
@@ -139,10 +151,10 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.finderMethod(
                 getTitle(),
-                methodModel, 
+                methodModel,
                 ClasspathInfo.create(fileObject),
-                hasRemote, 
-                hasLocal, 
+                hasRemote,
+                hasLocal,
                 methodsNode == null ? hasLocal : methodsNode.isLocal(),
                 methodsNode == null ? hasRemote : methodsNode.isRemote(),
                 ejbMethodController.createDefaultQL(methodModel),

@@ -76,22 +76,27 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public final class CmFieldGenerator extends AbstractMethodGenerator {
-    
+
     // available for tests
     static final Set<Modifier> PUBLIC_ABSTRACT = new HashSet<Modifier>(Arrays.asList(new Modifier[] {
         Modifier.PUBLIC,
         Modifier.ABSTRACT
     }));
-    
+
     private CmFieldGenerator(String ejbClass, FileObject ejbClassFileObject) {
         super(ejbClass, ejbClassFileObject);
     }
-    
+
     public static CmFieldGenerator create(String ejbClass, FileObject ejbClassFileObject) {
         return new CmFieldGenerator(ejbClass, ejbClassFileObject);
     }
-    
-    public void addCmpField(MethodModel.Variable field, boolean localGetter, boolean localSetter, 
+
+    /**
+     * Adds field into DD and also appropriate methods into the bean.
+     * <p>
+     * <b>Should be called outside EDT.</b>
+     */
+    public void addCmpField(MethodModel.Variable field, boolean localGetter, boolean localSetter,
             boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
@@ -107,10 +112,10 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
             saveXml();
         }
     }
-    
-    public void addFieldToClass(final MethodModel.Variable variable,  final boolean localGetter, final boolean localSetter, 
+
+    public void addFieldToClass(final MethodModel.Variable variable,  final boolean localGetter, final boolean localSetter,
             final boolean remoteGetter, final boolean remoteSetter) throws IOException {
-        
+
         // ejb class
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
         javaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -125,7 +130,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
-        
+
         Map<String, String> interfaces = getInterfaces();
         final String local = interfaces.get(EntityAndSession.LOCAL);
         final String remote = interfaces.get(EntityAndSession.REMOTE);
@@ -152,7 +157,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 }
             }).commit();
         }
-        
+
         // remote interface
         if (remoteGetter || remoteSetter) {
             FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remote);
@@ -175,9 +180,9 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 }
             }).commit();
         }
-        
+
     }
-    
+
     /**
      * Returns true if typeElement contains method with name <code>get&lt;fieldName&gt;</code>
      */
@@ -199,7 +204,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         }, true);
         return result[0];
     }
-    
+
     /**
      * Returns true if entity contains CMP field with name of the field
      */
@@ -211,7 +216,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         }
         return false;
     }
-    
+
     private static MethodTree createGetter(WorkingCopy workingCopy, MethodModel.Variable field, Set<Modifier> modifiers) {
         MethodModel methodModel = MethodModel.create(
                 "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1),
@@ -223,7 +228,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 );
         return MethodModelSupport.createMethodTree(workingCopy, methodModel);
     }
-    
+
     private static MethodTree createSetter(WorkingCopy workingCopy, MethodModel.Variable field, Set<Modifier> modifiers) {
         MethodModel methodModel = MethodModel.create(
                 "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1),
@@ -235,5 +240,5 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 );
         return MethodModelSupport.createMethodTree(workingCopy, methodModel);
     }
-    
+
 }

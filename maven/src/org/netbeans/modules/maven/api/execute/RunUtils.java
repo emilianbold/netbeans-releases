@@ -54,7 +54,6 @@ import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.LifecycleManager;
@@ -110,10 +109,6 @@ public final class RunUtils {
         task.addTaskListener(new TaskListener() {
             @Override public void taskFinished(Task _) {
                 // fireMavenProjectReload is done in executors
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                if (info == null) {
-                    return;
-                }
                 MavenProject mp = config.getMavenProject();
                 if (mp == null) {
                     return;
@@ -124,7 +119,7 @@ public final class RunUtils {
                     arts.add(main);
                 }
                 arts.addAll(mp.getArtifacts());
-                RepositoryIndexer.updateIndexWithArtifacts(info, arts);
+                RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
             }
         });
         return task;

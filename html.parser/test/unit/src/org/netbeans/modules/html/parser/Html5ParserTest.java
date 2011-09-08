@@ -55,6 +55,7 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
@@ -585,28 +586,27 @@ public class Html5ParserTest extends NbTestCase {
         String code = "@@@<div> @@@ </div>";
         assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
     }
-    
-    
+
     public void testParseFileTest1() throws ParseException {
         parse(getTestFile("testfiles/test1.html"));
     }
-    
+
     public void testParseFileTest2() throws ParseException {
         parse(getTestFile("testfiles/test2.html"));
     }
-    
+
     public void testParseFileTest3() throws ParseException {
         parse(getTestFile("testfiles/test3.html"));
     }
-    
+
     public void testParseFileTest4() throws ParseException {
         parse(getTestFile("testfiles/test4.html"));
     }
-    
+
     public void testParseFileTest5() throws ParseException {
         parse(getTestFile("testfiles/test5.html"));
     }
-    
+
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
@@ -617,7 +617,7 @@ public class Html5ParserTest extends NbTestCase {
 
         return fo;
     }
-    
+
     public void testHtml5Model() throws ParseException {
         String code = "<!doctype html><title>hi</title>";
         HtmlParseResult result = parse(code);
@@ -704,7 +704,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertEquals(32, div.logicalEndOffset());
 
-          code = "<!doctype html><div></";
+        code = "<!doctype html><div></";
         //        0123456789012345678901234567890123456789
         //                             ^
 //        AstNodeTreeBuilder.DEBUG = true;
@@ -739,8 +739,8 @@ public class Html5ParserTest extends NbTestCase {
     //Bug 193268 - AssertionError: Unexpected node type ENDTAG
     public void testScriptTagInBody() throws ParseException {
         String scriptOpenTag = "<script type=\"text/javascript\" src=\"test.js\">";
-           //                   0123456789012 3456789012345678 901234 56789012 345678901234567890123456789
-           //                   0         1          2          3          4          5
+        //                   0123456789012 3456789012345678 901234 56789012 345678901234567890123456789
+        //                   0         1          2          3          4          5
         String code = "<!doctype html>"
                 + "<html>"
                 + "<head>"
@@ -753,7 +753,7 @@ public class Html5ParserTest extends NbTestCase {
                 + scriptOpenTag + "</script>"
                 + "</body>"
                 + "</html>";
-        
+
         AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
@@ -772,7 +772,7 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(130, scriptEnd.endOffset());
 
     }
-    
+
     //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
     public void testIsAttributeQuoted() throws ParseException {
         String code = "<!doctype html>"
@@ -786,7 +786,7 @@ public class Html5ParserTest extends NbTestCase {
                 + "<a onclick=alert>x</a>"
                 + "</body>"
                 + "</html>";
-        
+
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
 
@@ -799,14 +799,14 @@ public class Html5ParserTest extends NbTestCase {
         AstNode.Attribute attr = div.getAttribute("onclick");
         assertNotNull(attr);
         assertTrue(attr.isValueQuoted());
-        
+
         AstNode p = AstNodeUtils.query(root, "html/body/p");
         assertNotNull(p);
 
         attr = p.getAttribute("onclick");
         assertNotNull(attr);
         assertTrue(attr.isValueQuoted());
-        
+
         AstNode a = AstNodeUtils.query(root, "html/body/a");
         assertNotNull(a);
 
@@ -815,7 +815,6 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(attr.isValueQuoted());
 
     }
-
 
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
@@ -829,6 +828,53 @@ public class Html5ParserTest extends NbTestCase {
 //        assertNotNull(root);
 //        AstNodeUtils.dumpTree(root);
 //
+//    }
+//    public void test_parse_safari_css_properties_spec() throws ParseException {
+//        //source:
+//        //http://developer.apple.com/library/safari/#documentation/appleapplications/reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/doc/uid/%28null%29-SW1
+//        File file = new File("/Users/marekfukala/parse.html");
+//        HtmlSource source = new HtmlSource(FileUtil.toFileObject(file));
+//        final CharSequence code = source.getSourceCode();
+//        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+//
+//        AstNode root = result.root();
+//
+//        AstNodeVisitor v = new AstNodeVisitor() {
+//
+//            public void visit(AstNode node) {
+//                if (node.name().contains("section")) {
+//                    AstNode h3 = AstNodeUtils.query(node, "h3");
+//                    if (h3 == null) {
+//                        return;
+//                    }
+//                    AstNode h3end = h3.getMatchingTag();
+//                    System.out.print(code.subSequence(h3.endOffset(), h3end.startOffset()));
+//                } else if (node.name().equals("dl")) {
+//                    AstNode.Attribute clazzattr = node.getAttribute("class");
+//                    if (clazzattr != null && "content_text".equals(clazzattr.unquotedValue())) {
+//                        AstNode strong = AstNodeUtils.query(node, "b/strong");
+//                        if(strong != null && "Support Level".contains(getTextContent(code, strong))) {
+//                            AstNode p = AstNodeUtils.query(node, "dd/p");
+//                            if(p != null) {
+//                                System.out.println("=" + getTextContent(code, p));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//                
+//        AstNodeUtils.visitChildren(root, v);
+//
+//    }
+//    
+//    private CharSequence getTextContent(CharSequence source, AstNode openTag) {
+//        AstNode endTag = openTag.getMatchingTag();
+//        if(endTag != null) {
+//            return source.subSequence(openTag.endOffset(), endTag.startOffset());
+//        }
+//        
+//        return null;
 //    }
 
     private HtmlParseResult parse(FileObject file) throws ParseException {
@@ -848,7 +894,7 @@ public class Html5ParserTest extends NbTestCase {
 
         return result;
     }
-    
+
     private static class HtmlTagImpl implements HtmlTag {
 
         private String name;

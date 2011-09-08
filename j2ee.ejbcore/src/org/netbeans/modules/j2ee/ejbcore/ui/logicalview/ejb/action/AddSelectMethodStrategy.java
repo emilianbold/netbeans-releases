@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -66,20 +68,21 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Pavel Buzek
  */
 public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
-    
+
     public AddSelectMethodStrategy() {
         super(NbBundle.getMessage(AddSelectMethodStrategy.class, "LBL_AddSelectMethodAction"));
     }
-    
+
     public AddSelectMethodStrategy(String name) {
         super(name);
     }
-    
+
     @Override
     public MethodModel getPrototypeMethod() {
         Set<Modifier> modifiers = new HashSet<Modifier>();
@@ -94,7 +97,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 modifiers
                 );
     }
-    
+
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
@@ -106,9 +109,9 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }
-    
+
 //    @SuppressWarnings("deprecation") //NOI18N
-//    protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
+//    protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType,
 //            final FileObject fileObject, String classHandle) throws java.io.IOException {
 //        ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
 //        try {
@@ -123,23 +126,32 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
 //            handle.finish();
 //        }
 //    }
-    
+
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.SELECT;
     }
 
-    protected void generateMethod(MethodModel method, boolean isOneReturn,
-                                  boolean publishToLocal,
-                                  boolean publishToRemote, String ejbql,
-                                  FileObject ejbClassFO, String ejbClass) throws IOException {
-        SelectMethodGenerator generator = SelectMethodGenerator.create(ejbClass, ejbClassFO);
-        generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
+    protected void generateMethod(final MethodModel method, final boolean isOneReturn,
+                                  final boolean publishToLocal, final  boolean publishToRemote,
+                                  final String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException {
+        final SelectMethodGenerator generator = SelectMethodGenerator.create(ejbClass, ejbClassFO);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
+                } catch (IOException ioe) {
+                    Logger.getLogger(SelectMethodGenerator.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
+
     }
 
     public boolean supportsEjb(FileObject fileObject,final String className) {
 
         boolean isCMP = false;
-        
+
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
@@ -158,7 +170,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
+
         return isCMP;
 
     }

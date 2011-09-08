@@ -242,10 +242,6 @@ class TemplateWizardIterImpl extends Object
         showingPanel = true;
     }
     
-    public void uninitialize (WizardDescriptor wiz) {
-        uninitialize ();
-    }
-    
     public Set<DataObject> instantiate () throws IOException {
         assert wizardInstance != null : "wizardInstance cannot be null when instantiate() called."; // NOI18N
         return wizardInstance.instantiateNewObjects (null);
