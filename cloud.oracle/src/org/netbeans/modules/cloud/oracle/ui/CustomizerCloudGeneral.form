@@ -17,7 +17,6 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="instanceUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="adminUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -27,31 +26,31 @@
                   <Component id="systemLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cloudUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
-                  <Component id="adminUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
-                  <Component id="instanceUrlField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Component id="cloudUrlField" alignment="0" pref="280" max="32767" attributes="0"/>
+                  <Component id="adminUrlField" alignment="0" pref="280" max="32767" attributes="0"/>
+                  <Component id="instanceUrlField" alignment="0" pref="280" max="32767" attributes="0"/>
                   <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                       <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
                       <Component id="usernameField" alignment="0" pref="104" max="32767" attributes="1"/>
                   </Group>
-                  <Component id="serviceField" alignment="0" pref="267" max="32767" attributes="0"/>
-                  <Component id="systemField" alignment="0" pref="267" max="32767" attributes="0"/>
+                  <Component id="systemField" alignment="0" pref="280" max="32767" attributes="0"/>
+                  <Component id="serviceField" alignment="0" pref="280" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="systemLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="systemField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -81,7 +80,7 @@
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

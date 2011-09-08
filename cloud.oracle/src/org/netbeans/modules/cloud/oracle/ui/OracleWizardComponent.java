@@ -79,12 +79,12 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.setVisible(SHOW_CLOUD_URLS);
         
         if (SHOW_CLOUD_URLS) {
-            serviceNameTextField.setText("c9_lab_host"); // NOI18N
+            serviceNameTextField.setText("localhost"); // NOI18N
             tenantIdTextField.setText("oracle"); // NOI18N
             userNameTextField.setText("system");
             passwordField.setText("welcome1");
-            adminURLTextField.setText("http://140.84.133.191:7001/");
-            instanceURLTextField.setText("http://140.84.133.191:9001/");
+            adminURLTextField.setText("http://adc2101039.us.oracle.com:7003/");
+            instanceURLTextField.setText("http://adc2101039.us.oracle.com:7013/");
             cloudURLTextField.setText("http://cloud.oracle.com");
         }
         
@@ -180,15 +180,15 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(cloudLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(sdkComboBox, 0, 184, Short.MAX_VALUE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-                    .addComponent(tenantIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(sdkComboBox, 0, 229, Short.MAX_VALUE)
+                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(serviceNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
+                    .addComponent(serviceNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(tenantIdTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
