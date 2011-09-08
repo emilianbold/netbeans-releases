@@ -92,6 +92,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -331,7 +332,9 @@ public class JFXProjectGenerator {
         Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        
+        final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+        explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+        data.appendChild(explicitPlatformEl);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
         if (srcRoot != null) {
