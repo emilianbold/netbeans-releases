@@ -215,7 +215,7 @@ public class EditorContextImpl extends EditorContext {
         }
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         boolean reuseEditorTabs = p.getBoolean("ReuseEditorTabs", true);
-        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
+        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows() || Utilities.isMac()) {
             if (reuseEditorTabs) {
                 l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
             }
@@ -244,7 +244,7 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return false;
         }
-        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
+        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows() || Utilities.isMac()) {
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT, column); //FIX 47825
         } else {
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
