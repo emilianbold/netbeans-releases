@@ -118,6 +118,7 @@ public class OrganizeImports {
             Set<Element> toImport = getUsedElements(cu, trees);
             if (!toImport.isEmpty()) {
                 CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
+                ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
                 CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
                 copy.rewrite(cu, ncu);
             }
