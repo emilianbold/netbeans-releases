@@ -402,20 +402,11 @@ public final class JFXProjectProperties {
             evaluator = j2sePropEval.evaluator();
             
             // Packaging
-            binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS);
-            if(evaluator.getProperty(JAVAFX_BINARY_ENCODE_CSS) == null) {
-                binaryEncodeCSS.setSelected(true); // default is true
-            }
+            binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS); // set true by default in JFXProjectGenerator
 
             // Deployment
-            allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE);
-            if(evaluator.getProperty(ALLOW_OFFLINE) == null) {
-                allowOfflineModel.setSelected(true); // default is true
-            }
-            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, BACKGROUND_UPDATE_CHECK);
-            if(evaluator.getProperty(BACKGROUND_UPDATE_CHECK) == null) {
-                backgroundUpdateCheck.setSelected(true); // default is true
-            }
+            allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE); // set true by default in JFXProjectGenerator            
+            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, BACKGROUND_UPDATE_CHECK); // set true by default in JFXProjectGenerator
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
