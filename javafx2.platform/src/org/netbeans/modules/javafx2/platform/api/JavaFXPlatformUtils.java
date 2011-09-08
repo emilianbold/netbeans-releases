@@ -42,6 +42,9 @@
 package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
@@ -84,7 +87,7 @@ public final class JavaFXPlatformUtils {
      * @param IDE java platform instance
      * @return is JavaFX supported
      */
-    public static boolean isJavaFXEnabled(final JavaPlatform platform) {
+    public static boolean isJavaFXEnabled(@NullAllowed final JavaPlatform platform) {
         if (platform == null) {
             return false;
         }
@@ -98,9 +101,10 @@ public final class JavaFXPlatformUtils {
      * Returns path to JavaFX Runtime installation
      * 
      * @param IDE java platform name
-     * @return JavaFX Runtime location
+     * @return JavaFX Runtime location, or null if not recognized
      */
-    public static String getJavaFXRuntimePath(String platformName) {
+    @CheckForNull
+    public static String getJavaFXRuntimePath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
     }
     
@@ -108,9 +112,10 @@ public final class JavaFXPlatformUtils {
      * Returns path to JavaFX SDK installation
      * 
      * @param IDE java platform name
-     * @return JavaFX SDK location
+     * @return JavaFX SDK location, or null if not recognized
      */
-    public static String getJavaFXSDKPath(String platformName) {
+    @CheckForNull
+    public static String getJavaFXSDKPath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getSDKPropertyKey(platformName));
     }
     
@@ -119,6 +124,7 @@ public final class JavaFXPlatformUtils {
      * 
      * @return classpath entries
      */
+    @NonNull
     public static String[] getJavaFXClassPath() {
         return new String[] {
                     "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/jfxrt.jar:", // NOI18N
@@ -133,9 +139,10 @@ public final class JavaFXPlatformUtils {
      * Can return null.
      * 
      * @param JavaFX SDK installation folder
-     * @return JavaFX Runtime location absolute path or null
+     * @return JavaFX Runtime location absolute path, or null if not predicted
      */
-    public static String guessRuntimePath(File sdkPath) {
+    @CheckForNull
+    public static String guessRuntimePath(@NonNull File sdkPath) {
         File parent = sdkPath.getParentFile();
         File[] brothers = parent.listFiles();
         for (File brother : brothers) {
@@ -152,7 +159,8 @@ public final class JavaFXPlatformUtils {
      * @param JavaFX SDK installation folder
      * @return Javadoc location absolute path
      */
-    public static String guessJavadocPath(File sdkPath) {
+    @NonNull
+    public static String guessJavadocPath(@NonNull File sdkPath) {
         return sdkPath.getAbsolutePath() + "\\docs"; // NOI18N
     }
     

@@ -41,8 +41,19 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -51,11 +62,18 @@ import org.openide.util.Parameters;
  * @author Anton Chechel
  */
 public final class Utils {
+    /**
+     * Default name for automatically registered JavaFX platform
+     */
+    public static final String DEFAULT_FX_PLATFORM_NAME = "Default JFX Platform"; // NOI18N
+
     private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
     private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N
     private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private Utils() {
     }
@@ -66,7 +84,8 @@ public final class Utils {
      * @param IDE java platform instance
      * @return key for JavaFX SDK location
      */
-    public static String getSDKPropertyKey(JavaPlatform platform) {
+    @NonNull
+    public static String getSDKPropertyKey(@NonNull JavaPlatform platform) {
         Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
@@ -78,7 +97,8 @@ public final class Utils {
      * @param IDE java platform instance
      * @return key for JavaFX Runtime location
      */
-    public static String getRuntimePropertyKey(JavaPlatform platform) {
+    @NonNull
+    public static String getRuntimePropertyKey(@NonNull JavaPlatform platform) {
         Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
@@ -90,7 +110,8 @@ public final class Utils {
      * @param IDE java platform name
      * @return key for JavaFX SDK location
      */
-    public static String getSDKPropertyKey(String platformName) {
+    @NonNull
+    public static String getSDKPropertyKey(@NonNull String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
     }
 
@@ -100,7 +121,8 @@ public final class Utils {
      * @param IDE java platform name
      * @return key for JavaFX Runtime location
      */
-    public static String getRuntimePropertyKey(String platformName) {
+    @NonNull
+    public static String getRuntimePropertyKey(@NonNull String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
     }
 
@@ -110,7 +132,8 @@ public final class Utils {
      * @param IDE java platform instance
      * @return key for JavaFX Javadoc location
      */
-    public static String getJavadocPropertyKey(JavaPlatform platform) {
+    @NonNull
+    public static String getJavadocPropertyKey(@NonNull JavaPlatform platform) {
         Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
@@ -122,9 +145,53 @@ public final class Utils {
      * @param IDE java platform instance
      * @return key for JavaFX Sources location
      */
-    public static String getSourcesPropertyKey(JavaPlatform platform) {
+    @NonNull
+    public static String getSourcesPropertyKey(@NonNull JavaPlatform platform) {
         Parameters.notNull("platform", platform); // NOI18N
         String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N
     }
+    
+    /**
+     * Creates new instance of Java Platform and register JavaFX extension for it
+     * 
+     * @param platformName the desired display name
+     * @param sdkPath JavaFX SDK location
+     * @param runtimePath JavaFX Runtime location
+     * @param javadocPath JavaFX javadoc location
+     * @param srcPath JavaFX sources location
+     * @return instance of created Java Platform, or null if creation was not successful
+     */
+    @CheckForNull
+    public static JavaPlatform createJavaFXPlatform(@NonNull String platformName, @NonNull String sdkPath,
+            @NonNull String runtimePath, @NullAllowed String javadocPath, @NullAllowed String srcPath) {
+
+        Parameters.notNull("platformName", platformName); // NOI18N
+        Parameters.notNull("sdkPath", sdkPath); // NOI18N
+        Parameters.notNull("runtimePath", runtimePath); // NOI18N
+        
+        FileObject platformFolder = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders().iterator().next();
+        JavaPlatform platform = null;
+        try {
+            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ioe); // NOI18N
+        }
+
+        if (platform != null) {
+            Map<String, String> map = new HashMap<String, String>(2);
+            map.put(Utils.getSDKPropertyKey(platform), sdkPath);
+            map.put(Utils.getRuntimePropertyKey(platform), runtimePath);
+            if (javadocPath != null) {
+                map.put(Utils.getJavadocPropertyKey(platform), javadocPath);
+            }
+            if (srcPath != null) {
+                map.put(Utils.getSourcesPropertyKey(platform), srcPath);
+            }
+            PlatformPropertiesHandler.saveGlobalProperties(map);
+        }
+        
+        return platform;
+    }
+    
 }
