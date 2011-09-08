@@ -212,7 +212,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a).getFile();
                 }
                 LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
-                FileUtil.addFileChangeListener(fcl, f);
+                FileUtil.addFileChangeListener(fcl, FileUtil.normalizeFile(f));
             }
         }
     }
