@@ -594,7 +594,11 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() : false));
-
+        d.putProperty(ProjectServerWizardPanel.SOURCE_LEVEL, getSourceLevel(d, serverInstanceId, j2ee));
+        d.putProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY, getServerLibraryName());
+    }
+    
+    private String getSourceLevel(WizardDescriptor d, String serverInstanceId, Profile j2ee) {
         // #119052
         String sourceLevel = "1.5"; // NOI18N
         if (j2ee != null && (Profile.JAVA_EE_6_FULL.equals(j2ee) || Profile.JAVA_EE_6_WEB.equals(j2ee))) {
@@ -635,9 +639,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 }
             }
         }
-        d.putProperty(ProjectServerWizardPanel.SOURCE_LEVEL, sourceLevel);
         
-        d.putProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY, getServerLibraryName());
+        return sourceLevel;
     }
     
     private String getServerLibraryName() {
