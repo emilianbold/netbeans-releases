@@ -72,6 +72,8 @@ class SimpleSearchIterator implements Iterator<FileObject> {
     private List<FileObjectFilter> filtersCopy;
     /** */
     private final boolean recursive;
+    /** */
+    private boolean searchInArchives = false; // TODO make configurable
     /** stack of the ancestor folders' children enumerations */
     private final List<Enumeration<? extends FileObject>> enums
             = new ArrayList<Enumeration<? extends FileObject>>();            //unsynced stack
@@ -133,7 +135,8 @@ class SimpleSearchIterator implements Iterator<FileObject> {
                         processFolder(file);
                     }
                 } else {
-                    if (FileUtil.isArchiveFile(file) && recursive) {
+                    if (FileUtil.isArchiveFile(file)
+                            && recursive && searchInArchives) {
                         processFolder(FileUtil.getArchiveRoot(file));
                     }
                     if ((filters == null) || checkFileFilters(file)) {
