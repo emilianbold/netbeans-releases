@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -639,31 +640,55 @@ public final class EditorContextDispatcher {
 
         private void updateCurrentOpenedPane(TopComponent activeComponent, Object source,
                                              boolean doFire) {
-            JEditorPane oldEditor = null;
-            JEditorPane newEditor = null;
+            JEditorPane oldEditor;
+            JEditorPane newEditor;
             String MIMEType = null;
-            synchronized (EditorContextDispatcher.this) {
-                boolean isSetPane = false;
-                EditorCookie ec = currentEditorCookie.get();
-                if ((source == null || source == ec)) {
-                    oldEditor = currentOpenedPane.get();
-                    if (ec != null && activeComponent != null) {
-                        if (ec.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
-                            (ec instanceof EditorCookie.Observable)) {
-                            // Document is not yet loaded, wait till we're notified that it is.
-                            // See issue #147988
-                            logger.fine("Document "+ ec +" NOT yet loaded...");  // NOI18N
-                            return ;
+            EditorCookie ec;
+            boolean isSetPane;
+            boolean loadOpenPane;
+            do {
+                oldEditor = null;
+                newEditor = null;
+                isSetPane = false;
+                loadOpenPane = false;
+                synchronized (EditorContextDispatcher.this) {
+                    ec = currentEditorCookie.get();
+                    if ((source == null || source == ec)) {
+                        oldEditor = currentOpenedPane.get();
+                        if (ec != null && activeComponent != null) {
+                            if (ec.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
+                                (ec instanceof EditorCookie.Observable)) {
+                                // Document is not yet loaded, wait till we're notified that it is.
+                                // See issue #147988
+                                logger.fine("Document "+ ec +" NOT yet loaded...");  // NOI18N
+                                return ;
+                            }
+                            loadOpenPane = true;
                         }
+                    }
+                }
+                if (loadOpenPane) {
+                    long t1 = 0l;
+                    if (logger.isLoggable(Level.FINE)) {
                         logger.fine("Document " + ec + " loaded, updating...");  // NOI18N
-                        long t1 = System.nanoTime();
-                        JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
+                        t1 = System.nanoTime();
+                    }
+                    // Do not call under synchronized block
+                    JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
+                    if (logger.isLoggable(Level.FINE)) {
                         long t2 = System.nanoTime();
                         logger.fine("Time to find opened panes = "+(t2 - t1)+" ns = "+(t2 - t1)/1000000+" ms.");  // NOI18N
-                        if ((openedPane != null) && activeComponent.isAncestorOf(openedPane)) {
-                            newEditor = openedPane;
-                            isSetPane = true;
-                        }
+                    }
+                    if ((openedPane != null) && activeComponent.isAncestorOf(openedPane)) {
+                        newEditor = openedPane;
+                        isSetPane = true;
+                    }
+                }
+                synchronized (EditorContextDispatcher.this) {
+                    EditorCookie ec2 = currentEditorCookie.get();
+                    if (ec2 != ec) {
+                        // The current editor cookie has changed in between, try once more...
+                        continue;
                     }
                     if (!isSetPane && source == null) {
                         newEditor = null;
@@ -688,7 +713,7 @@ public final class EditorContextDispatcher {
                     }
                     //System.err.println("\nCurrent Opened Pane = "+currentOpenedPane+", currentFile = "+currentFile+"\n");
                 }
-            }
+            } while (false);
             if (doFire && oldEditor != newEditor) {
                 refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
             }
