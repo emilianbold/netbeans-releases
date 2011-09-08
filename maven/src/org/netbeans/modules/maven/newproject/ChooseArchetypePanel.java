@@ -99,11 +99,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
     }
 
     private static URL getDefaultCatalogFile() throws IOException {
-        RepositoryInfo local = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-        if (local == null) {
-            return null;
-        }
-        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", Collections.singletonList(local)); // NOI18N
+        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository())); // NOI18N
         if (versions.isEmpty()) {
             return null;
         }
@@ -287,14 +283,12 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         RP.post(new Runnable() {
             public void run() {
                 try {
-                    RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                    if (info != null) {
-                        List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
-                                arch.getArtifactId(), arch.getVersion(), Collections.singletonList(info));
-                        for (NBVersionInfo record : rec) {
-                            Artifact a = RepositoryUtil.createArtifact(record);
-                            RepositoryIndexer.deleteArtifactFromIndex(info, a);
-                        }
+                    RepositoryInfo info = RepositoryPreferences.getInstance().getLocalRepository();
+                    List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
+                            arch.getArtifactId(), arch.getVersion(), Collections.singletonList(info));
+                    for (NBVersionInfo record : rec) {
+                        Artifact a = RepositoryUtil.createArtifact(record);
+                        RepositoryIndexer.deleteArtifactFromIndex(info, a);
                     }
                     File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
                             arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() + File.separator + arch.getVersion());

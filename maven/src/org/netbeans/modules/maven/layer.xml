@@ -55,46 +55,8 @@ made subject to such option by the copyright holder.
             
         <folder name="Project">
             <folder name="Maven2">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#Templates/Project/Maven2"/>
                 <attr name="position" intvalue="513"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                <file name="quickstart">
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
-                    <attr name="groupId" stringvalue="org.apache.maven.archetypes"/>
-                    <attr name="artifactId" stringvalue="maven-archetype-quickstart"/>
-                    <attr name="version" stringvalue="1.1"/>
-                    <attr name="position" intvalue="100"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/jaricon.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/quickstart.html"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="pom-root">
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="pom-root"/>
-                    <attr name="version" stringvalue="1.1"/>
-                    <attr name="position" intvalue="980"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/pom-root.html"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="Archetypes">
-                    <attr name="position" intvalue="990"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.pickArchetype"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/MavenDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="Existing">
-                    <attr name="position" intvalue="1000"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.ExistingWizardIterator.createIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/ExistingDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
             </folder>
         </folder>
         <folder name="Licenses">

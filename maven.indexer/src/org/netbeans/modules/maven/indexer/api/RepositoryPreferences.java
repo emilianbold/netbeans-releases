@@ -139,7 +139,12 @@ public final class RepositoryPreferences {
         return new RepositoryInfo(id, type, name, path, repourl, indexurl);
     }
 
-    public RepositoryInfo getRepositoryInfoById(String id) {
+    /** @since 2.2 */
+    public @NonNull RepositoryInfo getLocalRepository() {
+        return local;
+    }
+
+    public @CheckForNull RepositoryInfo getRepositoryInfoById(String id) {
         for (RepositoryInfo ri : getRepositoryInfos()) {
             if (ri.getId().equals(id)) {
                 return ri;

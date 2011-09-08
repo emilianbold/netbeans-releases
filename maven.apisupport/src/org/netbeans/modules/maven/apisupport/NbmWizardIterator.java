@@ -117,19 +117,19 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         this.archetype = archetype;
     }
 
-    @TemplateRegistration(folder="Project/Maven2", position=400, displayName="#template.module", iconBase="org/netbeans/modules/maven/apisupport/nbmicon.png", description="NbModuleDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=400, displayName="#template.module", iconBase="org/netbeans/modules/maven/apisupport/nbmicon.png", description="NbModuleDescription.html")
     @Messages("template.module=NetBeans Module")
     public static NbmWizardIterator createNbModuleIterator() {
         return new NbmWizardIterator(NB_MODULE_ARCH);
     }
 
-    @TemplateRegistration(folder="Project/Maven2", position=500, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
     @Messages("template.app=NetBeans Application")
     public static NbmWizardIterator createNbAppIterator() {
         return new NbmWizardIterator(NB_APP_ARCH);
     }
 
-    @TemplateRegistration(folder="Project/Maven2", position=450, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
     @Messages("template.suite=NetBeans Module Suite")
     public static NbmWizardIterator createNbSuiteIterator() {
         return new NbmWizardIterator(NB_SUITE_ARCH);
