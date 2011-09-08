@@ -56,6 +56,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
@@ -240,7 +241,11 @@ public class ManDocumentation {
                 exitStatus = np.execute("man", null, name); // NOI18N
             }
         } else {
-            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-S3", name); // NOI18N
+            if (Locale.getDefault().getLanguage().trim().isEmpty() || Locale.getDefault().getLanguage().equals("en")) {  // NOI18N
+                exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-S3", name); // NOI18N
+            } else {
+                exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-L", Locale.getDefault().getLanguage() + ".UTF-8", "-S3", name); // NOI18N
+            }
         }
         StringReader sr;
         if (exitStatus != null) {
