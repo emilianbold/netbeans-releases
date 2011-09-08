@@ -46,6 +46,7 @@ package org.netbeans.modules.websvc.customization.multiview;
 
 import java.awt.BorderLayout;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -83,7 +84,12 @@ public class WSCustomizationTopComponent extends TopComponent {
     
   
     public Collection<SaveableSectionInnerPanel> getPanels(){
-        return panelFactory.getPanels();
+        if ( panelFactory == null ){
+            return Collections.emptyList();
+        }
+        else {
+            return panelFactory.getPanels();
+        }
     }
     
     private void doInitialize() {
