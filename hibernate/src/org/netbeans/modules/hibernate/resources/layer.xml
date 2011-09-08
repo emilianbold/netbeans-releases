@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="RefactoringWhereUsed.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
                         <attr name="position" intvalue="1050"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
