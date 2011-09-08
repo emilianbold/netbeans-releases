@@ -242,18 +242,6 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(aPanel, gridBagConstraints);
-
-        javax.swing.GroupLayout pushPanelLayout = new javax.swing.GroupLayout(pushPanel);
-        pushPanel.setLayout(pushPanelLayout);
-        pushPanelLayout.setHorizontalGroup(
-            pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 366, Short.MAX_VALUE)
-        );
-        pushPanelLayout.setVerticalGroup(
-            pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 168, Short.MAX_VALUE)
-        );
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
