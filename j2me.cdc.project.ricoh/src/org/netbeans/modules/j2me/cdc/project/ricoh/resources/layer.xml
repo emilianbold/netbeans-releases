@@ -133,7 +133,8 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Project">
             <folder name="Samples">
-                <folder name="CDC_Ricoh">
+<!--                #180655 Changed folder name to match changes in Bundle -->
+                <folder name="JAVA_ME">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                     <attr name="position" intvalue="410"/>                    
                     <file name="ButtonTest.zip" url="samples/ButtonTest.zip">
