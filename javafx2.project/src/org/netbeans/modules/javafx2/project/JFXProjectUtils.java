@@ -76,6 +76,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -244,6 +245,19 @@ public final class JFXProjectUtils {
         }
 
         return appClassNames;
+    }
+
+    /**
+     * Checks if the JFX support is enabled for given project
+     * @param prj the project to check
+     * @return true if project supports JFX
+     */
+    public static boolean isFXProject(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (ep == null) {
+            return false;
+        }
+        return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }
 
 }

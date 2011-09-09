@@ -208,6 +208,9 @@ class J2SEActionProvider extends BaseActionProvider implements AntTargetsProvide
         return names;
     }
 
+    /**
+     * position=100
+     */
     public static class Registration implements LookupProvider {
         @Override
         public Lookup createAdditionalLookup(Lookup baseContext) {
