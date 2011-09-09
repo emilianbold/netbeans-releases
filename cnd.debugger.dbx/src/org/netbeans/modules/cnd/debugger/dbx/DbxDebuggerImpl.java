@@ -691,16 +691,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         manager().addRecentDebugTarget(progname, false);
 
-        // Only in tool (see convergence discussions)
-	/*
+        // Show console only in tool (see convergence discussions) and CR 7032948
+        // in the IDE we show program output
         if (DebuggerManager.isStandalone()) {
             manager().enableConsoleWindow();
-        } else {
-            manager().enablePioWindow();
         }
-	 *
-	 */
-	manager().enableConsoleWindow();
 	// CR 6998041
 	// DebuggerManager.openComponent("callstackView", true); // NOI18N
 
