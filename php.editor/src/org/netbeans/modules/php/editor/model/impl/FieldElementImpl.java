@@ -147,7 +147,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
             for (String typeName : allTypeNames) {
                 typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
             }
-        }            
+        }
         return typeScopes;
     }
     @Override
