@@ -157,9 +157,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             customPanel = null;
         }
         errorPanel = new ErrorPanel(rui);
-        calculatePrefferedSize();
-        setButtonsEnabled(false);
+        back.setVisible(!rui.isQuery());
+        previewButton.setVisible(!rui.isQuery());
         openInNewTab.setVisible(rui.isQuery());
+        setButtonsEnabled(false);
         if (rui.isQuery()) {
             Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
             openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, false));
@@ -170,7 +171,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
-    }
+        calculatePrefferedSize();
+   }
     
     
     private void calculatePrefferedSize() {
@@ -204,14 +206,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanel = new javax.swing.JPanel();
         back = new javax.swing.JButton();
         previewButton = new javax.swing.JButton();
-        previewButton.setVisible(false);
         next = new javax.swing.JButton();
         cancel = new javax.swing.JButton();
         help = new javax.swing.JButton();
+        openInNewTab = new javax.swing.JCheckBox();
         panel = new javax.swing.JPanel();
         innerPanel = new javax.swing.JPanel();
         label = new TooltipLabel();
-        openInNewTab = new javax.swing.JCheckBox();
         containerPanel = new javax.swing.JPanel();
         pleaseWait = new javax.swing.JLabel();
 
@@ -296,6 +297,15 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         controlsPanel.add(buttonsPanel, java.awt.BorderLayout.EAST);
 
+        org.openide.awt.Mnemonics.setLocalizedText(openInNewTab, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.openInNewTab.text")); // NOI18N
+        openInNewTab.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        openInNewTab.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                openInNewTabStateChanged(evt);
+            }
+        });
+        controlsPanel.add(openInNewTab, java.awt.BorderLayout.WEST);
+
         progressPanel.add(controlsPanel, java.awt.BorderLayout.SOUTH);
 
         panel.setLayout(new java.awt.BorderLayout());
@@ -307,15 +317,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         innerPanel.add(label, java.awt.BorderLayout.WEST);
 
         panel.add(innerPanel, java.awt.BorderLayout.CENTER);
-
-        org.openide.awt.Mnemonics.setLocalizedText(openInNewTab, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.openInNewTab.text")); // NOI18N
-        openInNewTab.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 4, 1, 1));
-        openInNewTab.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                openInNewTabStateChanged(evt);
-            }
-        });
-        panel.add(openInNewTab, java.awt.BorderLayout.EAST);
 
         progressPanel.add(panel, java.awt.BorderLayout.PAGE_START);
 

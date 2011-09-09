@@ -59,7 +59,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class MavenWebProjectValidation extends WebProjectValidation {
 
     public static final String[] TESTS = {
-        "testPreconditions", "testNewMavenWebProject",
+        "testNewMavenWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
         "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
         "testRunServlet", "testCreateTLD", "testCreateTagHandler",

@@ -57,7 +57,6 @@ import org.netbeans.junit.NbModuleSuite;
 public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
 
     public static final String[] TESTS = new String[]{
-        "testPreconditions",
         "testNewStrutsWebProject",
         "testCleanAndBuildProject",
         "testCompileAllJSP",

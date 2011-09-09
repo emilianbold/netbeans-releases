@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -50,6 +53,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.ExtractInterfaceAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_ExtractInterface_Action")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ExtractInterfaceAction", position = 700)
 public final class ExtractInterfaceAction extends JavaRefactoringGlobalAction {
 
     /**
