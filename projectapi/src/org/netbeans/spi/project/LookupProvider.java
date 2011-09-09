@@ -104,6 +104,8 @@ public interface LookupProvider {
             /**
              * Token denoting project type.
              * @see org.netbeans.spi.project.LookupProvider.Registration#projectType
+             * @see org.netbeans.spi.project.LookupMerger.Registration#projectType
+             * @see org.netbeans.spi.project.ProjectServiceProvider#projectType
              */
             String id();
             /**
