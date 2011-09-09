@@ -1222,19 +1222,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
-        String cmd = "stop at " + src + ":" + line;	// NOI18N
-        cmd += " -temp -hidden";			// NOI18N
-        dbx.sendCommand(0, 0, cmd);
-
-        runProgram("cont");				// NOI18N
+        String cmd = "stop at " + src + ":" + line + " -temp -hidden";	// NOI18N
+        runProgram(cmd, "cont");				// NOI18N
     }
 
     public void runToCursorInst(String addr) {
-        String cmd = "stopi at " + addr;	// NOI18N
-        cmd += " -temp -hidden";			// NOI18N
-        dbx.sendCommand(0, 0, cmd);
-
-        runProgram("cont");				// NOI18N
+        String cmd = "stopi at " + addr + " -temp -hidden";	// NOI18N
+        runProgram(cmd, "cont");				// NOI18N
     }
 
     /**
@@ -1277,27 +1271,37 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         deliverSignal = -1;
     }
 
+    private void runProgram(String cmd) {
+        runProgram(null, cmd);
+    }
+    
     /**
      * Common resumption action used for stepping, cont, run etc
+     * Runs:
+     * cmd1 ; cmd2
+     * meaning that cmd2 will not run if cmd1 fails
      */
-    private void runProgram(String cmd) {
-        lastRunCmd = cmd;
+    private void runProgram(String cmd1, String cmd2) {
+        lastRunCmd = cmd2;
 
         // We SHOULD only need to do this on a proc_go note from dbx.
         // The following seems redundant with resumed()
         deleteMarkLocations();
 
         if (!state().isRunning) {
-
             if (deliverSignal != -1) {
-                if (cmd.startsWith("cont") || // NOI18N
-                        cmd.startsWith("step") || // NOI18N
-                        cmd.equals("next")) {		// NOI18N
-                    cmd = cmd + " -sig " + deliverSignal; // NOI18N
+                if (cmd2.startsWith("cont") || // NOI18N
+                        cmd2.startsWith("step") || // NOI18N
+                        cmd2.equals("next")) {		// NOI18N
+                    cmd2 = cmd2 + " -sig " + deliverSignal; // NOI18N
                     deliverSignal = -1;
                 }
             }
-
+            
+            String cmd = cmd2;
+            if (cmd1 != null) {
+                cmd = cmd1 + "; " + cmd2; //NOI18N
+            }
             dbx.sendCommand(0, 0, cmd);
         }
 
