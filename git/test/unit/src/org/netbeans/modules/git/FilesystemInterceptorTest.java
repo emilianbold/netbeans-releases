@@ -55,6 +55,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.MockServices;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
@@ -3009,6 +3010,94 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile12).getStatus());
         assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile21).getStatus());
         assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile22).getStatus());
+    }
+    
+    public void testMoveFileToIgnoredFolder_DO () throws Exception {
+        // prepare
+        File ignored = createFolder(repositoryLocation, "ignoredFolder");
+        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File toFolder = createFolder(ignored, "toFolder");
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFile);
+        commit(fromFile);
+        getCache().refreshAllRoots(ignored);
+        
+        // move
+        moveDO(fromFile, toFile);
+        
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        getCache().refreshAllRoots(fromFile, toFile);
+        assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+    }
+    
+    public void testMoveFileToIgnoredFolder_FO () throws Exception {
+        // prepare
+        File ignored = createFolder(repositoryLocation, "ignoredFolder");
+        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File toFolder = createFolder(ignored, "toFolder");
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFile);
+        commit(fromFile);
+        getCache().refreshAllRoots(ignored);
+        
+        // move
+        moveFO(fromFile, toFile);
+        
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        getCache().refreshAllRoots(fromFile, toFile);
+        assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+    }
+
+    public void testCopyFileToIgnoredFolder_DO () throws Exception {
+        // prepare
+        File ignored = createFolder(repositoryLocation, "ignoredFolder");
+        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File toFolder = createFolder(ignored, "toFolder");
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFile);
+        commit(fromFile);
+        getCache().refreshAllRoots(ignored);
+        
+        // copy
+        copyDO(fromFile, toFile);
+        
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+        getCache().refreshAllRoots(fromFile, toFile);
+        assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.UPTODATE));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+    }
+
+    public void testCopyFileToIgnoredFolder_FO () throws Exception {
+        // prepare
+        File ignored = createFolder(repositoryLocation, "ignoredFolder");
+        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File toFolder = createFolder(ignored, "toFolder");
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFile);
+        commit(fromFile);
+        getCache().refreshAllRoots(ignored);
+        
+        // copy
+        copyFO(fromFile, toFile);
+        
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+        getCache().refreshAllRoots(fromFile, toFile);
+        assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.UPTODATE));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
     }
 
     private void renameDO(File from, File to) throws DataObjectNotFoundException, IOException {

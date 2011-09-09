@@ -243,7 +243,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.wiz = wiz;
     }
 
-    @Messages("TemplatesPanelGUI_note_samples=Samples may not meet security requirements for production code.")
+    @Messages("TemplatesPanelGUI_note_samples=<html>Note that samples may not include all security mechanisms required<br>for an application intended for a production environment.</html>")
     @Override public void propertyChange (PropertyChangeEvent event) {
         if (event.getSource() == this.categoriesPanel) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {

@@ -184,7 +184,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final File root = hg.getRepositoryRoot(srcFile);
         final File dstRoot = hg.getRepositoryRoot(dstFile);
-        if (root == null) return;
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
@@ -192,11 +191,18 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!result) {
             Mercurial.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
         }
+        if (root == null) {
+            return;
+        }
         // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         try {
-            if (root.equals(dstRoot)) {
+            if (root.equals(dstRoot) && !HgUtils.isIgnored(dstFile, false)) {
+                // target does not lie under ignored folder and is in the same repo as src
                 HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+            } else {
+                // just hg rm the old file
+                HgCommand.doRemove(root, srcFile, logger);
             }
         } catch (HgException e) {
             Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[]{srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
@@ -245,7 +251,10 @@ public class MercurialInterceptor extends VCSInterceptor {
             FileUtils.copyFile(from, to);
         }
 
-        if (root == null) return;
+        if (root == null || HgUtils.isIgnored(to, false)) {
+            // target lies under ignored folder, do not add it
+            return;
+        }
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         try {
             if (root.equals(dstRoot)) {

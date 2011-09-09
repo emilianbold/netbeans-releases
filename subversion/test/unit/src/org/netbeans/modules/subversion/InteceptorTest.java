@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -221,6 +222,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
         suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
         suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile2IgnoredFolder_DO"));
         suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
         suite.addTest(new InteceptorTest("moveA2B2A_DO"));
         suite.addTest(new InteceptorTest("moveA2B2C_DO"));
@@ -259,6 +261,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("moveUnversionedFile_FO"));
         suite.addTest(new InteceptorTest("moveUnversionedFolder_FO"));
         suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_FO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile2IgnoredFolder_FO"));
         suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_FO"));
         suite.addTest(new InteceptorTest("moveA2B2A_FO"));
         suite.addTest(new InteceptorTest("moveA2B2C_FO"));
@@ -284,6 +287,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("copyAddedFile2VersionedFolder_DO"));
 
         suite.addTest(new InteceptorTest("copyVersionedFile2UnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("copyVersionedFile2IgnoredFolder_DO"));
         suite.addTest(new InteceptorTest("copyVersionedFolder2UnversionedFolder_DO"));
 
         suite.addTest(new InteceptorTest("copyA2B2C_DO"));
@@ -305,6 +309,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("copyAddedFile2UnversionedFolder_FO"));
         suite.addTest(new InteceptorTest("copyVersionedFolder2UnversionedFolder_FO"));
         suite.addTest(new InteceptorTest("copyVersionedFile2UnversionedFolder_FO"));
+        suite.addTest(new InteceptorTest("copyVersionedFile2IgnoredFolder_FO"));
         suite.addTest(new InteceptorTest("copyAddedFile2VersionedFolder_FO"));
         suite.addTest(new InteceptorTest("copyA2B2C_FO"));
         suite.addTest(new InteceptorTest("copyVersionedFolder_FO"));
@@ -1342,6 +1347,35 @@ public class InteceptorTest extends NbTestCase {
 //        commit(wc);
     }
 
+    public void copyVersionedFile2IgnoredFolder_DO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFolder");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
+
+        // commit
+        commit(fromFile);
+        //ignore
+        getClient().setIgnoredPatterns(wc, Collections.singletonList(toFolder.getName()));
+
+        // copy
+        copyDO(fromFile, toFile);
+
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
+
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getStatus(toFile));
+        assertFalse(getSVNStatus(toFile).isCopied());
+    }
+
     public void copyVersionedFolder2UnversionedFolder_DO() throws Exception {
         // init
         File fromFolder = new File(wc, "folder");
@@ -1930,6 +1964,35 @@ public class InteceptorTest extends NbTestCase {
 //        commit(wc);
     }
 
+    public void copyVersionedFile2IgnoredFolder_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFolder");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
+
+        // commit
+        commit(fromFile);
+        //ignore
+        getClient().setIgnoredPatterns(wc, Collections.singletonList(toFolder.getName()));
+
+        // copy
+        copyFO(fromFile, toFile);
+
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
+
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getStatus(toFile));
+        assertFalse(getSVNStatus(toFile).isCopied());
+    }
+
     public void copyVersionedFolder2UnversionedFolder_FO() throws Exception {
         // init
         File fromFolder = new File(wc, "folder");
@@ -2333,6 +2396,32 @@ public class InteceptorTest extends NbTestCase {
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
         
 //        commit(wc);
+    }
+    
+    public void moveVersionedFile2IgnoredFolder_DO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFolder");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
+
+        // add
+        commit(fromFile);
+        getClient().setIgnoredPatterns(wc, Collections.singletonList(toFolder.getName()));
+
+        // move
+        moveDO(fromFile, toFile);
+
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fromFile));
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
     
     public void moveAddedFile2VersionedFolder_DO() throws Exception {
@@ -3239,6 +3328,32 @@ public class InteceptorTest extends NbTestCase {
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
         
 //        commit(wc);
+    }
+    
+    public void moveVersionedFile2IgnoredFolder_FO() throws Exception {
+        // init
+        File fromFile = new File(wc, "file");
+        fromFile.createNewFile();
+        File toFolder = new File(wc, "toFolder");
+        toFolder.mkdirs();
+        
+        File toFile = new File(toFolder, fromFile.getName());
+
+        // add
+        commit(fromFile);
+        getClient().setIgnoredPatterns(wc, Collections.singletonList(toFolder.getName()));
+
+        // move
+        moveFO(fromFile, toFile);
+
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fromFile));
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
        
     public void moveAddedFile2VersionedFolder_FO() throws Exception {
