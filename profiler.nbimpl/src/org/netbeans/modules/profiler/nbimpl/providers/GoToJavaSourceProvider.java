@@ -68,12 +68,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.profiler.spi.java.GoToSourceProvider.class)
+@ServiceProvider(service = GoToSourceProvider.class)
 public final class GoToJavaSourceProvider extends GoToSourceProvider {
     @Override
     public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {

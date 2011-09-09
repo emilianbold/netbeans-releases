@@ -175,6 +175,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -196,6 +197,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -203,28 +205,30 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
     @Override
     public int getLineForOffset(final FileObject file, final int offset) {
         try {
+            if (offset == -1) {
+                return -1;
+            }
+
+            DataObject dobj = DataObject.find(file);
+
+            if (dobj == null) {
+                return -1;
+            }
+            final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) {
+                return -1;
+            }
             return performOnAWT(new Callable<Integer>() {
 
                 @Override
                 public Integer call() throws Exception {
-                    if (offset == -1) {
-                        return -1;
-                    }
-
-                    DataObject dobj = DataObject.find(file);
-
-                    if (dobj != null) {
-                        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-
-                        if (ec != null) {
-                            return NbDocument.findLineNumber(ec.getDocument(), offset);
-                        }
-                    }
-
-                    return -1;
+                    return NbDocument.findLineNumber(ec.getDocument(), offset);
                 }
+
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -232,28 +236,29 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
     @Override
     public int getOffsetForLine(final FileObject file, final int line) {
         try {
+            if (line == -1) {
+                return -1;
+            }
+
+            DataObject dobj = DataObject.find(file);
+
+            if (dobj == null) {
+                return -1;
+            }
+            final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) {
+                return -1;
+            }
             return performOnAWT(new Callable<Integer>() {
 
                 @Override
                 public Integer call() throws Exception {
-                    if (line == -1) {
-                        return -1;
-                    }
-
-                    DataObject dobj = DataObject.find(file);
-
-                    if (dobj != null) {
-                        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-
-                        if (ec != null) {
-                            return NbDocument.findLineOffset(ec.getDocument(), line);
-                        }
-                    }
-
-                    return -1;
+                    return NbDocument.findLineOffset(ec.getDocument(), line);
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -273,6 +278,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         return false;
@@ -295,6 +301,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e)  {
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -330,6 +337,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         
         return new int[]{-1, -1};
