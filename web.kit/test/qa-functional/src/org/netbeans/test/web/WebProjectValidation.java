@@ -100,7 +100,7 @@ import org.openide.loaders.DataObject;
 public class WebProjectValidation extends J2eeTestCase {
 
     public static String[] TESTS = {
-        "testPreconditions", "testNewWebProject",
+        "testNewWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
         "testNewHTML", "testCreateTLD", "testCreateTagHandler", "testNewSegment",
         "testNewDocument", "testJSPNavigator", "testHTMLNavigator",
@@ -157,17 +157,6 @@ public class WebProjectValidation extends J2eeTestCase {
 
     protected String getEEVersion() {
         return JAVA_EE_6;
-    }
-
-    /** checks if the Server ports are not used */
-    public void testPreconditions() throws Exception {
-        URLConnection connection = server.getServerURL().openConnection();
-        try {
-            connection.connect();
-            fail("Port: " + server.getServerURL() + " is used by different server.");
-        } catch (ConnectException e) {
-        }
-        initDisplayer();
     }
 
     /** Test creation of web project.
