@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<#if package?? && package != "">
-<?import ${package}.MyGroup?> 
-<#else>
-<?import MyGroup?> 
-</#if>
+<?import javafx.scene.layout.*?>
 
-<MyGroup xmlns:fx="http://javafx.com/fxml">    
-    <children>      
-        <Button text="Click Me!" onAction="#handleButtonAction" />
-        <Label  fx:id="label" translateX="0" translateY="30" text=""/>  
-    </children>
-</MyGroup>    
+<#if package?? && package != "">
+<AnchorPane id="AnchorPane" prefHeight="200.0" prefWidth="320.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${package}.${name}">
+<#else>
+<AnchorPane id="AnchorPane" prefHeight="200.0" prefWidth="320.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${name}">
+</#if>
+  <children>
+    <Button layoutX="126.0" layoutY="90.0" text="Click Me!" onAction="#handleButtonAction" />
+    <Label id="label" layoutX="126.0" layoutY="120.0" fx:id="label" />
+  </children>
+</AnchorPane>
