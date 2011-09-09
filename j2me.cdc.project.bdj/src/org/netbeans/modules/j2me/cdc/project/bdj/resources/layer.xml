@@ -70,7 +70,8 @@ made subject to such option by the copyright holder.
         </folder>   
         <folder name="Project">
             <folder name="Samples">
-                <folder name="CDC_BD-J">
+<!--                #180655 Changed folder name to match changes made in Bundle -->
+                <folder name="JAVA_ME">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.bdj.Bundle"/>
                     <attr name="position" intvalue="420"/>
                     <file name="GunBunny.zip" url="samples/GunBunny.zip">
