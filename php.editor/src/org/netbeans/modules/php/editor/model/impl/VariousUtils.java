@@ -490,6 +490,17 @@ public class VariousUtils {
         } else if (semiTypeName != null ) {
             QualifiedName qn = QualifiedName.create(semiTypeName);
             qn = qn.toNamespaceName().append(translateSpecialClassName(varScope, qn.getName()));
+            if (semiTypeName.startsWith("\\")) { // NOI18N
+                qn = qn.toFullyQualified();
+            } else {
+                NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(varScope);
+                if (namespaceScope != null) {
+                    Collection<QualifiedName> possibleFQN = getPossibleFQN(qn, offset, namespaceScope);
+                    if (!possibleFQN.isEmpty()) {
+                        qn = ModelUtils.getFirst(possibleFQN);
+                    }
+                }
+            }
             final IndexScope indexScope = ModelUtils.getIndexScope(varScope);
             return indexScope.findTypes(qn);
         }
