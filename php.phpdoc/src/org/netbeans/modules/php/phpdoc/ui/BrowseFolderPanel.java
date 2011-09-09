@@ -169,7 +169,7 @@ public final class BrowseFolderPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(targetFolderLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(targetFolderTextField)
+                .addComponent(targetFolderTextField, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(browseTargetFolderButton)
                 .addContainerGap())

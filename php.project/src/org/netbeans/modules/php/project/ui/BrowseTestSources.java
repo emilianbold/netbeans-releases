@@ -184,7 +184,7 @@ public class BrowseTestSources extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testSourcesLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(testSourcesTextField)
+                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
