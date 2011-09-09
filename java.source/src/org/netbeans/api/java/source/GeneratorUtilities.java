@@ -600,8 +600,12 @@ public final class GeneratorUtilities {
                     cnt = -1;
                 } else if (cnt >= 0) {
                     cnt++;
-                    if (isStatic ? cnt >= staticTreshold : cnt >= treshold)
+                    if (isStatic) {
+                        if (cnt >= staticTreshold)
+                            cnt = -1;
+                    } else if (cnt >= treshold || checkPackagesForStarImport(((PackageElement)el).getQualifiedName().toString(), cs)) {
                         cnt = -1;
+                    }
                 }
                 if (isStatic) {
                     typeCounts.put((TypeElement)el, cnt);
@@ -1098,5 +1102,18 @@ public final class GeneratorUtilities {
                 copy.tag(body.getStatements().get(0), "methodBodyTag"); // NOI18N
             }
         }
+    }
+    
+    static boolean checkPackagesForStarImport(String pkgName, CodeStyle cs) {
+        for (String s : cs.getPackagesForStarImport()) {
+            if (s.endsWith(".*")) { //NOI18N
+                s = s.substring(0, s.length() - 2);
+                if (pkgName.startsWith(s))
+                    return true;
+            } else if (pkgName.equals(s)) {
+                return true;
+            }           
+        }
+        return false;
     }
 }
