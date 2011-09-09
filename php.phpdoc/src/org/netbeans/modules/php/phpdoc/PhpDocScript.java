@@ -120,19 +120,20 @@ public class PhpDocScript extends PhpProgram {
             return;
         }
 
+        String sanitizedPhpDocTarget = sanitizePath(phpDocTarget);
         ExternalProcessBuilder processBuilder = getProcessBuilder()
                 // from
                 .addArgument("-d") // NOI18N
                 .addArgument(sanitizePath(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath()))
                 // to
                 .addArgument("-t") // NOI18N
-                .addArgument(sanitizePath(phpDocTarget))
+                .addArgument(sanitizedPhpDocTarget)
                 // title
                 .addArgument("-ti") // NOI18N
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)
-                .outConvertorFactory(new ErrorFileLineConvertorFactory(phpDocTarget))
+                .outConvertorFactory(new ErrorFileLineConvertorFactory(sanitizedPhpDocTarget))
                 .optionsPath(getOptionsPath());
 
         try {
@@ -176,7 +177,7 @@ public class PhpDocScript extends PhpProgram {
 
         @Override
         public LineConvertor newLineConvertor() {
-            Pattern pattern = Pattern.compile("(.*)(" + docTarget + "/errors\\.html)(.*)"); // NOI18N
+            Pattern pattern = Pattern.compile("(.*)(" + Pattern.quote(docTarget) + "/?errors\\.html)(.*)"); // NOI18N
             return new ErrorFileLineConvertor(pattern);
         }
 
