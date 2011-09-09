@@ -382,7 +382,7 @@ public class SourceUtils {
                 if (cs.importInnerClasses())
                     break;
             } else if ((element = info.getElements().getPackageElement(qName)) != null) {
-                if (toImport == null || checkPackagesForStarImport(qName, cs))
+                if (toImport == null || GeneratorUtilities.checkPackagesForStarImport(qName, cs))
                     toImport = element;
                 break;
             }
@@ -436,19 +436,6 @@ public class SourceUtils {
         return sqName.toString();
     }
     
-    private static boolean checkPackagesForStarImport(String pkgName, CodeStyle cs) {
-        for (String s : cs.getPackagesForStarImport()) {
-            if (s.endsWith(".*")) { //NOI18N
-                s = s.substring(0, s.length() - 2);
-                if (pkgName.startsWith(s))
-                    return true;
-            } else if (pkgName.equals(s)) {
-                return true;
-            }           
-        }
-        return false;
-    }
-
     /**
      * Returns a {@link FileObject} in which the Element is defined.
      * @param element for which the {@link FileObject} should be located

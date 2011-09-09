@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
@@ -57,6 +58,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -142,7 +145,83 @@ public class LookupProviderSupportTest extends NbTestCase {
         assertEquals(3, grps.length);
         
     }
-    
+
+    public void testActionProviderMerger() throws Exception {
+        final ActionProviderImpl ap1 = new ActionProviderImpl(new LinkedHashMap<String,Boolean>(){
+            {
+                put(ActionProvider.COMMAND_CLEAN,Boolean.TRUE);
+                put(ActionProvider.COMMAND_BUILD,Boolean.TRUE);
+                put(ActionProvider.COMMAND_REBUILD,Boolean.TRUE);
+                put(ActionProvider.COMMAND_COMPILE_SINGLE,Boolean.FALSE);
+            }
+        });
+        final ActionProviderImpl ap2 = new ActionProviderImpl(new LinkedHashMap<String,Boolean>(){
+            {
+                put(ActionProvider.COMMAND_RUN,Boolean.TRUE);
+                put(ActionProvider.COMMAND_TEST,Boolean.TRUE);
+                put(ActionProvider.COMMAND_DEBUG,Boolean.FALSE);
+                put(ActionProvider.COMMAND_COMPILE_SINGLE,Boolean.TRUE);
+            }
+        });
+
+        final LookupMerger<ActionProvider> merger = LookupProviderSupport.createActionProviderMerger();
+        assertEquals(ActionProvider.class,merger.getMergeableClass());
+        final ActionProvider ap = merger.merge(Lookups.fixed(ap1,ap2));
+        assertEquals(Arrays.asList(new String[] {
+                ActionProvider.COMMAND_CLEAN,
+                ActionProvider.COMMAND_BUILD,
+                ActionProvider.COMMAND_REBUILD,
+                ActionProvider.COMMAND_COMPILE_SINGLE,
+                ActionProvider.COMMAND_RUN,
+                ActionProvider.COMMAND_TEST,
+                ActionProvider.COMMAND_DEBUG,
+            }),
+            Arrays.asList(ap.getSupportedActions()));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_BUILD, Lookup.EMPTY));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_REBUILD, Lookup.EMPTY));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, Lookup.EMPTY));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_RUN, Lookup.EMPTY));
+        assertTrue(ap.isActionEnabled(ActionProvider.COMMAND_TEST, Lookup.EMPTY));
+        assertFalse(ap.isActionEnabled(ActionProvider.COMMAND_DEBUG, Lookup.EMPTY));
+        try {
+            ap.isActionEnabled(ActionProvider.COMMAND_MOVE, Lookup.EMPTY);
+            throw new AssertionError("IAE should be thrown");   //NOI18N
+        } catch (IllegalArgumentException iae) {
+            assertEquals(ActionProvider.COMMAND_MOVE, iae.getMessage());
+        }
+        ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY);
+        assertEquals(ActionProvider.COMMAND_CLEAN,ap1.cleanInvokedTarget());
+        assertNull(ap2.cleanInvokedTarget());
+        ap.invokeAction(ActionProvider.COMMAND_BUILD, Lookup.EMPTY);
+        assertEquals(ActionProvider.COMMAND_BUILD,ap1.cleanInvokedTarget());
+        assertNull(ap2.cleanInvokedTarget());
+        ap.invokeAction(ActionProvider.COMMAND_REBUILD, Lookup.EMPTY);
+        assertEquals(ActionProvider.COMMAND_REBUILD,ap1.cleanInvokedTarget());
+        assertNull(ap2.cleanInvokedTarget());
+        ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookup.EMPTY);
+        assertNull(ap1.cleanInvokedTarget());
+        assertEquals(ActionProvider.COMMAND_COMPILE_SINGLE,ap2.cleanInvokedTarget());
+        ap.invokeAction(ActionProvider.COMMAND_RUN, Lookup.EMPTY);
+        assertNull(ap1.cleanInvokedTarget());
+        assertEquals(ActionProvider.COMMAND_RUN,ap2.cleanInvokedTarget());
+        ap.invokeAction(ActionProvider.COMMAND_TEST, Lookup.EMPTY);
+        assertNull(ap1.cleanInvokedTarget());
+        assertEquals(ActionProvider.COMMAND_TEST,ap2.cleanInvokedTarget());
+        try {
+            ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookup.EMPTY);
+            throw new AssertionError("IAE should be thrown");   //NOI18N
+        } catch (IllegalArgumentException iae) {
+            assertEquals(ActionProvider.COMMAND_DEBUG, iae.getMessage());
+        }
+        try {
+            ap.invokeAction(ActionProvider.COMMAND_MOVE, Lookup.EMPTY);
+            throw new AssertionError("IAE should be thrown");   //NOI18N
+        } catch (IllegalArgumentException iae) {
+            assertEquals(ActionProvider.COMMAND_MOVE, iae.getMessage());
+        }
+    }
+
     public void testNonexistentPath() throws Exception {
         // #87544: don't choke on a nonexistent path! Just leave it empty.
         Lookup l = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "nowhere");
@@ -237,5 +316,38 @@ public class LookupProviderSupportTest extends NbTestCase {
             return name;
         }
     }
-    
+
+    private static class ActionProviderImpl implements ActionProvider {
+        private final Map<String,Boolean> supportedCommands;
+        private String invokedTarget;
+
+        public ActionProviderImpl (final Map<String,Boolean> supportedCommands) {
+            this.supportedCommands = supportedCommands;
+        }
+
+        @Override
+        public String[] getSupportedActions() {
+            return supportedCommands.keySet().toArray(new String[supportedCommands.size()]);
+        }
+
+        @Override
+        public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+            invokedTarget = command;
+        }
+
+        @Override
+        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+            final Boolean res = supportedCommands.get(command);
+            if (res == null) {
+                throw new IllegalArgumentException(command);
+            }
+            return res;
+        }
+
+        String cleanInvokedTarget() {
+            final String res = invokedTarget;
+            invokedTarget = null;
+            return res;
+        }
+    }
 }

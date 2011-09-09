@@ -57,6 +57,7 @@ import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,10 +95,12 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
@@ -105,7 +108,6 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI.HintWrap;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsPanel;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
@@ -130,6 +132,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private FileObject fileObject;
     private final HintWrap hintWrap;
     org.netbeans.modules.refactoring.api.Scope customScope;
+    
+    private JLabel customScopeLab = null;
+    private JLabel currentFile = null;
+    private JLabel currentPackage = null;
+    private JLabel currentProject = null;
+    private JLabel allProjects = null;
+    private Project project;
     
     /** Creates new form InspectAndRefactorPanel */
     public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query) {
@@ -162,34 +171,39 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         if (dob != null) {
             FileObject file = context.lookup(FileObject.class);
             if (file != null) {
-                Project owner = FileOwnerQuery.getOwner(file);
-                if (owner != null) {
+                project = FileOwnerQuery.getOwner(file);
+                if (project != null) {
                     fileObject = file;
-                    pi = ProjectUtils.getInformation(owner);
+                    pi = ProjectUtils.getInformation(project);
                     prj = pi.getIcon();
                 }
             }
         }
         
-        JLabel customScope = null;
-        JLabel currentFile = null;
-        JLabel currentPackage = null;
-        JLabel currentProject = null;
-        JLabel allProjects = null;
-        
-        customScope = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
+        customScopeLab = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
         if (fileObject!=null) {
-            currentFile = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentFile", fileObject.getNameExt()), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
+            if (!fileObject.isFolder())
+                currentFile = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentFile", fileObject.getNameExt()), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
             currentPackage = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentPackage", getPackageName(fileObject)), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
             currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
+        } else {
+            project = context.lookup(Project.class);
+            if (project==null && dob!=null) {
+                project = FileOwnerQuery.getOwner(dob.getPrimaryFile());
+            }
+            if (project!=null) {
+                pi = ProjectUtils.getInformation(project);
+                prj = pi.getIcon();
+                currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
+            }
         }
         allProjects = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_AllProjects"), prj, SwingConstants.LEFT); //NOI18N
-        if (currentProject!=null)
-            scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
-        else
-            scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, customScope }));
+        scopeCombo.setModel(new DefaultComboBoxModel(createArray(allProjects, currentProject, currentPackage, currentFile, customScopeLab)));
         scopeCombo.setRenderer(new JLabelRenderer());
         loadPrefs();
+        if (scopeCombo.getItemCount()>2) {
+            scopeCombo.setSelectedIndex(scopeCombo.getItemCount()-2);
+        }
         if (hintWrap != null) {
             singleRefactoringCombo.setSelectedItem(hintWrap.hm);
             setConfig(false);
@@ -199,6 +213,15 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             manageSingleRefactoring.setEnabled(false);
             configurationRadio.setEnabled(false);
         }
+    }
+    
+    private static Object[] createArray(Object ... items) {
+        ArrayList a = new ArrayList();
+        for (Object o:items) {
+            if (o!=null)
+                a.add(o);
+        }
+        return a.toArray(new Object[a.size()]);
     }
 
     /** This method is called from within the constructor to
@@ -368,47 +391,38 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }//GEN-LAST:event_configurationComboItemStateChanged
 
     private void customScopeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_customScopeButtonActionPerformed
-        switch (scopeCombo.getSelectedIndex()) {
-            case 0:
-                //all projects
-                Set<FileObject> todo = new HashSet<FileObject>();
+        Object selectedItem = scopeCombo.getSelectedItem();
+        if (selectedItem == allProjects) {
+            Set<FileObject> todo = new HashSet<FileObject>();
 
-                for (ClassPath source : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    todo.addAll(Arrays.asList(source.getRoots()));
-                }
+            for (ClassPath source : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                todo.addAll(Arrays.asList(source.getRoots()));
+            }
 
-                customScope = org.netbeans.modules.refactoring.api.Scope.create(todo, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-                break;
-            case 1:
-                if (fileObject!=null) {
-                    //current project
-                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-                } else {
-                    //custom
-                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-                }
-                break;
-            case 2:
-                //current package
-                if (fileObject != null) {
-                    Collection col = Collections.singleton(new NonRecursiveFolder() {
+            customScope = org.netbeans.modules.refactoring.api.Scope.create(todo, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        } else if (selectedItem == currentProject) {
+            ArrayList<FileObject> roots = new ArrayList();
+            for (SourceGroup gr:ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                roots.add(gr.getRootFolder());
+            }
+            customScope = org.netbeans.modules.refactoring.api.Scope.create(roots, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        } else if (selectedItem == currentPackage) {
+            //current package
+            if (fileObject != null) {
+                Collection col = Collections.singleton(new NonRecursiveFolder() {
 
-                        @Override
-                        public FileObject getFolder() {
-                            return fileObject.getParent();
-                        }
-                    });
-                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
-                    break;
-                }
-            case 3:
-                if (fileObject != null) {
-                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.singleton(fileObject), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-                    break;
-                }
-            default:
-                //custom
-                customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                    @Override
+                    public FileObject getFolder() {
+                        return fileObject.getParent();
+                    }
+                });
+                customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
+            }
+        } else if (selectedItem == currentFile) {
+                customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.singleton(fileObject));
+        } else {
+            //custom
+            customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         }
         org.netbeans.modules.refactoring.api.Scope s = JavaScopeBuilder.open(NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_CustomScope"), customScope);
         if (s != null) {
@@ -562,7 +576,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private String getPackageName(FileObject file) {
-        return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file.getParent(), '.', false);
+        return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file.isFolder()?file:file.getParent(), '.', false);
     }
 
     private Popup popup = null;

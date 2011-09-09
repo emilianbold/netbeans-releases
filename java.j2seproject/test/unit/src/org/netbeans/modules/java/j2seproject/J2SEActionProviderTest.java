@@ -107,7 +107,7 @@ public class J2SEActionProviderTest extends NbTestCase {
     private FileObject build;
     private FileObject tests;
     private ProjectManager pm;
-    private Project pp;
+    private J2SEProject pp;
     private AntProjectHelper helper;
     private J2SEActionProvider actionProvider;
     private DataFolder sourcePkg1;
@@ -132,8 +132,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
-        actionProvider = pp.getLookup().lookup(J2SEActionProvider.class);              
+        pp = pm.findProject(projdir).getLookup().lookup(J2SEProject.class);
+        actionProvider = new J2SEActionProvider(pp, pp.getUpdateHelper());
+        actionProvider.startFSListener();
         sources = projdir.getFileObject("src");
         tests = projdir.getFileObject("test");
 //        projdir.createData("build.xml");
@@ -513,7 +514,8 @@ public class J2SEActionProviderTest extends NbTestCase {
             }
         });        
         
-        J2SEActionProvider ap = proj.getLookup().lookup(J2SEActionProvider.class);
+        J2SEActionProvider ap = new J2SEActionProvider(proj, proj.getUpdateHelper());
+        ap.startFSListener();
         PropertyEvaluator eval = proj.evaluator();
         String config = eval.getProperty("config");
         assertEquals("Name of active config from Evaluator is test", "test", config);
