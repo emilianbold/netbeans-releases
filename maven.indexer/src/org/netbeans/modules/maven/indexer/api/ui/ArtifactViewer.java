@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.indexer.api.ui;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -121,6 +122,10 @@ public final class ArtifactViewer {
         TopComponent tc;
         if (project != null) {
             tc = fact.createTopComponent(project);
+            if (tc == null) {
+                Logger.getLogger(ArtifactViewer.class.getName()).log(Level.WARNING, "#201783: no artifact viewer available for {0}", project);
+                return;
+            }
         } else if (info != null) {
             tc = fact.createTopComponent(info);
         } else {
