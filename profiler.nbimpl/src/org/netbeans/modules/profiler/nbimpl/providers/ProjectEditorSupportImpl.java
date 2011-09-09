@@ -175,6 +175,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -196,6 +197,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -225,6 +227,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -254,6 +257,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return -1;
     }
@@ -273,6 +277,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         return false;
@@ -295,6 +300,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e)  {
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -330,6 +336,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         
         return new int[]{-1, -1};
