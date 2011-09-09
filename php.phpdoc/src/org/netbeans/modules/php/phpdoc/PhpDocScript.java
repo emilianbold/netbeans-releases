@@ -150,7 +150,7 @@ public class PhpDocScript extends PhpProgram {
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, getOptionsPath());
+            UiUtils.processExecutionException(ex, OPTIONS_SUB_PATH);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (MalformedURLException ex) {
