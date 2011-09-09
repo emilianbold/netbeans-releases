@@ -60,24 +60,25 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         wd = FileUtil.toFileObject(getWorkDir());
     }
 
-    private String optsFor(String root) throws Exception {
+    private void assertOpts(String body, String expected, String root) throws Exception {
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<packaging>jar</packaging><version>1.0</version>" + body + "</project>");
         FileObject rootFO = FileUtil.createFolder(wd, root);
         assertNotNull(rootFO);
         AnnotationProcessingQuery.Result r = AnnotationProcessingQuery.getAnnotationProcessingOptions(rootFO);
         URL sOD = r.sourceOutputDirectory();
         Map<String,String> opts = new HashMap<String,String>(r.processorOptions());
         assertEquals("false", opts.remove("eclipselink.canonicalmodel.use_static_factory"));
-        return "enabled=" + r.annotationProcessingEnabled() +
+        assertEquals(expected,
+                "enabled=" + r.annotationProcessingEnabled() +
                 " run=" + r.annotationProcessorsToRun() +
                 " s=" + (sOD != null ? sOD.toString().replace(getWorkDir().toURI().toString(), ".../") : "-") +
-                " opts=" + opts;
+                " opts=" + opts);
     }
 
     public void testDefaults() throws Exception {
-        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
-                + "<groupId>test</groupId><artifactId>prj</artifactId>"
-                + "<packaging>jar</packaging><version>1.0</version></project>");
-        assertEquals("enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={}", optsFor("src/main/java"));
+        assertOpts("", "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
     }
 
 }
