@@ -47,8 +47,7 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-<!--                #180655 Changed folder name to match changes made in Bundle -->
-                <folder name="JAVA_ME">
+                <folder name="J2ME_MIDP">
                     <attr name="position" intvalue="403"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp.html"/>
