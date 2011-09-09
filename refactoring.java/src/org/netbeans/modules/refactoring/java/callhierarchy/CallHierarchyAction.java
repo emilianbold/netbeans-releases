@@ -46,6 +46,9 @@ import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -58,6 +61,9 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Pokorsky
  */
+@ActionID(id = "org.netbeans.modules.refactoring.java.callhierarchy.CallHierarchyAction", category = "Window")
+@ActionRegistration(displayName = "#CTL_CallHierarchyAction")
+@ActionReference(path = "Editors/text/x-java/Popup" , name = "CallHierarchyAction", position = 1420)
 public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 
     public CallHierarchyAction() {
