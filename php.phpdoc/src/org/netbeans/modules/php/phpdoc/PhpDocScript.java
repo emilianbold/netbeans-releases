@@ -65,14 +65,18 @@ import org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 public class PhpDocScript extends PhpProgram {
+
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-
     public static final String OPTIONS_SUB_PATH = "PhpDoc"; // NOI18N
+
+    private static final boolean IS_WINDOWS = Utilities.isWindows();
+
 
     private PhpDocScript(String command) {
         super(command);
@@ -119,10 +123,10 @@ public class PhpDocScript extends PhpProgram {
         ExternalProcessBuilder processBuilder = getProcessBuilder()
                 // from
                 .addArgument("-d") // NOI18N
-                .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
+                .addArgument(sanitizePath(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath()))
                 // to
                 .addArgument("-t") // NOI18N
-                .addArgument(phpDocTarget)
+                .addArgument(sanitizePath(phpDocTarget))
                 // title
                 .addArgument("-ti") // NOI18N
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
@@ -152,6 +156,14 @@ public class PhpDocScript extends PhpProgram {
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
+    }
+
+    // #199449
+    private String sanitizePath(String path) {
+        if (IS_WINDOWS) {
+            return path.replace(File.separatorChar, '/'); // NOI18N
+        }
+        return path;
     }
 
     private class ErrorFileLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
