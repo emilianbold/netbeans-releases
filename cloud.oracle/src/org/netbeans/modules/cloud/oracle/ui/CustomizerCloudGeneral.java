@@ -64,6 +64,13 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     public CustomizerCloudGeneral(OracleInstance instance) {
         initComponents();
     
+        adminUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        adminUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        instanceUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        instanceUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        cloudUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        cloudUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        
         this.instance = instance;
         serviceInstanceField.setText(instance.getServiceInstance());
         serviceGroupField.setText(instance.getServiceGroup());
@@ -151,9 +158,9 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         usernameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-        serviceLabel = new javax.swing.JLabel();
+        serviceGroupLabel = new javax.swing.JLabel();
         serviceInstanceField = new javax.swing.JTextField();
-        systemLabel = new javax.swing.JLabel();
+        serviceInstanceLabel = new javax.swing.JLabel();
         serviceGroupField = new javax.swing.JTextField();
 
         adminUrlLabel.setLabelFor(adminUrlField);
@@ -171,13 +178,13 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.passwordLabel.text")); // NOI18N
 
-        serviceLabel.setLabelFor(serviceInstanceField);
-        org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.serviceLabel.text")); // NOI18N
+        serviceGroupLabel.setLabelFor(serviceGroupField);
+        org.openide.awt.Mnemonics.setLocalizedText(serviceGroupLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.serviceGroupLabel.text")); // NOI18N
 
         serviceInstanceField.setEditable(false);
 
-        systemLabel.setLabelFor(serviceGroupField);
-        org.openide.awt.Mnemonics.setLocalizedText(systemLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.systemLabel.text")); // NOI18N
+        serviceInstanceLabel.setLabelFor(serviceInstanceField);
+        org.openide.awt.Mnemonics.setLocalizedText(serviceInstanceLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.serviceInstanceLabel.text")); // NOI18N
 
         serviceGroupField.setEditable(false);
 
@@ -192,8 +199,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addComponent(cloudUrlLabel)
                     .addComponent(passwordLabel)
                     .addComponent(usernameLabel)
-                    .addComponent(systemLabel)
-                    .addComponent(serviceLabel))
+                    .addComponent(serviceInstanceLabel)
+                    .addComponent(serviceGroupLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cloudUrlField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
@@ -202,21 +209,21 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(usernameField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE))
-                    .addComponent(serviceGroupField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
+                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                    .addComponent(serviceGroupField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                .addGap(16, 16, 16))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(serviceLabel)
-                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(serviceGroupLabel)
+                    .addComponent(serviceGroupField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(systemLabel)
-                    .addComponent(serviceGroupField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(serviceInstanceLabel)
+                    .addComponent(serviceInstanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminUrlLabel)
@@ -250,9 +257,9 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField serviceGroupField;
+    private javax.swing.JLabel serviceGroupLabel;
     private javax.swing.JTextField serviceInstanceField;
-    private javax.swing.JLabel serviceLabel;
-    private javax.swing.JLabel systemLabel;
+    private javax.swing.JLabel serviceInstanceLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables

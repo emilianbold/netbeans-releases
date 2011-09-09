@@ -23,8 +23,8 @@
                   <Component id="cloudUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="usernameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="systemLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceInstanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceGroupLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -35,10 +35,10 @@
                       <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
                       <Component id="usernameField" alignment="0" pref="104" max="32767" attributes="1"/>
                   </Group>
-                  <Component id="serviceGroupField" alignment="0" pref="280" max="32767" attributes="0"/>
                   <Component id="serviceInstanceField" alignment="0" pref="280" max="32767" attributes="0"/>
+                  <Component id="serviceGroupField" alignment="0" pref="280" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -47,13 +47,13 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="serviceInstanceField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceGroupLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceGroupField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="systemLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="serviceGroupField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceInstanceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceInstanceField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -161,13 +161,13 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
     </Component>
-    <Component class="javax.swing.JLabel" name="serviceLabel">
+    <Component class="javax.swing.JLabel" name="serviceGroupLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="serviceInstanceField"/>
+          <ComponentRef name="serviceGroupField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.serviceLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.serviceGroupLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -179,13 +179,13 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="systemLabel">
+    <Component class="javax.swing.JLabel" name="serviceInstanceLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="serviceGroupField"/>
+          <ComponentRef name="serviceInstanceField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.systemLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.serviceInstanceLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
