@@ -164,6 +164,9 @@ class APTGnuCppFilter extends APTBaseLanguageFilter {
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N 
         filter("export", APTTokenTypes.LITERAL_export); // NOI18N
         filter("__thread", APTTokenTypes.LITERAL___thread); // NOI18N
+        filter("__global", APTTokenTypes.LITERAL___global); // NOI18N
+        filter("__hidden", APTTokenTypes.LITERAL___hidden); // NOI18N
+        filter("__symbolic", APTTokenTypes.LITERAL___symbolic); // NOI18N
 
         filter("and", APTTokenTypes.AND); // NOI18N
         filter("bitor", APTTokenTypes.BITWISEOR); // NOI18N
