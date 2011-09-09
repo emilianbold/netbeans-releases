@@ -1382,6 +1382,9 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_mutable:
                 return true;
             case CPPTokenTypes.LITERAL___thread:
+            case CPPTokenTypes.LITERAL___symbolic:
+            case CPPTokenTypes.LITERAL___global:
+            case CPPTokenTypes.LITERAL___hidden:
                 return true;
             default:
                 return false;

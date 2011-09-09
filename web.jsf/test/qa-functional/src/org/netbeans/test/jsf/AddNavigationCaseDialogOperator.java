@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,42 +27,30 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.jsf;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextAreaOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.*;
 
-
-/** Class implementing all necessary methods for handling "Add Navigation Case" NbDialog.
+/**
+ * Class implementing all necessary methods for handling "Add Navigation Case"
+ * NbDialog.
  *
  * @author luke
  */
 public class AddNavigationCaseDialogOperator extends NbDialogOperator {
-
-    /** Creates new AddNavigationCase that can handle it.
-     */
-    public AddNavigationCaseDialogOperator() {
-        super("Add Navigation Case");
-    }
 
     private JLabelOperator _lblFromView;
     private JComboBoxOperator _cboFromView;
@@ -82,16 +67,20 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
     private JComboBoxOperator _cboToView;
     private JButtonOperator _btAdd;
 
+    /** Creates new AddNavigationCase that can handle it.
+     */
+    public AddNavigationCaseDialogOperator() {
+        super("Add Navigation Case");
+    }
 
     //******************************
     // Subcomponents definition part
     //******************************
-
     /** Tries to find "From View:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblFromView() {
-        if (_lblFromView==null) {
+        if (_lblFromView == null) {
             _lblFromView = new JLabelOperator(this, "From View:");
         }
         return _lblFromView;
@@ -101,8 +90,8 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboFromView() {
-        if (_cboFromView==null) {
-            _cboFromView = new JComboBoxOperator((JComboBox)lblFromView().getLabelFor());
+        if (_cboFromView == null) {
+            _cboFromView = new JComboBoxOperator((JComboBox) lblFromView().getLabelFor());
         }
         return _cboFromView;
     }
@@ -111,7 +100,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btBrowse() {
-        if (_btBrowse==null) {
+        if (_btBrowse == null) {
             _btBrowse = new JButtonOperator(this, "Browse...");
         }
         return _btBrowse;
@@ -121,7 +110,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblFromAction() {
-        if (_lblFromAction==null) {
+        if (_lblFromAction == null) {
             _lblFromAction = new JLabelOperator(this, "From Action:");
         }
         return _lblFromAction;
@@ -131,8 +120,8 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtFromAction() {
-        if (_txtFromAction==null) {
-            _txtFromAction = new JTextFieldOperator((JTextField)lblFromAction().getLabelFor());
+        if (_txtFromAction == null) {
+            _txtFromAction = new JTextFieldOperator((JTextField) lblFromAction().getLabelFor());
         }
         return _txtFromAction;
     }
@@ -141,19 +130,18 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblFromOutcome() {
-        if (_lblFromOutcome==null) {
+        if (_lblFromOutcome == null) {
             _lblFromOutcome = new JLabelOperator(this, "From Outcome:");
         }
         return _lblFromOutcome;
     }
-    
-    
+
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtFromOutcome() {
-        if (_txtFromOutcome==null) {
-            _txtFromOutcome = new JTextFieldOperator((JTextField)lblFromOutcome().getLabelFor());
+        if (_txtFromOutcome == null) {
+            _txtFromOutcome = new JTextFieldOperator((JTextField) lblFromOutcome().getLabelFor());
         }
         return _txtFromOutcome;
     }
@@ -162,7 +150,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblToView() {
-        if (_lblToView==null) {
+        if (_lblToView == null) {
             _lblToView = new JLabelOperator(this, "To View:");
         }
         return _lblToView;
@@ -172,7 +160,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btBrowse2() {
-        if (_btBrowse2==null) {
+        if (_btBrowse2 == null) {
             _btBrowse2 = new JButtonOperator(this, "Browse...", 1);
         }
         return _btBrowse2;
@@ -182,7 +170,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbRedirect() {
-        if (_cbRedirect==null) {
+        if (_cbRedirect == null) {
             _cbRedirect = new JCheckBoxOperator(this, "Redirect");
         }
         return _cbRedirect;
@@ -192,7 +180,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblRuleDescription() {
-        if (_lblRuleDescription==null) {
+        if (_lblRuleDescription == null) {
             _lblRuleDescription = new JLabelOperator(this, "Rule Description:");
         }
         return _lblRuleDescription;
@@ -202,7 +190,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JTextAreaOperator
      */
     public JTextAreaOperator txtRuleDescription() {
-        if (_txtRuleDescription==null) {
+        if (_txtRuleDescription == null) {
             _txtRuleDescription = new JTextAreaOperator(this);
         }
         return _txtRuleDescription;
@@ -212,8 +200,8 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboToView() {
-        if (_cboToView==null) {
-            _cboToView = new JComboBoxOperator((JComboBox)lblToView().getLabelFor());
+        if (_cboToView == null) {
+            _cboToView = new JComboBoxOperator((JComboBox) lblToView().getLabelFor());
         }
         return _cboToView;
     }
@@ -222,20 +210,19 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btAdd() {
-        if (_btAdd==null) {
+        if (_btAdd == null) {
             _btAdd = new JButtonOperator(this, "Add");
         }
         return _btAdd;
     }
-    
-    public void add(){
+
+    public void add() {
         btAdd().push();
     }
 
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** returns selected item for cboFromView
      * @return String item
      */
@@ -315,7 +302,7 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
      * @param state boolean requested state
      */
     public void checkRedirect(boolean state) {
-        if (cbRedirect().isSelected()!=state) {
+        if (cbRedirect().isSelected() != state) {
             cbRedirect().push();
         }
     }
@@ -362,11 +349,9 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
         cboToView().typeText(text);
     }
 
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /** Performs verification of AddNavigationCase by accessing all its components.
      */
     public void verify() {
@@ -388,4 +373,3 @@ public class AddNavigationCaseDialogOperator extends NbDialogOperator {
         btHelp();
     }
 }
-

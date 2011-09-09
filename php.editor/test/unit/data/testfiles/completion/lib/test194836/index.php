@@ -6,10 +6,12 @@
     </head>
     <body>
         <?php
-        require 'library/User.php';
-        $user = new User();
+        // here should be no completion, because
+        // "namespace" or "use" declaration is missing
+        require 'library/XUser.php';
+        $user = new XUser();
         $user->
-        
+
         ?>
     </body>
 </html>

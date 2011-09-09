@@ -68,6 +68,8 @@ final class APTGnuCFilter extends APTStdCFilter {
         filter("__const", APTTokenTypes.LITERAL___const); // NOI18N
         filter("__const__", APTTokenTypes.LITERAL___const__); // NOI18N
         filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N
+        filter("__global", APTTokenTypes.LITERAL___global); // NOI18N
+        filter("__hidden", APTTokenTypes.LITERAL___hidden); // NOI18N
         filter("__inline", APTTokenTypes.LITERAL___inline); // NOI18N
         filter("__inline__", APTTokenTypes.LITERAL___inline__); // NOI18N
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N
@@ -75,6 +77,7 @@ final class APTGnuCFilter extends APTStdCFilter {
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
         filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
         filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
+        filter("__symbolic", APTTokenTypes.LITERAL___symbolic); // NOI18N
         filter("__thread", APTTokenTypes.LITERAL___thread); // NOI18N
         filter("__typeof", APTTokenTypes.LITERAL___typeof); // NOI18N
         filter("__typeof__", APTTokenTypes.LITERAL___typeof__); // NOI18N

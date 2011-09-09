@@ -301,6 +301,8 @@ tokens {
     LITERAL___attribute="__attribute"; // NOI18N
     LITERAL__Imaginary="_Imaginary"; // NOI18N
     LITERAL_bit="bit"; // NOI18N
+    LITERAL___symbolic="__symbolic"; // NOI18N
+    LITERAL___hidden="__hidden"; // NOI18N
 
     // Extension points
     LITERAL__BUILT_IN_TYPE__; // extra built-in type name
