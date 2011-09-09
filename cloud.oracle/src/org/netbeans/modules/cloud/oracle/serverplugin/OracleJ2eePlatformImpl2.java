@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.libs.oracle.cloud.api.WhiteListQuerySupport;
+import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -210,21 +211,10 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     public Lookup getLookup() {
         File f = OracleInstance.findWeblogicJar(dm.getOnPremiseServiceInstanceId());
         return LookupProviderSupport.createCompositeLookup(
-                Lookups.fixed(WhiteListQuerySupport.createCloud9WhiteListQueryImpl(), new WeblogicJar(f)), 
-                "J2EE/DeploymentPlugins/Oracle Cloud/Lookup"); //NOI18N
-    }
-    
-    public static final class WeblogicJar {
-        private File f;
-
-        private WeblogicJar(File f) {
-            this.f = f;
-        }
-
-        public File getWeglobicJar() {
-            return f;
-        }
-        
-        
+                Lookups.fixed(
+                    WhiteListQuerySupport.createCloud9WhiteListQueryImpl(),
+                    JpaProviderFactory.createJpaProvider("", true, true, false),
+                    new JpaSupportImpl()
+                    ), "J2EE/DeploymentPlugins/Oracle Cloud/Lookup"); //NOI18N
     }
 }
