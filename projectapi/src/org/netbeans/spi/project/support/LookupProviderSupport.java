@@ -73,6 +73,10 @@ public final class LookupProviderSupport {
     /**
      * Creates a project lookup instance that combines the content from multiple sources. 
      * A convenience factory method for implementors of Project.
+     * <p>The pattern {@code Projects/TYPE/Lookup} is conventional for the folder path, and required if
+     * {@link org.netbeans.spi.project.LookupProvider.Registration},
+     * {@link org.netbeans.spi.project.LookupMerger.Registration}, or
+     * {@link org.netbeans.spi.project.ProjectServiceProvider} are used.
      * 
      * @param baseLookup initial, base content of the project lookup created by the project owner
      * @param folderPath the path in the System Filesystem that is used as root for lookup composition, as for {@link Lookups#forPath}.
