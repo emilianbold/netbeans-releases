@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test199899() throws Exception {
+        // #199899 - Parser fails on Solaris Studio specific keywords        
+        performTest("iz199899.c");
+    }
+    
     public void test197997() throws Exception {
         // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
         performTest("iz197997.cc");
