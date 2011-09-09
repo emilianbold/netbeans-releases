@@ -48,6 +48,7 @@ import java.awt.Toolkit;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.lexer.Language;
@@ -56,6 +57,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
@@ -125,16 +127,19 @@ public class ManifestHyperlinkProvider implements HyperlinkProviderExt {
         return null;
     }
     
-    private static FileObject findFile(FileObject manifest, String path) {
+    private static @CheckForNull FileObject findFile(FileObject manifest, String path) {
         Project prj = FileOwnerQuery.getOwner(manifest);
         if (prj == null) {
             return null;
         }
-        Sources srcs = prj.getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(prj);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (grps.length == 0)   // #143157: there needn't to be source group (yet)
             return null;
         ClassPath cp = ClassPath.getClassPath(grps[0].getRootFolder(), ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
         path = path.trim();
         return cp.findResource(path);
     }
