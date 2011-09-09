@@ -127,6 +127,15 @@ public final class ParserThread implements Runnable {
                             }
                         }
                         if (!project.isDisposing()) {
+                            if (TraceFlags.SUSPEND_PARSE_FILE_TIME > 0) {
+                                try {
+                                    System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_FILE_TIME + "ms before parsing " + file.getAbsolutePath());
+                                    Thread.sleep(TraceFlags.SUSPEND_PARSE_FILE_TIME);
+                                    System.err.println("awoke after sleep");
+                                } catch (InterruptedException ex) {
+                                    // do nothing
+                                }
+                            }
                             file.ensureParsed(preprocHandlers);
                         }
                     } catch (Throwable thr) {
