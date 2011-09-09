@@ -788,6 +788,15 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testIssue201330_04() throws Exception {
         testIndentInFile("testfiles/indent/issue201330_04.php");
     }
+    
+    public void testIssue201285_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue201285_01.php");
+    }
+    
+    public void testIssue201285_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue201285_02.php");
+    }
+    
 
     @Override
     protected boolean runInEQ() {
