@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
-import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -180,26 +179,6 @@ public abstract class RemoteCommand extends Command {
 
     protected String getRemoteDirectory() {
         return ProjectPropertiesSupport.getRemoteDirectory(getProject());
-    }
-
-    public static void processRemoteException(RemoteException remoteException) {
-        String title = NbBundle.getMessage(Command.class, "LBL_RemoteError");
-        StringBuilder message = new StringBuilder(remoteException.getMessage());
-        String remoteServerAnswer = remoteException.getRemoteServerAnswer();
-        Throwable cause = remoteException.getCause();
-        if (remoteServerAnswer != null && remoteServerAnswer.length() > 0) {
-            message.append(NbBundle.getMessage(Command.class, "MSG_RemoteErrorReason", remoteServerAnswer));
-        } else if (cause != null) {
-            message.append(NbBundle.getMessage(Command.class, "MSG_RemoteErrorReason", cause.getMessage()));
-        }
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                message.toString(),
-                title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.ERROR_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
 
     protected static void processTransferInfo(TransferInfo transferInfo, InputOutput io) {
