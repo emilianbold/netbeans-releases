@@ -196,7 +196,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final Set<ClassElement> classes = new HashSet<ClassElement>();
         final Collection<? extends IndexResult> result = results(ClassElementImpl.IDX_FIELD, query);
         for (final IndexResult indexResult : result) {
-            classes.addAll(ClassElementImpl.fromSignature(query, this, indexResult));
+            Set<ClassElement> allClasses = ClassElementImpl.fromSignature(query, this, indexResult);
+            if (query.isPrefix()) {
+                classes.addAll(allClasses);
+            } else {
+                for (ClassElement classElement : allClasses) {
+                    if (query.getQuery().getNamespaceName().equals(classElement.getNamespaceName().toString())) {
+                        classes.add(classElement);
+                    }
+                }
+            }
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<ClassElement> getClasses", query, start);//NOI18N
@@ -471,9 +480,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                         });
                 for (final IndexResult indexResult : clzResults) {
                     for (final TypeElement clzElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                        members.addAll(MethodElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
-                        members.addAll(FieldElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
-                        members.addAll(TypeConstantElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
+                        if (fullyQualifiedName.getNamespaceName().equals(clzElement.getNamespaceName().toString())) {
+                            members.addAll(MethodElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
+                            members.addAll(FieldElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
+                            members.addAll(TypeConstantElementImpl.fromSignature(clzElement, memberQuery, this, indexResult));
+                        }
                     }
                 }
                 break;

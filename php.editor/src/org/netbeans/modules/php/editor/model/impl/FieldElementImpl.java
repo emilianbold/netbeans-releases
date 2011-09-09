@@ -106,10 +106,12 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         Set<TypeResolver> instanceTypes = indexedConstant.getInstanceTypes();
         for (TypeResolver typeResolver : instanceTypes) {
             if (typeResolver.isResolved()) {
+                QualifiedName typeName = typeResolver.getTypeName(false);
+                String type = typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
                 if (this.defaultType != null) {
-                    this.defaultType += String.format("|%s", typeResolver.getTypeName(false).getName()); //NOI18N
+                    this.defaultType += String.format("|%s", type); //NOI18N
                 } else {
-                    this.defaultType = typeResolver.getTypeName(false).getName();
+                    this.defaultType = type;
                 }
             }
         }
