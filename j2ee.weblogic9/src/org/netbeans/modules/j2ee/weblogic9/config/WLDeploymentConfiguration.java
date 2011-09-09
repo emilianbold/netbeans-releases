@@ -102,7 +102,7 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration, Messa
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        return true;
+        return false;
     }
 
     @Override

@@ -67,6 +67,7 @@ import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encrypt
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -540,7 +541,10 @@ public class FtpClient implements RemoteClient {
             addProtocolCommandListener();
             scheduleKeepAlive();
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Keep-alive (NOOP) error for " + configuration.getHost(), ex);
+            LOGGER.log(Level.FINE, "Keep-alive (NOOP) error for " + configuration.getHost(), ex);
+            // #201828
+            RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
+            RemoteUtils.processRemoteException(exc);
         }
     }
 
