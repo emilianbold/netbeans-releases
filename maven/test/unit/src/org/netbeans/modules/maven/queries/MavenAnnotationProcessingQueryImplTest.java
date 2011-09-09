@@ -81,4 +81,27 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertOpts("", "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
     }
 
+    public void testProcNone() throws Exception {
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<configuration><compilerArgument>-proc:none</compilerArgument></configuration></plugin></plugins></build>",
+            "enabled=[] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+    }
+
+    public void testNewCompiler() throws Exception {
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<version>2.2</version></plugin></plugins></build>",
+            "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+    }
+
+    public void testOldCompiler() throws Exception {
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<version>2.1</version></plugin></plugins></build>",
+            "enabled=[] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+    }
+    
+    // XXX compilerArgument unformatted vs. compilerArguments
+    // XXX annotationProcessors config
+    // XXX <compilerArguments><Averbose>true</></> (MCOMPILER-135)
+    // XXX test root
+
 }
