@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -55,7 +56,7 @@ import org.openide.windows.InputOutput;
  */
 class InternalTerminalPack extends IOPack {
     private Pty pty = null;
-    protected final InputOutput io;
+    private final InputOutput io;
     private String slaveName = null;
     
     private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
@@ -87,7 +88,15 @@ class InternalTerminalPack extends IOPack {
     }
 
     @Override
+    public void switchTo() {
+        super.switchTo();
+        // show output
+        io.select();
+    }
+
+    @Override
     public void close() {
+        IOTerm.disconnect(io, null);
         if (pty != null) {
             try {
                 pty.close();
