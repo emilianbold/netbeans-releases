@@ -112,6 +112,9 @@ public class CdiGlyphAction extends AbstractAction {
             int dot = comp.getCaret().getDot();
             Annotations annotations = ((BaseDocument) document).getAnnotations();
             Line line = NbEditorUtilities.getLine(document, dot, true);
+            if (line == null) {
+                return false;
+            }
             int lineNumber = line.getLineNumber();
             AnnotationDesc  desc = annotations.getActiveAnnotation(lineNumber);
             if ( desc ==  null ){
