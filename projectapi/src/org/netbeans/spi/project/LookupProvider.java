@@ -57,6 +57,7 @@ import org.openide.util.Lookup;
  * location public where 3rd parties will register implementations of this interface.
  * @author mkleint
  * @since org.netbeans.modules.projectapi 1.12
+ * @see LookupProviderSupport#createCompositeLookup
  */
 public interface LookupProvider {
     
@@ -104,6 +105,8 @@ public interface LookupProvider {
             /**
              * Token denoting project type.
              * @see org.netbeans.spi.project.LookupProvider.Registration#projectType
+             * @see org.netbeans.spi.project.LookupMerger.Registration#projectType
+             * @see org.netbeans.spi.project.ProjectServiceProvider#projectType
              */
             String id();
             /**

@@ -44,10 +44,7 @@
 
 package org.netbeans.core.spi.multiview.text;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -55,35 +52,30 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.text.Document;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.text.NbDocument.CustomToolbar;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
  * @author  mkleint
  */
-class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElement,
-PropertyChangeListener {
+class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElement {
     private static final long serialVersionUID =-3126744316644172415L;
 
     private transient MultiViewElementCallback multiViewObserver;
-    private transient JPanel bar;
-    private transient PropertyChangeListener weakL;
+    private transient JToolBar bar;
     
     public MultiViewCloneableEditor() {
         super();
@@ -96,12 +88,14 @@ PropertyChangeListener {
     
     @Override
     public JComponent getToolbarRepresentation() {
+        Document doc = getEditorPane().getDocument();
+        if (doc instanceof NbDocument.CustomToolbar) {
+            if (bar == null) {
+                bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
+            }
+        }
         if (bar == null) {
-            bar = new JPanel();
-            bar.setLayout(new BorderLayout());
-            weakL = WeakListeners.propertyChange(this, cloneableEditorSupport());
-            cloneableEditorSupport().addPropertyChangeListener(weakL);
-            fillInBar();
+            bar = new JToolBar();
         }
         return bar;
     }
@@ -270,23 +264,5 @@ PropertyChangeListener {
     Lookup getLookupSuper() {
         return super.getLookup();
     }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (
-            EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName()) ||
-            EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())
-        ) {
-            fillInBar();
-        }
-    }
-
-    private void fillInBar() {
-        bar.removeAll();
-        Document doc = cloneableEditorSupport().getDocument();
-        if (doc instanceof NbDocument.CustomToolbar && pane != null) {
-            CustomToolbar custom = (NbDocument.CustomToolbar)doc;
-            bar.add(custom.createToolbar(pane), BorderLayout.CENTER);
-        }
-    }
+    
 }
