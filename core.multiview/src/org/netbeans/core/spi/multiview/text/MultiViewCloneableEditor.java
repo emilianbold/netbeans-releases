@@ -45,6 +45,7 @@
 package org.netbeans.core.spi.multiview.text;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -70,6 +71,7 @@ import org.openide.text.NbDocument;
 import org.openide.text.NbDocument.CustomToolbar;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -78,7 +80,7 @@ import org.openide.windows.TopComponent;
  * @author  mkleint
  */
 class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElement,
-PropertyChangeListener {
+PropertyChangeListener, Runnable {
     private static final long serialVersionUID =-3126744316644172415L;
 
     private transient MultiViewElementCallback multiViewObserver;
@@ -277,11 +279,17 @@ PropertyChangeListener {
             EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName()) ||
             EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())
         ) {
-            fillInBar();
+            Mutex.EVENT.readAccess(this);
         }
     }
 
+    @Override
+    public void run() {
+        fillInBar();
+    }
+
     private void fillInBar() {
+        assert EventQueue.isDispatchThread();
         bar.removeAll();
         Document doc = cloneableEditorSupport().getDocument();
         if (doc instanceof NbDocument.CustomToolbar && pane != null) {
