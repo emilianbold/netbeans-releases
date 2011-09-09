@@ -131,7 +131,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
             return false;
         }
         // XXX warn about missing server (or error? or not needed?)
-        if (!wizardPanel.isDestinationCreationSupportedByServerPlugin()) {
+        if (!wizardPanel.isServerConfigured()) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                     NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_MissingServer"));

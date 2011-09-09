@@ -121,6 +121,8 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
                     return b;
                 }
             }
+        } else if (roots.isEmpty()) {
+            notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_EmptySelection")); //NOI18N
         } else {
             notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_TooManyRoots"));            
         }

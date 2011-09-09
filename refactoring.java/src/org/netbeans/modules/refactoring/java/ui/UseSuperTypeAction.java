@@ -46,6 +46,9 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -59,6 +62,9 @@ import org.openide.util.NbBundle;
 /**
  * The Action class for the use super type refactoring
  */
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.UseSuperTypeAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_UseSuperType_Action")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "UseSuperTypeAction", position = 900)
 public class UseSuperTypeAction extends JavaRefactoringGlobalAction{
     
     private TreePathHandle classTreeHandle = null;

@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,18 +27,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.jsf;
 
 import javax.swing.JComboBox;
@@ -52,20 +47,21 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
-
-/** Class implementing all necessary methods for handling "New JSF Managed Bean" NbDialog.
+/**
+ * Class implementing all necessary methods for handling "New JSF Managed Bean"
+ * NbDialog.
  *
  * @author luke
  */
 public class NewJSFBeanStepOperator extends WizardOperator {
 
-    /** Creates new NewJSFManagedBean that can handle it.
+    /**
+     * Creates new NewJSFManagedBean that can handle it.
      */
     public NewJSFBeanStepOperator() {
         super("New JSF Managed Bean");
         checkPanel("Name and Location");
     }
-
     private JLabelOperator _lblNameAndLocation;
     private JLabelOperator _lblClassName;
     private JTextFieldOperator _txtClassName;
@@ -83,18 +79,15 @@ public class NewJSFBeanStepOperator extends WizardOperator {
     private JComboBoxOperator _cboScope;
     private JLabelOperator _lblBeanDescription;
     private JTextAreaOperator _txtBeanDescription;
-   
-
 
     //******************************
     // Subcomponents definition part
     //******************************
-
     /** Tries to find "Name and Location" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblNameAndLocation() {
-        if (_lblNameAndLocation==null) {
+        if (_lblNameAndLocation == null) {
             _lblNameAndLocation = new JLabelOperator(this, "Name and Location");
         }
         return _lblNameAndLocation;
@@ -104,7 +97,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblClassName() {
-        if (_lblClassName==null) {
+        if (_lblClassName == null) {
             _lblClassName = new JLabelOperator(this, "Class Name:");
         }
         return _lblClassName;
@@ -114,8 +107,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtClassName() {
-        if (_txtClassName==null) {
-            _txtClassName = new JTextFieldOperator((JTextField)lblClassName().getLabelFor());
+        if (_txtClassName == null) {
+            _txtClassName = new JTextFieldOperator((JTextField) lblClassName().getLabelFor());
         }
         return _txtClassName;
     }
@@ -124,7 +117,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblProject() {
-        if (_lblProject==null) {
+        if (_lblProject == null) {
             _lblProject = new JLabelOperator(this, "Project:");
         }
         return _lblProject;
@@ -134,8 +127,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtProject() {
-        if (_txtProject==null) {
-            _txtProject = new JTextFieldOperator((JTextField)lblProject().getLabelFor());
+        if (_txtProject == null) {
+            _txtProject = new JTextFieldOperator((JTextField) lblProject().getLabelFor());
         }
         return _txtProject;
     }
@@ -144,7 +137,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblLocation() {
-        if (_lblLocation==null) {
+        if (_lblLocation == null) {
             _lblLocation = new JLabelOperator(this, "Location:");
         }
         return _lblLocation;
@@ -154,8 +147,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboLocation() {
-        if (_cboLocation==null) {
-            _cboLocation = new JComboBoxOperator((JComboBox)lblLocation().getLabelFor());
+        if (_cboLocation == null) {
+            _cboLocation = new JComboBoxOperator((JComboBox) lblLocation().getLabelFor());
         }
         return _cboLocation;
     }
@@ -164,7 +157,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblPackage() {
-        if (_lblPackage==null) {
+        if (_lblPackage == null) {
             _lblPackage = new JLabelOperator(this, "Package:");
         }
         return _lblPackage;
@@ -174,8 +167,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboPackage() {
-        if (_cboPackage==null) {
-            _cboPackage = new JComboBoxOperator((JComboBox)lblPackage().getLabelFor());
+        if (_cboPackage == null) {
+            _cboPackage = new JComboBoxOperator((JComboBox) lblPackage().getLabelFor());
         }
         return _cboPackage;
     }
@@ -184,7 +177,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblCreatedFile() {
-        if (_lblCreatedFile==null) {
+        if (_lblCreatedFile == null) {
             _lblCreatedFile = new JLabelOperator(this, "Created File:");
         }
         return _lblCreatedFile;
@@ -194,8 +187,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtCreatedFile() {
-        if (_txtCreatedFile==null) {
-            _txtCreatedFile = new JTextFieldOperator((JTextField)lblCreatedFile().getLabelFor());
+        if (_txtCreatedFile == null) {
+            _txtCreatedFile = new JTextFieldOperator((JTextField) lblCreatedFile().getLabelFor());
         }
         return _txtCreatedFile;
     }
@@ -204,7 +197,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblConfigurationFile() {
-        if (_lblConfigurationFile==null) {
+        if (_lblConfigurationFile == null) {
             _lblConfigurationFile = new JLabelOperator(this, "Configuration File:");
         }
         return _lblConfigurationFile;
@@ -214,8 +207,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboConfigurationFile() {
-        if (_cboConfigurationFile==null) {
-            _cboConfigurationFile = new JComboBoxOperator((JComboBox)lblConfigurationFile().getLabelFor());
+        if (_cboConfigurationFile == null) {
+            _cboConfigurationFile = new JComboBoxOperator((JComboBox) lblConfigurationFile().getLabelFor());
         }
         return _cboConfigurationFile;
     }
@@ -224,7 +217,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblScope() {
-        if (_lblScope==null) {
+        if (_lblScope == null) {
             _lblScope = new JLabelOperator(this, "Scope:");
         }
         return _lblScope;
@@ -234,8 +227,8 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboScope() {
-        if (_cboScope==null) {
-            _cboScope = new JComboBoxOperator((JComboBox)lblScope().getLabelFor());
+        if (_cboScope == null) {
+            _cboScope = new JComboBoxOperator((JComboBox) lblScope().getLabelFor());
         }
         return _cboScope;
     }
@@ -244,7 +237,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblBeanDescription() {
-        if (_lblBeanDescription==null) {
+        if (_lblBeanDescription == null) {
             _lblBeanDescription = new JLabelOperator(this, "Bean Description:");
         }
         return _lblBeanDescription;
@@ -254,18 +247,15 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      * @return JTextAreaOperator
      */
     public JTextAreaOperator txtBeanDescription() {
-        if (_txtBeanDescription==null) {
+        if (_txtBeanDescription == null) {
             _txtBeanDescription = new JTextAreaOperator(this);
         }
         return _txtBeanDescription;
     }
-   
-
 
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** gets text for txtClassName
      * @return String text
      */
@@ -416,9 +406,9 @@ public class NewJSFBeanStepOperator extends WizardOperator {
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /** Performs verification of NewJSFManagedBean by accessing all its components.
      */
+    @Override
     public void verify() {
         lblNameAndLocation();
         lblClassName();
@@ -443,6 +433,4 @@ public class NewJSFBeanStepOperator extends WizardOperator {
         btCancel();
         btHelp();
     }
-
 }
-

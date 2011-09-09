@@ -123,24 +123,29 @@ public final class FileUtils {
         Parameters.notNull("filename", filename);
 
         String path = System.getenv("PATH"); // NOI18N
+        LOGGER.log(Level.FINE, "PATH: [{0}]", path);
         if (path == null) {
             return Collections.<String>emptyList();
         }
         // on linux there are usually duplicities in PATH
         Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+        LOGGER.log(Level.FINE, "PATH dirs: {0}", dirs);
         List<String> found = new ArrayList<String>(dirs.size() * filename.length);
         for (String f : filename) {
             for (String d : dirs) {
                 File file = new File(d, f);
                 if (file.isFile()) {
                     String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
+                    LOGGER.log(Level.FINE, "File ''{0}'' found", absolutePath);
                     // not optimal but should be ok
                     if (!found.contains(absolutePath)) {
+                        LOGGER.log(Level.FINE, "File ''{0}'' added to found files", absolutePath);
                         found.add(absolutePath);
                     }
                 }
             }
         }
+        LOGGER.log(Level.FINE, "Found files: {0}", found);
         return found;
     }
 

@@ -289,7 +289,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public OffsetRange getNameRange() {
         return offsetRange;
     }
- 
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -341,7 +341,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public final QualifiedName getFullyQualifiedName() {
-        return getNamespaceName().append(getName());
+        return QualifiedName.createFullyQualified(getName(), getNamespaceName().toString());
     }
 
     @Override
