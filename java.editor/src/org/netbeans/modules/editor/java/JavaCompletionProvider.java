@@ -4733,7 +4733,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (enclType.getKind() == TypeKind.DECLARED)
                 enclType = types.erasure(enclType);
             while(type != null && type.getKind() == TypeKind.DECLARED) {
-                if (types.isSubtype(type, enclType)) {
+                if ((enclType.getKind() != TypeKind.DECLARED || ((DeclaredType)enclType).asElement().getSimpleName().length() > 0) && types.isSubtype(type, enclType)) {
                     ret = types.asMemberOf((DeclaredType)type, element);
                     break;
                 }
