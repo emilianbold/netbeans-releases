@@ -193,18 +193,18 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             Image badge = null;        
             switch (app.getState()) {
                     
-                case STATE_ADMIN:
-                case STATE_NEW:
                 case STATE_PREPARED:
                 case STATE_UPDATE_PENDING:
                     badge = ImageUtilities.loadImage(WAITING_ICON);
                     break;
+                case STATE_NEW:
                 case STATE_RETIRED:
                     badge = ImageUtilities.loadImage(TERMINATED_ICON);
                     break;
                 case STATE_FAILED:
                     badge = ImageUtilities.loadImage(FAILED_ICON);
                     break;
+                case STATE_ADMIN:
                 case STATE_ACTIVE:
                     // no badge; app is running
                     break;
