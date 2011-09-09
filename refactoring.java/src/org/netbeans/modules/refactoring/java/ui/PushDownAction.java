@@ -45,6 +45,9 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.netbeans.modules.refactoring.java.ui.JavaActionsImplementationFactory;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -54,6 +57,9 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.PushDownAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_PushDown_Action")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "PushDownAction", position = 600)
 public class PushDownAction extends JavaRefactoringGlobalAction {
     
     /** Creates a new instance of PushDownAction

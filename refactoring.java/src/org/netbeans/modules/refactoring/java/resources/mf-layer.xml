@@ -61,71 +61,19 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1560"/>
                     </file>
-                    
-                            
-                        <file name="org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.instance"/>
-                        <attr name="position" intvalue="1420"/>
-                    </file>
                 </folder>
-
                     <folder name="RefactoringActions">
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance"/>
-                            <attr name="position" intvalue="430"/>
-                        </file>
                         <file name="separator-in-java-refactoring.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="470"/>
                         </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance"/>
-                            <attr name="position" intvalue="500"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance"/>
-                            <attr name="position" intvalue="600"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance"/>
-                            <attr name="position" intvalue="700"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance"/>
-                            <attr name="position" intvalue="800"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance"/>
-                            <attr name="position" intvalue="900"/>
-                        </file>
                         <file name="SecondSeparator.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="930"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance"/>
-                            <attr name="position" intvalue="1000"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance"/>
-                            <attr name="position" intvalue="1800"/>
-                        </file>
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-InlineAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-InlineAction.instance"/>
-                            <attr name="position" intvalue="420"/>
-                            </file>
-
-                        <file name="org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.instance"/>
-                            <attr name="position" intvalue="1750"/>
                         </file>
                     </folder>
             </folder>
@@ -143,54 +91,12 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                   <attr name="position" intvalue="2100"/>
                     </file>
-              <file name="RefactoringWhereUsed.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file>
                     <file name="RenameAction.shadow_hidden"/>
             </folder>
         </folder>
     </folder>
     
   </folder> 
-    <folder name="Actions">
-        <folder name="Refactoring">
-            <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.encapsulateFieldsAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-InlineAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.inlineAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.innerToOuterAction"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.introduceParameterAction"/>
-            </file>
-
-        </folder>
-        <folder name="Window">
-            <file name="org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.instance"/>
-        </folder>
-    </folder>  
     <folder name="Windows2">
         <folder name="Components">
             <file name="CallHierarchyTopComponent.settings" url="CallHierarchyTopComponentSettings.xml"/>
@@ -203,10 +109,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Shortcuts">
-        <file name="OS-P.shadow">
-            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.instance"/>
-        </file>
-    </folder>
-
 </filesystem>

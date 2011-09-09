@@ -48,10 +48,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "org.netbeans.modules.refactoring.spi.impl.UndoAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_Undo")
+@ActionReference(path = "Menu/Refactoring" , name = "UndoAction", position = 2000)
 public class UndoAction extends CallableSystemAction implements PropertyChangeListener {
 
     private UndoManager undoManager;
