@@ -70,7 +70,13 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
-            <folder name="Lookup"/>
+            <folder name="Lookup">
+                <file name="J2SEActionProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.LookupProvider"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.java.j2seproject.J2SEActionProvider$Registration"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
             <folder name="Actions">
                 <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>

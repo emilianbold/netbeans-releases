@@ -55,13 +55,15 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
  */
-class J2SEActionProvider extends BaseActionProvider {
+class J2SEActionProvider extends BaseActionProvider implements AntTargetsProvider {
 
     private static final Logger LOG = Logger.getLogger(J2SEActionProvider.class.getName());
 
@@ -204,6 +206,20 @@ class J2SEActionProvider extends BaseActionProvider {
             p.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, config);
         }
         return names;
+    }
+
+    /**
+     * position=100
+     */
+    public static class Registration implements LookupProvider {
+        @Override
+        public Lookup createAdditionalLookup(Lookup baseContext) {
+            final J2SEProject project = baseContext.lookup(J2SEProject.class);
+            final J2SEActionProvider j2seActionProvider = new J2SEActionProvider(project, project.getUpdateHelper());
+            j2seActionProvider.startFSListener();
+            return Lookups.fixed(j2seActionProvider);
+        }
+
     }
 
 }

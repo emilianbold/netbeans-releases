@@ -108,6 +108,24 @@ is the proper place.
 
     <changes>
 
+        <change id="ActionProviderMerger">
+            <api name="general"/>
+            <summary>Added <code>LookupProviderSupport.createActionProviderMerger</code> factory method</summary>
+            <version major="1" minor="38"/>
+            <date day="10" month="9" year="2011"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LookupProviderSupport.createActionProviderMerger</code> factory method to
+                    create a <code>LookupMerger</code> for merging multiple instances of <code>ActionProvider</code>
+                    in the project's <code>Lookup</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support" name="LookupProviderSupport"/>
+            <issue number="201737"/>
+        </change>
+
         <change id="ProjectIconAnnotator">
             <api name="general"/>
             <summary>Added <code>ProjectIconAnnotator</code></summary>
