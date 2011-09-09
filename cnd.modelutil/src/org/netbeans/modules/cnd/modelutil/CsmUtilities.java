@@ -796,6 +796,7 @@ public class CsmUtilities {
 
                         private final Observable ec;
                         private final PointOrOffsetable element;
+                        private boolean detach = false;
 
                         public PropertyChangeListenerImpl(Observable ec, PointOrOffsetable element) {
                             this.ec = ec;
@@ -805,19 +806,30 @@ public class CsmUtilities {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
                             if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-                                ec.removePropertyChangeListener(this);
-                                // it's strange, but ec.getOpenedPanes() still returns null at this time
-                                // evt.getNewValue is null as well
-                                // so redirect once more when pane is really opened
-                                SwingUtilities.invokeLater(this);
+                                // IZ#199820 - 10 sec freezing while hyperlink to non UTF-8 include files
+                                // we need event with already opened pane, unfortunately evt always have old/new params as null
+                                // so we check if pane is opened ourselves
+                                JEditorPane pane = findRecentEditorPaneInEQ(ec);
+                                // we use detach, because user can answer "No" and we'd like to detach listener anyway
+                                if (pane != null || detach) {
+                                    ec.removePropertyChangeListener(this);
+                                }
+                                detach = true;
+                                if (pane != null) {
+                                    // redirect to jump on position after showing document content
+                                    SwingUtilities.invokeLater(this);
+                                }
                             }
                         }
 
                         @Override
                         public void run() {
-                            final JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes != null && panes.length > 0) {
-                                selectElementInPane(panes[0], element, false);
+                            // do not use getOpenedPanes, because it holds AWT lock which
+                            // prevents to show UserQuestionException based dialogs
+                            // use non-blocking findRecentEditorPane instead
+                            JEditorPane pane = findRecentEditorPaneInEQ(ec);
+                            if (pane != null) {
+                                selectElementInPane(pane, element, false);
                             }
                         }
                     }

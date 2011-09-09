@@ -51,6 +51,10 @@ import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -65,6 +69,13 @@ import org.openide.util.lookup.ProxyLookup;
 /** 
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.refactoring.api.ui.SafeDeleteAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_SafeDel_Action")
+@ActionReferences({
+    @ActionReference(path = "Menu/Refactoring" , name = "SafeDeleteAction", position = 350),
+    @ActionReference(path = "Shortcuts", name = "O-DELETE")
+})
+        
 @org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
 public class SafeDeleteAction extends RefactoringGlobalAction implements ExtendedDelete {
     

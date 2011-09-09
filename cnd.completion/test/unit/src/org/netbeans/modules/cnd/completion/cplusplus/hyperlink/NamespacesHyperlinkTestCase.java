@@ -300,6 +300,12 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz172596.cc", 37, 27, "iz172596.cc", 26, 9);
     }
 
+    public void testBug201811() throws Exception {
+        // Bug 201811 - Code assistance unabled to parse boost::tr1::shared_ptr references
+        performTest("bug201811.cpp", 24, 8, "bug201811.cpp", 2, 5);
+        performTest("bug201811.cpp", 25, 8, "bug201811.cpp", 4, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

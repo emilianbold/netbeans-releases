@@ -1,6 +1,6 @@
 <?php
-namespace User;
-interface UserInterface {
+namespace XUser;
+interface XUserInterface {
     public function setName($name);
     public function setLastName($lastsName);
 }

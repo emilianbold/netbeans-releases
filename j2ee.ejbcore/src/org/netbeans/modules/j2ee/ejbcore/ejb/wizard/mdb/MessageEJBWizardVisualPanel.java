@@ -48,7 +48,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.util.Exceptions;
 
 /**
  * Panel for specifying message destination. Project or server message destination can be chosen.
@@ -100,12 +103,13 @@ public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
         return null;
     }
     
-    /**
-     * Return <code>true</code> if current server supports message destination creation.
-     * @return <code>true</code> if current server supports message destination creation, <code>false</code> otherwise.
-     */
-    public boolean isDestinationCreationSupportedByServerPlugin() {
-        return isDestinationCreationSupportedByServerPlugin;
+    public boolean isServerConfigured() {
+        String id = provider.getServerInstanceID();
+        try {
+            return id != null && Deployment.getDefault().getServerInstance(id).getJ2eePlatform() != null;
+        } catch (InstanceRemovedException ex) {
+            return false;
+        }
     }
     
     private void initialize() {

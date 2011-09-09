@@ -36,7 +36,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="testSourcesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="testSourcesTextField" max="32767" attributes="0"/>
+                      <Component id="testSourcesTextField" pref="188" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="testSourcesBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
