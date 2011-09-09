@@ -1705,6 +1705,9 @@ storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     |   LITERAL_mutable     {sc = scMUTABLE;}
     |   LITERAL___thread    {sc = scTHREAD;}
     |   LITERAL__STORAGE_CLASS_SPECIFIER__ {sc = scOTHER;}
+    |   LITERAL___symbolic {sc = scOTHER;}
+    |   LITERAL___global {sc = scOTHER;}
+    |   LITERAL___hidden {sc = scOTHER;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
