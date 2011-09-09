@@ -766,6 +766,22 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/test194836/index.php", "$user->^", false);
     }
 
+    public void testIssue194836_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index_02.php", "$user->^", false);
+    }
+
+    public void testIssue194836_03() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index_03.php", "$user->^", false);
+    }
+
+    public void testIssue194836_04() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index_04.php", "$user->^", false);
+    }
+
+    public void testIssue194836_05() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index_05.php", "$user->^", false);
+    }
+
     public void testIssue153707_01() throws Exception {
         checkCompletion("testfiles/completion/lib/issue153707.php", "class property: ^", false);
     }

@@ -6,8 +6,7 @@
     </head>
     <body>
         <?php
-        // here should be no completion, because
-        // "namespace" or "use" declaration is missing
+        use XUser\XUser;
         require 'library/XUser.php';
         $user = new XUser();
         $user->

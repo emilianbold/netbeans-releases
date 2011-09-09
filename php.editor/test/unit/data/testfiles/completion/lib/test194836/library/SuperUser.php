@@ -1,6 +1,6 @@
 <?php
-namespace User;
-class SuperUser extends UserAbstract{
+namespace XUser;
+class SuperUser extends XUserAbstract{
     public function isSuperUser(){
         return true;
     }
