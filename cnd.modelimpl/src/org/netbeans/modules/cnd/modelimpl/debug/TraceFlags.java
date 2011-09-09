@@ -69,6 +69,7 @@ public class TraceFlags {
     public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat"); // NOI18N
     public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
     public static final int     SUSPEND_PARSE_TIME = Integer.getInteger("cnd.modelimpl.sleep", 0); // NOI18N
+    public static final int     SUSPEND_PARSE_FILE_TIME = Integer.getInteger("cnd.modelimpl.parse.sleep", 0); // NOI18N
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors"); // NOI18N
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
