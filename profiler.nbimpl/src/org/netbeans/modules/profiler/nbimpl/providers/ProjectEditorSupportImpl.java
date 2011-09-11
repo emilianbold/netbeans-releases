@@ -49,6 +49,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -57,12 +58,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.profiler.api.EditorContext;
 import org.netbeans.modules.profiler.spi.EditorSupportProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -70,6 +75,7 @@ import org.openide.windows.WindowManager;
 /**
  *
  * @author Jaroslav Bachorik
+ * @author Tomas Hurka
  */
 @ServiceProvider(service = EditorSupportProvider.class)
 public class ProjectEditorSupportImpl extends EditorSupportProvider {
@@ -223,7 +229,11 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
                 @Override
                 public Integer call() throws Exception {
-                    return NbDocument.findLineNumber(ec.getDocument(), offset);
+                    StyledDocument doc = getDocument(ec);
+                    if (doc == null) {
+                        return -1;
+                    }
+                    return NbDocument.findLineNumber(doc, offset);
                 }
 
             });
@@ -254,7 +264,11 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
                 @Override
                 public Integer call() throws Exception {
-                    return NbDocument.findLineOffset(ec.getDocument(), line);
+                    StyledDocument doc = getDocument(ec);
+                    if (doc == null) {
+                        return -1;
+                    }
+                    return NbDocument.findLineOffset(doc, line);
                 }
             });
         } catch (Exception e) {
@@ -372,5 +386,24 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
         }
 
         return validated[0];
+    }
+
+    private static StyledDocument getDocument(EditorCookie ec) throws IOException {
+        StyledDocument doc = null;
+        try {
+            doc = ec.openDocument();
+        } catch (UserQuestionException uqe) {
+            final Object value = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                    NbBundle.getMessage(ProjectEditorSupportImpl.class, "TXT_Question"),
+                    NotifyDescriptor.YES_NO_OPTION));
+            if (value != NotifyDescriptor.YES_OPTION) {
+                return null;
+            }
+            uqe.confirmed();
+            doc = ec.openDocument();
+        }
+        return doc;
+
     }
 }
