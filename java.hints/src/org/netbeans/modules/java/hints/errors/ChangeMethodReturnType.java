@@ -93,6 +93,10 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         if (method == null) return null;
 
+        MethodTree mt = (MethodTree) tp.getLeaf();
+
+        if (mt.getReturnType() == null) return null;
+
         TypeMirror targetType = info.getTrees().getTypeMirror(treePath);
 
         if (targetType != null && targetType.getKind() == TypeKind.ERROR) {
