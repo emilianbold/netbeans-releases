@@ -1,3 +1,0 @@
-OpenIDE-Module: org.netbeans.modules.dlight.indicators.test
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/indicators/test-layer.xml
-OpenIDE-Public-Packages: -

@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.dlight.visualizers
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/visualizers/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/visualizers/resources/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory, org.netbeans.modules.dlight.visualizers.SourceSupportProvider
-OpenIDE-Module-Needs: org.netbeans.modules.dlight.visualizers.SourceSupportProvider

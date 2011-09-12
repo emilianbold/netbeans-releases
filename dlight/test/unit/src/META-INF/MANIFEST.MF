@@ -1,3 +1,0 @@
-OpenIDE-Module: org.netbeans.modules.dlight.test
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/spi/support/test-layer.xml
-OpenIDE-Public-Packages: -
