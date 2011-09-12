@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
@@ -20,9 +19,9 @@ import javax.ws.rs.Produces;
  *
  * @author lukas
  */
-
 @Path("/CI3ContainerURI")
 public class CI3CClass {
+
     @Context
     private UriInfo context;
 
@@ -58,8 +57,7 @@ public class CI3CClass {
      * Sub-resource locator method for {CI3URI}
      */
     @Path("{CI3URI}")
-    public CI3Cl getCI3Cl(@PathParam("CI3URI")
-    String CI3URI) {
+    public CI3Cl getCI3Cl(@PathParam("CI3URI") String CI3URI) {
         return CI3Cl.getInstance(CI3URI);
     }
 }

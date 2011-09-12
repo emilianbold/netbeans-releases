@@ -18,9 +18,9 @@ import javax.ws.rs.Produces;
  *
  * @author lukas
  */
-
 @Path("Singleton3URI")
 public class Singleton3Cl {
+
     @Context
     private UriInfo context;
 
