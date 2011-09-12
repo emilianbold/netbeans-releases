@@ -50,16 +50,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.Parameters;
 
 /**
  * Skeleton of JFX Action Provider
  */
+@ProjectServiceProvider(
+    service=ActionProvider.class,
+    projectTypes={@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-java-j2seproject",position=90)})
 public class JFXActionProvider implements ActionProvider {
 
     private final Project prj;
@@ -68,7 +72,8 @@ public class JFXActionProvider implements ActionProvider {
         COMMAND_RUN
     };
 
-    private JFXActionProvider(@NonNull final Project project) {
+    public JFXActionProvider(@NonNull final Project project) {
+        Parameters.notNull("project", project);
         this.prj = project;
     }
 
@@ -119,19 +124,5 @@ public class JFXActionProvider implements ActionProvider {
         final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
         assert ep != null;
         return prj.getProjectDirectory().getFileObject (getBuildXmlName(ep.evaluator()));
-    }
-
-    /**
-     * position=90
-     */
-    public static class Registration implements LookupProvider {
-        @Override
-        @NonNull
-        public Lookup createAdditionalLookup(@NonNull Lookup baseContext) {
-            final Project project = baseContext.lookup(Project.class);
-            final JFXActionProvider jfxActionProvider = new JFXActionProvider(project);
-            return Lookups.fixed(jfxActionProvider);
-        }
-
     }
 }

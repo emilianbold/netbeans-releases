@@ -400,9 +400,10 @@ class OutWriter extends PrintWriter {
         }
          */
 
-        int lineCLVT = 0;
+        int lineCLVT = 0; // Character Lenght With Tabs
         try {
             boolean written = false;
+            char lastChar = 0;
             ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
             CharBuffer charBuff = byteBuff.asCharBuffer();
             int charOffset = AbstractLines.toCharIndex(getStorage().size());
@@ -423,16 +424,21 @@ class OutWriter extends PrintWriter {
                     int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
                     lines.addTabAt(charOffset + (i - off), tabLength);
                     lineCLVT += tabLength;
-                } else if (c == '\r') {
-                    // skip
-                } else if (c == '\n') {
-                    charBuff.put(c);
-                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, true);
+                } else if (c == '\b') {
+                    handleBackspace(charBuff);
+                } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {
+                    charBuff.put('\n');
+                    int pos = charBuff.position() * 2;
+                    ByteBuffer bf = (ByteBuffer) byteBuff.position(pos);
+                    write(bf, lineCLVT, true);
                     written = true;
+                } else if (c == '\n') {
+                    assert lastChar == '\r';
                 } else {
                     charBuff.put(c);
                     lineCLVT++;
                 }
+                lastChar = c;
             }
             if (!written) {
                 write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, false);
@@ -442,6 +448,14 @@ class OutWriter extends PrintWriter {
         }
         lines.delayedFire();
         return;
+    }
+
+    /** Update state of character buffer after a backspace character has been
+        read */
+    private void handleBackspace(CharBuffer charBuff) {
+        if (charBuff.position() > 0) {
+            charBuff.position(charBuff.position() - 1);
+        }
     }
 
     @Override

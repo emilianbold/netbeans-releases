@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -94,6 +95,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -106,6 +108,7 @@ import org.openide.windows.InputOutput;
 public class ProjectActionSupport {
 
     private static ProjectActionSupport instance;
+    private static RequestProcessor RP = new RequestProcessor("ProjectActionSupport.refresh", 1); // NOI18N
     private final List<ProjectActionHandlerFactory> handlerFactories;
 
     private ProjectActionSupport() {
@@ -125,10 +128,10 @@ public class ProjectActionSupport {
         return instance;
     }
 
-    private static void refreshProjectFiles(Project project) {
+    private static void refreshProjectFiles(final Project project) {
         try {
-            Set<File> files = new HashSet<File>();
-            Set<FileObject> fileObjects = new HashSet<FileObject>();
+            final Set<File> files = new HashSet<File>();
+            final Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
             File f = FileUtil.toFile(projectFileObject);
             if (f != null) {
@@ -147,16 +150,34 @@ public class ProjectActionSupport {
                     fileObjects.add(rootFolder);
                 }
             }
-            File[] array = files.toArray(new File[files.size()]);
-            if (array.length > 0) {
-                FileUtil.refreshFor(array);
-            }
-            if (!fileObjects.isEmpty()) {
-                for (FileObject fo : fileObjects) {
-                    FileSystemProvider.scheduleRefresh(fo);
+            // IZ#201761  -  Too long refreshing file system after build.
+            // refresh can take a lot of time for slow file systems
+            // so we use worker and schedule it out of build process if auto refresh
+            // is turned off by user in Tools->Options->Misk->Files->Enable auto-scanning of sources
+            Runnable refresher = new Runnable() {
+                @Override
+                public void run() {
+                    final File[] array = files.toArray(new File[files.size()]);
+                    if (array.length > 0) {
+                        FileUtil.refreshFor(array);
+                    }
+                    if (!fileObjects.isEmpty()) {
+                        for (FileObject fo : fileObjects) {
+                            FileSystemProvider.scheduleRefresh(fo);
+                        }
+                    }
+                    MakeLogicalViewProvider.refreshBrokenItems(project);
+                }
+            };
+            final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
+            if (nd != null) {
+                boolean manual = nd.getBoolean("manual", false);// NOI18N
+                if (manual) {
+                    RP.post(refresher);
+                } else {
+                    refresher.run();
                 }
             }
-            MakeLogicalViewProvider.refreshBrokenItems(project);
         } catch (Exception e) {
             e.printStackTrace();
         }

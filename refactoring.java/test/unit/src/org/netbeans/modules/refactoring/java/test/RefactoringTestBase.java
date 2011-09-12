@@ -101,7 +101,7 @@ public class RefactoringTestBase extends NbTestCase {
         SourceUtils.waitScanFinished();
     }
 
-    protected static void verifyContent(FileObject sourceRoot, File... files) throws Exception {
+    protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
         List<FileObject> todo = new LinkedList<FileObject>();
 
         todo.add(sourceRoot);
@@ -121,7 +121,7 @@ public class RefactoringTestBase extends NbTestCase {
         for (File f : files) {
             String fileContent = content.remove(f.filename);
 
-            assertEquals(f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
+            assertEquals(getName() ,f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
         }
 
         assertTrue(content.toString(), content.isEmpty());
@@ -173,9 +173,11 @@ public class RefactoringTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         Util.allMimeTypes = new HashSet<String>();
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml"}, new Object[] {
-//            "org/netbeans/modules/java/source/resources/layer.xml",
-//            "org/netbeans/modules/java/editor/resources/layer.xml", "META-INF/generated-layer.xml"
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
+            "org/netbeans/modules/java/source/resources/layer.xml",
+            "org/netbeans/modules/java/editor/resources/layer.xml",
+            "org/netbeans/libs/freemarker/layer.xml",
+            "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
                 public ClassPath findClassPath(FileObject file, String type) {
                     if ((src != null && (file == src || FileUtil.isParentOf(src, file)))
@@ -327,5 +329,14 @@ public class RefactoringTestBase extends NbTestCase {
             return null;
         }
         
+    }
+    
+    protected static boolean problemIsFatal(List<Problem> problems) {
+        for (Problem problem : problems) {
+            if (problem.isFatal()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

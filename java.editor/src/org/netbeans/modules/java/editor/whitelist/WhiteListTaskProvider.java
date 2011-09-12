@@ -308,17 +308,19 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             IndexManager.readAccess(new IndexManager.Action<Void>(){
                 @Override
                 public Void run() throws IOException, InterruptedException {
-                    final DocumentIndex index = getIndex(root);
                     final List<Task> tasks = new ArrayList<Task>();
-                    try {
-                        for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, file), QueryKind.PREFIX)) {
-                            final Map.Entry<FileObject,Task> task = createTask(root, doc);
-                            if (task != null) {
-                                tasks.add(task.getValue());
+                    final DocumentIndex index = getIndex(root);
+                    if (index != null) {
+                        try {
+                            for (IndexDocument doc : index.findByPrimaryKey(FileUtil.getRelativePath(root, file), QueryKind.PREFIX)) {
+                                final Map.Entry<FileObject,Task> task = createTask(root, doc);
+                                if (task != null) {
+                                    tasks.add(task.getValue());
+                                }
                             }
+                        } finally {
+                            index.close();
                         }
-                    } finally {
-                        index.close();
                     }
                     Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
                     if (tasks.isEmpty()) {
