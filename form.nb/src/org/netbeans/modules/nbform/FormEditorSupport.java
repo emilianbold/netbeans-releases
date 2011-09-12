@@ -1031,6 +1031,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             DataEditorSupport.annotateName(htmlTitle, true, modified, readOnly)
         };
     }
+
+    @Override
+    protected String messageName() {
+        String[] titles = getMVTCDisplayName(formDataObject);
+        return titles[0];
+    }
+
+    @Override
+    protected String messageHtmlName() {
+        String[] titles = getMVTCDisplayName(formDataObject);
+        return titles[1];
+    }
     
     /** Updates title (display name) of all multiviews for given form. Replans
      * to event queue thread if necessary. */
