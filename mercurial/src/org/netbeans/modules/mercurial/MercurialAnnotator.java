@@ -77,6 +77,7 @@ import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.QueuesMenu;
 import org.netbeans.modules.mercurial.ui.menu.TagMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
@@ -360,6 +361,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(null);
                 actions.add(new BranchMenu(null));
                 actions.add(new TagMenu(null));
+                actions.add(new QueuesMenu(null));
                 actions.add(null);
                 actions.add(SystemAction.get(PropertiesAction.class));
             }
@@ -405,6 +407,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(new ShareMenu(context));
                 actions.add(new BranchMenu(context));
                 actions.add(new TagMenu(context));
+                actions.add(new QueuesMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }

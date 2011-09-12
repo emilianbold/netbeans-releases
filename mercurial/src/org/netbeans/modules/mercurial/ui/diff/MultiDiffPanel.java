@@ -77,9 +77,11 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -123,6 +125,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Context in which to DIFF.
      */
     private final VCSContext context;
+    private final File[] roots;
 
     private int displayStatuses;
 
@@ -158,12 +161,21 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private JComponent infoPanelLoadingFromRepo;
 
     private HgProgressSupport executeStatusSupport;
+    private HgRevision revisionLeft;
+    private HgRevision revisionRight;
+    private boolean displayUnversionedFiles = true;
     
     /**
      * Creates diff panel and immediatelly starts loading...
      */
-    public MultiDiffPanel(VCSContext context, int initialType, String contextName) {
+    public MultiDiffPanel (VCSContext context, int initialType, String contextName) {
+        this(context, null, initialType, contextName);
+        refreshStatuses();
+    }
+
+    private MultiDiffPanel (VCSContext context, File[] roots, int initialType, String contextName) {
         this.context = context;
+        this.roots = roots;
         this.contextName = contextName;
         currentType = initialType;
         initComponents();
@@ -176,6 +188,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshComponents();
 
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
+    }
+
+    public MultiDiffPanel (File[] roots, HgRevision revisionLeft, HgRevision revisionRight, boolean displayUnversionedFiles) {
+        this(null, roots, Setup.DIFFTYPE_LOCAL, null);
+        this.revisionLeft = revisionLeft;
+        this.revisionRight = revisionRight;
+        this.displayUnversionedFiles = displayUnversionedFiles;
         refreshStatuses();
     }
 
@@ -197,6 +216,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
         context = null;
+        roots = null;
         contextName = file.getName();
         initComponents();
         setAquaBackground();
@@ -208,7 +228,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         initNextPrevActions();
 
         // mimics refreshSetups()
-        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, forceNonEditable)};
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, null, forceNonEditable)};
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0, false);
         dpt = new DiffPrepareTask(setups);
@@ -359,7 +379,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             commitButton.setEnabled(false);     //until the diff is loaded
         } else {
             commitButton.setVisible(false);
-            refreshButton.setVisible(false);
+            if (roots == null) {
+                refreshButton.setVisible(false);
+            }
         }
     }
 
@@ -462,7 +484,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return context == null? false: context.contains(file);
+        return containsFile(file);
+    }
+    
+    private boolean containsFile (File file) {
+        if (context != null) {
+            return context.contains(file);
+        } else if (roots != null) {
+            return HgUtils.contains(roots, file);
+        } else {
+            return false;
+        }
     }
     
     private void setDiffIndex(int idx, int location, boolean restartPrepareTask) {
@@ -558,7 +590,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshStatuses() {
-        if (context == null || context.getRootFiles().isEmpty()) {
+        if ((context == null || context.getRootFiles().isEmpty()) && (roots == null || roots.length == 0)) {
             return;
         }
 
@@ -571,12 +603,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
         executeStatusSupport = new HgProgressSupport() {
             @Override
-            public void perform() {                                                
-                StatusAction.executeStatus(context, this);
+            public void perform() {
+                if (context != null) {
+                    StatusAction.executeStatus(context, this);
+                }
                 refreshSetups();
             }
         };
-        File repositoryRoot = HgUtils.getRootFile(context);
+        File repositoryRoot = context == null ? Mercurial.getInstance().getRepositoryRoot(roots[0]) : HgUtils.getRootFile(context);
         executeStatusSupport.start(rp, repositoryRoot, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
     }
     
@@ -674,9 +708,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         default:
             throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
         }
-        File [] files = HgUtils.getModifiedFiles(context, status, true);
         final int localDisplayStatuses = status;
-        final Setup[] localSetups = computeSetups(files);
+        final Setup[] localSetups;
+        if (roots == null) {
+            File [] files = HgUtils.getModifiedFiles(context, status, true);
+            localSetups = computeSetups(files);
+        } else {
+            localSetups = computeSetupsBetweenRevisions();
+        }
         final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
         Runnable runnable = new Runnable() {
             @Override
@@ -777,6 +816,30 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             repaint();
         }
+    }
+
+    private Setup[] computeSetupsBetweenRevisions () {
+        File repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        try {
+            Map<File, FileInformation> statuses = HgCommand.getStatus(repository, Arrays.asList(roots), revisionLeft.getRevisionNumber(), revisionRight.getRevisionNumber());
+            statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
+            List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
+            for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+                FileInformation fi = e.getValue();
+                if (displayUnversionedFiles || (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
+                    File file = e.getKey();
+                    Setup setup = new Setup(file, revisionLeft, revisionRight, fi, false);
+                    setup.setNode(new DiffNode(setup, new HgFileNode(file)));
+                    newSetups.add(setup);
+                }
+            }
+            Collections.sort(newSetups, new SetupsComparator());
+            return newSetups.toArray(new Setup[newSetups.size()]);
+        } catch (HgException.HgCommandCanceledException ex) {
+        } catch (HgException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+        }
+        return new Setup[0];
     }
 
     private class DiffPrepareTask implements Runnable, Cancellable {

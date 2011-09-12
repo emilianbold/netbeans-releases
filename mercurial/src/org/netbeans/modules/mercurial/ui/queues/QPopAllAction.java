@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mercurial.ui.queues;
 
-package org.netbeans.modules.versioning.util.common;
-
-import org.openide.util.NbBundle;
+import java.io.File;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 
 /**
- * @author Maros Sandor
+ *
+ * @author ondra
  */
-public abstract class VCSCommitOptions {
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPopAllPatchesAction", category = "Mercurial Queues")
+@ActionRegistration(displayName = "#CTL_MenuItem_QPopAllPatches")
+public class QPopAllAction extends ContextAction {
 
-    public static final VCSCommitOptions COMMIT = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Commit")); // NOI18N
-    public static final VCSCommitOptions COMMIT_REMOVE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_CommitRemove")); // NOI18N
-    public static final VCSCommitOptions EXCLUDE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Exclude")); // NOI18N
-    
-    private final String label;
-
-    private VCSCommitOptions (String label) {
-        this.label = label;
+    @Override
+    protected boolean enable (Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
     @Override
-    public String toString() {
-        return label;
-    }
-    
-    public static class Add extends VCSCommitOptions {
-        
-        public Add(String label) {
-            super(label);
-        }
+    protected String getBaseName (Node[] nodes) {
+        return "CTL_MenuItem_QPopAllPatches"; //NOI18N
     }
 
-    public static class Commit extends VCSCommitOptions {
+    @Override
+    protected void performContextAction (Node[] nodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(nodes);
+        final File roots[] = HgUtils.getActionRoots(ctx);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         
-        public Commit(String label) {
-            super(label);
-        }
+        SystemAction.get(QGoToPatchAction.class).goToPatch(root, null);
     }
 }
-
