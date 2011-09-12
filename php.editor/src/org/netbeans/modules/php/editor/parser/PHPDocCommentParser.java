@@ -228,7 +228,7 @@ public class PHPDocCommentParser {
     private List<String> getTypes(String description) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<String>();
-        if (tokens.length > 0) {
+        if (tokens.length > 0 && !tokens[0].startsWith("$")) { //NOI18N
             if (tokens[0].indexOf('|') > -1) {
                 String[] ttokens = tokens[0].split("[|]"); //NOI18N
                 for (String ttoken : ttokens) {
