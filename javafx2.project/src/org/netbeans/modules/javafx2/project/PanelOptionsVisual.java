@@ -59,7 +59,6 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.javafx2.platform.api.PlatformDetector;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -82,7 +81,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
 
-    private RequestProcessor.Task task;
+    private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
     
     private final JavaFXProjectWizardIterator.WizardType type;
@@ -535,9 +534,10 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     }
 
     @Override
-    void read(WizardDescriptor d) {
-        // test it and uncomment
-//        checkPlatforms();
+    synchronized void read(WizardDescriptor d) {
+        if (task == null) {
+            checkPlatforms();
+        }
     }
 
     @Override
@@ -625,7 +625,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     }
 
     @Override
-    public void taskFinished(Task task) {
+    public synchronized void taskFinished(Task task) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -633,14 +633,16 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 JavaPlatform platform = detectPlatformTask.getPlatform();
                 if (platform != null) {
                     // reload platform combo box model
-                    platformComboBox.setModel(null);
+//                    platformComboBox.setModel(null);
                     platformComboBox.setModel(platformsModel);
 
                     // select javafx platform
                     selectJavaFXEnabledPlatform();
+//                    panel.fireChangeEvent();
                 }
             }
         });
+        this.task = null;
     }
     
     private class JavaPlatformChangeListener implements PropertyChangeListener {
@@ -659,7 +661,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
         @Override
         public void run() {
-            platform = PlatformDetector.getInstance().detectJavaFXPlatform();
+            platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
         }
     }
 

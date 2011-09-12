@@ -174,10 +174,6 @@ public class CRUDTest extends RestTestBase {
         //copy entity class into a project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
         fo.copy(getProjectSourceRoot().createFolder("entity"), "Person", "java"); //NOI18N
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ex) {
-        }
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
@@ -191,40 +187,31 @@ public class CRUDTest extends RestTestBase {
         //Add All >>
         String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
         String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
-        try {
-            try {
-                Thread.sleep(8000);
-            } catch (InterruptedException ex) {
-            }
-            new JButtonOperator(wo, addAllLabel).push();
-            //<< Remove All
-            new JButtonOperator(wo, removeAllLabel).push();
-            //XXX - end
-        } catch (Exception e) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException ex) {
-            }
-            new JButtonOperator(wo, addAllLabel).push();
-            //<< Remove All
-            new JButtonOperator(wo, removeAllLabel).push();
-        }
+        
+        // wait till all classes are loaded into list
+        new EventTool().waitNoEvent(2000);
+        new JButtonOperator(wo, addAllLabel).push();
+        // wait till all classes are moved from one list to another
+        new EventTool().waitNoEvent(2000);
+        //<< Remove All (see bug #202010)
+        new JButtonOperator(wo, removeAllLabel).push();
+        //XXX - end
         availableEntities.selectItem("Customer"); //NOI18N
         //Add >
         String addLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Add");
         new JButtonOperator(wo, addLabel).push();
         availableEntities.selectItem("Product"); //NOI18N
         new JButtonOperator(wo, addLabel).push();
-        assertEquals("add failed in selected", 2, selectedEntities.getModel().getSize()); //NOI18N
-        assertEquals("add failed in available", 6, availableEntities.getModel().getSize()); //NOI18N
+        assertEquals("add failed in selected", 5, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("add failed in available", 3, availableEntities.getModel().getSize()); //NOI18N
         selectedEntities.selectItem("Product"); //NOI18N
         //< Remove
         String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Remove");
         new JButtonOperator(wo, removeLabel).push();
-        assertEquals("remove failed in selected", 1, selectedEntities.getModel().getSize()); //NOI18N
-        assertEquals("remove failed in available", 7, availableEntities.getModel().getSize()); //NOI18N
-//        //<< Remove All
-        new JButtonOperator(wo, removeAllLabel).push();
+        assertEquals("remove failed in selected", 2, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove failed in available", 6, availableEntities.getModel().getSize()); //NOI18N
+        //<< Remove All
+        new JButtonOperator(wo, "Remove All").push();
         assertEquals("remove all failed in selected", 0, selectedEntities.getModel().getSize()); //NOI18N
         assertEquals("remove all failed in available", 8, availableEntities.getModel().getSize()); //NOI18N
         availableEntities.selectItem("Person"); //NOI18N
@@ -234,10 +221,6 @@ public class CRUDTest extends RestTestBase {
         wo.next();
         wo.finish();
         waitForGenerationProgress();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-        }
         Set<File> files = getFilesFromCustomPkg("service", "entity"); //NOI18N
         if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
             files.addAll(getFilesFromCustomPkg("controller", "controller.exceptions", "service", "entity")); //NOI18N
@@ -320,20 +303,16 @@ public class CRUDTest extends RestTestBase {
         //Add all >>
         String lbl = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
         JButtonOperator allLbl = new JButtonOperator(wo, lbl);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-        }
+        // wait all classes are loaded
+        new EventTool().waitNoEvent(2000);
         allLbl.pushNoBlock();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-        }
+        // wait all classes are added
+        new EventTool().waitNoEvent(2000);
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
-//        if (createPU) {
+//        if (createPU) { // need to check if it's really necessary to create PU and if so this need to be done differently
 //            //Create persistence unit
 //            String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.Bundle", "LBL_CreatePersistenceUnit");
 //            new JButtonOperator(wo, btnLabel).pushNoBlock();

@@ -170,13 +170,11 @@ public class ProjectActionSupport {
                 }
             };
             final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
-            if (nd != null) {
-                boolean manual = nd.getBoolean("manual", false);// NOI18N
-                if (manual) {
-                    RP.post(refresher);
-                } else {
-                    refresher.run();
-                }
+            boolean manual = (nd != null) && nd.getBoolean("manual", false);// NOI18N
+            if (manual) {
+                RP.post(refresher);
+            } else {
+                refresher.run();
             }
         } catch (Exception e) {
             e.printStackTrace();

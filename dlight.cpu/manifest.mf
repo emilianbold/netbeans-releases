@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.dlight.cpu
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/cpu/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/cpu/resources/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider, org.netbeans.modules.dlight.spi.indicator.IndicatorFactory
