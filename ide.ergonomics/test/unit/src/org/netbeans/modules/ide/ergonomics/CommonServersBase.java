@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.util.lookup.Lookups;
 
@@ -56,35 +55,69 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Pavel Flaska
  */
-public class AvailableJ2EEServerCheck extends CommonServersBase {
+public abstract class CommonServersBase extends NbTestCase {
 
-    public AvailableJ2EEServerCheck(final String name) {
+    private final Logger LOG;
+    
+    public CommonServersBase(final String name) {
         super(name);
+        LOG = Logger.getLogger("commonserversbase." + name);
     }
     
     //
     // for CloudNodeCheck
     //
     
-    @Override
-    protected String forPath() {
-        return ServerRegistry.SERVERS_PATH;
-    }
-    
-    @Override
-    protected String propPrefix() {
-        return "serverwizard.";
-    }
+    protected abstract String forPath();
+    protected abstract String propPrefix();
     
     //
     // test methods
     //
     
-    public void testGetAllServerWizardsReal() {
-        doGetAllInstancesReal();
+    protected final void doGetAllInstancesReal() {
+        int cnt = 0;
+        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(forPath()).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
+        Collections.sort(providers, comparator); // ?
+        LOG.info("Iterating full");
+        for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
+           System.setProperty(propPrefix() + ++cnt, wizard.getDisplayName());
+           LOG.log(Level.INFO, "full: {0}", wizard.getDisplayName());
+        }
+        LOG.info("Iteration done for full");
     }
 
-    public void testGetAllServerWizardsErgo() {
-        doGetAllInstancesErgo();
+    protected final void doGetAllInstancesErgo() {
+        int cnt = 0;
+        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(forPath()).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
+        Collections.sort(providers, comparator);
+        LOG.info("Iterating ergo");
+        for (ServerWizardProvider wizard : providers) {
+           String name = System.getProperty(propPrefix() + ++cnt);
+           LOG.log(Level.INFO, "ergo: {0}", wizard.getDisplayName());
+           assertEquals(name, wizard.getDisplayName());
+           System.clearProperty(propPrefix() + cnt);
+        }
+        LOG.info("Iteration done for ergo"); 
+        for (Object key : System.getProperties().keySet()) {
+            assertFalse("Found additional server " + System.getProperty((String) key), ((String) key).startsWith(propPrefix()));
+        }
     }
+    
+    private final static Comparator<ServerWizardProvider> comparator = new Comparator<ServerWizardProvider>() {
+        @Override
+        public int compare(ServerWizardProvider arg0, ServerWizardProvider arg1) {
+            return arg0.getDisplayName().compareTo(arg1.getDisplayName());
+        }
+    };
 }

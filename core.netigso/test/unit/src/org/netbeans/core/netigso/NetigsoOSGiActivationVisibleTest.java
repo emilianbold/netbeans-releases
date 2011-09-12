@@ -133,14 +133,16 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
             
         assertFalse("not started yet", m2.isEnabled());
         toEnable.start();
+        
+        directBundle = toEnable.loadClass("org.foo.Something");
+        someModule = m2.getClassLoader().loadClass("org.foo.Something");
+        loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
     }
     
     public void testClassFromBundle() throws Exception {
-        directBundle = toEnable.loadClass("org.foo.Something");
         assertNotNull("Bundle knows how to load the class", directBundle);
     }
     public void testClassModuleM2() throws Exception {
-        someModule = m2.getClassLoader().loadClass("org.foo.Something");
         assertNotNull("Something loaded from module CL", someModule);
     }
     
@@ -152,7 +154,6 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     }
     
     public void testClassFromDirectBundle() throws Exception {
-        loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
         Class<?> directly = (Class<?>) loadClass.invoke(null, "org.foo.Something", null);
         assertNotNull("Bundle knows how to load the class from itself without problems", directly);
     }
