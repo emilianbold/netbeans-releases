@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -121,7 +122,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     /**
      * Creates a new instance of WarDeploymentConfiguration 
      */
-    public WarDeploymentConfiguration(J2eeModule j2eeModule,Version serverVersion) {
+    public WarDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion) {
 
         super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
@@ -300,6 +301,11 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             throw new ConfigurationException(msg);
         }
         return webLogicWebApp.getReferenceJndiName(referenceName);
+    }
+
+    @Override
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, String destName, Type type) throws ConfigurationException {
+        // noop for 1.5
     }
 
     @Override

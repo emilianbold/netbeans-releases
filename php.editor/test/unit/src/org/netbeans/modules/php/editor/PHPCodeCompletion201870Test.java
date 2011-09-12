@@ -39,22 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.dd.model;
+package org.netbeans.modules.php.editor;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface WeblogicEnterpriseBeanType {
-    
-    void setEjbName(String name);
+public class PHPCodeCompletion201870Test extends PHPTestBase {
 
-    String getEjbName();
+    public PHPCodeCompletion201870Test(String testName) {
+        super(testName);
+    }
 
-    ResourceDescriptionType addResourceDescription();
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test201870/test201870.php", "$object->get^", false);
+    }
 
-    ResourceDescriptionType[] getResourceDescription();
-    
-    MessageDrivenDescriptorType getMessageDrivenDescriptor();
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test201870/"))
+            })
+        );
+    }
 
 }

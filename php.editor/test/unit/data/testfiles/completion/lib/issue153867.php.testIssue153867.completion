@@ -90,6 +90,7 @@ CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
+CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php

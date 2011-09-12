@@ -12903,7 +12903,6 @@
                             <PHPDocNode start='2585' end='2598' value='$search_query'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2585' end='2598' value='$search_query' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='2716' end='2742' kind='PARAM'>
@@ -12911,7 +12910,6 @@
                             <PHPDocNode start='2723' end='2734' value='$case_exact'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2723' end='2734' value='$case_exact' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='2750' end='2824' kind='PARAM'>
@@ -12919,7 +12917,6 @@
                             <PHPDocNode start='2757' end='2763' value='$regex'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2757' end='2763' value='$regex' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='2832' end='2852' kind='SEE'>
@@ -12943,7 +12940,6 @@
                             <PHPDocNode start='4763' end='4770' value='$string'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='4763' end='4770' value='$string' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='4807' end='4860' kind='RETURN'>
@@ -12969,7 +12965,6 @@
                             <PHPDocNode start='5839' end='5858' value='$make_sql_clause_cb'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='5839' end='5858' value='$make_sql_clause_cb' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='6852' end='6882' kind='RETURN'>
@@ -13033,7 +13028,6 @@
                             <PHPDocNode start='12344' end='12357' value='$search_query'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='12344' end='12357' value='$search_query' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='12423' end='12558' kind='PARAM'>
@@ -13041,7 +13035,6 @@
                             <PHPDocNode start='12430' end='12443' value='$placeholders'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='12430' end='12443' value='$placeholders' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Tags>
@@ -13091,7 +13084,6 @@
                             <PHPDocNode start='17390' end='17396' value='$value'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='17390' end='17396' value='$value' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='17458' end='17527' kind='PARAM'>
@@ -13099,7 +13091,6 @@
                             <PHPDocNode start='17465' end='17467' value='$x'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='17465' end='17467' value='$x' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='17535' end='17549' kind='RETURN'>
@@ -13121,7 +13112,6 @@
                             <PHPDocNode start='18419' end='18428' value='$variable'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='18419' end='18428' value='$variable' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='18639' end='18654' kind='RETURN'>
@@ -13141,7 +13131,6 @@
                             <PHPDocNode start='19380' end='19389' value='$variable'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='19380' end='19389' value='$variable' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='19489' end='19504' kind='RETURN'>
@@ -13295,7 +13284,6 @@
                             <PHPDocNode start='2585' end='2598' value='$search_query'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2585' end='2598' value='$search_query' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='2716' end='2742' kind='PARAM'>
@@ -13303,7 +13291,6 @@
                             <PHPDocNode start='2723' end='2734' value='$case_exact'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2723' end='2734' value='$case_exact' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='2750' end='2824' kind='PARAM'>
@@ -13311,7 +13298,6 @@
                             <PHPDocNode start='2757' end='2763' value='$regex'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='2757' end='2763' value='$regex' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='2832' end='2852' kind='SEE'>
@@ -13335,7 +13321,6 @@
                             <PHPDocNode start='4763' end='4770' value='$string'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='4763' end='4770' value='$string' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='4807' end='4860' kind='RETURN'>
@@ -13361,7 +13346,6 @@
                             <PHPDocNode start='5839' end='5858' value='$make_sql_clause_cb'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='5839' end='5858' value='$make_sql_clause_cb' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='6852' end='6882' kind='RETURN'>
@@ -13425,7 +13409,6 @@
                             <PHPDocNode start='12344' end='12357' value='$search_query'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='12344' end='12357' value='$search_query' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='12423' end='12558' kind='PARAM'>
@@ -13433,7 +13416,6 @@
                             <PHPDocNode start='12430' end='12443' value='$placeholders'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='12430' end='12443' value='$placeholders' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Tags>
@@ -13483,7 +13465,6 @@
                             <PHPDocNode start='17390' end='17396' value='$value'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='17390' end='17396' value='$value' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocVarTypeTag start='17458' end='17527' kind='PARAM'>
@@ -13491,7 +13472,6 @@
                             <PHPDocNode start='17465' end='17467' value='$x'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='17465' end='17467' value='$x' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='17535' end='17549' kind='RETURN'>
@@ -13513,7 +13493,6 @@
                             <PHPDocNode start='18419' end='18428' value='$variable'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='18419' end='18428' value='$variable' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='18639' end='18654' kind='RETURN'>
@@ -13533,7 +13512,6 @@
                             <PHPDocNode start='19380' end='19389' value='$variable'/>
                         </Variable>
                         <Types>
-                            <PHPDocTypeNode start='19380' end='19389' value='$variable' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='19489' end='19504' kind='RETURN'>
