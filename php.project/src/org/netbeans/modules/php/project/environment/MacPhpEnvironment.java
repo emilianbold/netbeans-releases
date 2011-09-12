@@ -88,7 +88,7 @@ final class MacPhpEnvironment extends PhpEnvironment {
             if (mamp.isDirectory()) {
                 String documentRoot = getFolderName(mamp, projectName);
                 String url = getDefaultUrl(projectName, 8888);
-                String hint = NbBundle.getMessage(MampPhpEnvironment.class, "TXT_MAMP");
+                String hint = NbBundle.getMessage(MampPhpEnvironment.class, "TXT_MampHtDocs");
                 return Collections.singletonList(new DocumentRoot(documentRoot, url, hint, true));
             }
             return Collections.emptyList();
