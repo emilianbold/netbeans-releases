@@ -78,6 +78,11 @@ public final class JavaFXPlatformUtils {
      */
     public static final String PROPERTY_JAVA_FX = "javafx"; // NOI18N
 
+    private static final String[] KNOWN_LOCATIONS = new String[]{
+        "C:\\Program Files\\Oracle",        // NOI18N
+        "C:\\Program Files (x86)\\Oracle"   // NOI18N
+    };
+
     private JavaFXPlatformUtils() {
     }
 
@@ -164,4 +169,99 @@ public final class JavaFXPlatformUtils {
         return sdkPath.getAbsolutePath() + "\\docs"; // NOI18N
     }
     
+    /**
+     * Creates new default JavaFX platform
+     * 
+     * @return instance of created JavaFX Platform, or null if creation was
+     * not successful: such platform already exists or IO exception has occurred
+     */
+    @CheckForNull
+    public static JavaPlatform createDefaultJavaFXPlatform() {
+        String sdkPath = null;
+        String runtimePath = null;
+        String javadocPath = null;
+        String srcPath = null;
+
+        for (String path : KNOWN_LOCATIONS) {
+            if (sdkPath == null) {
+                sdkPath = predictSDKLocation(path);
+            }
+            if (runtimePath == null) {
+                runtimePath = predictRuntimeLocation(path);
+            }
+            if (javadocPath == null) {
+                javadocPath = predictJavadocLocation(path);
+            }
+            if (srcPath == null) {
+                srcPath = predictSourcesLocation(path);
+            }
+
+            // SDK and RT location is enought for JFX platform definition
+            if (sdkPath != null && runtimePath != null) {
+                break;
+            }
+        }
+
+        if (sdkPath != null && runtimePath != null) {
+            return Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, javadocPath, srcPath);
+        }
+
+        return null;
+    }
+
+    private static String predictSDKLocation(String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                String name = child.getName();
+                if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
+                    File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                    if (toolsJar.exists()) {
+                        return child.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String predictRuntimeLocation(String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                String name = child.getName();
+                if (name.contains("Runtime") || name.contains("runtime")) { // NOI18N
+                    File rtJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+                    if (rtJar.exists()) {
+                        return child.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String predictJavadocLocation(String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                String name = child.getName();
+                if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
+                    File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
+                    if (docs.exists()) {
+                        return docs.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // TODO when sources will be availabe
+    private static String predictSourcesLocation(String path) {
+        return null;
+    }
 }
