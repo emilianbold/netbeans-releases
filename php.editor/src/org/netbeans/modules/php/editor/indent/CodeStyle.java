@@ -592,6 +592,7 @@ public final class CodeStyle {
 
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
+        @Override
         public CodeStyle create(Preferences preferences) {
             return new CodeStyle(preferences);
         }

@@ -264,5 +264,4 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     Lookup getLookupSuper() {
         return super.getLookup();
     }
-    
 }

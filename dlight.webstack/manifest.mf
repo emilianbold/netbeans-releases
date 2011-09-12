@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.dlight.webstack
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/webstack/resources/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/webstack/resources/layer.xml
-

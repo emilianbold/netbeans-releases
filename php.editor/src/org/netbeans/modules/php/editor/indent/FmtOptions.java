@@ -553,7 +553,7 @@ public class FmtOptions {
                     reformat.unlock();
                 }
             } else {
-                LOGGER.warning("Can't format " + doc + "; it's not BaseDocument."); //NOI18N
+                LOGGER.warning(String.format("Can't format %s; it's not BaseDocument.", doc)); //NOI18N
             }
             pane.setIgnoreRepaint(false);
             pane.scrollRectToVisible(visibleRectangle);

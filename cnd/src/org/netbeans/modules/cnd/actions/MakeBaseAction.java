@@ -193,8 +193,15 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
             try {
-                mm.prependPathVariable("LD_PRELOAD",BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
-                mm.prependPathVariable("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                List<String> paths = BuildTraceHelper.INSTANCE.getPaths(execEnv);
+                if (paths.size() == 2) {
+                    mm.prependPathVariable("LD_PRELOAD_32",paths.get(0)); // NOI18N
+                    mm.prependPathVariable("LD_PRELOAD_64",paths.get(1)); // NOI18N
+                } else {
+                    assert false;
+                    mm.prependPathVariable("LD_PRELOAD",BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
+                    mm.prependPathVariable("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

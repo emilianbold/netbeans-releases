@@ -499,6 +499,9 @@ public class Utils {
                 for (ParamModel param:params) {
                     String paramNs = param.getTargetNamespace();
                     Name paramName = null;
+                    if ( param.getName() == null || param.getName().trim().length() ==0 ){
+                        continue;
+                    }
                     if (paramNs!=null && paramNs.length()>0) {
                         String pref = "ns"+String.valueOf(++i); //NOI18N
                         paramName = envelope.createName(param.getName(), pref, paramNs);

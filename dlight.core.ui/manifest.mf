@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.dlight.core.ui
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Layer: org/netbeans/modules/dlight/core/ui/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/core/ui/resources/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator

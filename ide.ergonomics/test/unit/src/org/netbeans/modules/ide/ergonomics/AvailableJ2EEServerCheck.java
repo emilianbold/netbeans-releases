@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.server.ServerRegistry;
@@ -55,54 +56,35 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Pavel Flaska
  */
-public class AvailableJ2EEServerCheck extends NbTestCase {
+public class AvailableJ2EEServerCheck extends CommonServersBase {
 
-    private static final Logger LOG = Logger.getAnonymousLogger();
-    private static final String SERVER_WIZARD = "serverwizard.";
-    
     public AvailableJ2EEServerCheck(final String name) {
         super(name);
     }
     
-    private final Comparator<ServerWizardProvider> comparator = new Comparator<ServerWizardProvider>() {
-
-        public int compare(ServerWizardProvider arg0, ServerWizardProvider arg1) {
-            return arg0.getDisplayName().compareTo(arg1.getDisplayName());
-        }
-    };
-
-    public void testGetAllJ2eeServersReal() {
-        int cnt = 0;
-        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
-        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
-            if (w.getInstantiatingIterator() == null) {
-                providers.remove(w);
-            }
-        }
-        Collections.sort(providers, comparator); // ?
-        for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
-           System.setProperty(SERVER_WIZARD + ++cnt, wizard.getDisplayName());
-           LOG.info("full: " + wizard.getDisplayName());
-        }
+    //
+    // for CloudNodeCheck
+    //
+    
+    @Override
+    protected String forPath() {
+        return ServerRegistry.SERVERS_PATH;
+    }
+    
+    @Override
+    protected String propPrefix() {
+        return "serverwizard.";
+    }
+    
+    //
+    // test methods
+    //
+    
+    public void testGetAllServerWizardsReal() {
+        doGetAllInstancesReal();
     }
 
-    public void testGetAllJ2eeServersErgo() {
-        int cnt = 0;
-        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
-        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
-            if (w.getInstantiatingIterator() == null) {
-                providers.remove(w);
-            }
-        }
-        Collections.sort(providers, comparator);
-        for (ServerWizardProvider wizard : providers) {
-           String name = System.getProperty(SERVER_WIZARD + ++cnt);
-           LOG.info("ergo: " + wizard.getDisplayName());
-           assertEquals(name, wizard.getDisplayName());
-           System.clearProperty(SERVER_WIZARD + cnt);
-        }
-        for (Object key : System.getProperties().keySet()) {
-            assertFalse("Found additional server " + System.getProperty((String) key), ((String) key).startsWith(SERVER_WIZARD));
-        }
+    public void testGetAllServerWizardsErgo() {
+        doGetAllInstancesErgo();
     }
 }

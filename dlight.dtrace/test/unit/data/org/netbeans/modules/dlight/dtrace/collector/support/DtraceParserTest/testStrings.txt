@@ -1,8 +1,0 @@
-100 myfile
-200 "myfile"
-300 'myfile'
-400 "my'file"
-500 'my"file'
-600 "foo\nbar\0"
-700 "my\"file\0"
-800 "     my    file     "

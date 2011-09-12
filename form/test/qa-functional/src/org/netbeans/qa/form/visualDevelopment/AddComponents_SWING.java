@@ -92,7 +92,10 @@ public class AddComponents_SWING extends ExtJellyTestCase {
     public MainWindowOperator mainWindow;
     public ProjectsTabOperator pto;
     public Node formnode;
-
+    int icko;
+    String[] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Combo Box", "Text Field", "Scroll Bar", "Slider", "Progress Bar", "Password Field", "Spinner", "Separator"};
+    String[] componentList2 = {"Button Group", "List", "Tree", "Table", "Text Area", "Text Pane", "Editor Pane", "Formatted Field"};
+    
     public AddComponents_SWING(String testName) {
         super(testName);
     }
@@ -104,8 +107,6 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         openDataProjects(_testProjectName);
     }
 
-   
-    
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_SWING.class).addTest("testAddAndCompile").clusters(".*").enableModules(".*").gui(true));
 
@@ -115,7 +116,7 @@ public class AddComponents_SWING extends ExtJellyTestCase {
      */
     public void testAddAndCompile() {
         String categoryName = "Swing Controls";
-
+        ArrayList<String> code=new ArrayList();
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
         prn.select();
@@ -130,9 +131,11 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         log("Form Editor window opened.");
-
+        formDesigner = new FormDesignerOperator(FILE_NAME);
+        formDesigner.source();
+        formDesigner.design();
         // store all component names from the category in the Vector
-        Vector componentNames = new Vector();
+
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         palette.collapseBeans();
         palette.collapseSwingContainers();
@@ -141,9 +144,9 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         palette.collapseAWT();
         palette.expandSwingControls();
         //Read all simple swing componet
-        String[] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Combo Box", "Text Field", "Scroll Bar", "Slider", "Progress Bar", "Password Field", "Spinner", "Separator"};
-        //
 
+        //
+        
         ComponentInspectorOperator cio = new ComponentInspectorOperator();
         Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
         inspectorRootNode.select();
@@ -152,42 +155,91 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         // Add all beans from Swing Palette Category to form
         Action popupAddFromPaletteAction;
         for (int i = 0; i < componentList.length; i++) {
-            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentList[i]);
-            popupAddFromPaletteAction.perform(inspectorRootNode);
+            ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+            icko = i;
+            inspector.freezeNavigatorAndRun(new Runnable() {
+
+                @Override
+                public void run() {
+                    ComponentInspectorOperator cio = new ComponentInspectorOperator();
+                    Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
+                    runNoBlockPopupOverNode("Add From Palette|Swing Controls|" + componentList[icko], inspectorRootNode);
+                }
+            });
+
             String componentName = componentList[i].toString().replace(" ", "");
             System.out.println("What is searched: " + "private javax.swing.J" + componentName + " j" + componentName + "1");
 
+            //formDesigner.source();
+            // formDesigner.design();
+            code.add("private javax.swing.J" + componentName + " j" + componentName + "1");
+            //findInCode("private javax.swing.J" + componentName + " j" + componentName + "1", formDesigner);
+            // findInCode("getContentPane().add(j" + componentName + "1)", formDesigner);
             //Check if code was generated properly for component
-            assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
-            assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(j" + componentName + "1)"));
+            //assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
+            //assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(j" + componentName + "1)"));
         }
+        openAction = new OpenAction();
+        openAction.perform(formnode);
+        log("Form Editor window opened.");
+        formDesigner = new FormDesignerOperator(FILE_NAME);
+        formDesigner.source();
+        formDesigner.design();
+        findInCode(code, formDesigner);
+        code.clear();
 
         //Add the rest of swing components which inserted together with another component into layout
-        String[] componentList2 = {"Button Group", "List", "Tree", "Table", "Text Area", "Text Pane", "Editor Pane", "Formatted Field"};
+        
 
         for (int i = 0; i < componentList2.length; i++) {
-            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentList2[i]);
-            popupAddFromPaletteAction.perform(inspectorRootNode);
+            
+            
+            ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+            icko = i;
+            inspector.freezeNavigatorAndRun(new Runnable() {
+
+                @Override
+                public void run() {
+                    ComponentInspectorOperator cio = new ComponentInspectorOperator();
+                    Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
+                    runNoBlockPopupOverNode("Add From Palette|Swing Controls|" + componentList2[icko], inspectorRootNode);
+                }
+            });
+            
             String componentName = componentList2[i].toString().replace(" ", "");
             switch (i) {
                 case 0:
                     System.out.println("private javax.swing." + componentName + " j" + componentName + "1");
-                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing." + componentName + " buttonGroup1"));
+                    //assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing." + componentName + " buttonGroup1"));
+                    code.add("private javax.swing." + componentName + " buttonGroup1");
                     break;
                 case 7:
-                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.JFormattedTextField" + " jFormattedTextField1"));
-                    assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(jFormattedTextField1)"));
+                    //assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.JFormattedTextField" + " jFormattedTextField1"));
+                    //assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(jFormattedTextField1)"));
+                    code.add("private javax.swing.JFormattedTextField" + " jFormattedTextField1");
+                    code.add("getContentPane().add(jFormattedTextField1)");
                     System.out.println("private javax.swing.J" + componentName + " j" + componentName + "1");
                     break;
                 default:
                     System.out.println("private javax.swing.J" + componentName + " j" + componentName + "1");
-                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
-                    assertTrue("Check if " + componentName + " is added to jScrollPane", checkEditor("jScrollPane" + i + ".setViewportView(j" + componentName + "1)"));
-                    assertTrue("Check if jScrollPane" + i + "is added to layout", checkEditor("getContentPane().add(jScrollPane" + i));
+                    //assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
+                    //assertTrue("Check if " + componentName + " is added to jScrollPane", checkEditor("jScrollPane" + i + ".setViewportView(j" + componentName + "1)"));
+                    //assertTrue("Check if jScrollPane" + i + "is added to layout", checkEditor("getContentPane().add(jScrollPane" + i));
+                    code.add("private javax.swing.J" + componentName + " j" + componentName + "1");
+                    code.add("jScrollPane" + i + ".setViewportView(j" + componentName + "1)");
+                    code.add("getContentPane().add(jScrollPane" + i);
                     break;
 
             }
         }
+        
+        openAction = new OpenAction();
+        openAction.perform(formnode);
+        log("Form Editor window opened.");
+        formDesigner = new FormDesignerOperator(FILE_NAME);
+        formDesigner.source();
+        formDesigner.design();
+        findInCode(code, formDesigner);
 
 
         log("All components from Swing Controls Palette : " + categoryName + " - were added to " + FILE_NAME);
@@ -237,6 +289,4 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         } catch (Exception e) {
         }
     }
-
-    
 }

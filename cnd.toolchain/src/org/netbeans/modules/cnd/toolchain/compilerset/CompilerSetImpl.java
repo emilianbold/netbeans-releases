@@ -394,6 +394,11 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public boolean isAutoDetected() {
+            return true;
+        }
+
+        @Override
         public String getDriveLetterPrefix() {
             return "/"; // NOI18N
         }

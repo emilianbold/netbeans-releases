@@ -75,6 +75,7 @@ public final class ToolchainScriptGenerator {
             PlatformTypes.PLATFORM_NONE
     };
     private final StringBuilder buf = new StringBuilder();
+    private boolean isAutoDetected;
     
     private ToolchainScriptGenerator(){
     }
@@ -91,7 +92,9 @@ public final class ToolchainScriptGenerator {
         lines(NbBundle.getMessage(ToolchainScriptGenerator.class, "DetectHostInfo")); // NOI18N
         if (path != null) {
             line("PATHSLIST=\""+path+"\""); // NOI18N
+            isAutoDetected= false;
         } else {
+            isAutoDetected= true;
             line("echo $PLATFORM_NAME"); // NOI18N
             for(int i = 0; i < platforms.length; i++) {
                 line("if [ \"$PLATFORM\" = \"$"+platforms[i]+"\" ]; then"); // NOI18N
@@ -143,7 +146,7 @@ public final class ToolchainScriptGenerator {
     }
     private void platformPath(int platform){
         for (ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(platform)) {
-            if (d.isAbstract()) {
+            if (d.isAbstract() || (isAutoDetected && !d.isAutoDetected())) {
                 continue;
             }
             if (d.getModuleID() != null) {

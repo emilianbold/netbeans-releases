@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -607,7 +606,7 @@ public class TokenFormatter {
 					if (docOptions.blankLinesGroupFields && !isBeforePHPDoc(formatTokens, index)) {
 					    newLines = 1;
 					} else {
-					    newLines = docOptions.blankLinesBetweenFields + 1 > newLines ? docOptions.blankLinesBetweenFields + 1 : newLines;;
+					    newLines = docOptions.blankLinesBetweenFields + 1 > newLines ? docOptions.blankLinesBetweenFields + 1 : newLines;
 					}
                                         countSpaces = indent;
                                         break;
@@ -896,9 +895,14 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_IF_ELSE_STATEMENT:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapIfStatement, true,  column, countLengthOfNextSequence(formatTokens, index + 1), indent);
-                                        newLines = ws.lines;
-                                        countSpaces = ws.spaces;
+                                        if (isCloseAndOpenTagOnOneLine(formatTokens, index)) {
+                                            newLines = 0;
+                                            countSpaces  = 1;
+                                        } else {
+                                            ws = countWSBeforeAStatement(docOptions.wrapIfStatement, true,  column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                            newLines = ws.lines;
+                                            countSpaces = ws.spaces;
+                                        }
                                         break;
                                     case WHITESPACE_IN_FOR:
                                         indentRule = true;
@@ -1491,6 +1495,7 @@ public class TokenFormatter {
 
 	    private boolean isCloseAndOpenTagOnOneLine(List<FormatToken> formatTokens, int currentIndex) {
 		boolean result = false;
+                int helpIndex = currentIndex;
 		FormatToken token = formatTokens.get(currentIndex);
 		do {
 		    token = formatTokens.get(currentIndex);
@@ -1498,15 +1503,19 @@ public class TokenFormatter {
 		} while (currentIndex > 0
 			&& token.getId() != FormatToken.Kind.WHITESPACE_INDENT
 			&& token.getId() != FormatToken.Kind.OPEN_TAG);
-		if (currentIndex > 0 && token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+		if ((currentIndex >= 0 && token.getId() == FormatToken.Kind.OPEN_TAG)
+                        || (currentIndex >= 0 && token.getId() == FormatToken.Kind.WHITESPACE_INDENT
+                        && formatTokens.get(currentIndex).getId() == FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG)) {
+                    currentIndex = helpIndex;
 		    do {
 			token = formatTokens.get(currentIndex);
-			currentIndex--;
-		    } while (currentIndex > 0
+			currentIndex++;
+		    } while (currentIndex < formatTokens.size()
 			    && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
-			    && token.getId() != FormatToken.Kind.OPEN_TAG);
+			    && token.getId() != FormatToken.Kind.OPEN_TAG
+                            && token.getId() != FormatToken.Kind.CLOSE_TAG);
+                    result = token.getId() == FormatToken.Kind.CLOSE_TAG;
 		}
-		result = token.getId() == FormatToken.Kind.OPEN_TAG;
 		return result;
 	    }
 
