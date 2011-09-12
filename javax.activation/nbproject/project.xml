@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>javax.activation</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>javax.mail</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+            </module-dependencies>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>javax-activation.jar</runtime-relative-path>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

@@ -30,6 +30,16 @@
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
+                <dependency>
+                    <code-name-base>javax.mail</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+		<dependency>
+                    <code-name-base>javax.activation</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>                  
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
