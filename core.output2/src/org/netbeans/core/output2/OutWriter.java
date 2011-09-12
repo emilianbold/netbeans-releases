@@ -424,6 +424,8 @@ class OutWriter extends PrintWriter {
                     int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
                     lines.addTabAt(charOffset + (i - off), tabLength);
                     lineCLVT += tabLength;
+                } else if (c == '\b') {
+                    handleBackspace(charBuff);
                 } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {
                     charBuff.put('\n');
                     int pos = charBuff.position() * 2;
@@ -446,6 +448,14 @@ class OutWriter extends PrintWriter {
         }
         lines.delayedFire();
         return;
+    }
+
+    /** Update state of character buffer after a backspace character has been
+        read */
+    private void handleBackspace(CharBuffer charBuff) {
+        if (charBuff.position() > 0) {
+            charBuff.position(charBuff.position() - 1);
+        }
     }
 
     @Override
