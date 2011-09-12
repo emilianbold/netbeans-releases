@@ -60,6 +60,33 @@
             </xsl:call-template>
         </xsl:for-each>
     </xsl:template>
+    
+    <xsl:template match="filesystem/folder[@name='Cloud']/file[attr/@stringvalue='org.netbeans.spi.server.ServerWizardProvider']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Cloud</xsl:attribute>
+                <xsl:apply-templates mode="cloud-server-types" select="."/>
+        </xsl:element>
+    </xsl:template>
+    
+
+    <xsl:template match="file" mode="cloud-server-types">
+        <xsl:if test="attr[@name='displayName']">
+            <xsl:element name="file">
+                <xsl:attribute name="name">WizardProvider-<xsl:value-of select="@name"/></xsl:attribute>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+                <attr name="originalDefinition">
+                    <xsl:attribute name="stringvalue">
+                        <xsl:call-template name="fullpath">
+                            <xsl:with-param name="file" select="."/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </attr>
+                <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
+            </xsl:element>
+        </xsl:if>
+    </xsl:template>
 
     <xsl:template match="filesystem/folder[@name='Menu']/folder[@name='Profile']">
         <xsl:element name="folder">

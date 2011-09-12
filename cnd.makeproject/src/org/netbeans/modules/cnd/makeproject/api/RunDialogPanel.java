@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -966,15 +967,15 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 projectAction = action;
                 Project project = null;
                 if (executionEnvironment.isLocal()) {
-                    project = createLocalProject();
+                    project = createLocalProject(true);
                 } else {
                     FileObject projectCreator = findProjectCreator();
                     if (projectCreator == null) {
-                        project = createLocalProject();
+                        project = createLocalProject(false);
                     } else {
                         project = createRemoteProject(projectCreator);
                         if (project == null) {
-                            project = createLocalProject();
+                            project = createLocalProject(false);
                         }
                     }
                 }
@@ -986,12 +987,17 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
     }
     
-    private Project createLocalProject() throws IOException, IllegalArgumentException {
+    private Project createLocalProject(boolean isLocal) throws IOException, IllegalArgumentException {
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         String projectName = projectNameField.getText().trim();
         String baseDir = projectFolderField.getText().trim();
-        MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
-                executionEnvironment.getHost());
+        String hostID;
+        if (isLocal) {
+            hostID = ExecutionEnvironmentFactory.toUniqueID(executionEnvironment);
+        } else {
+            hostID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
+        }
+        MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, hostID); // NOI18N
         // Working dir
         String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);
@@ -1006,7 +1012,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, new FSPath(fileSystem, baseDir));
         prjParams.setOpenFlag(false)
                  .setConfiguration(conf)
-                 .setHostUID(executionEnvironment.getHost())
+                 .setHostUID(hostID)
                  .setImportantFiles(Collections.<String>singletonList(exe).iterator())
                  .setMakefileName(""); //NOI18N
         Project project = ProjectGenerator.createBlankProject(prjParams);

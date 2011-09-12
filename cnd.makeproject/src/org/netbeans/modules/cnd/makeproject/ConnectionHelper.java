@@ -47,6 +47,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -96,7 +98,10 @@ public enum ConnectionHelper implements ConnectionListener {
                     public void run() {
                         try {
                             ConnectionManager.getInstance().connectTo(env);
-                            
+                            ServerRecord rec = ServerList.get(env);
+                            if (rec != null) {
+                                rec.checkSetupAfterConnection(null);
+                            }                            
                         } catch (IOException ex) {
 
                         } catch (CancellationException ex) {

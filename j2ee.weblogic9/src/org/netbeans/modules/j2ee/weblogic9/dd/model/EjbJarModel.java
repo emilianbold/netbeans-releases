@@ -176,6 +176,28 @@ public final class EjbJarModel extends BaseDescriptorModel {
         return null;
     }
 
+    public String getDestinationJndiName(String mdbName) {
+        // TODO logical JMS destinations support ?
+        // http://download.oracle.com/docs/cd/E12840_01/wls/docs103/ejb/message_beans.html#wp1164140
+        WeblogicEnterpriseBeanType enterpriseBean = null;
+        for (WeblogicEnterpriseBeanType ejb : bean.getWeblogicEnterpriseBean()) {
+            if (mdbName.equals(ejb.getEjbName())) {
+                enterpriseBean = ejb;
+                break;
+            }
+        }
+        
+        if (enterpriseBean == null) {
+            return null;
+        }
+
+        MessageDrivenDescriptorType descriptor = enterpriseBean.getMessageDrivenDescriptor();
+        if (descriptor != null) {
+            return descriptor.getDestinationJndiName();
+        }
+        return null;
+    }
+
     private WeblogicEnterpriseBeanType getWeblogicEnterpriseBean(String name) {
         for (WeblogicEnterpriseBeanType enterpriseBean : bean.getWeblogicEnterpriseBean()) {
             if (name.equals(enterpriseBean.getEjbName())) {

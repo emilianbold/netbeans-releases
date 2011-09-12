@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ide.ergonomics;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.server.ServerRegistry;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
 /**
  *
- * @author Pavel Flaska
+ * @author Petr Hejl
  */
-public class AvailableJ2EEServerCheck extends CommonServersBase {
-
-    public AvailableJ2EEServerCheck(final String name) {
-        super(name);
-    }
+public interface MessageDrivenDescriptorType {
     
-    //
-    // for CloudNodeCheck
-    //
-    
-    @Override
-    protected String forPath() {
-        return ServerRegistry.SERVERS_PATH;
-    }
-    
-    @Override
-    protected String propPrefix() {
-        return "serverwizard.";
-    }
-    
-    //
-    // test methods
-    //
-    
-    public void testGetAllServerWizardsReal() {
-        doGetAllInstancesReal();
-    }
-
-    public void testGetAllServerWizardsErgo() {
-        doGetAllInstancesErgo();
-    }
+    String getDestinationJndiName();
 }

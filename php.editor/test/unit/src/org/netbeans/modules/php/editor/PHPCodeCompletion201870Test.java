@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ide.ergonomics;
+package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.server.ServerRegistry;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.util.lookup.Lookups;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Pavel Flaska
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AvailableJ2EEServerCheck extends CommonServersBase {
+public class PHPCodeCompletion201870Test extends PHPTestBase {
 
-    public AvailableJ2EEServerCheck(final String name) {
-        super(name);
-    }
-    
-    //
-    // for CloudNodeCheck
-    //
-    
-    @Override
-    protected String forPath() {
-        return ServerRegistry.SERVERS_PATH;
-    }
-    
-    @Override
-    protected String propPrefix() {
-        return "serverwizard.";
-    }
-    
-    //
-    // test methods
-    //
-    
-    public void testGetAllServerWizardsReal() {
-        doGetAllInstancesReal();
+    public PHPCodeCompletion201870Test(String testName) {
+        super(testName);
     }
 
-    public void testGetAllServerWizardsErgo() {
-        doGetAllInstancesErgo();
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test201870/test201870.php", "$object->get^", false);
     }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test201870/"))
+            })
+        );
+    }
+
 }

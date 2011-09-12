@@ -41,50 +41,30 @@
  */
 package org.netbeans.modules.ide.ergonomics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.server.ServerRegistry;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.util.lookup.Lookups;
 
-/**
- *
- * @author Pavel Flaska
- */
-public class AvailableJ2EEServerCheck extends CommonServersBase {
+public final class CloudNodeCheck extends CommonServersBase {
 
-    public AvailableJ2EEServerCheck(final String name) {
+    public CloudNodeCheck(final String name) {
         super(name);
     }
-    
-    //
-    // for CloudNodeCheck
-    //
-    
+
     @Override
     protected String forPath() {
-        return ServerRegistry.SERVERS_PATH;
+        return ServerRegistry.CLOUD_PATH;
     }
-    
+
     @Override
     protected String propPrefix() {
-        return "serverwizard.";
+        return "clouds.";
     }
     
-    //
-    // test methods
-    //
-    
-    public void testGetAllServerWizardsReal() {
+    public void testGetAllCloudWizardsReal() {
         doGetAllInstancesReal();
     }
 
-    public void testGetAllServerWizardsErgo() {
+    public void testGetAllCloudWizardsErgo() {
         doGetAllInstancesErgo();
     }
+    
 }

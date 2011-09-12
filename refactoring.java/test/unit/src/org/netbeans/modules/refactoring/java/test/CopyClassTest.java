@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
 /**
- * 
+ *
  * @author Ralph Ruijs
  */
 public class CopyClassTest extends RefactoringTestBase {
@@ -60,22 +60,87 @@ public class CopyClassTest extends RefactoringTestBase {
 
     public void test179333() throws Exception {
         writeFilesAndWaitForScan(src,
-                                 new File("t/package-info.java", "package t;"),
-                                 new File("u/A.java", "package u; public class A { }"));
-                                 
-        performCopyClass(src.getFileObject("t/package-info.java"), new URL(src.getURL(), "u/"));
+                new File("t/package-info.java", "package t;"),
+                new File("u/A.java", "package u; public class A { }"));
+        performCopyClass(src.getFileObject("t/package-info.java"), new URL(src.getURL(), "u/"), "package-info");
         verifyContent(src,
-                      new File("t/package-info.java", "package t;"),
-                      new File("u/package-info.java", "package u;"),
-                      new File("u/A.java", "package u; public class A { }"));
+                new File("t/package-info.java", "package t;"),
+                new File("u/package-info.java", "package u;"),
+                new File("u/A.java", "package u; public class A { }"));
     }
 
-    private void performCopyClass(FileObject source, URL target, Problem... expectedProblems) throws Exception {
+    public void testCopyClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkgdst/"), "CopyClass");
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkgdst/CopyClass.java", "package copypkgdst; import copypkg.*; public class CopyClass { public CopyClass() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+
+    public void testCopyClassToSamePackage() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkg/"), "CopyClass1");
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+
+    public void testCopyClassWithRename() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkgdst/"), "CopyClassRen");
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkgdst/CopyClassRen.java", "package copypkgdst; import copypkg.*; public class CopyClassRen { public CopyClassRen() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+    
+    public void testCopyToDefault() throws Exception{
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), src.getURL(), "CopyClass");
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("CopyClass.java", " import copypkg.*; public class CopyClass { public CopyClass() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+    
+    public void testCopyInvalid1() throws Exception{
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkg/"), "CopyClass1", new Problem(true, "ERR_ClassToMoveClashes"));
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+    
+    public void testCopyInvalid2() throws Exception{
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkg/"), "CopyClass", new Problem(true, "ERR_ClassToMoveClashes"));
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+
+    private void performCopyClass(FileObject source, URL target, String newname, Problem... expectedProblems) throws Exception {
         final SingleCopyRefactoring[] r = new SingleCopyRefactoring[1];
-        
+
         r[0] = new SingleCopyRefactoring(Lookups.singleton(source));
         r[0].setTarget(Lookups.singleton(target));
-        r[0].setNewName(source.getNameExt());
+        r[0].setNewName(newname);
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
@@ -86,6 +151,4 @@ public class CopyClassTest extends RefactoringTestBase {
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
-
 }
-
