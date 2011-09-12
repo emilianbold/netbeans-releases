@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.filesystems.FileObject;
@@ -63,6 +64,38 @@ public class HgCommandTest extends AbstractHgTestCase {
     public HgCommandTest(String arg0) throws IOException {
         super(arg0);
         System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
+    }
+    
+    public void testNumericTagname () throws Exception {
+        commit(getWorkTreeDir());
+        // this should demonstrate the correct behavior
+        String tagName = "tag";
+        // create tag
+        HgCommand.createTag(getWorkTreeDir(), tagName, "tag message", null, true, NULL_LOGGER);
+        HgLogMessage[] logs = HgCommand.getLogMessages(getWorkTreeDir(), null, tagName, tagName, 
+                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+        // hg log should return the tagged revision info
+        assertEquals(1, logs.length);
+        
+        // now a numeric tagname
+        String last = HgCommand.getLastRevision(getWorkTreeDir(), null);
+        tagName = Integer.toString(Integer.parseInt(last) + 1);
+        // create tag
+        HgCommand.createTag(getWorkTreeDir(), tagName, "tag message", null, true, NULL_LOGGER);
+        logs = HgCommand.getLogMessages(getWorkTreeDir(), null, tagName, tagName, 
+                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+        // hg log should return the tagged revision info
+        assertEquals(1, logs.length);
+    }
+    
+    public void testToGreaterThanLast () throws Exception {
+        commit(getWorkTreeDir());
+        String last = HgCommand.getLastRevision(getWorkTreeDir(), null);
+        String to = Integer.toString(Integer.parseInt(last) + 100);
+        HgLogMessage[] logs = HgCommand.getLogMessages(getWorkTreeDir(), null, last, to, 
+                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+        // hg log should return the tagged revision info
+        assertEquals(1, logs.length);
     }
 
     public void testDisabledIndexing () throws Exception {
