@@ -61,8 +61,7 @@ public class ViewApplicationAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
         Application app = activatedNodes[0].getLookup().lookup(Application.class);
-        // XXX: there is no way to retrieve app context name; it it being considered to be added to API
-        String appContext = app.getApplicationName();
+        String appContext = app.getApplicationUrl();
         String url = inst.getOracleInstance().getInstanceURL();
         if (appContext.startsWith("/")) {
             appContext = appContext.substring(1);
