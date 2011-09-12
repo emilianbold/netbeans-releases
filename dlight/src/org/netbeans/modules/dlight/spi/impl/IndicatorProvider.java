@@ -46,7 +46,7 @@ public final class IndicatorProvider {
                 @SuppressWarnings("unchecked")
                 // Impossible to do it in checked manner. Have to rely on factory ID check.
                 Indicator<?> indicator = indicatorFactory.create(configuraiton);
-                indicator.getDefaultAction().setEnabled(isDetailsEnabled);
+                IndicatorAccessor.getDefault().setDetailsEnabled(indicator, isDetailsEnabled);
                 IndicatorAccessor.getDefault().setToolID(indicator, toolID);
                 IndicatorAccessor.getDefault().initMouseListener(indicator);
                 return indicator;

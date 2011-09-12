@@ -42,6 +42,8 @@ public abstract class IndicatorAccessor {
     }
 
     public abstract void setToolID(Indicator<?> ind, String toolID);
+    
+    public abstract void setDetailsEnabled(Indicator<?> ind, boolean isDetailsEnabled);
 
     public abstract void setToolDescription(Indicator<?> ind, String toolDescription);
 
