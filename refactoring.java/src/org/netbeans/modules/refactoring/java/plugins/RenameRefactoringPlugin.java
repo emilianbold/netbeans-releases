@@ -358,9 +358,15 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             fireProgressListenerStep();
             if (hiddenField != null) {
-                msg = new MessageFormat(getString("ERR_WillHide")).format(
-                        new Object[] {info.getElementUtilities().enclosingTypeElement(hiddenField).toString()}
-                );
+                if (RetoucheUtils.isWeakerAccess(element.getModifiers(), hiddenField.getModifiers())) {
+                    msg = getString("ERR_WillHidePrivate", RetoucheUtils.getAccess(element.getModifiers()),
+                            RetoucheUtils.getAccess(hiddenField.getModifiers()), 
+                            info.getElementUtilities().enclosingTypeElement(hiddenField).toString()
+                            );
+                } else {
+                    msg = new MessageFormat(getString("ERR_WillHide")).format(
+                            new Object[]{info.getElementUtilities().enclosingTypeElement(hiddenField).toString()});
+                }
                 checkProblem = createProblem(checkProblem, false, msg);
             }
         }
@@ -587,7 +593,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     
-    private static String getString(String key) {
-        return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
+    private static String getString(String... value) {
+        return NbBundle.getMessage(RenameRefactoringPlugin.class, value[0], Arrays.copyOfRange(value, 1, value.length));
     }
 }
