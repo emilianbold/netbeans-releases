@@ -1591,12 +1591,14 @@ public class RADComponent {
                                               List<RADProperty> normalProps,
                                               List<RADProperty> expertProps) {
         // Issue 171445 - missing cursor property
-        if ((getBeanInstance() instanceof java.awt.Component) && (nameToProperty.get("cursor") == null)) { // NOI18N
+        if (FormUtils.isStandardJavaComponent(getBeanClass())) {
             try {
-                PropertyDescriptor pd = new PropertyDescriptor("cursor", java.awt.Component.class); // NOI18N
-                RADProperty prop = createBeanProperty(pd, null, null);
-                nameToProperty.put("cursor", prop); // NOI18N
-                normalProps.add(prop);
+                if (nameToProperty.get("cursor") == null) { // NOI18N
+                    PropertyDescriptor pd = new PropertyDescriptor("cursor", java.awt.Component.class); // NOI18N
+                    RADProperty prop = createBeanProperty(pd, null, null);
+                    nameToProperty.put("cursor", prop); // NOI18N
+                    normalProps.add(prop);
+                }
             } catch (IntrospectionException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
