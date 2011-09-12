@@ -240,6 +240,7 @@ public class FormatVisitor extends DefaultVisitor {
         addAllUntilOffset(node.getEndOffset());
     }
 
+    @Override
     public void visit(Assignment node) {
         scan(node.getLeftHandSide());
         while (ts.moveNext() && ((ts.offset() + ts.token().length()) < node.getRightHandSide().getStartOffset())

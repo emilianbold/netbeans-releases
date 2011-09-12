@@ -74,6 +74,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -91,10 +92,12 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -115,6 +118,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -393,7 +397,7 @@ import org.openide.util.NbBundle;
                     }
                 }
             }
-            
+
         }
 
         // add the @stateless annotation
@@ -664,12 +668,28 @@ import org.openide.util.NbBundle;
                 Logger.getLogger(EjbFacadeWizardIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: "+ ex.getPath()); //NOI18N
             }
             String names[]=null;
-            if(noPuNeeded){
-                panels = new WizardDescriptor.Panel[]{new PersistenceClientEntitySelection(NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard), new EjbFacadeWizardPanel2(project, wizard)};
-                names = new String[]{NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_GeneratedSessionBeans")};
+
+            WizardDescriptor.Panel persistenceClientEntitySelectionPanel = new PersistenceClientEntitySelection(NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard);
+            // persistence panel improved about server validation
+            WizardDescriptor.Panel validatedPersistenceClientEntitySelectionPanel = new EjbLiteServerValidationPanel(persistenceClientEntitySelectionPanel);
+            EjbFacadeWizardPanel2 ejbFacadeWizardPanel2 = new EjbFacadeWizardPanel2(project, wizard);
+
+            if (noPuNeeded) {
+                panels = new WizardDescriptor.Panel[]{
+                    validatedPersistenceClientEntitySelectionPanel,
+                    ejbFacadeWizardPanel2};
+                names = new String[]{
+                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"),
+                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_GeneratedSessionBeans")};
             } else {
-                panels = new WizardDescriptor.Panel[]{new PersistenceClientEntitySelection(NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard), new EjbFacadeWizardPanel2(project, wizard), new PersistenceUnitWizardDescriptor(project)};
-                names = new String[]{NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_GeneratedSessionBeans"), NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_PersistenceUnitSetup")};
+                panels = new WizardDescriptor.Panel[]{
+                    validatedPersistenceClientEntitySelectionPanel,
+                    ejbFacadeWizardPanel2,
+                    new PersistenceUnitWizardDescriptor(project)};
+                names = new String[]{
+                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"),
+                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_GeneratedSessionBeans"),
+                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_PersistenceUnitSetup")};
             }
 
 

@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2ee.common/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/common/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/common/resources/layer.xml
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
-OpenIDE-Module-Specification-Version: 1.65
+OpenIDE-Module-Specification-Version: 1.66
 AutoUpdate-Show-In-Client: false
