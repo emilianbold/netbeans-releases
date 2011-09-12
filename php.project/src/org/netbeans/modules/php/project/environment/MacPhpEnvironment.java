@@ -43,8 +43,8 @@
 package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.openide.util.NbBundle;
 
@@ -53,29 +53,56 @@ import org.openide.util.NbBundle;
  */
 final class MacPhpEnvironment extends PhpEnvironment {
 
+    private static final String PHP = "php"; // NOI18N
+    private static final PhpEnvironment MAMP = new MampPhpEnvironment();
+
+
     MacPhpEnvironment() {
     }
 
     @Override
     protected List<DocumentRoot> getDocumentRoots(String projectName) {
-        // MAMP
-        File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
-        if (mamp.isDirectory()) {
-            String documentRoot = getFolderName(mamp, projectName);
-            String url = getDefaultUrl(projectName, 8888);
-            String hint = NbBundle.getMessage(MacPhpEnvironment.class, "TXT_MAMP");
-            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, true));
-        }
-        return Collections.<DocumentRoot>emptyList();
+        return MAMP.getDocumentRoots(projectName);
     }
 
     @Override
     public List<String> getAllPhpInterpreters() {
-        // MAMP
-        File php = new File("/Applications/MAMP/bin/php5/bin/php"); // NOI18N
-        if (!php.exists()) {
-            return Collections.<String>emptyList();
-        }
-        return Arrays.asList(php.getAbsolutePath());
+        List<String> phps = new LinkedList<String>();
+        // system path
+        phps.addAll(getAllPhpInterpreters(PHP));
+        // mamp
+        phps.addAll(MAMP.getAllPhpInterpreters());
+        return phps;
     }
+
+    //~ Inner classes
+
+    /**
+     * {@link PhpEnvironment} implementation for MAMP.
+     */
+    private static final class MampPhpEnvironment extends PhpEnvironment {
+
+        @Override
+        protected List<DocumentRoot> getDocumentRoots(String projectName) {
+            File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
+            if (mamp.isDirectory()) {
+                String documentRoot = getFolderName(mamp, projectName);
+                String url = getDefaultUrl(projectName, 8888);
+                String hint = NbBundle.getMessage(MampPhpEnvironment.class, "TXT_MAMP");
+                return Collections.singletonList(new DocumentRoot(documentRoot, url, hint, true));
+            }
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<String> getAllPhpInterpreters() {
+            File php = new File("/Applications/MAMP/bin/php5/bin/php"); // NOI18N
+            if (php.isFile()) {
+                return Collections.singletonList(php.getAbsolutePath());
+            }
+            return Collections.emptyList();
+        }
+
+    }
+
 }
