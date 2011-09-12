@@ -51,6 +51,109 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.instance"/>
             </file>
         </folder>
+        <folder name="org-netbeans-modules-ant-freeform">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="position" intvalue="1230"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-apisupport-project">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-j2ee-earproject">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="ejb">
+                <folder name="Lookup">
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                        <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                        <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="jar">
+                <folder name="Lookup">
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                        <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                        <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="nbm">
+                <folder name="Lookup">
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                        <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                        <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="war">
+                <folder name="Lookup">
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                    <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                        <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                        <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProfilerTypeUtilsImpl.instance_hidden"/>
+                <file name="org-netbeans-modules-profiler-nbimpl-providers-ProjectProfilerTypeUtilsImpl.instance">
+                    <attr name="class" stringvalue="org.netbeans.modules.profiler.nbimpl.providers.ProfilerTypeUtilsImpl"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.projectapi.LazyLookupProviders.forProjectServiceProvider"/>
+                    <attr name="service" stringvalue="org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Loaders">
