@@ -127,7 +127,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class B {\n"
                 + "}"));
         verifyContent(test,
-                new File("t/BTest", "package t;\n" // XXX: Why is there no java extension?
+                new File("t/BTest.java", "package t;\n"
                 + "import junit.framework.TestCase;\n"
                 + "\n"
                 + "public class BTest extends TestCase {\n"
@@ -408,14 +408,5 @@ public class RenameTest extends RefactoringTestBase {
         }
 
         assertProblems(Arrays.asList(expectedProblems), problems);
-    }
-    
-    private boolean problemIsFatal(List<Problem> problems) {
-        for (Problem problem : problems) {
-            if (problem.isFatal()) {
-                return true;
-            }
-        }
-        return false;
     }
 }
