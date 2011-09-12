@@ -120,6 +120,7 @@ import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.openide.awt.MouseUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -1568,7 +1569,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
         return offset;
     }
-
+    
     @Override
     public void mouseClicked(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -1577,7 +1578,7 @@ AtomicLockListener, FoldHierarchyListener {
         
         JTextComponent c = component;
         if (c != null) {
-            if (SwingUtilities.isMiddleMouseButton(evt)) {
+            if (isMiddleMouseButtonExt(evt)) {
 		if (evt.getClickCount() == 1) {
 		    if (c == null) return;
                     Clipboard buffer = getSystemSelection();
@@ -1708,6 +1709,11 @@ AtomicLockListener, FoldHierarchyListener {
                 && !(evt.isPopupTrigger())
                 && (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0);
     }
+    
+    private boolean isMiddleMouseButtonExt(MouseEvent evt) {
+        return (evt.getButton() == MouseEvent.BUTTON2) &&
+                (evt.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK | InputEvent.META_DOWN_MASK | /* cannot be tested bcs of bug in JDK InputEvent.ALT_DOWN_MASK | */ InputEvent.ALT_GRAPH_DOWN_MASK)) == 0;
+    }
 
     protected int mapDragOperationFromModifiers(MouseEvent e) {
         int mods = e.getModifiersEx();
@@ -1766,7 +1772,7 @@ AtomicLockListener, FoldHierarchyListener {
     private static String logMouseEvent(MouseEvent evt) {
         return "x=" + evt.getX() + ", y=" + evt.getY() + ", clicks=" + evt.getClickCount() //NOI18N
             + ", component=" + s2s(evt.getComponent()) //NOI18N
-            + ", source=" + s2s(evt.getSource()); //NOI18N
+            + ", source=" + s2s(evt.getSource()) + ", button=" + evt.getButton() + ", mods=" + evt.getModifiers() + ", modsEx=" + evt.getModifiersEx(); //NOI18N
     }
 
     private static String s2s(Object o) {
