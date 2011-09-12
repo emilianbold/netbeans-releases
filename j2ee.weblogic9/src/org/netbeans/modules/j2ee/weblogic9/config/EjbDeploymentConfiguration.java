@@ -47,28 +47,19 @@ package org.netbeans.modules.j2ee.weblogic9.config;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.dd.model.BaseDescriptorModel;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.EjbJarModel;
-import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -218,6 +209,11 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
             throw new ConfigurationException(msg);
         }
         return webLogicEjbJar.getReferenceJndiName(ejbName, referenceName);
+    }
+
+    @Override
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+        return weblogicEjbJar.getDestinationJndiName(mdbName);
     }
 
     /**
