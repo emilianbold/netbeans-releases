@@ -132,14 +132,14 @@ public final class J2eeProjectCapabilities {
         boolean ee6Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_WEB);
         return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6Web);
     }
-    
+
     /*
-     * Returns <code>true</code> if the server used by project supports JSF 2.x.
-     * 
-     * @retunr <code>true</code> if the server used by project supports JSF 2.x
-     * @since 1.61
+     * Returns <code>true</code> if the server used by project supports EJB lite.
+     *
+     * @return <code>true</code> if the server used by project supports EJB lite
+     * @since 1.66
      */
-    public boolean isJsf2Included() {
+    public boolean isEjbLiteIncluded() {
         if (webProfile == null || !webProfile.equals(Profile.JAVA_EE_6_FULL)
                 && !webProfile.equals(Profile.JAVA_EE_6_WEB)) {
             return false;
