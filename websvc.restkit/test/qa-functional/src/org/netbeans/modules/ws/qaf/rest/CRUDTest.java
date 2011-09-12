@@ -209,7 +209,7 @@ public class CRUDTest extends RestTestBase {
         String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Remove");
         new JButtonOperator(wo, removeLabel).push();
         assertEquals("remove failed in selected", 2, selectedEntities.getModel().getSize()); //NOI18N
-        assertEquals("remove failed in available", 7, availableEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove failed in available", 6, availableEntities.getModel().getSize()); //NOI18N
         //<< Remove All
         new JButtonOperator(wo, "Remove All").push();
         assertEquals("remove all failed in selected", 0, selectedEntities.getModel().getSize()); //NOI18N
