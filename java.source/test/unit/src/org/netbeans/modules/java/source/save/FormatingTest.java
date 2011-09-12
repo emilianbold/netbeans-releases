@@ -3655,6 +3655,36 @@ public class FormatingTest extends NbTestCase {
                 + "}\n";        
         reformat(doc, content, golden);
         
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * This is longer test JavaDoc for the Test class.\n"
+                + " *\n"
+                + " * @author XYZ\n"
+                + " * @Deprecated\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " This is longer test JavaDoc for the Test class.\n"
+                + "\n"
+                + " @author XYZ\n"
+                + " @Deprecated\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        preferences.putBoolean("addLeadingStarInComment", false);
+        preferences.putBoolean("wrapCommentText", false);
+        preferences.putBoolean("blankLineAfterJavadocDescription", false);
+        reformat(doc, content, golden);
+        preferences.remove("blankLineAfterJavadocDescription");        
+        preferences.remove("wrapCommentText");        
+        preferences.remove("addLeadingStarInComment");        
+
         preferences.remove("text-limit-width");
     }
 
