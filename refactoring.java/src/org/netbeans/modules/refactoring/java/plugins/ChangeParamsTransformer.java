@@ -183,28 +183,30 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             List<? extends Tree> members = node.getMembers();
             for (int i = 0; i < members.size(); i++) {
                 Tree tree = members.get(i);
-                ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), tree));
-                if(p.equals(element)) {
-                    List<ExpressionTree> paramList = getNewCompatibleArguments();
-                    MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                            make.Identifier(element),
-                            paramList);
-                    TypeMirror methodReturnType = element.getReturnType();
-                    boolean hasReturn = true;
-                    Types types = workingCopy.getTypes();
-                    if (types.isSameType(methodReturnType, types.getNoType(TypeKind.VOID))) {
-                        hasReturn = false;
+                if (tree.getKind().equals(Kind.METHOD)) {
+                    ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), tree));
+                    if (p.equals(element)) {
+                        List<ExpressionTree> paramList = getNewCompatibleArguments();
+                        MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                make.Identifier(element),
+                                paramList);
+                        TypeMirror methodReturnType = element.getReturnType();
+                        boolean hasReturn = true;
+                        Types types = workingCopy.getTypes();
+                        if (types.isSameType(methodReturnType, types.getNoType(TypeKind.VOID))) {
+                            hasReturn = false;
+                        }
+                        StatementTree statement = null;
+                        if (hasReturn) {
+                            statement = make.Return(methodInvocation);
+                        } else {
+                            statement = make.ExpressionStatement(methodInvocation);
+                        }
+                        MethodTree newMethod = make.Method(element,
+                                make.Block(Collections.singletonList(statement), false));
+                        ClassTree addMember = make.insertClassMember(node, i, newMethod);
+                        rewrite(node, addMember);
                     }
-                    StatementTree statement = null;
-                    if(hasReturn) {
-                        statement = make.Return(methodInvocation);
-                    } else {
-                        statement = make.ExpressionStatement(methodInvocation);
-                    }
-                    MethodTree newMethod = make.Method(element,
-                            make.Block(Collections.singletonList(statement), false));
-                    ClassTree addMember = make.insertClassMember(node, i, newMethod);
-                    rewrite(node, addMember);
                 }
             }
         }

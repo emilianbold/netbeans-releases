@@ -170,7 +170,7 @@ class Ordering {
                 previousChild = subsequentChild;
             }
         }
-        if (logWarnings && !childrenByPosition.isEmpty() && childrenByPosition.size() < children.size()) {
+        if (logWarnings && /* #201893*/ !parent.getPath().matches("Projects/.+/Lookup") && !childrenByPosition.isEmpty() && childrenByPosition.size() < children.size()) {
             List<FileObject> missingPositions = new ArrayList<FileObject>(children);
             for (ChildAndPosition cap : childrenByPosition) {
                 missingPositions.remove(cap.child);
