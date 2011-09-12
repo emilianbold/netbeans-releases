@@ -478,9 +478,16 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         LinkedList supertypes = new LinkedList();
         
         ElementUtilities ut = info.getElementUtilities();
-        //TODO:
-        //ExecutableElement m = ut.getOverriddenMethod(method, name);
+        Elements elements = info.getElements();
         ExecutableElement m = null;
+        
+        for (ExecutableElement ee:ElementFilter.methodsIn(elements.getAllMembers(jc))) {
+            if (ee.getSimpleName().contentEquals(name) &&
+                info.getTypes().isSubsignature((ExecutableType) ee.asType(), (ExecutableType) method.asType())) {
+                m = ee;
+                break;
+            }    
+        }
         if (m!=null) {
             if (m.getModifiers().contains(Modifier.FINAL)) {
                 String msg = new MessageFormat(getString("ERR_WillOverride_final")).format(
