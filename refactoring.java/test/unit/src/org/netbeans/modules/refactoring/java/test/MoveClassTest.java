@@ -44,7 +44,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -62,7 +62,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c; } }"),
                                  new File("u/B.java", "package u; class B { public static int c = 5; }"));
-        performCopyClass(src.getFileObject("u/B.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("u/A.java", "package u; import t.B; public class A { public void foo() { int d = B.c; } }"),
@@ -72,7 +72,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c; } }"),
                                  new File("u/B.java", "package u; public class B { static int c = 5; }"));
-        performCopyClass(src.getFileObject("u/B.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("u/A.java", "package u; import t.B; public class A { public void foo() { int d = B.c; } }"),
@@ -82,7 +82,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c; } }"),
                                  new File("u/B.java", "package u; public class B { public static int c = 5; }"));
-        performCopyClass(src.getFileObject("u/B.java"), new URL(src.getURL(), "t/"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("u/A.java", "package u; import t.B; public class A { public void foo() { int d = B.c; } }"),
@@ -92,7 +92,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c(); } }"),
                                  new File("u/B.java", "package u; class B { public static int c() { return 5; } }"));
-        performCopyClass(src.getFileObject("u/A.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/A.java")), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("t/A.java", "package t; import u.B; public class A { public void foo() { int d = B.c(); } }"),
@@ -102,7 +102,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c(); } }"),
                                  new File("u/B.java", "package u; public class B { static int c() { return 5 } }"));
-        performCopyClass(src.getFileObject("u/A.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/A.java")), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature2"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("t/A.java", "package t; import u.B; public class A { public void foo() { int d = B.c(); } }"),
@@ -112,7 +112,7 @@ public class MoveClassTest extends RefactoringTestBase {
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/A.java", "package u; public class A { public void foo() { int d = B.c(); } }"),
                                  new File("u/B.java", "package u; public class B { public static int c() { return 5 } }"));
-        performCopyClass(src.getFileObject("u/A.java"), new URL(src.getURL(), "t/"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/A.java")), new URL(src.getURL(), "t/"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
                       new File("t/A.java", "package t; import u.B; public class A { public void foo() { int d = B.c(); } }"),
@@ -124,17 +124,63 @@ public class MoveClassTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/C1.java", "package u; public class C1 { protected int p; }"),
                 new File("u/C2.java", "package u; public class C2 { public void m(C1 c1) { c1.p=2; } }"));
-        performCopyClass(src.getFileObject("u/C1.java"), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/C1.java")), new URL(src.getURL(), "t/"), new Problem(false, "ERR_AccessesPackagePrivateFeature"));
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("t/C1.java", "package t; public class C1 { protected int p; }"),
                 new File("u/C2.java", "package u; import t.C1; public class C2 { public void m(C1 c1) { c1.p=2; } }"));
     }
+    
+    public void testMoveClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkg.MoveClass reference2; } }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkgdst/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkgdst/MoveClass.java", "package movepkgdst; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; import movepkgdst.MoveClass; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkgdst.MoveClass reference2; } }"));
+    }
+    
+    public void testMoveMultiple() throws Exception {
+                writeFilesAndWaitForScan(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; public class MoveClass { public MoveClass() { MoveClassDep dep; } }"),
+                new File("movepkg/MoveClass1.java", "package movepkg; public class MoveClass1 { public MoveClass1() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkg.MoveClass reference2; } }"));
+        performMoveClass(Lookups.fixed(src.getFileObject("movepkg/MoveClass.java"), src.getFileObject("movepkg/MoveClass1.java")), new URL(src.getURL(), "movepkgdst/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkgdst/MoveClass.java", "package movepkgdst; import movepkg.MoveClassDep; public class MoveClass { public MoveClass() { MoveClassDep dep; } }"),
+                new File("movepkgdst/MoveClass1.java", "package movepkgdst; public class MoveClass1 { public MoveClass1() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; import movepkgdst.MoveClass; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkgdst.MoveClass reference2; } }"));
+    }
+    
+    public void testMovePackageImport() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; import movepkg.*; public class MoveClass { public MoveClass() { } }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkgdst/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkgdst/MoveClass.java", "package movepkgdst; import movepkg.*; public class MoveClass { public MoveClass() { } }"));
+    }
+    
+    public void testMoveToSamePackage() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; import movepkg.*; public class MoveClass { public MoveClass() { } }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkg/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; import movepkg.*; public class MoveClass { public MoveClass() { } }"));
+    }
 
-    private void performCopyClass(FileObject source, URL target, Problem... expectedProblems) throws Exception {
+    private void performMoveClass(Lookup source, URL target, Problem... expectedProblems) throws Exception {
         final MoveRefactoring[] r = new MoveRefactoring[1];
         
-        r[0] = new MoveRefactoring(Lookups.singleton(source));
+        r[0] = new MoveRefactoring(source);
         r[0].setTarget(Lookups.singleton(target));
 
         RefactoringSession rs = RefactoringSession.create("Session");

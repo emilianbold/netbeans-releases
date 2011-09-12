@@ -66,13 +66,16 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -239,6 +242,21 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                         Method m = optFactory.getClass().getMethod("getAddInstanceIterator");
                         iterator = (InstantiatingIterator) m.invoke(optFactory);
                         fo = (FileObject) o;
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    break;
+                }
+            } else if (templateResource.startsWith("Cloud/WizardProvider")) { // NOI18N
+                String resource = "Cloud/" + templateResource.substring(templateResource.indexOf('-') + 1); // NOI18N
+                fo = FileUtil.getConfigFile(resource);
+                try {
+                    if (fo != null) {
+                        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                        Object oo = DataObject.find(fo).getCookie(InstanceCookie.class).instanceCreate();
+                        if (oo instanceof ServerWizardProvider && ServerWizardProviderProxy.isReal((ServerWizardProvider)oo)) {
+                            iterator = ((ServerWizardProvider)oo).getInstantiatingIterator();
+                        }
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);

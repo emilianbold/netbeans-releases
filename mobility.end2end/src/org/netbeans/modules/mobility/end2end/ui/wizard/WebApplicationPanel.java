@@ -61,7 +61,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import javax.swing.ComboBoxModel;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -74,7 +73,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataListener;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -91,8 +89,6 @@ import org.netbeans.modules.mobility.end2end.client.config.ClassDescriptor;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -848,8 +844,8 @@ final public class WebApplicationPanel extends JPanel
 //            final WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());            
 //            final FileObject rootFolder = wscs.getWsdlFolder();
             JAXWSClientSupport jaxws = JAXWSClientSupport.getJaxWsClientSupport( p.getProjectDirectory());
-            List wsclients = jaxws.getServiceClients();
-            if( wsclients.size() > 0 ){
+            List wsclients = jaxws != null ? jaxws.getServiceClients() : null;
+            if (wsclients == null || wsclients.size() > 0) {
 //                final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport(rootFolder);
 //                final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport( p.getProjectDirectory());
                 final JAXWSClientSupport jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport( p.getProjectDirectory());
@@ -867,6 +863,7 @@ final public class WebApplicationPanel extends JPanel
                         servicesModel = new DefaultComboBoxModel(
                                 new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "MSG_ComputingWebServices" )} );
                         RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                             public void run() {
                                 updateWebServices(p);
                             }

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ExpressionTree;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.api.Scope;
 import com.sun.source.util.TreePath;
@@ -218,8 +219,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 }
 
                 TreePath path = WhereUsedPanel.this.element.resolve(info);
-                final String packageName = path.getCompilationUnit().getPackageName().toString();
-                packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(packageName.replaceAll("\\.", "/"));
+                final ExpressionTree packageName1 = path.getCompilationUnit().getPackageName();
+                final String packageName = packageName1 == null? "<default package>" : packageName1.toString(); //NOI18N
+                if(packageName1 == null) {
+                    packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findOwnerRoot(WhereUsedPanel.this.element.getFileObject());
+                } else {
+                    packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(packageName.replaceAll("\\.", "/")); //NOI18N
+                }
                 
                 final Set<Modifier> modifiers = modif;
                 final String isBaseClassText = m_isBaseClassText;

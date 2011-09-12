@@ -470,6 +470,14 @@ public class OutWriterTest extends NbTestCase {
         }
     }
     
+    public void testWriteWithBackspace() throws IOException {
+
+        OutWriter ow = new OutWriter();
+
+        ow.write("Helle\bo World");
+        assertEquals("Hello World", ow.getLines().getLine(0));
+    }
+
     public void testWriteLineTerminators() throws IOException {
 
         OutWriter ow = new OutWriter();

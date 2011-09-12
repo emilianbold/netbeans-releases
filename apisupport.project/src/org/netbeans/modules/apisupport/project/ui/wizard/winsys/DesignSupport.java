@@ -93,6 +93,9 @@ public final class DesignSupport implements TaskListener, Runnable {
     static boolean isDesignModeSupported(NbModuleProvider info) {
         try {
             SpecificationVersion current = info.getDependencyVersion("org.openide.windows");
+            if (current == null) {
+                return false;
+            }
             return current.compareTo(new SpecificationVersion("6.45")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);

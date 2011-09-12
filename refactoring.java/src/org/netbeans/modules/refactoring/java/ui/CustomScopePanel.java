@@ -111,7 +111,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
     private abstract static class Data {
 
         private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-        public static final String PROP_SELECTED = "selected";
+        public static final String PROP_SELECTED = "selected"; //NOI18N
         private String name;
         private Data parent;
 
@@ -286,9 +286,9 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
         private SourceData source;
         private List<ClassData> classes;
         private NonRecursiveFolder folder;
-        private final Set<NonRecursiveFolder> folders;
+        private final Map<String, NonRecursiveFolder> folders;
 
-        public PackageData(SourceData source, String name, Data parent, final FileObject folder, Set<NonRecursiveFolder> folders) {
+        public PackageData(SourceData source, String name, Data parent, final FileObject folder, Map<String, NonRecursiveFolder> folders) {
             super(name, parent);
             classes = new LinkedList<ClassData>();
             this.source = source;
@@ -312,7 +312,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
 
         @Override
         protected boolean isFullySelected() {
-            return folders.contains(folder)
+            return folders.containsKey(folder.getFolder().getPath())
                     || getParent().isFullySelected();
         }
 
@@ -331,10 +331,10 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
         @Override
         public void setSelected(boolean selected, boolean recursive) {
             if(selected) {
-                folders.add(folder);
+                folders.put(folder.getFolder().getPath(), folder);
             } else {
-                if(folders.contains(folder)) {
-                    folders.remove(folder);
+                if(folders.containsKey(folder.getFolder().getPath())) {
+                    folders.remove(folder.getFolder().getPath());
                 } else if(isFullySelected()) {
                     Data parent = getParent();
                     parent.setSelected(false);
@@ -462,9 +462,9 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
             String htmlDisplayName = super.getHtmlDisplayName() == null ? getDisplayName() : super.getHtmlDisplayName();
             if (data.isSelected() == null) {
                 // TODO: Get colors from settings
-                htmlDisplayName = String.format("<font color=\"#0000E6\">%s</font>", htmlDisplayName);
+                htmlDisplayName = String.format("<font color=\"#0000E6\">%s</font>", htmlDisplayName); //NOI18N
             } else if(!data.isSelected()) {
-                htmlDisplayName = String.format("<font color=\"#969696\">%s</font>", htmlDisplayName);
+                htmlDisplayName = String.format("<font color=\"#969696\">%s</font>", htmlDisplayName); //NOI18N
             }
             return htmlDisplayName;
         }
@@ -585,7 +585,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
 
         public PackageNode(PackageData data, CustomScopePanel panel) {
             super(createChildren(data, panel), Lookups.fixed(data), panel, data);
-            setDisplayName(data.getName());
+            setDisplayName(data.getName().isEmpty()? "<default package>" : data.getName()); //NOI18N
             setIconBaseWithExtension(PACKAGE);
             this.data = data;
         }
@@ -596,6 +596,18 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                 childs.add(new Node[]{new ClassNode(classData, panel)});
             }
             return childs;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String htmlDisplayName = data.getName().isEmpty()? "&lt;default package&gt;" : data.getName(); //NOI18N
+            if (data.isSelected() == null) {
+                // TODO: Get colors from settings
+                htmlDisplayName = String.format("<font color=\"#0000E6\">%s</font>", htmlDisplayName); //NOI18N
+            } else if(!data.isSelected()) {
+                htmlDisplayName = String.format("<font color=\"#969696\">%s</font>", htmlDisplayName); //NOI18N
+            }
+            return htmlDisplayName;
         }
     }
 
@@ -637,14 +649,14 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
     private List<ProjectData> projectList;
     private Set<FileObject> sourceRoots;
     private Set<FileObject> files;
-    private Set<NonRecursiveFolder> folders;
+    private Map<String, NonRecursiveFolder> folders;
 
     /** Creates new form CustomScopePanel */
     public CustomScopePanel() {
         projectList = new LinkedList<ProjectData>();
         sourceRoots = new HashSet<FileObject>();
         files = new HashSet<FileObject>();
-        folders = new HashSet<NonRecursiveFolder>();
+        folders = new HashMap<String, NonRecursiveFolder>();
         manager = new ExplorerManager();
         initComponents();
         manager.setRootContext(new WaitNode());
@@ -652,7 +664,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
     }
 
     public Scope getCustomScope() {
-        return Scope.create(sourceRoots, folders, files);
+        return Scope.create(sourceRoots, folders.values(), files);
     }
 
     @Override
@@ -664,7 +676,11 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
         if (!initialized) {
             if(customScope != null) {
                 sourceRoots.addAll(customScope.getSourceRoots());
-                folders.addAll(customScope.getFolders());
+                
+                for (NonRecursiveFolder folder : customScope.getFolders()) {
+                    folders.put(folder.getFolder().getPath(), folder);
+                }
+                
                 files.addAll(customScope.getFiles());
             }
             for (Project project : OpenProjects.getDefault().getOpenProjects()) {
@@ -695,12 +711,12 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                     ClassPath rcp = ClassPathSupport.createClassPath(sg.getRootFolder());
                     ClasspathInfo cpInfo = ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, rcp);
                     ClassIndex index = cpInfo.getClassIndex();
-                    Set<String> packageNames = index.getPackageNames("", false, EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                    Set<String> packageNames = index.getPackageNames("", false, EnumSet.of(ClassIndex.SearchScope.SOURCE)); // NOI18N
                     for (String packageName : packageNames) {
-                        String pathname = packageName.replaceAll("\\.", "/");
+                        String pathname = packageName.replaceAll("\\.", "/"); // NOI18N
                         final FileObject folder = sg.getRootFolder().getFileObject(pathname);
                         if(folder != null) {
-                            PackageData data = new PackageData(sourceData, packageName, sourceData, folder, folders);
+                            PackageData data = new PackageData(sourceData, packageName, sourceData, folder, folders); // NOI18N
                             sourceData.getPackages().put(packageName, data);
                         }
                     }
@@ -709,7 +725,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                     for (ElementHandle<TypeElement> elementHandle : declaredTypes) {
 
                         String qualifiedName = elementHandle.getQualifiedName();
-                        String packageName = "<default>"; // NOI18N
+                        String packageName = ""; // NOI18N
                         String className = qualifiedName;
 
                         int delimiter = qualifiedName.lastIndexOf("."); // NOI18N
