@@ -278,13 +278,23 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
                     NbBundle.getMessage(AddTemplateAction.class,
                     "TTL_NEW_FILE_ACTION"), //NOI18N
                     NbBundle.getMessage(AddTemplateAction.class,
-                    "NEW_FILE_ACTION", tpl.getName())); //NOI18
+                    "NEW_FILE_ACTION", tpl.getName())); //NOI18N
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(line))) {
                 String filename = line.getInputText();
                 Problems problems = new Problems();
                 Validators.REQUIRE_VALID_FILENAME.validate(problems, 
                         NbBundle.getMessage(JCProjectSourceNodeFactory.class, 
-                        "FILENAME"), filename);
+                        "FILENAME"), filename); //NOI18N
+                // TODO validator doesn't work, investigate
+                if (filename.length() == 0) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(JCProjectSourceNodeFactory.class, "WARN_FILENAME_INCORRECT"), // NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE);
+
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+                
                 if (problems.hasFatal()) {
                     NotifyDescriptor nd = new NotifyDescriptor.Message(
                             problems.getLeadProblem().getMessage(), 
