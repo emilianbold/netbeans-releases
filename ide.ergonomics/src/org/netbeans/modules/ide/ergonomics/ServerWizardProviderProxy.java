@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
  * @author Pavel Flaska
  */
 public class ServerWizardProviderProxy implements ServerWizardProvider {
-    
+
     private FileObject fob;
     private String displayName;
 
@@ -65,6 +65,7 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
         this.fob = fob;
     }
     
+    @Override
     public String getDisplayName() {
         if (originalActive()) {
             return null;
@@ -78,6 +79,11 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
         return displayName;
     }
 
+    public static boolean isReal(ServerWizardProvider swp) {
+        return swp != null && !(swp instanceof ServerWizardProviderProxy);
+    }
+
+    @Override
     public InstantiatingIterator getInstantiatingIterator() {
         if (originalActive()) {
             return null;

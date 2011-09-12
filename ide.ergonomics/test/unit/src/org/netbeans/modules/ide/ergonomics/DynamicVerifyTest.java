@@ -77,7 +77,8 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(LayersCheck.class).
             addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggers").
-            addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersReal").
+            addTest(AvailableJ2EEServerCheck.class, "testGetAllServerWizardsReal").
+            addTest(CloudNodeCheck.class, "testGetAllCloudWizardsReal").
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
@@ -93,7 +94,8 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(AllClustersProcessedCheck.class).
             addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal", "testTemplateHTMLDescriptions").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggersReal").
-            addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersErgo").
+            addTest(AvailableJ2EEServerCheck.class, "testGetAllServerWizardsErgo").
+            addTest(CloudNodeCheck.class, "testGetAllCloudWizardsErgo").
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
             addTest(LibrariesCheck.class, "testCheckLibrariesReal").
