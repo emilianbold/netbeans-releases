@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.dlight.perfan
-OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/perfan/resources/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory, org.netbeans.modules.dlight.spi.storage.DataStorageFactory, org.netbeans.modules.dlight.spi.collector.DataCollectorFactory, org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory
