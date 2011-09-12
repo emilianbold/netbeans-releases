@@ -170,7 +170,13 @@ public class ClipboardHandler {
         }
     }
 
+    static boolean autoImport = false; //tests
     private static void showImportDialog(final JavaSource js, final Document doc, final int caret, final Map<String, String> simple2ImportFQN, Collection<String> toShow, final List<Position[]> inSpans) {
+        if (autoImport) {
+            doImport(js, doc, caret, simple2ImportFQN, inSpans, new AtomicBoolean());
+            return;
+        }
+
         ClipboardImportPanel panel = new ClipboardImportPanel(toShow);
         final AtomicBoolean cancel = new AtomicBoolean();
         final JButton okButton = new JButton(NbBundle.getMessage(ClipboardHandler.class, "BTN_ClipboardImportOK"));
@@ -342,7 +348,7 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e <= end && (el.getKind().isClass() || el.getKind().isInterface())) {
+                                    if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                                         simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                         spans.add(new int[] {s - start, e - start});
                                     }

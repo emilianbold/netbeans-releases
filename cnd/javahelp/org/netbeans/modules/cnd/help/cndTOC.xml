@@ -40,7 +40,6 @@
 				<tocitem text="Adding Files and Folders to a C/C++/Fortran Project" target="AddingFilesandFolders" />
 				<tocitem text="Adding Unit Tests to a C/C++/Fortran Project" target="AddingUnitTests" />
 				<tocitem text="Running a C/C++/Fortran Project" target="RunningCorC++Project1" />
-				<tocitem text="Profiling a C/C++/Fortran Project" target="ProfilingCandC++Projects" />
 				<tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
 				<tocitem text="Deleting a C/C++/Fortran Project" target="DeletingCorC++Project" />
 			</tocitem>
@@ -91,18 +90,6 @@
 				<tocitem text="Opening a Terminal Window for a Development Host" target="RemoteDevelopmentTerminal" />
 				<tocitem text="Managing Development Hosts" target="RemoteDevelopmentBrowsing" />
 			</tocitem>
-		</tocitem>
-		<tocitem text="Profiling C/C++/Fortran Applications">
-			<tocitem text="About Profiling Tools for C/C++/Fortan Applications" target="OverviewOfCandC++Profiling" />
-			<tocitem text="Run Monitor Window" target="RunMonitorWindowforCandC++Fort" />
-			<tocitem text="Managing Profiling Configurations" target="ManagingProfileConfigurations" />
-			<tocitem text="Enabling DTrace Privileges for Profiling C/C++/Fortran Applications" target="EnablingDTraceForProfilingCandC++FortranApps" />
-			<tocitem text="Analyzing CPU Usage of C/C++/Fortran Applications" target="AnalyzingCPUUsageCandC++FortanApps" />
-			<tocitem text="Analyzing Memory Usage of C/C++/Fortran Applications" target="AnalyzingMemoryUsageCandC++FortranApps" />
-			<tocitem text="Analyzing I/O Usage of C/C++/Fortran Applications" target="AnalyzingIOUsageCandC++FortranApps" />
-			<tocitem text="Profiling Threaded C/C++/Fortran Applications" target="ProfilingThreadedCandC++Apps" />
-			<tocitem text="Analyzing Thread Usage of C/C++/Fortran Applications" target="AnalyzingThreadUsageCandC++FortranApps" />
-			<tocitem text="Analyzing Thread Microstates of C/C++/Fortran Applications" target="AnalyzingThreadMicrostatesCandC++FortranApps" />
 		</tocitem>
 		<tocitem text="Testing C/C++ Projects">
 			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />

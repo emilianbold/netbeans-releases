@@ -127,38 +127,26 @@ public class MergeAction extends ContextAction {
                             JOptionPane.INFORMATION_MESSAGE);
                          return;
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                String revStr = null;
-                                MergeRevisions mergeDlg = new MergeRevisions(root, null);
-                                if (!mergeDlg.showDialog()) {
-                                    return;
-                                }
-                                revStr = mergeDlg.getSelectionRevision();
-                                logger.outputInRed(
-                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
-                                logger.outputInRed(
-                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
-                                doMergeAction(root, revStr, logger);
-                                HgUtils.forceStatusRefreshProject(context);
-                                logger.output(""); // NOI18N
-                            } catch (HgException.HgCommandCanceledException ex) {
-                                // canceled by user, do nothing
-                            } catch (HgException ex) {
-                                NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                                DialogDisplayer.getDefault().notifyLater(e);
-                            } finally {
-                                logger.closeLog();
-                            }
-                        }
-                    });
+                    String revStr = null;
+                    MergeRevisions mergeDlg = new MergeRevisions(root, null);
+                    if (!mergeDlg.showDialog()) {
+                        return;
+                    }
+                    revStr = mergeDlg.getSelectionRevision();
+                    logger.outputInRed(
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
+                    logger.outputInRed(
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
+                    doMergeAction(root, revStr, logger);
+                    HgUtils.forceStatusRefreshProject(context);
+                    logger.output(""); // NOI18N
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
+                } finally {
+                    logger.closeLog();
                 }
             }
         };

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -174,8 +173,8 @@ public final class Utils {
         JavaPlatform platform = null;
         try {
             platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ioe); // NOI18N
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
         }
 
         if (platform != null) {

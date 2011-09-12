@@ -834,7 +834,7 @@ public class RetoucheUtils {
             make.addComment(tree, Comment.create(Comment.Style.JAVADOC, -1, -1, -1, jdtxt), true);
         }
     }
-    
+
     private static class CompilerTask implements CancellableTask<CompilationController> {
         
         private FileObject f;
@@ -1158,6 +1158,35 @@ public class RetoucheUtils {
         char chars[] = str.toCharArray();
         chars[0] = Character.toUpperCase(chars[0]);
         return new String(chars);
+    }
+    
+    public static boolean isWeakerAccess(Set<Modifier> modifiers, Set<Modifier> modifiers0) {
+        return accessLevel(modifiers) < accessLevel(modifiers0);
+    }
+    
+    private static int accessLevel(Set<Modifier> modifiers) {
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            return 0;
+        }
+        if (modifiers.contains(Modifier.PROTECTED)) {
+            return 2;
+        }
+        if (modifiers.contains(Modifier.PUBLIC)) {
+            return 3;
+        }
+        return 1;
+    }
+    public static String getAccess(Set<Modifier> modifiers) {
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            return "private"; //NOI18N
+        }
+        if (modifiers.contains(Modifier.PROTECTED)) {
+            return "protected"; //NOI18N
+        }
+        if (modifiers.contains(Modifier.PUBLIC)) {
+            return "public"; //NOI18N
+        }
+        return "<default>"; //NOI18N
     }
     
 

@@ -76,9 +76,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.javafx2.project</friend>
                 <package>org.netbeans.modules.javafx2.platform.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

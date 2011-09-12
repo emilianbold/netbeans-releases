@@ -73,7 +73,6 @@ public class ExternalChangesTest extends AbstractHgTestCase {
     File workdir;
     FileObject modifiedFO;
     File modifiedFile;
-//    FileObject dirstateFile;
 
     public ExternalChangesTest (String arg0) {
         super(arg0);
@@ -159,6 +158,20 @@ public class ExternalChangesTest extends AbstractHgTestCase {
         failIfRefreshed();
         assertCacheStatus(modifiedFile, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
         System.setProperty("mercurial.handleDirstateEvents", "true");
+    }
+
+    // change of modif TS of the .hg folder must be ignored
+    public void testNoEventsOnHgFolderChange () throws Exception {
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
+        Thread.sleep(5000); // some time for initial scans to finish
+        // dirstate events disabled
+        write(modifiedFile, "testNoEventsOnHgFolderChange");
+        waitForRefresh();
+        assertCacheStatus(modifiedFile, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
+        Thread.sleep(5000); // some time for initial scans to finish
+        new File(workdir, ".hg").setLastModified(System.currentTimeMillis());
+        failIfRefreshed();
+        assertCacheStatus(modifiedFile, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
     }
 
     public void testExternalRollback () throws Exception {

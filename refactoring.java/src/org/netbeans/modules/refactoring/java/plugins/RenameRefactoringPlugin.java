@@ -358,9 +358,15 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             fireProgressListenerStep();
             if (hiddenField != null) {
-                msg = new MessageFormat(getString("ERR_WillHide")).format(
-                        new Object[] {info.getElementUtilities().enclosingTypeElement(hiddenField).toString()}
-                );
+                if (RetoucheUtils.isWeakerAccess(element.getModifiers(), hiddenField.getModifiers())) {
+                    msg = getString("ERR_WillHidePrivate", RetoucheUtils.getAccess(element.getModifiers()),
+                            RetoucheUtils.getAccess(hiddenField.getModifiers()), 
+                            info.getElementUtilities().enclosingTypeElement(hiddenField).toString()
+                            );
+                } else {
+                    msg = new MessageFormat(getString("ERR_WillHide")).format(
+                            new Object[]{info.getElementUtilities().enclosingTypeElement(hiddenField).toString()});
+                }
                 checkProblem = createProblem(checkProblem, false, msg);
             }
         }
@@ -478,9 +484,16 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         LinkedList supertypes = new LinkedList();
         
         ElementUtilities ut = info.getElementUtilities();
-        //TODO:
-        //ExecutableElement m = ut.getOverriddenMethod(method, name);
+        Elements elements = info.getElements();
         ExecutableElement m = null;
+        
+        for (ExecutableElement ee:ElementFilter.methodsIn(elements.getAllMembers(jc))) {
+            if (ee.getSimpleName().contentEquals(name) &&
+                info.getTypes().isSubsignature((ExecutableType) ee.asType(), (ExecutableType) method.asType())) {
+                m = ee;
+                break;
+            }    
+        }
         if (m!=null) {
             if (m.getModifiers().contains(Modifier.FINAL)) {
                 String msg = new MessageFormat(getString("ERR_WillOverride_final")).format(
@@ -580,7 +593,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     
-    private static String getString(String key) {
-        return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
+    private static String getString(String... value) {
+        return NbBundle.getMessage(RenameRefactoringPlugin.class, value[0], Arrays.copyOfRange(value, 1, value.length));
     }
 }

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+<!--    <folder name="ProjectXMLCatalog">
+        <folder name="javafx">
+            <file name="FxAnt.xsd" url="./FxAnt.xsd"/>
+        </folder>
+    </folder>-->
+
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="fxml.xml" url="fxml-mime-resolver.xml">

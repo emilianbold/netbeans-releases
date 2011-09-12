@@ -495,14 +495,14 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         else if (o instanceof Short)
             cast = "(short) ";  // NOI18N
         
-        if(s.equals("Double") || s.equals("Float")) {
+        if(s.equals("Double") || s.equals("Float")) { // NOI18N
             String os = o.toString();
-            if(os.equals("Infinity")) {
-                o = s + ".POSITIVE_INFINITY";
-            } else if(os.equals("-Infinity")) {
-                o = s + ".NEGATIVE_INFINITY";
-            } else if(os.equals("NaN")) {
-                o = s + ".NaN";
+            if(os.equals("Infinity")) { // NOI18N
+                o = s + ".POSITIVE_INFINITY"; // NOI18N
+            } else if(os.equals("-Infinity")) { // NOI18N
+                o = s + ".NEGATIVE_INFINITY"; // NOI18N
+            } else if(os.equals("NaN")) { // NOI18N
+                o = s + ".NaN"; // NOI18N
             }
         }
         

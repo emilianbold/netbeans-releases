@@ -343,6 +343,9 @@ public final class ToolchainManagerImpl {
         if (descriptor.isAbstract()) {
             element.setAttribute("abstract", "true"); // NOI18N
         }
+        if (!descriptor.isAutoDetected()) {
+            element.setAttribute("auto_detected", "false"); // NOI18N
+        }
         root.appendChild(element);
         if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
             element = doc.createElement("download"); // NOI18N
@@ -970,6 +973,7 @@ public final class ToolchainManagerImpl {
         String upgrage;
         String module;
         boolean isAbstract;
+        boolean isAutoDetected;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
         List<FolderInfo> commandFolder;
@@ -1391,6 +1395,7 @@ public final class ToolchainManagerImpl {
                 v.family = getValue(attributes, "family"); // NOI18N
                 v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
                 v.isAbstract = "true".equals(getValue(attributes, "abstract"));// NOI18N
+                v.isAutoDetected = !"false".equals(getValue(attributes, "auto_detected"));// NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -1918,6 +1923,11 @@ public final class ToolchainManagerImpl {
         @Override
         public boolean isAbstract() {
             return v.isAbstract;
+        }
+
+        @Override
+        public boolean isAutoDetected() {
+            return v.isAutoDetected;
         }
 
         @Override

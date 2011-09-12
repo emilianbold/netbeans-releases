@@ -67,6 +67,7 @@ import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -427,7 +428,7 @@ public class SvnConfigFiles {
             return t9yNbConfigPath;
         }
         
-        String nbHome = System.getProperty("netbeans.user");                    // NOI18N
+        String nbHome = Places.getUserDirectory().getAbsolutePath();
         return nbHome + "/config/svn/config/";                                  // NOI18N
     }
     
@@ -507,7 +508,7 @@ public class SvnConfigFiles {
 
         patcher.patch(systemIniFile);
 
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName)); // NOI18N
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + File.separatorChar + fileName)); // NOI18N
         BufferedOutputStream bos = null;
         try {
             file.getParentFile().mkdirs();
