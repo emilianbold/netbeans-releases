@@ -65,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -853,6 +854,9 @@ public final class JFXProjectProperties {
 
         // store JavaScript callbacks
         storeJSCallbacks(editableProps);
+        
+        // store JFX SDK & RT path
+        storePlatform(editableProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -1126,6 +1130,12 @@ public final class JFXProjectProperties {
                 }
             }
         }
+    }
+
+    private void storePlatform(EditableProperties editableProps) {
+        String activePlatform = editableProps.getProperty("platform.active"); // NOI18N
+        editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
+        editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
     }
 
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
