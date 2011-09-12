@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javax.mail" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/geronimo-javamail-1.4-mail-1.2.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="javax.mail"/>
+                <attribute name="Bundle-Version" value="1.4.0"/>
+                <attribute name="Export-Package" value="javax.mail; vendor=geronimo,javax.mail.event; vendor=geronimo,javax.mail.internet; vendor=geronimo,javax.mail.search; vendor=geronimo,javax.mail.util; vendor=geronimo,org.apache.geronimo.javamail.authentication;x-internal:=true,org.apache.geronimo.javamail.store.nntp;x-internal:=true,org.apache.geronimo.javamail.store.nntp.newsrc;x-internal:=true,org.apache.geronimo.javamail.store.pop3;x-internal:=true,org.apache.geronimo.javamail.store.pop3.message;x-internal:=true,org.apache.geronimo.javamail.store.pop3.response;x-internal:=true,org.apache.geronimo.javamail.transport.nntp;x-internal:=true,org.apache.geronimo.javamail.transport.smtp;x-internal:=true,org.apache.geronimo.javamail.util;x-internal:=true,org.apache.geronimo.mail.handlers;x-internal:=true,org.apache.geronimo.mail.util;x-internal:=true"/>
+            </manifest>
+        </jar>
+    </target>
+</project>
+

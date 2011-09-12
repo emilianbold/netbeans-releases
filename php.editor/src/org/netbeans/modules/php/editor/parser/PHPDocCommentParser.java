@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
@@ -62,7 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 public class PHPDocCommentParser {
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
-    
+
     /**
      * Tags that define a type / types
      */
@@ -90,8 +90,8 @@ public class PHPDocCommentParser {
     }
 
     /**
-     * 
-     * @param startOffset this is offset of the comment in the document. It's used 
+     *
+     * @param startOffset this is offset of the comment in the document. It's used
      * for creating ASTNodes.
      * @param comment
      * @return
@@ -108,7 +108,7 @@ public class PHPDocCommentParser {
         Matcher matcher = pattern.matcher(comment);
         int index = 0;
         String line = "";               // one line of the blog
-        String description = "";        // temporary holder for description of block description or tag        
+        String description = "";        // temporary holder for description of block description or tag
         PHPDocTag.Type lastTag = null;
         int lastStartIndex = 0;
         int lastEndIndex = comment.length();
@@ -146,7 +146,7 @@ public class PHPDocCommentParser {
         PHPDocTag.Type tagType = findTagOnLine(line);
         if (tagType != null) {  // is defined a tag on the last line
             if (lastTag == null) {
-                blockDescription = description.trim();  
+                blockDescription = description.trim();
             } else {
                 PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.substring(0, description.length() -1), comment, startOffset + 3);
                 if (tag != null) {
@@ -168,7 +168,7 @@ public class PHPDocCommentParser {
                     tags.add(tag);
                 }
             }
-        }        
+        }
         return new PHPDocBlock(Math.min(startOffset + 3, endOffset), endOffset, blockDescription, tags);
     }
 
@@ -186,7 +186,7 @@ public class PHPDocCommentParser {
                 return null;
             } else if (type == PHPDocTag.Type.METHOD) {
                 String name = getMethodName(description);
-                if (name != null) {                    
+                if (name != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, name, start);
                     PHPDocNode methodNode = new PHPDocNode(startOfVariable, startOfVariable + name.length(), name);
                     List<PHPDocVarTypeTag> params = findMethodParams(description, findStartOfDocNode(originalComment, originalCommentStart, description, start));
@@ -195,7 +195,7 @@ public class PHPDocCommentParser {
                 return null;
             }
             return new PHPDocTypeTag(start, end, type, description, docTypes);
-        } 
+        }
         return new PHPDocTag(start, end, type, description);
     }
 
@@ -224,11 +224,11 @@ public class PHPDocCommentParser {
         }
         return result;
     }
-    
+
     private List<String> getTypes(String description) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<String>();
-        if (tokens.length > 0) {
+        if (tokens.length > 0 && !tokens[0].startsWith("$")) { //NOI18N
             if (tokens[0].indexOf('|') > -1) {
                 String[] ttokens = tokens[0].split("[|]"); //NOI18N
                 for (String ttoken : ttokens) {
@@ -253,7 +253,7 @@ public class PHPDocCommentParser {
         }
         return variable;
     }
-    
+
     private String getMethodName(String description) {
         String name = null;
         int index = description.indexOf('(');
@@ -299,7 +299,7 @@ public class PHPDocCommentParser {
                 if (paramName != null) {
                     int startOfParamName = findStartOfDocNode(description, startOfDescription, paramName, position);
                     PHPDocNode paramNameNode = new PHPDocNode(startOfParamName, startOfParamName + paramName.length(), paramName);
-                    List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1 
+                    List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1
                             ? findTypes(token, position, description, startOfDescription)
                             : Collections.EMPTY_LIST;
                     result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), PHPDocTag.Type.PARAM, token, types, paramNameNode));
@@ -309,7 +309,7 @@ public class PHPDocCommentParser {
         }
         return result;
     }
-    
+
     private String removeHTMLTags(String text) {
         String value = text;
         int index = value.indexOf('>');

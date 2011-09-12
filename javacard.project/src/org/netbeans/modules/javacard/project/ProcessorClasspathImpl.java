@@ -53,14 +53,15 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.modules.javacard.common.ListenerProxy;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -110,9 +111,16 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
         @Override
         public URL[] getRoots() {
             List<URL> l = new ArrayList<URL>();
-            for (ClassPath.Entry e : project.getPlatform().getProcessorClasspath(get().kind()).entries()) {
-                URL url = e.getURL();
-                l.add(url);
+            JavacardPlatform platform = project.getPlatform();
+            if (platform != null) {
+                ClassPath processorClasspath = platform.getProcessorClasspath(get().kind());
+                if (processorClasspath != null) {
+                    List<Entry> entries = processorClasspath.entries();
+                    for (ClassPath.Entry e : entries) {
+                        URL url = e.getURL();
+                        l.add(url);
+                    }
+                }
             }
             URL[] urls = l.toArray(new URL[l.size()]);
             return urls;

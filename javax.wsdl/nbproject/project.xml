@@ -2,13 +2,34 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>javax.wsdl</code-name-base>
-            <module-dependencies>
-            </module-dependencies>
-            <public-packages/>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.apache.axis</friend>
+                <package>com.ibm.wsdl</package>
+                <package>com.ibm.wsdl.extensions</package>
+                <package>com.ibm.wsdl.extensions.http</package>
+                <package>com.ibm.wsdl.extensions.mime</package>
+                <package>com.ibm.wsdl.extensions.schema</package>
+                <package>com.ibm.wsdl.extensions.soap</package>
+                <package>com.ibm.wsdl.extensions.soap12</package>
+                <package>com.ibm.wsdl.factory</package>
+                <package>com.ibm.wsdl.util</package>
+                <package>com.ibm.wsdl.util.xml</package>
+                <package>com.ibm.wsdl.xml</package>
+                <package>javax.wsdl</package>
+                <package>javax.wsdl.extensions</package>
+                <package>javax.wsdl.extensions.http</package>
+                <package>javax.wsdl.extensions.mime</package>
+                <package>javax.wsdl.extensions.schema</package>
+                <package>javax.wsdl.extensions.soap</package>
+                <package>javax.wsdl.extensions.soap12</package>
+                <package>javax.wsdl.factory</package>
+                <package>javax.wsdl.xml</package>
+            </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>javax-wsdl.jar</runtime-relative-path>
+                <runtime-relative-path>ext/wsdl4j-1.6.2.jar</runtime-relative-path>
                 <binary-origin>external/wsdl4j-1.6.2.jar</binary-origin>
             </class-path-extension>
         </data>

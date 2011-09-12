@@ -63,7 +63,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { class B { } class F { B b; } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { class B { } }"));
     }
 
@@ -72,7 +72,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; public static class F { } }"));
         performInnerToOuterTest(false);
         verifyContent(src,
-                      new File("t/F.java", "package t;\n\npublic class F { }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */\n\npublic class F { }\n"),//TODO: why outer reference?
                       new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
     }
 
@@ -81,7 +81,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -90,7 +90,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } static class F { } }")); 
         performInnerToOuterTest(false);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { }\n"),
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { }\n"),
                       new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } }"));
 
 }
@@ -100,7 +100,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -109,7 +109,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performInnerToOuterTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
     }
 
@@ -118,7 +118,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { int i; static class F extends A { private void t() { i = 0; } } }"));
         performInnerToOuterTest(false);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F extends A {  private void t() { i = 0; } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F extends A {  private void t() { i = 0; } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { int i; }"));
     }
     
@@ -189,12 +189,12 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "\n" +
                                           "}\n"),
                                  new File("t/F.java",
-                                          "package t;\n" +
+                                          "/* * Refactoring License */ package t;\n" +
                                           "\n" +
                                           "import java.awt.event.ActionEvent;\n" +
                                           "import java.awt.event.MouseEvent;\n" +
                                           "import javax.swing.AbstractAction;\n" +
-                                          "\n" +
+                                          " /** * * @author junit */\n" +
                                           "/**\n" +
                                           " * javadoc comment for F.\n" +
                                           " */\n" +
@@ -237,7 +237,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { int i; public enum F { A, B, C; } }"));
         performInnerToOuterTest(false);
         verifyContent(src,
-                      new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ public enum F {  A, B, C }\n"),
                       new File("t/A.java", "package t; public class A { int i; }"));
     }
     
@@ -324,7 +324,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                 + "}\n"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                new File("t/StartAsNested.java", "package t;\n"
+                new File("t/StartAsNested.java", "/* * Refactoring License */ package t; /** * * @author junit */\n"
                 + "\n"
                 + "class StartAsNested {\n"
                 + "\n"
@@ -409,7 +409,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = t.new Inner(); } class Inner { }}"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/Inner.java", "package t; class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
+                      new File("t/Inner.java", "/* * Refactoring License */ package t; /** * * @author junit */ class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); }}"));
     }
     

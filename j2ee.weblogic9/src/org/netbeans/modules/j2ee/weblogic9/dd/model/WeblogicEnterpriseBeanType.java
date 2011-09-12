@@ -54,5 +54,7 @@ public interface WeblogicEnterpriseBeanType {
     ResourceDescriptionType addResourceDescription();
 
     ResourceDescriptionType[] getResourceDescription();
+    
+    MessageDrivenDescriptorType getMessageDrivenDescriptor();
 
 }

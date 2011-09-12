@@ -637,13 +637,4 @@ public class ChangeParametersTest extends RefactoringTestBase {
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
-    
-    private boolean problemIsFatal(List<Problem> problems) {
-        for (Problem problem : problems) {
-            if (problem.isFatal()) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
