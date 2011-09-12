@@ -353,7 +353,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             File folder = new File(SunStudioPath);
             if (folder.isDirectory()) {
                 for(ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(getPlatform())) {
-                    if (d.isAbstract()) {
+                    if (d.isAbstract() || !d.isAutoDetected()) {
                         continue;
                     }
                     CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(d.getName(), getPlatform());
@@ -379,7 +379,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         Loop:for(ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(getPlatform())) {
-            if (d.isAbstract()) {
+            if (d.isAbstract() || !d.isAutoDetected()) {
                 continue;
             }
             CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(d.getName(), getPlatform());
@@ -429,7 +429,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
      */
     public static ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(platform)) {
-            if (d.isAbstract()) {
+            if (d.isAbstract() || !d.isAutoDetected()) {
                 continue;
             }
             Map<String, List<String>> map = d.getDefaultLocations();
