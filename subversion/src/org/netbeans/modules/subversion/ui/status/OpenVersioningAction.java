@@ -76,6 +76,7 @@ public class OpenVersioningAction extends ShowAllChangesAction {
     
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
+        setIcon(ImageUtilities.loadImageIcon(ICON_BASE, false)); // NOI18N
     }
 
     public String getName() {
