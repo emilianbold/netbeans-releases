@@ -127,7 +127,9 @@ public class JavaI18nFinder implements I18nFinder {
 
     /** Helper variable. End of actual found hard coded string or -1. */
     protected int currentStringEnd;
-
+    
+    /** Helper variable. Used to recognize "a" + "b" as "ab" (bug 185645). */
+    private boolean concatenatedStringsFound;
 
     /** Constructs finder. */
     public JavaI18nFinder(StyledDocument document) {
@@ -143,6 +145,7 @@ public class JavaI18nFinder implements I18nFinder {
         initJavaStringBuffer();
 
         lastPosition = null;
+        concatenatedStringsFound = false;
     }
 
     /** Resets finder. */
@@ -408,34 +411,52 @@ public class JavaI18nFinder implements I18nFinder {
                     if (endOfLine == -1) {
                         endOfLine = restBuffer.length();
                     }
-
-                    lastJavaString.append(document.getText(currentStringStart + 1,
-                                                           hardString.length()));
+                    
+                    if (concatenatedStringsFound) {
+                        lastJavaString.append(document.getText(currentStringStart + 1, hardString.length()).replace("\" + \"", ""));
+                    } else {
+                        lastJavaString.append(document.getText(currentStringStart + 1, hardString.length()));
+                    }
                     
                     // Get the rest of line.
                     String restOfLine = document.getText(currentStringStart + 1 + hardString.length(),
                                                          currentStringEnd + endOfLine - currentStringStart - hardString.length());
 
+                    if(restOfLine.trim().startsWith("+ \"")) {
+                        concatenatedStringsFound = true;
+                        currentStringEnd = -1;
+                        state = STATE_STRING;
+                        position += 4;
+                        lastJavaString = lastJavaString.delete(lastJavaString.lastIndexOf("\"") - 1, lastJavaString.length());
+                        return null;
+                    }
+                    
                     // Replace rest of occurences of \" to cheat out regular expression for very minor case when the same string is after our at the same line.
                     lastJavaString.append(restOfLine.replace('\"', '_'));
-
+                    
+                    if (concatenatedStringsFound) {
+                        concatenatedStringsFound = false;
+                        hardString = hardString.replace("\" + \"", "");
+                    }
                     // If not matches regular expression -> is not internationalized.
                     if (isSearchedString(lastJavaString.toString(), hardString)) {
                         lastPosition = hardStringEnd;
 
                         // Search was successful -> return.
                         return new HardCodedString(extractString(hardString),
-                                                   hardStringStart,
-                                                   hardStringEnd);
+                                hardStringStart,
+                                hardStringEnd);
                     }
                 } catch (BadLocationException ble) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                                                      ble);
                 } finally {
-                    currentStringStart = -1;
-                    currentStringEnd = -1;
-
-                    initJavaStringBuffer();
+                    if (state == STATE_JAVA) {
+                        currentStringStart = -1;
+                        currentStringEnd = -1;
+                        
+                        initJavaStringBuffer();
+                    }
                 }
             }
         }
