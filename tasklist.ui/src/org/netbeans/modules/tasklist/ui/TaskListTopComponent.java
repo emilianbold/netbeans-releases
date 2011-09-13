@@ -76,6 +76,7 @@ import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Cancellable;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -152,7 +153,7 @@ final class TaskListTopComponent extends TopComponent {
         setLayout(new java.awt.GridBagLayout());
 
         toolbar.setFloatable(false);
-        toolbar.setOrientation(1);
+        toolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -170,7 +171,7 @@ final class TaskListTopComponent extends TopComponent {
         tableHolderPanel.setLayout(tableHolderPanelLayout);
         tableHolderPanelLayout.setHorizontalGroup(
             tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+            .addComponent(tableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
         );
         tableHolderPanelLayout.setVerticalGroup(
             tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -561,4 +562,10 @@ final class TaskListTopComponent extends TopComponent {
             return TaskListTopComponent.getDefault();
         }
     }
+    
+   /** Defines task list Help ID */
+    @Override
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx(TaskListTopComponent.class);
+    }  
 }
