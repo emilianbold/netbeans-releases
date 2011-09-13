@@ -616,7 +616,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     + " Name:" + CloneableEditor.this.getName()
                     + " kit:" + kit);
                 }
-                assert doc != null;
+                if (support.cesEnv().isValid()) {
+                    assert doc != null;
+                }
                 kit = k;
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
