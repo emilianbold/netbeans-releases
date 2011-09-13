@@ -58,7 +58,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.form.FormServices;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -182,23 +181,6 @@ public class ClassPathUtils {
         }
 
         return loader.loadClass(classSource.getClassName());
-    }
-
-    /** Creates ClassSource object corresponding to project output classpath.
-     * @param fileInProject FileObject being source (.java) or output (.class)
-     *        file in a project
-     * @param classname String name of class for which the ClassSource is
-     *        created
-     */
-    public static ClassSource getProjectClassSource(FileObject fileInProject,
-                                                    String classname)
-    {
-        Project project = FileOwnerQuery.getOwner(fileInProject);
-        if (project == null)
-            return null; // the file is not in any project
-
-        FormServices services = Lookup.getDefault().lookup(FormServices.class);
-        return services.getProjectClassSource(project, classname);
     }
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {
