@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.io.IOException;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
