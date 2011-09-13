@@ -10,6 +10,7 @@
         <file name="org-netbeans-modules-cloud-oracle-OracleServerWizardProvider.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.OracleServerWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.cloud.oracle.ui.Bundle#Oracle_Node_Name"/>
         </file>
     </folder>
 

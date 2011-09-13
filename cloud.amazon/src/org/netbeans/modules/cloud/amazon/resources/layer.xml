@@ -53,6 +53,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
         <file name="org-netbeans-modules-cloud-amazon-AmazonServerWizardProvider.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.amazon.AmazonServerWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.cloud.amazon.ui.Bundle#Amazon_Node_Name"/>
         </file>
     </folder>
 
