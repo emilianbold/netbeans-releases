@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
@@ -151,7 +152,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
         return vendorSpecificProperties;
     }
 
-    private static class ProxyProperty extends Property {
+    private class ProxyProperty extends Property {
 
         private String delegateToPropertyName;
 
@@ -162,9 +163,12 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
         @Override
         public String getValueGrammar() {
-            Property prop = CssModuleSupport.getProperties().get(delegateToPropertyName);
-            return prop.getValueGrammar();
+            Property p = CssModuleSupport.getProperty(delegateToPropertyName);
+            if (p == null) {
+                Logger.getAnonymousLogger().warning(String.format("Cannot fine property %s referred in %s", delegateToPropertyName, resourcePath));
+                return ""; //return empty grammar definition
+            }
+            return p.getValueGrammar();
         }
     }
-    
 }
