@@ -52,7 +52,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -97,6 +99,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private final ConfigListModel configListModel = new ConfigListModel();
     private final RemoteConnections remoteConnections;
     private final ConfigManager configManager;
+    private final Map<Configuration, RemoteConfigurationPanel> configPanels = new HashMap<Configuration, RemoteConfigurationPanel>();
 
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
@@ -295,7 +298,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             type = remoteConnections.getConfigurationType(configuration);
             name = configuration.getDisplayName();
 
-            configurationPanel = remoteConnections.getConfigurationPanel(configuration);
+            configurationPanel = getConfigurationPanel(configuration);
             assert configurationPanel != null : "Panel must be provided for configuration " + configuration.getName();
             readActiveConfig(configuration);
             configManager.markAsCurrentConfiguration(configuration.getName());
@@ -318,6 +321,15 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         configurationPanelHolder.add(innerPanel, BorderLayout.CENTER);
         configurationPanelHolder.revalidate();
         configurationPanelHolder.repaint();
+    }
+
+    private RemoteConfigurationPanel getConfigurationPanel(Configuration configuration) {
+        RemoteConfigurationPanel panel = configPanels.get(configuration);
+        if (panel == null) {
+            panel = remoteConnections.getConfigurationPanel(configuration);
+            configPanels.put(configuration, panel);
+        }
+        return panel;
     }
 
     private ConfigManager.Configuration getSelectedConfiguration() {

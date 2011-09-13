@@ -39,80 +39,32 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.codegen.ui;
+package org.netbeans.modules.css.editor.properties.parser;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
- * @author kuba
+ * @author mfukala@netbeans.org
  */
-class NodeSelectionListener implements MouseListener, KeyListener {
+public class PropertyValueTest extends NbTestCase {
 
-    JTree tree;
-
-    NodeSelectionListener(JTree tree) {
-        this.tree = tree;
+    public PropertyValueTest(String name) {
+        super(name);
     }
 
-
-    public void mouseClicked(MouseEvent e) {
-        int x = e.getX();
-        int y = e.getY();
-        int row = tree.getRowForLocation(x, y);
-        TreePath path = tree.getPathForRow(row);
-        //TreePath  path = tree.getSelectionPath();
-        if (path != null) {
-            CheckNode node = (CheckNode) path.getLastPathComponent();
-            boolean isSelected = !(node.isSelected());
-            node.setSelected(isSelected);
-            ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
-            tree.revalidate();
-            tree.repaint();
+    public void testGrammarOfAllProperties() {
+        for(Property property : CssModuleSupport.getProperties()) {
+            assertNotNull(property);
+            assertNotNull(property.getName());
+            assertNotNull(property.getValueGrammar());
+            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getValueGrammar().isEmpty());
+            PropertyModel model = new PropertyModel(property);
+            PropertyValue evaluated = new PropertyValue(model, "");
+            assertTrue(evaluated.success());
         }
     }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void keyTyped(KeyEvent e) {
-    }
-
-    // Key Listener --------------------------------------------------------
-    public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-
-            if (e.getSource() instanceof JTree) {
-                JTree t = (JTree) e.getSource();
-                TreePath path = t.getSelectionPath();
-                if (path != null) {
-                    CheckNode node = (CheckNode) path.getLastPathComponent();
-                    boolean isSelected = !(node.isSelected());
-                    node.setSelected(isSelected);
-                    ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
-                    tree.revalidate();
-                    tree.repaint();
-                }
-                e.consume();
-            }
-        }
-    }
-
-    public void keyReleased(KeyEvent e) {
-    }
+    
 }
