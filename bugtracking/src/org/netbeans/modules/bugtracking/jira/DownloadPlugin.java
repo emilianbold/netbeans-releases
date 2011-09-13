@@ -160,7 +160,6 @@ class DownloadPlugin implements ActionListener {
                 if(JiraModules.JAVAX_WSDL.updateElement != null) sb.append(JiraModules.JAVAX_WSDL.updateElement.getLicence());
 
                 panel.licenseTextPane.setText(sb.toString());
-                panel.progressPanel.setVisible(false);
                 panel.repaint();
 
                 NotifyDescriptor descriptor = new NotifyDescriptor (
