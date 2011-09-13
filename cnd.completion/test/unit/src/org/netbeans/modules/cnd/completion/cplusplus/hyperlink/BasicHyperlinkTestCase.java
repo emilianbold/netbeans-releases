@@ -862,6 +862,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug200141.c", 11, 41, "bug200141.c", 2, 5);
     }    
 
+    public void testBug201237() throws Exception {
+        // Bug 201237 - Regression in CLucene (ternary operator)
+        performTest("bug201237.cpp", 19, 63, "bug201237.cpp", 5, 5);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
@@ -80,10 +81,13 @@ public class ListenersNode extends AbstractWebContainerNode {
     @Override
     protected Collection<SelectorNode> collectChildren(final Project prj, WebAppMetadata md) {
         Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
-        for(Listener li : md.getRoot().getListener()) {
-            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(li.getListenerClass(), prj);
+        WebApp root = md.getRoot();
+        if (root != null) {
+            for(Listener li : root.getListener()) {
+                SourceClassInfo sType = ProfilerTypeUtils.resolveClass(li.getListenerClass(), prj);
 
-            fNodes.add(new ListenerNode(sType, this));
+                fNodes.add(new ListenerNode(sType, this));
+            }
         }
         return fNodes;
     }

@@ -332,7 +332,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
-            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties().values(), prefix);
+            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
@@ -343,7 +343,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //h1 { color:red; | font: bold }
             //
             //should be no prefix 
-            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties().values(), caretOffset));
+            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(), caretOffset));
         } else if (node.type() == NodeType.declaration) {
             //value cc without prefix
             //find property node
@@ -477,7 +477,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             Node property = result[0];
 
-            Property propertyDescriptor = CssModuleSupport.getProperties().get(property.image().toString());
+            Property propertyDescriptor = CssModuleSupport.getProperty(property.image().toString());
             if (propertyDescriptor == null) {
                 return CodeCompletionResult.NONE;
             }

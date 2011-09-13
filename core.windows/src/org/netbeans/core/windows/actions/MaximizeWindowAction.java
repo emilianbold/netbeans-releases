@@ -183,8 +183,7 @@ public final class MaximizeWindowAction extends AbstractAction implements Presen
         TopComponent active = getTCToWorkWith();
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
-        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)
-                || activeMode.getState() == Constants.MODE_STATE_SEPARATED ) {
+        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)) {
             getMenuPresenter().setSelected( false );
             getPopupPresenter().setSelected( false );
             setEnabled(false);

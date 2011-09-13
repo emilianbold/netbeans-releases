@@ -64,6 +64,8 @@ import org.netbeans.modules.css.editor.properties.KeywordUtil;
  */
 public class PropertyValue {
 
+    private static final Logger LOGGER = Logger.getLogger(PropertyValue.class.getName());
+    
     final GroupGrammarElement groupGrammarElement;
     private final String text;
     private final List<ResolvedToken> resolved = new ArrayList<ResolvedToken>();
@@ -74,7 +76,8 @@ public class PropertyValue {
     Stack<String> originalStack;
     final StringBuffer log = new StringBuffer();
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
-
+    private String propertyName;
+    
     private static String filterComments(String text) {
         Matcher m = FILTER_COMMENTS_PATTERN.matcher(text);
         StringBuilder b = new StringBuilder(text);
@@ -92,6 +95,7 @@ public class PropertyValue {
     }
 
     public PropertyValue(PropertyModel property, String textOfTheValue) {
+        this.propertyName = property.getPropertyDescriptor().getName();
         this.groupGrammarElement = property.values();
         this.text = filterComments(textOfTheValue);
         this.propertyDefinition = property.getPropertyDescriptor().getValueGrammar();
@@ -99,7 +103,7 @@ public class PropertyValue {
     }
 
     /** for unit tests */
-    public PropertyValue(String propertyValueDefinition, String textOfTheValue) {
+    PropertyValue(String propertyValueDefinition, String textOfTheValue) {
         this.groupGrammarElement = GrammarParser.parse(propertyValueDefinition);
         this.text = textOfTheValue;
         this.propertyDefinition = propertyValueDefinition;
@@ -591,7 +595,7 @@ public class PropertyValue {
                     }
 
                 } else {
-                    Logger.getAnonymousLogger().log(Level.WARNING, "ERROR - no acceptor for unit property value {0}", ve.value()); //NOI18N
+                    LOGGER.log(Level.WARNING, String.format("Cannot find unit acceptor '%s' for of the '%s' property", ve.value(), propertyName)); //NOI18N
                 }
 
             } else if (token.equalsIgnoreCase(ve.value())) {

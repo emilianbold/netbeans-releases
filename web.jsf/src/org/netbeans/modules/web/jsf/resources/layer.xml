@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Plugins">
         <!-- Register XML module catalog plugin -->
         <folder name="XML">
@@ -75,6 +75,12 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-jsf+xml">
+                <folder name="HyperlinkProviders">
+                    <file name="JSFConfigHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.JSFConfigHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
                 <folder name="Popup">
                     <file name="org-netbeans-modules-web-jsf-editor-JsfPopupAction.instance">
                         <attr name="position" intvalue="1000"/>
@@ -83,7 +89,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-  
+
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
@@ -93,7 +99,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Templates">
         <folder name="JSP_Servlet">
             <!-- JSF Page  -->
@@ -181,7 +187,7 @@ made subject to such option by the copyright holder.
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
-            <!-- JSP Page --> 
+            <!-- JSP Page -->
             <file name="JSP.jsp" url="templates/JSP.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="position" intvalue="10"/>
@@ -196,17 +202,17 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
-            <!-- JSP Document --> 
+            <!-- JSP Document -->
             <file name="JSPX.jspx" url="templates/JSPDoc.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
-            <!-- JSP Segment --> 
+            <!-- JSP Segment -->
             <file name="JSPF.jspf" url="templates/JSPF.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
-            <!-- JSP XML segemnt --> 
+            <!-- JSP XML segemnt -->
             <file name="JSPFX.jspf" url="templates/JSPDocX.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
@@ -232,7 +238,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="831"/>
             </file>
-            <!-- JSF Managed Bean --> 
+            <!-- JSF Managed Bean -->
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
@@ -306,7 +312,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    
+
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">

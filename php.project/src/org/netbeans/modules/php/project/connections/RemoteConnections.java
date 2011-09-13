@@ -129,7 +129,7 @@ public final class RemoteConnections {
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
         RemoteConnectionsPanel panel = createPanel();
         // original remote configurations
-        final List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations(true);
+        final List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
 
         final boolean changed = panel.open(remoteConfiguration);
         if (changed) {
@@ -172,18 +172,8 @@ public final class RemoteConnections {
      * @return remote configuration or {@code null} if the given configuration is not accepted by any {@link RemoteConnectionProvider}
      */
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
-        return getRemoteConfiguration(cfg, false);
-    }
-
-    /**
-     * Get remote configuration from the given configuration.
-     * @param cfg {@link Configuration} to read data from
-     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
-     * @return remote configuration or {@code null} if the given configuration is not accepted by any {@link RemoteConnectionProvider}
-     */
-    private RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg, boolean createWithSecrets) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
-            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg, createWithSecrets);
+            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
             if (configuration != null) {
                 return configuration;
             }
@@ -216,29 +206,17 @@ public final class RemoteConnections {
     /**
      * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
      * The list is ordered according to configuration's display name (locale-sensitive string comparison).
-     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      * @return the ordered list of all the existing remote configurations.
      * @see RemoteConfiguration
      */
     public List<RemoteConfiguration> getRemoteConfigurations() {
-        return getRemoteConfigurations(false);
-    }
-
-    /**
-     * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
-     * The list is ordered according to configuration's display name (locale-sensitive string comparison).
-     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
-     * @return the ordered list of all the existing remote configurations.
-     * @see RemoteConfiguration
-     */
-    private List<RemoteConfiguration> getRemoteConfigurations(boolean createWithSecrets) {
         // get all the configs
         List<Configuration> configs = getConfigurations();
 
         // convert them to remote connections
         List<RemoteConfiguration> remoteConfigs = new ArrayList<RemoteConfiguration>(configs.size());
         for (Configuration cfg : configs) {
-            RemoteConfiguration configuration = getRemoteConfiguration(cfg, createWithSecrets);
+            RemoteConfiguration configuration = getRemoteConfiguration(cfg);
             if (configuration == null) {
                 // unknown configuration type => get config of unknown type
                 configuration = UNKNOWN_REMOTE_CONFIGURATION;
@@ -255,7 +233,7 @@ public final class RemoteConnections {
      */
     public RemoteConfiguration remoteConfigurationForName(String name) {
         assert name != null;
-        for (RemoteConfiguration remoteConfig : getRemoteConfigurations(false)) {
+        for (RemoteConfiguration remoteConfig : getRemoteConfigurations()) {
             if (remoteConfig.getName().equals(name)) {
                 return remoteConfig;
             }

@@ -215,7 +215,8 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                 synchronized (lastFoundLock) {
                     lastFoundRemoteCompilerSet = cs;
                     lastFoundRemoteCompilerSets.clear();
-                    for(int i = 0; i < flavors.size(); i++) {
+                    lastFoundRemoteCompilerSets.add(cs);
+                    for(int i = 1; i < flavors.size(); i++) {
                         cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(i), compilerSetName);
                         ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
                         lastFoundRemoteCompilerSets.add(cs);

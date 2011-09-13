@@ -355,7 +355,9 @@ final class CommandManager implements ActionListener {
                             && !(SwingUtilities.isDescendingFrom((Component)event.getSource(), getSlidedTabContainer())
                             || SwingUtilities.isDescendingFrom((Component)event.getSource(), slideBar)) ) {
                         //#159356 - make sure window slides out when clicked outside that window
-                        slideBar.getSelectionModel().setSelectedIndex( -1 );
+                        TopComponent tc = slideBar.getTabbed().getSelectedTopComponent();
+                        if( null != tc && TopComponent.getRegistry().getActivated() != tc )
+                            slideBar.getSelectionModel().setSelectedIndex( -1 );
                         return;
                     }
                 }

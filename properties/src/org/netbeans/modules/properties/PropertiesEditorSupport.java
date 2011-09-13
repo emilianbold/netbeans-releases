@@ -1462,13 +1462,20 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public void updateName() {
             super.updateName();
-            if (callback != null) {
-                TopComponent tc = callback.getTopComponent();
-                tc.setHtmlDisplayName(getHtmlDisplayName());
-                tc.setDisplayName(getDisplayName());
-                tc.setName(getName());
-                tc.setToolTipText(getToolTipText());
-            }
+            Mutex.EVENT.writeAccess(
+                new Runnable() {
+                @Override
+                    public void run() {
+                        if (callback != null) {
+                            TopComponent tc = callback.getTopComponent();
+                            tc.setHtmlDisplayName(getHtmlDisplayName());
+                            tc.setDisplayName(getDisplayName());
+                            tc.setName(getName());
+                            tc.setToolTipText(getToolTipText());
+                        }
+                    }
+                }
+            );
         }
 
         @Override
