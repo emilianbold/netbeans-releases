@@ -66,7 +66,7 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
         HelpResolver resolver = CssModuleSupport.getHelpResolver();
         assertNotNull(resolver);
         
-        Property color = CssModuleSupport.getProperties().get("color");
+        Property color = CssModuleSupport.getProperty("color");
         assertNotNull(color);
         
         String help = resolver.getHelp(color);

@@ -144,9 +144,17 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
 
         FormDesignerOperator designer = new FormDesignerOperator(name);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-        Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
+        inspector.freezeNavigatorAndRun(new Runnable() {
 
-        runPopupOverNode("Add From Palette|Swing Controls|Label", node); // NOI18N
+            @Override
+            public void run() {
+                ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+                Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
+
+                runPopupOverNode("Add From Palette|Swing Controls|Label", node); // NOI18N
+            }
+        });
+
         waitAMoment();
 
         String code = "private javax.swing.JLabel jLabel1";  // NOI18N

@@ -199,6 +199,13 @@ public class AbstractLookup extends Lookup implements Serializable {
     protected void beforeLookup(Template<?> template) {
     }
 
+    /** currently a hook for MetaInfServicesLookup to initialize itself
+     * before the result is created. Prevents unwanted change events delivered
+     * later. Possible candidate for a public API, if needed by other lookups.
+     */
+    void beforeLookupResult(Template<?> template) {
+    }
+    
     /** The method to add instance to the lookup with.
      * @param pair class/instance pair
      */
@@ -470,7 +477,9 @@ public class AbstractLookup extends Lookup implements Serializable {
         return res;
     }
 
+    @Override
     public final <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
+        beforeLookupResult(template);
         for (;;) {
             AbstractLookup.ISE toRun = null;
 

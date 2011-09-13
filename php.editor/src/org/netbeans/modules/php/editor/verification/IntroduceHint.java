@@ -91,6 +91,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.elements.MethodElementImpl;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -681,46 +682,90 @@ public class IntroduceHint extends AbstractRule {
     private static int getOffset(BaseDocument doc, TypeScope typeScope, PhpElementKind kind) throws BadLocationException {
         int offset = -1;
         Collection<ModelElement> elements = new HashSet<ModelElement>();
+        elements.addAll(typeScope.getDeclaredConstants());
         switch (kind) {
-            case TYPE_CONSTANT:
-                elements.addAll(typeScope.getDeclaredConstants());
-                break;
             case METHOD:
+                if (typeScope instanceof ClassScope) {
+                    ClassScope clz = (ClassScope) typeScope;
+                    elements.addAll(clz.getDeclaredFields());
+                    elements.addAll(clz.getDeclaredMethods());
+                }
+                break;
             case FIELD:
-                elements.addAll(typeScope.getDeclaredConstants());
                 if ((typeScope instanceof ClassScope)) {
                     ClassScope clz = (ClassScope) typeScope;
                     elements.addAll(clz.getDeclaredFields());
                 }
                 break;
         }
+        int newOffset = 0;
         for (ModelElement elem : elements) {
-            if (elem.getOffset() > offset) {
-                offset = elem.getOffset();
+            newOffset = elem.getOffset();
+            if (elem instanceof MethodScope) {
+                newOffset = getOffsetAfterBlockCloseCurly(doc, newOffset);
+            } else {
+                newOffset = getOffsetAfterNextSemicolon(doc, newOffset);
+            }
+            if (newOffset > offset) {
+                offset = newOffset;
             }
         }
-        if (offset != -1) {
-            offset = Utilities.getRowEnd(doc, offset);
-        } else {
-            offset = getClassCurlyOpenOffset(doc, typeScope.getOffset());
+        if (offset == -1) {
+            offset = getOffsetAfterClassOpenCurly(doc, typeScope.getOffset());
         }
         return offset;
     }
 
-    private static int getClassCurlyOpenOffset(BaseDocument doc, int offset) throws BadLocationException {
+    private static int getOffsetAfterBlockCloseCurly(BaseDocument doc, int offset) throws BadLocationException {
+        int retval = offset;
+        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
+        if (ts != null) {
+            ts.move(retval);
+            int curlyMatch = 0;
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                if (t.id() == PHPTokenId.PHP_CURLY_OPEN || t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                        curlyMatch++;
+                    } else if (t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                        curlyMatch--;
+                    }
+                    if (curlyMatch == 0) {
+                        ts.moveNext();
+                        retval = ts.offset();
+                        break;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        return retval;
+    }
+
+    private static int getOffsetAfterNextSemicolon(BaseDocument doc, int offset) throws BadLocationException {
+        return getOffsetAfterNextTokenId(doc, offset, PHPTokenId.PHP_SEMICOLON);
+    }
+
+    private static int getOffsetAfterClassOpenCurly(BaseDocument doc, int offset) throws BadLocationException {
+        return getOffsetAfterNextTokenId(doc, offset, PHPTokenId.PHP_CURLY_OPEN);
+    }
+
+    private static int getOffsetAfterNextTokenId(BaseDocument doc, int offset, PHPTokenId tokenId) throws BadLocationException {
         int retval = offset;
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
         if (ts != null) {
             ts.move(retval);
             while (ts.moveNext()) {
                 Token t = ts.token();
-                if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                if (t.id() == tokenId) {
+                    ts.moveNext();
                     retval = ts.offset();
                     break;
                 }
             }
         }
-        return Utilities.getRowEnd(doc, retval);
+        return retval;
     }
 
     private static PHPCompletionItem.MethodDeclarationItem createMethodDeclarationItem(final TypeScope typeScope, final MethodInvocation node) {
