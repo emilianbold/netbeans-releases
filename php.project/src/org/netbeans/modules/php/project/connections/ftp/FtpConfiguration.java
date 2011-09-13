@@ -71,8 +71,8 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private String password;
 
 
-    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
-        super(cfg, createWithSecrets);
+    public FtpConfiguration(final ConfigManager.Configuration cfg) {
+        super(cfg);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
@@ -80,9 +80,6 @@ public final class FtpConfiguration extends RemoteConfiguration {
                 readEnum(Encryption.class, FtpConnectionProvider.ENCRYPTION, FtpConnectionProvider.DEFAULT_ENCRYPTION),
                 readBoolean(FtpConnectionProvider.ONLY_LOGIN_ENCRYPTED, FtpConnectionProvider.DEFAULT_ONLY_LOGIN_ENCRYPTED));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        if (createWithSecrets) {
-            password = readPassword(FtpConnectionProvider.PASSWORD);
-        }
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -148,7 +145,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
             return "nobody@nowhere.net"; // NOI18N
         }
         synchronized (this) {
-            if (!createWithSecrets && password == null) {
+            if (password == null) {
                 password = readPassword(FtpConnectionProvider.PASSWORD);
             }
             if (password == null) {

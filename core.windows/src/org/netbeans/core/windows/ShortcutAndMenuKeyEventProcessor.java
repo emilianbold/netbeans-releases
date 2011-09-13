@@ -249,22 +249,6 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         if (arr == null || arr.length == 0) {
             wasPopupDisplayed = false;
 
-            // XXX(-ttran) special case for Shift+F10 on braindead Windoze.
-            // Shortcuts are handled in postProcessKeyEvent() so that the
-            // focused components can decide to handle and consume the key
-            // event itself.  Buttons' and labels' mnemonics in components will
-            // work even though they conflict with shortcuts.  But if we do so
-            // for Shift+F10 on Windoze then for some mysterious reason the
-            // system menu (left-upper icon in the native window caption) will
-            // be invoked, no matter how hard we try to consume the event.
-
-            if (Utilities.isWindows()
-                && ev.getModifiers() == InputEvent.SHIFT_MASK
-                && ev.getKeyCode() == KeyEvent.VK_F10
-                ) {
-                return processShortcut(ev);
-            }
-
             // Only here for fix #41477:
             // To be able to catch and dispatch Ctrl+TAB and Ctrl+Shift+Tab
             // in our own way, it's needed to do as soon as here, because

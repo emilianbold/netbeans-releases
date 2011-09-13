@@ -110,7 +110,7 @@ public class ReconfigureAction extends NodeAction {
         if (cs == null) {
             return false;
         }
-        return true;
+        return new ReconfigureProject(p).isApplicable();
     }
 
     @Override

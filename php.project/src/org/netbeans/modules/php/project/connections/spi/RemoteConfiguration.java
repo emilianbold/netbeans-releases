@@ -72,7 +72,6 @@ public abstract class RemoteConfiguration {
     static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
 
     protected final ConfigManager.Configuration cfg;
-    protected final boolean createWithSecrets;
 
     private final String displayName;
     private final String name;
@@ -84,15 +83,13 @@ public abstract class RemoteConfiguration {
     /**
      * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}.
      * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
-     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      */
-    public RemoteConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+    public RemoteConfiguration(final ConfigManager.Configuration cfg) {
         if (cfg == null) {
             throw new NullPointerException("Configuration cannot be null");
         }
 
         this.cfg = cfg;
-        this.createWithSecrets = createWithSecrets;
         name = cfg.getName();
         displayName = cfg.getDisplayName();
         deprecatedPasswordKey = getClass().getName() + "." + name + ".password"; // NOI18N
@@ -110,7 +107,6 @@ public abstract class RemoteConfiguration {
         this.displayName = displayName;
 
         this.cfg = null;
-        this.createWithSecrets = false;
         deprecatedPasswordKey = null;
         passwordKey = null;
     }
@@ -350,6 +346,11 @@ public abstract class RemoteConfiguration {
     }
 
     protected void savePassword(final String password, final String type) {
+        if (password == null) {
+            // password not set at all, do nothing
+            //  (e.g. when user opens Remote Configurations and clicks OK but not all configs were displayed [= passwords were not fetched from keyring])
+            return;
+        }
         if (StringUtils.hasText(password)) {
             KEYRING_ACCESS.post(new Runnable() {
                 @Override

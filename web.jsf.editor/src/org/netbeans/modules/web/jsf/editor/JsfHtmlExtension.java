@@ -342,6 +342,10 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         AstNode queriedNode = context.getCurrentNode();
         String nsPrefix = queriedNode.getNamespacePrefix();
+        if(nsPrefix == null) {
+            //jsf tag always have a prefix
+            return null;
+        }
         String tagName = queriedNode.getNameWithoutPrefix();
 
         String namespace = getUriForPrefix(nsPrefix, declaredNS);

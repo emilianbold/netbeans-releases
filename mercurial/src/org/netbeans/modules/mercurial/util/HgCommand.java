@@ -982,17 +982,19 @@ public class HgCommand {
         String rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags;
         List<String> filesShortPaths = new ArrayList<String>();
 
-        final String rootPath = root.getAbsolutePath();
-
+        String rootPath = root.getAbsolutePath();
+        if (!rootPath.endsWith(File.separator)) {
+            rootPath = rootPath + File.separator;
+        }
         if (list != null && !list.isEmpty()) {
             if (files != null) {
                 for (File f : files) {
                     String shortPath = f.getAbsolutePath();
                     if (shortPath.startsWith(rootPath) && shortPath.length() > rootPath.length()) {
                         if (Utilities.isWindows()) {
-                            filesShortPaths.add(shortPath.substring(rootPath.length() + 1).replace(File.separatorChar, '/')); // NOI18N
+                            filesShortPaths.add(shortPath.substring(rootPath.length()).replace(File.separatorChar, '/')); // NOI18N
                         } else {
-                            filesShortPaths.add(shortPath.substring(rootPath.length() + 1)); // NOI18N
+                            filesShortPaths.add(shortPath.substring(rootPath.length())); // NOI18N
                         }
                     }
                 }
@@ -2076,12 +2078,16 @@ public class HgCommand {
 
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
+            String repoPath = repository.getAbsolutePath();
+            if (!repoPath.endsWith(File.separator)) {
+                repoPath = repoPath + File.separator;
+            }
             for(File f: commitFiles){
-                if (f.getAbsolutePath().length() <= repository.getAbsolutePath().length()) {
+                if (f.getAbsolutePath().length() <= repoPath.length()) {
                     // list contains the root itself
                     command.add(f.getAbsolutePath());
                 } else {
-                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
+                    command.add(f.getAbsolutePath().substring(repoPath.length()));
                 }
             }
             if(Utilities.isWindows()) {
@@ -2145,8 +2151,12 @@ public class HgCommand {
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
 
-        command.add(sourceFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
-        command.add(destFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+        String repoPath = repository.getAbsolutePath();
+        if (!repoPath.endsWith(File.separator)) {
+            repoPath = repoPath + File.separator;
+        }
+        command.add(sourceFile.getAbsolutePath().substring(repoPath.length()));
+        command.add(destFile.getAbsolutePath().substring(repoPath.length()));
 
         List<String> list = exec(command);
         if (!list.isEmpty() &&
