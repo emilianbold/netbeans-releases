@@ -657,7 +657,7 @@ made subject to such option by the copyright holder.
         <test test.type="qa-functional"/>
     </target>
 
-    <target name="test-generate-html">
+    <target name="test-generate-html" depends="-build-dir-init">
         <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="true">
             <dirset dir="${build.dir}/test" includes="*/results"/>
         </subant>
