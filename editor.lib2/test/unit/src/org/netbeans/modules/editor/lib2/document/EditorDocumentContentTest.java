@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
@@ -73,6 +74,8 @@ public class EditorDocumentContentTest extends NbTestCase {
 //        includes.add("testMarkSwapSimple");
 //        includes.add("testMarkSwapMulti");
 //        includes.add("testMarkSwapMultiBB");
+//        includes.add("testWholeDocRemove");
+//        includes.add("testPartDocRemove");
 //        filterTests(includes);
     }
     
@@ -91,14 +94,15 @@ public class EditorDocumentContentTest extends NbTestCase {
 //        return Level.FINEST;
 //        return Level.FINE;
 //        return Level.INFO;
-        return null;
+        return Level.FINE;
     }
 
     private RandomTestContainer createContainer() throws Exception {
         RandomTestContainer container = DocumentContentTesting.createContainer();
         container.setName(this.getName());
-        container.setLogOp(true);
-        DocumentContentTesting.setLogDoc(container, false);
+//        container.setLogOp(true);
+//        DocumentContentTesting.setLogDoc(container, true);
+//        Logger.getLogger("org.netbeans.modules.editor.lib2.document.EditorDocumentContent").setLevel(Level.FINEST);
         return container;
     }
     
@@ -247,6 +251,7 @@ public class EditorDocumentContentTest extends NbTestCase {
             ((TestEditorDocument)DocumentContentTesting.getDocument(context)).getDocumentContent().toStringDetail());
         container.runChecks(context);
         DocumentContentTesting.undo(context, 1);
+        container.runChecks(context);
     }
 
     public void testBackwardBiasPositionsSimple() throws Exception {
@@ -347,6 +352,59 @@ public class EditorDocumentContentTest extends NbTestCase {
         container.runChecks(context);
         DocumentContentTesting.undo(context, 1); // Undo Ins(2, "x") tj. Rem(2,1) => becomes: pos3=2 2
         DocumentContentTesting.undo(context, 1); // Undo Rem(2, 1) tj. Ins(2,"c") => becomes: pos3=3 2
+        container.runChecks(context);
+    }
+
+    public void testWholeDocRemove() throws Exception {
+        RandomTestContainer container = createContainer();
+        RandomTestContainer.Context context = container.context();
+        Document doc = DocumentContentTesting.getDocument(container);
+        DocumentContentTesting.insert(context, 0, "ahoj");
+//        Position pos7 = DocumentContentTesting.createPosition(context, doc.getLength() + 1, false);
+
+//        Position pos1 = DocumentContentTesting.createPosition(context, 1, false);
+        Position pos2 = DocumentContentTesting.createPosition(context, 2, false);
+//        Position pos5 = DocumentContentTesting.createPosition(context, 5, false);
+        container.runChecks(context);
+        DocumentContentTesting.remove(context, 0, doc.getLength());
+        container.runChecks(context);
+        DocumentContentTesting.insert(context, 0, "nazdar");
+        container.runChecks(context);
+//        Position pos21 = DocumentContentTesting.createPosition(context, 1, false);
+//        Position pos22 = DocumentContentTesting.createPosition(context, 2, false);
+        Position pos25 = DocumentContentTesting.createPosition(context, 5, false);
+//        Position pos26 = DocumentContentTesting.createPosition(context, 6, false);
+//        Position pos27 = DocumentContentTesting.createPosition(context, 7, false);
+        container.runChecks(context);
+        DocumentContentTesting.undo(context, 2);
+//        Position pos31 = DocumentContentTesting.createPosition(context, 1, false);
+//        Position pos34 = DocumentContentTesting.createPosition(context, 4, false);
+//        Position pos36 = DocumentContentTesting.createPosition(context, 6, false);
+        container.runChecks(context);
+        DocumentContentTesting.redo(context, 1);
+        DocumentContentTesting.redo(context, 1);
+        container.runChecks(context);
+    }
+
+    public void testPartDocRemove() throws Exception {
+        RandomTestContainer container = createContainer();
+        RandomTestContainer.Context context = container.context();
+        container.setLogOp(true);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.document.EditorDocumentContent").setLevel(Level.FINEST);
+        Document doc = DocumentContentTesting.getDocument(container);
+        DocumentContentTesting.insert(context, 0, "ahoj");
+        Position pos2 = DocumentContentTesting.createPosition(context, 3, false);
+        container.runChecks(context);
+        DocumentContentTesting.remove(context, 2, doc.getLength() - 2);
+        container.runChecks(context);
+        DocumentContentTesting.insert(context, 2, "nazdar");
+        container.runChecks(context);
+        Position pos25 = DocumentContentTesting.createPosition(context, 5, false);
+        container.runChecks(context);
+        DocumentContentTesting.undo(context, 2);
+        container.runChecks(context);
+        DocumentContentTesting.redo(context, 1);
+        DocumentContentTesting.redo(context, 1);
         container.runChecks(context);
     }
 

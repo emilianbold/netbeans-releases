@@ -477,7 +477,6 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
     private void readProperties() {
-        // TODO default platform should not have FX support
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
 
         String sdkPath = properties.get(Utils.getSDKPropertyKey(platform));
@@ -492,14 +491,11 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         
         if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
             enableCheckBox.setSelected(true);
-            addToPlatformCP();
         }
     }
     
     private boolean isPlatformValid() {
-        String sdkPath = sdkTextField.getText();
-        String runtimePath = runtimeTextField.getText();
-        return sdkPath.length() > 0 && runtimePath.length() > 0;
+        return JavaFXPlatformUtils.areJFXLocationsCorrect(sdkTextField.getText(), runtimeTextField.getText());
     }
     
     // TODO use message label and icon from Categories ?
@@ -509,11 +505,6 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
     private void clearErrorMessage() {
         messageLabel.setText(null);
-    }
-    
-    private void addToPlatformCP() {
-        ClassPath bootstrapLibraries = platform.getBootstrapLibraries();
-        // TODO after Tomas will give me API
     }
     
     // XXX dirty hack, change it

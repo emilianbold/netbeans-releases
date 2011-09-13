@@ -25,7 +25,6 @@ made subject to such option by the copyright holder.
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
-import org.netbeans.modules.refactoring.java.api.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
@@ -40,9 +39,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
@@ -171,6 +172,43 @@ class VarUsageVisitor extends RefactoringVisitor {
         VariableElement varElement = (VariableElement) asElement(varTree);
         isReplCandidate = isReplacableAssgnmt(varElement) && isReplCandidate;
         return super.visitVariable(varTree, refVarElem);
+    }
+
+    @Override
+    public Tree visitMethod(MethodTree node, Element p) {
+        List<? extends VariableTree> parameters = node.getParameters();
+        for (VariableTree variableTree : parameters) {
+            Element var = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variableTree));
+            if(p.equals(var)) {
+                TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
+                List<ExecutableElement> methods = ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(classElement));
+                String methodName = node.getName().toString();
+                for (ExecutableElement method : methods) {
+                        if(methodName.equals(method.getSimpleName().toString())
+                        && node.getParameters().size() == method.getParameters().size()) {
+                    ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
+                    boolean sameParameters = true;
+                    for (int j = 0; j < node.getParameters().size(); j++) {
+                        TypeMirror exType = ((VariableElement)method.getParameters().get(j)).asType();
+                        TypeMirror type;
+                        VariableElement vari = (VariableElement)element.getParameters().get(j);
+                        if(p.equals(vari)) {
+                            type = superTypeElement.asType();
+                        } else {
+                            type = vari.asType();
+                        }
+                        if(!workingCopy.getTypes().isSameType(exType, type)) {
+                            sameParameters = false;
+                        }
+                    }
+                    if(sameParameters) {
+                        isReplCandidate = false;
+                    }
+                    }
+                }
+            }
+        }
+        return super.visitMethod(node, p);
     }
 
     private boolean isMemberAvailable(TypeElement subTypeElement, Element methodElement, 
