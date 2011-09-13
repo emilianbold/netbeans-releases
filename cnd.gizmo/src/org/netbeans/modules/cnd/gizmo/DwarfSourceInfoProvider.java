@@ -88,22 +88,37 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
-
+            
+    private static  String getUriScheme(ExecutionEnvironment env, boolean isFullRemote){
+        if (env.isLocal()){
+            return "file://";
+        }
+        if (isFullRemote){
+            return "rfs:" + env.toString();
+        }
+        return "file://";
+    }    
+    
     @Override
     public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
             PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
             if (provider != null) {
-                String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
+                String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);                
                 if (env != null) {
-                    PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(env));
-                    if (pathMapper != null) {
-                        String remote = pathMapper.getLocalPath(info.getFileName());
-                        if (remote != null) {
-                            return new SourceFileInfo(remote, info.getLine(), 0);
+                    ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(env);                    
+                    boolean isFullRemote = Boolean.valueOf(serviceInfo.get("full.remote"));//NOI18N
+                    String uriScheme = getUriScheme(execEnv, isFullRemote);
+                    String path = info.getFileName();
+                    if (!isFullRemote && execEnv.isRemote()) {
+                        PathMapper pathMapper = provider.getPathMapper(execEnv);
+                        if (pathMapper != null){
+                            String remote = pathMapper.getLocalPath(info.getFileName());
+                            path = remote;
                         }
                     }
+                    return new SourceFileInfo(uriScheme + path, info.getLine(), 0);
                 }
             }
         }
