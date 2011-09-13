@@ -150,7 +150,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserQuestionException;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -1635,12 +1634,4 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
     }
 
-    @ServiceProvider(service=EditorSupport.Provider.class)
-    public static class FESProvider implements EditorSupport.Provider {
-        @Override
-        public EditorSupport create(FormDataObject formDataObject) {
-            return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
-        }
-        
-    }
 }

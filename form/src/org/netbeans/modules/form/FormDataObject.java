@@ -146,8 +146,8 @@ public class FormDataObject extends MultiDataObject {
 
     public synchronized EditorSupport getFormEditorSupport() {
         if (formEditor == null) {
-            EditorSupport.Provider provider = Lookup.getDefault().lookup(EditorSupport.Provider.class);
-            formEditor = provider.create(this);
+            FormServices services = Lookup.getDefault().lookup(FormServices.class);
+            formEditor = services.createEditorSupport(this);
         }
         return formEditor;
     }

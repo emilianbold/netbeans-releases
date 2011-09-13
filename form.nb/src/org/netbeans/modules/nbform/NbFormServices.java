@@ -43,6 +43,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.EditorSupport;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormServices;
 import org.netbeans.modules.form.FormUtils;
@@ -122,6 +123,11 @@ public class NbFormServices implements FormServices {
     @Override
     public boolean isLayoutExtensionsLibrarySupported() {
         return true;
+    }
+
+    @Override
+    public EditorSupport createEditorSupport(FormDataObject formDataObject) {
+        return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
     }
     
 }

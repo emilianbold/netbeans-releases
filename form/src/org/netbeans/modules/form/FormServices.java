@@ -60,4 +60,5 @@ public interface FormServices {
     Node createFormDataNode(FormDataObject formDataObject);
     MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile);
     boolean isLayoutExtensionsLibrarySupported();
+    EditorSupport createEditorSupport(FormDataObject formDataObject);
 }
