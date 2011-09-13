@@ -39,41 +39,32 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties.parser;
 
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class DefaultCssModuleTest extends CssModuleTestBase {
+public class PropertyValueTest extends NbTestCase {
 
-    public DefaultCssModuleTest(String name) {
+    public PropertyValueTest(String name) {
         super(name);
     }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        //allow the InstalledFilesLocator to work
-        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
-    }
-    
-    public void testDocumentation() {
-        HelpResolver resolver = CssModuleSupport.getHelpResolver();
-        assertNotNull(resolver);
-        
-        Property color = CssModuleSupport.getProperty("color");
-        assertNotNull(color);
-        
-        String help = resolver.getHelp(color);
-        assertNotNull(help);
-        assertTrue(help.length() > 0);
-        
-        System.out.println(help);
+
+    public void testGrammarOfAllProperties() {
+        for(Property property : CssModuleSupport.getProperties()) {
+            assertNotNull(property);
+            assertNotNull(property.getName());
+            assertNotNull(property.getValueGrammar());
+            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getValueGrammar().isEmpty());
+            PropertyModel model = new PropertyModel(property);
+            PropertyValue evaluated = new PropertyValue(model, "");
+            assertTrue(evaluated.success());
+        }
     }
     
 }

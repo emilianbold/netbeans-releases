@@ -182,7 +182,7 @@ public class PagedMediaModule extends CssModule {
     }
     
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
-        return Utilities.wrapProperties(CssModuleSupport.getProperties().values(), context.getAnchorOffset());
+        return Utilities.wrapProperties(CssModuleSupport.getProperties(), context.getAnchorOffset());
     }
     
     
