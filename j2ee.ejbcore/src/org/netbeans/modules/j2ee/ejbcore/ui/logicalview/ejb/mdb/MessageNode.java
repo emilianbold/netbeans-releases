@@ -76,10 +76,10 @@ import org.openide.util.lookup.InstanceContent;
  * @author Martin Adamek
  */
 public class MessageNode extends AbstractNode implements OpenCookie {
-    
+
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController controller;
-    
+
     public static MessageNode create(final String ejbClass, EjbJar ejbModule, Project project) {
         String ejbName = null;
         try {
@@ -98,7 +98,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             return new MessageNode(new InstanceContent(), new EjbViewController(ejbClass, ejbModule), ejbName, project);
         }
     }
-    
+
     private MessageNode(InstanceContent content, EjbViewController controller, String ejbName, Project project) {
         super(Children.LEAF, new AbstractLookup(content));
         this.controller = controller;
@@ -121,27 +121,27 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             content.add(controller.getBeanDo().getPrimaryFile());
         }
     }
-    
+
     private void setDisplayName() {
         setDisplayName(controller.getDisplayName());
     }
-    
+
     public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
         };
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // TODO
         // return new HelpCtx(SessionNode.class);
     }
-    
+
     public boolean canDestroy() {
         return false;
     }
-    
+
     public void destroy() throws java.io.IOException {
         String deleteOptions = DeleteEJBDialog.open(controller.getDisplayName());
         if (!deleteOptions.equals(DeleteEJBDialog.DELETE_NOTHING)) {
@@ -152,19 +152,22 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             }
         }
     }
-    
+
     public boolean canCopy() {
         return false;
     }
-    
+
     public boolean canCut() {
         return false;
     }
-    
+
     public void open() {
         FileObject fo = controller.getBeanFo();
         ElementHandle<TypeElement> beh = controller.getBeanClass();
-        ElementOpen.open(fo, beh);
+        if (fo != null && beh != null) {
+            ElementOpen.open(fo, beh);
+        }
+
 /*
         DataObject dataObject = controller.getBeanDo();
         if (dataObject != null) {

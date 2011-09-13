@@ -140,43 +140,24 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
             }
             try {
-                List<String> paths = BuildTraceHelper.INSTANCE.getPaths(execEnv);
-                if (paths.size() == 2) {
-                    String merge = env.getenv("LD_PRELOAD_32"); // NOI18N
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = paths.get(0)+":"+merge; // NOI18N
-                    } else {
-                        merge = paths.get(0);
-                    }
-                    env.putenv("LD_PRELOAD_32", merge); // NOI18N
-                    merge = env.getenv("LD_PRELOAD_64"); // NOI18N
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = paths.get(1)+":"+merge; // NOI18N
-                    } else {
-                        merge = paths.get(1);
-                    }
-                    env.putenv("LD_PRELOAD_64", merge); // NOI18N
+                String merge = env.getenv("LD_PRELOAD"); // NOI18N
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
                 } else {
-                    assert false;
-                    String merge = env.getenv("LD_PRELOAD"); // NOI18N
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
-                    } else {
-                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                    }
-                    env.putenv("LD_PRELOAD", merge); // NOI18N
-
-                    merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
-                    if (merge == null || merge.isEmpty()) {
-                        merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
-                    }
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
-                    } else {
-                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                    }
-                    env.putenv("LD_LIBRARY_PATH", merge); // NOI18N
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
                 }
+                env.putenv("LD_PRELOAD", merge); // NOI18N
+
+                merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
+                if (merge == null || merge.isEmpty()) {
+                    merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
+                }
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
+                } else {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                }
+                env.putenv("LD_LIBRARY_PATH", merge); // NOI18N
             } catch (CancellationException ex) {
                 // don't report CancellationException
             } catch (IOException ex) {
