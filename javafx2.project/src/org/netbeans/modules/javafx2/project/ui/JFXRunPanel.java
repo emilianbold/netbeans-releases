@@ -160,7 +160,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             //JFXProjectProperties.APPLICATION_ARGS,
             //JFXProjectProperties.PRELOADER_CLASS,
             JFXProjectProperties.RUN_JVM_ARGS,
-            JFXProjectProperties.RUN_IN_HTMLPAGE,
+            JFXProjectProperties.RUN_IN_HTMLTEMPLATE,
             JFXProjectProperties.RUN_APP_HEIGHT,
             JFXProjectProperties.RUN_APP_WIDTH,
             JFXProjectProperties.RUN_WORK_DIR,
@@ -956,12 +956,15 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
             textFieldPreloader.setText(file.getAbsolutePath());
             if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
                 activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, file.getAbsolutePath());
-                activeConfig.put(JFXProjectProperties.PRELOADER_JAR, file.getAbsolutePath() 
-                        + File.separatorChar + "dist" + File.separatorChar + file.getName() + ".jar"); // NOI18N);
+                activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
+                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, "${dist.dir}" + File.separatorChar + "lib" + File.separatorChar + file.getName() + ".jar"); // NOI18N);
+                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName() + ".jar"); // NOI18N
             } else {
                 if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
-                    activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, null);
-                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR, file.getAbsolutePath());
+                    activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, ""); //NOI18N
+                    activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.JAR.getString());
+                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, file.getAbsolutePath());
+                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName());
                 }
             }
             fillPreloaderCombo(file, wizard.getSourceType(), null, activeConfig);
@@ -1112,7 +1115,8 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             preloaderSelectionChanged(
                     preloaderEnabled,
                     m.get(JFXProjectProperties.PRELOADER_PROJECT),
-                    m.get(JFXProjectProperties.PRELOADER_JAR),
+                    m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
+                    m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
                     m.get(JFXProjectProperties.PRELOADER_CLASS),
                     m);
             boolean prelEnabled = JFXProjectProperties.isTrue(preloaderEnabled);
@@ -1159,7 +1163,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
     
-    private void preloaderSelectionChanged(String enabled, String projectDir, String jarFile, String cls, Map<String,String> config) {
+    private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
         if(projectDir != null) {
             File proj = new File(projectDir);
@@ -1172,13 +1176,13 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             }
             return;
         }
-        if(jarFile != null) {
-            File jar = new File(jarFile);
+        if(jarFilePath != null && jarFileName != null) {
+            File jar = new File(jarFilePath + jarFileName);
             if(!jar.exists() || !jar.isFile()) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
             } else {
-                textFieldPreloader.setText(jarFile);
+                textFieldPreloader.setText(jarFilePath + jarFileName);
                 fillPreloaderCombo(jar, JFXProjectProperties.PreloaderSourceType.JAR, cls, config);
             }
             return;
@@ -1192,8 +1196,10 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 JFXProjectProperties.isTrue(configs.get(null).get(JFXProjectProperties.PRELOADER_ENABLED)) ||
                 !JFXProjectProperties.isEqualIgnoreCase(configs.get(config).get(JFXProjectProperties.PRELOADER_PROJECT),
                 configs.get(null).get(JFXProjectProperties.PRELOADER_PROJECT)) ||
-                !JFXProjectProperties.isEqualIgnoreCase(configs.get(config).get(JFXProjectProperties.PRELOADER_JAR),
-                configs.get(null).get(JFXProjectProperties.PRELOADER_JAR));
+                !JFXProjectProperties.isEqualIgnoreCase(configs.get(config).get(JFXProjectProperties.PRELOADER_JAR_PATH),
+                configs.get(null).get(JFXProjectProperties.PRELOADER_JAR_PATH)) ||
+                !JFXProjectProperties.isEqualIgnoreCase(configs.get(config).get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
+                configs.get(null).get(JFXProjectProperties.PRELOADER_JAR_FILENAME));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

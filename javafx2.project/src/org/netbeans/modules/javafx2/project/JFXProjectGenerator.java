@@ -306,7 +306,13 @@ public class JFXProjectGenerator {
     private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
-        if (templateFO != null) {
+        FileObject platformFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-platform.inc"); //NOI18N
+        FileObject parametersFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-parameters.inc"); //NOI18N
+        FileObject callbacksFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-callbacks.inc"); //NOI18N
+        if (templateFO != null && platformFO != null && parametersFO != null && callbacksFO != null) {
+            FileUtil.copyFile(platformFO, dirFO.getFileObject("nbproject"), "jfx-impl-platform"); // NOI18N
+            FileUtil.copyFile(parametersFO, dirFO.getFileObject("nbproject"), "jfx-impl-parameters"); // NOI18N
+            FileUtil.copyFile(callbacksFO, dirFO.getFileObject("nbproject"), "jfx-impl-callbacks"); // NOI18N
             FileObject jfxBuildFile = FileUtil.copyFile(templateFO, dirFO.getFileObject("nbproject"), "jfx-impl"); // NOI18N
             AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
@@ -361,11 +367,14 @@ public class JFXProjectGenerator {
         ep.setComment(JFXProjectProperties.JAVAFX_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_javafx")}, false); // NOI18N
         
         ep.setProperty("jnlp.enabled", "false"); // NOI18N
+        ep.setComment("jnlp.enabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjnlp")}, false); // NOI18N
+        
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
         
-        ep.setProperty(JFXProjectProperties.BACKGROUND_UPDATE_CHECK, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
+        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
@@ -378,6 +387,8 @@ public class JFXProjectGenerator {
         if (isPreloader) {
             ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true"); // NOI18N
             ep.setComment(JFXProjectProperties.JAVAFX_PRELOADER, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_preloader")}, false); // NOI18N
+            ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
+            ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_prepreloader")}, false); // NOI18N
         } else {
             ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
             ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
@@ -390,20 +401,33 @@ public class JFXProjectGenerator {
             if (preloader != null && preloader.length() > 0) { // this project uses preloader
                 String preloaderProj = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
                         + File.separatorChar + preloader; // NOI18N
-                String preloaderJar = preloaderProj + "\\dist\\" + preloader + ".jar"; // NOI18N
-                String preloaderSrc = preloader + "\\src"; // NOI18N
+                //String preloaderJar = preloaderProj + "\\dist\\" + preloader + ".jar"; // NOI18N
+                String preloaderJarPath = preloaderProj + File.separatorChar + "dist" + File.separatorChar; // NOI18N
+                String preloaderJarFileName = preloader + ".jar"; // NOI18N
+                String copiedPreloaderJarPath = FileUtil.toFile(dirFO).getAbsolutePath() + File.separatorChar + "dist" + File.separatorChar + "lib" + File.separatorChar + preloaderJarFileName; // NOI18N
+                //String preloaderSrc = preloader + "\\src"; // NOI18N
 
                 ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
                 ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_preloader")}, false); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProj);
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader)); // NOI18N
-                ep.setProperty(JFXProjectProperties.PRELOADER_JAR, preloaderJar);
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, copiedPreloaderJarPath);
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, preloaderJarFileName);
+            } else {
+                ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.NONE.getString());
+                ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_dontuse_preloader")}, false); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, ""); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, ""); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, ""); // NOI18N
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, ""); // NOI18N
             }
         }
 
         // TODO select from UI
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback"); // NOI18N
-        ep.setProperty(JFXProjectProperties.SIGNED_JAR, "${dist.dir}/" + validatePropertyValue(name) + "_signed.jar"); // NOI18N
+        //ep.setProperty(JFXProjectProperties.SIGNED_JAR, "${dist.dir}/" + validatePropertyValue(name) + "_signed.jar"); // NOI18N
                 
         // ===========================
         //     J2SE Project stuff
