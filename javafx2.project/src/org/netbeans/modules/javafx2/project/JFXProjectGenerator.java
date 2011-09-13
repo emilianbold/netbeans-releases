@@ -314,7 +314,9 @@ public class JFXProjectGenerator {
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
-//                    ext.addDependency("run", "jar"); //NOI18N 
+                    ext.addDependency("run", "jar"); //NOI18N
+                    ext.addDependency("debug", "jar");//NOI18N
+                    ext.addDependency("profile", "jar");//NOI18N
                 }
             }
         }
@@ -377,10 +379,8 @@ public class JFXProjectGenerator {
             ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true"); // NOI18N
             ep.setComment(JFXProjectProperties.JAVAFX_PRELOADER, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_preloader")}, false); // NOI18N
         } else {
-            // temporary hack fopr disabling main class selector dialog
-            ep.setProperty(ProjectProperties.MAIN_CLASS, mainClass); // NOI18N
-    //        ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
-    //        ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
+            ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
+            ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
             if (!isLibrary) {
                 ep.setProperty(JFXProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
@@ -428,7 +428,8 @@ public class JFXProjectGenerator {
         ep.setComment("build.sysclasspath", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty(ProjectProperties.RUN_CLASSPATH, new String[]{ // NOI18N
                     "${javac.classpath}:", // NOI18N
-                    "${build.classes.dir}", // NOI18N
+                    "${build.classes.dir}:", // NOI18N
+                    "${dist.jar}",         // NOI18N
                 });
         ep.setProperty("debug.classpath", new String[]{ // NOI18N
                     "${run.classpath}", // NOI18N
