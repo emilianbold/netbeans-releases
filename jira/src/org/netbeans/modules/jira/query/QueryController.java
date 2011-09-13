@@ -221,6 +221,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
                  assert jiraFilter instanceof FilterDefinition;
             }
             postPopulate((FilterDefinition) jiraFilter, false);
+        } else {
+            panel.cloneQueryButton.setEnabled(false);
         }
     }
 
