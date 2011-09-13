@@ -140,7 +140,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
         String fileName = lineInfo.getFileName();
         try {
-            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
+            FileObject fo = CndFileUtils.toFileObject(fileName);
             if (fo == null || ! fo.isValid()) {
                 InputStream inputStream = null;
                 try {

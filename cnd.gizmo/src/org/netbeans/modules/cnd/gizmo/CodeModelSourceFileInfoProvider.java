@@ -62,9 +62,13 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -72,12 +76,24 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
+
     private static final boolean TRACE = false;
     private WeakReference<Map<String, Set<SourceFileInfo>>> staticFileCache = new WeakReference<Map<String, Set<SourceFileInfo>>>(null);
 
-    public CodeModelSourceFileInfoProvider(){
+    public CodeModelSourceFileInfoProvider() {
     }
 
+    private static String getUriScheme(ExecutionEnvironment env, boolean isFullRemote) {
+        if (env.isLocal()) {
+            return "file://";
+        }
+        if (isFullRemote) {
+            return "rfs:" + env.toString();
+        }
+        return "file://";
+    }
+
+    @Override
     public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
@@ -102,7 +118,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                 return null;
             }
             if (TRACE) {
-                System.err.println("Model search for: "+functionQName); // NOI18N
+                System.err.println("Model search for: " + functionQName); // NOI18N
             }
 
             SourceFileInfo res = findFunction(csmProject, functionQName, lineNumber);
@@ -111,7 +127,27 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             }
             if (TRACE) {
                 if (res != null) {
-                    System.err.println("\tFound: "+res); // NOI18N
+                    System.err.println("\tFound: " + res); // NOI18N
+                }
+            }
+            if (res != null) {
+                PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
+                if (provider != null) {
+                    String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
+                    if (env != null) {
+                        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(env);                        
+                        boolean isFullRemote = Boolean.valueOf(serviceInfo.get("full.remote"));//NOI18N
+                        String uriScheme = getUriScheme(execEnv, isFullRemote);
+                        String path = res.getFileName();
+                        if (!isFullRemote && execEnv.isRemote()) {
+                            PathMapper pathMapper = provider.getPathMapper(execEnv);
+                            if (pathMapper != null){
+                                String remote = pathMapper.getLocalPath(res.getFileName());
+                                path = remote;
+                            }
+                        }
+                        return new SourceFileInfo(uriScheme + path, res.getLine(), 0);
+                    }
                 }
             }
             return res;
@@ -154,7 +190,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         return declaration;
     }
 
-    private SourceFileInfo findStaticFunction(CsmProject project, String qualifiedName){
+    private SourceFileInfo findStaticFunction(CsmProject project, String qualifiedName) {
         Map<String, Set<SourceFileInfo>> cache = getCache(project);
         Set<SourceFileInfo> set = cache.get(qualifiedName);
         if (set == null || set.isEmpty()) {
@@ -163,7 +199,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         return set.iterator().next();
     }
 
-    private synchronized Map<String, Set<SourceFileInfo>> getCache(CsmProject project){
+    private synchronized Map<String, Set<SourceFileInfo>> getCache(CsmProject project) {
         Map<String, Set<SourceFileInfo>> cache = staticFileCache.get();
         if (cache == null) {
             cache = initStaticFunctions(project);
@@ -172,10 +208,10 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         return cache;
     }
 
-    private Map<String, Set<SourceFileInfo>> initStaticFunctions(CsmProject project){
+    private Map<String, Set<SourceFileInfo>> initStaticFunctions(CsmProject project) {
         Map<String, Set<SourceFileInfo>> res = new HashMap<String, Set<SourceFileInfo>>();
-        for(CsmFile file : project.getAllFiles()){
-            for(CsmOffsetableDeclaration decl : file.getDeclarations()) {
+        for (CsmFile file : project.getAllFiles()) {
+            for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
                 if (CsmKindUtilities.isFileLocalFunction(decl)) {
                     CsmFunction func = (CsmFunction) decl;
                     String name = func.getQualifiedName().toString();
