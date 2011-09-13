@@ -408,6 +408,11 @@ in methods
     and we need to adjust the time to the new file object.
 </api>
 
+<api type="export" group="property" name="usedByCloneableEditor" category="friend" >
+    Component client property which is set to Boolean.TRUE if an editor pane is actively used by a cloneable editor.
+    Once the component gets closed the CloneableEditor sets the property to Boolean.FALSE.
+</api>
+
 </answer>
 
 

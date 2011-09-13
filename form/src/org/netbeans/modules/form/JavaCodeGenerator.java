@@ -239,13 +239,6 @@ class JavaCodeGenerator extends CodeGenerator {
             else canGenerate = false;
 
             if (formEditor.getGuardedSectionManager() == null) {
-                // Issue 143655 - opening of big file canceled
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        formEditorSupport.close();
-                    }
-                });
                 return;
             }
             SimpleSection initComponentsSection = formEditor.getInitComponentSection();

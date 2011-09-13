@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.io.IOException;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
@@ -61,16 +60,11 @@ public interface EditorSupport extends Node.Cookie {
     GuardedSectionManager getGuardedSectionManager();
     void markModified();
     Object getJavaContext();
-    boolean close();
     void openAt(Position pos);
     void discardEditorUndoableEdits();
     void saveAs(FileObject folder, String fileName) throws IOException;
-    void openFormEditor(boolean forceFormElement);
-    void open();
+    void openDesign();
+    void openSource();
     void reloadForm();
     boolean isJavaEditorDisplayed();
-
-    interface Provider {
-        EditorSupport create(FormDataObject formDataObject);
-    }
 }
