@@ -122,13 +122,13 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
 
         assert accept(configuration) : "Not my configuration?!";
 
-        return new SftpConfiguration(configuration, false);
+        return new SftpConfiguration(configuration);
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
         if (accept(configuration)) {
-            return new SftpConfiguration(configuration, createWithSecrets);
+            return new SftpConfiguration(configuration);
         }
         return null;
     }
