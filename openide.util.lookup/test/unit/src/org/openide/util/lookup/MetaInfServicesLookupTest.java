@@ -203,6 +203,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     public void testBasicUsage() throws Exception {
         Lookup l = getTestedLookup(c2);
         Class<?> xface = c1.loadClass("org.foo.Interface");
+        NoChange nc = new NoChange(l, xface);
         LOG.log(Level.INFO, "tested lookup: {0}", l);
         LOG.log(Level.INFO, "search for {0}", xface);
         List<?> results = new ArrayList<Object>(l.lookupAll(xface));
@@ -214,6 +215,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         // Make sure it does not gratuitously replace items:
         List<?> results2 = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals(results, results2);
+        nc.waitNoChange();
     }
 
     public void testLoaderSkew() throws Exception {
@@ -575,5 +577,30 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     static <T> Enumeration<T> singleton(T t) {
         return Collections.enumeration(Collections.singleton(t));
+    }
+    
+    public static class NoChange implements LookupListener {
+        private final Lookup.Result<?> res;
+        private IllegalStateException stack;
+        public NoChange(Lookup lkp, Class<?> type) {
+            res = lkp.lookupResult(type);
+            res.addLookupListener(this);
+        }
+        
+        
+        @Override
+        public synchronized void resultChanged(LookupEvent ev) {
+            stack = new IllegalStateException("Don't generate an event, please!");
+            notifyAll();
+        }
+        
+        public synchronized void waitNoChange() throws IllegalStateException, InterruptedException {
+            if (stack == null) {
+                wait(1000);
+            }
+            if (stack != null) {
+                throw stack;
+            }
+        }
     }
 }

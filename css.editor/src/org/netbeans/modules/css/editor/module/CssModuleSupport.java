@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -70,6 +71,7 @@ import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
+import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.Pair;
@@ -82,6 +84,8 @@ import org.openide.util.Lookup;
 public class CssModuleSupport {
 
     private static final Logger LOGGER = Logger.getLogger(CssModuleSupport.class.getSimpleName());
+    //TODO possibly add support for refreshing the cached data based on css module changes in the lookup
+    private static final AtomicReference<Map<String, Property>> PROPERTIES = new AtomicReference<Map<String, Property>>();
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
 
     public static Collection<? extends CssModule> getModules() {
@@ -232,8 +236,12 @@ public class CssModuleSupport {
 
     }
 
-    //todo: cache results of most of the methods below!!!!!!!!!!!!!!!
-    public static Map<String, Property> getProperties() {
+    public static Collection<Property> getProperties() {
+        PROPERTIES.compareAndSet(null, loadProperties());
+        return PROPERTIES.get().values();
+    }
+
+    private static Map<String, Property> loadProperties() {
         Map<String, Property> all = new HashMap<String, Property>();
         for (CssModule module : getModules()) {
             for (Property pd : module.getProperties()) {
@@ -247,11 +255,27 @@ public class CssModuleSupport {
         return all;
     }
 
+    public static Property getProperty(String propertyName) {
+        PROPERTIES.compareAndSet(null, loadProperties());
+
+        //try to resolve the refered element name with the at-sign prefix so
+        //the property appearance may contain link to appearance, which in fact
+        //will be resolved as the @appearance property:
+        //
+        //appearance=<appearance> |normal
+        //@appearance=...
+        //
+        StringBuilder sb = new StringBuilder().append(GrammarParser.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
+        Property invisibleProperty = PROPERTIES.get().get(sb.toString());
+        
+        return invisibleProperty != null ? invisibleProperty : PROPERTIES.get().get(propertyName);
+    }
+
     public static PropertyModel getPropertyModel(String name) {
         synchronized (PROPERTY_MODELS) {
             PropertyModel model = PROPERTY_MODELS.get(name);
             if (model == null) {
-                Property pd = getProperties().get(name);
+                Property pd = getProperty(name);
                 model = pd != null ? new PropertyModel(pd) : null;
                 PROPERTY_MODELS.put(name, model);
             }
@@ -268,6 +292,7 @@ public class CssModuleSupport {
         return all;
     }
 
+    //todo: cache results of most of the methods below!!!!!!!!!!!!!!!
     //TODO: the pseudo elements and classes should be context aware, not simple strings ... later
     public static Collection<String> getPseudoClasses() {
         Collection<String> all = new HashSet<String>();
@@ -388,9 +413,8 @@ public class CssModuleSupport {
                 int i2 = t2.getPriority();
                 return new Integer(i1).compareTo(new Integer(i2));
             }
-            
         });
-        
+
         return list;
     }
 }

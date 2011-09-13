@@ -101,7 +101,7 @@ final class PaletteVisibility {
 
     private static FileObject findPaletteTopComponentSettings() {
         String role = WindowManager.getDefault().getRole();
-        String root = "Windows2";
+        String root = "Windows2Local"; //NOI18N
         if( null != role )
             root += "/Roles/" + role;
         FileObject res = FileUtil.getConfigFile(root+"/Modes/commonpalette");

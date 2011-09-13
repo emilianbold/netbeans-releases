@@ -197,7 +197,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
     }
-
+    
     public void testToString() {
         String txt = lookup.toString();
         assertNotNull("Something is there", txt);

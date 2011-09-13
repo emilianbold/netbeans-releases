@@ -83,10 +83,10 @@ import org.openide.filesystems.FileObject;
     @ProjectType(id="org-netbeans-modules-maven/nbm") // NOI18N
 })
 
-public class ProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvider {
+public class ProjectProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
     private Project project;
     
-    public ProfilerTypeUtilsImpl(Project prj) {
+    public ProjectProfilerTypeUtilsImpl(Project prj) {
         this.project = prj;
     }
     
@@ -102,35 +102,16 @@ public class ProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvider {
     }
 
     @Override
-    public SourceClassInfo resolveClass(final String className) {
+    protected ClasspathInfo getClasspathInfo() {
         if (project != null) {
-            ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
-            ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
-            return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
+            return ClasspathInfoFactory.infoFor(project);
         }
         return null;
     }
-    
+
     @Override
-    public Collection<SourcePackageInfo> getPackages(boolean subprojects, SourcePackageInfo.Scope scope) {
-        Collection<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
-        
-        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project, subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
-        // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
-        // ignore such a project
-        if (cpInfo != null) {
-            Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
-            if (scope == SourcePackageInfo.Scope.SOURCE) {
-                sScope.add(ClassIndex.SearchScope.SOURCE);
-            }
-            if (scope == SourcePackageInfo.Scope.DEPENDENCIES) {
-                sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
-            }
-            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, sScope)) { // NOI18N
-                pkgs.add(new JavacPackageInfo(cpInfo, pkgName, pkgName, scope));
-            }
-        }        
-        return pkgs;
-    }
+    protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps) {
+        return ClasspathInfoFactory.infoFor(project, subprojects, source, deps);
+    }    
 }
  
