@@ -65,6 +65,8 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Method;
 
@@ -76,6 +78,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.form.project.*;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.util.Exceptions;
 
 /**
@@ -118,8 +121,7 @@ public final class BeanInstaller {
                 @Override
                 public void handle(String className, String problem) {
                     if (problem == null) {
-                        ClassSource classSource = 
-                                ClassPathUtils.getProjectClassSource(fo, className);
+                        ClassSource classSource = getProjectClassSource(fo, className);
                         if (classSource == null) {
                             // Issue 47947
                             unableToInstall.add(className);
@@ -199,6 +201,20 @@ public final class BeanInstaller {
             });
         }
         catch (java.io.IOException ex) {} // should not happen
+    }
+
+    /**
+     * Creates ClassSource object corresponding to project output classpath.
+     * @param fileInProject FileObject being source (.java) or output (.class) file in a project
+     * @param className String name of class for which the ClassSource is created
+     */
+    public static ClassSource getProjectClassSource(FileObject fileInProject, String className) {
+        Project project = FileOwnerQuery.getOwner(fileInProject);
+        if (project == null) {
+            return null; // the file is not in any project
+        }
+        ClassSource.Entry entry = new ClassSourceResolver.ProjectEntry(project);
+        return new ClassSource(className, entry);
     }
 
     /** Finds available JavaBeans in given JAR files. Looks for beans

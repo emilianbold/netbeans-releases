@@ -299,33 +299,6 @@ public class EditorModule extends ModuleInstall {
              return;
          }
 
-         EditorApiPackageAccessor.get().setIgnoredAncestorClass(TopComponent.class);
-         if (topComponentRegistryListener == null) {
-             topComponentRegistryListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                        TopComponent tc = (TopComponent)evt.getNewValue();
-// changed due to #186730 - MacroExpansionTopComponent from CND calls removeAll() in its componentClosed(),
-//  which removes the JEditorPane from the component hierarchy. And since ancestorRemoved() is ignored in
-//  this case and later on the MECT can't be identified as an ancestor of any JEP (due to now already purged
-//  component hierarchy) the macro view JEP is never removed from EditorRegistry.
-//  The change here makes sure that ancestorRemoved events are ignored only for TopComponents, for which
-//  we call EditorRegistry.notifyClose().
-//                        // Limit checking to editors and multiviews only - should suffice
-//                        // if not then assign: doClose = true;
-//                        boolean doNotify = (tc instanceof CloneableEditorSupport.Pane);
-//                        LOG.finest("CLOSE-TC: doClose=" + doNotify + ", TC=" + tc + "\n");
-//                        if (doNotify) {
-//                            EditorApiPackageAccessor.get().notifyClose(tc);
-//                        }
-                        LOG.finest("CLOSE-TC: TC=" + tc + "\n"); //NOI18N
-                        EditorApiPackageAccessor.get().notifyClose(tc);
-                    }
-                }
-            };
-            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
-         }
-
          if (LOG.isLoggable(Level.FINE)) {
              WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 public void run() {

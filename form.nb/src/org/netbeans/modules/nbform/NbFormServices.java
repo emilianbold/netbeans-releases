@@ -37,19 +37,19 @@
  */
 package org.netbeans.modules.nbform;
 
+import java.awt.datatransfer.Transferable;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.loaders.JavaDataSupport;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.EditorSupport;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormServices;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.nbform.palette.BeanInstaller;
 import org.netbeans.modules.nbform.palette.FormPaletteActions;
-import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -57,6 +57,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -98,14 +99,19 @@ public class NbFormServices implements FormServices {
     }
 
     @Override
-    public String findJavaBeanName(FileObject fob) {
-        return BeanInstaller.findJavaBeanName(fob);
-    }
+    public ClassSource getCopiedBeanClassSource(Transferable transferable) {
+        DataObject dobj = NodeTransfer.cookie(transferable, NodeTransfer.COPY, DataObject.class);
+        FileObject fo = (dobj != null && dobj.isValid()) ? dobj.getPrimaryFile() : null;
+        if (fo == null) {
+            return null;
+        }
 
-    @Override
-    public ClassSource getProjectClassSource(Project project, String className) {
-        ClassSource.Entry entry = new ClassSourceResolver.ProjectEntry(project);
-        return new ClassSource(className, entry);
+        String clsName = BeanInstaller.findJavaBeanName(fo);
+        if (clsName == null) {
+            return null;
+        }
+
+        return BeanInstaller.getProjectClassSource(fo, clsName);
     }
 
     @Override
@@ -122,6 +128,11 @@ public class NbFormServices implements FormServices {
     @Override
     public boolean isLayoutExtensionsLibrarySupported() {
         return true;
+    }
+
+    @Override
+    public EditorSupport createEditorSupport(FormDataObject formDataObject) {
+        return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
     }
     
 }

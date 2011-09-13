@@ -52,6 +52,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -224,6 +225,9 @@ public class AddMethodTest extends AddMethodBase {
         }
         editor.txtEditorPane().waitText(toSearchInEditor);
         if (saveFile) {
+            editor.waitModified(true);
+            // need to wait because sometimes is save() called sooner than it can take effect
+            new EventTool().waitNoEvent(300);
             editor.save();
         }
 

@@ -91,6 +91,7 @@ projectuiapi,\
 queries,\
 sendopts,\
 settings,\
+spi.navigator,\
 spi.quicksearch,\
 tasklist.todo,\
 tasklist.ui,\

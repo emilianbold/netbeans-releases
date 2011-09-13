@@ -57,14 +57,12 @@ import java.util.Map;
 import javax.swing.undo.UndoableEdit;
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.form.project.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
@@ -595,22 +593,9 @@ class CopySupport {
         }
     }
 
-    static String getCopiedBeanClassName(FileObject fo) {
+    static ClassSource getCopiedBeanClassSource(Transferable transferable) {
         FormServices services = Lookup.getDefault().lookup(FormServices.class);
-        return services.findJavaBeanName(fo);
-    }
-
-    static ClassSource getCopiedBeanClassSource(Transferable t) {
-        DataObject dobj = NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
-        FileObject fo = (dobj != null && dobj.isValid()) ? dobj.getPrimaryFile() : null;
-        if (fo == null)
-            return null;
-
-        String clsName = getCopiedBeanClassName(fo);
-        if (clsName == null)
-            return null;
-
-        return ClassPathUtils.getProjectClassSource(fo, clsName);
+        return services.getCopiedBeanClassSource(transferable);
     }
 
 }

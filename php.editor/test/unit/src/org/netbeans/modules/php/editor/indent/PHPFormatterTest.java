@@ -750,7 +750,7 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testSpacesBeforeClassDecLeftBrace03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, new Boolean(false));
+        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeClassDecLeftBrace03.php", options);
     }
 
@@ -1388,6 +1388,20 @@ public class PHPFormatterTest extends PHPTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	options.put(FmtOptions.spaceAroundBinaryOps, false);
         reformatFileContents("testfiles/formatting/spaces/issue180859_02.php", options);
+    }
+    
+    public void testSpaceAfterShortPHPTag_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceAfterShortPHPTag, true);
+        options.put(FmtOptions.spaceBeforeClosePHPTag, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterShortPHPTag01.php", options);
+    }
+
+    public void testSpaceAfterShortPHPTag_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceAfterShortPHPTag, false);
+        options.put(FmtOptions.spaceBeforeClosePHPTag, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterShortPHPTag02.php", options);
     }
 
     public void testSpacesBeforeAfterSemi01() throws Exception {

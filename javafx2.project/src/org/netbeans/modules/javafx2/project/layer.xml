@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-<!--    <folder name="ProjectXMLCatalog">
-        <folder name="javafx">
-            <file name="FxAnt.xsd" url="./FxAnt.xsd"/>
-        </folder>
-    </folder>-->
-
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="fxml.xml" url="fxml-mime-resolver.xml">
@@ -20,7 +14,18 @@
     <folder name="Templates">
         <folder name="JFX">
             <attr name="position" intvalue="0"/>
-            <file name="jfx-impl.xml" url="templates/jfx-impl.xml_"/>
+            <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
+                <attr name="position" intvalue="25"/>
+            </file>
+            <file name="jfx-impl-platform.inc" url="templates/jfx-impl-platform.inc_">
+                <attr name="position" intvalue="35"/>
+            </file>
+            <file name="jfx-impl-parameters.inc" url="templates/jfx-impl-parameters.inc_">
+                <attr name="position" intvalue="45"/>
+            </file>
+            <file name="jfx-impl-callbacks.inc" url="templates/jfx-impl-callbacks.inc_">
+                <attr name="position" intvalue="55"/>
+            </file>
         </folder>
         
         <folder name="Project">

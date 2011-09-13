@@ -126,6 +126,7 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
     
     synchronized void insertEdit(ContentEdit edit) {
 //        checkConsistency(); LOG.fine("insertEdit:" + edit); // NOI18N
+//        LOG.fine("markVector-before-insert:\n" + toStringDetail()); // NOI18N
         charContent.insertText(edit.offset, edit.text);
         markVector.insertUpdate(edit.offset, edit.length(), edit.markUpdates);
         edit.markUpdates = null; // Allow GC
@@ -133,7 +134,7 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
             bbMarkVector.insertUpdate(edit.offset, edit.length(), edit.bbMarkUpdates);
             edit.bbMarkUpdates = null; // Allow GC
         }
-//        checkConsistency(); LOG.fine("INSERT-after: DUMP\n"+ markVector.toStringDetail(null));
+//        LOG.fine("INSERT-after: DUMP\n"+ markVector.toStringDetail(null)); checkConsistency();
     }
     
     @Override
@@ -155,23 +156,23 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
     }
     
     synchronized void removeEdit(ContentEdit edit) {
-//        checkConsistency();
+//        checkConsistency(); LOG.fine("removeEdit:" + edit); // NOI18N
+//        LOG.fine("markVector-before-remove:\n" + toStringDetail()); // NOI18N
         int len = edit.length();
         charContent.removeText(edit.offset, len);
         edit.markUpdates = markVector.removeUpdate(edit.offset, len);
         if (bbMarkVector != null) {
             edit.bbMarkUpdates = bbMarkVector.removeUpdate(edit.offset, len);
         }
-//        checkConsistency(); LOG.fine("removeEdit:" + edit); // NOI18N
-//        LOG.fine("REMOVE-after: DUMP\n"+ markVector.toStringDetail(null));
+//        LOG.fine("REMOVE-after: DUMP\n"+ markVector.toStringDetail(null)); checkConsistency();
     }
 
     @Override
     public synchronized Position createPosition(int offset) throws BadLocationException {
         checkOffsetInContent(offset);
-//        checkConsistency();
+//        checkConsistency(); LOG.fine("createPosition(" + offset + ")-before\n"); // NOI18N
         EditorPosition pos = markVector.position(offset);
-//        checkConsistency(); LOG.fine("createPosition(" + offset + ")=" + pos.toString()); // NOI18N
+//        LOG.fine("createPosition(" + offset + ")=" + pos.getMark().toStringDetail() + "\n"); checkConsistency(); // NOI18N
         return pos;
     }
 
