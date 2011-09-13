@@ -453,6 +453,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
     }
 
+    public boolean spaceAfterShortPHPTag() {
+        return preferences.getBoolean(spaceAfterShortPHPTag, getDefaultAsBoolean(spaceAfterShortPHPTag));
+    }
+    
     public boolean spaceBeforeClosePHPTag() {
         return preferences.getBoolean(spaceBeforeClosePHPTag, getDefaultAsBoolean(spaceBeforeClosePHPTag));
     }

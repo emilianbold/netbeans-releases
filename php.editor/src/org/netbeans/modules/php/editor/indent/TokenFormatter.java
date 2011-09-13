@@ -149,6 +149,7 @@ public class TokenFormatter {
 	public boolean spaceBeforeSemi;
 	public boolean spaceAfterSemi;
 	public boolean spaceAfterTypeCast;
+        public boolean spaceAfterShortTag;
 	public boolean spaceBeforeClosePHPTag;
 
 	public boolean placeElseOnNewLine;
@@ -269,6 +270,7 @@ public class TokenFormatter {
 	    spaceBeforeSemi = codeStyle.spaceBeforeSemi();
 	    spaceAfterSemi = codeStyle.spaceAfterSemi();
 	    spaceAfterTypeCast = codeStyle.spaceAfterTypeCast();
+            spaceAfterShortTag = codeStyle.spaceAfterShortPHPTag();
 	    spaceBeforeClosePHPTag = codeStyle.spaceBeforeClosePHPTag();
 
 	    placeElseOnNewLine = codeStyle.placeElseOnNewLine();
@@ -403,9 +405,7 @@ public class TokenFormatter {
                     String oldText = null;
                     int changeOffset = -1;
                     int deltaForLastMoveBeforeLineComment = 0;
-                    FormatToken.AnchorToken lastAnchor = null;
-
-                    while (index < formatTokens.size()) {
+                    FormatToken.AnchorToken lastAnchor = null;                    while (index < formatTokens.size()) {
                         formatToken = formatTokens.get(index);
                         oldText = null;						//NOI18N
                         if (formatToken.isWhitespace()) {
@@ -1059,6 +1059,14 @@ public class TokenFormatter {
                                         else {
                                             newLines = 0;
                                             countSpaces = 1;
+                                            if (index > 0) {
+                                                FormatToken ft = formatTokens.get(index - 1);
+                                                if (ft.getId() == FormatToken.Kind.OPEN_TAG
+                                                        && ft.getOldText().length() < 4) {
+                                                    countSpaces = docOptions.spaceAfterShortTag ? 1 : 0;
+                                                }
+                                            }
+                                            
                                         }
                                         break;
                                     case WHITESPACE_BEFORE_CLOSE_PHP_TAG:
