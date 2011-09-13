@@ -168,6 +168,17 @@ public final class JavaFXPlatformUtils {
     public static String guessJavadocPath(@NonNull File sdkPath) {
         return sdkPath.getAbsolutePath() + "\\docs"; // NOI18N
     }
+
+    /**
+     * Determines whether JavaFX SDK and JavaFX Runtime locations are correct
+     * 
+     * @param JavaFX SDK path
+     * @param JavaFX Runtime path
+     * @return are locations correct
+     */
+    public static boolean areJFXLocationsCorrect(@NonNull String sdkPath, @NonNull String runtimePath) {
+        return isSdkPathCorrect(sdkPath) && isRuntimePathCorrect(runtimePath);
+    }
     
     /**
      * Creates new default JavaFX platform
@@ -209,7 +220,8 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
-    private static String predictSDKLocation(String path) {
+    @CheckForNull
+    private static String predictSDKLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
@@ -226,7 +238,8 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
-    private static String predictRuntimeLocation(String path) {
+    @CheckForNull
+    private static String predictRuntimeLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
@@ -243,7 +256,8 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
-    private static String predictJavadocLocation(String path) {
+    @CheckForNull
+    private static String predictJavadocLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
@@ -261,7 +275,35 @@ public final class JavaFXPlatformUtils {
     }
 
     // TODO when sources will be availabe
-    private static String predictSourcesLocation(String path) {
+    @CheckForNull
+    private static String predictSourcesLocation(@NonNull String path) {
         return null;
     }
+
+    private static boolean isSdkPathCorrect(@NonNull String sdkPath) {
+        File file = new File(sdkPath);
+        if (!file.exists()) {
+            return false;
+        }
+        String name = file.getName();
+        if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
+            File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+            return toolsJar.exists();
+        }
+        return false;
+    }
+    
+    private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
+        File file = new File(runtimePath);
+        if (!file.exists()) {
+            return false;
+        }
+        String name = file.getName();
+        if (name.contains("Runtime") || name.contains("runtime")) { // NOI18N
+            File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+            return rtJar.exists();
+        }
+        return false;
+    }
+
 }
