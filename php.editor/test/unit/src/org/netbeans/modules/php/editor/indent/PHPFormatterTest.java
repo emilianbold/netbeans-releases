@@ -750,7 +750,7 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testSpacesBeforeClassDecLeftBrace03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, new Boolean(false));
+        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeClassDecLeftBrace03.php", options);
     }
 
