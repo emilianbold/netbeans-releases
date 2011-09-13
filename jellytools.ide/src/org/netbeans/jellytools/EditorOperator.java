@@ -987,12 +987,12 @@ public class EditorOperator extends TopComponentOperator {
 
                 @Override
                 public Object actionProduced(Object obj) {
-                    return isModified() == modified ? new Object() : null;
+                    return isModified() == modified ? Boolean.TRUE : null;
                 }
 
                 @Override
                 public String getDescription() {
-                    return ("Wait Modified State");
+                    return ("Wait Modified State=" + modified);
                 }
             });
             Timeouts times = getTimeouts().cloneThis();
