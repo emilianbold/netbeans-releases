@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.connections.sftp;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -71,15 +70,12 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private String password;
 
 
-    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
-        super(cfg, createWithSecrets);
+    public SftpConfiguration(final ConfigManager.Configuration cfg) {
+        super(cfg);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        if (createWithSecrets) {
-            password = readPassword(SftpConnectionProvider.PASSWORD);
-        }
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
@@ -113,7 +109,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
     }
 
     public synchronized String getPassword() {
-        if (!createWithSecrets && password == null) {
+        if (password == null) {
             password = readPassword(SftpConnectionProvider.PASSWORD);
         }
         if (password == null) {

@@ -81,6 +81,8 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
     private String warning = null;
+    private boolean passwordRead = false;
+
 
     public FtpConfigurationPanel() {
         initComponents();
@@ -593,7 +595,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         setEncryption(cfg.getValue(FtpConnectionProvider.ENCRYPTION));
         setOnlyLoginSecured(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ONLY_LOGIN_ENCRYPTED)));
         setUserName(cfg.getValue(FtpConnectionProvider.USER));
-        setPassword(cfg.getValue(FtpConnectionProvider.PASSWORD, true));
+        setPassword(readPassword(cfg));
         setAnonymousLogin(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN)));
         setInitialDirectory(cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY));
         setTimeout(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -616,6 +618,19 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         cfg.putValue(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, getKeepAliveInterval());
         cfg.putValue(FtpConnectionProvider.PASSIVE_MODE, String.valueOf(isPassiveMode()));
         cfg.putValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS, String.valueOf(getIgnoreDisconnectErrors()));
+    }
+
+    // #200530
+    /**
+     * Read password from keyring, once it is needed.
+     * @return password
+     */
+    private String readPassword(Configuration cfg) {
+        if (!passwordRead) {
+            passwordRead = true;
+            return new FtpConfiguration(cfg).getPassword();
+        }
+        return cfg.getValue(FtpConnectionProvider.PASSWORD, true);
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
