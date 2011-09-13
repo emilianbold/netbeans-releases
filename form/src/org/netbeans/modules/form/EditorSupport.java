@@ -60,7 +60,6 @@ public interface EditorSupport extends Node.Cookie {
     GuardedSectionManager getGuardedSectionManager();
     void markModified();
     Object getJavaContext();
-    boolean close();
     void openAt(Position pos);
     void discardEditorUndoableEdits();
     void saveAs(FileObject folder, String fileName) throws IOException;

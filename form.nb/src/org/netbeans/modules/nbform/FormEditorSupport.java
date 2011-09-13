@@ -1295,7 +1295,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                     doc = openDocument();
                 }
             }
-            return (doc == null) ? null : GuardedSectionManager.getInstance(doc);
+            if (doc == null) {
+                // Issue 143655 - opening of big file canceled
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        close();
+                    }
+                });
+                return null;
+            } else {
+                return GuardedSectionManager.getInstance(doc);
+            }
         } catch (IOException ex) {
             throw new IllegalStateException("cannot open document", ex); // NOI18N
         }
