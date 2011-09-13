@@ -413,7 +413,7 @@ public class JavaI18nFinder implements I18nFinder {
                     }
                     
                     if (concatenatedStringsFound) {
-                        lastJavaString.append(document.getText(currentStringStart + 1, hardString.length()).replace("\" + \"", ""));
+                        lastJavaString.append(document.getText(currentStringStart + 1, hardString.length()).replace("\" + \"", "")); //NOI18N
                     } else {
                         lastJavaString.append(document.getText(currentStringStart + 1, hardString.length()));
                     }
@@ -422,12 +422,12 @@ public class JavaI18nFinder implements I18nFinder {
                     String restOfLine = document.getText(currentStringStart + 1 + hardString.length(),
                                                          currentStringEnd + endOfLine - currentStringStart - hardString.length());
 
-                    if(restOfLine.trim().startsWith("+ \"")) {
+                    if(restOfLine.trim().startsWith("+ \"")) { //NOI18N
                         concatenatedStringsFound = true;
                         currentStringEnd = -1;
                         state = STATE_STRING;
                         position += 4;
-                        lastJavaString = lastJavaString.delete(lastJavaString.lastIndexOf("\"") - 1, lastJavaString.length());
+                        lastJavaString = lastJavaString.delete(lastJavaString.lastIndexOf("\"") - 1, lastJavaString.length()); //NOI18N
                         return null;
                     }
                     
@@ -436,7 +436,7 @@ public class JavaI18nFinder implements I18nFinder {
                     
                     if (concatenatedStringsFound) {
                         concatenatedStringsFound = false;
-                        hardString = hardString.replace("\" + \"", "");
+                        hardString = hardString.replace("\" + \"", ""); //NOI18N
                     }
                     // If not matches regular expression -> is not internationalized.
                     if (isSearchedString(lastJavaString.toString(), hardString)) {
