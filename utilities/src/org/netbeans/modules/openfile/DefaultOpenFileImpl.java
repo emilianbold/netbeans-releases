@@ -79,8 +79,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import static org.openide.cookies.EditorCookie.Observable.PROP_OPENED_PANES;
@@ -177,7 +177,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                                final int line) {
         assert EventQueue.isDispatchThread();
         if (log.isLoggable(FINER)) {
-            log.finer("openEditor(EditorCookie, line=" + line + ')');   //NOI18N
+            log.log(FINER, "openEditor(EditorCookie, line={0})", line); //NOI18N
         }
 
         /* if the editor is already open, just set the cursor and activate it */
@@ -190,10 +190,17 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 openPanes[0].setCaretPosition(cursorOffset);
             }
 
-            Container c = SwingUtilities.getAncestorOfClass(TopComponent.class,
+            final Container c;
+            c = SwingUtilities.getAncestorOfClass(TopComponent.class,
                                                             openPanes[0]);
             if (c != null) {
-                ((TopComponent) c).requestActive();
+                WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ((TopComponent) c).requestActive();
+                    }
+                });
             } else {
                 assert false;
             }
@@ -214,18 +221,23 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             return false;
         }
 
-        editorCookie.open();
-            /*
-             * Note:
-             * editorCookie.open() may return before the editor is actually
-             * open. But since the document was successfully open,
-             * the editor should be opened quite quickly and no problem
-             * should occur.
-             */
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
-        if (line >= 0) {
-            openDocAtLine(editorCookie, doc, line);
-        }
+            @Override
+            public void run() {
+                editorCookie.open();
+                /*
+                 * Note: editorCookie.open() may return before the editor is
+                 * actually open. But since the document was successfully open,
+                 * the editor should be opened quite quickly and no problem
+                 * should occur.
+                 */
+
+                if (line >= 0) {
+                    openDocAtLine(editorCookie, doc, line);
+                }
+            }
+        });
         return true;
     }
     
@@ -248,8 +260,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         assert editorCookie.getDocument() == doc;
 
         if (log.isLoggable(FINER)) {
-            log.finer("openDocAtLine(EditorCookie, Document, line="     //NOI18N
-                      + line + ')');
+            log.log(FINER, "openDocAtLine(EditorCookie, Document, line={0})", line);
         }
         
         int offset = getCursorOffset(doc, line);
@@ -285,7 +296,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
 
             if (log.isLoggable(FINEST)) {
                 log.finest("SetCursorTask.<init>");                     //NOI18N
-                log.finest(" - observable: " + (observable != null));   //NOI18N
+                log.log(FINEST, " - observable: {0}", (observable != null));//NOI18N
             }
         }
         private void perform() {
@@ -308,7 +319,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 log.finest("SetCursorTask: tryNow() after adding the listener...");//NOI18N
                 if (tryNow()) {
                     log.finest("SetCursorTask:    SUCCESS!");           //NOI18N
-                    return;
                 }
             } else {
                 trySeveralTimes();
@@ -326,6 +336,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 return false;
             }
         }
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             log.finer("SetCursorTask: propertyChange()");               //NOI18N
 
@@ -340,6 +351,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         }
         class ScheduledOpenTask implements Runnable {
             private volatile int remainingTries = MAX_TRIES;
+
+            @Override
             public void run() {
                 try {
                     EventQueue.invokeAndWait(SetCursorTask.this);
@@ -358,6 +371,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 }
             }
         }
+
+        @Override
         public void run() {
             assert EventQueue.isDispatchThread();
             log.finer("SetCursorTask: run()");                          //NOI18N
@@ -473,7 +488,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * @return  <code>true</code> if the file was successfully open,
      *          <code>false</code> otherwise
      */
-    private final boolean openDataObjectByCookie(DataObject dataObject,
+    private boolean openDataObjectByCookie(DataObject dataObject,
                                                  int line) {
         
         Class<? extends Node.Cookie> cookieClass;        
@@ -490,6 +505,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * This method is called when it is rescheduled to the AWT thread.
      * (from a different thread). It is always run in the AWT thread.
      */
+    @Override
     public void run() {
         assert EventQueue.isDispatchThread();
         
@@ -501,11 +517,12 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * (or {@link OpenCookie} or {@link ViewCookie}),
      * or by showing it in the Explorer.
      */
+    @Override
     public boolean open(final FileObject fileObject, int line) {
         if (log.isLoggable(FINER)) {
-            log.finer("open(" + fileObject.getNameExt()                 //NOI18N
-                      + ", line=" + line + ") called from thread "      //NOI18N
-                      + Thread.currentThread().getName());
+            log.log(FINER, "open({0}, line={1}) called from thread {2}",//NOI18N
+                    new Object[]{fileObject.getNameExt(),
+                        line, Thread.currentThread().getName()});
         }
         if (!EventQueue.isDispatchThread()) {
             log.finest(" - rescheduling to EDT using invokeLater(...)");//NOI18N
@@ -546,27 +563,35 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 && !(action instanceof FileSystemAction)
                 && !(action instanceof ToolsAction)) {
             if (log.isLoggable(FINEST)) {
-                log.finest(" - using preferred action (\""              //NOI18N
-                           + action.getValue(Action.NAME)
-                           + "\" - "                                    //NOI18N
-                           + action.getClass().getName()
-                           + ") for opening the file");                 //NOI18N
+                log.log(FINEST, " - using preferred action "            //NOI18N
+                        + "(\"{0}\" - {1}) for opening the file",       //NOI18N
+                        new Object[]{action.getValue(Action.NAME),
+                            action.getClass().getName()});
             }
 
             if (action instanceof ContextAwareAction) {
                 action = ((ContextAwareAction) action)
                   .createContextAwareInstance(dataNode.getLookup());
                 if (log.isLoggable(FINEST)) {
-                    log.finest("    - it is a ContextAwareAction");
-                    log.finest("    - using a context-aware instance instead (\"" //NOI18N
-                                      + action.getValue(Action.NAME)
-                                      + "\" - "                         //NOI18N
-                                      + action.getClass().getName() + ')');
+                    log.finest("    - it is a ContextAwareAction");     //NOI18N
+                    log.log(FINEST, "    - using a context-aware "      //NOI18N
+                            + "instance instead (\"{0}\" - {1})",       //NOI18N
+                            new Object[]{action.getValue(Action.NAME),
+                                action.getClass().getName()});
                 }
             }
 
             log.finest("   - will call action.actionPerformed(...)");   //NOI18N
-            action.actionPerformed(new ActionEvent(dataNode, 0, ""));                                 
+            final Action a = action;
+            final Node n = dataNode;
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+                @Override
+                public void run() {
+                    a.actionPerformed(new ActionEvent(n, 0, ""));
+                }
+            });
+
             return true;            
         }             
         
@@ -581,9 +606,15 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         }        
         if (fileObject.isFolder() || FileUtil.isArchiveFile(fileObject)) {
             // select it in explorer:
-            Node node = dataObject.getNodeDelegate();
+            final Node node = dataObject.getNodeDelegate();
             if (node != null) {
-                NodeOperation.getDefault().explore(node);
+                WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        NodeOperation.getDefault().explore(node);
+                    }
+                });
                 return true;
             } else {
                 return false;

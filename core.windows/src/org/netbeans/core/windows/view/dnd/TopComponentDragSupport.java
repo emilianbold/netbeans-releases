@@ -321,7 +321,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             }
         } else {
             if( Switches.isTopComponentDragAndDropEnabled() && Switches.isDraggingEnabled(tc) ) {
-                draggable = new TopComponentDraggable( tc );
+                ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+                if( null != mode )
+                    draggable = new TopComponentDraggable( tc );
             }
         }
 

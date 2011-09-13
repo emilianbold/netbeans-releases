@@ -206,12 +206,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 //        }
 //    }
 
-    @Test
-    public void testProfilingDemo() throws IOException, InterruptedException, InvocationTargetException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
-        }
-    }
+    //@Test
+    //public void testProfilingDemo() throws IOException, InterruptedException, InvocationTargetException {
+    //    if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+    //        testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
+    //    }
+    //}
 
     @Override
     protected List<Class<?>> getServices() {
