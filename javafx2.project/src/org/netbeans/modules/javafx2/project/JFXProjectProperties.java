@@ -113,14 +113,17 @@ public final class JFXProjectProperties {
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
     public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
-    public static final String PRELOADER_PROJECT = "javafx.preloader.project"; // NOI18N
+    public static final String PRELOADER_TYPE = "javafx.preloader.type"; // NOI18N
+    public static final String PRELOADER_PROJECT = "javafx.preloader.project.path"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
-    public static final String PRELOADER_JAR = "javafx.preloader.jar"; // NOI18N
+    public static final String PRELOADER_JAR_FILENAME = "javafx.preloader.jar.filename"; // NOI18N
+    public static final String PRELOADER_JAR_PATH = "javafx.preloader.jar.path"; // NOI18N
     
     public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
     public static final String RUN_APP_HEIGHT = "javafx.run.height"; // NOI18N
-    public static final String RUN_IN_HTMLPAGE = "javafx.run.inhtmlpage"; // NOI18N
+    public static final String RUN_IN_HTMLTEMPLATE = "javafx.run.htmltemplate"; // NOI18N
+    public static final String RUN_IN_HTMLTEMPLATE_PROCESSED = "javafx.run.htmltemplate.processed"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
@@ -128,12 +131,13 @@ public final class JFXProjectProperties {
     public static final String DEFAULT_APP_HEIGHT = "600"; // NOI18N
 
     // Deployment properties
-    public static final String BACKGROUND_UPDATE_CHECK = "javafx.deploy.backgroundupdate"; // NOI18N
+    public static final String UPDATE_MODE_BACKGROUND = "javafx.deploy.backgroundupdate"; // NOI18N
     public static final String ALLOW_OFFLINE = "javafx.deploy.allowoffline"; // NOI18N
     public static final String INSTALL_PERMANENTLY = "javafx.deploy.installpermanently"; // NOI18N
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+    public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
 
     // Deployment - signing
     public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
@@ -406,7 +410,7 @@ public final class JFXProjectProperties {
 
             // Deployment
             allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE); // set true by default in JFXProjectGenerator            
-            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, BACKGROUND_UPDATE_CHECK); // set true by default in JFXProjectGenerator
+            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, UPDATE_MODE_BACKGROUND); // set true by default in JFXProjectGenerator
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
@@ -523,8 +527,8 @@ public final class JFXProjectProperties {
         } catch (IOException ex) {
             // can be ignored
         }
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
                 v = pep.getProperty(prop);
@@ -711,13 +715,13 @@ public final class JFXProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_PROJECT, PRELOADER_JAR, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
                     (//prop.equals(APPLICATION_ARGS) ||
                     prop.equals(RUN_WORK_DIR)  ||
-                    prop.equals(RUN_IN_HTMLPAGE)  ||
+                    prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                     prop.equals(RUN_IN_BROWSER)  ||
                     prop.equals(RUN_AS)  ||
                     privateProperties.containsKey(prop)) ?
@@ -775,7 +779,7 @@ public final class JFXProjectProperties {
                 EditableProperties ep =
                         (//prop.equals(APPLICATION_ARGS) ||
                          prop.equals(RUN_WORK_DIR) ||
-                         prop.equals(RUN_IN_HTMLPAGE)  ||
+                         prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                          prop.equals(RUN_IN_BROWSER)  ||
                          prop.equals(RUN_AS)  ||
                          privateCfgProps.containsKey(prop)) ?

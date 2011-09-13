@@ -244,11 +244,7 @@ final class MarkVector {
         // For remove(offset, n) the markUpdates content is created by taking a consecutive array of marks
         // with <offset, offset+n) and resetting their offset to "offset" and remembering their
         // original offsets in MarkUpdate[].
-        // Since these marks share the same offset after the removal they should retain
-        // their order with no "intruder" mark inserted in between them.
-        // When doing undo of remove(offset, n) additional marks with offset may be present.
-        // Those must be moved to end of <offset,offset+n> marks interval.
-        // The interval must be scanned (since markUpdates has no info about mark's current index).
+        // Mark must be resorted so that marks with offset are the first followed by marks with the updated offset.
         // Some marks in markUpdates array might already be removed from markArray since their position
         // was GCed so this must be taken into consideration too.
         if (markUpdates != null) { // Possibly restore marks' original offsets
@@ -260,46 +256,110 @@ final class MarkVector {
                     markUpdates[activeMarkUpdatesCount++] = update; // Filter markUpdates to valid ones
                 }
             }
+            // markUpdates array is ordered appropriately however the marks in markArray may require sorting.
             if (activeMarkUpdatesCount > 0) {
+                int foundRestoredMarkCount = 0; // Number of active marks found during scan
                 if (!backwardBiasHandling) {
-                    Mark firstUpdatedMark = markUpdates[0].mark;
-                    for (int i = index;; i++) { // The updated mark must be there
-                        if (getMark(i) == firstUpdatedMark) {
-                            if (i > index) {
-                                // Must move initial marks forward right beyond those from filtered markUpdates
-                                // Cannot use System.arraycopy() due to gap-storage
-                                for (int j = i - index - 1; j >= 0; j--) { // Copy backward
-                                    setMark(index + activeMarkUpdatesCount + j, getMark(index + j));
+                    int rawOffset = offsetGapStart + offsetGapLength;
+                    for (int i = index;; i++) { // Scan upwards; index points at first mark with 'offset'
+                        if (getMark(i).rawOffset() != rawOffset) { // Found updated mark
+                            foundRestoredMarkCount++;
+                            if (foundRestoredMarkCount == activeMarkUpdatesCount) { // Found them all
+                                if (i >= index + activeMarkUpdatesCount) { // Only if any extra marks at offset are present
+                                    // Go back and copy all marks with 'offset' into continuous area
+                                    int tgtI = i;
+                                    i--;
+                                    do {
+                                        Mark mark = getMark(i);
+                                        if (mark.rawOffset() == rawOffset) {
+                                            setMark(tgtI--, mark);
+                                        }
+                                        i--;
+                                    } while (i >= index);
                                 }
+                                // Copy the updated (sorted) marks to begining (starting at index)
                                 for (int j = activeMarkUpdatesCount - 1; j >= 0; j--) {
                                     setMark(index + j, markUpdates[j].mark);
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 } else { // backward-bias marks or marks at offset == 0
-                    // For backward bias the active mark updates will be above the non-updated marks.
                     // "index" corresponds to offset+1 (or offset+1+length)
-                    Mark lastUpdatedMark = markUpdates[activeMarkUpdatesCount - 1].mark;
+                    // Locate last updated mark and swap group to end
                     for (int i = index - 1;; i--) { // The updated mark must be there
-                        if (getMark(i) == lastUpdatedMark) {
-                            i++; // First mark to move
-                            if (i < index) {
-                                // Must move initial marks backward right beyond those from filtered markUpdates
-                                int count = index - i;
-                                for (int j = 0; j < count; j++) {
-                                    setMark(i - activeMarkUpdatesCount + j, getMark(i + j));
+                        if (getMark(i).rawOffset() != offset) {
+                            foundRestoredMarkCount++;
+                            if (foundRestoredMarkCount == activeMarkUpdatesCount) {
+                                if (i < index - activeMarkUpdatesCount) { // Only if not already ordered properly
+                                    // Must move initial marks backward right beyond those from filtered markUpdates
+                                    int tgtI = i;
+                                    i++;
+                                    do {
+                                        Mark mark = getMark(i);
+                                        if (mark.rawOffset() == offset) {
+                                            setMark(tgtI++, mark);
+                                        }
+                                        i++;
+                                    } while (i < index);
                                 }
                                 i = index - activeMarkUpdatesCount;
                                 for (int j = activeMarkUpdatesCount - 1; j >= 0; j--) {
                                     setMark(i + j, markUpdates[j].mark);
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
+
+                // The following alternative algorithm relies on assumption that the marks
+                // (that just had their offset corrected) had the same offset after the removal
+                // and thus they also retained their physical order with no "intruder" mark inserted in between them.
+                // The algorithm above does no rely on that.
+                // Since the EditorDocumentContentTest.testWholeDocRemove() was failing a variant above was created.
+                // However the test failure was caused by something else so the algorithm is still candidate
+                // since it's more efficient than the one above.
+//                if (!backwardBiasHandling) {
+//                    Mark firstUpdatedMark = markUpdates[0].mark;
+//                    for (int i = index;; i++) { // The updated mark must be there
+//                        if (getMark(i) == firstUpdatedMark) {
+//                            if (i > index) {
+//                                // Must move initial marks forward right beyond those from filtered markUpdates
+//                                // Cannot use System.arraycopy() due to gap-storage
+//                                for (int j = i - index - 1; j >= 0; j--) { // Copy backward
+//                                    setMark(index + activeMarkUpdatesCount + j, getMark(index + j));
+//                                }
+//                                for (int j = activeMarkUpdatesCount - 1; j >= 0; j--) {
+//                                    setMark(index + j, markUpdates[j].mark);
+//                                }
+//                            }
+//                            break;
+//                        }
+//                    }
+//                } else { // backward-bias marks or marks at offset == 0
+//                    // For backward bias the active mark updates will be above the non-updated marks.
+//                    // "index" corresponds to offset+1 (or offset+1+length)
+//                    Mark lastUpdatedMark = markUpdates[activeMarkUpdatesCount - 1].mark;
+//                    for (int i = index - 1;; i--) { // The updated mark must be there
+//                        if (getMark(i) == lastUpdatedMark) {
+//                            i++; // First mark to move
+//                            if (i < index) {
+//                                // Must move initial marks backward right beyond those from filtered markUpdates
+//                                int count = index - i;
+//                                for (int j = 0; j < count; j++) {
+//                                    setMark(i - activeMarkUpdatesCount + j, getMark(i + j));
+//                                }
+//                                i = index - activeMarkUpdatesCount;
+//                                for (int j = activeMarkUpdatesCount - 1; j >= 0; j--) {
+//                                    setMark(i + j, markUpdates[j].mark);
+//                                }
+//                            }
+//                            break;
+//                        }
+//                    }
+//                }
             }
         }
 
@@ -316,7 +376,8 @@ final class MarkVector {
         int index; // Index of first mark to restore its offset upon undo of removal
         int endIndex; // End index of marks to restore their offset upon undo of removal
         int biasOffset = offset;
-        if (isBackwardBiasMarks()) {
+        boolean backwardBiasHandling = isBackwardBiasMarks() || offset == 0;
+        if (backwardBiasHandling) {
             biasOffset++;
         }
         int newGapOffset = biasOffset + length;
@@ -334,7 +395,7 @@ final class MarkVector {
         // is faster than another binary search.
         for (index = endIndex - 1; index >= 0; index--) {
             Mark mark = getMark(index);
-            if (mark.rawOffset() < biasOffset) {
+            if (mark.rawOffset() < biasOffset) { // btw offset-gap is at (biasOffset+length).
                 break;
             }
         }
@@ -347,11 +408,11 @@ final class MarkVector {
             updates = new MarkUpdate[updateCount];
             // Regular marks:
             // Offset gap was moved to (offset+length) i.e. to offset (after actual removal)
-            // so all the marks "inside" removed area need to be at offset but above offset gap.
+            // so all the marks "inside" removed area need to be at 'offset' but above offset gap.
             // Backward-bias marks:
             // Offset gap will be at offset + 1 so all marks will be below gap.
             int newRawOffset = offset;
-            if (!isBackwardBiasMarks()) {
+            if (!backwardBiasHandling) {
                 newRawOffset += offsetGapLength;
             }
             for (int i = updateCount - 1; i >= 0; i--) {
@@ -562,9 +623,6 @@ final class MarkVector {
     
     String consistencyError(int maxOffset) {
         int markCount = markCount();
-        if (!isBackwardBiasMarks() && markCount < 1) {
-            return "markCount=" + markCount + " < 1"; // NOI18N
-        }
         int lastOffset = 0;
         for (int i = 0; i < markCount; i++) {
             Mark mark = getMark(i);
@@ -617,7 +675,16 @@ final class MarkVector {
         }
         return sb.toString();
     }
-
+    
+    static StringBuilder markUpdatesToString(StringBuilder sb, MarkUpdate[] markUpdates, int length) {
+        int digitCount = ArrayUtilities.digitCount(length);
+        for (int i = 0; i < length; i++) {
+            sb.append("    ");
+            ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
+            sb.append(markUpdates[i]).append('\n'); // NOI18N
+        }
+        return sb;
+    }
 
     /**
      * Class used for holding the offset to which the mark

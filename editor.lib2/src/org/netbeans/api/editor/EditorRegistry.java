@@ -163,6 +163,12 @@ public final class EditorRegistry {
     public static final String LAST_FOCUSED_REMOVED_PROPERTY = "lastFocusedRemoved"; //NOI18N
 
     /**
+     * Component client property defined by CloneableEditor that is set to false once
+     * the text component gets closed (no longer used by CloneableEditor).
+     */
+    private static final String USED_BY_CLONEABLE_EDITOR_PROPERTY = "usedByCloneableEditor"; // NOI18N
+
+    /**
      * Double linked list of weak references to text components.
      */
     private static Item items;
@@ -264,6 +270,7 @@ public final class EditorRegistry {
                 c.putClientProperty(Item.class, item);
                 c.addFocusListener(FocusL.INSTANCE);
                 c.addAncestorListener(AncestorL.INSTANCE);
+                c.addPropertyChangeListener(CloneableEditorUsageL.INSTANCE);
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "EditorRegistry.register(): " + dumpComponent(c) + '\n'); //NOI18N
                 }
@@ -315,6 +322,18 @@ public final class EditorRegistry {
                     item = item.next;
                 }
             }
+        }
+        fireEvents(events);
+    }
+    
+    static void releasedByCloneableEditor(JTextComponent component) {
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.fine("releasedByCloneableEditor for " + dumpComponent(component) + "\n"); //NOI18N
+        }
+        ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+        synchronized (EditorRegistry.class) {
+            Item item = item(component);
+            removeFromRegistry(item, events);
         }
         fireEvents(events);
     }
@@ -376,7 +395,11 @@ public final class EditorRegistry {
             throw new IllegalStateException("Component should be non-null"); //NOI18N
         
         // Remember whether component should not be removed from registry upon removeNotify()
-        item.ignoreAncestorChange = (SwingUtilities.getAncestorOfClass(ignoredAncestorClass, c) != null);
+        item.ignoreAncestorChange = (ignoredAncestorClass != null) &&
+                (SwingUtilities.getAncestorOfClass(ignoredAncestorClass, c) != null);
+        item.usedByCloneableEditor = Boolean.TRUE.equals(c.getClientProperty(USED_BY_CLONEABLE_EDITOR_PROPERTY));
+        item.ignoreAncestorChange |= item.usedByCloneableEditor; // possibly ignore ancestore change
+
         if (LOG.isLoggable(Level.FINER)) {
             LOG.fine("ancestorAdded: " + dumpComponent(item.get()) + '\n'); //NOI18N
             logItemListFinest();
@@ -475,6 +498,7 @@ public final class EditorRegistry {
             component.putClientProperty(Item.class, null);
             component.removeFocusListener(FocusL.INSTANCE);
             component.removeAncestorListener(AncestorL.INSTANCE);
+            component.removePropertyChangeListener(CloneableEditorUsageL.INSTANCE);
 
             events.add(new PropertyChangeEvent(EditorRegistry.class, COMPONENT_REMOVED_PROPERTY, component, null));
             if (LOG.isLoggable(Level.FINEST)) {
@@ -533,6 +557,8 @@ public final class EditorRegistry {
                 sb.append("Focused, "); //NOI18N
             if (item.ignoreAncestorChange)
                 sb.append("IgnoreAncestorChange, "); //NOI18N
+            if (item.usedByCloneableEditor)
+                sb.append("UsedByCloneableEditor, ");
             sb.append(dumpComponent(item.get()));
             sb.append('\n'); //NOI18N
             item = item.next;
@@ -607,6 +633,12 @@ public final class EditorRegistry {
          * but later on when notifyClose() is called.
          */
         boolean ignoreAncestorChange;
+        
+        /**
+         * Whether the component is used by CloneableEditor. In that case the ancestor
+         * removal is not effective and registry is waiting for the property becoming false.
+         */
+        boolean usedByCloneableEditor;
 
         /**
          * The ancestor which was ignored in removeNotify().
@@ -654,6 +686,22 @@ public final class EditorRegistry {
             if ("document".equals(evt.getPropertyName())) { //NOI18N
                 focusedDocumentChange((JTextComponent)evt.getSource(),
                         (Document)evt.getOldValue(), (Document)evt.getNewValue());
+            }
+        }
+
+    }
+    
+    private static final class CloneableEditorUsageL implements PropertyChangeListener {
+        
+        static final CloneableEditorUsageL INSTANCE = new CloneableEditorUsageL();
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            // Check client property defined in CloneableEditor
+            if (USED_BY_CLONEABLE_EDITOR_PROPERTY.equals(evt.getPropertyName())) { // NOI18N
+                if (Boolean.FALSE.equals(evt.getNewValue())) {
+                    releasedByCloneableEditor((JTextComponent)evt.getSource());
+                }
             }
         }
 

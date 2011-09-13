@@ -2,7 +2,7 @@
  * File:   pty_start.c
  * Author: ak119685
  *
- * Created on 22 Апрель 2010 г., 12:32
+ * Created on 22 ?????? 2010 ?., 12:32
  */
 
 #include "pty_fork.h"
@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
     int status = 0;
     int envnum = 0;
     int envsize = 0;
-    int pty_open = 0;
     char **envvars = NULL;
     char *pty = NULL;
 
@@ -47,16 +46,6 @@ int main(int argc, char** argv) {
 
     for (idx = 1; idx < argc; idx++) {
         if (argv[idx][0] == '-') {
-            if (strcmp(argv[idx], "-h") == 0) {
-                //  -e          turned echoing off
-                //  -p          defines pts_name to use instead of opening a new one
-                // --env        passes additional environment variable to a program
-                //              in NAME=VALUE form. For multiple variables multiple
-                //              --env options should be used.
-                printf("usage: %s -h \n %s [-e] [-p pts_name] [[--env NAME=VALUE] ...] [program [ arg ... ]]\n", progname, progname);
-                exit(-1);
-            }
-            
             if (strcmp(argv[idx], "-p") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {
@@ -100,7 +89,13 @@ int main(int argc, char** argv) {
     /* now argv points to the executable */
 
     if (argc == 0) {
-        pty_open = 1;
+        //  -e          turned echoing off
+        //  -p          defines pts_name to use instead of opening a new one
+        // --env        passes additional environment variable to a program
+        //              in NAME=VALUE form. For multiple variables multiple
+        //              --env options should be used.
+        err_quit("usage: pty_start [-e] [-p pts_name] [[--env NAME=VALUE] ...] program [ arg ... ]");
+        exit(-1);
     }
 
     if (pty != NULL) {
@@ -123,11 +118,11 @@ int main(int argc, char** argv) {
         }
 
         // Set passed environment variables
-
+        
         for (int i = 0; i < envnum; i++) {
             putenv(envvars[i]);
         }
-
+                
         if (execvp(argv[0], argv) < 0) {
             err_sys("can't execute: %s", argv[0]);
         }
@@ -137,7 +132,7 @@ int main(int argc, char** argv) {
     if (envvars != NULL) {
         free(envvars);
     }
-
+    
     /* parent */
 
     int loop_result = 0;

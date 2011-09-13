@@ -84,7 +84,7 @@ public class FormModel
     final static FormVersion LATEST_VERSION = FormVersion.NB71;
 
     private FormVersion currentVersionLevel;
-    private FormVersion lastVersionLevel;
+    private FormVersion lastConfirmedVersionLevel;
     private FormVersion maxVersionLevel; // max version to upgrade to without user confirmation
 
     // the class on which the form is based (which is extended in the java file)
@@ -203,7 +203,9 @@ public class FormModel
     }
 
     void setCurrentVersionLevel(FormVersion version) {
-        lastVersionLevel = currentVersionLevel;
+        if (lastConfirmedVersionLevel == null) {
+            lastConfirmedVersionLevel = currentVersionLevel;
+        }
         currentVersionLevel = version;
     }
 
@@ -212,7 +214,11 @@ public class FormModel
     }
 
     void revertVersionLevel() {
-        currentVersionLevel = lastVersionLevel;
+        currentVersionLevel = lastConfirmedVersionLevel;
+    }
+
+    void confirmVersionLevel() {
+        lastConfirmedVersionLevel = currentVersionLevel;
     }
 
     void setMaxVersionLevel(FormVersion version) {
