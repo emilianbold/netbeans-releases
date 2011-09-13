@@ -75,7 +75,11 @@ public final class EjbLiteServerValidationPanel extends DelegatingWizardDescript
 
         // check that target server supports full JEE6 platform if Java EE 6 sources
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
+
+        // webModule is null in cases of EJB application (Session beans from Entity classes)
+        // where should be proper server set (issue #202050)
+        if (wm != null
+                && (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB)) {
             J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
             if (cap == null || !cap.isEjbLiteIncluded()) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
