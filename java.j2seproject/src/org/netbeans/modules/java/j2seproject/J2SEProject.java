@@ -173,7 +173,9 @@ public final class J2SEProject implements Project {
         "-do-compile-single",   //NOI18N
         "jar",                  //NOI18N
         "-post-jar",            //NOI18N
-        "run"                   //NOI18N
+        "run",                  //NOI18N
+        "debug",                //NOI18N
+        "profile",              //NOI18N
     };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
