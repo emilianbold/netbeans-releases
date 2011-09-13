@@ -149,6 +149,16 @@ implements CloneableEditorSupport.Env {
 
         pane = support.getRecentPane();
         assertNotNull("Must return not null", pane);
+        
+        assertTrue(isUsedByCloneableEditor(pane));
+        
+        support.close();
+
+        assertFalse(isUsedByCloneableEditor(pane));
+    }
+    
+    private boolean isUsedByCloneableEditor(JEditorPane pane) {
+        return Boolean.TRUE.equals(pane.getClientProperty("usedByCloneableEditor"));
     }
     
     

@@ -87,7 +87,7 @@ public class FormDataNode extends FilterNode {
         return new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                EditorSupport supp = getCookie(EditorSupport.class);
+                FormEditorSupport supp = (FormEditorSupport)getCookie(EditorSupport.class);
                 supp.openFormEditor(false);
             }
         };

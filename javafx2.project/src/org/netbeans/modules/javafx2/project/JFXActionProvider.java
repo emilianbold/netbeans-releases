@@ -42,6 +42,8 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -68,8 +70,11 @@ public class JFXActionProvider implements ActionProvider {
 
     private final Project prj;
 
-    private static String[] ACTIONS =  new String[] {
-        COMMAND_RUN
+    private static final Map<String,String> ACTIONS = new HashMap<String,String>(){
+        {
+            put(COMMAND_RUN,"run"); //NOI18N
+            put(COMMAND_DEBUG,"debug"); //NOI18N
+        }
     };
 
     public JFXActionProvider(@NonNull final Project project) {
@@ -80,17 +85,18 @@ public class JFXActionProvider implements ActionProvider {
     @Override
     @NonNull
     public String[] getSupportedActions() {
-        return ACTIONS;
+        return ACTIONS.keySet().toArray(new String[ACTIONS.size()]);
     }
 
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        if (ACTIONS[0].equals(command)) {
+        String target;
+        if ((target=(command))!=null) {
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
             try {
                 final Properties p = new Properties();
-                ActionUtils.runTarget(buildFo, new String[] {"run"}, p);    //NOI18N
+                ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -107,7 +113,7 @@ public class JFXActionProvider implements ActionProvider {
         if (findBuildXml() == null) {
             return false;
         }
-        return ACTIONS[0].equals(command);
+        return findTarget(command) != null;
     }
 
     @NonNull
@@ -124,5 +130,10 @@ public class JFXActionProvider implements ActionProvider {
         final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
         assert ep != null;
         return prj.getProjectDirectory().getFileObject (getBuildXmlName(ep.evaluator()));
+    }
+
+    @CheckForNull
+    private static String findTarget(@NonNull final String command) {
+        return ACTIONS.get(command);
     }
 }
