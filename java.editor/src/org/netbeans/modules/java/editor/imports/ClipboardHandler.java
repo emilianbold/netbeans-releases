@@ -140,7 +140,11 @@ public class ClipboardHandler {
                         String handled = imported.get(currentSimpleName);
 
                         if (handled == null) {
-                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, simple2ImportFQN.get(currentSimpleName)));
+                            String fqn = simple2ImportFQN.get(currentSimpleName);
+
+                            if (copy.getElements().getTypeElement(fqn) == null) continue;
+
+                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, fqn));
                         }
 
                         putFQNs.put(span, handled);
@@ -246,6 +250,8 @@ public class ClipboardHandler {
                             Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
 
                             if (type.equals(el)) continue OUTER;
+                        } else {
+                            continue;
                         }
 
                         unavailable.add(e.getValue());
