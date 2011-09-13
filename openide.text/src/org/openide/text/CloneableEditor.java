@@ -239,6 +239,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 this.getAccessibleContext().getAccessibleDescription()
             )
         );
+        tmp.putClientProperty("usedByCloneableEditor", true);
 
         this.pane = tmp;
         this.initialized = true;
@@ -267,6 +268,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      */
     protected final void initializeBySupport() {
         cloneableEditorSupport().initializeCloneableEditor(this);
+    }
+    
+    private void releasePane() {
+        if (pane != null) {
+            pane.putClientProperty("usedByCloneableEditor", false);
+        }
+        pane = null;
     }
     
     class AWTQuery implements Runnable {
@@ -616,7 +624,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     + " Name:" + CloneableEditor.this.getName()
                     + " kit:" + kit);
                 }
-                assert doc != null;
+                if (support.cesEnv().isValid()) {
+                    assert doc != null;
+                }
                 kit = k;
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
@@ -690,7 +700,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     }
                     if (isDocLoadingCanceled) {
                         //Reset pane here so getEditorPane will return null
-                        pane = null;
+                        releasePane();
                         return false;
                     }
                     try {
@@ -871,17 +881,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             pane.setEditorKit(null);
         }
 
-        // #175576 - EditorRegistry listens on TopComponent.getRegistry() and iterates through
-        // children of closed TCs to registered JEditorPanes and close them as well. Calling
-        // removeAll() here directly means that ER will have no children to search through.
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                removeAll();
-            }
-        });
         customComponent = null;
         customToolbar = null;
-        pane = null;
+        releasePane();
         initialized = false;
         initVisualFinished = false;
         isComponentOpened = false;

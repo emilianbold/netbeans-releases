@@ -178,22 +178,22 @@ public abstract class ContentEdit implements UndoableEdit {
     @Override
     public String toString() {
 	StringBuilder sb = new StringBuilder(200);
-        sb.append(super.toString()).append(" ").append(getPresentationName()). // NOI18N
+        sb.append(getPresentationName()). // NOI18N
                 append(": o=").append(offset).append(",len=").append(length()). // NOI18N
                 append(",hBDone=").append(((statusBits & HAS_BEEN_DONE) != 0) ? "T" : "F"). // NOI18N
                 append(",alive=").append(((statusBits & ALIVE) != 0) ? "T" : "F"). // NOI18N
                 append(",IHC=").append(System.identityHashCode(this)); // NOI18N
         if (markUpdates != null) {
-            sb.append("\n  markUpdates:"); // NOI18N
-            for (int i = 0; i < markUpdates.length; i++) {
-                sb.append("\n    [").append(i).append("]: ").append(markUpdates[i]); // NOI18N
-            }
+            sb.append("\n  markUpdates:\n"); // NOI18N
+            MarkVector.markUpdatesToString(sb, markUpdates, markUpdates.length);
+        } else {
+            sb.append(",markUpdates:NONE"); // NOI18N
         }
         if (bbMarkUpdates != null) {
-            sb.append("\n  BB markUpdates:"); // NOI18N
-            for (int i = 0; i < bbMarkUpdates.length; i++) {
-                sb.append("\n    [").append(i).append("]: ").append(bbMarkUpdates[i]); // NOI18N
-            }
+            sb.append("\n  BBmarkUpdates:\n"); // NOI18N
+            MarkVector.markUpdatesToString(sb, bbMarkUpdates, bbMarkUpdates.length);
+        } else {
+            sb.append(",BBmarkUpdates:NONE"); // NOI18N
         }
         return sb.toString();
     }

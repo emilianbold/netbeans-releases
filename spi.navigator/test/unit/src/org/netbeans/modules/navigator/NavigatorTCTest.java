@@ -637,14 +637,14 @@ public class NavigatorTCTest extends NbTestCase {
             });
         }
         void close() throws Exception {
-//            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
-//                @Override
-//                public Object run() throws Exception {
-            navTC.getController().propertyChange(
-                    new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_CLOSED, null, navTC));
-//                    return null;
-//                }
-//            });
+            Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    navTC.getController().propertyChange(
+                        new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_CLOSED, null, navTC));
+                    return null;
+                }
+            });
         }
     }
 

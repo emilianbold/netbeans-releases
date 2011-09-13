@@ -892,6 +892,7 @@ public class FormEditor {
 
     private void confirmVersionUpgrade() {
         if (formModel != null) {
+            formModel.confirmVersionLevel();
             formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
         }
     }

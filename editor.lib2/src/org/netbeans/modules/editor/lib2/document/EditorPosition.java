@@ -77,6 +77,10 @@ final class EditorPosition implements Position {
         return mark.isBackwardBias();
     }
     
+    public Mark getMark() {
+        return mark;
+    }
+    
     void setMark(Mark mark) {
         this.mark = mark;
     }
