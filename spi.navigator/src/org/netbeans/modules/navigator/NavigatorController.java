@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -134,6 +135,8 @@ public final class NavigatorController implements LookupListener,
     private final ClientsLookup clientsLookup;
     /** Lookup that wraps lookup of active panel */
     private final Lookup panelLookup;
+    /** Lookup of active panel plus lookups of nodes found in the panel lookup */
+    private final PanelLookupWithNodes panelLookupWithNodes;
     /** Lookup result that track nodes (for activated nodes propagation) */
     private Lookup.Result<Node> panelLookupNodesResult;
     /** Listener for panel lookup content changes */
@@ -155,6 +158,7 @@ public final class NavigatorController implements LookupListener,
         this.navigatorTC = navigatorTC;
         clientsLookup = new ClientsLookup();
         panelLookup = Lookups.proxy(new PanelLookupWrapper());
+        panelLookupWithNodes = new PanelLookupWithNodes();
         panelLookupListener = new PanelLookupListener();
         navigatorTC.addPropertyChangeListener(this);
         TopComponent.getRegistry().addPropertyChangeListener(this);
@@ -194,6 +198,7 @@ public final class NavigatorController implements LookupListener,
         weakNodesL = Collections.emptyList();
         // #113764: mem leak fix - update lookup - force ClientsLookup to free its delegates
         clientsLookup.lookup(Object.class);
+        panelLookupWithNodes.setNodes(null);
         // #104145: panelDeactivated called if needed
         NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
         if (selPanel != null) {
@@ -214,7 +219,7 @@ public final class NavigatorController implements LookupListener,
      * navigator panel
      */
     public Lookup getPanelLookup () {
-        return panelLookup;
+        return panelLookupWithNodes;
     }
 
     /** Activates given panel. Throws IllegalArgumentException if panel is
@@ -400,6 +405,7 @@ public final class NavigatorController implements LookupListener,
     private void updateActNodesAndTitle () {
         LOG.fine("updateActNodesAndTitle called...");
         Node[] actNodes = obtainActivatedNodes();
+        panelLookupWithNodes.setNodes(actNodes);
         updateTCTitle(actNodes);
     }
 
@@ -700,6 +706,33 @@ public final class NavigatorController implements LookupListener,
         }
 
     } // end of PanelLookupListener
+
+    /**
+     * Lookup that exposes lookups of selected (activated) nodes. Needed in case
+     * the lookup from active panel does not do that.
+     */
+    private class PanelLookupWithNodes extends ProxyLookup {
+        PanelLookupWithNodes() {
+            setLookups(panelLookup);
+        }
+
+        void setNodes(Node[] nodes) {
+            if (nodes != null && nodes.length > 0) {
+                List<Lookup> l = new LinkedList();
+                l.add(panelLookup);
+                for (Node n : nodes) {
+                    if (!panelLookup.lookupResult(Object.class).allInstances().containsAll(
+                            n.getLookup().lookupResult(Object.class).allInstances())) {
+                        l.add(n.getLookup());
+                    }
+                }
+                Lookup[] lookups = l.toArray(new Lookup[l.size()]);
+                setLookups(lookups);
+            } else {
+                setLookups(panelLookup);
+            }
+        }
+    }
 
     /** Task to set given node (as data context). Used to be able to coalesce
      * data context changes if selected nodes changes too fast.
