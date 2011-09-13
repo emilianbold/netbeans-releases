@@ -74,11 +74,31 @@ class DownloadPlugin implements ActionListener {
     private DownloadPanel panel;
     private JButton install;
     private JButton cancel;
-    private UpdateElement jiraElement;
-    private UpdateElement jiraLibraryElement;
-    private boolean jiraElementInstalled = false;
-    private boolean jiraLibraryElementInstalled = false;
 
+    private enum JiraModules {
+        ECLIPSE_MYLYN_MONITOR_DUMMY("org.eclipse.mylyn.monitor.ui.dummy"),      // NOI18N    
+        JAVAX_WSDL("javax.wsdl"),                                               // NOI18N
+        JAVAX_MAIL("javax.mail"),                                               // NOI18N
+        JAVAX_ACTIVATION("javax.activation"),                                   // NOI18N
+        JAVAX_SERVLET("javax.servlet"),                                         // NOI18N
+        JAVAX_XML_SOAP("javax.xml.soap"),                                       // NOI18N
+        JAVAX_XML_RPC("javax.xml.rpc"),                                         // NOI18N
+        APACHE_COMMONS_DISCOVERY("org.apache.commons.discovery"),               // NOI18N
+        APACHE_AXIS("org.apache.axis"),                                         // NOI18N    
+        ECLIPSE_MYLYN_COMMONS_SOAP("org.eclipse.mylyn.commons.soap"),           // NOI18N    
+        CONNECTOR_COMMON_CORE("com.atlassian.connector.eclipse.commons.core"),  // NOI18N
+        CONNECTOR_JIRA_CORE("com.atlassian.connector.eclipse.jira.core"),       // NOI18N
+        JIRA("org.netbeans.modules.jira");                                      // NOI18N
+        
+        String cnb;
+        UpdateElement updateElement = null;
+        boolean installed = false;
+        
+        JiraModules(String cnb) {
+            this.cnb = cnb;
+        }
+    }
+    
     public DownloadPlugin() {
         panel = new DownloadPanel();
         install = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Install")); // NOI18N
@@ -95,29 +115,26 @@ class DownloadPlugin implements ActionListener {
                 ph.start();
                 try {
                     List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+                    
                     for (UpdateUnit u : units) {
-                        if(u.getCodeName().equals("org.netbeans.modules.jira")) {       // NOI18N
-                            List<UpdateElement> elements = u.getAvailableUpdates();
-                            if(elements.size() == 0) {
-                                jiraElementInstalled = true;
-                            } else {
-                                jiraElement = u.getAvailableUpdates().get(0);
-                            }
-                        } else if(u.getCodeName().equals("org.netbeans.libs.jira")) {   // NOI18N
-                            List<UpdateElement> elements = u.getAvailableUpdates();
-                            if(elements.size() == 0) {
-                                jiraLibraryElementInstalled = true;
-                            } else {
-                                jiraLibraryElement = u.getAvailableUpdates().get(0);
+                        
+                        for(JiraModules modules : JiraModules.values()) {
+                            if(u.getCodeName().equals(modules.cnb)) {       
+                                List<UpdateElement> elements = u.getAvailableUpdates();
+                                if(elements.isEmpty()) {
+                                    modules.installed = true;
+                                } else {
+                                    modules.updateElement = u.getAvailableUpdates().get(0);
+                                }
                             }
                         }
-                        if(jiraElement == null || jiraLibraryElement == null) {
+                        if(nullElements(false)) {
                             continue;
                         } else {
                             break;
                         }
                     }
-                    if(jiraLibraryElementInstalled && jiraElementInstalled) {
+                    if(allInstaled()) {
                         notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyInstalled"),  // NOI18N
                                     NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));            // NOI18N
                         //panel.progressLabel.setText();
@@ -126,13 +143,23 @@ class DownloadPlugin implements ActionListener {
                 } finally {
                     ph.finish();
                 }
-                if(jiraElement == null || jiraLibraryElement == null) {
+                if(nullElements(true)) {
+                    if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
+                        for(JiraModules module : JiraModules.values()) {
+                            BugtrackingManager.LOG.log(Level.FINE, " + {0}, installed : {1}, found: {2}", new Object[]{module.cnb, module.installed, module.updateElement == null ? "false" : "true"});
+                        }
+                    }
                     notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_JiraNotFound"),          // NOI18N
                                 NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));                // NOI18N
                     return;
                 }
                 panel.licensePanel.setVisible(true);
-                panel.licenseTextPane.setText(jiraElement.getLicence());
+                StringBuilder sb = new StringBuilder();
+                if(JiraModules.JIRA.updateElement != null) sb.append(JiraModules.JIRA.updateElement.getLicence());
+                if(JiraModules.JIRA.updateElement != null && JiraModules.JAVAX_WSDL.updateElement != null) sb.append("\n\n");
+                if(JiraModules.JAVAX_WSDL.updateElement != null) sb.append(JiraModules.JAVAX_WSDL.updateElement.getLicence());
+
+                panel.licenseTextPane.setText(sb.toString());
                 panel.progressPanel.setVisible(false);
                 panel.repaint();
 
@@ -146,21 +173,56 @@ class DownloadPlugin implements ActionListener {
 
                 boolean ret = DialogDisplayer.getDefault().notify(descriptor) == install;
                 if(!ret) {
-                    jiraElement = null;
-                    jiraLibraryElement = null;
+                    resetElements();
                     return;
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if(jiraLibraryElement != null) {
-                            install(jiraLibraryElement, jiraElement == null);
-                        }
-                        if(jiraElement != null) {
-                            install(jiraElement, true);
+                        for(JiraModules module : JiraModules.values()) {
+                            if(!module.installed) {
+                                try {
+                                    BugtrackingManager.LOG.log(Level.FINE, " + installing: {0}", module.cnb);
+                                    install(module.updateElement, uninstalledElementsCount() == 1);
+                                } finally {
+                                    module.installed = true;
+                                }
+                            }
                         }
                     }
                 });
             }
+
+            private boolean nullElements(boolean onlyInstalled) {
+                for(JiraModules module : JiraModules.values()) {
+                    if(!(onlyInstalled && module.installed) && module.updateElement == null) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            private boolean allInstaled() {
+                for(JiraModules module : JiraModules.values()) {
+                    if(!module.installed) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            private boolean resetElements() {
+                for(JiraModules module : JiraModules.values()) {
+                    module.installed = false;
+                    module.updateElement = null;
+                }
+                return true;
+            }
+            private int uninstalledElementsCount() {
+                int unistalled = 0;
+                for(JiraModules module : JiraModules.values()) {
+                    if(!module.installed) ++unistalled;
+                }
+                return unistalled;
+            }
+            
         });
     }
 
@@ -264,14 +326,6 @@ class DownloadPlugin implements ActionListener {
         if(e.getSource() == panel.acceptCheckBox) {
             install.setEnabled(panel.acceptCheckBox.isSelected());
         } 
-    }
-
-    public UpdateElement getJiraElement() {
-        return jiraElement;
-    }
-
-    public UpdateElement getJiraLibraryElement() {
-        return jiraLibraryElement;
     }
 
 }
