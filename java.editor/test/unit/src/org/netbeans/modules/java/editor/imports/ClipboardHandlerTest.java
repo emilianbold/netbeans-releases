@@ -72,6 +72,14 @@ public class ClipboardHandlerTest extends NbTestCase {
         copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\nList l;\n}");
     }
 
+    public void testFieldGroup1() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l1, l2;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\nList l1, l2;\n}");
+    }
+
+    public void testFieldGroup2() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |@SuppressWarnings(\"deprecated\") List l1, l2;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\n@SuppressWarnings(\"deprecated\") List l1, l2;\n}");
+    }
+
     private void copyAndPaste(String from, final String to, String golden) throws Exception {
         final int pastePos = to.indexOf('^');
 
