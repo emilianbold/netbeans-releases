@@ -191,6 +191,20 @@ public class ReconfigureProject {
         platform = configuration.getDevelopmentHost().getBuildPlatform();
     }
 
+    public boolean isApplicable() {
+        if (cmake != null && make != null) {
+            return true;
+        } else if (qmake != null && make != null){
+            return true;
+        } else if (configure != null && make != null) {
+            return true;
+        } else if (make != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public void addExecutionListener(ExecutionListener listener){
         listeners.add(listener);
     }
