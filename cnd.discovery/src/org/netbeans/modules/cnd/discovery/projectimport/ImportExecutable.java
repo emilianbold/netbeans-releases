@@ -354,7 +354,7 @@ public class ImportExecutable implements PropertyChangeListener {
         if (configure.script == null || configure.makefile == null) {
             String binaryName = CndPathUtilitities.getBaseName(binary);
             if (binaryName.indexOf('.') > 0 ) {
-                binaryName.substring(0, binaryName.lastIndexOf('.'));
+                binaryName = binaryName.substring(0, binaryName.lastIndexOf('.'));
             }
             File[] listFiles = rootFile.listFiles();
             if (listFiles != null) {
