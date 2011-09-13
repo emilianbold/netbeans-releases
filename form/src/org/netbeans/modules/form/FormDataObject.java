@@ -117,12 +117,12 @@ public class FormDataObject extends MultiDataObject {
         @Override
         public void open() {
             // open form editor with form designer selected
-            getFormEditorSupport().openFormEditor(true);
+            getFormEditorSupport().openDesign();
         }
         @Override
         public void edit() {
             // open form editor with java editor selected (form not loaded)
-            getFormEditorSupport().open();
+            getFormEditorSupport().openSource();
         }
     }
 

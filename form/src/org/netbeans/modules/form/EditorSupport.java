@@ -64,8 +64,8 @@ public interface EditorSupport extends Node.Cookie {
     void openAt(Position pos);
     void discardEditorUndoableEdits();
     void saveAs(FileObject folder, String fileName) throws IOException;
-    void openFormEditor(boolean forceFormElement);
-    void open();
+    void openDesign();
+    void openSource();
     void reloadForm();
     boolean isJavaEditorDisplayed();
 
