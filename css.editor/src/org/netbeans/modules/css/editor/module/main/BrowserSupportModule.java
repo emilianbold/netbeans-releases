@@ -129,7 +129,7 @@ public class BrowserSupportModule extends CssModule {
 
         @Override
         public PropertySupportResolver createPropertySupportResolver(Browser browser) {
-            return new SupportAll(browser);
+            return getBrowser().equals(browser) ? new  SupportAll(browser) : null;
         }
         
     }

@@ -39,54 +39,59 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.api.java;
+package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
-import org.openide.util.Lookup;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Java types related profiler utility methods
- * 
+ *
  * @author Jaroslav Bachorik
  */
-final public class ProfilerTypeUtils {
-    private static ProfilerTypeUtilsProvider getProvider(Lookup.Provider project) {
-        return project != null ? project.getLookup().lookup(ProfilerTypeUtilsProvider.class) : Lookup.getDefault().lookup(ProfilerTypeUtilsProvider.class);
+@ServiceProvider(service=ProfilerTypeUtilsProvider.class)
+public class GlobalProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
+    @Override
+    public Collection<SourceClassInfo> getMainClasses() {
+        return Collections.EMPTY_LIST;
     }
     
-    /**
-     * Resolves a class given its FQN
-     * @param className The class FQN
-     * @param project A project to resolve the class in
-     * @return Returns a resolved {@linkplain SourceClassInfo} or null
-     */
-    public static SourceClassInfo resolveClass(String className, Lookup.Provider project) {
-        ProfilerTypeUtilsProvider p = getProvider(project);
-        return p != null ? p.resolveClass(className) : null;
-    }
-    
-    /**
-     * @param project A project to get the main classes for
-     * @return Returns a list of all main classes present in the project
-     */
-    public static Collection<SourceClassInfo> getMainClasses(Lookup.Provider project) {
-        ProfilerTypeUtilsProvider p = getProvider(project);
+    @Override
+    protected ClasspathInfo getClasspathInfo() {
+        ClassPath[] cps = prepareClassPaths();
         
-        return p != null ? p.getMainClasses() : Collections.EMPTY_LIST;
+        return ClasspathInfo.create(cps[0], cps[1], cps[2]);
+    }
+
+    @Override
+    protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps) {
+        ClassPath[] cps = prepareClassPaths();
+        
+        return ClasspathInfo.create(deps ? cps[0] : ClassPath.EMPTY, deps ? cps[1] : ClassPath.EMPTY, source ? cps[2] : ClassPath.EMPTY);
     }
     
-    /**
-     * Retrieves project's packages
-     * @param subprojects Flag indicating whether subprojects should be taken into account
-     * @param scope A {@linkplain SourcePackageInfo.Scope} - SOURCE or DEPENDENCIES
-     * @param project A project to get the packages for
-     * @return Returns a list of project's packages
-     */
-    public static Collection<SourcePackageInfo> getPackages(boolean subprojects, SourcePackageInfo.Scope scope, Lookup.Provider project) {
-        ProfilerTypeUtilsProvider p = getProvider(project);
+    private ClassPath[] prepareClassPaths() {
+        Set<ClassPath> srcPaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+        Set<ClassPath> compilePaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE);
+        Set<ClassPath> bootPaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT);
         
-        return p != null ? p.getPackages(subprojects, scope) : Collections.EMPTY_LIST;
+        if (bootPaths.isEmpty()) {
+            bootPaths = Collections.singleton(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries());
+        }
+        
+        ClassPath[] cps = new ClassPath[3];
+        cps[0] = ClassPathSupport.createProxyClassPath(bootPaths.toArray(new ClassPath[bootPaths.size()]));
+        cps[1] = ClassPathSupport.createProxyClassPath(compilePaths.toArray(new ClassPath[compilePaths.size()]));
+        cps[2] = ClassPathSupport.createProxyClassPath(srcPaths.toArray(new ClassPath[srcPaths.size()]));
+        
+        return cps;
     }
 }

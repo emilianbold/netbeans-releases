@@ -127,6 +127,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
         return "MetaInfServicesLookup[" + loader + "]"; // NOI18N
     }
 
+    /** Initialize soon, before result's listeners are activated
+     */
+    @Override
+    void beforeLookupResult(Template<?> template) {
+        beforeLookup(template);
+    }
+
     /* Tries to load appropriate resources from manifest files.
      */
     @Override
