@@ -37,8 +37,8 @@
  */
 package org.netbeans.modules.form;
 
+import java.awt.datatransfer.Transferable;
 import javax.swing.JEditorPane;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
@@ -55,8 +55,7 @@ import org.openide.nodes.Node;
 public interface FormServices {
     void setupEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition);
     PaletteActions createPaletteActions();
-    String findJavaBeanName(FileObject fob);
-    ClassSource getProjectClassSource(Project project, String className);
+    ClassSource getCopiedBeanClassSource(Transferable transferable);
     Node createFormDataNode(FormDataObject formDataObject);
     MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile);
     boolean isLayoutExtensionsLibrarySupported();
