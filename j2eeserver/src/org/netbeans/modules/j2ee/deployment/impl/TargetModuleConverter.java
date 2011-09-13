@@ -247,6 +247,10 @@ public class TargetModuleConverter extends DOMConvertor {
             LOGGER.log(Level.INFO, null, ex);
             Thread.currentThread().interrupt();
             return null;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not read {0}", tmFileName);
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
         } catch (Exception ioe) {
             LOGGER.log(Level.WARNING, null, ioe);
             return null;
