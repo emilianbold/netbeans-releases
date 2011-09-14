@@ -74,13 +74,12 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  *
  * @author Dusan Balek
  */
-public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaCompletionItem implements LazyCompletionItem {
+public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaCompletionItem<TypeElement> implements LazyCompletionItem {
     
     public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
         return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, addTypeVars, afterExtends, whiteList);
     }
     
-    private ElementHandle<TypeElement> handle;
     private EnumSet<ElementKind> kinds;
     private Source source;
     private boolean insideNew;
@@ -94,8 +93,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
     private int prefWidth = -1;
     
     private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
-        super(substitutionOffset, whiteList);
-        this.handle = handle;
+        super(substitutionOffset, handle, whiteList);
         this.kinds = kinds;
         this.source = source;
         this.insideNew = insideNew;
@@ -109,7 +107,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
     }
     
     public boolean accept() {
-        if (handle != null) {
+        if (getElementHandle() != null) {
             try {
                 ParserManager.parse(Collections.singletonList(source), new UserTask() {
                     @Override
@@ -117,7 +115,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
                         CompilationController controller = CompilationController.get(resultIterator.getParserResult(substitutionOffset));
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
-                        TypeElement e = handle.resolve(controller);
+                        TypeElement e = getElementHandle().resolve(controller);
                         Elements elements = controller.getElements();
                         if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                             if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
