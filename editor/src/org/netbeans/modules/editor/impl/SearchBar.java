@@ -102,6 +102,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -457,7 +458,7 @@ public final class SearchBar extends JPanel {
     }
 
     private JButton createCloseButton() throws MissingResourceException {
-        JButton button = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_close.png", false)); // NOI18N
+        JButton button = CloseButtonFactory.createBigCloseButton();
         button.addActionListener(new ActionListener() {
 
             @Override
@@ -466,7 +467,6 @@ public final class SearchBar extends JPanel {
             }
         });
         button.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
-        button.setMargin(BUTTON_INSETS);
         return button;
     }
 
@@ -682,7 +682,7 @@ public final class SearchBar extends JPanel {
         int parentWidth = this.getParent().getWidth();
         int totalWidth = 0;
         for (Component c : this.getComponents()) {
-            if (c != padding && (c != closeButton || c.isVisible())) {
+            if (c != padding) {
                 totalWidth += c.getPreferredSize().width;
             }
         }
