@@ -20,4 +20,7 @@
 	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.push" url="csh/git-push-p1.html"/>
 	<mapID target="org.netbeans.modules.git.ui.push.PushBranchesStep" url="csh/git-push-p2.html"/>
 	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-push-p3.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="csh/git-chkout-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="csh/git-create-branch.html"/>
+	<!--csh topic is in progress <mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>-->
 </map>
