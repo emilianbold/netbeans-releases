@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Stanislav Aubrecht
  */
-public class RemoveWritablesTest extends NbTestCase {
+public class RemoveWritablesModifiedTest extends NbTestCase {
     Module myModule;
     File configDir;
     
@@ -75,7 +75,7 @@ public class RemoveWritablesTest extends NbTestCase {
                 + "OpenIDE-Module-Implementation-Version: today\n"
                 + "OpenIDE-Module-Layer: foo/mf-layer.xml\n";
 
-    public RemoveWritablesTest(String testName) {
+    public RemoveWritablesModifiedTest(String testName) {
         super(testName);
     }
 
@@ -108,70 +108,17 @@ public class RemoveWritablesTest extends NbTestCase {
         }
     }
     
-    public void testAddedFile() throws Exception {
-        FileObject folder = FileUtil.getConfigFile( "foo" );
-        FileObject newFile = folder.createData( "newFile", "ext" );
-        
-        File writableFile = new File( new File( configDir, "foo"), "newFile.ext" );
-        assertTrue( writableFile.exists() );
-        
-        Object writablesRemover = newFile.getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
-        
-        assertFalse( "local file removed", writableFile.exists() );
-        assertNull( "FileObject does not exist", FileUtil.getConfigFile( "foo/newFile.ext" ) );
-    }
-    
-    public void testRemovedFile() throws Exception {
+
+    public void testModifiedAttributesFile() throws Exception {
         FileObject existingFile = FileUtil.getConfigFile( "foo/test1" );
         
         assertNotNull( existingFile );
         
-        existingFile.delete();
+        existingFile.setAttribute( "myAttribute", "myAttributeValue" );
         
-        File maskFile = new File( new File( configDir, "foo"), "test1_hidden" );
-        assertTrue( maskFile.exists() );
-        
-        Object writablesRemover = FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
-        
-        assertFalse( "local file removed", maskFile.exists() );
-        assertNotNull( "FileObject exists again", FileUtil.getConfigFile( "foo/test1" ) );
+        assertNull( "removeWritables does not work for file attributes", FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" ) );
     }
-    
-    public void testRenamedFile() throws Exception {
-        FileObject existingFile = FileUtil.getConfigFile( "foo/test1" );
-        
-        assertNotNull( existingFile );
-        
-        FileLock lock = existingFile.lock();
-        existingFile.rename( lock, "newName", "newExt" );
-        lock.releaseLock();
-        
-        assertNotNull( FileUtil.getConfigFile( "foo/newName.newExt" ) );
-        
-        File maskFile = new File( new File( configDir, "foo"), "test1_hidden" );
-        assertTrue( maskFile.exists() );
-        
-        Object writablesRemover = FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
-        
-        assertFalse( "local file removed", maskFile.exists() );
-        assertNotNull( "FileObject exists again", FileUtil.getConfigFile( "foo/test1" ) );
-        assertNull( "renamed file is gone", FileUtil.getConfigFile( "foo/newName.newExt" ) );
-    }
+
 
     private File createModuleJar(String manifest) throws IOException {
         // XXX use TestFileUtils.writeZipFile
