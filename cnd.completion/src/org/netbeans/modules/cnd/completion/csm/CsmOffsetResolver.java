@@ -159,7 +159,7 @@ public class CsmOffsetResolver {
             if (CsmKindUtilities.isFunctionDefinition(lastObj)) {
                 CsmFunctionDefinition funDef = (CsmFunctionDefinition)lastObj;
                 CsmCompoundStatement body = funDef.getBody();
-                if (!CsmOffsetUtilities.sameOffsets(funDef, body) && CsmOffsetUtilities.isInObject(body, offset)) {
+                if ((!CsmOffsetUtilities.sameOffsets(funDef, body) || body.getStartOffset() != body.getEndOffset()) && CsmOffsetUtilities.isInObject(body, offset)) {
                     last = null;
                     // offset is in body, try to find inners statement
                     if (CsmStatementResolver.findInnerObject(body, offset, context)) {
