@@ -1900,7 +1900,8 @@ public final class WebProject implements Project {
                     WebProjectProperties.TAG_WEB_MODULE_LIBRARIES)) {
 
                 if (!item.isBroken() && (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT
-                        || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY)) {
+                        || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        || item.getType() == ClassPathSupport.Item.TYPE_JAR)) {
                     String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
                     String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
                     if (path != null) {
