@@ -51,6 +51,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
@@ -447,6 +448,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 if (isConstructor(info, method)) {
                     //how many constructors do we have in the target class?:
                     allowFinalInCurrentMethod = findConstructors(info, method).size() == 1;
+                }
+
+                if (resolved.getLeaf().getKind() == Kind.VARIABLE) {
+                    //the variable name would incorrectly clash with itself:
+                    guessedName = Utilities.guessName(info, resolved, resolved.getParentPath());
                 }
 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
@@ -1683,18 +1689,20 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ModifiersTree modsTree = make.Modifiers(mods);
                     Tree parentTree = resolved.getParentPath().getLeaf();
                     VariableTree field;
+                    boolean mustRemoveFromParent;
 
                     if (!variableRewrite) {
                         field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
 
                         Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
                         parameter.rewrite(parentTree, nueParent);
+                        mustRemoveFromParent = false;
                     } else {
                         VariableTree originalVar = (VariableTree) original;
 
-                        field = make.Variable(modsTree, originalVar.getName(), originalVar.getType(), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
+                        field = make.Variable(modsTree, name, originalVar.getType(), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
 
-                        removeFromParent(parameter, resolved);
+                        mustRemoveFromParent = true;
                     }
                     
                     ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
@@ -1715,28 +1723,35 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             return ;
                         }
 
-                        BlockTree statements = (BlockTree) statementPath.getParentPath().getLeaf();
-                        StatementTree statement = (StatementTree) statementPath.getLeaf();
+                        ExpressionStatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(name), expression));
 
-                        int index = statements.getStatements().indexOf(statement);
+                        if (!variableRewrite) {
+                            BlockTree statements = (BlockTree) statementPath.getParentPath().getLeaf();
+                            StatementTree statement = (StatementTree) statementPath.getLeaf();
 
-                        if (index == (-1)) {
-                            //really strange...
-                            return ;
+                            int index = statements.getStatements().indexOf(statement);
+
+                            if (index == (-1)) {
+                                //really strange...
+                                return ;
+                            }
+
+                            List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
+
+                            if (expression.getKind() == Kind.NEW_ARRAY) {
+                                List<? extends ExpressionTree> initializers = ((NewArrayTree) expression).getInitializers();
+                                expression = make.NewArray(make.Type(((ArrayType)tm).getComponentType()), Collections.<ExpressionTree>emptyList(), initializers);
+                            }
+
+                            nueStatements.add(index, assignment);
+
+                            BlockTree nueBlock = make.Block(nueStatements, false);
+
+                            parameter.rewrite(statements, nueBlock);
+                        } else {
+                            parameter.rewrite(original, assignment);
+                            mustRemoveFromParent = false;
                         }
-
-                        List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
-
-                        if (expression.getKind() == Kind.NEW_ARRAY) {
-                            List<? extends ExpressionTree> initializers = ((NewArrayTree) expression).getInitializers();
-                            expression = make.NewArray(make.Type(((ArrayType)tm).getComponentType()), Collections.<ExpressionTree>emptyList(), initializers);
-                        }
-
-                        nueStatements.add(index, make.ExpressionStatement(make.Assignment(make.Identifier(name), expression)));
-
-                        BlockTree nueBlock = make.Block(nueStatements, false);
-
-                        parameter.rewrite(statements, nueBlock);
                     }
 
                     if (initializeIn == IntroduceFieldPanel.INIT_CONSTRUCTORS) {
@@ -1769,22 +1784,33 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 }
                             }
 
-                            BlockTree origBody = constr.getBody();
-                            List<StatementTree> nueStatements = new LinkedList<StatementTree>();
                             ExpressionTree reference = hasParameterOfTheSameName ? make.MemberSelect(make.Identifier("this"), name) : make.Identifier(name); // NOI18N
+                            ExpressionStatementTree assignment = make.ExpressionStatement(make.Assignment(reference, expression));
+                            
+                            if (!variableRewrite || method.getLeaf() != constr) {
+                                BlockTree origBody = constr.getBody();
+                                List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 
-                            List<? extends StatementTree> origStatements = origBody.getStatements();
-                            StatementTree canBeSuper = origStatements.get(0);
-                            if (!parameter.getTreeUtilities().isSynthetic(TreePath.getPath(constructor, canBeSuper))) {
-                                nueStatements.add(canBeSuper);
+                                List<? extends StatementTree> origStatements = origBody.getStatements();
+                                StatementTree canBeSuper = origStatements.get(0);
+                                if (!parameter.getTreeUtilities().isSynthetic(TreePath.getPath(constructor, canBeSuper))) {
+                                    nueStatements.add(canBeSuper);
+                                }
+                                nueStatements.add(assignment);
+                                nueStatements.addAll(origStatements.subList(1, origStatements.size()));
+
+                                BlockTree nueBlock = make.Block(nueStatements, false);
+
+                                parameter.rewrite(origBody, nueBlock);
+                            } else {
+                                parameter.rewrite(original, assignment);
+                                mustRemoveFromParent = false;
                             }
-                            nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expression)));
-                            nueStatements.addAll(origStatements.subList(1, origStatements.size()));
-
-                            BlockTree nueBlock = make.Block(nueStatements, false);
-
-                            parameter.rewrite(origBody, nueBlock);
                         }
+                    }
+
+                    if (mustRemoveFromParent) {
+                        removeFromParent(parameter, resolved);
                     }
 
                     parameter.rewrite(pathToClass.getLeaf(), nueClass);

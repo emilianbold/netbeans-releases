@@ -1418,6 +1418,73 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 1);
     }
 
+    public void testLocalVariableToField201759a() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        |int i = 0;|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private static int nue;\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        nue = 0;\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("nue", IntroduceFieldPanel.INIT_METHOD, false, EnumSet.of(Modifier.PRIVATE), false, true),
+                       3, 1);
+    }
+
+    public void testLocalVariableToField201759b() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public Test() {\n" +
+                       "        |int i = 0;|\n" +
+                       "    }\n" +
+                       "    public Test(int i) {\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private int nue;\n" +
+                       "    public Test() {\n" +
+                       "        nue = 0;\n" +
+                       "    }\n" +
+                       "    public Test(int i) {\n" +
+                       "        nue = 0;\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("nue", IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.of(Modifier.PRIVATE), false, true),
+                       3, 1);
+    }
+
+    public void testLocalVariableToField201759c() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public void main(String[] args) {\n" +
+                       "        |int i = 0;|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private int nue;\n" +
+                       "    public Test() {\n" +
+                       "        nue = 0;\n" +
+                       "    }\n" +
+                       "    public void main(String[] args) {\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("nue", IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.of(Modifier.PRIVATE), false, true),
+                       3, 1);
+    }
+
     public void testLocalVariableToConstant1() throws Exception {
         performFixTest("package test;\n" +
                        "import java.util.ArrayList;\n" +
