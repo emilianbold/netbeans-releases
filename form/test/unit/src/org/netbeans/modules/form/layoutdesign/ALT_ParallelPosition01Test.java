@@ -96,6 +96,7 @@ public class ALT_ParallelPosition01Test extends LayoutTestCase {
         compBounds.put("jTextField2", new Rectangle(20, 77, 59, 20));
         baselinePosition.put("jTextField2-59-20", new Integer(14));
         ld.updateCurrentState();
+        ld.updateCurrentState(); // again because the structure is rebuilt in this case
         // < UPDATE CURRENT STATE
         // > START RESIZING
         baselinePosition.put("jTextField1-59-20", new Integer(14));

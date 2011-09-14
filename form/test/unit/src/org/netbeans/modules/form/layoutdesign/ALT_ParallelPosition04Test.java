@@ -68,7 +68,6 @@ public class ALT_ParallelPosition04Test extends LayoutTestCase {
 
     // Move the first two buttons to align right with the third one. Then resize
     // them (one by one) to the left so all three buttons have the same size.
-    // A fixed parallel group with 2 resizing buttons should be created.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE

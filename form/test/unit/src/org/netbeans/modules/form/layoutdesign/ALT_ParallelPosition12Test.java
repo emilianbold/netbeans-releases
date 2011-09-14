@@ -68,8 +68,10 @@ public class ALT_ParallelPosition12Test extends LayoutTestCase {
         }
     }
 
-    // Place two buttons, first with left indent, second just next to it.
+    // Place two buttons bello the toggle button, first with left indent, second
+    // just next to it.
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));

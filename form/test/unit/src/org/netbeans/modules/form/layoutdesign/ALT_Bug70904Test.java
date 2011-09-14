@@ -79,7 +79,7 @@ public class ALT_Bug70904Test extends LayoutTestCase {
         compBounds.put("jTextField1", new Rectangle(38, 0, 59, 20));
         baselinePosition.put("jTextField1-59-20", new Integer(14));
         compPrefSize.put("jTextField1", new Dimension(59, 20));
-        contInterior.put("Form", new Rectangle(0, 0, 400, 300));
+        compMinSize.put("Form", new Dimension(97, 20));
         compBounds.put("jLabel1", new Rectangle(0, 3, 34, 14));
         baselinePosition.put("jLabel1-34-14", new Integer(11));
         compBounds.put("jTextField1", new Rectangle(38, 0, 59, 20));
@@ -174,7 +174,9 @@ public class ALT_Bug70904Test extends LayoutTestCase {
     public void doChanges1() {
         // > START RESIZING
         baselinePosition.put("jTextField1-59-20", new Integer(14));
+        compMinSize.put("Form", new Dimension(97, 20));
         compPrefSize.put("jTextField1", new Dimension(59, 20));
+        compMinSize.put("jTextField1", new Dimension(59, 20));
         {
             String[] compIds = new String[] {
                 "jTextField1"

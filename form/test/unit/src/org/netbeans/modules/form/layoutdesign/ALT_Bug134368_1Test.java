@@ -69,6 +69,7 @@ public class ALT_Bug134368_1Test extends LayoutTestCase {
      * Resize passwordField2 - drag right edge to the left, don't snap.
      */
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 398, 134));
