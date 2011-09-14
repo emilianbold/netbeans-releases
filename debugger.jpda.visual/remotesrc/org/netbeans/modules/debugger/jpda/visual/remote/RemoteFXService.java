@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
-import com.sun.javafx.runtime.SystemProperties;
 import java.lang.reflect.Field;
 
 /**
@@ -70,7 +69,7 @@ public class RemoteFXService {
     }
 
     /**
-     * JavaFX runtime is boobietrapped with various checks for {@linkplain SystemProperties#isDebug() }
+     * JavaFX runtime is boobietrapped with various checks for {@linkplain com.sun.javafx.runtime.SystemProperties#isDebug() }
      * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
      */
     private static void setDebugMode() {
