@@ -46,6 +46,9 @@ import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -198,25 +201,23 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         if ((trimText.length() == 0) || trimText.toLowerCase().equals(NULL_STR)) {
             return null;
         }
-        
-        int arrBeginPos = text.indexOf(ARR_BEGIN);
-        int arrEndPos = text.indexOf(ARR_END);
 
-        if ((arrBeginPos == -1) && (arrEndPos == -1)) {
-            // Issue 202075
-            arrEndPos = text.length();
+        String body;
+        if ((trimText.charAt(0) == '[') && (trimText.charAt(trimText.length()-1) == ']')) {
+            body = trimText.substring(1, trimText.length()-1);
+        } else {
+            body = trimText; // Issue 202075
         }
 
-        if (arrBeginPos + 1 < arrEndPos) {
-            String body = text.substring(arrBeginPos + 1, arrEndPos);
-
-            if (!valueType.equals(char[].class)) {
-                parts = body.split(","); // NOI18N
-            } else {
-                parts = splitCharArray(body);
+        if (!valueType.equals(char[].class)) {
+            List<String> tokens = new LinkedList<String>();
+            StringTokenizer st = new StringTokenizer(body, ","); // NOI18N
+            while (st.hasMoreTokens()) {
+                tokens.add(st.nextToken());
             }
+            parts = tokens.toArray(new String[tokens.size()]);
         } else {
-            parts = new String[0];
+            parts = splitCharArray(body);
         }
         
         if (valueType.equals(boolean[].class)) {
