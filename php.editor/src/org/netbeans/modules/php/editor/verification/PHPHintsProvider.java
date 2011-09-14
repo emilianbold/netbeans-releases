@@ -211,13 +211,5 @@ public class PHPHintsProvider implements HintsProvider {
             phpParseResult.getProgram().accept(visitor);
         }
         hints.addAll(visitor.getResult());
-        List<? extends Rule.AstRule> secondPass = allHints.get(SECOND_PASS_HINTS);
-        if (secondPass != null && secondPass.size() > 0) {
-            assert secondPass.size() == 1;
-            UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
-            if (mgr.isEnabled(unusedVariableRule)) {
-                unusedVariableRule.check((PHPRuleContext) context, hints);
-            }
-        }
     }
 }
