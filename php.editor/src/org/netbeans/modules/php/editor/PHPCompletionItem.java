@@ -539,15 +539,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             while (tokenSequence.moveNext()) {
                 Token<PHPTokenId> token = tokenSequence.token();
                 PHPTokenId id = token.id();
-                if (PHPTokenId.WHITESPACE.equals(id)) {
+                if (PHPTokenId.WHITESPACE.equals(id) || PHPTokenId.PHP_STRING.equals(id)) {
                     continue;
                 }
-                if (PHPTokenId.PHP_TOKEN.equals(id)) {
-                    if (token.toString().equals("(")) { // NOI18N
-                        return template.toString();
-                    } else {
-                        break;
-                    }
+                if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
+                    return template.toString();
+                } else {
+                    break;
                 }
             }
 

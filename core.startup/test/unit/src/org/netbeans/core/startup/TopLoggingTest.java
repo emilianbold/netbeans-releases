@@ -48,6 +48,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -77,6 +80,14 @@ public class TopLoggingTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        
+        Enumeration<?> en = System.getProperties().propertyNames();
+        while (en.hasMoreElements()) {
+            String n = en.nextElement().toString();
+            if (n.endsWith(".level")) {
+                System.getProperties().remove(n);
+            }
+        }
 
         System.setProperty("netbeans.user", getWorkDirPath());
 
@@ -119,6 +130,10 @@ public class TopLoggingTest extends NbTestCase {
 
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        logger = null;
+    }
 
     protected ByteArrayOutputStream getStream() {
         return w;
@@ -302,9 +317,13 @@ public class TopLoggingTest extends NbTestCase {
 
     public void testCanInfluenceBehaviourBySettingALevelPropertyOnParent() throws Exception {
         System.setProperty("ha.nu.level", "100");
+        Reference<?> ref = new WeakReference<Object>(Logger.getLogger("ha.nu.wirta"));
+        assertGC("ha.nu.wirta should not exist after this line", ref);
+        
         LogManager.getLogManager().readConfiguration();
 
-        Logger.getLogger("ha.nu.wirta").log(Level.FINER, "Finer level msg");
+        final Logger log = Logger.getLogger("ha.nu.wirta");
+        log.log(Level.FINER, "Finer level msg");
 
         Pattern p = Pattern.compile("FINER.*Finer level msg");
         String disk = readLog(true);
