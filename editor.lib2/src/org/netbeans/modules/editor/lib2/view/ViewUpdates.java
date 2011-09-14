@@ -242,10 +242,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try { // No return prior this "try" to properly unset incomingModification
-                if (!docView.op.isUpdatable() || docView.getViewCount() == 0) {
-                    // For viewCount zero - it would later fail on paragraphViewIndex == -1
-                    // Even for empty doc there should be a single paragraph view for extra ending '\n'
-                    // so this should only happen when no views were created yet.
+                if (!docView.op.isUpdatable()) {
                     return;
                 }
                 Document doc = docView.getDocument();
@@ -260,7 +257,6 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
                     ViewBuilder viewBuilder = startBuildViews();
                     try {
-                        // Possibly clear rebuild region - all the views will be re-inited anyway
                         if (viewBuilder.initModUpdate(insertOffset, insertLength, fetchRebuildRegion())) {
                             if (viewBuilder.createReplaceRepaintViews(i == 0)) {
                                 break; // Creation finished successfully
