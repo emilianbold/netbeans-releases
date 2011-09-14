@@ -118,6 +118,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
 
     private int valueOffset;
     private String [] ev = null;
+    
     /** Creates a new instance of StrutsHyperlinkProvider. */
     public JSFConfigHyperlinkProvider() {
     }
@@ -126,7 +127,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
     public int[] getHyperlinkSpan(javax.swing.text.Document doc, int offset) {
         if (debug) debug (":: getHyperlinkSpan");
         if (ev != null){
-            return new int []{valueOffset, valueOffset + ev[1].length() -1};
+            return new int []{valueOffset, valueOffset + ev[1].length()};
         }
         return null;
     }
