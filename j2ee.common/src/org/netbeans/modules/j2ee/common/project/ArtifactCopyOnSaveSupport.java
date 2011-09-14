@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -153,7 +156,27 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         Map<File, ItemDescription> toRemove  = new HashMap<File, ItemDescription>(listeningTo);
         for (Item artifactItem : getArtifacts()) {
             ClassPathSupport.Item item = artifactItem.getItem();
-            if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            String path = null;
+            Collection<File> files = new ArrayList<File>();
+
+            if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                path = artifactItem.getDescription().getPathInDeployment();
+                if (path != null) {
+                    for (URL url : item.getLibrary().getContent("classpath")) { // FIXME is this OK ?
+                        URL norm = FileUtil.getArchiveFile(url);
+                        if (norm == null) {
+                            norm = url;
+                        }
+                        FileObject fo = URLMapper.findFileObject(norm);
+                        if (fo != null) {
+                            File file = FileUtil.toFile(fo);
+                            if (file != null) {
+                                files.add(file);
+                            }
+                        }
+                    }
+                }
+            } else if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                 // FIXME more precise check when we should ignore it
                 if (item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
                     continue;
@@ -163,7 +186,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
                     scriptLocation = scriptLocation.getParentFile();
                 }
 
-                String path = artifactItem.getDescription().getPathInDeployment();
+                path = artifactItem.getDescription().getPathInDeployment();
                 if (path != null) {
                     for (URI artifactURI : item.getArtifact().getArtifactLocations()) {
                         File file = null;
@@ -173,23 +196,28 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
                             file = new File(scriptLocation, artifactURI.getPath());
                         }
                         file = FileUtil.normalizeFile(file);
-
-                        if (!listeningTo.containsKey(file)) {
-                            FileChangeSupport.DEFAULT.addListener(this, file);
-                            listeningTo.put(file, artifactItem.getDescription());
-                            if (synchronize) {
-                                try {
-                                    updateFile(file,
-                                            artifactItem.getDescription().getPathInDeployment(),
-                                            artifactItem.getDescription().getRelocationType());
-                                } catch (IOException ex) {
-                                    LOGGER.log(Level.FINE, "Initial copy failed", ex);
-                                }
-                            }
+                        if (file != null) {
+                            files.add(file);
                         }
-                        toRemove.remove(file);
                     }
                 }
+            }
+
+            for (File file : files) {
+                if (!listeningTo.containsKey(file)) {
+                    FileChangeSupport.DEFAULT.addListener(this, file);
+                    listeningTo.put(file, artifactItem.getDescription());
+                    if (synchronize) {
+                        try {
+                            updateFile(file,
+                                    artifactItem.getDescription().getPathInDeployment(),
+                                    artifactItem.getDescription().getRelocationType());
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.FINE, "Initial copy failed", ex);
+                        }
+                    }
+                }
+                toRemove.remove(file);
             }
         }
 
