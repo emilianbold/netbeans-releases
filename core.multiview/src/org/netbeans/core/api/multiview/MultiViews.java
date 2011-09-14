@@ -108,8 +108,7 @@ import org.openide.windows.WindowManager;
 
     /** Factory method to create cloneable multiview for a given mime type. 
      * The way to obtain individual elements is the same as in 
-     * {@link #createMultiView}. By default the returned component is put
-     * into "editor" mode, if it exists.
+     * {@link #createMultiView}
      * 
      * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in
@@ -121,11 +120,6 @@ import org.openide.windows.WindowManager;
     ) {
         MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
         tc.setMimeLookup(mimeType, context);
-        // dock into editor mode if possible.
-        Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
-        if (editorMode != null) {
-            editorMode.dockInto(tc);
-        }
         return tc;
     }
 }
