@@ -1349,6 +1349,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES)) {
 
                 if (!item.isBroken() && (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT
+                        || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY)) {
                     String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
                     String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);

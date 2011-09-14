@@ -159,43 +159,53 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             String path = null;
             Collection<File> files = new ArrayList<File>();
 
-            if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                path = artifactItem.getDescription().getPathInDeployment();
-                if (path != null) {
-                    for (URL url : item.getLibrary().getContent("classpath")) { // FIXME is this OK ?
-                        URL norm = FileUtil.getArchiveFile(url);
-                        if (norm == null) {
-                            norm = url;
+            if (!item.isBroken()) {
+                if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                    path = artifactItem.getDescription().getPathInDeployment();
+                    if (path != null) {
+                        for (URL url : item.getLibrary().getContent("classpath")) { // FIXME is this OK ?
+                            URL norm = FileUtil.getArchiveFile(url);
+                            if (norm == null) {
+                                norm = url;
+                            }
+                            FileObject fo = URLMapper.findFileObject(norm);
+                            if (fo != null) {
+                                File file = FileUtil.toFile(fo);
+                                if (file != null) {
+                                    files.add(file);
+                                }
+                            }
                         }
-                        FileObject fo = URLMapper.findFileObject(norm);
-                        if (fo != null) {
-                            File file = FileUtil.toFile(fo);
+                    }
+                } else if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                    // FIXME more precise check when we should ignore it
+                    if (item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
+                        continue;
+                    }
+                    File scriptLocation = item.getArtifact().getScriptLocation().getAbsoluteFile();
+                    if (!scriptLocation.isDirectory()) {
+                        scriptLocation = scriptLocation.getParentFile();
+                    }
+
+                    path = artifactItem.getDescription().getPathInDeployment();
+                    if (path != null) {
+                        for (URI artifactURI : item.getArtifact().getArtifactLocations()) {
+                            File file = null;
+                            if (artifactURI.isAbsolute()) {
+                                file = new File(artifactURI);
+                            } else {
+                                file = new File(scriptLocation, artifactURI.getPath());
+                            }
+                            file = FileUtil.normalizeFile(file);
                             if (file != null) {
                                 files.add(file);
                             }
                         }
                     }
-                }
-            } else if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
-                // FIXME more precise check when we should ignore it
-                if (item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
-                    continue;
-                }
-                File scriptLocation = item.getArtifact().getScriptLocation().getAbsoluteFile();
-                if (!scriptLocation.isDirectory()) {
-                    scriptLocation = scriptLocation.getParentFile();
-                }
-
-                path = artifactItem.getDescription().getPathInDeployment();
-                if (path != null) {
-                    for (URI artifactURI : item.getArtifact().getArtifactLocations()) {
-                        File file = null;
-                        if (artifactURI.isAbsolute()) {
-                            file = new File(artifactURI);
-                        } else {
-                            file = new File(scriptLocation, artifactURI.getPath());
-                        }
-                        file = FileUtil.normalizeFile(file);
+                } else if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                    path = artifactItem.getDescription().getPathInDeployment();
+                    if (path != null) {
+                        File file = item.getResolvedFile();
                         if (file != null) {
                             files.add(file);
                         }
