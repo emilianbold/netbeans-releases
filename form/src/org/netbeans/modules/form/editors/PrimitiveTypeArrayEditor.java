@@ -199,24 +199,24 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
             return null;
         }
         
-        if (text.length() < 2) {
-            parts = new String[0];
-        } else {
-            int arrBeginPos = text.indexOf(ARR_BEGIN);
-            int arrEndPos = text.indexOf(ARR_END);
-            
-            if (arrBeginPos + 1 < arrEndPos) {
-                String body = text.substring(text.indexOf(ARR_BEGIN) + 1,
-                                                text.indexOf(ARR_END));
+        int arrBeginPos = text.indexOf(ARR_BEGIN);
+        int arrEndPos = text.indexOf(ARR_END);
 
-                if (!valueType.equals(char[].class)) {
-                    parts = body.split(","); // NOI18N
-                } else {
-                    parts = splitCharArray(body);
-                }
+        if ((arrBeginPos == -1) && (arrEndPos == -1)) {
+            // Issue 202075
+            arrEndPos = text.length();
+        }
+
+        if (arrBeginPos + 1 < arrEndPos) {
+            String body = text.substring(arrBeginPos + 1, arrEndPos);
+
+            if (!valueType.equals(char[].class)) {
+                parts = body.split(","); // NOI18N
             } else {
-                parts = new String[0];
+                parts = splitCharArray(body);
             }
+        } else {
+            parts = new String[0];
         }
         
         if (valueType.equals(boolean[].class)) {
