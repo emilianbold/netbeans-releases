@@ -67,7 +67,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
-import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.util.Utilities;
@@ -314,17 +314,13 @@ public class GeneralPHP extends JellyTestCase {
 
         opNewProjectWizard.finish();
 
-        // Wait for warnings
+        // Wait for warnings (is it really needed?)
         Sleep(5000);
-        try {
-            JDialogOperator jdWarning = new JDialogOperator("Warning");
-            JButtonOperator jbCancel = new JButtonOperator(jdWarning, "Cancel");
-            jbCancel.push();
-            jdWarning.waitClosed();
-        } catch (JemmyException ex) {
-            // No warning? Nice to know.
+        if (JDialogOperator.findJDialog("Warning", false, false) != null) {
+            NbDialogOperator dWarning = new NbDialogOperator("Warning");
+            dWarning.close();
         }
-
+        waitScanFinished();
     }
 
     protected void CreatePHPApplicationInternal(String sProjectName) {
