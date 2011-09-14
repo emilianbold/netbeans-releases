@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -136,16 +137,20 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            setEnabled(false);
             RequestProcessor.getDefault().post(this);
         }
 
         @Override
         public void run() {
-            setEnabled(false);
-            try {
-                work();
-            } finally {
+            if (SwingUtilities.isEventDispatchThread()) {
                 setEnabled(true);
+            } else {
+                try {
+                    work();
+                } finally {
+                    SwingUtilities.invokeLater(this);
+                }
             }
         }
 

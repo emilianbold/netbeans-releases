@@ -61,6 +61,7 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.openide.util.NbBundle;
 
@@ -459,6 +460,25 @@ public class Commit extends GeneralPHP {
                 true);
 
         Sleep(2000);
+        // workaround bug 202127
+        new Thread("Close discard question dialog") {
+
+            @Override
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    if (JDialogOperator.findJDialog("Question", false, false) != null) {
+                        new JButtonOperator(new NbDialogOperator("Question"), "Discard").push();
+                        break;
+                    }
+                    try {
+                        sleep(500);
+                    } catch (InterruptedException ex) {
+                        //ignore
+                    }
+                }
+            }
+        }.start();
+        // workaround bug 202127 - end
         // Close to prevent affect on next tests
         eoPHP.close(false);
 

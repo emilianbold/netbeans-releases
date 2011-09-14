@@ -53,6 +53,8 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteFXScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RetrievalException;
@@ -100,40 +102,45 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
         String msg = null;
         setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, false);
         try {
-            RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
-            for (int i = 0; i < screenshots.length; i++) {
-                final RemoteScreenshot screenshot = screenshots[i];
-                screenshot.getScreenshotUIManager().open();
-                bpListener.addScreenshot(screenshot);
-                /*
-                SwingUtilities.invokeLater(new Runnable() {
+            ProgressHandle ph = createProgress();
+            
+            RemoteScreenshot[] screenshots = null;
+            try {
+                screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
+                for (int i = 0; i < screenshots.length; i++) {
+                    final RemoteScreenshot screenshot = screenshots[i];
+                    screenshot.getScreenshotUIManager().open();
+                    bpListener.addScreenshot(screenshot);
+                    /*
+                    SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        ScreenshotComponent sc = new ScreenshotComponent(screenshot);
-                        sc.open();
-                        sc.requestActive();
+                    ScreenshotComponent sc = new ScreenshotComponent(screenshot);
+                    sc.open();
+                    sc.requestActive();
                     }
-                });*/
+                    });*/
+                }
+                if (screenshots != null || screenshots.length != 0) {
+                    return;
+                }
+            } finally {
+                ph.finish();
             }
-            if (screenshots.length != 0) {
-                return;
-            }
-            screenshots = RemoteFXScreenshot.takeCurrent(debugger);
-            for (int i = 0; i < screenshots.length; i++) {
-                final RemoteScreenshot screenshot = screenshots[i];
-                screenshot.getScreenshotUIManager().open();
-                /*
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ScreenshotComponent sc = new ScreenshotComponent(screenshot);
-                        sc.open();
-                        sc.requestActive();
-                    }
-                });*/
-            }
-            if (screenshots.length != 0) {
-                return;
+            
+            ph = createProgress();
+            try {
+                screenshots = RemoteFXScreenshot.takeCurrent(debugger);
+                for (int i = 0; i < screenshots.length; i++) {
+                    final RemoteScreenshot screenshot = screenshots[i];
+                    screenshot.getScreenshotUIManager().open();
+                }
+                
+                if (screenshots != null || screenshots.length != 0) {
+                    return;
+                }
+            } finally {
+                ph.finish();
             }
             msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
         } catch (RetrievalException ex) {
@@ -148,6 +155,13 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
             DialogDisplayer.getDefault().notify(nd);
         }
+    }
+
+    private ProgressHandle createProgress() {
+        ProgressHandle ph = ProgressHandleFactory.createHandle(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/visual/actions/Bundle").getString("MSG_TakingApplicationScreenshot"));
+        ph.setInitialDelay(500);
+        ph.start();
+        return ph;
     }
 
     private DebuggerManagerAdapter enableListener = null;
