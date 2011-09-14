@@ -160,7 +160,7 @@
 
                 </folder>
                 <!--end of issue #127161-->
-                
+
                 <!-- associating platte with the mime type -->
                 <file name="PaletteFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
@@ -254,7 +254,7 @@
             </folder>
         </folder>
     </folder>
-    
+
     <!-- registering PHP palette -->
     <folder name="Menu">
         <folder name="Tools">
