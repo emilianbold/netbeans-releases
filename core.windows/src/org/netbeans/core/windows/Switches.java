@@ -238,6 +238,17 @@ public final class Switches {
         return getSwitchValue( "WinSys.Show.Hide.MainWindow.While.Switching.Role", true ); //NOI18N
     }
     
+    /**
+     * @return True to open new editor windows docked in the main IDE window.
+     * When false then new editor window may open floating if the last active
+     * editor is also floating.
+     * @see WindowManager#setRole(java.lang.String) 
+     * @since 2.39
+     */
+    public static boolean isOpenNewEditorsDocked() {
+        return getSwitchValue( "WinSys.Open.New.Editors.Docked", false ); //NOI18N
+    }
+    
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
         boolean result = defaultValue;
         try {

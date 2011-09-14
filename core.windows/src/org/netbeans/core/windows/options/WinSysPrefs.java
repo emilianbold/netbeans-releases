@@ -82,8 +82,15 @@ public interface WinSysPrefs {
     
     /**
      * If true then the most recent document is activate when some editor is closed.
-     * If false then the editor window to right of the document being closed is activated.
+     * If false then the editor window to the left of the document being closed is activated.
      */
     public final String EDITOR_CLOSE_ACTIVATES_RECENT = "editor.closing.activates.recent";
+    
+    /**
+     * If true then new documents will open next to the active document tab.
+     * If false new documents will open as the last document tab.
+     * @since 2.38
+     */
+    public final String OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB = "editor.open.next.to.active";
     
 }

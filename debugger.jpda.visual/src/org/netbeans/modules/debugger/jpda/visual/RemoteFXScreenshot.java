@@ -82,7 +82,6 @@ import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -342,8 +341,8 @@ public class RemoteFXScreenshot {
     private static void pauseMedia(ThreadReference tr, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException {
         final ClassType audioClipClass = getClass(vm, tr, "com.sun.media.jfxmedia.AudioClip");
         final ClassType mediaManagerClass = getClass(vm, tr, "com.sun.media.jfxmedia.MediaManager");
-        final ClassType mediaPlayerClass = getClass(vm, tr, "com.sun.media.jfxmedia.MediaPlayer");
-        final ClassType playerStateEnum = getClass(vm, tr, "com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState");
+        final InterfaceType mediaPlayerClass = getInterface(vm, tr, "com.sun.media.jfxmedia.MediaPlayer");
+        final ClassType playerStateEnum = getClass(vm, tr, "com.sun.media.jfxmedia.events.PlayerStateEvent$PlayerState");
         
         if (audioClipClass != null) {
             Method stopAllClips = audioClipClass.concreteMethodByName("stopAllClips", "()V");
@@ -355,32 +354,34 @@ public class RemoteFXScreenshot {
 
             ObjectReference plList = (ObjectReference)mediaManagerClass.invokeMethod(tr, getAllPlayers, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
 
-            ClassType listType = (ClassType)plList.referenceType();
-            Method iterator = listType.concreteMethodByName("iterator", "()Ljava/util/Iterator;");
-            ObjectReference plIter = (ObjectReference)plList.invokeMethod(tr, iterator, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            if (plList != null) {
+                ClassType listType = (ClassType)plList.referenceType();
+                Method iterator = listType.concreteMethodByName("iterator", "()Ljava/util/Iterator;");
+                ObjectReference plIter = (ObjectReference)plList.invokeMethod(tr, iterator, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
 
-            ClassType iterType = (ClassType)plIter.referenceType();
-            Method hasNext = iterType.concreteMethodByName("hasNext", "()Z");
-            Method next = iterType.concreteMethodByName("next", "()Ljava/lang/Object;");
+                ClassType iterType = (ClassType)plIter.referenceType();
+                Method hasNext = iterType.concreteMethodByName("hasNext", "()Z");
+                Method next = iterType.concreteMethodByName("next", "()Ljava/lang/Object;");
 
 
-            Field playingState = playerStateEnum.fieldByName("PLAYING");
+                Field playingState = playerStateEnum.fieldByName("PLAYING");
 
-            Method getState = mediaPlayerClass.concreteMethodByName("getState", "()Lcom/sun/media/jfxmedia/events/PlayerStateEvent$PlayerState;");
-            Method pausePlayer = mediaPlayerClass.concreteMethodByName("pause", "()V");
-            boolean hasNextFlag = false;
-            do {
-                BooleanValue v = (BooleanValue)plIter.invokeMethod(tr, hasNext, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                hasNextFlag = v.booleanValue();
-                if (hasNextFlag) {
-                    ObjectReference player = (ObjectReference)plIter.invokeMethod(tr, next, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    ObjectReference curState = (ObjectReference)player.invokeMethod(tr, getState, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (playingState.equals(curState)) {
-                        player.invokeMethod(tr, pausePlayer, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                        pausedPlayers.add(player);
+                Method getState = mediaPlayerClass.methodsByName("getState", "()Lcom/sun/media/jfxmedia/events/PlayerStateEvent$PlayerState;").get(0);
+                Method pausePlayer = mediaPlayerClass.methodsByName("pause", "()V").get(0);
+                boolean hasNextFlag = false;
+                do {
+                    BooleanValue v = (BooleanValue)plIter.invokeMethod(tr, hasNext, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    hasNextFlag = v.booleanValue();
+                    if (hasNextFlag) {
+                        ObjectReference player = (ObjectReference)plIter.invokeMethod(tr, next, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        ObjectReference curState = (ObjectReference)player.invokeMethod(tr, getState, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        if (playingState.equals(curState)) {
+                            player.invokeMethod(tr, pausePlayer, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            pausedPlayers.add(player);
+                        }
                     }
-                }
-            } while (hasNextFlag);
+                } while (hasNextFlag);
+            }
         }
     }
     
@@ -403,7 +404,7 @@ public class RemoteFXScreenshot {
         if (t instanceof ClassType) {
             return (ClassType)t;
         }
-        logger.log(Level.WARNING, name + " is not a class but " + t); // NOI18N
+        logger.log(Level.WARNING, "{0} is not a class but {1}", new Object[]{name, t}); // NOI18N
         return null;
     } 
     
@@ -412,7 +413,7 @@ public class RemoteFXScreenshot {
         if (t instanceof InterfaceType) {
             return (InterfaceType)t;
         }
-        logger.log(Level.WARNING, name + " is not an interface but " + t); // NOI18N
+        logger.log(Level.WARNING, "{0} is not an interface but {1}", new Object[]{name, t}); // NOI18N
         return null;
     } 
 
