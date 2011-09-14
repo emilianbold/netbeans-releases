@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
+import com.sun.javafx.runtime.SystemProperties;
+import java.lang.reflect.Field;
+
 /**
  *
  * @author Jaroslav Bachorik
@@ -60,9 +63,25 @@ public class RemoteFXService {
     }, "FX Access Thread (Visual Debugger)"); // NOI18N
     
     public static void startAccessLoop() {
+        setDebugMode();
         accessThread.setDaemon(true);
         accessThread.setPriority(Thread.MIN_PRIORITY);
         accessThread.start();
+    }
+
+    /**
+     * JavaFX runtime is boobietrapped with various checks for {@linkplain SystemProperties#isDebug() }
+     * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
+     */
+    private static void setDebugMode() {
+        try {
+            Class spClz = Class.forName("com.sun.javafx.runtime.SystemProperties");
+            Field dbgFld = spClz.getDeclaredField("isDebug");
+            dbgFld.setAccessible(true);
+            dbgFld.set(null, Boolean.TRUE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private static void access() {};
