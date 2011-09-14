@@ -53,6 +53,8 @@ import org.openide.util.Lookup;
  */
 public class JSFConfigMultiViewEditorElement extends MultiViewEditorElement {
 
+    private static final long serialVersionUID = -8168949345860037002L;
+
     public JSFConfigMultiViewEditorElement(Lookup lookup) {
         super(lookup);
     }
