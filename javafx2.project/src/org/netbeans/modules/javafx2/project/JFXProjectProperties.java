@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -86,6 +88,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
+    // copies of private J2SE properties
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
@@ -1145,11 +1148,20 @@ public final class JFXProjectProperties {
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private boolean filling = false;
+        private ChangeListener changeListener = null;
               
         public PreloaderClassComboBoxModel() {
             fillNoPreloaderAvailable();
         }
         
+        public void addChangeListener (ChangeListener l) {
+            changeListener = l;
+        }
+
+        public void removeChangeListener (ChangeListener l) {
+            changeListener = null;
+        }
+
         public final void fillNoPreloaderAvailable() {
             removeAllElements();
             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
@@ -1182,6 +1194,9 @@ public final class JFXProjectProperties {
                                 }
                             }
                         }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
+                        }
                         filling = false;
                     }
                 }
@@ -1213,6 +1228,9 @@ public final class JFXProjectProperties {
                                     config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
                                 }
                             }
+                        }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
                         }
                         filling = false;
                     }

@@ -213,7 +213,34 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                 }
             });
         }
-
+        jfxProps.getPreloaderClassModel().addChangeListener (new ChangeListener () {
+                @Override
+                public void stateChanged(final ChangeEvent e) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            String config = (String) comboConfig.getSelectedItem();
+                            if (config.length() == 0) {
+                                config = null;
+                            }
+                            Map<String,String> activeConfig = configs.get(config);
+                            boolean preloaderEnabled = JFXProjectProperties.isTrue(activeConfig.get(JFXProjectProperties.PRELOADER_ENABLED));
+                            boolean preloaderClassAvailable = (e != null);
+                            if(!preloaderClassAvailable) {
+                                activeConfig.put(JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
+                            }
+                            checkBoxPreloader.setSelected(preloaderEnabled && preloaderClassAvailable);
+                            checkBoxPreloader.setEnabled(preloaderClassAvailable);
+                            textFieldPreloader.setEnabled(preloaderClassAvailable);
+                            labelPreloaderClass.setEnabled(preloaderClassAvailable);
+                            comboBoxPreloaderClass.setEnabled(preloaderClassAvailable);
+                            setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
+                            String sel = (String)comboBoxPreloaderClass.getSelectedItem();
+                            setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, configs.get(null).get(JFXProjectProperties.PRELOADER_CLASS)));
+                        }
+                    });
+                }
+             });
         comboConfig.setRenderer(new ConfigListCellRenderer());
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
         comboBoxPreloaderClass.setModel(jfxProps.getPreloaderClassModel());
@@ -449,6 +476,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
         checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
+        checkBoxPreloader.setEnabled(false);
         checkBoxPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 checkBoxPreloaderActionPerformed(evt);
@@ -474,7 +502,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         mainPanel.add(textFieldPreloader, gridBagConstraints);
 
         buttonPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
-        buttonPreloader.setEnabled(false);
         buttonPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonPreloaderActionPerformed(evt);
@@ -932,7 +959,6 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxPreloaderActionPerformed
     boolean sel = checkBoxPreloader.isSelected();
     textFieldPreloader.setEnabled(sel);
-    buttonPreloader.setEnabled(sel);
     labelPreloaderClass.setEnabled(sel);
     comboBoxPreloaderClass.setEnabled(sel);
     String config = (String) comboConfig.getSelectedItem();
@@ -967,14 +993,8 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
                     activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName());
                 }
             }
+            activeConfig.put(JFXProjectProperties.PRELOADER_ENABLED, "true"); //NOI18N
             fillPreloaderCombo(file, wizard.getSourceType(), null, activeConfig);
-            String sel = (String)comboBoxPreloaderClass.getSelectedItem();
-            if(sel != null && sel.equalsIgnoreCase(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"))) { //NOI18N
-                sel = null;
-            }
-            activeConfig.put(JFXProjectProperties.PRELOADER_CLASS, sel);
-            setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
-            setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, configs.get(null).get(JFXProjectProperties.PRELOADER_CLASS)));
         }
     }
 }//GEN-LAST:event_buttonPreloaderActionPerformed
@@ -1119,11 +1139,6 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                     m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
                     m.get(JFXProjectProperties.PRELOADER_CLASS),
                     m);
-            boolean prelEnabled = JFXProjectProperties.isTrue(preloaderEnabled);
-            textFieldPreloader.setEnabled(prelEnabled);
-            buttonPreloader.setEnabled(prelEnabled);
-            labelPreloaderClass.setEnabled(prelEnabled);
-            comboBoxPreloaderClass.setEnabled(prelEnabled);
             
             String runType = m.get(JFXProjectProperties.RUN_AS);
             if(runType == null) {
@@ -1189,6 +1204,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         }
         textFieldPreloader.setText(""); //NOI18N
         jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
+        config.put(JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
+        checkBoxPreloader.setSelected(false);
+        checkBoxPreloader.setEnabled(false);
+        textFieldPreloader.setEnabled(false);
+        labelPreloaderClass.setEnabled(false);
+        comboBoxPreloaderClass.setEnabled(false);
     }
     
     private boolean preloaderConfigChanged(String config) {
