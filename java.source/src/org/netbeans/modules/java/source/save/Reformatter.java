@@ -3533,23 +3533,29 @@ public class Reformatter implements ReformatTask {
                                     align = -1;
                                     break;
                                 case 2:
-                                    int num = maxParamNameLength + lastNWSPos - currWSPos;
+                                    int num = maxParamNameLength + lastNWSPos + 1 - i;
                                     if (num > 0) {
-                                        pendingDiff = new Diff(offset + i, offset + i, getSpaces(num));
-                                        col += num;
+                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                    } else if (num < 0) {
+                                        addDiff(new Diff(offset + i + num, offset + i, null));
                                     }
+                                    col += num;
                                     align = col;
+                                    currWSPos = -1;
                                     break;
                                 case 3:
                                     align = col;
                                     break;
                                 case 4:
-                                    num = maxExcNameLength + lastNWSPos - currWSPos;
+                                    num = maxExcNameLength + lastNWSPos + 1 - i;
                                     if (num > 0) {
-                                        pendingDiff = new Diff(offset + i, offset + i, getSpaces(num));
-                                        col += num;
+                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                    } else if (num < 0) {
+                                        addDiff(new Diff(offset + i + num, offset + i, null));
                                     }
+                                    col += num;
                                     align = col;
+                                    currWSPos = -1;
                                     break;
                                 case 5:
                                     noFormat = true;
@@ -3598,21 +3604,21 @@ public class Reformatter implements ReformatTask {
                                 }
                             }
                         } else {
-                            String s = indentString + SPACE;
                             if (pendingDiff != null) {
-                                pendingDiff.text += s;
+                                pendingDiff.text += indentString + SPACE;
                                 String subs = text.substring(pendingDiff.start - offset, i);
                                 if (pendingDiff.text.equals(subs)) {
                                     lastNewLinePos = pendingDiff.start - offset;
                                     pendingDiff = null;
                                 }
                             } else {
-                                String subs = text.substring(lastNewLinePos + 1, i);
+                                String s = NEWLINE + indentString + SPACE;
+                                String subs = text.substring(lastNewLinePos, i);
                                 if (!s.equals(subs))
-                                    pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, s);
+                                    pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
                             }
                             lastWSPos = currWSPos = -1;
-                            col = getCol(s);
+                            col = getCol(indentString + SPACE);
                             if (enableCommentFormatting) {
                                 if (c == '*') {
                                     col++;
@@ -3840,7 +3846,9 @@ public class Reformatter implements ReformatTask {
             int col = 0;
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
-                if (c == '\t') {
+                if (c == '\n') {
+                    col = 0;
+                } else if (c == '\t') {
                     col += tabSize;
                     col -= (col % tabSize);
                 } else {

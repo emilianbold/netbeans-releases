@@ -127,19 +127,28 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '<':
-                state = null;
                 int backupCounter = 0;
                 boolean newline = false;
                 boolean asterisk = false;
                 while (true) {
                     ch = input.read();
                     ++backupCounter;
-                    if (ch == '>' || ch == EOF) {
+                    if (ch == EOF) {
+                        state = null;
+                        return token(JavadocTokenId.HTML_TAG);
+                    } else if (ch == '>') {
+                        if (state != null) {
+                            state = null;
+                            return token(JavadocTokenId.IDENT, "javadoc-identifier"); //NOI18N
+                        }
+                        state = null;
                         return token(JavadocTokenId.HTML_TAG);
                     } else if (ch == '<') {
+                        state = null;
                         input.backup(1);
                         return token(JavadocTokenId.HTML_TAG);
                     } else if (ch == '\n') {
+                        state = null;
                         backupCounter = 1;
                         newline = true;
                         asterisk = false;
