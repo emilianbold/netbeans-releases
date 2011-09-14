@@ -240,10 +240,10 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             
             //close button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/openide/awt/resources/mac_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/openide/awt/resources/mac_bigclose_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/openide/awt/resources/mac_bigclose_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
             
             //slide/pin button

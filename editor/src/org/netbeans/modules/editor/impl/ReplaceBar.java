@@ -235,8 +235,6 @@ public class ReplaceBar extends JPanel {
         padding.setOpaque(false);
         add(padding);
 
-        add(createCloseButton());
-
         searchBarFocusTraversalPolicy = createSearchBarFocusTraversalPolicy();
 
         setVisible(false);
@@ -541,20 +539,6 @@ public class ReplaceBar extends JPanel {
         return incSearchComboBox;
     }
 
-    private JButton createCloseButton() throws MissingResourceException {
-        JButton closeButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_close.png", false)); // NOI18N
-        closeButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                looseFocus();
-            }
-        });
-        closeButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
-        closeButton.setMargin(BUTTON_INSETS);
-        return closeButton;
-    }
-
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
         jpanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 "loose-focus"); // NOI18N
@@ -594,8 +578,21 @@ public class ReplaceBar extends JPanel {
         }
     }
 
+    private ActionListener closeButtonListener;
+    private ActionListener getCloseButtonListener() {
+        if (closeButtonListener == null)
+            closeButtonListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                looseFocus();
+            }
+        };
+        return closeButtonListener;
+    }
+    
     private void unchangeSearchBarToBeOnlySearchBar() throws MissingResourceException {
-        searchBar.getCloseButton().setVisible(true);
+        searchBar.getCloseButton().removeActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
         Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
         searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
@@ -611,7 +608,7 @@ public class ReplaceBar extends JPanel {
     }
 
     private void changeSearchBarToBePartOfReplaceBar() throws MissingResourceException {
-        searchBar.getCloseButton().setVisible(false);
+        searchBar.getCloseButton().addActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
         Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);
         searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
