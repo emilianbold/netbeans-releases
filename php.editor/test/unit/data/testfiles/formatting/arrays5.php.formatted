@@ -2,7 +2,7 @@
 
 class Test {
 
-    function bla($param=array(22 => "hello")) {
+    function bla($param = array(22 => "hello")) {
         if (true) {
             echo "true";
         } else {
