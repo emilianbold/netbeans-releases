@@ -102,7 +102,9 @@ public class CsmDisplayUtilities {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
         StyledDocument stDoc = null;
         try {
-            stDoc = ces.openDocument();
+            if (ces != null) {
+                stDoc = ces.openDocument();
+            }
         } catch (IOException iOException) {
             // skip
         }
