@@ -81,10 +81,11 @@ public final class PhpUnitLogParser extends DefaultHandler {
         xmlReader.setContentHandler(this);
     }
 
-    static void parse(Reader reader, TestSessionVO testSession) {
+    static boolean parse(Reader reader, TestSessionVO testSession) {
         try {
             PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
             parser.xmlReader.parse(new InputSource(reader));
+            return true;
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
             LOGGER.log(Level.INFO, null, ex);
@@ -97,6 +98,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
                 Exceptions.printStackTrace(ex);
             }
         }
+        return false;
     }
 
     @Override
