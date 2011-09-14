@@ -84,6 +84,7 @@ class DbxVariable extends Variable {
     private String atype = "<unset atype>"; // NOI18N
     private boolean delta = false;
     private boolean isJava = false;
+    private boolean isWatch = false;
 
     // "changing" attributes
     private String rhs;
@@ -92,29 +93,30 @@ class DbxVariable extends Variable {
     private boolean firstAggregate;
 
     protected DbxVariable(DbxDebuggerImpl debugger, ModelChangeDelegator updater,
-		       Variable parent,
-		       String name, 
+		       Variable parent, String name,
 		       String deref_name, String type, String atype, 
-		       String value) {
+		       String value, boolean isWatch) {
 	super(updater, parent, name, type, value);
 	this.debugger = debugger;
 	this.deref_name = deref_name;
 	this.atype = atype;
+	if (isWatch == true)
+	    this.isWatch = isWatch;
      }
 
     // interface Variable
-    public void noteExpanded(boolean isWatch) {
+    public void noteExpanded(boolean is_watch) {
 	if (isExpanded())
 	    return;
 	setExpanded(true);
-	expand(isWatch);
-	updateOpenNodes(true, !isWatch);
+	expand(this.isWatch);
+	updateOpenNodes(true, !this.isWatch);
     }
 
     // interface Variable
-    public void noteCollapsed(boolean isWatch) {
+    public void noteCollapsed(boolean is_watch) {
 	setExpanded(false);
-	updateOpenNodes(false, !isWatch);
+	updateOpenNodes(false, !this.isWatch);
 	// Don't do this. It doesn't work. See IZ 97706.
 	// var.removeAllDescendantFromOpenList(isLocal());
     }
@@ -177,7 +179,7 @@ class DbxVariable extends Variable {
      * updateWatches with null on an error
      */
 
-    void setChildren(String rhs_vdl, DbxVariable v) {
+    void setChildren(String rhs_vdl, DbxVariable v, boolean isWatch) {
 
 	// CR 6972600, v is the node that will show error msg
 	if (v != null) {
@@ -206,7 +208,7 @@ class DbxVariable extends Variable {
 	valueStack.top().setMayHaveChildren();
 
 	firstAggregate = true;
-	parser = new VDLParser(new DerefVDLActions(this, updater));
+	parser = new VDLParser(new DerefVDLActions(this, updater, isWatch));
 	parser.parse(rhs_vdl);
 
 	// If 'this' is an aggregate then we'll encounter a startAggregate and 
@@ -293,7 +295,7 @@ class DbxVariable extends Variable {
 	return rhs_vdl;
     }
 
-    public void setRHS(String rhs, String rhs_vdl) {
+    public void setRHS(String rhs, String rhs_vdl, boolean isWatch) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Variable.ctx)
 	    System.out.printf("setRHS[%s]()\n", this.getVariableName()); // NOI18N
 
@@ -306,7 +308,7 @@ class DbxVariable extends Variable {
 	valueStack.push(firstCtx);
 
 	firstAggregate = true;
-	parser = new VDLParser(new DerefVDLActions(this, updater));
+	parser = new VDLParser(new DerefVDLActions(this, updater, isWatch));
 	parser.parse(rhs_vdl);
     }
 
@@ -392,10 +394,12 @@ class DbxVariable extends Variable {
     private static class DerefVDLActions implements VDLActions {
 	private final DbxVariable var;
 	private final ModelChangeDelegator updater;
+	private boolean isWatch;
 
-	DerefVDLActions(DbxVariable var, ModelChangeDelegator updater) {
+	DerefVDLActions(DbxVariable var, ModelChangeDelegator updater, boolean isWatch) {
 	    this.var = var;
 	    this.updater = updater;
+	    this.isWatch = isWatch;
 	}
 
 	// interface VDLActions
@@ -448,7 +452,7 @@ class DbxVariable extends Variable {
 
 		newVariable = new DbxVariable(var.debugger, updater,
 		      var.valueStack.top().currentVariable(),
-		      name, derefId, type, atype, value);
+		      name, derefId, type, atype, value, isWatch);
 		newVariableCase = 2;
 		var.valueStack.top().add(newVariable);
 		// we just added a child so it can't be a leaf anymore
@@ -563,7 +567,7 @@ class DbxVariable extends Variable {
 		parentCase = 3;
 	        parent = new DbxVariable(var.debugger, updater,
 				var.valueStack.top().currentVariable(),
-				name, derefId, type, atype, null);
+				name, derefId, type, atype, null, isWatch);
 	    } else {
 		parent.setType(type);
 		parent.setAType(atype);

@@ -71,7 +71,7 @@ class DbxWatch extends DbxVariable implements WatchVariable {
     public DbxWatch(DbxDebuggerImpl debugger, ModelChangeDelegator updater,
 		    int id, boolean restricted,
 		    String name, String type) {
-	super(debugger, updater, null, name, name, type, type, null);
+	super(debugger, updater, null, name, name, type, type, null, true);
 	this.id = id;
 	this.restricted = restricted;
     }

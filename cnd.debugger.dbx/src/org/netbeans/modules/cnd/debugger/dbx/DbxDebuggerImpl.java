@@ -1430,15 +1430,16 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
                 v.setExpanded(true);
 		if (item.flags == 0) {
-		    v.setChildren(item.rhs_vdl, null);
+		    v.setChildren(item.rhs_vdl, null, !locals);
 		} else {
 		    DbxVariable var = new DbxVariable(this, localUpdater, null,
 			   item.plain_lhs,
 			   item.plain_lhs,
 			   null,
 			   null,
-			   variableErrorCode(item.flags));
-		    v.setChildren(item.rhs_vdl, var);
+			   variableErrorCode(item.flags),
+			   !locals);
+		    v.setChildren(item.rhs_vdl, var, !locals);
 		}
             }
         }
@@ -1556,16 +1557,18 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 			result.plain_lhs,
 			null,
 			null,
-			result.rhs);
+			result.rhs,
+			rt == RT_CHASE_WATCH);
 		// this will generate a open node list for this var
-		v.setRHS(result.rhs, result.rhs_vdl);
+		v.setRHS(result.rhs, result.rhs_vdl, rt == RT_CHASE_WATCH);
 	    } else {
 		v = new DbxVariable(this, localUpdater, null,
 			result.plain_lhs,
 			result.plain_lhs,
 			result.static_type,
 			result.static_type,
-			variableErrorCode(result.flags));
+			variableErrorCode(result.flags),
+			rt == RT_CHASE_WATCH);
 	    }
 
 	    autos.add(v);
@@ -1586,14 +1589,15 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
         if (var != null) {
 	    if (result.flags == 0) {
-		var.setChildren(result.rhs_vdl, null);
+		var.setChildren(result.rhs_vdl, null, rt == RT_CHASE_WATCH);
 	    } else {
 	        DbxVariable v = new DbxVariable(this, localUpdater, null,
 		       result.plain_lhs,
 		       result.plain_lhs,
 		       result.static_type,
 		       result.static_type,
-		       variableErrorCode(result.flags));
+		       variableErrorCode(result.flags),
+		       rt == RT_CHASE_WATCH);
 	        Variable vars[] = new Variable[1];
 	        vars[0] = v;
 	        var.setChildren(vars, true);
@@ -1616,14 +1620,15 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
         if (var != null) {
 	    if (result.flags == 0) {
-		var.setChildren(result.rhs_vdl, null);
+		var.setChildren(result.rhs_vdl, null, false);
 	    } else {
 	        DbxVariable v = new DbxVariable(this, localUpdater, null,
 		       result.plain_lhs,
 		       result.plain_lhs,
 		       result.static_type,
 		       result.static_type,
-		       variableErrorCode(result.flags));
+		       variableErrorCode(result.flags),
+		       false);
 	        Variable vars[] = new Variable[1];
 	        vars[0] = v;
 	        var.setChildren(vars, true);
@@ -1983,7 +1988,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             if (i.rhs_vdl != null && i.flags == 0) {
-                w.setRHS(i.rhs, i.rhs_vdl); // should give accurate Leaf setting
+                w.setRHS(i.rhs, i.rhs_vdl, true); // should give accurate Leaf setting
 		if (i.plain_lhs != null) {
 		    w.setVariableName(i.plain_lhs); // could be watch replace
                     // also update the one in debuggercore
@@ -1992,7 +1997,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     nativeWatch.replacedWith(null);
                 }
             } else {
-                w.setChildren(null, null);
+                w.setChildren(null, null, true);
                 w.setLeaf(true);
                 w.setAsText(variableErrorCode(items[wx].flags));
             }
@@ -2143,16 +2148,18 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                             gp_locals[lx].plain_lhs,
                             null,
                             null,
-                            gp_locals[lx].rhs);
+                            gp_locals[lx].rhs,
+			    false);
                     // this will generate a open node list for this var
-                    v.setRHS(gp_locals[lx].rhs, gp_locals[lx].rhs_vdl);
+                    v.setRHS(gp_locals[lx].rhs, gp_locals[lx].rhs_vdl, false);
                 } else {
                     v = new DbxVariable(this, localUpdater, null,
                             gp_locals[lx].plain_lhs,
                             gp_locals[lx].plain_lhs,
                             null,
                             null,
-                            variableErrorCode(gp_locals[lx].flags));
+                            variableErrorCode(gp_locals[lx].flags),
+			    false);
                 }
                 if (v != null) {
                     locals_vector.add(v);
