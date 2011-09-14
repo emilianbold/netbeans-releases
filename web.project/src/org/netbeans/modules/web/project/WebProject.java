@@ -1899,7 +1899,9 @@ public final class WebProject implements Project {
                     helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
                     WebProjectProperties.TAG_WEB_MODULE_LIBRARIES)) {
 
-                if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                if (!item.isBroken() && (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT
+                        || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        || item.getType() == ClassPathSupport.Item.TYPE_JAR)) {
                     String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
                     String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
                     if (path != null) {

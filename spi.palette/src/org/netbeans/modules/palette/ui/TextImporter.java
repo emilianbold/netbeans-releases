@@ -64,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -189,8 +190,8 @@ public class TextImporter implements Runnable {
         w.print(   "    <icon16 urlvalue=\"" ); w.print(smallIconPath); w.println( "\" />" );
         w.print(   "    <icon32 urlvalue=\"" ); w.print(largeIconPath); w.println( "\" />" );
         w.println( "    <inline-description>" );
-        w.print(   "        <display-name>" ); w.print( toUTF8(name) ); w.println( "</display-name>" );
-        w.print(   "        <tooltip>" ); w.print( toUTF8(tooltip) ); w.println( "</tooltip>" );
+        w.print(   "        <display-name>" ); w.print( XMLUtil.toElementContent( toUTF8(name) ) ); w.println( "</display-name>" );
+        w.print(   "        <tooltip>" ); w.print( XMLUtil.toElementContent( toUTF8(tooltip) ) ); w.println( "</tooltip>" );
         w.println( "    </inline-description>" );
         w.println( "</editor_palette_item>" );
     }

@@ -170,7 +170,7 @@ public final class UnitTestRunner {
     }
 
     private void processPhpUnitError() {
-        LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
+        LOGGER.info(String.format("File %s not found or cannot be parsed. If there are no errors in PHPUnit output (verify in Output window), "
                 + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
         MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
         MANAGER.sessionFinished(testSession);
@@ -198,9 +198,13 @@ public final class UnitTestRunner {
             return null;
         }
         TestSessionVO session = new TestSessionVO();
-        PhpUnitLogParser.parse(reader, session);
+        boolean parsed = PhpUnitLogParser.parse(reader, session);
         if (!PhpUnit.KEEP_LOGS) {
             PhpUnit.XML_LOG.delete();
+        }
+        if (!parsed) {
+            processPhpUnitError();
+            return null;
         }
         return session;
     }

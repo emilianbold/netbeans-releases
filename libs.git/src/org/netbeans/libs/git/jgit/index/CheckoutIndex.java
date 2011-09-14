@@ -157,7 +157,7 @@ public class CheckoutIndex {
             roots = new File[] { workTree };
         }
         for (File parent : roots) {
-            if (parent.equals(path.getParentFile())) {
+            if (parent.equals(path) || parent.equals(path.getParentFile())) {
                 return true;
             }
         }
