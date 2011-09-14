@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
+import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -67,6 +71,7 @@ public final class PlatformPropertiesHandler {
      * <p>
      * @return user properties (empty if missing or malformed)
      */
+    @NonNull
     public static EditableProperties getGlobalProperties() {
         return PropertyUtils.getGlobalProperties();
     }
@@ -78,7 +83,7 @@ public final class PlatformPropertiesHandler {
      * <p>
      * @param map of properties
      */
-    public static void saveGlobalProperties(final Map<String, String> propMap) {
+    public static void saveGlobalProperties(@NonNull final Map<String, String> propMap) {
         try {
             ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Object>() {
@@ -96,4 +101,42 @@ public final class PlatformPropertiesHandler {
             ErrorManager.getDefault().notify(me.getException());
         }
     }
+
+    /**
+     * Removes all properties for given platform from IDE global properties file located in userdir.
+     * <p>
+     * Acquires write access.
+     * <p>
+     * @param java platform instance
+     */
+    public static void clearGlobalPropertiesForPlatform(@NonNull final JavaPlatform platform) {
+        try {
+            ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Object>() {
+                        @Override
+                        public Object run() throws Exception {
+                            String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+                            String propPrefix = "platforms." + platformName + ".javafx."; // NOI18N
+                            boolean changed = false;
+                            
+                            final EditableProperties props = PropertyUtils.getGlobalProperties();
+                            for (Iterator<String> it = props.keySet().iterator(); it.hasNext();) {
+                                String key = it.next();
+                                if (key.startsWith(propPrefix)) {
+                                    it.remove();
+                                    changed = true;
+                                }
+                            }
+                            
+                            if (changed) {
+                                PropertyUtils.putGlobalProperties(props);
+                            }
+                            return null;
+                        }
+                    });
+        } catch (MutexException me) {
+            ErrorManager.getDefault().notify(me.getException());
+        }
+    }
+
 }
