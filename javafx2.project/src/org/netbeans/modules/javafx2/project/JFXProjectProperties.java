@@ -281,6 +281,7 @@ public final class JFXProjectProperties {
     SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
+    boolean permissionsElevated;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
     public boolean getSigningEnabled() {
@@ -288,6 +289,12 @@ public final class JFXProjectProperties {
     }
     public void setSigningEnabled(boolean enabled) {
         this.signingEnabled = enabled;
+    }
+    public boolean getPermissionsElevated() {
+        return permissionsElevated;
+    }
+    public void setPermissionsElevated(boolean enabled) {
+        this.permissionsElevated = enabled;
     }
     public SigningType getSigningType() {
         return signingType;
@@ -855,6 +862,7 @@ public final class JFXProjectProperties {
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
+        editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
         
@@ -1064,6 +1072,7 @@ public final class JFXProjectProperties {
         if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
             signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
         }
+        permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
     private void initResources (final PropertyEvaluator eval, final Project prj) {
