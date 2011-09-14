@@ -238,8 +238,6 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
     @Override
     public void insertUpdate(DocumentEvent evt) {
-        if (Integer.valueOf(55).equals(docView.getTextComponent().getClientProperty("id")))
-            evt = evt; // Place breakpoint here to track update for particular VH
         clearIncomingEvent(evt);
         if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
