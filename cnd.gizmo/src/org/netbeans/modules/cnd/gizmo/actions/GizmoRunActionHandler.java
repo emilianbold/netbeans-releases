@@ -54,7 +54,9 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -88,8 +90,9 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStrea
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -167,6 +170,18 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
+        Project project = pae.getProject();
+        boolean isFullRemote = false;
+        FileObject dir = project.getProjectDirectory();
+            if (dir != null) { // paranoia
+                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
+                if (env != null && env.isRemote()) {
+                    isFullRemote=  true;
+                }
+            } 
+        if (isFullRemote){
+            targetConf.putInfo("full.remote", "true");
+        }        
 
         final CompilerSet2Configuration cset = conf.getCompilerSet();
         if (cset != null) {

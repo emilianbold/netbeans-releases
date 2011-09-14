@@ -73,12 +73,16 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends AbstractCompiler {
 
     private static final String DEV_NULL = "/dev/null"; // NOI18N
     private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
 
     private volatile Pair compilerDefinitions;
     private static File emptyFile = null;
@@ -282,12 +286,14 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
 
-    protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
+    protected final void getSystemIncludesAndDefines(String arguments, final boolean stdout, Pair pair) throws IOException {
         String compilerPath = getPath();
         if (compilerPath == null || compilerPath.length() == 0) {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
+        NativeProcess startedProcess = null;
+        Task errorTask = null;
         try {
             if (execEnv.isLocal() && Utilities.isWindows()) {
                 compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
@@ -307,10 +313,25 @@ public abstract class CCCCompiler extends AbstractCompiler {
             npb.setExecutable(compilerPath);
             npb.setArguments(argsList.toArray(new String[argsList.size()]));
             npb.getEnvironment().prependPathVariable("PATH", ToolUtils.getDirName(compilerPath)); // NOI18N
-
-            NativeProcess process = npb.call();
+            
+            final NativeProcess process = npb.call();
+            startedProcess = process;
             if (process.getState() != State.ERROR) {
                 InputStream stream = stdout? process.getInputStream() : process.getErrorStream();
+                errorTask = RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (stdout) {
+                                ProcessUtils.readProcessError(process);
+                            } else {
+                                ProcessUtils.readProcessOutput(process);
+                            }
+                        } catch (Throwable ex) {
+                        }
+                    }
+                });
+                
                 if (stream != null) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                     try {
@@ -324,6 +345,13 @@ public abstract class CCCCompiler extends AbstractCompiler {
             throw ex;
         } catch (Throwable ex) {
             throw new IOException(ex);
+        } finally {
+            if (errorTask != null){
+                errorTask.cancel();
+            }
+            if (startedProcess != null) {
+                startedProcess.destroy();
+            }
         }
     }
 

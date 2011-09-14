@@ -105,6 +105,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
     private DLightTarget target;
     private boolean visible;
+    private boolean actionsEnabled;
     private final Action defaultAction;
     private final List<Action> actions;
     private final Collection<Column> columnsProvided = new ArrayList<Column>();
@@ -233,7 +234,9 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
     
     public final List<Action> getActions() {
-        return Collections.unmodifiableList(actions);
+        return actionsEnabled
+                ? Collections.unmodifiableList(actions)
+                : Collections.<Action>emptyList();
     }
     
     private List<Action> initActions() {
@@ -471,6 +474,10 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         component.setToolTipText(st.toString());
     }
 
+    private void setDetailsEnabled(boolean detailsEnabled) {
+        this.actionsEnabled = detailsEnabled;
+    }
+
     final List<VisualizerConfiguration> getVisualizerConfigurations() {
         return Collections.unmodifiableList(visualizerConfigurations);
     }
@@ -578,6 +585,11 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         public void setToolDescription(Indicator<?> ind, String toolDescription) {
             ind.setToolDescription(toolDescription);
 
+        }
+
+        @Override
+        public void setDetailsEnabled(Indicator<?> ind, boolean isDetailsEnabled) {
+            ind.setDetailsEnabled(isDetailsEnabled);
         }
     }
 }
