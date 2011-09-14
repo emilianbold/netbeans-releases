@@ -968,7 +968,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = findTopComponentToActivateAfterClose( mode, tc );
+            recentTc = getRecentTopComponent( mode, tc );
         }
         model.removeModeTopComponent(mode, tc, recentTc);
 
@@ -1041,6 +1041,17 @@ final class Central implements ControllerHandler {
      */
     TopComponent getRecentTopComponent( ModeImpl editorMode, TopComponent closedTc ) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        if (!WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true)) {
+            List<TopComponent> open = editorMode.getOpenedTopComponents();
+            int pos = open.indexOf(closedTc);
+            if (open.size() > 1 && pos >= 0) {
+                if (pos > 0) { // select previous one
+                    return open.get(pos - 1);
+                } else { // this was first, so select next one
+                    return open.get(1);
+                }
+            }
+        }
         TopComponent[] documents = wm.getRecentViewList();
         
         for (int i = 0; i < documents.length; i++) {
@@ -1970,7 +1981,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = findTopComponentToActivateAfterClose( mode, tc );
+            recentTc = getRecentTopComponent( mode, tc );
         }
         boolean wasTcClosed = false;
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
@@ -2020,23 +2031,6 @@ final class Central implements ControllerHandler {
                 }
             });
         }
-    }
-    
-    private TopComponent findTopComponentToActivateAfterClose( ModeImpl editorMode, TopComponent tcBeingClosed ) {
-        TopComponent result = null;
-        if( !WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true)
-                && tcBeingClosed.equals( editorMode.getSelectedTopComponent() ) ) {
-            List<TopComponent> opened = editorMode.getOpenedTopComponents();
-            int index = opened.indexOf(tcBeingClosed)+1;
-            if( index >= opened.size() )
-                index = opened.size()-2;
-            if( index >= 0 && index < opened.size() ) {
-                result = opened.get(index);
-            }
-        } else {
-            result = getRecentTopComponent( editorMode, tcBeingClosed );
-        }
-        return result;
     }
     
     /**
