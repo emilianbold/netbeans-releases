@@ -1165,7 +1165,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     
     private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
-        if(projectDir != null) {
+        if(projectDir != null && !projectDir.isEmpty()) {
             File proj = new File(projectDir);
             if(!proj.exists() || !proj.isDirectory()) {
                 textFieldPreloader.setText(""); //NOI18N
@@ -1177,12 +1177,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             return;
         }
         if(jarFilePath != null && jarFileName != null) {
-            File jar = new File(jarFilePath + jarFileName);
+            File jar = new File(jarFilePath);
             if(!jar.exists() || !jar.isFile()) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
             } else {
-                textFieldPreloader.setText(jarFilePath + jarFileName);
+                textFieldPreloader.setText(jarFilePath);
                 fillPreloaderCombo(jar, JFXProjectProperties.PreloaderSourceType.JAR, cls, config);
             }
             return;
