@@ -133,10 +133,15 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Project">
             <folder name="Samples">
-                <folder name="CDC_Ricoh">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
-                    <attr name="position" intvalue="410"/>                    
+<!--                #180655 Changed folder name to match changes in Bundle 
+                            Removed position attribute and SystemFileSystem.localizingBundle;
+                            now defined in MIDP Wirless Examples (org.netbeans.modules.mobility.midpexamples) 
+                            Added position attributes to all children -->
+                <folder name="JAVA_ME">
+<!--                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>-->
+<!--                    <attr name="position" intvalue="403"/>                    -->
                     <file name="ButtonTest.zip" url="samples/ButtonTest.zip">
+                        <attr name="position" intvalue="10"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/ButtonTest.html"/>
@@ -147,6 +152,7 @@ made subject to such option by the copyright holder.
                     </file>
 <!--                            
                     <file name="FormBrowser.zip" url="samples/FormBrowser.zip">
+                        <attr name="position" intvalue="20"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/FormBrowser.html"/>
@@ -157,6 +163,7 @@ made subject to such option by the copyright holder.
                     </file>
 -->                            
                     <file name="HardKey.zip" url="samples/HardKey.zip">
+                        <attr name="position" intvalue="30"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/HardKey.html"/>
@@ -166,6 +173,7 @@ made subject to such option by the copyright holder.
                         <attr name="sampletype" stringvalue="xlet"/>
                     </file>
                     <file name="Puzzle15Xlet.zip" url="samples/Puzzle15Xlet.zip">
+                        <attr name="position" intvalue="40"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/Puzzle15Xlet.html"/>
@@ -175,6 +183,7 @@ made subject to such option by the copyright holder.
                         <attr name="sampletype" stringvalue="xlet"/>
                     </file>
                     <file name="SampleLockControl.zip" url="samples/SampleLockControl.zip">
+                        <attr name="position" intvalue="50"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/SampleLockControl.html"/>
@@ -184,6 +193,7 @@ made subject to such option by the copyright holder.
                         <attr name="sampletype" stringvalue="xlet"/>
                     </file>
                     <file name="TimeSet.zip" url="samples/TimeSet.zip">
+                        <attr name="position" intvalue="60"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/TimeSet.html"/>
@@ -194,6 +204,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <!-- We are waiting for a fix so it is disabled for now
                     <file name="WidgetsDemoXlet.zip" url="samples/WidgetsDemoXlet.zip">
+                        <attr name="position" intvalue="70"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/WidgetsDemoXlet.html"/>
