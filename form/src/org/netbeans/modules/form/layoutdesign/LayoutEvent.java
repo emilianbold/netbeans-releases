@@ -158,6 +158,14 @@ abstract class LayoutEvent extends EventObject {
             return index;
         }
 
+        int getOldPreferredSize() {
+            return oldSizes[1];
+        }
+
+        int getNewPreferredSize() {
+            return newSizes[1];
+        }
+
         @Override
         void undo() {
             switch (getType()) {

@@ -70,6 +70,10 @@ public class ALT_SeqResizing01Test extends LayoutTestCase {
      * bottom edge and below the yellow panel's top edge (i.e. not aligned).
      */
     public void doChanges0() {
+        lm.setChangeRecording(true); // also checks that it can recognize when
+            // vertical resizing affects horizontal dimension so horizontal
+            // dimension can't be left unchanged (undone)
+
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
         contInterior.put("jPanel1", new Rectangle(26, 30, 100, 100));

@@ -66,7 +66,7 @@ public class ALT_Bug66431_3Test extends LayoutTestCase {
     }
 
     // There is no resizing element in the vertical dimension. First the bottom
-    // edge of the form is resizied upwards to snap to text area, then it is
+    // edge of the form is resized upwards to snap to text area, then it is
     // resized back. A resizing gap should be created after the second step.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
@@ -100,7 +100,7 @@ public class ALT_Bug66431_3Test extends LayoutTestCase {
         // < UPDATE CURRENT STATE
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
-        contInterior.put("Form", new Rectangle(0, 0, 400, 313));
+        compMinSize.put("Form", new Dimension(172, 313));
         compBounds.put("jScrollPane1", new Rectangle(10, 40, 380, 196));
         baselinePosition.put("jScrollPane1-380-196", new Integer(0));
         compPrefSize.put("jScrollPane1", new Dimension(104, 64));

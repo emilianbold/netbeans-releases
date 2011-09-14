@@ -69,6 +69,14 @@ public class LayoutModel implements LayoutConstants {
     // list of listeners registered on LayoutModel
     private ArrayList<Listener> listeners;
 
+    // handler that takes care of complex removal of components, with additional
+    // adjustments in the layout
+    private RemoveHandler removeHandler;
+
+    // handler that takes care of setting explicit size to components or gaps,
+    // with additional adjustments in the layout
+    private ResizeHandler resizeHandler;
+
     // layout changes recording and undo/redo
     private boolean recordingChanges = true;
     private boolean undoRedoInProgress;
@@ -97,10 +105,20 @@ public class LayoutModel implements LayoutConstants {
         addComponent(comp, null, -1);
     }
 
+    /**
+     * Removes component from the component hierarchy, its intervals from the
+     * layout structure, and if fromModel is true then also from the LayoutModel
+     * registry.
+     */
     public void removeComponent(String compId, boolean fromModel) {
         LayoutComponent comp = getLayoutComponent(compId);
-        if (comp != null)
-            removeComponentAndIntervals(comp, fromModel);
+        if (comp != null) {
+            if (removeHandler != null) {
+                removeHandler.removeComponents(new LayoutComponent[] { comp }, fromModel);
+            } else {
+                removeComponentAndIntervals(comp, true);
+            }
+        }
     }
 
     /**
@@ -227,6 +245,16 @@ public class LayoutModel implements LayoutConstants {
 
     Iterator getAllComponents() {
         return idToComponents.values().iterator();
+    }
+
+    Collection<LayoutComponent> getTopContainers() {
+        List<LayoutComponent> containers = new LinkedList<LayoutComponent>();
+        for (LayoutComponent comp : idToComponents.values()) {
+            if (comp.isLayoutContainer() && comp.getParent() == null) {
+                containers.add(comp);
+            }
+        }
+        return containers;
     }
 
     // Note this method does not care about adding the layout intervals of the
@@ -408,12 +436,54 @@ public class LayoutModel implements LayoutConstants {
         }
     }
 
-    public void setIntervalSize(LayoutInterval interval, int min, int pref, int max) {
+    public void setUserIntervalSize(LayoutInterval interval, int dimension, int size) {
+        int min = interval.getMinimumSize();
+        int max = interval.getMaximumSize();
+        if (resizeHandler != null) {
+            resizeHandler.setIntervalSize(interval, dimension, min, size, max);
+        } else {
+            setIntervalSize(interval, min, size, max);
+        }
+        changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, false);
+    }
+
+    public void setUserIntervalSize(LayoutInterval interval, int dimension, int size, boolean resizing) {
+        int min, max;
+        if (size == NOT_EXPLICITLY_DEFINED && interval.isComponent()) {
+            size = LayoutInterval.getDefaultSizeDef(interval);
+        }
+        boolean sizeChange = size != interval.getPreferredSize();
+        if (resizing) {
+            if (!interval.isEmptySpace()) {
+                min = NOT_EXPLICITLY_DEFINED;
+            } else {
+                min = (size == 0 || (size != NOT_EXPLICITLY_DEFINED && interval.getMinimumSize() == 0))
+                        ? 0 : NOT_EXPLICITLY_DEFINED;
+            }
+            max = Short.MAX_VALUE;
+        } else {
+            min = (interval.getMinimumSize() == size)
+                    ? interval.getMinimumSize() : USE_PREFERRED_SIZE;
+            max = interval.getMaximumSize() == interval.getPreferredSize()
+                    ? size : USE_PREFERRED_SIZE;
+        }
+        if (resizeHandler != null) {
+            resizeHandler.setIntervalSize(interval, dimension, min, size, max);
+        } else {
+            setIntervalSize(interval, min, size, max);
+        }
+
+        if (sizeChange) {
+            interval.unsetAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
+        }
+    }
+
+    public boolean setIntervalSize(LayoutInterval interval, int min, int pref, int max) {
         int oldMin = interval.getMinimumSize();
         int oldPref = interval.getPreferredSize();
         int oldMax = interval.getMaximumSize();
         if (min == oldMin && pref == oldPref && max == oldMax) {
-            return; // no change
+            return false; // no change
         }
         interval.setSizes(min, pref, max);
         if (interval.isComponent()) {
@@ -433,10 +503,12 @@ public class LayoutModel implements LayoutConstants {
             }
         }
 
-        // record undo/redo (don't fire event)
+        // record undo/redo and fire event
         LayoutEvent.Interval ev = new LayoutEvent.Interval(this, LayoutEvent.INTERVAL_SIZE_CHANGED);
         ev.setSize(interval, oldMin, oldPref, oldMax, min, pref, max);
         addChange(ev);
+        fireEvent(ev);
+        return true;
     }
 
     public void setPaddingType(LayoutInterval interval, PaddingType paddingType) {
@@ -491,11 +563,19 @@ public class LayoutModel implements LayoutConstants {
         // Copy LayoutIntervals
         int i = 0;
         for (LayoutInterval[] sourceRoots : sourceContainer.getLayoutRoots()) {
+            LayoutInterval[] targetRoots;
             if (i == targetContainer.getLayoutRootCount()) {
-                addNewLayoutRoots(targetContainer);
+                targetRoots = addNewLayoutRoots(targetContainer);
+            } else { // make sure it's clean
+                targetRoots = targetContainer.getLayoutRoots().get(i);
+                for (int dim=0; dim<DIM_COUNT; dim++) {
+                    for (int n=targetRoots[dim].getSubIntervalCount(); n > 0; n--) {
+                        removeInterval(targetRoots[dim], n-1);
+                    }
+                }
             }
             for (int dim=0; dim<DIM_COUNT; dim++) {
-                copySubIntervals(sourceRoots[dim], targetContainer.getLayoutRoot(i, dim), sourceToTargetId);
+                copySubIntervals(sourceRoots[dim], targetRoots[dim], sourceToTargetId);
             }
             i++;
         }
@@ -783,6 +863,32 @@ public class LayoutModel implements LayoutConstants {
     }
 
     // -----
+
+    void setRemoveHandler(RemoveHandler h) {
+        removeHandler = h;
+    }
+
+    RemoveHandler getRemoveHandler() {
+        return removeHandler;
+    }
+
+    interface RemoveHandler {
+        void removeComponents(LayoutComponent[] components, boolean fromModel);
+    }
+
+    void setResizeHandler(ResizeHandler h) {
+        resizeHandler = h;
+    }
+
+    ResizeHandler getResizeHandler() {
+        return resizeHandler;
+    }
+
+    interface ResizeHandler {
+        void setIntervalSize(LayoutInterval interval, int dimension, int min, int pref, int max);
+    }
+
+    // -----
     // listeners registration, firing methods (no synchronization)
 
     void addListener(Listener l) {
@@ -802,10 +908,9 @@ public class LayoutModel implements LayoutConstants {
     }
 
     private void fireEvent(LayoutEvent event) {
-        if (listeners != null && listeners.size() > 0) {
-            Iterator it = ((List)listeners.clone()).iterator();
-            while (it.hasNext()) {
-                ((Listener)it.next()).layoutChanged(event);
+        if (listeners != null) {
+            for (Listener l : listeners) {
+                l.layoutChanged(event);
             }
         }
     }
@@ -835,14 +940,19 @@ public class LayoutModel implements LayoutConstants {
     public Object getChangeMark() {
         return new Integer(changeMark);
     }
-    
-    public void endUndoableEdit() {
+
+    public boolean endUndoableEdit() {
+        boolean empty = true;
         if (lastUndoableEdit != null) {
             lastUndoableEdit.endMark = getChangeMark();
+            if (!lastUndoableEdit.endMark.equals(lastUndoableEdit.startMark)) {
+                empty = false;
+            }
             lastUndoableEdit = null;
         }
+        return !empty;
     }
-    
+
     public boolean isUndoableEditInProgress() {
         return (lastUndoableEdit != null);
     }
@@ -878,21 +988,22 @@ public class LayoutModel implements LayoutConstants {
             return false; // the mark is not present in the undo queue
         }
 
+        boolean undone = false;
         int start = ((Integer)startMark).intValue();
         int end = ((Integer)endMark).intValue();
         undoRedoInProgress = true;
-
         while (end > start) {
             Integer key = new Integer(--end);
             LayoutEvent change = undoMap.remove(key);
             if (change != null) {
                 change.undo();
                 redoMap.put(key, change);
+                undone = true;
             }
         }
-
         undoRedoInProgress = false;
-        return true;
+
+        return undone;
     }
 
     boolean redo(Object startMark, Object endMark) {
@@ -916,6 +1027,27 @@ public class LayoutModel implements LayoutConstants {
 
         undoRedoInProgress = false;
         return true;
+    }
+
+    boolean revert(Object startMark, Object endMark) {
+        assert !undoRedoInProgress;
+        boolean reverted = false;
+        int start = ((Integer)startMark).intValue();
+        int end = ((Integer)endMark).intValue();
+        undoRedoInProgress = true;
+        while (end > start) {
+            Integer key = new Integer(--end);
+            LayoutEvent change = undoMap.remove(key);
+            if (change != null) {
+                change.undo();
+                reverted = true;
+            }
+        }
+        undoRedoInProgress = false;
+        if (lastUndoableEdit != null && startMark.equals(lastUndoableEdit.startMark)) {
+            lastUndoableEdit.startMark = endMark;
+        }
+        return reverted;
     }
 
     void releaseChanges(Object fromMark, Object toMark) {

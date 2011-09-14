@@ -29,7 +29,7 @@
                   <Group type="sequential" alignment="trailing" attributes="0">
                       <EmptySpace min="$pref" pref="31" max="$pref" attributes="0"/>
                       <Component id="jButton1" min="$pref" max="$pref" attributes="0"/>
-                      <EmptySpace pref="225" max="Short.MAX_VALUE" attributes="0"/>
+                      <EmptySpace max="Short.MAX_VALUE" attributes="0"/>
                       <Component id="jTextField5" min="$pref" max="$pref" attributes="0"/>
                   </Group>
               </Group>
