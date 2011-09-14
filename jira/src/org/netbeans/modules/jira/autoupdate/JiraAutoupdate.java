@@ -148,7 +148,7 @@ public class JiraAutoupdate {
         return false;
     }
 
-    boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
+    public boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
         final String[] v = new String[1];
         JiraCommand cmd = new JiraCommand() {
             @Override
