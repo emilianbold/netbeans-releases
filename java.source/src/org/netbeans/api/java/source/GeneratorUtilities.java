@@ -71,6 +71,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.Entry;
+import com.sun.tools.javac.code.Scope.StarImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -87,6 +88,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -561,13 +563,16 @@ public final class GeneratorUtilities {
         // check weather any conversions to star imports are needed
         int treshold = cs.countForUsingStarImport();
         int staticTreshold = cs.countForUsingStaticStarImport();        
-        Map<PackageElement, Integer> pkgCounts = new HashMap<PackageElement, Integer>();
+        Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
         ExpressionTree packageName = cut.getPackageName();
-        if (packageName != null)
-            pkgCounts.put((PackageElement)trees.getElement(TreePath.getPath(cut, packageName)), -2);
-        Map<TypeElement, Integer> typeCounts = new HashMap<TypeElement, Integer>();
+        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : elements.getPackageElement(elements.getName("")); //NOI18N
+        pkgCounts.put(pkg, -2);
+        Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
         Scope scope = trees.getScope(new TreePath(cut));
+        StarImportScope importScope = new StarImportScope((Symbol)pkg);
+        if (((JCCompilationUnit)cut).starImportScope != null)
+            importScope.importAll(((JCCompilationUnit)cut).starImportScope);
         for (Element e : elementsToImport) {
             boolean isStatic = false;
             Element el = null;
@@ -642,18 +647,26 @@ public final class GeneratorUtilities {
         // check for possible name clashes originating from adding the package imports
         Set<Element> explicitNamedImports = new HashSet<Element>();
         Map<Name, TypeElement> usedTypes = null;
-        JCCompilationUnit unit = (JCCompilationUnit) cut;
-        if (unit.starImportScope != null) {
-            for (Map.Entry<PackageElement, Integer> entry : pkgCounts.entrySet()) {
-                if (entry.getValue() == -1) {
-                    for (Element element : entry.getKey().getEnclosedElements()) {
-                        if (element.getKind().isClass() || element.getKind().isInterface()) {
-                            Entry starEntry = unit.starImportScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
-                            if (starEntry.scope != null) {
+        for (Map.Entry<PackageElement, Integer> entry : pkgCounts.entrySet()) {
+            if (entry.getValue() == -1) {
+                for (Element element : entry.getKey().getEnclosedElements()) {
+                    if (element.getKind().isClass() || element.getKind().isInterface()) {
+                        Entry starEntry = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
+                        if (starEntry.scope != null) {
+                            TypeElement te = null;
+                            for (Element e : elementsToImport) {
+                                if ((e.getKind().isClass() || e.getKind().isInterface()) && element.getSimpleName() == e.getSimpleName()) {
+                                    te = (TypeElement) e;
+                                    break;
+                                }                                    
+                            }
+                            if (te != null) {
+                                explicitNamedImports.add(te);
+                            } else {
                                 if (usedTypes == null) {
                                     usedTypes = getUsedTypes(cut);
                                 }
-                                TypeElement te = usedTypes.get(element.getSimpleName());
+                                te = usedTypes.get(element.getSimpleName());
                                 if (te != null) {
                                     elementsToImport.add(te);
                                     explicitNamedImports.add(te);
@@ -662,6 +675,7 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
+                importScope.importAll(((Symbol)entry.getKey()).members());
             }
         }
 
@@ -957,7 +971,7 @@ public final class GeneratorUtilities {
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 if (!map.containsKey(node.getName())) {
                     Element element = trees.getElement(getCurrentPath());
-                    if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                    if (element != null && (element.getKind().isClass() || element.getKind().isInterface()) && element.asType().getKind() != TypeKind.ERROR) {
                         map.put(node.getName(), (TypeElement) element);
                     }
                 }
@@ -974,7 +988,6 @@ public final class GeneratorUtilities {
     }
     
     private ExpressionTree qualIdentFor(Element e) {
-        Elements elements = copy.getElements();
         TreeMaker tm = copy.getTreeMaker();
         if (e.getKind() == ElementKind.PACKAGE) {
             String name = ((PackageElement)e).getQualifiedName().toString();
