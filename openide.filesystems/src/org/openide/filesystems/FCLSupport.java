@@ -99,7 +99,7 @@ class FCLSupport {
         }
     }
 
-    final static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation, Collection<Runnable> postNotify) {
+    static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation, Collection<Runnable> postNotify) {
         boolean async = fe.isAsynchronous();
         DispatchEventWrapper dw = new DispatchEventWrapper(fcl, fe, operation);
         dw.dispatchEvent(async, postNotify);
@@ -166,9 +166,10 @@ class FCLSupport {
         }
         
     }
-    private static RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher", 1, false, false); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher", 1, false, false); // NOI18N
     private static final Queue<DispatchEventWrapper> q = new ConcurrentLinkedQueue<DispatchEventWrapper>();
-    private static RequestProcessor.Task task = RP.create(new Runnable() {
+    private static final RequestProcessor.Task task = RP.create(new Runnable() {
+        @Override
         public void run() {
             DispatchEventWrapper dw = q.poll();
             Set<Runnable> post = new HashSet<Runnable>();
