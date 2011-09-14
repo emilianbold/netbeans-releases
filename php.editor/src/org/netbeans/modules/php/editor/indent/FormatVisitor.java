@@ -248,9 +248,7 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
             addFormatToken(formatTokens);
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
         } else {
             ts.movePrevious();
         }
@@ -1010,9 +1008,7 @@ public class FormatVisitor extends DefaultVisitor {
         if (node.getValue() != null) {
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) {
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
                     addFormatToken(formatTokens);
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
                 } else {
                     addFormatToken(formatTokens);
                 }
@@ -1355,6 +1351,10 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else if ("=".equals(text)) { 
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
@@ -1554,12 +1554,10 @@ public class FormatVisitor extends DefaultVisitor {
             if (lastToken.getId() == FormatToken.Kind.LINE_COMMENT && removedWS != null) {
                 formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
                 formatTokens.add(removedWS);
-                ts.moveNext();
             } else {
                 formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
                 if (removedWS != null) {
                     formatTokens.add(removedWS);
-//                    ts.moveNext();
                 }
             }
 
