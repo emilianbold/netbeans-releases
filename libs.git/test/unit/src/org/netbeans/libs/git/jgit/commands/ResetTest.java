@@ -357,6 +357,14 @@ public class ResetTest extends AbstractGitTestCase {
         assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file2, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        
+        write(file1, content);
+        add(file1);
+        // non recursive on file
+        client.reset(new File[] { file1 }, "HEAD", false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
 
     public void testResetPathsChangeType () throws Exception {
