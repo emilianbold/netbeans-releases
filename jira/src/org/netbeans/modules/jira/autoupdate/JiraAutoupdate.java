@@ -77,7 +77,7 @@ public class JiraAutoupdate {
     static final JiraVersion SUPPORTED_JIRA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.jira.supported.version");
-        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("4.1"); // NOI18N
+        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : JiraVersion.JIRA_4_2; // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
