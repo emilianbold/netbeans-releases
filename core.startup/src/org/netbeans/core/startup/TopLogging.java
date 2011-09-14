@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -142,6 +143,7 @@ public final class TopLogging {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(os);
 
+        Collection<Logger> keep = new LinkedList<Logger>();
         for (Map.Entry<?, ?> e: System.getProperties().entrySet()) {
             String key = (String)e.getKey();
 
@@ -156,6 +158,7 @@ public final class TopLogging {
                 ps.print(key);
                 ps.print('=');
                 ps.println(v);
+                keep.add(Logger.getLogger(key.substring(0, key.length() - 6)));
             }
         }
         ps.close();
