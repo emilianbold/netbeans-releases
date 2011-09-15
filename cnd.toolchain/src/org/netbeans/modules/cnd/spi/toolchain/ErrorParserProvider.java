@@ -59,16 +59,23 @@ import org.openide.windows.OutputListener;
  * @author Alexander Simon
  */
 public abstract class ErrorParserProvider {
+    // id of error parser provider which handles any output
+    public static final String UNIVERSAL_PROVIDER_ID = "universal"; //NOI18N
     public static final Result NO_RESULT = new NoResult();
     public static final Result REMOVE_LINE = new RemoveLine();
 
-    private static final ErrorParserProvider DEFAULT = new DefaultErrorParserProvider();
+    private static final DefaultErrorParserProvider DEFAULT = new DefaultErrorParserProvider();
     
     public static ErrorParserProvider getDefault() {
 	return DEFAULT;
     }
 
+    public static List<ErrorParser> getUniversalErorParsers(Project project, ExecutionEnvironment execEnv, FileObject relativeTo) {
+        return DEFAULT.getUniversalErorParsersImpl(project, execEnv, relativeTo);
+    }
+
     public abstract ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo);
+    
     public abstract String getID();
 
     public interface ErrorParser {
@@ -149,5 +156,18 @@ public abstract class ErrorParserProvider {
 	public String getID() {
 	    throw new UnsupportedOperationException();
 	}
+
+        public List<ErrorParser> getUniversalErorParsersImpl(Project project, ExecutionEnvironment execEnv, FileObject relativeTo) {
+            List<ErrorParser> parsers = new ArrayList<ErrorParser>();
+            for (ErrorParserProvider service : res.allInstances()) {
+                if (ErrorParserProvider.UNIVERSAL_PROVIDER_ID.equals(service.getID())) {
+                    ErrorParser erorParser = service.getErorParser(project, null, execEnv, relativeTo);
+                    if (erorParser != null) {
+                        parsers.add(erorParser);
+                    }
+                }
+            }
+            return parsers;
+        }
     }
 }
