@@ -43,12 +43,13 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
- * Displayes Edit Servers List dialog.
+ * Displays Edit Servers List dialog.
  *
  * It was created as a replacement of the show() method
  * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
@@ -65,6 +66,10 @@ public abstract class ServerListUI {
         return getDefault().showServerListDialogImpl(selectedEnv);
     }
 
+    public static boolean showServerRecordPropertiesDialog(ExecutionEnvironment env) {
+        return getDefault().showServerRecordPropertiesDialogImpl(env);
+    }
+
     /**
      * Checks whether the record is initialized,
      * if it is not, ask user whether (s)he wants to (re)connect,
@@ -79,7 +84,7 @@ public abstract class ServerListUI {
 
     /**
      * The same as ensureRecordOnline(ServerRecord record),
-     * but allows to specify a message instead of defaule one
+     * but allows to specify a message instead of default one
      * @param message message to display in the case the record is not connected
      * @return
      */
@@ -105,6 +110,8 @@ public abstract class ServerListUI {
 
     protected abstract boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv);
 
+    protected abstract boolean showServerRecordPropertiesDialogImpl(ExecutionEnvironment env);
+
     protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String message);
 
     protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env);
@@ -112,8 +119,8 @@ public abstract class ServerListUI {
     private static class Dummy extends ServerListUI {
 
         private void warning() {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListUI.class.getSimpleName()); //NOI18N
+            Logger.getLogger("cnd.remote.logger").log( //NOI18N
+                    Level.WARNING, "Can not find {0}", ServerListUI.class.getSimpleName()); //NOI18N
         }
 
         @Override
@@ -129,6 +136,12 @@ public abstract class ServerListUI {
         }
 
         @Override
+        protected boolean showServerRecordPropertiesDialogImpl(ExecutionEnvironment env) {
+            warning();
+            return false;
+        }
+
+        @Override
         protected boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String message) {
             warning();
             return false;
@@ -139,7 +152,5 @@ public abstract class ServerListUI {
             warning();
             return false;
         }
-
-
     }
 }
