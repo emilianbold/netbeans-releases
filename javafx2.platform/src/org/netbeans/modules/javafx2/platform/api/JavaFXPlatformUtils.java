@@ -42,6 +42,9 @@
 package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -149,9 +152,12 @@ public final class JavaFXPlatformUtils {
     @CheckForNull
     public static String guessRuntimePath(@NonNull File sdkPath) {
         File parent = sdkPath.getParentFile();
-        File[] brothers = parent.listFiles();
+        List<File> brothers = new ArrayList<File>(Arrays.asList(parent.listFiles())); // check in neighbour folders: Win installation
+        brothers.add(sdkPath); // check inside SDK: Mac installation
         for (File brother : brothers) {
-            if (brother.getName().contains("Runtime") || brother.getName().contains("runtime")) { // NOI18N
+            if (brother.getName().contains("Runtime") || // NOI18N
+                    brother.getName().contains("runtime") || // NOI18N
+                    brother.getName().contains("rt")) { // NOI18N
                 return brother.getAbsolutePath();
             }
         }
@@ -166,7 +172,7 @@ public final class JavaFXPlatformUtils {
      */
     @NonNull
     public static String guessJavadocPath(@NonNull File sdkPath) {
-        return sdkPath.getAbsolutePath() + "\\docs"; // NOI18N
+        return sdkPath.getAbsolutePath() + File.separatorChar + "docs"; // NOI18N
     }
 
     /**
@@ -226,12 +232,9 @@ public final class JavaFXPlatformUtils {
         if (location.exists()) {
             File[] children = location.listFiles();
             for (File child : children) {
-                String name = child.getName();
-                if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
-                    File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
-                    if (toolsJar.exists()) {
-                        return child.getAbsolutePath();
-                    }
+                File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                if (toolsJar.exists()) {
+                    return child.getAbsolutePath();
                 }
             }
         }
@@ -244,12 +247,9 @@ public final class JavaFXPlatformUtils {
         if (location.exists()) {
             File[] children = location.listFiles();
             for (File child : children) {
-                String name = child.getName();
-                if (name.contains("Runtime") || name.contains("runtime")) { // NOI18N
-                    File rtJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
-                    if (rtJar.exists()) {
-                        return child.getAbsolutePath();
-                    }
+                File rtJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+                if (rtJar.exists()) {
+                    return child.getAbsolutePath();
                 }
             }
         }
@@ -262,12 +262,9 @@ public final class JavaFXPlatformUtils {
         if (location.exists()) {
             File[] children = location.listFiles();
             for (File child : children) {
-                String name = child.getName();
-                if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
-                    File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
-                    if (docs.exists()) {
-                        return docs.getAbsolutePath();
-                    }
+                File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
+                if (docs.exists()) {
+                    return docs.getAbsolutePath();
                 }
             }
         }
@@ -285,12 +282,8 @@ public final class JavaFXPlatformUtils {
         if (!file.exists()) {
             return false;
         }
-        String name = file.getName();
-        if (name.contains("SDK") || name.contains("sdk")) { // NOI18N
-            File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
-            return toolsJar.exists();
-        }
-        return false;
+        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        return toolsJar.exists();
     }
     
     private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
@@ -298,12 +291,8 @@ public final class JavaFXPlatformUtils {
         if (!file.exists()) {
             return false;
         }
-        String name = file.getName();
-        if (name.contains("Runtime") || name.contains("runtime")) { // NOI18N
-            File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
-            return rtJar.exists();
-        }
-        return false;
+        File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+        return rtJar.exists();
     }
 
 }
