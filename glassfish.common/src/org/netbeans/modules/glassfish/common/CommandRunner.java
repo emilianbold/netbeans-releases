@@ -705,6 +705,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                     fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
                             ex.getLocalizedMessage());
                     retries = 0;
+                } catch (ConnectException ce) {
+                    return fireOperationStateChanged(OperationState.FAILED,"MSG_EmptyMessage"); // NOI18N
                 } catch(IOException ex) {
                     if(retries <= 0) {
                         fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
