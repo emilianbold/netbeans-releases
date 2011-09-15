@@ -22,5 +22,5 @@
 	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-push-p3.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="csh/git-chkout-rev.html"/>
 	<mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="csh/git-create-branch.html"/>
-	<!--csh topic is in progress <mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>-->
+	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>
 </map>
