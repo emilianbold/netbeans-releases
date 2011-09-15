@@ -106,7 +106,7 @@ public class UnusedVariableHint extends AbstractRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         VariablesHeap variablesHeap = new VariablesHeap(phpParseResult.getModel(), context.doc);
-        HintsCreator hintsCreator = new HintsCreator(variablesHeap, fileObject);
+        HintsCreator hintsCreator = new HintsCreator(variablesHeap, fileObject, context.doc);
 
         CheckVisitor checkVisitor = new CheckVisitor(variablesHeap);
         phpParseResult.getProgram().accept(checkVisitor);
@@ -243,10 +243,12 @@ public class UnusedVariableHint extends AbstractRule {
         private final List<Hint> hints = new LinkedList<Hint>();
         private final VariablesHeap variablesHeap;
         private final FileObject fileObject;
+        private final BaseDocument doc;
 
-        public HintsCreator(VariablesHeap variablesHeap, FileObject fileObject) {
+        public HintsCreator(VariablesHeap variablesHeap, FileObject fileObject, BaseDocument doc) {
             this.variablesHeap = variablesHeap;
             this.fileObject = fileObject;
+            this.doc = doc;
         }
 
         public List<Hint> getHints() {
@@ -259,10 +261,15 @@ public class UnusedVariableHint extends AbstractRule {
         private void checkVariableScope(VariableScope variableScope) {
             Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
             for (VariableName variableName : declaredVariables) {
-                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName))) {
+                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpVarDoc(variableName.getOffset())) {
                     checkVariableName(variableName, variableScope);
                 }
             }
+        }
+
+        private boolean isInPhpVarDoc(int offset) {
+            Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
+            return token.id() == PHPTokenId.PHP_COMMENT;
         }
 
         private void checkVariableName(VariableName variableName, VariableScope variableScope) {
