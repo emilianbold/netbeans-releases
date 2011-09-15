@@ -146,13 +146,17 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
+        return guessName(info, tp, tp);
+    }
+
+    public static String guessName(CompilationInfo info, TreePath tp, TreePath scope) {
         String name = getName(tp.getLeaf());
         
         if (name == null) {
             return DEFAULT_NAME;
         }
         
-        Scope s = info.getTrees().getScope(tp);
+        Scope s = info.getTrees().getScope(scope);
         
         return makeNameUnique(info, s, name);
     }

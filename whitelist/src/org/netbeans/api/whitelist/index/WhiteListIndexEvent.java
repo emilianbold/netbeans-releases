@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.api.whitelist.index;
 
-package org.netbeans.modules.glassfish.javaee.ide;
-
-import java.io.File;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog;
-import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
-import org.openide.util.lookup.ServiceProvider;
+import java.net.URL;
+import java.util.EventObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
- *
- * @author raccah
+ * WhiteListIndexEvent is used to notify interested parties about
+ * changes in persistent index of white list violations.
+ * @author Tomas Zezula
+ * @since 1.2
  */
-@ServiceProvider(service=RegisteredDDCatalog.class,path="Servers/GlassFish")
-public class RegisteredDDCatalogImpl implements RegisteredDDCatalog {
-    private void registerRunTimeDDCatalog(RunTimeDDCatalog catalog, ServerInstanceProvider gip) {
-        if (catalog != null) {
-            catalog.setInstanceProvider(gip);
-        }
-    }
-    @Override
-    public void registerPreludeRunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getPreludeRunTimeDDCatalog(), gip);
-    }
-    @Override
-    public void registerEE6RunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getEE6RunTimeDDCatalog(), gip);
+public class WhiteListIndexEvent extends EventObject {
+
+    private final URL root;
+
+    WhiteListIndexEvent(@NonNull final Object source, @NonNull final URL root) {
+        super(source);
+        Parameters.notNull("root", root);   //NOI18N
+        this.root = root;
     }
 
-    @Override
-    public void refreshRunTimeDDCatalog(ServerInstanceProvider gip, String installRoot) {
-        RunTimeDDCatalog catalog = RunTimeDDCatalog.getRunTimeDDCatalog(gip);
-        if (catalog != null) {
-            catalog.refresh((installRoot != null) ? new File(installRoot) : null);
-        }
+    /**
+     * Returns a source root for which the index was changed.
+     * @return the {@link URL} of the source root.
+     */
+    @NonNull
+    public URL getRoot() {
+        return root;
     }
 }

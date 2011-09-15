@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.whitelist.index;
 
-package org.netbeans.modules.glassfish.javaee.ide;
-
-import java.io.File;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog;
-import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
-import org.openide.util.lookup.ServiceProvider;
+import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.whitelist.WhiteListQuery;
+import org.netbeans.api.whitelist.index.WhiteListIndex;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author raccah
+ * @author Tomas Zezula
  */
-@ServiceProvider(service=RegisteredDDCatalog.class,path="Servers/GlassFish")
-public class RegisteredDDCatalogImpl implements RegisteredDDCatalog {
-    private void registerRunTimeDDCatalog(RunTimeDDCatalog catalog, ServerInstanceProvider gip) {
-        if (catalog != null) {
-            catalog.setInstanceProvider(gip);
+public abstract class WhiteListIndexAccessor {
+
+    private static volatile WhiteListIndexAccessor instance;
+
+    @NonNull
+    public static synchronized WhiteListIndexAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(WhiteListIndex.class.getName(), true, WhiteListIndexAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
-    }
-    @Override
-    public void registerPreludeRunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getPreludeRunTimeDDCatalog(), gip);
-    }
-    @Override
-    public void registerEE6RunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getEE6RunTimeDDCatalog(), gip);
+        return instance;
+
     }
 
-    @Override
-    public void refreshRunTimeDDCatalog(ServerInstanceProvider gip, String installRoot) {
-        RunTimeDDCatalog catalog = RunTimeDDCatalog.getRunTimeDDCatalog(gip);
-        if (catalog != null) {
-            catalog.refresh((installRoot != null) ? new File(installRoot) : null);
-        }
+    public static void setInstance(@NonNull final WhiteListIndexAccessor _instance) {
+        Parameters.notNull("_instance", _instance); //NOI18N
+        instance = _instance;
     }
+
+    public abstract void refresh(@NonNull URL root);
+    public abstract WhiteListIndex.Problem createProblem(
+            @NonNull WhiteListQuery.Result result,
+            @NonNull FileObject root,
+            @NonNull String key,
+            int line);
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import javax.lang.model.element.Modifier;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
@@ -209,10 +210,16 @@ public class RenameTransformer extends RefactoringVisitor {
                                 break;
                             }
                         }
-                        if (scope.getEnclosingClass().equals(elementToFind.getEnclosingElement())) 
-                            useThis = "this."; // NOI18N
-                        else 
-                            useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this."; // NOI18N
+                        if (elementToFind.getModifiers().contains(Modifier.STATIC)) {
+                            useThis = elementToFind.getEnclosingElement().getSimpleName().toString() + ".";
+                        } else {
+                            Types types = workingCopy.getTypes();
+                            if (types.isSubtype(scope.getEnclosingClass().asType(), elementToFind.getEnclosingElement().asType())) {
+                                useThis = "this."; // NOI18N
+                            } else {
+                                useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this."; // NOI18N
+                            }
+                        }
                         break;
                     }
                 }

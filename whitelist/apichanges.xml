@@ -75,6 +75,24 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="WhiteListIndex">
+            <api name="whitelist"/>
+            <summary>Added WhiteListQuery to check violations of runtime restrictions</summary>
+            <version major="1" minor="2"/>
+            <date day="15" month="9" year="2011"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added WhiteListIndex to provide persistent index of the white list violations.
+                </p>
+            </description>
+            <class package="org.netbeans.api.whitelist.index" name="WhiteListIndex"/>
+            <class package="org.netbeans.api.whitelist.index" name="WhiteListIndexListener"/>
+            <class package="org.netbeans.api.whitelist.index" name="WhiteListIndexEvent"/>
+            <class package="org.netbeans.api.whitelist.support" name="WhiteListSupport"/>
+            <issue number="202063"/>
+        </change>
         <change id="WhiteListQuery">
             <api name="whitelist"/>
             <summary>Added WhiteListQuery to check violations of runtime restrictions</summary>

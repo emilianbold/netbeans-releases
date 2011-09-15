@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.api.whitelist.index;
 
-package org.netbeans.modules.glassfish.javaee.ide;
-
-import java.io.File;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog;
-import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- *
- * @author raccah
+ * The listener interface for receiving {@link WhiteListIndex} events.
+ * @author Tomas Zezula
+ * @since 1.2
  */
-@ServiceProvider(service=RegisteredDDCatalog.class,path="Servers/GlassFish")
-public class RegisteredDDCatalogImpl implements RegisteredDDCatalog {
-    private void registerRunTimeDDCatalog(RunTimeDDCatalog catalog, ServerInstanceProvider gip) {
-        if (catalog != null) {
-            catalog.setInstanceProvider(gip);
-        }
-    }
-    @Override
-    public void registerPreludeRunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getPreludeRunTimeDDCatalog(), gip);
-    }
-    @Override
-    public void registerEE6RunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getEE6RunTimeDDCatalog(), gip);
-    }
-
-    @Override
-    public void refreshRunTimeDDCatalog(ServerInstanceProvider gip, String installRoot) {
-        RunTimeDDCatalog catalog = RunTimeDDCatalog.getRunTimeDDCatalog(gip);
-        if (catalog != null) {
-            catalog.refresh((installRoot != null) ? new File(installRoot) : null);
-        }
-    }
+public interface WhiteListIndexListener extends EventListener {
+    /**
+     * Invoked when the index for a source root changed
+     * @param event the event providing the change details
+     */
+    void indexChanged (@NonNull WhiteListIndexEvent event);
 }

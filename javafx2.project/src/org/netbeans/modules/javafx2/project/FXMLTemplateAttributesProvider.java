@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.project;
 
-package org.netbeans.modules.glassfish.javaee.ide;
-
-import java.io.File;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.netbeans.modules.glassfish.javaee.RunTimeDDCatalog;
-import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
- *
- * @author raccah
+ * Provides attributes that can be used inside scripting templates.
+ * <dl>
+ * <dt><code>package</code></dt>
+ * <dd>attribute containing <code>target</code> folder as package.</dd>
+ * </dl>
+ * 
+ * @author Petr Somol
  */
-@ServiceProvider(service=RegisteredDDCatalog.class,path="Servers/GlassFish")
-public class RegisteredDDCatalogImpl implements RegisteredDDCatalog {
-    private void registerRunTimeDDCatalog(RunTimeDDCatalog catalog, ServerInstanceProvider gip) {
-        if (catalog != null) {
-            catalog.setInstanceProvider(gip);
-        }
-    }
-    @Override
-    public void registerPreludeRunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getPreludeRunTimeDDCatalog(), gip);
-    }
-    @Override
-    public void registerEE6RunTimeDDCatalog(ServerInstanceProvider gip) {
-        registerRunTimeDDCatalog(RunTimeDDCatalog.getEE6RunTimeDDCatalog(), gip);
-    }
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
+public final class FXMLTemplateAttributesProvider implements CreateFromTemplateAttributesProvider{
 
+    private static final Logger LOG = Logger.getLogger(FXMLTemplateAttributesProvider.class.getName());
+    
     @Override
-    public void refreshRunTimeDDCatalog(ServerInstanceProvider gip, String installRoot) {
-        RunTimeDDCatalog catalog = RunTimeDDCatalog.getRunTimeDDCatalog(gip);
-        if (catalog != null) {
-            catalog.refresh((installRoot != null) ? new File(installRoot) : null);
+    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+        FileObject templateFO = template.getPrimaryFile();
+        if (!JFXProjectProperties.FXML_EXTENSION.equals(templateFO.getExt()) || templateFO.isFolder()) {
+            return null;
         }
+        
+        FileObject targetFO = target.getPrimaryFile();
+        Map<String,Object> result = new HashMap<String,Object>();
+        
+        ClassPath cp = ClassPath.getClassPath(targetFO, ClassPath.SOURCE);
+        if (cp == null) {
+            LOG.warning("No classpath was found for folder: " + target.getPrimaryFile()); // NOI18N
+        }
+        else {
+            result.put("package", cp.getResourceName(targetFO, '.', false)); // NOI18N
+        }
+        
+        return result;
     }
+    
 }

@@ -214,10 +214,13 @@ public abstract class ServerCommand {
             try {
                 String tmp = m.getMainAttributes().getValue("message"); // NOI18N
                 if (null != tmp) {
+                    message = tmp;
                     message = URLDecoder.decode(tmp , "UTF-8"); // NOI18N
                 }
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8");
+                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8"); // NOI18N
+            } catch (IllegalArgumentException iae) {
+                // ignore this for now
             }
 
             // If server is not currently available for processing commands,
@@ -311,10 +314,13 @@ public abstract class ServerCommand {
                 String key = "";
                 try {
                     if (null != encodedkey) {
+                        key = encodedkey;
                         key = URLDecoder.decode(encodedkey, "UTF-8"); // NOI18N
                     }
                 } catch (UnsupportedEncodingException uee) {
-                    Logger.getLogger("glassfish").log(Level.INFO, encodedkey, uee);
+                    Logger.getLogger("glassfish").log(Level.INFO, encodedkey, uee); // NOI18N
+                } catch (IllegalArgumentException iae) {
+                    // ignore this for now
                 }
                 int equalsIndex = key.indexOf('=');
                 if(equalsIndex >= 0) {

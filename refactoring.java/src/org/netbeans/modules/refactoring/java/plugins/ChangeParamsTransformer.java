@@ -216,12 +216,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     @Override
     public Tree visitNewClass(NewClassTree tree, Element p) {
         if (constructorRefactoring && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            ExecutableElement constructor = (ExecutableElement) p;
             final Trees trees = workingCopy.getTrees();
             Element el = trees.getElement(getCurrentPath());
             el = resolveAnonymousClassConstructor(el, tree, trees);
             if (el!=null) {
                 if (isMethodMatch(el, p)) {
-                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), false, p);
+                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), false, constructor);
                     NewClassTree nju = make.NewClass(tree.getEnclosingExpression(),
                             (List<ExpressionTree>)tree.getTypeArguments(),
                             tree.getIdentifier(),
@@ -273,7 +274,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return arguments;
     }
     
-    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments, boolean passThrough, Element p) {
+    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments, boolean passThrough, ExecutableElement method) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = paramInfos;
         for (int i = 0; i < pi.length; i++) {
@@ -286,10 +287,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
                 } else {
                     String value = pi[i].getDefaultValue();
-                    vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, p);
+                    vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, method);
                 }
             } else {
-                if (i == pi.length - 1 && pi[i].getType().endsWith("...")) { // NOI18N
+                if (i == pi.length - 1 && pi[i].getType().endsWith("...") && method.isVarArgs() && method.getParameters().size()-1 == originalIndex) { // NOI18N
                     // last param is vararg, so copy all remaining arguments
                     for (int j = originalIndex; j < currentArguments.size(); j++) {
                         arguments.add(currentArguments.get(j));
@@ -307,19 +308,20 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     @Override
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
         if ((constructorRefactoring || !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) && !compatible) {
+            ExecutableElement method = (ExecutableElement) p;
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
-                if (isMethodMatch(el, p)) {
+                if (isMethodMatch(el, method)) {
                     if(newModifiers != null) {
-                        checkNewModifier(getCurrentPath(), p);
+                        checkNewModifier(getCurrentPath(), method);
                     }
                     TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
                     Element enclosingElement = workingCopy.getTrees().getElement(enclosingMethod);
                     boolean passThrough = false;
-                    if(isMethodMatch(enclosingElement, p)) {
+                    if(isMethodMatch(enclosingElement, method)) {
                         passThrough = true;
                     }
-                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), passThrough, p);
+                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), passThrough, method);
                     
                     MethodInvocationTree nju = make.MethodInvocation(
                             (List<ExpressionTree>)tree.getTypeArguments(),
@@ -396,9 +398,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), p[i].getName(),make.Identifier(p[i].getType()), null);
                 } else {
                     VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
+                    boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N
                     vt = make.Variable(originalVt.getModifiers(),
                             originalVt.getName(),
-                            make.Identifier(p[i].getType()),
+                            make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
                             originalVt.getInitializer());
                 }
                 newParameters.add(vt);
@@ -477,7 +480,8 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     newParameters,
                     current.getThrows(),
                     current.getBody(),
-                    (ExpressionTree) current.getDefaultValue());
+                    (ExpressionTree) current.getDefaultValue(),
+                    p[p.length-1].getType().endsWith("...")); //NOI18N
 
             if (javaDoc != null) {
                 Comment comment = null;
@@ -609,7 +613,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return sb.toString();
     }
 
-    private ExpressionTree translateExpression(ExpressionTree expressionTree, final List<? extends ExpressionTree> currentArguments, Element p) {
+    private ExpressionTree translateExpression(ExpressionTree expressionTree, final List<? extends ExpressionTree> currentArguments, ExecutableElement p) {
         final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
         boolean changed = false;
         do {
@@ -633,9 +637,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             expressionTree = (ExpressionTree) workingCopy.getTreeUtilities().translate(expressionTree, original2Translated);
             
             original2Translated.clear();
-            TreeScanner<Boolean, Element> methodScanner = new TreeScanner<Boolean, Element>() {
+            TreeScanner<Boolean, ExecutableElement> methodScanner = new TreeScanner<Boolean, ExecutableElement>() {
                 @Override
-                public Boolean visitMethodInvocation(MethodInvocationTree node, Element p) {
+                public Boolean visitMethodInvocation(MethodInvocationTree node, ExecutableElement p) {
                     boolean changed = false;
                     final TreePath path = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), node);
                     if(path != null) {
