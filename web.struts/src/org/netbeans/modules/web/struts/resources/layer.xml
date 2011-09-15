@@ -68,16 +68,14 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
+            <folder name="x-struts+xml">
                 <folder name="HyperlinkProviders">
                     <file name="StrutsConfigHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.struts.editor.StrutsConfigHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
-            </folder>
-            <folder name="x-struts+xml">
-                <folder name="Popup"> 
+                <folder name="Popup">
                     <file name="org-netbeans-modules-web-struts-editor-StrutsPopupAction.instance">
                         <attr name="position" intvalue="900"/>
                     </file>
@@ -85,11 +83,11 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
@@ -99,11 +97,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="j2ee">
         <folder name="webtier">
             <folder name="framework">
-                <file name="org-netbeans-modules-web-struts-StrutsFrameworkProvider.instance"> 
+                <file name="org-netbeans-modules-web-struts-StrutsFrameworkProvider.instance">
                     <attr name="position" intvalue="400"/>
                 </file>
             </folder>
@@ -124,7 +122,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"/>          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"/>
             </file>
             <file name="DispatchAction.java" url="templates/DispatchAction.template">
                 <attr name="position" intvalue="0"/>
@@ -148,7 +146,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsFormBean.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"/>          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"/>
             </file>
         </folder>
     </folder>
@@ -230,5 +228,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
 </filesystem>
