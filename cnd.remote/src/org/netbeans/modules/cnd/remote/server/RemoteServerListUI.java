@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
+import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -89,6 +90,17 @@ public class RemoteServerListUI extends ServerListUIEx {
         } else {
             return false;
         }
+    }
+
+    @Override
+    protected boolean showServerRecordPropertiesDialogImpl(ExecutionEnvironment env) {
+        ServerRecord record = RemoteServerList.getInstance().get(env);
+        if (record instanceof RemoteServerRecord) {
+            if (HostPropertiesDialog.invokeMe((RemoteServerRecord)record)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override    
