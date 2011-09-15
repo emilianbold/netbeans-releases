@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.profiler.categories.j2ee;
 
+import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.results.RuntimeCCTNode;
 import org.netbeans.lib.profiler.results.cpu.CPUCallGraphBuilder;
+import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory;
 
 
 /**
@@ -56,5 +58,10 @@ public class TestGraphBuilder extends CPUCallGraphBuilder {
     
     protected RuntimeCCTNode getAppRootNode() {
         return super.getAppRootNode();
+    }
+
+    protected void doStartup(ProfilerClient profilerClient) {
+        super.doStartup(profilerClient);
+        setFactory(new CPUCCTNodeFactory(isCollectingTwoTimeStamps()));
     }
 }
