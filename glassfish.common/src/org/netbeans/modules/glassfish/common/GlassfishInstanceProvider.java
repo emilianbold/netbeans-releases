@@ -70,15 +70,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Peter Williams
  * @author vince kraemer
  */
-public final class GlassfishInstanceProvider implements ServerInstanceProvider {
+public final class GlassfishInstanceProvider implements ServerInstanceProvider, LookupListener {
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
@@ -175,7 +178,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     final private String[] javadocFilenames;
     final private List<String> noPasswordOptions;
     final private CommandFactory cf;
-
+    final private Lookup.Result<RegisteredDDCatalog> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(RegisteredDDCatalog.class);
+    
     private GlassfishInstanceProvider(
             String[] uriFragments, 
             String[] instancesDirNames,
@@ -195,6 +199,23 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
         this.cf = cf;
+        lookupResult.allInstances();
+        
+        lookupResult.addLookupListener(this); 
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Logger.getLogger("glassfish").log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
+        RegisteredDDCatalog catalog = getDDCatalog();
+        if (null != catalog) {
+            if (this.equals(preludeProvider)) {
+                catalog.registerPreludeRunTimeDDCatalog(this);
+            } else {
+                catalog.registerEE6RunTimeDDCatalog(this);
+            }
+        }
+        refreshCatalogFromFirstInstance(this, getDDCatalog());
     }
 
     public static synchronized boolean initialized() {
@@ -206,7 +227,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private static RegisteredDDCatalog getDDCatalog() {
-        return Lookup.getDefault().lookup(RegisteredDDCatalog.class);
+        return Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(RegisteredDDCatalog.class);
     }
 
     private static void refreshCatalogFromFirstInstance(GlassfishInstanceProvider gip, RegisteredDDCatalog catalog) {

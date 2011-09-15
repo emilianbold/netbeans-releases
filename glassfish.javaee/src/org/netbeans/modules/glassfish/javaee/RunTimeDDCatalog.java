@@ -620,23 +620,23 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
             return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBSERVICES_CLIENT_1_2_XSD);
         } else if (XML_XSD.equals(systemId)) {
             return new org.xml.sax.InputSource(new java.io.StringReader(XML_XSD_DEF));
-        } else if (systemId != null && systemId.endsWith("weblogic-web-app")) { //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-web-app.xsd")) { //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-web-app.xsd");  //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-ejb-jar")) {  //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-ejb-jar.xsd")) {  //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-ejb-jar.xsd");  //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-application")) {  //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-application.xsd")) {  //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-application.xsd");  //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-application-client")) {  //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-application-client.xsd")) {  //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-application-client.xsd");  //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-connector")) {  //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-connector.xsd")) {  //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-connector.xsd"); //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-javaee")) { //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-javaee.xsd")) { //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-javaee.xsd"); //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-jms")) { //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-jms.xsd")) { //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-jms.xsd"); //NOI18N
-        } else if (systemId != null && systemId.endsWith("weblogic-webservices")) { //NOI18N
+        } else if (systemId != null && systemId.endsWith("weblogic-webservices.xsd")) { //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"weblogic-webservices.xsd"); //NOI18N
-        } else if (systemId != null && systemId.endsWith("jdbc-data-source")) { //NOI18N
+        } else if (systemId != null && systemId.endsWith("jdbc-data-source.xsd")) { //NOI18N
             return new org.xml.sax.InputSource(SCHEMASLOCATION+"jdbc-data-source.xsd"); //NOI18N
         }
         else {
