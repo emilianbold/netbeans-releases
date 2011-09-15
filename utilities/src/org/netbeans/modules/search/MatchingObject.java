@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.search;
 
+import java.nio.CharBuffer;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.io.InputStream;
 import org.openide.filesystems.FileUtil;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -78,6 +82,12 @@ final class MatchingObject
     /** */
     private static final Logger LOG =
             Logger.getLogger(MatchingObject.class.getName());
+    
+    /**
+     * Char/byte buffer for reading/decoding file contents.
+     */
+    private static final int FILE_READ_BUFFER_SIZE = 4096;
+    
     /** */
     private final ResultModel resultModel;
     /** */
@@ -423,19 +433,61 @@ final class MatchingObject
     FileLock lock() throws IOException {
         return getFileObject().lock();
     }
-    
+
     /**
      * Reads the file if it has not been read already.
      * 
      * @author  TimBoudreau
      * @author  Marian Petras
      */
- 
     private StringBuilder text(boolean refreshCache) throws IOException {
         assert !EventQueue.isDispatchThread();
 
         if (refreshCache || (text == null)) {     
-            text = new StringBuilder(charset == null ? getFileObject().asText() : getFileObject().asText(charset.name()));            
+            if (charset == null) {
+                text = new StringBuilder(getFileObject().asText());
+            } else {
+                InputStream istm = getFileObject().getInputStream();
+                try {
+                    CharsetDecoder decoder = charset.newDecoder();
+
+                    ByteBuffer fileBuf = ByteBuffer.allocate(FILE_READ_BUFFER_SIZE);
+                    CharBuffer charBuf = CharBuffer.allocate(FILE_READ_BUFFER_SIZE);
+                    text = new StringBuilder();
+
+                    int read;
+                    // read from the stream
+                    while ((read = istm.read(fileBuf.array(), fileBuf.arrayOffset() + fileBuf.position(), fileBuf.remaining())) != -1) {
+                        fileBuf.limit(fileBuf.position() + read);
+                        fileBuf.position(0);
+
+                        // can safely ignore OVERFLOW, as there will be always character space
+                        // in the buffer. Can also ignore UNDERFLOW, as new input will be given on the next
+                        // loop iteration 
+                        decoder.decode(fileBuf, charBuf, false);
+
+                        charBuf.flip();
+                        text.append(charBuf, charBuf.position(), charBuf.remaining());
+                        charBuf.clear();
+                        fileBuf.compact();
+                    }
+
+                    // final decode, potentially with an empty fileBuf
+                    fileBuf.limit(fileBuf.position());
+                    decoder.decode(fileBuf, charBuf, true);
+
+                    boolean repeat;
+
+                    do {
+                        repeat = decoder.flush(charBuf).isOverflow();
+                        charBuf.flip();
+                        text.append(charBuf, charBuf.position(), charBuf.remaining());
+                        charBuf.clear();
+                    } while (repeat);
+                } finally {
+                    istm.close();
+                }
+            }
         }      
         return text;
     }

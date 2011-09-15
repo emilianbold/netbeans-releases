@@ -142,7 +142,9 @@ public class BufferedCharSequence implements CharSequence {
      * @param charset is a named mapping that will be used to decode a sequence
      *                of bytes from the {@code stream}.
      * @param size is the size of the file.
+     * @deprecated tempts to use charset names, use {@link #BufferedCharSequence(java.io.InputStream, java.nio.charset.CharsetDecoder, long) 
      */
+    @Deprecated
     public BufferedCharSequence(final InputStream stream, Charset charset, long size) {
         // TODO charset.name() is used instead of charset due to a bug in the
         // org.netbeans.api.queries.FileEncodingQuery.ProxyCharset.ProxyDecoder
@@ -502,6 +504,9 @@ public class BufferedCharSequence implements CharSequence {
         private int read() {
             try {
                 if(buffer.hasArray()) {
+                    if (buffer.capacity() == 0) {
+                        return -1;
+                    }
                     int res = bstream.read(buffer.array(), buffer.position(), buffer.remaining());
                     if(res > 0) {
                         buffer.position(res + buffer.position());
@@ -556,6 +561,7 @@ public class BufferedCharSequence implements CharSequence {
     private class Sink {
 
         private Buffer buffer;
+        private boolean wasEndOfInput;
 
         public Sink(Source source) {
             int sourceCapacity = source.getCapacity();
@@ -568,6 +574,7 @@ public class BufferedCharSequence implements CharSequence {
         }
 
         public void reset() {            
+            wasEndOfInput = false;
             buffer.reset();
         }
 
@@ -584,16 +591,25 @@ public class BufferedCharSequence implements CharSequence {
          * @return {@code true} is successful, otherwise {@code false}.
          */
         private boolean next() {
+            if (wasEndOfInput) {
+                return false;
+            }
+            
             CharBuffer out = buffer.clear();           
-            boolean endOfInput = false;
-            if(coderResult == CoderResult.UNDERFLOW) {
-                endOfInput = source.readNext();
-            }
-            while((coderResult =
-                    decoder.decode(source.buffer, out, endOfInput))
-                    == CoderResult.OVERFLOW) {
-                out = buffer.growBuffer();                
-            }
+            boolean endOfInput = wasEndOfInput;
+            
+            do {
+                if(coderResult == CoderResult.UNDERFLOW) {
+                    endOfInput = source.readNext();
+                }
+                coderResult = decoder.decode(source.buffer, out, endOfInput);
+                if (coderResult.isOverflow()) {
+                    out = buffer.growBuffer();
+                }
+                // loop if underflow is reported, EOF is not reached && no chars
+                // produced, otherwise our logic could be damaged
+            } while (out.position() == 0 && coderResult.isUnderflow() && !endOfInput);
+            
             if(endOfInput) {
                 while((coderResult = decoder.flush(out))
                         == CoderResult.OVERFLOW) {
@@ -601,6 +617,7 @@ public class BufferedCharSequence implements CharSequence {
                 }
             }
             buffer.adjustScope();
+            wasEndOfInput = endOfInput;
             return !buffer.scope.isEmpty();
         }
 
