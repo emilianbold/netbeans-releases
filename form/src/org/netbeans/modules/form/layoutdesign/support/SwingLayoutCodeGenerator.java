@@ -175,7 +175,7 @@ public class SwingLayoutCodeGenerator {
     {
         int groupAlignment = group.getGroupAlignment();
         if (group.isParallel()) {
-            boolean notResizable = group.getMaximumSize(false) == LayoutConstants.USE_PREFERRED_SIZE;
+            boolean notResizable = group.getMaximumSize() == LayoutConstants.USE_PREFERRED_SIZE;
             String alignmentStr = convertAlignment(groupAlignment);
             layout.append(layoutVarName).append(".createParallelGroup("); // NOI18N
             layout.append(alignmentStr);
@@ -226,25 +226,31 @@ public class SwingLayoutCodeGenerator {
             }
             composeGroup(layout, interval, null, first, last);
         } else {
-            int min = interval.getMinimumSize(false);
-            int pref = interval.getPreferredSize(false);
-            int max = interval.getMaximumSize(false);
+            int min = interval.getMinimumSize();
+            int pref = interval.getPreferredSize();
+            int max = interval.getMaximumSize();
             if (interval.isComponent()) {
                 layout.append(getAddComponentStr());
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
                 ComponentInfo info = componentIDMap.get(layoutComp.getId());
+                boolean horizontal = layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval;
                 if (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
-                    int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
-                    if ((dimension == LayoutConstants.HORIZONTAL) && info.component.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
+                    if (horizontal && info.component.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
                         min = 0;
                     } else if (pref >= 0) {
                         Dimension minSize = info.component.getMinimumSize();
-                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? minSize.width : minSize.height;
+                        int compMin = horizontal ? minSize.width : minSize.height;
                         if (compMin > pref) {
                             min = LayoutConstants.USE_PREFERRED_SIZE;
                         }
                     }
+                }
+                // workaround for bug in GroupLayout that does not align properly on baseline
+                // if some component has 0 preferred width (even if actual size is bigger)
+                if (pref == 0 && max >= Short.MAX_VALUE && horizontal
+                        && layoutComp.getLayoutInterval(LayoutConstants.VERTICAL).getAlignment() == LayoutConstants.BASELINE) {
+                    pref = 1;
                 }
                 assert (info.variableName != null);
                 if (interval.getParent().isSequential() || (alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)
@@ -277,7 +283,7 @@ public class SwingLayoutCodeGenerator {
             } else if (interval.isEmptySpace()) {
                 boolean preferredGap;
                 LayoutConstants.PaddingType gapType = interval.getPaddingType();
-                if (interval.isDefaultPadding(false)) {
+                if (interval.isDefaultPadding()) {
                     if (gapType != null && gapType == LayoutConstants.PaddingType.SEPARATE) {
                         // special case - SEPARATE padding not known by LayoutStyle
                         preferredGap = false;
@@ -304,8 +310,11 @@ public class SwingLayoutCodeGenerator {
                         }
                         layout.append(getPaddingTypeStr(gapType));
                     }
+                    // workaround GroupLayout bug - default container gap as last
+                    // should not be resizing (may cause problems), luckily it
+                    // makes no difference if it is fixed
                     if ((pref != LayoutConstants.NOT_EXPLICITLY_DEFINED)
-                        || ((max != LayoutConstants.NOT_EXPLICITLY_DEFINED)
+                        || (!last && (max != LayoutConstants.NOT_EXPLICITLY_DEFINED)
                             // NOT_EXPLICITLY_DEFINED is the same as USE_PREFERRED_SIZE in this case
                             && (max != LayoutConstants.USE_PREFERRED_SIZE))) {
                         if (!first && !last) {

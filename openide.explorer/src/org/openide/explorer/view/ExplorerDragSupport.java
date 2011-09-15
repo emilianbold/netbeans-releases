@@ -228,6 +228,9 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
         this.active = active;
 
         DragGestureRecognizer dgr = getDefaultGestureRecognizer();
+        if (dgr == null) {
+            return;
+        }
 
         if (active) {
             dgr.setSourceActions(getAllowedDragActions());

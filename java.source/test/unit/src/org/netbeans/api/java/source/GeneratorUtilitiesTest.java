@@ -512,6 +512,19 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         }, false);
     }
 
+    public void testAddImports9a() throws Exception {
+        performTest("package test;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections", "java.util.List", "java.awt.Component", "java.awt.Container", "java.awt.Dialog", "java.awt.Graphics", "java.awt.Menu"), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(0, info.getDiagnostics().size());
+                List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+                assertEquals(3, imports.size());
+                assertEquals("java.awt.*", imports.get(0).getQualifiedIdentifier().toString());
+                assertEquals("java.util.*", imports.get(1).getQualifiedIdentifier().toString());
+                assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
+            }
+        }, false);
+    }
+
     public void testAddImports10() throws Exception {
         performTest("package test;\nimport static java.lang.Math.max;\npublic class Test { }\n", "1.5", new AddImportsTask("java.lang.Math.abs", "java.lang.Math.min"), new Validator() {
             public void validate(CompilationInfo info) {

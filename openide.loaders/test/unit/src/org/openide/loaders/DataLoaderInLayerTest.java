@@ -96,6 +96,12 @@ public class DataLoaderInLayerTest extends NbTestCase {
         LOG = Logger.getLogger("test." + getName());
         FileUtil.setMIMEType("simple", "text/plain");
         FileUtil.setMIMEType("ant", "text/ant+xml");
+        LOG.info("setUp is over");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        LOG.info("tearDown");
     }
     
     private static void addRemoveLoader(DataLoader l, boolean add) throws Exception {
@@ -325,6 +331,8 @@ public class DataLoaderInLayerTest extends NbTestCase {
         FileSystem lfs = createFS("folder/file.simple");
         FileObject fo = lfs.findResource("folder/file.simple");
         assertNotNull(fo);
+        assertFalse("No folder", fo.isFolder());
+        assertTrue("Real data", fo.isData());
         DataObject first = DataObject.find(fo);
         LOG.log(Level.INFO, "default data object created: {0}", first);
         assertEquals("Realy default", DefaultDataObject.class, first.getClass());

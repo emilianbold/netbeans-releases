@@ -234,10 +234,16 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Cust
         browseJavadocButton.setEnabled(enableCheckBox.isSelected());
         browseSourcesButton.setEnabled(enableCheckBox.isSelected());
         
-        if (enableCheckBox.isSelected() && !isPlatformValid()) {
-            setErrorMessage();
+        if (enableCheckBox.isSelected()) {
+            if (isPlatformValid()) {
+                clearErrorMessage();
+                saveProperties();
+            } else {
+                setErrorMessage();
+            }
         } else {
             clearErrorMessage();
+            clearProperties();
         }
     }//GEN-LAST:event_enableCheckBoxItemStateChanged
 
@@ -440,7 +446,11 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     @Override
     public void setObject(Object bean) {
         this.platform = (JavaPlatform) bean;
-        readProperties();
+        if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+            readProperties();
+        } else {
+            enableCheckBox.setSelected(false);
+        }
     }
 
     private void saveProperties() {
@@ -475,6 +485,10 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             PlatformPropertiesHandler.saveGlobalProperties(map);
         }
     }
+    
+    private void clearProperties() {
+        PlatformPropertiesHandler.clearGlobalPropertiesForPlatform(platform);
+    }
 
     private void readProperties() {
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
@@ -483,15 +497,13 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         String runtimePath = properties.get(Utils.getRuntimePropertyKey(platform));
         String javadocPath = properties.get(Utils.getJavadocPropertyKey(platform));
         String srcPath = properties.get(Utils.getSourcesPropertyKey(platform));
-        
+
         sdkTextField.setText(sdkPath);
         runtimeTextField.setText(runtimePath);
         javadocTextField.setText(javadocPath);
         srcTextField.setText(srcPath);
-        
-        if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
-            enableCheckBox.setSelected(true);
-        }
+
+        enableCheckBox.setSelected(true);
     }
     
     private boolean isPlatformValid() {

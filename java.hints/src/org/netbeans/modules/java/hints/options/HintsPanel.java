@@ -71,6 +71,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -868,9 +869,18 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             public void valueForPathChanged(TreePath path, Object newValue) {
                 DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
                 if (o.getUserObject() instanceof HintMetadata) {
-                    HintMetadata hint = (HintMetadata) o.getUserObject();
-                    throw new UnsupportedOperationException("Not implemented yet");
-                    
+                    try {
+                        HintMetadata hint = (HintMetadata) o.getUserObject();
+                        getDataObject(hint).rename((String) newValue);
+                        RulesManager.getInstance().allHints.clear();
+                        RulesManager.getInstance().reload();
+                        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                        errorTree.setModel(errorTreeModel);
+                        select(getHintByName((String) newValue));
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(errorTree, NbBundle.getMessage(HintsPanel.class, "ERR_CannotRename", newValue));
+                        errorTree.startEditingAtPath(path);
+                    }
                 }
             }
         };

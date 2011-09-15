@@ -5,7 +5,7 @@
           <Group type="sequential" alignment="leading" attributes="0">
               <EmptySpace max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="trailing" attributes="16">
-                  <Component id="jLabel4" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
+                  <Component id="jLabel4" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jLabel1" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jLabel2" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jLabel3" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
@@ -22,8 +22,8 @@
                       <EmptySpace max="$pref" attributes="0"/>
                       <Component id="jTextField1" pref="90" max="Short.MAX_VALUE" attributes="0"/>
                   </Group>
-                  <Component id="jTextField2" alignment="leading" pref="171" max="Short.MAX_VALUE" attributes="0"/>
-                  <Component id="jTextField3" alignment="leading" pref="171" max="Short.MAX_VALUE" attributes="0"/>
+                  <Component id="jTextField2" max="Short.MAX_VALUE" attributes="0"/>
+                  <Component id="jTextField3" max="Short.MAX_VALUE" attributes="0"/>
               </Group>
               <EmptySpace min="$pref" pref="32" max="$pref" attributes="12"/>
           </Group>

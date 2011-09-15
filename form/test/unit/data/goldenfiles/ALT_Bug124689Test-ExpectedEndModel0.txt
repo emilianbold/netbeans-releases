@@ -4,13 +4,13 @@
       <Group type="parallel" groupAlignment="leading" attributes="0">
           <Group type="sequential" attributes="0">
               <EmptySpace min="$pref" pref="18" max="$pref" attributes="12"/>
-              <Group type="parallel" groupAlignment="leading" attributes="16">
-                  <Component id="jDesktopPane1" pref="183" max="Short.MAX_VALUE" attributes="1"/>
-                  <Group type="parallel" alignment="leading" groupAlignment="trailing" max="$pref" attributes="0">
-                      <Component id="jTabbedPane1" min="$pref" pref="183" max="$pref" attributes="0"/>
+              <Group type="parallel" groupAlignment="trailing" attributes="16">
+                  <Component id="jTabbedPane1" min="$pref" pref="183" max="$pref" attributes="0"/>
+                  <Group type="parallel" alignment="trailing" groupAlignment="leading" max="$pref" attributes="0">
                       <Component id="jToolBar1" alignment="leading" min="$pref" pref="100" max="$pref" attributes="0"/>
                       <Component id="jSplitPane1" alignment="leading" max="Short.MAX_VALUE" attributes="1"/>
                   </Group>
+                  <Component id="jDesktopPane1" max="Short.MAX_VALUE" attributes="1"/>
               </Group>
               <EmptySpace type="separate" max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="leading" attributes="16">

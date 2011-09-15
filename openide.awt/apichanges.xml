@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="closebutton.api">
+        <api name="awt"/>
+        <summary>Close Button API</summary>
+        <version major="7" minor="38"/>
+        <date day="14" month="9" year="2011"/>
+        <author login="mkristofic"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>
+                New close button factory to a create close button or a big close button.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="CloseButtonFactory"/>
+        <issue number="201639"/>
+    </change>
     <change id="mnemonics.in.popup">
         <api name="awt"/>
         <summary>Turn on Mnemonics in Popup Menus</summary>

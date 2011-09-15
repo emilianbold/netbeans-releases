@@ -256,12 +256,12 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
          */
         private String findIconPath( NimbusEditorTabCellRenderer renderer  ) {
             if( renderer.inCloseButton() && renderer.isPressed() ) {
-                return "org/netbeans/swing/tabcontrol/resources/gtk_close_pressed.png"; // NOI18N
+                return "org/openide/awt/resources/gtk_close_pressed.png"; // NOI18N
             }
             if( renderer.inCloseButton() ) {
-                return "org/netbeans/swing/tabcontrol/resources/gtk_close_rollover.png"; // NOI18N
+                return "org/openide/awt/resources/gtk_close_rollover.png"; // NOI18N
             }
-            return "org/netbeans/swing/tabcontrol/resources/gtk_close_enabled.png"; // NOI18N
+            return "org/openide/awt/resources/gtk_close_enabled.png"; // NOI18N
         }
         
         public boolean supportsCloseButton(JComponent renderer) {

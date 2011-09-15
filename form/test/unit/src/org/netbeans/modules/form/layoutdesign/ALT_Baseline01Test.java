@@ -68,6 +68,7 @@ public class ALT_Baseline01Test extends LayoutTestCase {
 
     // Resize jTextField1 downwards.
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));

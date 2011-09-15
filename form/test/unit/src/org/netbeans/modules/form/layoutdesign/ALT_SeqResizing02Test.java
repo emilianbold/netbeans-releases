@@ -70,6 +70,7 @@ public class ALT_SeqResizing02Test extends LayoutTestCase {
      * jButton1's top edge (aligning with component in another sequence).
      */
     public void doChanges0() {
+        lm.setChangeRecording(true); // here to make sure it does not interfere
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
         contInterior.put("jPanel1", new Rectangle(26, 30, 100, 100));

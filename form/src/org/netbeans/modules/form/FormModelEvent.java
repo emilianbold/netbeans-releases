@@ -807,31 +807,32 @@ public class FormModelEvent extends EventObject
 
         private void undoSyntheticPropertyChange() {
             String propName = getPropertyName();
+            RADComponent metacomp = getComponent();
             if (propName.startsWith(RADProperty.SYNTH_PREFIX)) {
                 // special case - pre/post init code of a property
                 if (propName.startsWith(RADProperty.SYNTH_PRE_CODE)) {
-                    FormProperty prop = (FormProperty)
-                      getComponent().getPropertyByName(
+                    FormProperty prop = (FormProperty) metacomp.getPropertyByName(
                         propName.substring(RADProperty.SYNTH_PRE_CODE.length()));
                     prop.setPreCode((String)getOldPropertyValue());
                 }
                 else if (propName.startsWith(RADProperty.SYNTH_POST_CODE)) {
-                    FormProperty prop = (FormProperty)
-                      getComponent().getPropertyByName(
+                    FormProperty prop = (FormProperty) metacomp.getPropertyByName(
                         propName.substring(RADProperty.SYNTH_POST_CODE.length()));
                     prop.setPostCode((String)getOldPropertyValue());
                 }
             } else { 
                 Node.Property[] props;
-                if (getComponent() == null) { // form synthetic property
+                if (metacomp == null) { // form synthetic property
                     FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
                     FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
                     props = rootNode.getAllProperties();
                 } else { // component synthetic property
-                    props = getComponent().getSyntheticProperties();
+                    props = metacomp.getSyntheticProperties();
                 }
+                boolean found = false;
                 for (int i=0; i < props.length; i++) {
                     if (props[i].getName().equals(propName)) {
+                        found = true;
                         try {
                             props[i].setValue(getOldPropertyValue());
                         }
@@ -841,36 +842,41 @@ public class FormModelEvent extends EventObject
                         break;
                     }
                 }
+                if (!found) { // hack for FormDesigner.PROP_DESIGNER_SIZE property on subcontainers
+                    getFormModel().fireSyntheticPropertyChanged(metacomp, propName,
+                            getNewPropertyValue(), getOldPropertyValue());
+                }
             }
         }
 
         private void redoSyntheticPropertyChange() {
             String propName = getPropertyName();
+            RADComponent metacomp = getComponent();
             if (propName.startsWith(RADProperty.SYNTH_PREFIX)) {
                 // special case - pre/post init code of a property
                 if (propName.startsWith(RADProperty.SYNTH_PRE_CODE)) {
-                    FormProperty prop = (FormProperty)
-                      getComponent().getPropertyByName(
+                    FormProperty prop = (FormProperty) metacomp.getPropertyByName(
                         propName.substring(RADProperty.SYNTH_PRE_CODE.length()));
                     prop.setPreCode((String)getNewPropertyValue());
                 }
                 else if (propName.startsWith(RADProperty.SYNTH_POST_CODE)) {
-                    FormProperty prop = (FormProperty)
-                      getComponent().getPropertyByName(
+                    FormProperty prop = (FormProperty) metacomp.getPropertyByName(
                         propName.substring(RADProperty.SYNTH_POST_CODE.length()));
                     prop.setPostCode((String)getNewPropertyValue());
                 }
             } else {
                 Node.Property[] props;
-                if (getComponent() == null) { // form synthetic property
+                if (metacomp == null) { // form synthetic property
                     FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
                     FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
                     props = rootNode.getAllProperties();
                 } else { // component synthetic property
-                    props = getComponent().getSyntheticProperties();
+                    props = metacomp.getSyntheticProperties();
                 }
+                boolean found = false;
                 for (int i=0; i < props.length; i++) {
                     if (props[i].getName().equals(propName)) {
+                        found = true;
                         try {
                             props[i].setValue(getNewPropertyValue());
                         }
@@ -879,6 +885,10 @@ public class FormModelEvent extends EventObject
                         }
                         break;
                     }
+                }
+                if (!found) { // hack for FormDesigner.PROP_DESIGNER_SIZE property on subcontainers
+                    getFormModel().fireSyntheticPropertyChanged(metacomp, propName,
+                            getOldPropertyValue(), getNewPropertyValue());
                 }
             }
         }
