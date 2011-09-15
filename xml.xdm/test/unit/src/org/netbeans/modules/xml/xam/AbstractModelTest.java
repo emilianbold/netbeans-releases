@@ -370,7 +370,7 @@ public class AbstractModelTest extends NbTestCase {
         assertEquals("undo sync", 0, mModel.getRootComponent().getChildren(C.class).size());
     }
     
-    public void BLOCKED_BY_201475_testSourceEditSyncUndo() throws Exception {
+    public void testSourceEditSyncUndo() throws Exception {
         defaultSetup();
         UndoManager urListener = new UndoManager();
         Document doc = mModel.getBaseDocument();

@@ -130,8 +130,7 @@ public class VisualReplicator {
             Container contDelegate = metacont.getContainerDelegate(cont);
 
             builder = new SwingLayoutBuilder(getFormModel().getLayoutModel(),
-                                             contDelegate, containerId,
-                                             getDesignRestrictions());
+                                             contDelegate, containerId);
             layoutBuilders.put(containerId, builder);
         }
         return builder;

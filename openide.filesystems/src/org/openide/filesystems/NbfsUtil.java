@@ -144,7 +144,7 @@ final class NbfsUtil {
 
     private static String encodeFsPart(FileObject fo) throws FileStateInvalidException {
         FileSystem fs = fo.getFileSystem();
-
+        assert fs != null : "File object " + fo + " returns null from getFileSystem()";
         return encoder(fs.getSystemName());
     }
 

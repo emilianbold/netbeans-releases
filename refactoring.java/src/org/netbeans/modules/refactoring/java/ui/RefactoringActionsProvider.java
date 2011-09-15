@@ -1021,7 +1021,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (ec != null && ec.getOpenedPanes() != null) {
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             if (activetc instanceof CloneableEditorSupport.Pane) {
-                return true;
+                return ec.getDocument()!=null;
             }
         }
         return false;

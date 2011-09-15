@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -74,6 +75,9 @@ public abstract class LayoutTestCase extends TestCase {
     
     protected FileObject startingFormFile;
     protected File expectedLayoutFile;
+
+    /** False by default - interval attribute values not significant. */
+    protected boolean checkAttributes;
     
     protected HashMap contInterior = new HashMap();
     protected HashMap baselinePosition = new HashMap();
@@ -90,7 +94,9 @@ public abstract class LayoutTestCase extends TestCase {
     protected String goldenFilesPath = "../../../test/unit/data/goldenfiles/";
 
     protected String className;
-    
+
+    private static final String ATTR_PREFIX = "attributes=";
+
     public LayoutTestCase(String name) {
         super(name);
         String resName = LayoutTestCase.class.getName().replace('.', '/') + ".class";
@@ -134,7 +140,7 @@ public abstract class LayoutTestCase extends TestCase {
 
                     System.out.print("Comparing ... ");
 
-                    boolean same = expectedLayout.equals(currentLayout);
+                    boolean same = compare(currentLayout, expectedLayout);
                     if (!same) {
                         System.out.println("failed");
                         System.out.println("EXPECTED: ");
@@ -163,15 +169,51 @@ public abstract class LayoutTestCase extends TestCase {
         }
     }
 
+    private boolean compare(String actual, String expected) {
+        String[] lines1 = actual.split("\n");
+        String[] lines2 = expected.split("\n");
+        if (lines1.length != lines2.length) {
+            return false;
+        }
+        for (int i=0; i < lines1.length; i++) {
+            if (!lineContent(lines1[i]).equals(lineContent(lines2[i]))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String lineContent(String line) {
+        line = line.trim();
+        if (!checkAttributes) { // extract attributes
+            int i1 = line.indexOf(ATTR_PREFIX);
+            if (i1 >= 0) {
+                int i2 = i1 + ATTR_PREFIX.length();
+                int n = line.length();
+                if (i2 < n && line.charAt(i2) == '\"') { // first quotation mark
+                    i2++;
+                    while (i2 < n) {
+                        if (line.charAt(i2) == '\"') { // second quotation mark
+                            line = line.substring(0, i1) + line.substring(i2+1);
+                            break;
+                        }
+                        i2++;
+                    }
+                }
+            }
+        }
+        return line;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
         testSwitch = System.getProperty(LayoutDesigner.TEST_SWITCH);
         System.setProperty(LayoutDesigner.TEST_SWITCH, "true"); // NOI18N
         hackFormLAF(true);
     }
 
+    @Override
     protected void tearDown() throws Exception {
-        hackFormLAF(false);
         if (testSwitch != null)
             System.setProperty(LayoutDesigner.TEST_SWITCH, testSwitch);
         else
@@ -181,34 +223,52 @@ public abstract class LayoutTestCase extends TestCase {
 
     private void hackFormLAF(boolean b) {
         try {
-            Field f = FormLAF.class.getDeclaredField("preview"); // NOI18N
-            f.setAccessible(true);
-            f.setBoolean(null, b);
+            Field f1 = FormLAF.class.getDeclaredField("preview"); // NOI18N
+            Field f2 = FormLAF.class.getDeclaredField("lafBlockEntered"); // NOI18N
+            f1.setAccessible(true);
+            f2.setAccessible(true);
+            f1.setBoolean(null, b);
+            f2.setBoolean(null, b);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     private void loadForm(final FileObject file) {
-        FormModel fm = null;
-        GandalfPersistenceManager gpm = new GandalfPersistenceManager();
-        List<Throwable> errors = new ArrayList<Throwable>();
+        final FormModel[] fm = new FormModel[1];
+        final Exception[] failure = new Exception[1];
         try {
-            fm = gpm.loadForm(file, file, null, errors);
-        } catch (PersistenceException pe) {
-            fail(pe.toString());
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    try {
+                        hackFormLAF(true);
+                        List<Throwable> errors = new ArrayList<Throwable>();
+
+                        fm[0] = new GandalfPersistenceManager().loadForm(file, file, null, errors);
+
+                        if (errors.size() > 0) {
+                            System.out.println("There were errors while loading the form: ");
+                            for (Throwable er : errors) {
+                                er.printStackTrace();
+                            }
+                        }
+                    } catch (PersistenceException pe) {
+                        failure[0] = pe;
+                    } finally {
+                        hackFormLAF(false);
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            fail(ex.toString());
+        }
+        if (failure[0] != null) {
+            fail(failure[0].toString());
         }
 
-        if (errors.size() > 0) {
-            System.out.println("There were errors while loading the form: ");
-            for (Throwable er : errors) {
-                er.printStackTrace();
-            }
-        }
+        lm = fm[0].getLayoutModel();
 
-        lm = fm.getLayoutModel();
-
-        ld = new LayoutDesigner(lm, new FakeLayoutMapper(fm,
+        ld = new LayoutDesigner(lm, new FakeLayoutMapper(fm[0],
                                                          contInterior,
                                                          baselinePosition,
                                                          prefPaddingInParent,
@@ -217,6 +277,7 @@ public abstract class LayoutTestCase extends TestCase {
                                                          compPrefSize,
                                                          hasExplicitPrefSize,
                                                          prefPadding));
+        ld.setActive(true);
     }
     
     private String getCurrentLayoutDump() {

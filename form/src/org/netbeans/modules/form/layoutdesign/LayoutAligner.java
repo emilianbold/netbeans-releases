@@ -143,7 +143,7 @@ class LayoutAligner implements LayoutConstants {
             iter = gapsToResize.iterator();
             while (iter.hasNext()) {
                 LayoutInterval gap = (LayoutInterval)iter.next();
-                designer.setIntervalResizing(gap, true);
+                operations.setIntervalResizing(gap, true);
             }
         }
 
@@ -604,10 +604,10 @@ class LayoutAligner implements LayoutConstants {
             if ((alignment == TRAILING) && !closed) {
                 int preGap = leadingRegion.positions[dimension][LEADING]
                     - parentRegion.positions[dimension][LEADING];
-                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, SEQUENTIAL, LEADING);
+                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, LEADING, false, true, false);
                 leadingGaps = leadingGaps && (preGap != 0);
                 if ((gapInterval != null) && gapInterval.isEmptySpace() && parParent.isParentOf(gapInterval)
-                    && (LayoutInterval.getIntervalCurrentSize(gapInterval, dimension) == preGap)) {
+                    && (LayoutInterval.getCurrentSize(gapInterval, dimension) == preGap)) {
                     LayoutInterval gap = cloneGap(gapInterval);
                     newSequenceList.add(gap);
                     gapSizes.put(gap, new Integer(preGap));
@@ -641,12 +641,12 @@ class LayoutAligner implements LayoutConstants {
                 
                 // Determine gap between before the processed interval
                 LayoutRegion trailingRegion = trailingInterval.getCurrentSpace();
-                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, SEQUENTIAL, TRAILING);
+                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, TRAILING, false, true, false);
                 int gapSize = trailingRegion.positions[dimension][LEADING]
                     - leadingRegion.positions[dimension][TRAILING];
                 boolean gapFound = false;
                 if (gapInterval.isEmptySpace()) {
-                    LayoutInterval neighbor = LayoutInterval.getNeighbor(gapInterval, SEQUENTIAL, TRAILING);
+                    LayoutInterval neighbor = LayoutInterval.getNeighbor(gapInterval, TRAILING, false, true, false);
                     if (neighbor == trailingInterval) {
                         gapFound = true;
                         LayoutInterval gap = cloneGap(gapInterval);
@@ -684,9 +684,9 @@ class LayoutAligner implements LayoutConstants {
                 int postGap = parentRegion.positions[dimension][TRAILING]
                     - leadingRegion.positions[dimension][TRAILING];
                 trailingGaps = trailingGaps && (postGap != 0);
-                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, SEQUENTIAL, TRAILING);
+                LayoutInterval gapInterval = LayoutInterval.getNeighbor(leadingInterval, TRAILING, false, true, false);
                 if ((gapInterval != null) && gapInterval.isEmptySpace() && parParent.isParentOf(gapInterval)
-                    && (LayoutInterval.getIntervalCurrentSize(gapInterval, dimension) == postGap)) {
+                    && (LayoutInterval.getCurrentSize(gapInterval, dimension) == postGap)) {
                     LayoutInterval gap = cloneGap(gapInterval);
                     newSequenceList.add(gap);
                     gapSizes.put(gap, new Integer(postGap));
@@ -805,12 +805,6 @@ class LayoutAligner implements LayoutConstants {
         // Check resizability
         if ((gapsToResize.size() > 0) && !resizable && (alignment != CENTER)) {
             operations.suppressGroupResizing(parParent);
-            Iterator iter = gapsToResize.iterator();
-            while (iter.hasNext()) {
-                LayoutInterval gap = (LayoutInterval)iter.next();
-                layoutModel.changeIntervalAttribute(gap, LayoutInterval.ATTRIBUTE_FORMER_FILL, false);
-                layoutModel.changeIntervalAttribute(gap, LayoutInterval.ATTRIBUTE_FILL, true);
-            }
         }
         return gapsToResize;
     }
@@ -1190,13 +1184,13 @@ class LayoutAligner implements LayoutConstants {
             if (pre != 0) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
                 gap.setSize(pre);
-                if (interval.getAlignment() == TRAILING) designer.setIntervalResizing(gap, true);
+                if (interval.getAlignment() == TRAILING) operations.setIntervalResizing(gap, true);
                 layoutModel.addInterval(gap, interval, 0);
             }
             if (post != 0) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
                 gap.setSize(post);
-                if (interval.getAlignment() == LEADING) designer.setIntervalResizing(gap, true);
+                if (interval.getAlignment() == LEADING) operations.setIntervalResizing(gap, true);
                 layoutModel.addInterval(gap, interval, -1);
             }
             

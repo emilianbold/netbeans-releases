@@ -63,8 +63,9 @@ import org.openide.util.Exceptions;
 final class NetigsoModule extends Module {
     static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
 
-    private File jar;
-    private Manifest manifest;
+    private final File jar;
+    private final Manifest manifest;
+    private int startLevel;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
@@ -222,6 +223,15 @@ final class NetigsoModule extends Module {
             return null;
         }
         return s.replaceFirst(";.*$", "");
+    }
+
+    @Override
+    final int getStartLevelImpl() {
+        return startLevel;
+    }
+
+    final void setStartLevel(int startLevel) {
+        this.startLevel = startLevel;
     }
 
     private final class DelegateCL extends ProxyClassLoader 

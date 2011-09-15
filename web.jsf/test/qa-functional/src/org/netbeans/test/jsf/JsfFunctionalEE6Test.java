@@ -41,7 +41,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test JSF support.
+ * Test JSF support in Java EE 6 project.
  *
  * @author Lukasz Grela
  * @author Jiri Skrivanek
@@ -49,9 +49,18 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JsfFunctionalEE6Test extends JsfFunctionalTest {
 
-    /**
-     * Need to be defined because of JUnit
-     */
+    public static final String[] TESTS = {
+        "testNewJSFWebProject",
+        "testCleanAndBuildProject",
+        "testCompileAllJSP",
+        "testRedeployProject",
+        "testManagedBeanWizard",
+        "testManagedBeanDelete",
+        "testAddJSFToProject",
+        "testShutdownDb",
+        "testFinish"
+    };
+
     public JsfFunctionalEE6Test(String name) {
         super(name);
         PROJECT_NAME = "WebJSFProjectEE6";
@@ -59,19 +68,7 @@ public class JsfFunctionalEE6Test extends JsfFunctionalTest {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalEE6Test.class);
-        conf = addServerTests(Server.GLASSFISH, conf,
-                "testPreconditions",
-                "testNewJSFWebProject",
-                "testRedeployProject",
-                "testCleanAndBuildProject",
-                "testCompileAllJSP",
-                "testCleanAndBuildProject",
-                "testCompileAllJSP",
-                "testStopServer",
-                "testManagedBeanWizard",
-                "testManagedBeanDelete",
-                "testAddJSFToProject",
-                "testShutdownDb");
+        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -79,10 +76,5 @@ public class JsfFunctionalEE6Test extends JsfFunctionalTest {
     @Override
     protected String getEEVersion() {
         return JAVA_EE_6;
-    }
-
-    @Override
-    protected String getJSFVersion() {
-        return "2.0";
     }
 }

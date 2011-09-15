@@ -83,7 +83,20 @@ import org.openide.util.NbBundle.Messages;
 public class UnusedVariableHint extends AbstractRule {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
-    private static final String THIS_VARIABLE = "this"; //NOI18N
+    private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+
+    static {
+        UNCHECKED_VARIABLES.add("this"); //NOI18N
+        UNCHECKED_VARIABLES.add("GLOBALS"); //NOI18N
+        UNCHECKED_VARIABLES.add("_SERVER"); //NOI18N
+        UNCHECKED_VARIABLES.add("_GET"); //NOI18N
+        UNCHECKED_VARIABLES.add("_POST"); //NOI18N
+        UNCHECKED_VARIABLES.add("_FILES"); //NOI18N
+        UNCHECKED_VARIABLES.add("_COOKIE"); //NOI18N
+        UNCHECKED_VARIABLES.add("_SESSION"); //NOI18N
+        UNCHECKED_VARIABLES.add("_REQUEST"); //NOI18N
+        UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
+    }
 
     @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
@@ -93,7 +106,7 @@ public class UnusedVariableHint extends AbstractRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         VariablesHeap variablesHeap = new VariablesHeap(phpParseResult.getModel(), context.doc);
-        HintsCreator hintsCreator = new HintsCreator(variablesHeap, fileObject);
+        HintsCreator hintsCreator = new HintsCreator(variablesHeap, fileObject, context.doc);
 
         CheckVisitor checkVisitor = new CheckVisitor(variablesHeap);
         phpParseResult.getProgram().accept(checkVisitor);
@@ -111,11 +124,13 @@ public class UnusedVariableHint extends AbstractRule {
 
         @Override
         public void visit(FormalParameter node) {
+            super.visit(node);
             processNode(node);
         }
 
         @Override
         public void visit(Variable node) {
+            super.visit(node);
             processNode(node);
         }
 
@@ -128,6 +143,7 @@ public class UnusedVariableHint extends AbstractRule {
 
         @Override
         public void visit(FunctionInvocation node) {
+            super.visit(node);
             if (node.getFunctionName().getName() instanceof NamespaceName) {
                 NamespaceName namespaceName = (NamespaceName) node.getFunctionName().getName();
                 if (namespaceName.getSegments().size() == 1) {
@@ -137,7 +153,6 @@ public class UnusedVariableHint extends AbstractRule {
                     }
                 }
             }
-            super.visit(node);
         }
 
     }
@@ -165,7 +180,7 @@ public class UnusedVariableHint extends AbstractRule {
 
         public void addNodeUsage(ASTNode node) {
             Identifier identifier = getIdentifier(node);
-            if (identifier != null && !identifier.getName().equals(THIS_VARIABLE)) {
+            if (identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())) {
                 int inScopeOffset = resolveInScopeOffset(node);
                 VariableScope variableScope = model.getVariableScope(inScopeOffset);
                 Map<String, List<Identifier>> scopeVars = getScopeVariables(variableScope);
@@ -230,10 +245,12 @@ public class UnusedVariableHint extends AbstractRule {
         private final List<Hint> hints = new LinkedList<Hint>();
         private final VariablesHeap variablesHeap;
         private final FileObject fileObject;
+        private final BaseDocument doc;
 
-        public HintsCreator(VariablesHeap variablesHeap, FileObject fileObject) {
+        public HintsCreator(VariablesHeap variablesHeap, FileObject fileObject, BaseDocument doc) {
             this.variablesHeap = variablesHeap;
             this.fileObject = fileObject;
+            this.doc = doc;
         }
 
         public List<Hint> getHints() {
@@ -246,10 +263,15 @@ public class UnusedVariableHint extends AbstractRule {
         private void checkVariableScope(VariableScope variableScope) {
             Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
             for (VariableName variableName : declaredVariables) {
-                if (!getPureName(variableName).equals(THIS_VARIABLE)) {
+                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpVarDoc(variableName.getOffset())) {
                     checkVariableName(variableName, variableScope);
                 }
             }
+        }
+
+        private boolean isInPhpVarDoc(int offset) {
+            Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
+            return token.id() == PHPTokenId.PHP_COMMENT;
         }
 
         private void checkVariableName(VariableName variableName, VariableScope variableScope) {
@@ -289,8 +311,8 @@ public class UnusedVariableHint extends AbstractRule {
         @Messages("UnusedVariableHintCustom=Variable ${0} does not seem to be used in its scope")
         private Hint createHint(VariableName variableName) {
             String varName = getPureName(variableName);
-            int start = variableName.getNameRange().getStart() - 1;
-            int end = start + varName.length() + 1;
+            int start = variableName.getNameRange().getStart();
+            int end = start + varName.length();
             OffsetRange offsetRange = new OffsetRange(start, end);
             Hint hint = new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(varName), fileObject, offsetRange, null, 500);
             return hint;

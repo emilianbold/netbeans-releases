@@ -44,16 +44,12 @@
 
 package org.netbeans.core.netigso;
 
-import org.netbeans.core.startup.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Locale;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -62,14 +58,19 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.launch.Framework;
 
 /**
  * How does OSGi integration deals with layer registration?
@@ -79,6 +80,7 @@ import org.osgi.framework.ServiceRegistration;
 public class NetigsoServicesTest extends SetupHid implements LookupListener {
     private static Module m1;
     private static ModuleManager mgr;
+
     private int cnt;
 
     public NetigsoServicesTest(String name) {
@@ -139,7 +141,9 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         Bundle b = findBundle("org.bar");
         assertNotNull("Bundle really found", b);
         IOException s = new IOException();
-        ServiceRegistration sr = b.getBundleContext().registerService(IOException.class.getName(), s, null);
+        Hashtable dict = new Hashtable();
+        dict.put(Constants.SERVICE_DESCRIPTION, "tristatricettri");
+        ServiceRegistration sr = b.getBundleContext().registerService(IOException.class.getName(), s, dict);
         assertBundles("Nobody is using the service yet", 0, sr.getReference().getUsingBundles());
         IOException found = Lookup.getDefault().lookup(IOException.class);
         assertNotNull("Result really found", found);
@@ -147,6 +151,14 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         Result<IOException> res = Lookup.getDefault().lookupResult(IOException.class);
         res.addLookupListener(this);
         assertEquals("One instance found", 1, res.allInstances().size());
+        
+        Collection<? extends Item<IOException>> items = res.allItems();
+        assertEquals("One item found: " + items, 1, items.size());
+        Item<IOException> first = items.iterator().next();
+        String expectedServiceID = "OSGiService[" + sr.getReference().getProperty(Constants.SERVICE_ID) + "]";
+        assertEquals("Proper ID", expectedServiceID, first.getId());
+        assertEquals("Right display name", "tristatricettri", first.getDisplayName());
+        
         sr.unregister();
         IOException notFound = Lookup.getDefault().lookup(IOException.class);
         assertNull("Result not found", notFound);
@@ -166,10 +178,7 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
 
     static Bundle findBundle(String bsn) throws Exception {
-        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
-        assertEquals("The right class", Netigso.class, o.getClass());
-        Netigso f = (Netigso)o;
-        Bundle[] arr = f.getFramework().getBundleContext().getBundles();
+        Bundle[] arr = findFramework().getBundleContext().getBundles();
         for (Bundle b : arr) {
             if (bsn.equals(b.getSymbolicName())) {
                 return b;
@@ -202,7 +211,16 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         return f;
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         cnt++;
+    }
+
+    static Framework findFramework() {
+        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
+        assertEquals("The right class", Netigso.class, o.getClass());
+        Netigso f = (Netigso)o;
+        final Framework frame = f.getFramework();
+        return frame;
     }
 }

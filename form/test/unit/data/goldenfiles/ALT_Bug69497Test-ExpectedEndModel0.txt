@@ -3,31 +3,14 @@
     <DimensionLayout dim="horizontal">
       <Group type="parallel" groupAlignment="leading" attributes="0">
           <Group type="sequential" alignment="leading" attributes="0">
+              <EmptySpace max="$pref" attributes="0"/>
               <Group type="parallel" groupAlignment="leading" attributes="16">
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel1" min="$pref" pref="93" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel3" min="$pref" pref="93" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel5" min="$pref" pref="90" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel2" min="$pref" pref="54" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel6" min="$pref" pref="62" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jLabel7" min="$pref" pref="62" max="$pref" attributes="0"/>
-                  </Group>
+                  <Component id="jLabel1" alignment="leading" min="$pref" pref="93" max="$pref" attributes="0"/>
+                  <Component id="jLabel3" alignment="leading" min="$pref" pref="93" max="$pref" attributes="0"/>
+                  <Component id="jLabel5" alignment="leading" min="$pref" pref="90" max="$pref" attributes="0"/>
+                  <Component id="jLabel2" alignment="leading" min="$pref" pref="54" max="$pref" attributes="0"/>
+                  <Component id="jLabel6" alignment="leading" min="$pref" pref="62" max="$pref" attributes="0"/>
+                  <Component id="jLabel7" alignment="leading" min="$pref" pref="62" max="$pref" attributes="0"/>
               </Group>
               <EmptySpace max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="leading" attributes="16">
@@ -74,14 +57,12 @@
                       <Component id="jLabel1" min="$pref" max="$pref" attributes="0"/>
                   </Group>
               </Group>
-              <Group type="parallel" groupAlignment="leading" attributes="16">
-                  <Group type="sequential" attributes="0">
-                      <Component id="couponField" min="$pref" max="$pref" attributes="0"/>
-                      <EmptySpace min="$pref" pref="9" max="$pref" attributes="0"/>
-                      <Component id="callDateField" min="$pref" max="$pref" attributes="0"/>
-                  </Group>
+              <Group type="parallel" groupAlignment="leading" attributes="512">
+                  <Component id="couponField" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jLabel7" min="$pref" pref="15" max="$pref" attributes="0"/>
               </Group>
+              <EmptySpace min="$pref" pref="9" max="$pref" attributes="0"/>
+              <Component id="callDateField" min="$pref" max="$pref" attributes="0"/>
               <EmptySpace min="$pref" pref="2" max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="baseline" attributes="16">
                   <Component id="callPriceField" alignment="baseline" min="$pref" max="$pref" attributes="0"/>

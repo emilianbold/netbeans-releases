@@ -108,7 +108,8 @@ implements BundleListener, ServiceListener, InstanceContent.Convertor<ServiceRef
 
     @Override
     public String id(ServiceReference obj) {
-        return (String) obj.getProperty(Constants.SERVICE_ID);
+        Long id = (Long) obj.getProperty(Constants.SERVICE_ID);
+        return "OSGiService[" + id + "]"; // NOI18N
     }
     
     @Override

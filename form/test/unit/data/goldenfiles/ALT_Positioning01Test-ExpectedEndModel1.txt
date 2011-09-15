@@ -12,32 +12,29 @@
                               <EmptySpace pref="287" max="Short.MAX_VALUE" attributes="0"/>
                               <Component id="jTextField4" min="$pref" max="$pref" attributes="0"/>
                           </Group>
-                          <Group type="sequential" attributes="0">
-                              <Group type="parallel" groupAlignment="leading" attributes="0">
-                                  <Group type="sequential" attributes="0">
-                                      <Group type="parallel" groupAlignment="leading" attributes="0">
-                                          <Component id="jLabel3" alignment="leading" min="$pref" max="$pref" attributes="0"/>
-                                          <Component id="jLabel4" alignment="leading" min="$pref" max="$pref" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace pref="287" max="Short.MAX_VALUE" attributes="0"/>
-                                  </Group>
-                                  <Group type="sequential" alignment="trailing" attributes="0">
-                                      <Component id="jButton2" min="$pref" max="$pref" attributes="0"/>
-                                      <EmptySpace min="$pref" pref="26" max="$pref" attributes="0"/>
-                                  </Group>
+                          <Group type="sequential" attributes="512">
+                              <Group type="parallel" groupAlignment="leading" attributes="512">
+                                  <Component id="jLabel3" alignment="leading" min="$pref" max="$pref" attributes="0"/>
+                                  <Component id="jLabel4" alignment="leading" min="$pref" max="$pref" attributes="0"/>
                               </Group>
-                              <Group type="parallel" groupAlignment="trailing" attributes="0">
-                                  <Component id="jTextField1" min="$pref" max="$pref" attributes="0"/>
+                              <EmptySpace pref="287" max="Short.MAX_VALUE" attributes="0"/>
+                              <Group type="parallel" groupAlignment="trailing" attributes="512">
                                   <Component id="jTextField2" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
                                   <Component id="jTextField3" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
                               </Group>
+                          </Group>
+                          <Group type="sequential" alignment="trailing" attributes="512">
+                              <EmptySpace min="0" pref="0" max="Short.MAX_VALUE" attributes="1536"/>
+                              <Component id="jButton2" min="$pref" max="$pref" attributes="0"/>
+                              <EmptySpace min="$pref" pref="26" max="$pref" attributes="0"/>
+                              <Component id="jTextField1" min="$pref" max="$pref" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
                   <Group type="sequential" alignment="trailing" attributes="0">
                       <EmptySpace min="$pref" pref="31" max="$pref" attributes="0"/>
                       <Component id="jButton1" min="$pref" max="$pref" attributes="0"/>
-                      <EmptySpace pref="225" max="Short.MAX_VALUE" attributes="0"/>
+                      <EmptySpace max="Short.MAX_VALUE" attributes="0"/>
                       <Component id="jTextField5" min="$pref" max="$pref" attributes="0"/>
                   </Group>
               </Group>

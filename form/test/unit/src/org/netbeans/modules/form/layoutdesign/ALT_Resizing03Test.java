@@ -75,7 +75,7 @@ public class ALT_Resizing03Test extends LayoutTestCase {
         compBounds.put("jInternalFrame1", new Rectangle(10, 31, 24, 26));
         baselinePosition.put("jInternalFrame1-24-26", new Integer(-1));
         compMinSize.put("jInternalFrame1", new Dimension(30, 26));
-        compPrefSize.put("jInternalFrame1", new Dimension(24, 26));
+        compPrefSize.put("jInternalFrame1", new Dimension(22, 26));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));
@@ -159,7 +159,7 @@ public class ALT_Resizing03Test extends LayoutTestCase {
         compBounds.put("jInternalFrame1", new Rectangle(10, 31, 24, 258));
         baselinePosition.put("jInternalFrame1-24-258", new Integer(-1));
         compMinSize.put("jInternalFrame1", new Dimension(30, 26));
-        compPrefSize.put("jInternalFrame1", new Dimension(24, 26));
+        compPrefSize.put("jInternalFrame1", new Dimension(22, 26));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         ld.endMoving(true);
@@ -170,7 +170,7 @@ public class ALT_Resizing03Test extends LayoutTestCase {
         compBounds.put("jInternalFrame1", new Rectangle(10, 31, 24, 258));
         baselinePosition.put("jInternalFrame1-24-258", new Integer(-1));
         compMinSize.put("jInternalFrame1", new Dimension(30, 26));
-        compPrefSize.put("jInternalFrame1", new Dimension(24, 258));
+        compPrefSize.put("jInternalFrame1", new Dimension(22, 258));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         hasExplicitPrefSize.put("jInternalFrame1", new Boolean(false));
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));

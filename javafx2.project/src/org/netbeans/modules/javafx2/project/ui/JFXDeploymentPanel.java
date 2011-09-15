@@ -461,6 +461,7 @@ private void checkBoxUnrestrictedAccActionPerformed(java.awt.event.ActionEvent e
     labelSigningMessage.setEnabled(sel);
     buttonSigning.setEnabled(sel);
     jfxProps.setSigningEnabled(sel);
+    jfxProps.setPermissionsElevated(sel);
     if(jfxProps.getSigningEnabled() && jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
         jfxProps.setSigningType(JFXProjectProperties.SigningType.SELF);
     }
