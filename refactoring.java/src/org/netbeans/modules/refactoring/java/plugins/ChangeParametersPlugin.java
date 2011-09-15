@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -456,9 +457,16 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             // check if the changed type is assigneble
             int originalIndex = paramTable[index].getOriginalIndex();
             if(parseType != null && originalIndex > -1) {
-                final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
+                final VariableElement parameterElement = method.getParameters().get(originalIndex);
                 if(!javac.getTypes().isAssignable(parseType, parameterElement.asType())) {
-                    p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), type)); // NOI18N
+                    if(type != null && type.endsWith("...") && parameterElement.asType().getKind() == TypeKind.ARRAY) { //NOI18N
+                        ArrayType arrayType = (ArrayType) parameterElement.asType();
+                        if(!javac.getTypes().isAssignable(parseType, arrayType.getComponentType())) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), type)); // NOI18N
+                        }
+                    } else {
+                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), type)); // NOI18N
+                    }
                 }
             }
             // check ...
