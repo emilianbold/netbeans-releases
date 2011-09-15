@@ -213,7 +213,8 @@ public class RenameTransformer extends RefactoringVisitor {
                         if (elementToFind.getModifiers().contains(Modifier.STATIC)) {
                             useThis = elementToFind.getEnclosingElement().getSimpleName().toString() + ".";
                         } else {
-                            if (scope.getEnclosingClass().equals(elementToFind.getEnclosingElement())) {
+                            Types types = workingCopy.getTypes();
+                            if (types.isSubtype(scope.getEnclosingClass().asType(), elementToFind.getEnclosingElement().asType())) {
                                 useThis = "this."; // NOI18N
                             } else {
                                 useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this."; // NOI18N
