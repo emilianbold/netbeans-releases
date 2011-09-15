@@ -201,6 +201,26 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test200985() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    static int a;\n"
+                + "    static m(int b){\n"
+                + "        System.out.println(a);\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, "b", null);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    static int b;\n"
+                + "    static m(int b){\n"
+                + "        System.out.println(A.b);\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test104819_2() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
