@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
@@ -64,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer {
+public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer, DocumentListener {
     private static final String DEFAULT_SDK_LOCATION = "C:\\Program Files\\Oracle\\"; // NOI18N
     
     private JavaPlatform platform;
@@ -72,6 +74,14 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Cust
 
     public JavaFXPlatformCustomizer() {
         initComponents();
+        postInitComponents();
+    }
+
+    private void postInitComponents() {
+        sdkTextField.getDocument().addDocumentListener(this);
+        runtimeTextField.getDocument().addDocumentListener(this);
+        javadocTextField.getDocument().addDocumentListener(this);
+        srcTextField.getDocument().addDocumentListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -283,13 +293,13 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
                 javadocTextField.setText(JavaFXPlatformUtils.guessJavadocPath(file));
             }
         
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
+//            if (isPlatformValid()) {
+//                saveProperties();
+//                firePlatformChange();
+//                clearErrorMessage();
+//            } else {
+//                setErrorMessage();
+//            }
         }
 }//GEN-LAST:event_browseSDKButtonActionPerformed
 
@@ -321,13 +331,13 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
             lastUsedFolder = file.getParentFile();
             runtimeTextField.setText(file.getAbsolutePath());
 
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
+//            if (isPlatformValid()) {
+//                saveProperties();
+//                firePlatformChange();
+//                clearErrorMessage();
+//            } else {
+//                setErrorMessage();
+//            }
         }
 }//GEN-LAST:event_browseRuntimeButtonActionPerformed
 
@@ -369,13 +379,13 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
             lastUsedFolder = file.getParentFile();
             javadocTextField.setText(file.getAbsolutePath());
 
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
+//            if (isPlatformValid()) {
+//                saveProperties();
+//                firePlatformChange();
+//                clearErrorMessage();
+//            } else {
+//                setErrorMessage();
+//            }
         }
 }//GEN-LAST:event_browseJavadocButtonActionPerformed
 
@@ -416,13 +426,13 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             lastUsedFolder = file.getParentFile();
             srcTextField.setText(file.getAbsolutePath());
 
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
+//            if (isPlatformValid()) {
+//                saveProperties();
+//                firePlatformChange();
+//                clearErrorMessage();
+//            } else {
+//                setErrorMessage();
+//            }
         }
 }//GEN-LAST:event_browseSourcesButtonActionPerformed
 
@@ -530,4 +540,30 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             Exceptions.printStackTrace(ex);
         }
     }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    private void documentChanged() {
+        if (isPlatformValid()) {
+            saveProperties();
+            firePlatformChange();
+            clearErrorMessage();
+        } else {
+            setErrorMessage();
+        }
+    }
+
 }
