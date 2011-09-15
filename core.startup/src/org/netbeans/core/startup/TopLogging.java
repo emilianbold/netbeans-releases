@@ -57,6 +57,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
@@ -106,9 +107,6 @@ public final class TopLogging {
     private static boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
     /** reference to the old error stream */
     private static final PrintStream OLD_ERR = System.err;
-    static {
-        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.startup.TopLogging$AWTHandler"); // NOI18N
-    }
 
     private static final PrintStream DEBUG;
     private static final Pattern unwantedMessages;
@@ -140,6 +138,7 @@ public final class TopLogging {
     /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
     public TopLogging() {
+        AWTHandler.install();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(os);
 
@@ -196,6 +195,8 @@ public final class TopLogging {
         initialize(true);
     }
     private static void initialize(boolean verbose) {
+        AWTHandler.install();
+        
         if (previousUser == null || previousUser.equals(Places.getUserDirectory())) {
             // useful from tests
             streamHandler = null;
@@ -960,18 +961,33 @@ public final class TopLogging {
         }
     } // end of LookupDel
 
-    /** Instances are created in awt.EventDispatchThread */
-    public static final class AWTHandler {
-        /** The name MUST be handle and MUST be public
-         * @param t the throwable to print
-         */
-        public static void handle(Throwable t) {
-            // Either org.netbeans or org.netbeans.core.execution pkgs:
-            if (t.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N
+    private static final class AWTHandler implements Thread.UncaughtExceptionHandler {
+        private final Thread.UncaughtExceptionHandler delegate;
+        private final Logger g;
+
+        private AWTHandler(UncaughtExceptionHandler delegate) {
+            this.delegate = delegate;
+            this.g = Logger.getLogger("global"); // NOI18N
+        }
+        
+        static void install() {
+            if (Thread.getDefaultUncaughtExceptionHandler() instanceof AWTHandler) {
                 return;
             }
-            Logger g = Logger.getLogger("global");
-            g.log(Level.SEVERE, null, t);
+            Thread.setDefaultUncaughtExceptionHandler(new AWTHandler(Thread.getDefaultUncaughtExceptionHandler()));
+        }
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            if (delegate != null) {
+                delegate.uncaughtException(t, e);
+            }
+            
+            // Either org.netbeans or org.netbeans.core.execution pkgs:
+            if (e.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N
+                return;
+            }
+            g.log(Level.SEVERE, null, e);
         }
     } // end of AWTHandler
 
