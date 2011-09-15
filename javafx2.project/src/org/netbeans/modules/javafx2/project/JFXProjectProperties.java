@@ -90,6 +90,9 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
+    /** The standard extension for FXML source files. */
+    public static final String FXML_EXTENSION = "fxml"; // NOI18N    
+    
     // copies of private J2SE properties
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N

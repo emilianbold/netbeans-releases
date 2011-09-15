@@ -56,10 +56,10 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
+                <friend>org.netbeans.modules.whitelist</friend>
                 <package>org.netbeans.modules.parsing.lucene.support</package>
             </friend-packages>
         </data>

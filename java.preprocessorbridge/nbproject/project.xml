@@ -70,6 +70,7 @@
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.whitelist</friend>
                 <package>org.netbeans.modules.java.preprocessorbridge.api</package>
                 <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
             </friend-packages>
