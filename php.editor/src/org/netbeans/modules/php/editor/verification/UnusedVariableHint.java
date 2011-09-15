@@ -302,8 +302,8 @@ public class UnusedVariableHint extends AbstractRule {
         @Messages("UnusedVariableHintCustom=Variable ${0} does not seem to be used in its scope")
         private Hint createHint(VariableName variableName) {
             String varName = getPureName(variableName);
-            int start = variableName.getNameRange().getStart() - 1;
-            int end = start + varName.length() + 1;
+            int start = variableName.getNameRange().getStart();
+            int end = start + varName.length();
             OffsetRange offsetRange = new OffsetRange(start, end);
             Hint hint = new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(varName), fileObject, offsetRange, null, 500);
             return hint;
