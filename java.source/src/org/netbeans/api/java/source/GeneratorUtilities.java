@@ -566,7 +566,11 @@ public final class GeneratorUtilities {
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
         ExpressionTree packageName = cut.getPackageName();
-        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : elements.getPackageElement(elements.getName("")); //NOI18N
+        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
+        if (pkg == null && packageName != null)
+            pkg = elements.getPackageElement(elements.getName(packageName.toString()));
+        if (pkg == null)
+            pkg = elements.getPackageElement(elements.getName("")); //NOI18N
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
         Scope scope = trees.getScope(new TreePath(cut));
