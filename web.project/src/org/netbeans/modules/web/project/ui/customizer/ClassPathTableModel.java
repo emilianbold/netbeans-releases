@@ -51,6 +51,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.openide.util.NbBundle;
 
@@ -115,7 +116,8 @@ public final class ClassPathTableModel extends AbstractTableModel implements Lis
         }
         if (value == Boolean.TRUE) {
             ClassPathSupport.Item item = getItem(row);
-            String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB;
+            String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) || 
+                    (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && Utils.isLibraryDirectoryBased(item)) ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB;
             item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, pathInWar);
         } else {
             getItem(row).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
