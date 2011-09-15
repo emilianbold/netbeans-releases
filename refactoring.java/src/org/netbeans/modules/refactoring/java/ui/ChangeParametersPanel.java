@@ -766,7 +766,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
                 String typeRepresentation;
                 if (method.isVarArgs() && originalIndex == pars.size()-1) {
-                    typeRepresentation = getTypeStringRepresentation(parTree) + " ..."; // NOI18N
+                    typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
                 } else {
                     typeRepresentation = getTypeStringRepresentation(parTree);
                 }
