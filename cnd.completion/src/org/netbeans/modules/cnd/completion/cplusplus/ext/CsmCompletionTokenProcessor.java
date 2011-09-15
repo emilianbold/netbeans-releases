@@ -774,7 +774,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case TRUE:
                     case FALSE:
                         constExp = createTokenExp(CONSTANT);
-                        constExp.setType("boolean"); // NOI18N
+                        constExp.setType(CsmCompletion.BOOLEAN_CLASS.getName().toString()); // NOI18N
                         break;
 
                     case NULL:

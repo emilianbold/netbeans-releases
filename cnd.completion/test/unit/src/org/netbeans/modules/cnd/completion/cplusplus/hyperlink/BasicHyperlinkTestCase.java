@@ -874,8 +874,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testBug201237_2() throws Exception {
         // Bug 201237 - Regression in CLucene (ternary operator)
-        performTest("bug201237_2.cpp", 13, 44, "bug201237_2.cpp", 3, 5);
+        performTest("bug201237_2.cpp", 15, 44, "bug201237_2.cpp", 3, 5);
     }    
+    
+    public void testBug202191() throws Exception {
+        // Bug #202191  -  incorrect detection of overridden function
+        performTest("bug201237_2.cpp", 16, 20, "bug201237_2.cpp", 3, 5);
+        performTest("bug201237_2.cpp", 16, 8, "bug201237_2.cpp", 6, 5);
+        performTest("bug201237_2.cpp", 17, 8, "bug201237_2.cpp", 9, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

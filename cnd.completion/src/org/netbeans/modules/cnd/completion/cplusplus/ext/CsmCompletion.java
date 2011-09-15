@@ -84,7 +84,7 @@ abstract public class CsmCompletion {
     public static final int PROTECTED_LEVEL = 2;
     public static final int PACKAGE_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
-    public static final SimpleClass BOOLEAN_CLASS = new SimpleClass("boolean", ""); // NOI18N
+    public static final SimpleClass BOOLEAN_CLASS = new SimpleClass("bool", ""); // NOI18N
     public static final SimpleClass BYTE_CLASS = new SimpleClass("byte", ""); // NOI18N
     public static final SimpleClass CHAR_CLASS = new SimpleClass("char", ""); // NOI18N
     public static final SimpleClass DOUBLE_CLASS = new SimpleClass("double", ""); // NOI18N
