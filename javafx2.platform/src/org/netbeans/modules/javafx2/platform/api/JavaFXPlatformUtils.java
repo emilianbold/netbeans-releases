@@ -81,7 +81,8 @@ public final class JavaFXPlatformUtils {
      */
     public static final String PROPERTY_JAVA_FX = "javafx"; // NOI18N
 
-    private static final String[] KNOWN_LOCATIONS = new String[]{
+    // TODO any Mac OS predefined locations?
+    public static final String[] KNOWN_JFX_LOCATIONS = new String[]{
         "C:\\Program Files\\Oracle",        // NOI18N
         "C:\\Program Files (x86)\\Oracle"   // NOI18N
     };
@@ -143,39 +144,6 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
-     * Tries to predict JavaFX Runtime location for JavaFX SDK installation
-     * Can return null.
-     * 
-     * @param JavaFX SDK installation folder
-     * @return JavaFX Runtime location absolute path, or null if not predicted
-     */
-    @CheckForNull
-    public static String guessRuntimePath(@NonNull File sdkPath) {
-        File parent = sdkPath.getParentFile();
-        List<File> brothers = new ArrayList<File>(Arrays.asList(parent.listFiles())); // check in neighbour folders: Win installation
-        brothers.add(sdkPath); // check inside SDK: Mac installation
-        for (File brother : brothers) {
-            if (brother.getName().contains("Runtime") || // NOI18N
-                    brother.getName().contains("runtime") || // NOI18N
-                    brother.getName().contains("rt")) { // NOI18N
-                return brother.getAbsolutePath();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Tries to predict Javadoc location for JavaFX SDK installation
-     * 
-     * @param JavaFX SDK installation folder
-     * @return Javadoc location absolute path
-     */
-    @NonNull
-    public static String guessJavadocPath(@NonNull File sdkPath) {
-        return sdkPath.getAbsolutePath() + File.separatorChar + "docs"; // NOI18N
-    }
-
-    /**
      * Determines whether JavaFX SDK and JavaFX Runtime locations are correct
      * 
      * @param JavaFX SDK path
@@ -199,7 +167,7 @@ public final class JavaFXPlatformUtils {
         String javadocPath = null;
         String srcPath = null;
 
-        for (String path : KNOWN_LOCATIONS) {
+        for (String path : KNOWN_JFX_LOCATIONS) {
             if (sdkPath == null) {
                 sdkPath = predictSDKLocation(path);
             }
@@ -226,8 +194,15 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
+    /**
+     * Tries to predict JavaFX SDK location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX SDK location absolute path, or null if not predicted
+     */
     @CheckForNull
-    private static String predictSDKLocation(@NonNull String path) {
+    public static String predictSDKLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
@@ -241,23 +216,38 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
+    /**
+     * Tries to predict JavaFX Runtime location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX Runtime location absolute path, or null if not predicted
+     */
     @CheckForNull
-    private static String predictRuntimeLocation(@NonNull String path) {
+    public static String predictRuntimeLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
-            File[] children = location.listFiles();
-            for (File child : children) {
-                File rtJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+            List<File> files = new ArrayList<File>(Arrays.asList(location.listFiles())); // check in neighbour folders: Win installation
+            files.add(location); // check inside SDK: Mac installation
+            for (File file : files) {
+                File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
                 if (rtJar.exists()) {
-                    return child.getAbsolutePath();
+                    return file.getAbsolutePath();
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Tries to predict JavaFX SDK Javadoc location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX SDK Javadoc location absolute path, or null if not predicted
+     */
     @CheckForNull
-    private static String predictJavadocLocation(@NonNull String path) {
+    public static String predictJavadocLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
@@ -271,9 +261,16 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
+    /**
+     * Tries to predict JavaFX SDK Sources location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX SDK Sources location absolute path, or null if not predicted
+     */
     // TODO when sources will be availabe
     @CheckForNull
-    private static String predictSourcesLocation(@NonNull String path) {
+    public static String predictSourcesLocation(@NonNull String path) {
         return null;
     }
 
