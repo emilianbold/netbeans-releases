@@ -86,6 +86,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -880,14 +881,31 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
     private void addElementIds(final List<CompletionProposal> proposals, final CompletionRequest request, final String prefix) {
         Source source = request.info.getSnapshot().getSource();
-        if (source.getMimeType().equals(JsUtils.HTML_MIME_TYPE)) {
-            try {
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                    public
-                    @Override
-                    void run(ResultIterator resultIterator) throws Exception {
-                        HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
+                public
+                @Override
+                void run(ResultIterator resultIterator) throws Exception {
+                    HtmlParserResult htmlResult = null;
+                    if (resultIterator.getParserResult() instanceof HtmlParserResult) {
+                        htmlResult = (HtmlParserResult) resultIterator.getParserResult();
+                    } else {
+                        Embedding htmlEmbeding = null;
+                        for(Embedding embedding : resultIterator.getEmbeddings()) {
+                            if (embedding.getMimeType().equals(JsUtils.HTML_MIME_TYPE)) {
+                                htmlEmbeding = embedding;
+                            }
+                        }
+                        if (htmlEmbeding != null) {
+                            resultIterator = resultIterator.getResultIterator(htmlEmbeding);
+                            if (resultIterator != null) {
+                                htmlResult = (HtmlParserResult) resultIterator.getParserResult();
+                            }
+                        }
+                        
+                    }
+                    if (htmlResult != null) {
                         Set<SyntaxElement.TagAttribute> elementIds = new HashSet<SyntaxElement.TagAttribute>();
                         for (SyntaxElement element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
                             if (element.type() == SyntaxElement.TYPE_TAG) {
@@ -913,10 +931,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     }
-                });
-            } catch (ParseException e) {
-                LOG.log(Level.WARNING, null, e);
-            }
+                }
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
         }
     }
 
