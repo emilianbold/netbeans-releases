@@ -234,6 +234,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                 if(isConstructor) {
                                     methodNameText.setEnabled(false);
                                     singleLineEditor[1].setEnabled(false);
+                                    returnTypeAction.setEnabled(false);
                                 } else {
                                     DialogBinding.bindComponentToFile(fileObject, (int) start, (int) (end - start), ((JEditorPane)singleLineEditor[1]));
                                 }
@@ -1095,7 +1096,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             Component returnValue = tableCellEditorComponent;
             tableCellEditorComponent.setCaretPosition(tableCellEditorComponent.getText().length());
             tableCellEditorComponent.selectAll();
-            if (col < 2) {
+            if (col < 2 && parameterSpan != null) {
                 try {
                     editorPane = new JEditorPane() {
 
@@ -1155,14 +1156,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     if (col == 0) {
                         editorPane.setText(value.toString());
                         editorPane.selectAll();
-                        ChangeParametersButtonPanel buttonPanel = new ChangeParametersButtonPanel();
-                        buttonPanel.setButtonAction(new TypeAction(table, value, row, col));
-                        buttonPanel.setComp(editorPane);
-                        returnValue = buttonPanel;
                     }
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+            if(col == 0) {
+                ChangeParametersButtonPanel buttonPanel = new ChangeParametersButtonPanel();
+                buttonPanel.setButtonAction(new TypeAction(table, value, row, col));
+                buttonPanel.setComp((JComponent)returnValue);
+                returnValue = buttonPanel;
             }
             return returnValue;
         }

@@ -85,11 +85,11 @@ public class ChangeParametersUI implements RefactoringUI {
     public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
         TreePath path = refactoredObj.resolve(info);
         Kind kind;
-        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION) {
+        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION && kind != Kind.NEW_CLASS) {
             path = path.getParentPath();
         }
         
-        if(path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+        if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS)) {
             ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
             path = info.getTrees().getPath(element);
         }
