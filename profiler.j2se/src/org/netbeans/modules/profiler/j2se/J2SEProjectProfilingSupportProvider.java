@@ -62,6 +62,8 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
+import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 
@@ -69,9 +71,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
-                        projectType="org-netbeans-modules-java-j2seproject") // NOI18N
-public final class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
+@ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
+                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=100)}) // NOI18N
+public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class MyPropertyProvider implements PropertyProvider {
@@ -267,8 +269,7 @@ public final class J2SEProjectProfilingSupportProvider extends JavaProjectProfil
         ProjectUtilities.unintegrateProfiler(getProject());
     }
 
-    // --- Private methods -------------------------------------------------------------------------------------------------
-    private PropertyEvaluator getProjectProperties(final Project project) {
+    PropertyEvaluator getProjectProperties(final Project project) {
         final Properties privateProps = new Properties();
         final Properties projectProps = new Properties();
         final Properties userPropsProps = new Properties();
