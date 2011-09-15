@@ -328,7 +328,10 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	currentDbgProfile().setRedirection(infile, outfile, append);
 	String args = currentRunProfile().getArgsFlat();
 	String redirection = currentDbgProfile().getRedirection();
-	if (redirection != null) {
+	if (redirection != null && !redirection.contains("fifo")) { 
+	    // prevent saving Standard output implementation
+	    // < /var/tmp/debuggerFifo14551.fifo > /var/tmp/debuggerFifo14552.fifo
+	    // which is infering redirection in args.
 	    args += " ";//NOI18N
 	    args += currentDbgProfile().getRedirection();
 	}
@@ -499,7 +502,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 		applyRunDirectory();
 
 	    } else if (RunProfile.PROP_ENVVARS_CHANGED.equals(name)) {
-		String o = evt.getOldValue().toString();
+		String o = (String) evt.getOldValue();
 		Env n = (Env) evt.getNewValue();
 		// CR 4887794
 		if (savedEnv != null) {
