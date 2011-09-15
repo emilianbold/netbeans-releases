@@ -791,7 +791,7 @@ final class BasicSearchCriteria {
         BufferedCharSequence bcs = null;
         try {         
             InputStream stream = fo.getInputStream();
-            bcs = new BufferedCharSequence(stream, lastCharset, fo.getSize());
+            bcs = new BufferedCharSequence(stream, lastCharset.newDecoder(), fo.getSize());
             registerProcessedSequence(bcs);
             ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
             unregisterProcessedSequence(bcs);

@@ -144,7 +144,7 @@ public class BufferedCharSequenceTest {
     
     private int getLenght(TypeOfStream stype, TypeOfContent ctype, Charset cs, int size){
         InputStream stream = getInputStream(stype, ctype, cs);
-        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, size);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), size);
         instance.setMaxBufferSize(10);
         return instance.length();
     }
@@ -159,7 +159,7 @@ public class BufferedCharSequenceTest {
         int index = 0;        
         Charset cs = Charset.forName(UTF_8);
         InputStream stream = getInputStream(TypeOfStream.FILE, TypeOfContent.BYTE_0, cs);
-        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 0);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), 0);
         instance.charAt(index);
     }
 
@@ -172,7 +172,7 @@ public class BufferedCharSequenceTest {
         int index = 0;
         Charset cs = Charset.forName(UTF_8);
         InputStream stream = getInputStream(TypeOfStream.BYTE, TypeOfContent.BYTE_0, cs);
-        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 0);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), 0);
         instance.charAt(index);
     }
 
@@ -185,7 +185,7 @@ public class BufferedCharSequenceTest {
         for(TypeOfStream stype: TypeOfStream.values()) {
             try {
                 InputStream stream = getInputStream(stype, TypeOfContent.BYTE_1, cs);
-                BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 1);
+                BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), 1);
                 char expResult = 'a';
                 char result = instance.charAt(index);
                 assertEquals(expResult, result);
@@ -208,7 +208,7 @@ public class BufferedCharSequenceTest {
         Charset cs = Charset.forName(UTF_8);
         for(TypeOfStream stype: TypeOfStream.values()) {
             InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs);
-            BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 10);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), 10);
             instance.setMaxBufferSize(10);
             char result;
 
@@ -233,7 +233,7 @@ public class BufferedCharSequenceTest {
         Charset cs = Charset.forName(UTF_8);
         for(TypeOfStream stype: TypeOfStream.values()) {
             InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs);
-            BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 10);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs.newDecoder(), 10);
             instance.setMaxBufferSize(5);
             char result;
 
@@ -276,7 +276,7 @@ public class BufferedCharSequenceTest {
         System.out.println("toString");
         for(TypeOfStream stype: TypeOfStream.values()) {
             InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs_UTF_8);
-            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8, 10);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8.newDecoder(), 10);
             instance.setMaxBufferSize(5);
             String expResult = TypeOfContent.BYTE_10.getContent();
             String result = instance.toString();
@@ -335,7 +335,7 @@ public class BufferedCharSequenceTest {
         System.out.println("nextLineText@no line terminators in the file.");
         for(TypeOfStream stype: TypeOfStream.values()) {
             InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs_UTF_8);
-            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8, 10);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8.newDecoder(), 10);
             assertEquals(0, instance.position());
             String expResult = TypeOfContent.BYTE_10.getContent();
             String result = instance.nextLineText();
@@ -349,7 +349,7 @@ public class BufferedCharSequenceTest {
     public void testUnicodeAt4KB() {
         File f = getFile("more_than_4KB.txt");
         FileInputStream is = getFileInputStream(f);
-        BufferedCharSequence chars = new BufferedCharSequence(is, cs_UTF_8, 4098);
+        BufferedCharSequence chars = new BufferedCharSequence(is, cs_UTF_8.newDecoder(), 4098);
         assertEquals('0', chars.charAt(0));
         assertEquals('1', chars.charAt(1));
         assertEquals('X', chars.charAt(4097));

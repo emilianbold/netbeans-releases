@@ -3600,7 +3600,9 @@ public class Reformatter implements ReformatTask {
                                     }
                                 }
                                 if (pendingDiff != null) {
-                                    pendingDiff.end = offset + i;
+                                    int diff = offset + i - pendingDiff.end;
+                                    pendingDiff.end += diff;
+                                    col -= diff;
                                 }
                             }
                         } else {
