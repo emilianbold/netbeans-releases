@@ -61,6 +61,7 @@ public class JFXApplicationParametersPanel extends javax.swing.JPanel {
     public JFXApplicationParametersPanel(PropertiesTableModel mdl) {
         this.tableModel = mdl;
         initComponents();
+        tableParams.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
 
     /** This method is called from within the constructor to

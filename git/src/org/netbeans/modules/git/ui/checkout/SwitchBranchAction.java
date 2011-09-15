@@ -50,6 +50,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +68,8 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
     }
 
     public void checkoutRevision (final File repository, String preselectedRevision) {
-        checkoutRevision(repository, new SwitchBranch(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_SwitchBranchAction.progressName"); //NOI18N
+        checkoutRevision(repository, new SwitchBranch(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_SwitchBranchAction.progressName", //NOI18N
+                new HelpCtx(SwitchBranchAction.class));
     }
     
     private static class SwitchBranch extends AbstractCheckoutRevision {

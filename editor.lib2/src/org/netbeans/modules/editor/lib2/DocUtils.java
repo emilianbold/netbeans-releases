@@ -50,6 +50,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -153,6 +156,27 @@ public final class DocUtils {
             e.printStackTrace();
             return -1;
         }
+    }
+    
+    /**
+     * Transpose letter at offset with the next one at offset+1.
+     * @param doc non-null document that should be write-locked.
+     * @param offset
+     * @return true if succeeded or false when at end of doc.
+     */
+    public static boolean transposeLetters(@NonNull Document doc, int offset) {
+        if (offset >= 0 && offset <= doc.getLength() - 2) {
+            CharSequence text = DocumentUtilities.getText(doc);
+            char ch = text.charAt(offset);
+            try {
+                doc.remove(offset, 1);
+                doc.insertString(offset + 1, String.valueOf(ch), null);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex); // Should never happen due to check above
+            }
+            return true;
+        }
+        return false;
     }
     
     private static Method findDeclaredMethod(Class<?> clazz, String name, Class... parameters) throws NoSuchMethodException {

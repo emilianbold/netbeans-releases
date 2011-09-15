@@ -98,6 +98,7 @@ public class SvnConfigFilesTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/cache");
         
         if (defaultPS == null) {
             defaultPS = ProxySelector.getDefault();

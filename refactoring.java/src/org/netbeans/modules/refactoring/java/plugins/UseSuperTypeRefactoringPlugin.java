@@ -58,7 +58,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -149,26 +149,20 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
 
     private void replaceSubtypeUsages(final TreePathHandle subClassHandle, final RefactoringElementsBag elemsBag) {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
-
-
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
+                public void cancel() { }
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     FileObject fo = subClassHandle.getFileObject();
-                    ClasspathInfo classpathInfo = JavaRefactoringUtils.getClasspathInfoFor(fo);
-
+                    ClasspathInfo classpathInfo = RetoucheUtils.getClasspathInfoFor(true, true, fo) ;
+                    
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
                             resolveElement(complController);
                     EnumSet<ClassIndex.SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES);
                     Set<FileObject> refFileObjSet = clsIndx.getResources(ElementHandle.create(javaClassElement), typeRefSearch, EnumSet.of(ClassIndex.SearchScope.SOURCE));
-
 
                     if (!refFileObjSet.isEmpty()) {
                         fireProgressListenerStart(AbstractRefactoring.PREPARE, refFileObjSet.size());
@@ -194,7 +188,6 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
-        return;
     }
 
     private final class FindRefTask implements CancellableTask<WorkingCopy> {
@@ -222,6 +215,12 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 Element subClassElement = subClassHandle.resolveElement(compiler);
                 Element superClassElement = superClassHandle.resolve(compiler);
+                if (superClassElement == null) {
+                    //superClassElement is not resolvable in this project
+                    //do not replace
+                    //#202030
+                    return;
+                }
                 assert subClassElement != null;
                 ReferencesVisitor findRefVisitor = new ReferencesVisitor(compiler, subClassElement, superClassElement);
                 findRefVisitor.scan(compiler.getCompilationUnit(), subClassElement);

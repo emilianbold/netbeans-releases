@@ -81,7 +81,6 @@ import org.openide.util.NbBundle;
 public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
     
     private final J2SEProject project;
-    private final J2SEActionProvider actionProvider;
     
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private final Map<String,String> privatePropsToRestore = new HashMap<String,String>();
@@ -96,11 +95,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private FileSystem configs;
     
-    public J2SEProjectOperations(final J2SEProject project, final J2SEActionProvider actionProvider) {
+    public J2SEProjectOperations(final J2SEProject project) {
         assert project != null;
-        assert actionProvider != null;
         this.project = project;
-        this.actionProvider = actionProvider;
     }
     
     private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
@@ -153,12 +150,14 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
 
     private void clean() throws IOException {
         Properties p = new Properties();
-        String[] targetNames = this.actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p, false);
+        final AntTargetsProvider ap = project.getLookup().lookup(AntTargetsProvider.class);
+        assert ap != null;
+        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p, false);
         FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
-        
+
         assert targetNames != null;
         assert targetNames.length > 0;
-        
+
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
     }
     

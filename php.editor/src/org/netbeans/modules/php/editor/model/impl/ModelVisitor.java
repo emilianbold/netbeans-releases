@@ -622,9 +622,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FieldAccess node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
-        //super.visit(node);
         Variable field = node.getField();
+        if (field.isDollared()) {
+            scan(field);
+        } else {
+            occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        }
+        //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
             scan(access.getIndex());
@@ -920,7 +924,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(FunctionInvocation node) {
         //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        Expression functionName = node.getFunctionName().getName();
+        if (functionName instanceof Variable) {
+            Variable variable = (Variable) functionName;
+            scan(variable);
+        } else {
+            occurencesBuilder.prepare(node, scope);
+        }
         ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
         String name = nodeInfo.getName();
         if ("define".equals(name) && node.getParameters().size() == 2) {//NOI18N

@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.options.WinSysPrefs;
 
 /**
  * Model which stored TopComponents in one mode. It manages opened, closed
@@ -119,6 +120,17 @@ final class TopComponentSubModel {
                 int openedIndex = tcIDs.indexOf( otcID );
                 if( openedIndex >= index ) {
                     position = openedTopComponents.indexOf( otc );
+                    break;
+                }
+            }
+        }
+        if( kind == Constants.MODE_KIND_EDITOR 
+                && WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, false)
+                && selectedTopComponentID != null ) {
+            
+            for (int i = 0; i < openedTopComponents.size(); i++) {
+                if (selectedTopComponentID.equals(getID(openedTopComponents.get(i)))) {
+                    position = i + 1;
                     break;
                 }
             }

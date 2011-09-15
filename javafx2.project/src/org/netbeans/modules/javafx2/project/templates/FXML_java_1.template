@@ -25,9 +25,9 @@ public class ${name} extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("NewFXML.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("${fxmlname}.fxml"));
         
-        stage.setScene(new Scene(root, 320, 200));
+        stage.setScene(new Scene(root));
         stage.show();
     }
 

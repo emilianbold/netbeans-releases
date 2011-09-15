@@ -423,6 +423,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             incSearch.setSelected(getBooleanProperty(incSearch));
             matchCase.setSelected(getBooleanProperty(matchCase));
             preserveCase.setSelected(getBooleanProperty(preserveCase));
+            preserveCase.setVisible(isReplaceDialog);
             //smartCase.setSelected(getBooleanProperty(smartCase));
             wholeWords.setSelected(getBooleanProperty(wholeWords));
             regExp.setSelected(getBooleanProperty(regExp));
@@ -615,6 +616,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             incSearch.setSelected(getBooleanProperty(incSearch));
             matchCase.setSelected(getBooleanProperty(matchCase));
             preserveCase.setSelected(getBooleanProperty(preserveCase));
+            preserveCase.setVisible(isReplaceDialog);
             //smartCase.setSelected(getBooleanProperty(smartCase));
             wholeWords.setSelected(getBooleanProperty(wholeWords));
             boolean regExpValue = getBooleanProperty(regExp);

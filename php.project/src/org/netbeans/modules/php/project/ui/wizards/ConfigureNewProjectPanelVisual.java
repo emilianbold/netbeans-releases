@@ -133,24 +133,21 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         localServerComboBox.setEditable(true);
 
-
-
         Mnemonics.setLocalizedText(localServerButton, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
         Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text"));
         Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text"));
 
         encodingLabel.setLabelFor(encodingComboBox);
-
         Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding"));
+
         projectFolderPanel.setLayout(new BorderLayout());
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(projectNameLabel)
@@ -163,17 +160,17 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                         .addComponent(phpVersionInfoLabel)
                         .addContainerGap())
                     .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(phpVersionComboBox, 0, 297, Short.MAX_VALUE)
-                        .addComponent(projectNameTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                        .addComponent(phpVersionComboBox, 0, 249, Short.MAX_VALUE)
+                        .addComponent(projectNameTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(localServerComboBox, 0, 221, Short.MAX_VALUE)
+                            .addComponent(localServerComboBox, 0, 141, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(localServerButton))
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(localServerInfoLabel)
                             .addContainerGap())
-                        .addComponent(encodingComboBox, 0, 297, Short.MAX_VALUE))))
-            .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+                        .addComponent(encodingComboBox, 0, 249, Short.MAX_VALUE))))
+            .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -232,6 +229,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         separator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.separator.AccessibleContext.accessibleDescription")); // NOI18N
         projectFolderPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.projectFolderPanel.AccessibleContext.accessibleName")); // NOI18N
         projectFolderPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.projectFolderPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

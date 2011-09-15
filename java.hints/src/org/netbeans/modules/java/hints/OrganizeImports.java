@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -116,6 +118,7 @@ public class OrganizeImports {
             Set<Element> toImport = getUsedElements(cu, trees);
             if (!toImport.isEmpty()) {
                 CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
+                ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
                 CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
                 copy.rewrite(cu, ncu);
             }
@@ -129,10 +132,21 @@ public class OrganizeImports {
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 Element element = trees.getElement(getCurrentPath());
-                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
-                    Element glob = global(element);
-                    if (glob != null)
-                        ret.add(glob);
+                if (element != null) {
+                    switch (element.getKind()) {
+                        case ENUM_CONSTANT:
+                        case FIELD:
+                        case METHOD:
+                            if (!element.getModifiers().contains(Modifier.STATIC))
+                                break;
+                        case ANNOTATION_TYPE:
+                        case CLASS:
+                        case ENUM:
+                        case INTERFACE:
+                            Element glob = global(element);
+                            if (glob != null)
+                                ret.add(glob);
+                    }
                 }
                 return null;
             }

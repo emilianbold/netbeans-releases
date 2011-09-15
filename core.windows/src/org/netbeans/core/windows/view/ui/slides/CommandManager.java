@@ -44,10 +44,13 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -232,6 +235,8 @@ final class CommandManager implements ActionListener {
             }
         } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideIntoDesktop(curSlidedIndex, true);
+        } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(e.getActionCommand())) {
+            slideBar.getSelectionModel().setSelectedIndex(-1);
         } else if (TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY.equals(e.getActionCommand())) {
             TabActionEvent tae = (TabActionEvent) e;
             toggleTransparency( tae.getTabIndex() );
@@ -288,7 +293,19 @@ final class CommandManager implements ActionListener {
     private TabbedContainer getSlidedTabContainer () {
         if (slidedTabContainer == null) {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
-            slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo());
+            slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo()) {
+                @Override
+                public void addNotify() {
+                    super.addNotify();
+                    Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), MouseEvent.MOUSE_EVENT_MASK);
+                }
+                
+                @Override
+                public void removeNotify() {
+                    super.removeNotify();
+                    Toolkit.getDefaultToolkit().removeAWTEventListener( getAWTListener() );
+                }
+            };
             slidedTabContainer.addActionListener(this);
             Border b = null;
             String side = orientation2Side( slideBar.getModel().getOrientation() );
@@ -326,6 +343,27 @@ final class CommandManager implements ActionListener {
     private void registerEscHandler (JComponent comp) {
         comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
         comp.getActionMap().put("slideOut", escapeAction);
+    }
+
+    private AWTEventListener awtListener = null;
+    private AWTEventListener getAWTListener() {
+        if( null == awtListener ) {
+            awtListener = new AWTEventListener() {
+                @Override
+                public void eventDispatched(AWTEvent event) {
+                    if( event.getID() == MouseEvent.MOUSE_PRESSED && event.getSource() instanceof Component
+                            && !(SwingUtilities.isDescendingFrom((Component)event.getSource(), getSlidedTabContainer())
+                            || SwingUtilities.isDescendingFrom((Component)event.getSource(), slideBar)) ) {
+                        //#159356 - make sure window slides out when clicked outside that window
+                        TopComponent tc = slideBar.getTabbed().getSelectedTopComponent();
+                        if( null != tc && TopComponent.getRegistry().getActivated() != tc )
+                            slideBar.getSelectionModel().setSelectedIndex( -1 );
+                        return;
+                    }
+                }
+            };
+        }
+        return awtListener;
     }
     
 

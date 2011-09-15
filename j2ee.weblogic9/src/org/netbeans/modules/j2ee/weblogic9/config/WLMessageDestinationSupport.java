@@ -149,8 +149,8 @@ public class WLMessageDestinationSupport {
                         if (config != null) {
                             confs.put(config, resource.isSystem());
                         }
-                    } else if (resource.getName() != null && resource.isSystem()) {
-                        nameOnly.add(resource.getName());
+                    } else if (resource.getResourceName() != null && resource.isSystem()) {
+                        nameOnly.add(resource.getResourceName());
                     }
                 }
 
@@ -162,7 +162,7 @@ public class WLMessageDestinationSupport {
                     Set<WLMessageDestination> configMessageDestinations =
                             getMessageDestinations(domain, inputFile.getParent().getFileObject("jms"), true); // NOI18N
                     for (WLMessageDestination ds : configMessageDestinations) {
-                        if (nameOnly.contains(ds.getName())) {
+                        if (nameOnly.contains(ds.getResourceName())) {
                             result.add(ds);
                         }
                     }
@@ -208,13 +208,15 @@ public class WLMessageDestinationSupport {
                     continue;
                 }
 
-                for (String name : messageModel.getMessageDestinations(Type.QUEUE)) {
+                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.QUEUE)) {
                     messageDestinations.add(new WLMessageDestination(
-                            name, Type.QUEUE, jmsFile, entry.getValue()));
+                            dest.getResourceName(), dest.getJndiName(),
+                            Type.QUEUE, jmsFile, entry.getValue()));
                 }
-                for (String name : messageModel.getMessageDestinations(Type.TOPIC)) {
+                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.TOPIC)) {
                     messageDestinations.add(new WLMessageDestination(
-                            name, Type.TOPIC, jmsFile, entry.getValue()));
+                            dest.getResourceName(), dest.getJndiName(),
+                            Type.TOPIC, jmsFile, entry.getValue()));
                 }
             } catch (IOException ioe) {
                 String msg = NbBundle.getMessage(WLMessageDestinationSupport.class, "MSG_CannotReadMessages", jmsFile.getAbsolutePath());
@@ -236,14 +238,16 @@ public class WLMessageDestinationSupport {
         return getMessageDestinations(null, resource, false);
     }
 
-    public org.netbeans.modules.j2ee.deployment.common.api.MessageDestination createMessageDestination(final String name, final Type type) throws ConfigurationException {
+    public org.netbeans.modules.j2ee.deployment.common.api.MessageDestination createMessageDestination(final String resourceName,
+            final String jndiName, final Type type) throws ConfigurationException {
 
         WLMessageDestination destination = modifyMessageDestination(new MessageDestinationModifier() {
 
             @Override
             public ModifiedMessageDestination modify(Set<WLMessageDestination> destinations) throws ConfigurationException {
                 for (WLMessageDestination destination : destinations) {
-                    if (name.equals(destination.getName())) {
+                    // TODO is jndi check correct and needed
+                    if (resourceName.equals(destination.getResourceName()) || jndiName.equals(destination.getName())) {
                         throw new ConfigurationException(NbBundle.getMessage(WLMessageDestinationSupport.class, "MSG_MessageDestinationAlreadyExists"));
                     }
                 }
@@ -261,7 +265,8 @@ public class WLMessageDestinationSupport {
                 } while (candidate.exists());
 
                 MessageModel model = MessageModel.generate(version);
-                model.addMessageDestination(name, type);
+                model.addMessageDestination(
+                        new MessageModel.MessageDestination(resourceName, jndiName, type));
 
                 try {
                     writeFile(candidate, model);
@@ -269,7 +274,7 @@ public class WLMessageDestinationSupport {
                     Exceptions.printStackTrace(ex);
                 }
                 return new ModifiedMessageDestination(
-                        candidate, model, new WLMessageDestination(name, type, candidate, false));
+                        candidate, model, new WLMessageDestination(resourceName, jndiName, type, candidate, false));
             }
         });
 
@@ -327,11 +332,13 @@ public class WLMessageDestinationSupport {
                             return null;
                         }
                         File origin = FileUtil.toFile(dsFileObject);
-                        for (String name : source.getMessageDestinations(Type.QUEUE)) {
-                            destinations.put(new WLMessageDestination(name, Type.QUEUE, origin, false), datasourceDO);
+                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.QUEUE)) {
+                            destinations.put(new WLMessageDestination(
+                                    dest.getResourceName(), dest.getJndiName(), Type.QUEUE, origin, false), datasourceDO);
                         }
-                        for (String name : source.getMessageDestinations(Type.TOPIC)) {
-                            destinations.put(new WLMessageDestination(name, Type.TOPIC, origin, false), datasourceDO);
+                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.TOPIC)) {
+                            destinations.put(new WLMessageDestination(
+                                    dest.getResourceName(), dest.getJndiName(), Type.TOPIC, origin, false), datasourceDO);
                         }
                     }
                 }
@@ -517,7 +524,9 @@ public class WLMessageDestinationSupport {
                 resources.add(resource);
                 resource = null; 
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setResourceName(value);
+            } else if("jndi-name".equals(qName)) { // NOI18N
+                resource.setJndiName(value);
             } else if ("taget".equals(qName)) { // NOI18N
                 resource.setTarget(value);
             } else if ("descriptor-file-name".equals(qName)) { // NOI18N
@@ -572,7 +581,9 @@ public class WLMessageDestinationSupport {
                 isJms = false;
                 resource = null;
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setResourceName(value);
+            } else if("jndi-name".equals(qName)) { // NOI18N
+                resource.setJndiName(value);
             } else if ("taget".equals(qName)) { // NOI18N
                 resource.setTarget(value);
             } else if ("source-path".equals(qName)) { // NOI18N
@@ -638,7 +649,9 @@ public class WLMessageDestinationSupport {
 
         private final boolean system;
         
-        private String name;
+        private String jndiName;
+
+        private String resourceName;
 
         private String target;
 
@@ -677,12 +690,20 @@ public class WLMessageDestinationSupport {
             this.file = file;
         }
 
-        public String getName() {
-            return name;
+        public String getJndiName() {
+            return jndiName;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public void setJndiName(String name) {
+            this.jndiName = name;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public void setResourceName(String resourceName) {
+            this.resourceName = resourceName;
         }
 
         public String getTarget() {

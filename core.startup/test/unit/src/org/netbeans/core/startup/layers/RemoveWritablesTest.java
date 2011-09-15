@@ -173,17 +173,6 @@ public class RemoveWritablesTest extends NbTestCase {
         assertNull( "renamed file is gone", FileUtil.getConfigFile( "foo/newName.newExt" ) );
     }
 
-    public void testModifiedAttributesFile() throws Exception {
-        FileObject existingFile = FileUtil.getConfigFile( "foo/test1" );
-        
-        assertNotNull( existingFile );
-        
-        existingFile.setAttribute( "myAttribute", "myAttributeValue" );
-        
-        assertNull( "removeWritables does not work for file attributes", FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" ) );
-    }
-
-
     private File createModuleJar(String manifest) throws IOException {
         // XXX use TestFileUtils.writeZipFile
         File jarFile = new File( getWorkDir(), "mymodule.jar" );

@@ -185,6 +185,7 @@ made subject to such option by the copyright holder.
     <bind actionName="toggle-rectangular-selection" key="OS-R"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
     <bind actionName="tooltip-show" key="D-P"/>
+    <bind actionName="transpose-letters" key="D-T"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="word-match-next" key="DS-K"/>

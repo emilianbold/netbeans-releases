@@ -97,6 +97,10 @@ class LayoutRegion implements LayoutConstants {
                && positions[dimension][TRAILING] != UNKNOWN;
     }
 
+    boolean isSet(int dimension, int alignment) {
+        return isValidCoordinate(positions[dimension][alignment]);
+    }
+
     int size(int dimension) {
         int trail = positions[dimension][TRAILING];
         int lead = positions[dimension][LEADING];
@@ -163,6 +167,14 @@ class LayoutRegion implements LayoutConstants {
             if (dimension == VERTICAL) {
                 pos[BASELINE] = UNKNOWN; // undefined after change
             }
+        }
+    }
+
+    void setPos(int dimension, int alignment, int value) {
+        int[] pos = positions[dimension];
+        pos[alignment] = value;
+        if (pos[LEADING] != UNKNOWN && pos[TRAILING] != UNKNOWN) {
+            pos[CENTER] = (pos[LEADING] + pos[TRAILING]) / 2;
         }
     }
 

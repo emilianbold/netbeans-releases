@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:fx="javafx:com.sun.javafx.tools.ant">
+
+<!DOCTYPE project [
+   <!ENTITY platform-impl SYSTEM "jfx-impl-platform.inc">
+   <!ENTITY parameters-impl SYSTEM "jfx-impl-parameters.inc">
+   <!ENTITY callbacks-impl SYSTEM "jfx-impl-callbacks.inc">
+]>
+
+<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:fx="javafx:com.sun.javafx.tools.ant">
+    <description>JavaFX-specific ant calls</description>
 
     <target name="-init-javafx">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
@@ -7,65 +15,549 @@
             classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
     </target>
 
-    <target name="check-jfx-deployment" depends="-init-javafx">
+    <target name="-check-jfx-deployment" depends="-init-javafx">
         <condition property="jfx-deployment-available">
+            <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
+        </condition>
+        <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
+    </target>
+
+    <target name="-check-project">
+        <condition property="main-class-available">
+            <isset property="javafx.main.class"/>
+        </condition>
+        <condition property="preloader-available">
             <and>
-                <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
+                <isset property="javafx.preloader.enabled"/>
+                <equals arg1="${javafx.preloader.enabled}" arg2="true"/>
+                <isset property="javafx.preloader.class"/>
+                <not><equals arg1="${javafx.preloader.class}" arg2=""/></not>
+                <isset property="javafx.preloader.jar.filename"/>
+                <not><equals arg1="${javafx.preloader.jar.filename}" arg2=""/></not>
+            </and>
+        </condition>
+        <condition property="app-with-preloader">
+            <and>
+                <istrue value="${preloader-available}"/>
+                <istrue value="${main-class-available}"/>
+            </and>
+        </condition>
+        <condition property="app-with-external-preloader-jar">
+            <and>
+                <isset property="javafx.preloader.type"/>
+                <equals arg1="${javafx.preloader.type}" arg2="jar" trim="true"/>
+            </and>
+        </condition>
+        <condition property="app-without-preloader">
+            <and>
+                <not>
+                    <istrue value="${preloader-available}"/>
+                </not>
+                <istrue value="${main-class-available}"/>
+            </and>
+        </condition>
+        <condition property="preloader-app">
+            <and>
+                <isset property="javafx.preloader"/>
+                <equals arg1="${javafx.preloader}" arg2="true"/>
+            </and>
+        </condition>
+        <condition property="html-template-available">
+            <and>
+                <isset property="javafx.run.htmltemplate"/>
+                <not>
+                    <equals arg1="${javafx.run.htmltemplate}" arg2=""/>
+                </not>
+            </and>
+        </condition>
+        <condition property="icon-available">
+            <and>
+                <isset property="javafx.deploy.icon"/>
+                <not>
+                    <equals arg1="${javafx.deploy.icon}" arg2=""/>
+                </not>
+            </and>
+        </condition>
+        <condition property="dimensions-available">
+            <and>
+                <isset property="javafx.run.width"/>
+                <isset property="javafx.run.height"/>
+                <not><equals arg1="${javafx.run.width}" arg2=""/></not>
+                <not><equals arg1="${javafx.run.height}" arg2=""/></not>
+            </and>
+        </condition>
+        <condition property="update-mode-background">
+            <and>
+                <isset property="javafx.deploy.backgroundupdate"/>
+                <equals arg1="${javafx.deploy.backgroundupdate}" arg2="true" trim="true"/>
+            </and>
+        </condition>
+        <condition property="offline-allowed">
+            <and>
+                <isset property="javafx.deploy.allowoffline"/>
+                <equals arg1="${javafx.deploy.allowoffline}" arg2="true" trim="true"/>
+            </and>
+        </condition>
+        <condition property="permissions-elevated">
+            <and>
+                <isset property="javafx.deploy.permissionselevated"/>
+                <equals arg1="${javafx.deploy.permissionselevated}" arg2="true" trim="true"/>
+            </and>
+        </condition>
+
+        <echo message="main-class-available = ${main-class-available}" level="verbose"/>
+        <echo message="preloader-available = ${preloader-available}" level="verbose"/>
+        <echo message="app-with-preloader = ${app-with-preloader}" level="verbose"/>
+        <echo message="app-with-preloader-without-project = ${app-with-preloader-without-project}" level="verbose"/>
+        <echo message="app-without-preloader = ${app-without-preloader}" level="verbose"/>
+        <echo message="preloader-app = ${preloader-app}" level="verbose"/>
+        <echo message="html-template-available = ${html-template-available}" level="verbose"/>
+        <echo message="icon-available = ${icon-available}" level="verbose"/>
+        <echo message="dimensions-available = ${dimensions-available}" level="verbose"/>
+        <echo message="update-mode-background = ${update-mode-background}" level="verbose"/>
+        <echo message="offline-allowed = ${offline-allowed}" level="verbose"/>
+        <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
+    </target>
+
+    <target name="-icon-warning" depends="-check-project" if="icon-available">
+        <echo message="Warning: Note that due to a bug in early JavaFX 2.0 SDK distributions the icon may not be properly set in deployment files."/>
+    </target>
+
+    <target name="-offline-allowed-warning" depends="-check-project" unless="offline-allowed">
+        <echo message="Warning: Note that due to a bug in early JavaFX 2.0 SDK distributions the 'offline allowed' property may not be properly set in deployment files."/>
+    </target>
+
+    <target name="-set-dimensions" depends="-check-project" if="dimensions-available">
+        <property name="javafx.width" value="${javafx.run.width}"/>
+        <property name="javafx.height" value="${javafx.run.height}"/>
+    </target>
+    <target name="-reset-dimensions" depends="-check-project" unless="dimensions-available">
+        <property name="javafx.width" value="800"/>
+        <property name="javafx.height" value="600"/>
+    </target>
+
+    <target name="-set-update-mode-background" depends="-check-project" if="update-mode-background">
+        <property name="update-mode" value="background"/>
+    </target>
+    <target name="-set-update-mode-eager" depends="-check-project" unless="update-mode-background">
+        <property name="update-mode" value="eager"/>
+    </target>
+
+    <target name="-set-permissions-elevated" depends="-check-project" if="permissions-elevated">
+        <property name="permissions.elevated" value="true"/>
+    </target>
+    <target name="-reset-permissions-elevated" depends="-check-project" unless="permissions-elevated">
+        <property name="permissions.elevated" value="false"/>
+    </target>
+
+    <target name="-copy-external-preloader-jar" depends="-check-project" if="app-with-external-preloader-jar">
+        <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}/lib"/>
+    </target>
+
+
+    <!-- Main Target -->
+
+    <target name="jfx-deployment" depends="-check-jfx-deployment,-check-project,-icon-warning,
+        -set-dimensions,-reset-dimensions,-set-update-mode-background,-set-update-mode-eager,
+        -offline-allowed-warning,-set-permissions-elevated,-reset-permissions-elevated,
+        -copy-external-preloader-jar,
+        -deploy-app-sign-nopreloader-notemplate,
+        -deploy-app-sign-preloader-notemplate,
+        -deploy-app-sign-nopreloader-template,
+        -deploy-app-sign-preloader-template,
+        -deploy-app-nosign-nopreloader-notemplate,
+        -deploy-app-nosign-preloader-notemplate,
+        -deploy-app-nosign-nopreloader-template,
+        -deploy-app-nosign-preloader-template"
+        if="jfx-deployment-available">
+    </target>
+
+
+    <!-- Security / Signing -->
+    
+    <target name="-unavailable-signjars-task" depends="-check-jfx-deployment" unless="jfx-deployment-available">
+        <echo message="Task required to sign JAR file is missing, check the availability of JavaFX 2.0 deployment tasks. JAR files will not be signed."/>
+    </target>
+
+    <target name="-security-props-check">
+        <condition property="javafx.signed.true">
+            <istrue value="${javafx.signing.enabled}"/>
+        </condition>
+    </target>
+
+    <target name="-check-signing-possible" depends="-security-props-check,-check-jfx-deployment,-unavailable-signjars-task">
+        <condition property="javafx.signed.true+signjars.task.available">
+            <and>
+                <isset property="javafx.signed.true"/>
+                <isset property="jfx-deployment-available"/>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="-javafx-init-keystore" depends="-check-signing-possible,-javafx-init-signing,-javafx-init-keystore1,-javafx-init-keystore2,-check-keystore-exists" if="javafx.signed.true+signjars.task.available" unless="javafx.signjar.keystore.exists">
+        <property name="javafx.signjar.vendor" value="CN=${application.vendor}"/>
+        <echo message="Going to create default keystore in ${javafx.signjar.keystore}"/>
+        <genkey dname="${javafx.signjar.vendor}" alias="${javafx.signjar.alias}" keystore="${javafx.signjar.keystore}"
+            storepass="${javafx.signjar.storepass}" keypass="${javafx.signjar.keypass}"/>
+    </target>
+    
+    <target name="-check-keystore-exists">
+        <available property="javafx.signjar.keystore.exists" file="${javafx.signjar.keystore}"/>
+    </target>
+
+    <target name="-javafx-init-signing">
+        <condition property="generated.key.signing">
+            <equals arg1="${javafx.signing.type}" arg2="self" trim="true"/>
+        </condition>
+    </target>
+
+    <target name="-javafx-init-keystore1" depends="-javafx-init-signing" if="generated.key.signing">
+        <property name="javafx.signjar.keystore" value="${basedir}/build/nb-jfx.jks" />
+        <property name="javafx.signjar.storepass" value="storepass"/>
+        <property name="javafx.signjar.keypass" value="keypass"/>
+        <property name="javafx.signjar.alias" value="nb-jfx"/>
+    </target>
+
+    <target name="-javafx-init-keystore2" depends="-javafx-init-signing" unless="generated.key.signing">
+        <property name="javafx.signjar.keystore" value="${javafx.signing.keystore}" />
+        <property name="javafx.signjar.storepass" value="${javafx.signing.keystore.password}"/>
+        <property name="javafx.signjar.keypass" value="${javafx.signing.keyalias.password}"/>
+        <property name="javafx.signjar.alias" value="${javafx.signing.keyalias}"/>
+    </target>
+
+    
+    <!-- Project Deployment Macros -->
+
+    <macrodef name="deploy-defines">
+        <sequential>
+            <basename property="jfx.deployment.jar" file="${dist.jar}"/>
+            <property name="jfx.deployment.dir" location="${dist.dir}"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-preprocess">
+        <sequential>
+            <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
+            <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
+            <delete file="${jfx.deployment.dir}/README.TXT"/>
+            <!-- hack end -->
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-application-def">
+        <sequential>
+            <fx:application id="fxApp"
+                name="${application.title}"
+                mainClass="${javafx.main.class}"
+                preloaderClass=""
+                fallbackClass="${javafx.fallback.class}">
+                <!-- PARAMETERS -->
+                &parameters-impl;
+            </fx:application>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-application-def-preloader">
+        <sequential>
+            <fx:application id="fxApp"
+                name="${application.title}"
+                mainClass="${javafx.main.class}"
+                preloaderClass="${javafx.preloader.class}"
+                fallbackClass="${javafx.fallback.class}">
+                <!-- PARAMETERS -->
+                &parameters-impl;
+            </fx:application>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-resources">
+        <sequential>
+            <fx:resources id="appRes">
+                <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib/*.jar"/>
+                </fx:fileset>
+            </fx:resources>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-resources-preloader">
+        <sequential>
+            <fx:resources id="appRes">
+                <fx:fileset requiredFor="preloader" dir="${jfx.deployment.dir}">
+                    <include name="lib/${javafx.preloader.jar.filename}"/>
+                </fx:fileset>
+                <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib/*.jar"/>
+                    <exclude name="lib/${javafx.preloader.jar.filename}"/>
+                </fx:fileset>
+            </fx:resources>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-jar">
+        <sequential>
+            <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
+                <fx:application refid="fxApp"/>
+                <fx:resources refid="appRes"/>
+                <fileset dir="${build.classes.dir}"/>
+                <manifest>
+                    <attribute name="Implementation-Vendor" value="${application.vendor}"/>
+                    <attribute name="Implementation-Title" value="${application.title}"/>
+                    <attribute name="Implementation-Version" value="1.0"/>
+                </manifest>
+            </fx:jar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-sign">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <fx:signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib/*.jar"/>
+                </fileset>
+            </fx:signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-sign-preloader">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="lib/${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </signjar>
+            <signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib/*.jar"/>
+                    <exclude name="lib/${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-deploy">
+        <sequential>
+            <fx:deploy width="${javafx.width}" height="${javafx.height}"
+                      outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
+                      outfile="${application.title}">
+                <fx:application refid="fxApp"/>
+                <fx:resources refid="appRes"/>
+                <info title="${application.title}" vendor="${application.vendor}"/>
+                <permissions elevated="${permissions.elevated}"/>
+                <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
+                <!-- PLATFORM -->
+                &platform-impl;
+                <!-- CALLBACKS -->
+                &callbacks-impl;
+            </fx:deploy>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-deploy-template">
+        <sequential>
+            <fx:deploy width="${javafx.width}" height="${javafx.height}"
+                      outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
+                      outfile="${application.title}">
+                <fx:application refid="fxApp"/>
+                <fx:resources refid="appRes"/>
+                <info title="${application.title}" vendor="${application.vendor}"/>
+                <permissions elevated="${permissions.elevated}"/>
+                <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
+                <template file="${javafx.run.htmltemplate}" tofile="${javafx.run.htmltemplate.processed}"/>
+                <!-- PLATFORM -->
+                &platform-impl;
+                <!-- CALLBACKS -->
+                &callbacks-impl;
+            </fx:deploy>
+        </sequential>
+    </macrodef>
+
+
+    <!-- Project Deployment Targets -->
+
+    <target name="-check-sign" depends="-check-project,-javafx-init-keystore" if="javafx.signed.true+signjars.task.available">
+        <condition property="sign-nopreloader-notemplate">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+            </and>
+        </condition>
+        <condition property="sign-preloader-notemplate">
+            <and>
+                <isset property="app-with-preloader"/>
+                <not><isset property="html-template-available"/></not>
+            </and>
+        </condition>
+        <condition property="sign-nopreloader-template">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+            </and>
+        </condition>
+        <condition property="sign-preloader-template">
+            <and>
+                <isset property="app-with-preloader"/>
+                <isset property="html-template-available"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-check-nosign" depends="-check-project">
+        <condition property="nosign-nopreloader-notemplate">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="javafx.signed.true"/></not>
+            </and>
+        </condition>
+        <condition property="nosign-preloader-notemplate">
+            <and>
+                <isset property="app-with-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="javafx.signed.true"/></not>
+            </and>
+        </condition>
+        <condition property="nosign-nopreloader-template">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="javafx.signed.true"/></not>
+            </and>
+        </condition>
+        <condition property="nosign-preloader-template">
+            <and>
+                <isset property="app-with-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="javafx.signed.true"/></not>
             </and>
         </condition>
     </target>
 
-    <target name="jfx-deployment" depends="check-jfx-deployment" if="jfx-deployment-available">
-        <basename property="jfx.deployment.jar" file="${dist.jar}"/>
-        <property name="jfx.deployment.dir" location="${dist.dir}"/>
 
-        <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
-        <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
-        <delete file="${jfx.deployment.dir}/README.TXT"/>
-        <!-- hack end -->
+    <!-- WITH SIGNING -->
 
-        <fx:application id="fxApp" name="${application.title}" mainClass="${main.class}"/>
-<!--            preloaderClass="testpreloader.Preloader" fallbackClass="test.UseMeIfNoFX"-->
-
-        <fx:resources id="appRes">
-            <!-- PRELOADER -->
-<!--            <fileset dir="dist"
-                requiredFor="preloader"
-                includes="mypreloader.jar"/>      -->
-            <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
-                <include name="${jfx.deployment.jar}"/>
-                <include name="lib/*.jar"/>
-                <exclude name="**/jfxrt.jar"/>
-            </fx:fileset>
-        </fx:resources>
-
-        <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
-            <fx:application refId="fxApp"/>
-            <fx:resources refid="appRes"/>
-            <fileset dir="${build.classes.dir}"/>
-
-            <manifest>
-                <attribute name="Implementation-Vendor" value="${application.vendor}"/>
-                <attribute name="Implementation-Title" value="${application.title}"/>
-                <attribute name="Implementation-Version" value="1.0"/>
-            </manifest>
-        </fx:jar>
-
-            <!-- SIGNING -->
-<!--        <fx:signjar keyStore="${basedir}/sample.jks" destdir="dist"
-               alias="javafx" storePass="****" keyPass="****">
-            <fileset dir='dist/*.jar'/>
-        </fx:signjar>-->
-
-        <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}"
-                  outdir="${jfx.deployment.dir}" embedJNLP="true"
-                  outfile="${application.title}">
-            <fx:application refId="fxApp"/>
-            <fx:resources refid="appRes"/>
-            <info title="${application.title}" vendor="${application.vendor}"/>
-            <!-- Request elevated permissions -->
-<!--            <permissions elevate="true"/>-->
-        </fx:deploy>
+    <!-- project without preloader -->
+    <!-- no html template -->
+    <target name="-deploy-app-sign-nopreloader-notemplate" depends="-check-sign" if="sign-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def/>
+        <deploy-resources/>
+        <deploy-jar/>
+        <deploy-sign/>
+        <deploy-deploy/>
     </target>
+
+    <!-- project with preloader -->
+    <!-- no html template -->
+    <target name="-deploy-app-sign-preloader-notemplate" depends="-check-sign" if="sign-preloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def-preloader/>
+        <deploy-resources-preloader/>
+        <deploy-jar/>
+        <deploy-sign-preloader/>
+        <deploy-deploy/>
+    </target>
+
+    <!-- project without preloader -->
+    <!-- html template -->
+    <target name="-deploy-app-sign-nopreloader-template" depends="-check-sign" if="sign-nopreloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def/>
+        <deploy-resources/>
+        <deploy-jar/>
+        <deploy-sign/>
+        <deploy-deploy-template/>
+    </target>
+
+    <!-- project with preloader -->
+    <!-- html template -->
+    <target name="-deploy-app-sign-preloader-template" depends="-check-sign" if="sign-preloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def-preloader/>
+        <deploy-resources-preloader/>
+        <deploy-jar/>
+        <deploy-sign-preloader/>
+        <deploy-deploy-template/>
+    </target>
+
+
+    <!-- NO SIGNING -->
+
+    <!-- project without preloader -->
+    <!-- no html template -->
+    <target name="-deploy-app-nosign-nopreloader-notemplate" depends="-check-nosign" if="nosign-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-nosign-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def/>
+        <deploy-resources/>
+        <deploy-jar/>
+        <deploy-deploy/>
+    </target>
+
+    <!-- project with preloader -->
+    <!-- no html template -->
+    <target name="-deploy-app-nosign-preloader-notemplate" depends="-check-nosign" if="nosign-preloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-nosign-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def-preloader/>
+        <deploy-resources-preloader/>
+        <deploy-jar/>
+        <deploy-deploy/>
+    </target>
+
+    <!-- project without preloader -->
+    <!-- html template -->
+    <target name="-deploy-app-nosign-nopreloader-template" depends="-check-nosign" if="nosign-nopreloader-template" unless="preloader-app">
+        <echo message="-deploy-app-nosign-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def/>
+        <deploy-resources/>
+        <deploy-jar/>
+        <deploy-deploy-template/>
+    </target>
+
+    <!-- project with preloader -->
+    <!-- html template -->
+    <target name="-deploy-app-nosign-preloader-template" depends="-check-nosign" if="nosign-preloader-template" unless="preloader-app">
+        <echo message="-deploy-app-nosign-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-application-def-preloader/>
+        <deploy-resources-preloader/>
+        <deploy-jar/>
+        <deploy-deploy-template/>
+    </target>
+
 
 </project>

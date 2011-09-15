@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileLock;
@@ -586,6 +587,101 @@ public class InterceptorTest extends AbstractHgTestCase {
         } finally {
             // cleanup, temp folder is outside workdir
             FileUtils.deleteRecursively(target);
+        }
+    }
+    
+    public void testMoveFileToIgnoredFolder_DO () throws Exception {
+        // prepare
+        File folder = createFolder("ignoredFolder");
+        HgUtils.addIgnored(folder.getParentFile(), new File[] { folder });
+        File toFolder = createFolder(folder, "toFolder");
+        File fromFile = createFile("file");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFile);
+        
+        // move
+        moveDO(fromFile, toFile);
+        
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
+    }
+    
+    public void testMoveFileToIgnoredFolder_FO () throws Exception {
+        // prepare
+        File folder = createFolder("ignoredFolder");
+        HgUtils.addIgnored(folder.getParentFile(), new File[] { folder });
+        File toFolder = createFolder(folder, "toFolder");
+        File fromFile = createFile("file");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFile);
+        
+        // move
+        moveFO(fromFile, toFile);
+        
+        // test
+        assertFalse(fromFile.exists());
+        assertTrue(toFile.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(fromFile).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
+    }
+    
+    public void testCopyFileToIgnoredFolder_DO () throws Exception {
+        // prepare
+        File folder = createFolder("ignoredFolder");
+        HgUtils.addIgnored(folder.getParentFile(), new File[] { folder });
+        File toFolder = createFolder(folder, "toFolder");
+        File fromFile = createFile("file");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFile);
+        
+        // move
+        copyDO(fromFile, toFile);
+        
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(fromFile).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
+    }
+    
+    public void testCopyFileToIgnoredFolder_FO () throws Exception {
+        // prepare
+        File folder = createFolder("ignoredFolder");
+        HgUtils.addIgnored(folder.getParentFile(), new File[] { folder });
+        File toFolder = createFolder(folder, "toFolder");
+        File fromFile = createFile("file");
+        File toFile = new File(toFolder, fromFile.getName());
+        commit(fromFile);
+        
+        // move
+        copyFO(fromFile, toFile);
+        
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(fromFile).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
+    }
+
+    private void moveDO (File from, File to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));
+        DataObject daoTarget = DataObject.find(FileUtil.toFileObject(to.getParentFile()));
+        daoFrom.move((DataFolder) daoTarget);
+    }
+
+    private void moveFO (File from, File to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = FileUtil.toFileObject(from);
+        assertNotNull(foFrom);
+        FileObject foTarget = FileUtil.toFileObject(to.getParentFile());
+        assertNotNull(foTarget);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.move(lock, foTarget, to.getName(), null);
+        } finally {
+            lock.releaseLock();
         }
     }
 

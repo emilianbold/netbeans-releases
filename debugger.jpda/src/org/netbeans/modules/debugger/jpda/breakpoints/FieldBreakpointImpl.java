@@ -60,6 +60,8 @@ import com.sun.jdi.request.ModificationWatchpointRequest;
 import com.sun.jdi.request.WatchpointRequest;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -215,7 +217,13 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
         if (varFilters != null && varFilters.length > 0) {
             for (ObjectVariable v : varFilters) {
-                WatchpointRequestWrapper.addInstanceFilter(wr, (ObjectReference) ((JDIVariable) v).getJDIValue());
+                ObjectReference value = (ObjectReference) ((JDIVariable) v).getJDIValue();
+                if (value != null) {
+                    WatchpointRequestWrapper.addInstanceFilter(wr, value);
+                } else {
+                    Logger.getLogger(FieldBreakpointImpl.class.getName()).log(Level.CONFIG, "",
+                        new IllegalStateException("Null instance filter of breakpoint "+breakpoint+", v = "+v));
+                }
             }
         }
     }

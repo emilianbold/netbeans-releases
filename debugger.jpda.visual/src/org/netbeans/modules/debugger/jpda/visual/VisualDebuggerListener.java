@@ -60,6 +60,7 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.WatchpointEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -154,7 +155,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
         }
-        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", true);
+        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", false);
         if (debugger != null && trackComponentChanges) {
             FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
             fb.setHidden(true);
@@ -288,6 +289,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                     componentAndStackTrace = new HashMap<ObjectReference, Stack>();
                     componentsAndStackTraces.put(debugger, componentAndStackTrace);
                 }
+                //System.err.println("Component "+component+" has changed parent from "+Arrays.asList(stack.getFrames()));
+                //System.err.println("   Parent = "+((JDIVariable) event.getVariable()).getJDIValue());
                 componentAndStackTrace.put(component, stack);
             }
         }

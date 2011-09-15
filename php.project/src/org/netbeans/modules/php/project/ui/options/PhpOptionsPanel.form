@@ -38,7 +38,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="phpInterpreterTextField" pref="243" max="32767" attributes="0"/>
+                      <Component id="phpInterpreterTextField" pref="107" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="phpInterpreterBrowseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -56,13 +56,13 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="commandLineSeparator" pref="496" max="32767" attributes="0"/>
+              <Component id="commandLineSeparator" pref="360" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="includePathScrollPane" pref="468" max="32767" attributes="0"/>
+                      <Component id="includePathScrollPane" pref="332" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addFolderButton" linkSize="2" min="-2" max="-2" attributes="0"/>
@@ -78,7 +78,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="globalIncludePathSeparator" pref="462" max="32767" attributes="0"/>
+              <Component id="globalIncludePathSeparator" pref="326" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

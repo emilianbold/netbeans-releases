@@ -417,7 +417,9 @@ public class FormUtils
             "model", "mnemonic",
             "model", "text" },
         { "javax.swing.JRadioButton",
-            "model", "buttonGroup" }
+            "model", "buttonGroup" },
+        { "javax.swing.JFileChooser",
+            "dialogType", "approveButtonText"}
     };
 
     /** Table enumerating properties that can hold HTML text. */
@@ -1830,6 +1832,15 @@ public class FormUtils
 
     public static RequestProcessor getRequestProcessor() {
         return RP;
+    }
+
+    static boolean isStandardJavaComponent(Class clazz) {
+        boolean standard = false;
+        if (java.awt.Component.class.isAssignableFrom(clazz)) {
+            String name = clazz.getName();
+            standard = name.startsWith("java.awt.") || name.startsWith("javax.swing."); // NOI18N
+        }
+        return standard;
     }
 
 }

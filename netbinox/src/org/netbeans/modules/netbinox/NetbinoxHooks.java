@@ -90,55 +90,40 @@ import org.osgi.framework.FrameworkEvent;
  */
 public final class NetbinoxHooks implements HookConfigurator, ClassLoadingHook,
 BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
-    private static transient Map<Bundle,ClassLoader> map;
-    private static transient NetigsoArchive archive;
-    private static transient Lookup.Result<HookConfigurator> configurators;
-    private static transient Collection<? extends HookConfigurator> previous = Collections.emptyList();
-    private static transient HookRegistry hookRegistry;
-    static void clear() {
-        map = null;
-        archive = null;
-        configurators = null;
-        hookRegistry = null;
-    }
-
-    static void registerMap(Map<Bundle, ClassLoader> bundleMap) {
-        map = bundleMap;
-    }
-
-    static void registerArchive(NetigsoArchive netigsoArchive) {
-        archive = netigsoArchive;
-    }
-
+    private static Map<Bundle,ClassLoader> map;
+    private static NetigsoArchive archive;
+    private static Lookup.Result<HookConfigurator> configurators;
+    private static Collection<? extends HookConfigurator> previous = Collections.emptyList();
+    private static HookRegistry hookRegistry;
+    
     @Override
     public void addHooks(HookRegistry hr) {
-        hookRegistry = hr;
-        hr.addClassLoadingHook(this);
-        hr.addBundleFileFactoryHook(this);
-        hr.addAdaptorHook(this);
-        if (configurators == null) {
-            configurators = Lookup.getDefault().lookupResult(HookConfigurator.class);
-            configurators.addLookupListener(this);
-        }
-        resultChanged(null);
+        initRegistry(hr, this);
+        initAndRefresh();
     }
 
+
+    @Override
     public byte[] processClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be, ClasspathManager cm) {
         return bytes;
     }
 
+    @Override
     public boolean addClassPathEntry(ArrayList al, String string, ClasspathManager cm, BaseData bd, ProtectionDomain pd) {
         return false;
     }
 
+    @Override
     public String findLibrary(BaseData bd, String string) {
         return null;
     }
 
+    @Override
     public ClassLoader getBundleClassLoaderParent() {
         return null;
     }
 
+    @Override
     public BaseClassLoader createClassLoader(ClassLoader parent, final ClassLoaderDelegate delegate, final BundleProtectionDomain bpd, BaseData bd, String[] classpath) {
         String loc = bd.getBundle().getLocation();
         //NetigsoModule.LOG.log(Level.FINER, "createClassLoader {0}", bd.getLocation());
@@ -146,7 +131,7 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         ClassLoader ml = null;
         if (loc != null && loc.startsWith(pref)) {
             String cnb = loc.substring(pref.length());
-            ml = map.get(bd.getBundle());
+            ml = classLoaderForBundle(bd);
         }
         if (ml == null) {
             return new NetbinoxLoader(parent, delegate, bpd, bd, classpath);
@@ -156,37 +141,46 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
                 super(parent);
             }
 
+            @Override
             public ProtectionDomain getDomain() {
                 return bpd;
             }
 
+            @Override
             public ClasspathEntry createClassPathEntry(BundleFile bf, ProtectionDomain pd) {
                 return null;
             }
 
+            @Override
             public Class defineClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be) {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public Class publicFindLoaded(String name) {
                 return super.findLoadedClass(name);
             }
 
+            @Override
             public Object publicGetPackage(String name) {
                 return super.getPackage(name);
             }
 
+            @Override
             public Object publicDefinePackage(String s1, String s2, String s3, String s4, String s5, String s6, String s7, URL url) {
                 return super.definePackage(s1, s2, s3, s4, s5, s6, s7, url);
             }
 
+            @Override
             public ClasspathManager getClasspathManager() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
 
+            @Override
             public void initialize() {
             }
 
+            @Override
             public URL findLocalResource(String name) {
                 return null;
                 /*
@@ -196,6 +190,7 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
                  */
             }
 
+            @Override
             public Enumeration<URL> findLocalResources(String name) {
                 return null;
                 /*
@@ -218,20 +213,25 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
                 return findLocalResources(name);
             }
 
+            @Override
             public Class findLocalClass(String name) throws ClassNotFoundException {
                 return getParent().loadClass(name);
             }
 
+            @Override
             public void close() {
             }
 
+            @Override
             public void attachFragment(BundleData bd, ProtectionDomain pd, String[] strings) {
             }
 
+            @Override
             public ClassLoaderDelegate getDelegate() {
                 return delegate;
             }
 
+            @Override
             public Bundle getBundle() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
@@ -239,10 +239,12 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         return new Del(ml);
     }
 
+    @Override
     public void initializedClassLoader(BaseClassLoader bcl, BaseData bd) {
     }
 
     private final MRUBundleFileList mruList = new MRUBundleFileList();
+    @Override
     public BundleFile createBundleFile(Object file, final BaseData bd, boolean isBase) throws IOException {
 
         if (file instanceof File) {
@@ -257,6 +259,7 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         return null;
     }
 
+    @Override
     public void log(FrameworkEvent fe) {
         Level l = Level.FINE;
         if ((fe.getType() & FrameworkEvent.ERROR) != 0) {
@@ -273,63 +276,120 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         NetbinoxFactory.LOG.log(lr);
     }
 
+    @Override
     public void log(FrameworkLogEntry fle) {
         NetbinoxFactory.LOG.log(Level.FINE, "entry {0}", fle);
     }
 
+    @Override
     public void setWriter(Writer writer, boolean bln) {
     }
 
+    @Override
     public void setFile(File file, boolean bln) throws IOException {
     }
 
+    @Override
     public File getFile() {
         return null;
     }
 
+    @Override
     public void setConsoleLog(boolean bln) {
     }
 
+    @Override
     public void close() {
     }
 
     // adaptor hooks
 
+    @Override
     public void initialize(BaseAdaptor ba) {
     }
 
+    @Override
     public void frameworkStart(BundleContext bc) throws BundleException {
     }
 
+    @Override
     public void frameworkStop(BundleContext bc) throws BundleException {
     }
 
+    @Override
     public void frameworkStopping(BundleContext bc) {
     }
 
+    @Override
     public void addProperties(Properties prprts) {
     }
 
+    @Override
     public URLConnection mapLocationToURLConnection(String string) throws IOException {
         return null;
     }
 
+    @Override
     public void handleRuntimeError(Throwable thrwbl) {
         NetbinoxFactory.LOG.log(Level.WARNING, thrwbl.getMessage(), thrwbl);
     }
 
+    @Override
     public FrameworkLog createFrameworkLog() {
         return this;
     }
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        Collection<? extends HookConfigurator> now = configurators.allInstances();
-        Set<HookConfigurator> added = new HashSet<HookConfigurator>(now);
-        added.removeAll(previous);
+        initAndRefresh();
+    }
+    
+    //
+    // synchronized to access internal data structures
+    //
+    private void initAndRefresh() {
+        Set<HookConfigurator> added;
+        synchronized (NetbinoxHooks.class) {
+            if (configurators == null) {
+                configurators = Lookup.getDefault().lookupResult(HookConfigurator.class);
+                configurators.addLookupListener(this);
+            }
+    
+            Collection<? extends HookConfigurator> now = configurators.allInstances();
+            added = new HashSet<HookConfigurator>(now);
+            added.removeAll(previous);
+            previous = now;
+        }
         for (HookConfigurator hc : added) {
             hc.addHooks(hookRegistry);
         }
-        previous = now;
+    }
+    static synchronized void clear() {
+        map = null;
+        archive = null;
+        configurators = null;
+        hookRegistry = null;
+    }
+    private static synchronized ClassLoader classLoaderForBundle(BaseData bd) {
+        if (map == null) {
+            return null;
+        }
+        return map.get(bd.getBundle());
+    }
+
+
+    static synchronized void registerMap(Map<Bundle, ClassLoader> bundleMap) {
+        map = bundleMap;
+    }
+
+    static synchronized void registerArchive(NetigsoArchive netigsoArchive) {
+        archive = netigsoArchive;
+    }
+
+    private synchronized static void initRegistry(HookRegistry hr, NetbinoxHooks hooks) {
+        hookRegistry = hr;
+        hr.addClassLoadingHook(hooks);
+        hr.addBundleFileFactoryHook(hooks);
+        hr.addAdaptorHook(hooks);
     }
 }

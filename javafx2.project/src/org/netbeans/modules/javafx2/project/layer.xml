@@ -14,7 +14,18 @@
     <folder name="Templates">
         <folder name="JFX">
             <attr name="position" intvalue="0"/>
-            <file name="jfx-impl.xml" url="templates/jfx-impl.xml_"/>
+            <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
+                <attr name="position" intvalue="25"/>
+            </file>
+            <file name="jfx-impl-platform.inc" url="templates/jfx-impl-platform.inc_">
+                <attr name="position" intvalue="35"/>
+            </file>
+            <file name="jfx-impl-parameters.inc" url="templates/jfx-impl-parameters.inc_">
+                <attr name="position" intvalue="45"/>
+            </file>
+            <file name="jfx-impl-callbacks.inc" url="templates/jfx-impl-callbacks.inc_">
+                <attr name="position" intvalue="55"/>
+            </file>
         </folder>
         
         <folder name="Project">
@@ -25,7 +36,7 @@
                     <attr name="position" intvalue="105"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXApp.html"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator"/>
                 </file>
             </folder>
         </folder>
@@ -45,10 +56,21 @@
                 <attr name="templateCategory" stringvalue="java-main-class"/>
             </file>
 
+            <file name="FXPreloader.java" url="templates/FXPreloader.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXPreloader.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXPreloader.html"/>
+                <attr name="templateCategory" stringvalue="java-main-class"/>
+            </file>
+
             <file name="FXML.java" url="templates/FXML_java_1.template">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXML.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
@@ -56,12 +78,12 @@
             </file>
 
             <file name="FXML.fxml" url="templates/FXML_fxml.template">
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="400"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             
             <file name="FXML2.java" url="templates/FXML_java_2.template">
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="500"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>

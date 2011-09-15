@@ -51,17 +51,22 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
  */
-class J2SEActionProvider extends BaseActionProvider {
+public class J2SEActionProvider extends BaseActionProvider implements AntTargetsProvider {
 
     private static final Logger LOG = Logger.getLogger(J2SEActionProvider.class.getName());
 
@@ -204,6 +209,17 @@ class J2SEActionProvider extends BaseActionProvider {
             p.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, config);
         }
         return names;
+    }
+
+    @ProjectServiceProvider(
+            service=ActionProvider.class,
+            projectTypes={@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-java-j2seproject",position=100)})
+    public static J2SEActionProvider create(@NonNull final Lookup lkp) {
+        Parameters.notNull("lkp", lkp); //NOI18N
+        final J2SEProject project = lkp.lookup(J2SEProject.class);
+        final J2SEActionProvider j2seActionProvider = new J2SEActionProvider(project, project.getUpdateHelper());
+        j2seActionProvider.startFSListener();
+        return j2seActionProvider;
     }
 
 }

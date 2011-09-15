@@ -65,21 +65,26 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public class SelectMethodGenerator extends AbstractMethodGenerator {
-    
+
     public SelectMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
         super(ejbClass, ejbClassFileObject);
     }
-    
+
     public static SelectMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
         return new SelectMethodGenerator(ejbClass, ejbClassFileObject);
     }
-    
+
+    /**
+     * Generates select method.
+     * <p>
+     * <b>Should be called outside EDT.</b>
+     */
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote, boolean isOneReturn, String ejbql) throws IOException {
-        
+
         if (!methodModel.getName().startsWith("ejbSelect")) {
             throw new IllegalArgumentException("The select method name must have ejbSelect as its prefix.");
         }
-        
+
         List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
         if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
             exceptions.add("javax.ejb.FinderException");
@@ -96,12 +101,12 @@ public class SelectMethodGenerator extends AbstractMethodGenerator {
                 modifiers
                 );
         addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
-        
+
         // write query to deplyment descriptor
         addQueryToXml(methodModel, ejbql);
-        
+
     }
-    
+
     private void addQueryToXml(MethodModel methodModel, String ejbql) throws IOException {
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();

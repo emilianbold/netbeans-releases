@@ -248,7 +248,7 @@ public class ModuleListTest extends SetupHid {
     /** Check that adding a new module via XML, as Auto Update does, works.
      * Written to help test #27106.
      */
-    public void testAddNewModuleViaXML() throws Exception {
+    public void testXAddNewModuleViaXML() throws Exception {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             assertEquals(Collections.emptySet(), list.readInitial());

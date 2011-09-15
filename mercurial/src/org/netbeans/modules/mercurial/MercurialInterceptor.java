@@ -184,7 +184,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final File root = hg.getRepositoryRoot(srcFile);
         final File dstRoot = hg.getRepositoryRoot(dstFile);
-        if (root == null) return;
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
@@ -192,11 +191,18 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!result) {
             Mercurial.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
         }
+        if (root == null) {
+            return;
+        }
         // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         try {
-            if (root.equals(dstRoot)) {
+            if (root.equals(dstRoot) && !HgUtils.isIgnored(dstFile, false)) {
+                // target does not lie under ignored folder and is in the same repo as src
                 HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+            } else {
+                // just hg rm the old file
+                HgCommand.doRemove(root, srcFile, logger);
             }
         } catch (HgException e) {
             Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[]{srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
@@ -245,7 +251,10 @@ public class MercurialInterceptor extends VCSInterceptor {
             FileUtils.copyFile(from, to);
         }
 
-        if (root == null) return;
+        if (root == null || HgUtils.isIgnored(to, false)) {
+            // target lies under ignored folder, do not add it
+            return;
+        }
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         try {
             if (root.equals(dstRoot)) {
@@ -393,8 +402,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         } finally {
             if (repository != null) {
                 hgFolderEventsHandler.enableEvents(repository, true);
-                File hgFolder = HgUtils.getHgFolderForRoot(repository);
-                hgFolderEventsHandler.refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+                hgFolderEventsHandler.refreshRepositoryTimestamps(repository);
             }
         }
     }
@@ -493,8 +501,71 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
 
+    
+    private static class HgFolderTimestamps {
+        private final File hgFolder;
+        private final Map<String, Long> interestingTimestamps;
+        private static final String DIRSTATE = "dirstate"; //NOI18N
+        private static final String[] INTERESTING_FILENAMES = { 
+            "branch", //NOI18N
+            "branchheads.cache", //NOI18N
+            DIRSTATE,
+            "localtags", //NOI18N
+            "tags.cache", //NOI18N
+            "undo.branch", //NOI18N
+            "undo.dirstate" //NOI18N
+        };
+
+        public HgFolderTimestamps (File hgFolder) {
+            this.hgFolder = hgFolder;
+            Map<String, Long> ts = new HashMap<String, Long>(INTERESTING_FILENAMES.length);
+            for (String fn : INTERESTING_FILENAMES) {
+                ts.put(fn, new File(hgFolder, fn).lastModified());
+            }
+            interestingTimestamps = Collections.unmodifiableMap(ts);
+        }
+
+        private boolean isNewer (HgFolderTimestamps other) {
+            boolean newer = true;
+            if (other != null) {
+                newer = false;
+                for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
+                    // has a newer (higher) ts or the file is deleted
+                    if (e.getValue() > other.interestingTimestamps.get(e.getKey())
+                            || e.getValue() == -1 && other.interestingTimestamps.get(e.getKey()) != e.getValue()) {
+                        newer = true;
+                        break;
+                    }
+                }
+            }
+            return newer;
+        }
+
+        private File getHgFolder () {
+            return hgFolder;
+        }
+
+        private boolean repositoryExists () {
+            return interestingTimestamps.get(DIRSTATE) > 0 || hgFolder.exists();
+        }
+
+        private boolean isOutdated () {
+            boolean upToDate = true;
+            for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
+                File f = new File(hgFolder, e.getKey());
+                long ts = f.lastModified();
+                // file is now either modified (higher ts) or deleted
+                if (e.getValue() < ts || e.getValue() > ts && ts == -1) {
+                    upToDate = false;
+                    break;
+                }
+            }
+            return !upToDate;
+        }
+    }
+
     private class HgFolderEventsHandler {
-        private final HashMap<File, Long> hgFolders = new HashMap<File, Long>(5);
+        private final HashMap<File, HgFolderTimestamps> hgFolders = new HashMap<File, HgFolderTimestamps>(5);
         private final HashMap<File, FileChangeListener> hgFolderRLs = new HashMap<File, FileChangeListener>(5);
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
         private final HashSet<File> disabledEvents = new HashSet<File>(5);
@@ -517,16 +588,24 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         });
 
+        private HgFolderTimestamps scanHgFolderTimestamps (File hgFolder) {
+            return new HgFolderTimestamps(hgFolder);
+        }
+
+        public void refreshRepositoryTimestamps (File repository) {
+            refreshHgFolderTimestamp(scanHgFolderTimestamps(HgUtils.getHgFolderForRoot(repository)));
+        }
+
         /**
          *
          * @param hgFolder
          * @param timestamp new timestamp, value 0 will remove the item from the cache
          */
-        private void refreshHgFolderTimestamp(File hgFolder, long timestamp) {
-            boolean exists = timestamp > 0 || hgFolder.exists();
+        private void refreshHgFolderTimestamp (HgFolderTimestamps newTimestamps) {
+            final File hgFolder = newTimestamps.getHgFolder();
+            boolean exists = newTimestamps.repositoryExists();
             synchronized (hgFolders) {
-                Long ts;
-                if (exists && (ts = hgFolders.get(hgFolder)) != null && ts >= timestamp) {
+                if (exists && !newTimestamps.isNewer(hgFolders.get(hgFolder))) {
                     // do not enter the filesystem module unless really need to
                     return;
                 }
@@ -535,7 +614,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 hgFolders.remove(hgFolder);
                 FileChangeListener list = hgFolderRLs.remove(hgFolder);
                 if (exists) {
-                    hgFolders.put(hgFolder, Long.valueOf(timestamp));
+                    hgFolders.put(hgFolder, newTimestamps);
                     if (list == null) {
                         FileUtil.addRecursiveListener(list = new FileChangeAdapter(), hgFolder);
                     }
@@ -554,24 +633,23 @@ public class MercurialInterceptor extends VCSInterceptor {
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("mercurial.handleDirstateEvents", "true"))) { //NOI18N
                 hgFolder = FileUtil.normalizeFile(hgFolder);
                 Mercurial.STATUS_LOG.log(Level.FINER, "handleHgFolderEvent: special FS event handling for {0}", hgFolder.getAbsolutePath()); //NOI18N
-                lastModified = hgFolder.lastModified();
-                Long lastCachedModified = null;
-                synchronized (hgFolders) {
-                    lastCachedModified = hgFolders.get(hgFolder);
-                    if (lastCachedModified == null || lastCachedModified < lastModified || lastModified == 0) {
-                        if (!isEnabled(hgFolder)) {
-                            return lastModified;
-                        }
-                        refreshHgFolderTimestamp(hgFolder, lastModified);
-                        lastCachedModified = null;
+                boolean refreshNeeded = false;
+                HgFolderTimestamps cached;
+                if (isEnabled(hgFolder)) {
+                    synchronized (hgFolders) {
+                        cached = hgFolders.get(hgFolder);
                     }
-                }
-                if (lastCachedModified == null) {
-                    File repository = hgFolder.getParentFile();
-                    Mercurial.STATUS_LOG.log(Level.FINE, "handleDirstateEvent: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
-                    reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
-                    refreshOpenFilesTask.schedule(3000);
-                    WorkingCopyInfo.refreshAsync(repository);
+                    if (cached == null || !cached.repositoryExists() || cached.isOutdated()) {
+                        refreshHgFolderTimestamp(scanHgFolderTimestamps(hgFolder));
+                        refreshNeeded = true;
+                    }
+                    if (refreshNeeded) {
+                        File repository = hgFolder.getParentFile();
+                        Mercurial.STATUS_LOG.log(Level.FINE, "handleDirstateEvent: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
+                        reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
+                        refreshOpenFilesTask.schedule(3000);
+                        WorkingCopyInfo.refreshAsync(repository);
+                    }
                 }
             }
             return lastModified;
@@ -639,21 +717,25 @@ public class MercurialInterceptor extends VCSInterceptor {
                 // select repository root for the file and finds it's .hg folder
                 File repositoryRoot = hg.getRepositoryRoot(file);
                 if (repositoryRoot != null) {
-                    File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
                     File newlyAddedRoot = addSeenRoot(repositoryRoot, file);
                     if (newlyAddedRoot != null) {
+                        // this means the repository has not yet been scanned, so scan it
+                        Mercurial.STATUS_LOG.log(Level.FINE, "pingRepositoryRootFor: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
+                        reScheduleRefresh(4000, newlyAddedRoot);
+                        File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
+                        boolean refreshNeeded = false;
                         synchronized (hgFolders) {
-                            // this means the repository has not yet been scanned, so scan it
-                            Mercurial.STATUS_LOG.log(Level.FINE, "pingRepositoryRootFor: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
-                            reScheduleRefresh(4000, newlyAddedRoot);
                             if (!hgFolders.containsKey(hgFolder)) {
                                 if (hgFolder.isDirectory()) {
                                     // however there might be NO .hg folder, especially for just initialized repositories
                                     // so keep the reference only for existing and valid .hg folders
                                     hgFolders.put(hgFolder, null);
-                                    refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+                                    refreshNeeded = true;
                                 }
                             }
+                        }
+                        if (refreshNeeded) {
+                            refreshHgFolderTimestamp(scanHgFolderTimestamps(hgFolder));
                         }
                     }
                 }

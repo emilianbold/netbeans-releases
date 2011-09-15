@@ -1,3 +1,4 @@
+11:0-11:28:verifier:Import section does not correspond to the specified code style rules
 25:7-25:9:warning:The entity relationship is not defined.
 46:15-46:23:verifier:Add @Override Annotation
 52:19-52:25:verifier:Add @Override Annotation
@@ -9,6 +10,7 @@ Create bidirectional ManyToOne relationship...
 Create bidirectional OneToOne relationship...
 Create unidirectional ManyToOne relationship
 Create unidirectional OneToOne relationship
+Organize imports
 ---------------------
 /*
  * CC.java
@@ -24,12 +26,7 @@ package hints;
 import java.io.Serializable;
 
 import java.util.List;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 /**
  *

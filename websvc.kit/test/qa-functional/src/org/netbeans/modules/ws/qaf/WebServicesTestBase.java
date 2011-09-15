@@ -87,6 +87,7 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Base class for web services UI tests
@@ -258,32 +259,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
         SJSAS,
         GLASSFISH,
-        GLASSFISH_V3,
         TOMCAT,
         JBOSS;
-//        @Override
-//        public String toString() {
-//            switch (this) {
-//                case SJSAS:
-//                    //Sun Java System Application Server
-//                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.dm.Bundle", "FACTORY_DISPLAYNAME");
-//                case GLASSFISH:
-//                    //GlassFish V2
-//                    String label = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle", "LBL_GLASSFISH_V2");
-//                    //Need only "GlassFish" to be able to handle both versions (v1, v2)
-//                    return label.substring(0, label.length() - 3);
-//                case GLASSFISH_V3:
-//                    //GlassFish V3
-//                    return Bundle.getStringTrimmed("org.netbeans.modules.glassfish.javaee.Bundle", "TXT_DisplayName");
-//                case TOMCAT:
-//                    //Tomcat
-//                    return Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.util.Bundle", "LBL_DefaultDisplayName");
-//                case JBOSS:
-//                    //JBoss Application Server
-//                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.jboss4.Bundle", "SERVER_NAME");
-//            }
-//            throw new AssertionError("Unknown type: " + this); //NOI18N
-//        }
     }
 
     /**
@@ -603,10 +580,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param p project where to create new file
      * @param fileType file type name from web services category
      */
-    protected void createNewWSFile(Project p, String fileType) {
+    protected NewFileWizardOperator createNewWSFile(Project p, String fileType) {
         // Web Services
         String webServicesLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.client.wizard.Bundle", "Templates/WebServices");
-        createNewFile(p, webServicesLabel, fileType);
+        return createNewFile(p, webServicesLabel, fileType);
     }
 
     /**
@@ -616,7 +593,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param p project where to create new file
      * @param fileType file type name from web services category
      */
-    protected void createNewFile(Project p, String fileCategory, String fileType) {
+    protected NewFileWizardOperator createNewFile(Project p, String fileCategory, String fileType) {
         // file category & filetype selection step
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         new EventTool().waitNoEvent(500);
@@ -626,6 +603,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         nfwo.selectCategory(fileCategory);
         nfwo.selectFileType(fileType);
         nfwo.next();
+        return nfwo;
     }
 
     /**
@@ -634,9 +612,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param projectName name of the project to be deployed
      */
     protected void deployProject(String projectName) throws IOException {
-        new CleanJavaProjectAction().perform();
+        performProjectAction(projectName, "Clean");
+        String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_RedeployAction_Name");
         //Deploy
-        String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name");
         performProjectAction(projectName, deployProjectLabel);
     }
 
@@ -660,18 +638,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         assertServerRunning();
         J2eeServerNode serverNode = getServerNode();
         serverNode.expand();
-        //Applications
-        String applicationsLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications");
-        //Web Applications
-        String webLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_WebModules");
-        //EJB Modules
-        String ejbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_EjbModules");
-        //App Client Modules
-        String appclientLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_AppClientModules");
-        //Refresh
-        String refreshLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.Bundle", "LBL_RefreshAction");
-        //Undeploy
-        String undeployLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Undeploy");
+        String applicationsLabel = "Applications";
+        String webLabel = "Web Applications";
         Node appsNode = null;
         switch (getProjectType()) {
             case SAMPLE:
@@ -679,7 +647,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             case MAVEN_WEB:
                 if (ServerType.TOMCAT.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, webLabel);
-                } else if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                } else if (ServerType.GLASSFISH.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, applicationsLabel);
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + webLabel);
@@ -687,24 +655,24 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 break;
             case EJB:
             case MAVEN_EJB:
-                if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                if (ServerType.GLASSFISH.equals(REGISTERED_SERVER)) {
                     appsNode = new Node(serverNode, applicationsLabel);
                 } else {
-                    appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                    appsNode = new Node(serverNode, applicationsLabel + "|" + "EJB Modules");
                 }
                 break;
             case APPCLIENT:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + appclientLabel);
+                appsNode = new Node(serverNode, applicationsLabel + "|" + "App Client Modules");
                 break;
         }
         appsNode.expand();
-        appsNode.callPopup().pushMenu(refreshLabel);
+        appsNode.callPopup().pushMenu("Refresh");
         // needed for slower machines
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); //NOI18N
         Node n = new Node(appsNode, projectName);
-        n.callPopup().pushMenu(undeployLabel);
+        n.callPopup().pushMenu("Undeploy");
         new EventTool().waitNoEvent(2000);
-        appsNode.callPopup().pushMenu(refreshLabel);
+        appsNode.callPopup().pushMenu("Refresh");
         new EventTool().waitNoEvent(2000);
         dumpOutput();
     }

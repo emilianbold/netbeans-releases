@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.Enumeration;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
@@ -57,6 +58,14 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
  * @author Miloslav Metelka
  */
 public final class CompoundAttributes implements AttributeSet {
+    
+    private static void checkHighlightItemsNonNull(HighlightItem[] highlightItems) {
+        for (int i = 0; i < highlightItems.length; i++) {
+            if (highlightItems[i] == null) {
+                throw new IllegalStateException("highlightItems[" + i + "] == null"); // NOI18N
+            }
+        }
+    }
     
     /**
      * Since the view may move its absolute start offset the end offsets in highlight items
@@ -75,6 +84,7 @@ public final class CompoundAttributes implements AttributeSet {
         assert (highlightItems.length >= 2) : "highlightItems.length=" + highlightItems.length + " < 2"; // NOI18N
         this.highlightItems = highlightItems;
         this.startOffset = startOffset;
+//        checkHighlightItemsNonNull(highlightItems);
     }
     
     public int startOffset() {
@@ -90,7 +100,11 @@ public final class CompoundAttributes implements AttributeSet {
     }
 
     private AttributeSet firstItemAttrs() {
-        return highlightItems[0].getAttributes();
+        AttributeSet attrs = highlightItems[0].getAttributes();
+        if (attrs == null) {
+            attrs = SimpleAttributeSet.EMPTY;
+        }
+        return attrs;
     }
 
     @Override

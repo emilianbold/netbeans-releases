@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.newproject;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.Action;
@@ -52,15 +51,20 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  *@author mkleint
  */
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=1000, displayName="#template.existing", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="ExistingDescription.html")
+@Messages("template.existing=Project with Existing POM")
 public class ExistingWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
@@ -68,21 +72,16 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     
-    private ExistingWizardIterator() {}
-    
-    public static ExistingWizardIterator createIterator() {
-        return new ExistingWizardIterator();
-    }
-    
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new UseOpenWizardPanel()
         };
     }
     
+    @Messages("LBL_UseOpenStep=Existing Project")
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(MavenWizardIterator.class, "LBL_UseOpenStep"),
+            LBL_UseOpenStep(),
         };
     }
     
@@ -145,9 +144,9 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         panels = null;
     }
     
+    @Messages("MSG_One_of_Many={0} of {1}")
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(ExistingWizardIterator.class, "MSG_One_of_Many"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+        return MSG_One_of_Many(index + 1, panels.length);
     }
     
     public boolean hasNext() {

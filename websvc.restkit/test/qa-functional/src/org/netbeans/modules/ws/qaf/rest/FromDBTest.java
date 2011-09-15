@@ -47,13 +47,13 @@ import java.util.Set;
 import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 
 /**
  * Tests for New REST web services from Database wizard
@@ -62,8 +62,14 @@ import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
  */
 public class FromDBTest extends CRUDTest {
 
+    protected static Server server = Server.GLASSFISH;
+
     public FromDBTest(String name) {
-        super(name);
+        super(name, server);
+    }
+
+    public FromDBTest(String name, Server server) {
+        super(name, server);
     }
 
     @Override
@@ -81,21 +87,23 @@ public class FromDBTest extends CRUDTest {
         copyDBSchema();
         //RESTful Web Services from Database
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromDatabase");
-        createNewWSFile(getProject(), restLabel);
+        NewFileWizardOperator nfwo = createNewWSFile(getProject(), restLabel);
         //Entity Classes from Database
-        String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
-        WizardOperator wo = prepareEntityClasses(new RestWizardOperator(fromDbLabel), false);
+        WizardOperator wo = prepareEntityClasses(nfwo, false);
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
-        jcbo = new JComboBoxOperator(wo, 2);
-        jcbo.clearText();
-        jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            jcbo = new JComboBoxOperator(wo, 2);
+            jcbo.clearText();
+            jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
+        }
         wo.finish();
         Runnable r = new Runnable() {
 
             private boolean found = false;
+
             public void run() {
                 while (!found) {
                     String dlgLbl = "REST Resources Configuration";
@@ -113,14 +121,20 @@ public class FromDBTest extends CRUDTest {
         new EventTool().waitNoEvent(1500);
         waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
-        files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
+        }
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
-            assertEquals("Some files were not generated", 29, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         } else {
             assertEquals("Some files were not generated", 30, files.size()); //NOI18N
         }
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE6)) {
+            assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
+        } else {
+            assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
+        }
     }
 
     /**

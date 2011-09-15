@@ -7,22 +7,19 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * General Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of
+ * the License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include
+ * the License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by
+ * Oracle in the GPL Version 2 section of the License file that accompanied
+ * this code. If applicable, add the following below the License Header, with
+ * the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -30,37 +27,28 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license." If you do not indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to its
+ * licensees as provided above. However, if you add GPL Version 2 code and
+ * therefore, elected the GPL Version 2 license, then the option applies only
+ * if the new code is made subject to such option by the copyright holder.
  */
 package org.netbeans.test.jsf;
 
 import javax.swing.JTextField;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextAreaOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.*;
 
-/** Class implementing all necessary methods for handling "Add Managed Bean" Dialog.
+/**
+ * Class implementing all necessary methods for handling "Add Managed Bean"
+ * Dialog.
  *
  */
 public class AddManagedBeanOperator extends NbDialogOperator {
-
-    /** Creates new AddManagedBeanOperator that can handle it.
-     */
-    public AddManagedBeanOperator() {
-        super("Add Managed Bean");
-    }
 
     private JLabelOperator _lblBeanClass;
     private JTextFieldOperator _txtBeanClass;
@@ -73,16 +61,21 @@ public class AddManagedBeanOperator extends NbDialogOperator {
     private JTextFieldOperator _txtBeanName;
     private JButtonOperator _btAdd;
 
+    /**
+     * Creates new AddManagedBeanOperator that can handle it.
+     */
+    public AddManagedBeanOperator() {
+        super("Add Managed Bean");
+    }
 
     //******************************
     // Subcomponents definition part
     //******************************
-
     /** Tries to find "Bean Class:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblBeanClass() {
-        if (_lblBeanClass==null) {
+        if (_lblBeanClass == null) {
             _lblBeanClass = new JLabelOperator(this, "Bean Class:");
         }
         return _lblBeanClass;
@@ -92,8 +85,8 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtBeanClass() {
-        if (_txtBeanClass==null) {
-            _txtBeanClass = new JTextFieldOperator((JTextField)lblBeanClass().getLabelFor());
+        if (_txtBeanClass == null) {
+            _txtBeanClass = new JTextFieldOperator((JTextField) lblBeanClass().getLabelFor());
         }
         return _txtBeanClass;
     }
@@ -102,7 +95,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btBrowse() {
-        if (_btBrowse==null) {
+        if (_btBrowse == null) {
             _btBrowse = new JButtonOperator(this, "Browse...");
         }
         return _btBrowse;
@@ -112,7 +105,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblScope() {
-        if (_lblScope==null) {
+        if (_lblScope == null) {
             _lblScope = new JLabelOperator(this, "Scope:");
         }
         return _lblScope;
@@ -122,7 +115,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboScope() {
-        if (_cboScope==null) {
+        if (_cboScope == null) {
             _cboScope = new JComboBoxOperator(this);
         }
         return _cboScope;
@@ -132,7 +125,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblBeanDescription() {
-        if (_lblBeanDescription==null) {
+        if (_lblBeanDescription == null) {
             _lblBeanDescription = new JLabelOperator(this, "Bean Description:");
         }
         return _lblBeanDescription;
@@ -142,7 +135,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JTextAreaOperator
      */
     public JTextAreaOperator txtBeanDescription() {
-        if (_txtBeanDescription==null) {
+        if (_txtBeanDescription == null) {
             _txtBeanDescription = new JTextAreaOperator(this);
         }
         return _txtBeanDescription;
@@ -152,7 +145,7 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblBeanName() {
-        if (_lblBeanName==null) {
+        if (_lblBeanName == null) {
             _lblBeanName = new JLabelOperator(this, "Bean Name:");
         }
         return _lblBeanName;
@@ -162,8 +155,8 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtBeanName() {
-        if (_txtBeanName==null) {
-            _txtBeanName = new JTextFieldOperator((JTextField)lblBeanName().getLabelFor());
+        if (_txtBeanName == null) {
+            _txtBeanName = new JTextFieldOperator((JTextField) lblBeanName().getLabelFor());
         }
         return _txtBeanName;
     }
@@ -172,17 +165,15 @@ public class AddManagedBeanOperator extends NbDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btAdd() {
-        if (_btAdd==null) {
+        if (_btAdd == null) {
             _btAdd = new JButtonOperator(this, "Add");
         }
         return _btAdd;
     }
 
-
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** gets text for txtBeanClass
      * @return String text
      */
@@ -272,11 +263,9 @@ public class AddManagedBeanOperator extends NbDialogOperator {
         btAdd().push();
     }
 
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /** Performs verification of AddManagedBeanOperator by accessing all its components.
      */
     public void verify() {
@@ -292,4 +281,3 @@ public class AddManagedBeanOperator extends NbDialogOperator {
         btAdd();
     }
 }
-

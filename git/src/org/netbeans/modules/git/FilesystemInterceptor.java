@@ -202,16 +202,18 @@ class FilesystemInterceptor extends VCSInterceptor {
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(from);
         File dstRoot = git.getRepositoryRoot(to);
-        if (root == null) return;
         try {
-            if (root.equals(dstRoot)) {
+            if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+                // target does not lie under ignored folder and is in the same repo as src
                 git.getClient(root).rename(from, to, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
             } else {
                 boolean result = from.renameTo(to);
                 if (!result) {
                     throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                 }
-                git.getClient(root).remove(new File[] { from }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                if (root != null) {
+                    git.getClient(root).remove(new File[] { from }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                }
             }
         } catch (GitException e) {
             IOException ex = new IOException();
@@ -260,7 +262,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             FileUtils.copyFile(from, to);
         }
 
-        if (root == null) return;
+        if (root == null || cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+            // target lies under ignored folder, do not add it
+            return;
+        }
         try {
             if (root.equals(dstRoot)) {
                 git.getClient(root).copyAfter(from, to, ProgressMonitor.NULL_PROGRESS_MONITOR);

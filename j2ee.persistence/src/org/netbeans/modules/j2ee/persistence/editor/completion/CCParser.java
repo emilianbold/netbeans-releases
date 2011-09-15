@@ -224,39 +224,43 @@ public class CCParser {
     
     
     private int  findAnnotationStart(int offset) {
-        int parentCount = -100;
+        
+        if(offset>0){//0 can't contain any '@' before
+            
+            int parentCount = -100;
 
-        TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-        if (ts.move(offset) == 0 || !ts.moveNext())
-            ts.movePrevious();
-        int len = offset - ts.offset();
-        if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-            String prefix = ts.token().toString().substring(0, len);
-            offset = ts.offset();
-        }
-        Token<JavaTokenId> titk = ts.token();
-        while(titk != null) {
-                JavaTokenId id = titk.id();
+            TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            if (ts.move(offset) == 0 || !ts.moveNext())
+                ts.movePrevious();
+            int len = offset - ts.offset();
+            if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                    ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                    ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                    ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                    && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                String prefix = ts.token().toString().substring(0, len);
+                offset = ts.offset();
+            }
+            Token<JavaTokenId> titk = ts.token();
+            while(titk != null) {
+                    JavaTokenId id = titk.id();
 
-            if(id == JavaTokenId.RPAREN) {
-                if(parentCount == -100) parentCount = 0;
-                parentCount++;
-            } else if(id == JavaTokenId.LPAREN) {
-                if(parentCount == -100) parentCount = 0;
-                parentCount--;
-            } else if(id == JavaTokenId.AT) {
-                if(parentCount == -1 || parentCount == -100) { //needed if offset is not within annotation content
-                    return ts.offset();
+                if(id == JavaTokenId.RPAREN) {
+                    if(parentCount == -100) parentCount = 0;
+                    parentCount++;
+                } else if(id == JavaTokenId.LPAREN) {
+                    if(parentCount == -100) parentCount = 0;
+                    parentCount--;
+                } else if(id == JavaTokenId.AT) {
+                    if(parentCount == -1 || parentCount == -100) { //needed if offset is not within annotation content
+                        return ts.offset();
+                    }
                 }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+                titk = ts.token();
             }
-            if (!ts.movePrevious()) {
-                break;
-            }
-            titk = ts.token();
         }
         
         return -1;

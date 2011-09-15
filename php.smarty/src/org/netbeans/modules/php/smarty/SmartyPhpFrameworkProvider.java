@@ -97,13 +97,16 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         return badgeIcon;
     }
 
-    public static boolean isSmartyTemplateExtension(String ext) {
-        for (String mimeExt : FileUtil.getMIMETypeExtensions(TplDataLoader.MIME_TYPE)) { // NOI18N
-            if (ext.equals(mimeExt)) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * Checks if the given {@code FileObject} has extension registered in the
+     * IDE as Smarty template extension (text/x-tpl).
+     *
+     * @param fo investigated file
+     * @return {@code true} if the file has extension registered as Smarty template
+     * extension, {@code false} otherwise
+     */
+    public static boolean hasSmartyTemplateExtension(FileObject fo) {
+        return TplDataLoader.MIME_TYPE.equals(FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE));
     }
 
     /**
@@ -115,7 +118,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         while (actualDepth <= maxDepth) {
             for (FileObject child : fo.getChildren()) {
                 if (!child.isFolder()) {
-                    if (isSmartyTemplateExtension(child.getExt())) {
+                    if (hasSmartyTemplateExtension(child)) {
                         return true;
                     }
                 } else if (child.isFolder() && actualDepth < maxDepth) {
@@ -180,7 +183,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             return isSmartyFound.get();
         } finally {
             Logger.getLogger(SmartyPhpFrameworkProvider.class.getName()).log(
-                    Level.INFO, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
+                    Level.FINE, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
         }
     }
 

@@ -292,12 +292,12 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
         MavenProject mp = mavProj.getMavenProject();
         String testSourceDirectory = mp.getBuild().getTestSourceDirectory();
-        File testdir = new File(testSourceDirectory);
-
-        FileObject fo = FileUtil.toFileObject(testdir);
-        //need check null because Test Dir may null
-        if (fo != null) {
-            isTestSource = FileUtil.isParentOf(fo, fileObject);
+        if (testSourceDirectory != null) {
+            File testdir = new File(testSourceDirectory);
+            FileObject fo = FileUtil.toFileObject(testdir);
+            if (fo != null) {
+                isTestSource = FileUtil.isParentOf(fo, fileObject);
+            }
         }
 
         List<Fix> fixes = new ArrayList<Fix>();

@@ -53,9 +53,9 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -64,7 +64,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Translates files registered under {@code Editors/<mime-type>/RefactoringActions/}
@@ -123,6 +122,10 @@ public final class RefactoringContextActionsProvider
                 InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
                     Object instance = ic.instanceCreate();
+
+                    if (instance instanceof Action) { // #201397
+                        AcceleratorBinding.setAccelerator((Action) instance, fo);
+                    }
 
                     if(instance instanceof ContextAwareAction) {
                         instance = ((ContextAwareAction)instance).createContextAwareInstance(context);

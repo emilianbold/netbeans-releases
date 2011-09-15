@@ -1,1 +1,5 @@
+Manifest-Version: 1.0
 OpenIDE-Module: javax.wsdl
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/wsdl/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.6.0
+AutoUpdate-Show-In-Client: false

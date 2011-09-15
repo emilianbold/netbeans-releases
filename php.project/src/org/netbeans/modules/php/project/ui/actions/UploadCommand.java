@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
@@ -151,7 +152,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
             }
         } catch (RemoteException ex) {
-            processRemoteException(ex);
+            RemoteUtils.processRemoteException(ex);
         } finally {
             progressHandle.finish();
         }
@@ -176,12 +177,12 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 }
             }
         } catch (RemoteException ex) {
-            processRemoteException(ex);
+            RemoteUtils.processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                processRemoteException(ex);
+                RemoteUtils.processRemoteException(ex);
             }
             if (transferInfo != null) {
                 processTransferInfo(transferInfo, remoteLog);

@@ -5,7 +5,6 @@
 <map version="1.0">
 	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
 	<mapID target="AboutQtProjects" url="WorkingWithCandC++Projects/AboutQtProjects.html"/>
-	<mapID target="ProfilingCandC++Projects" url="ProfilingCandC++Projects/ProfilingCandC++Projects.html"/>
 	<mapID target="WorkingWithCandC++Projects" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
 	<mapID target="ProjectTasks" url="WorkingWithCandC++Projects/ProjectTasks.html"/>
 	<mapID target="CreatingCorC++Project" url="WorkingWithCandC++Projects/CreatingCorC++Project.html"/>
@@ -253,7 +252,6 @@
 	<mapID target="NewRemoteDevelopmentHostWizardP1" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP1.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP2" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP2.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP3" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP3.html"/>
-	<mapID target="ProjectPropsProfile" url="WorkingWithCandC++Projects/ProjectPropsProfile.html"/>
 	<mapID target="PackagingFiles" url="CandC++ProjectBasics/PackagingFiles.html"/>
 	<mapID target="credits" url="credits.html"/>
 	<mapID target="appclient" url="images/appclient.gif"/>
@@ -266,7 +264,6 @@
 	<mapID target="junit_filter" url="images/junit_filter.gif"/>
 	<mapID target="makeProject" url="images/makeProject.gif"/>
 	<mapID target="module" url="images/module.gif"/>
-	<mapID target="refresh" url="images/refresh.png"/>
 	<mapID target="RunningThread" url="images/RunningThread.gif"/>
 	<mapID target="runtime-window-databases" url="images/runtime-window-databases.png"/>
 	<mapID target="runtime-window-httpserver" url="images/runtime-window-httpserver.png"/>
@@ -282,18 +279,8 @@
 	<mapID target="who_includes" url="images/who_includes.png"/>
 	<mapID target="who_is_included" url="images/who_is_included.png"/>
 	<mapID target="RunningCorC++Project1" url="WorkingWithCandC++Projects/RunningCorC++Project.html"/>
-	<mapID target="ManagingProfileConfigurations" url="ProfilingCandC++Projects/ManagingProfileConfigurations.html"/>
-	<mapID target="OverviewOfCandC++Profiling" url="ProfilingCandC++Projects/OverviewOfCandC++Profiling.html"/>
-	<mapID target="ProfilingThreadedCandC++Apps" url="ProfilingCandC++Projects/ProfilingThreadedCandC++Apps.html"/>
 	<mapID target="ProjectPropsQt" url="WorkingWithCandC++Projects/ProjectPropsQt.html"/>
 	<mapID target="RemoteDevelopmentFileSharing" url="WorkingWithCandC++Projects/RemoteDevelopmentFileSharing.html"/>
-	<mapID target="AnalyzingCPUUsageCandC++FortanApps" url="ProfilingCandC++Projects/AnalyzingCPUUsageCandC++FortanApps.html"/>
-	<mapID target="AnalyzingIOUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingIOUsageCandC++FortranApps.html"/>
-	<mapID target="AnalyzingMemoryUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingMemoryUsageCandC++FortranApps.html"/>
-	<mapID target="AnalyzingThreadMicrostatesCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingThreadMicrostatesCandC++FortranApps.html"/>
-	<mapID target="AnalyzingThreadUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingThreadUsageCandC++FortranApps.html"/>
-	<mapID target="EnablingDTraceForProfilingCandC++FortranApps" url="ProfilingCandC++Projects/EnablingDTraceForProfilingCandC++FortranApps.html"/>
-	<mapID target="RunMonitorWindowforCandC++Fort" url="ProfilingCandC++Projects/RunMonitorWindowforCandC++Fort.html"/>
 	<mapID target="AutoLocalVariables" url="images/AutoLocalVariables.png"/>
 	<mapID target="EvaluatorInVariables" url="images/EvaluatorInVariables.png"/>
 	<mapID target="WatchesInVariables" url="images/WatchesInVariables.png"/>

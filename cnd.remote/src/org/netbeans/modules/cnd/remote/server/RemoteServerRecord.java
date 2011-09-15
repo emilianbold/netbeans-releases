@@ -163,7 +163,9 @@ public class RemoteServerRecord implements ServerRecord {
             resetOfflineState();
             init(null);
             if (isOnline()) {
-                task.run();
+                if (task != null) {
+                    task.run();
+                }
             }
         }
     }

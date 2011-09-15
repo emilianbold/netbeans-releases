@@ -43,16 +43,16 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.Document;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -66,107 +66,90 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
+    
 /**
  * @author  phrebejk, Anton Chechel
  */
-public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
+public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+
+    private volatile RequestProcessor.Task task;
+    private DetectPlatformTask detectPlatformTask;
+    
+    private final JavaFXProjectWizardIterator.WizardType type;
     private PanelConfigureProject panel;
-    private boolean valid;
-    private String currentLibrariesLocation;
-    private String projectLocation;
-    private final NewJFXProjectWizardIterator.WizardType type;
     
     private ComboBoxModel platformsModel;
     private ListCellRenderer platformsCellRenderer;
     private JavaPlatformChangeListener jpcl;
 
-    public PanelOptionsVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
-        platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform");
-        platformsCellRenderer = PlatformUiSupport.createPlatformListCellRenderer();
-        
-        initComponents();
-        // copied from CustomizerLibraries
-        platformComboBox.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
-        jpcl = new JavaPlatformChangeListener();
-        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
+    private String currentLibrariesLocation;
+    private String projectLocation;
 
+    private boolean isMainClassValid;
+    private boolean isPreloaderNameValid;
+    
+    PanelOptionsVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
         this.panel = panel;
         this.type = type;
+
+        detectPlatformTask = new DetectPlatformTask();
+        
+        preInitComponents();
+        initComponents();
+        postInitComponents();
+//        J2SEProjectProperties uiProps = context.lookup(J2SEProjectProperties.class);
+    }
+    
+    private void preInitComponents() {
+        platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform"); // NOI18N
+        platformsCellRenderer = PlatformUiSupport.createPlatformListCellRenderer();
+    }
+    
+    private void postInitComponents() {
+        // copied from CustomizerLibraries
+        platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        jpcl = new JavaPlatformChangeListener();
+        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
+        
+        selectJavaFXEnabledPlatform();
+
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
         txtLibFolder.setText(currentLibrariesLocation);
         cbSharableActionPerformed(null);
 
         switch (type) {
-            case LIB:
+            case LIBRARY:
                 setAsMainCheckBox.setVisible(false);
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
                 break;
-            case APP:
-                createMainCheckBox.addActionListener(this);
+            case APPLICATION:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 break;
-            case EXT:
+            case EXTISTING:
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
                 break;
         }
 
         setAsMainCheckBox.setSelected(WizardSettings.getSetAsMain(type));
-        this.mainClassTextField.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                mainClassChanged();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                mainClassChanged();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                mainClassChanged();
-            }
-        });
-        this.txtLibFolder.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                librariesLocationChanged();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                librariesLocationChanged();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                librariesLocationChanged();
-            }
-        });
-        
-//        J2SEProjectProperties uiProps = context.lookup(J2SEProjectProperties.class);
-
-
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == createMainCheckBox) {
-            lastMainClassCheck = createMainCheckBox.isSelected();
-            mainClassTextField.setEnabled(lastMainClassCheck);
-            this.panel.fireChangeEvent();
-        }
+        mainClassTextField.getDocument().addDocumentListener(this);
+        txtLibFolder.getDocument().addDocumentListener(this);
+        txtPreloaderProject.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -174,13 +157,43 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         final String propName = event.getPropertyName();
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(propName)) {
             final String projectName = (String) event.getNewValue();
-            this.mainClassTextField.setText(createMainClassName(projectName));
+            mainClassTextField.setText(createMainClassName(projectName));
+            txtPreloaderProject.setText(createPreloaderProjectName(projectName));
         } else if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(propName)) {
             projectLocation = (String) event.getNewValue();
         }
     }
 
-    static String createMainClassName(final String projectName) {
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        documentChanged(e.getDocument());
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        documentChanged(e.getDocument());
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        documentChanged(e.getDocument());
+    }
+
+    private void documentChanged(Document doc) {
+        if (txtLibFolder.getDocument().equals(doc)) {
+            librariesLocationChanged();
+        } else if (mainClassTextField.getDocument().equals(doc)) {
+            mainClassChanged();
+        } else if (txtPreloaderProject.getDocument().equals(doc)) {
+            preloaderNameChanged();
+        }
+    }
+    
+    private static String createPreloaderProjectName(final String projectName) {
+        return projectName + "-Preloader"; // NOI18N
+    }
+    
+    private static String createMainClassName(final String projectName) {
 
         final StringBuilder pkg = new StringBuilder();
         final StringBuilder main = new StringBuilder();
@@ -247,6 +260,16 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         return platform;
     }
 
+    private void selectJavaFXEnabledPlatform() {
+        for (int i = 0; i < platformsModel.getSize(); i++) {
+            JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
+            if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                platformComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -293,6 +316,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
+        createMainCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                createMainCheckBoxItemStateChanged(evt);
+            }
+        });
 
         mainClassTextField.setText("com.myapp.Main");
 
@@ -317,6 +345,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(preloaderCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Preloader_Checkbox")); // NOI18N
+        preloaderCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                preloaderCheckBoxItemStateChanged(evt);
+            }
+        });
 
         lblPreloaderProject.setLabelFor(txtPreloaderProject);
         org.openide.awt.Mnemonics.setLocalizedText(lblPreloaderProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_PreloaderName_TextBox")); // NOI18N
@@ -398,7 +431,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(setAsMainCheckBox)
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
@@ -448,6 +481,16 @@ private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
         this.panel.fireChangeEvent();
 }//GEN-LAST:event_platformComboBoxItemStateChanged
 
+private void preloaderCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_preloaderCheckBoxItemStateChanged
+        txtPreloaderProject.setEnabled(preloaderCheckBox.isSelected());
+}//GEN-LAST:event_preloaderCheckBoxItemStateChanged
+
+private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createMainCheckBoxItemStateChanged
+        lastMainClassCheck = createMainCheckBox.isSelected();
+        mainClassTextField.setEnabled(lastMainClassCheck);
+        this.panel.fireChangeEvent();
+}//GEN-LAST:event_createMainCheckBoxItemStateChanged
+
     @Override
     boolean valid(WizardDescriptor settings) {
         if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
@@ -474,18 +517,27 @@ private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
         }
 
         if (mainClassTextField.isVisible() && mainClassTextField.isEnabled()) {
-            if (!valid) {
+            if (!isMainClassValid) {
                 settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalMainClassName")); // NOI18N
             }
-            return this.valid;
+            return isMainClassValid;
+        } else if (txtPreloaderProject.isVisible() && txtPreloaderProject.isEnabled()) {
+            if (!isPreloaderNameValid) {
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalPreloaderProjectName")); // NOI18N
+            }
+            return isPreloaderNameValid;
         } else {
             return true;
         }
     }
 
     @Override
-    void read(WizardDescriptor d) {
+    synchronized void read(WizardDescriptor d) {
+        if (task == null) {
+            checkPlatforms();
+        }
     }
 
     @Override
@@ -501,7 +553,11 @@ private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
         d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
         
         String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        d.putProperty(JFXProjectProperties.JAVA_PLATFORM_NAME, platformName);
+        d.putProperty(JavaFXProjectWizardIterator.PROP_JAVA_PLATFORM_NAME, platformName);
+
+        if (preloaderCheckBox.isSelected()) {
+            d.putProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME, txtPreloaderProject.getText());
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -523,33 +579,90 @@ private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
     // End of variables declaration//GEN-END:variables
 
     private void mainClassChanged() {
-        String mainClassName = this.mainClassTextField.getText();
+        String mainClassName = mainClassTextField.getText();
         StringTokenizer tk = new StringTokenizer(mainClassName, "."); //NOI18N
-        boolean valid = true;
+        boolean isValid = true;
         while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
             if (token.length() == 0 || !Utilities.isJavaIdentifier(token)) {
-                valid = false;
+                isValid = false;
                 break;
             }
         }
-        this.valid = valid;
-        this.panel.fireChangeEvent();
+        isMainClassValid = isValid;
+        panel.fireChangeEvent();
     }
 
     private void librariesLocationChanged() {
-        this.panel.fireChangeEvent();
+        panel.fireChangeEvent();
+    }
+    
+    private void preloaderNameChanged() {
+        String name = txtPreloaderProject.getText();
+        isPreloaderNameValid = !JavaFXProjectWizardIterator.isIllegalProjectName(name);
+        panel.fireChangeEvent();
+    }
 
+    // TODO show popup window with detection message ?
+    private void checkPlatforms() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        boolean fxPlatformExists = false;
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                fxPlatformExists = true;
+                break;
+            }
+        }
+        
+        if (!fxPlatformExists) {
+            if (task != null) {
+                task.removeTaskListener(this);
+            }
+            task = RequestProcessor.getDefault().create(detectPlatformTask);
+            task.addTaskListener(this);
+            task.schedule(0);
+        }
+    }
+
+    @Override
+    public synchronized void taskFinished(Task task) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                JavaPlatform platform = detectPlatformTask.getPlatform();
+                if (platform != null) {
+                    // reload platform combo box model
+//                    platformComboBox.setModel(null);
+                    platformComboBox.setModel(platformsModel);
+
+                    // select javafx platform
+                    selectJavaFXEnabledPlatform();
+//                    panel.fireChangeEvent();
+                }
+            }
+        });
+        this.task = null;
     }
     
     private class JavaPlatformChangeListener implements PropertyChangeListener {
-
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-//            if (evt.getPropertyName().equals(JavaFXPlatformUtils.PROPERTY_JAVA_FX)) {
-                PanelOptionsVisual.this.panel.fireChangeEvent();
-//            }
+            PanelOptionsVisual.this.panel.fireChangeEvent();
         }
-        
     }
+    
+    private class DetectPlatformTask implements Runnable {
+        private JavaPlatform platform;
+
+        public JavaPlatform getPlatform() {
+            return platform;
+        }
+
+        @Override
+        public void run() {
+            platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+        }
+    }
+
 }

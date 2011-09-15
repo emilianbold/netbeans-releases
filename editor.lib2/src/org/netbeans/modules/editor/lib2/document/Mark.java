@@ -71,9 +71,9 @@ final class Mark extends WeakReference<EditorPosition> implements Runnable {
         return offset;
     }
     
-    public Boolean isBackwardBias() {
+    public boolean isBackwardBias() {
         MarkVector lMarkVector = markVector;
-        return (lMarkVector != null) ? lMarkVector.isBackwardBiasMarks() : null;
+        return (lMarkVector != null) ? lMarkVector.isBackwardBiasMarks() : false;
     }
     
     public int rawOffset() {

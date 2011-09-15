@@ -50,7 +50,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.whitelist.WhiteListQuery;
@@ -74,18 +77,24 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     private static final String WHITE_LIST_INDEX = "whitelist"; //NOI18N
     static final String MSG = "msg";    //NOI18N
     static final String LINE = "line";  //NOI18N
-    private static volatile String whiteListPath;
+    private static Map<URL,File> roots2whiteListDirs = new ConcurrentHashMap<URL, File>();
 
+    private final URL root;
+    private final File whiteListDir;
     private final WhiteListQuery.WhiteList whiteList;
     private final DocumentIndex index;
 
     private WhiteListIndexerPlugin(
+            @NonNull final URL root,
             @NonNull final WhiteListQuery.WhiteList whiteList,
-            @NonNull final DocumentIndex index) {
+            @NonNull final File whiteListDir) throws IOException {
+        assert root != null;
         assert whiteList != null;
-        assert index != null;
+        assert whiteListDir != null;
+        this.root = root;
         this.whiteList = whiteList;
-        this.index = index;
+        this.whiteListDir = whiteListDir;
+        this.index = IndexManager.createDocumentIndex(whiteListDir);
     }
 
     @Override
@@ -124,6 +133,11 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     public void finish() {
         try {
             index.store(true);
+            roots2whiteListDirs.put(root, whiteListDir);
+            final WhiteListTaskProvider tp = WhiteListTaskProvider.getInstance();
+            if (tp != null) {
+                tp.refresh(root);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -135,37 +149,68 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
         }
     }
 
-    static String getWhiteListPath() {
-        return whiteListPath;
+    @CheckForNull
+    static File getWhiteListDir(@NonNull final URL root) {
+        return roots2whiteListDirs.get(root);
     }
 
     @MimeRegistration(mimeType="text/x-java",service=JavaIndexerPlugin.Factory.class)
     public static class Factory implements JavaIndexerPlugin.Factory {
         @Override
         public JavaIndexerPlugin create(final URL root, final FileObject cacheFolder) {
-            final FileObject rootFo = URLMapper.findFileObject(root);
-            if (rootFo == null) {
-                //TODO: clean up cache
-                return null;
-            }
-            final WhiteListQuery.WhiteList wl = WhiteListQuery.getWhiteList(rootFo);
-            if (wl == null) {
-                return null;
-            }
             try {
-                final FileObject whiteListFolder = FileUtil.createFolder(cacheFolder, WHITE_LIST_INDEX);
-                final File whiteListDir = FileUtil.toFile(whiteListFolder);
+                File whiteListDir = getWhiteListDir(root);
                 if (whiteListDir == null) {
-                    return null;
+                    //First time
+                    final FileObject whiteListFolder = FileUtil.createFolder(cacheFolder, WHITE_LIST_INDEX);
+                    whiteListDir = FileUtil.toFile(whiteListFolder);
+                    if (whiteListDir == null) {
+                        return null;
+                    }
                 }
-                final FileObject indexFolder = cacheFolder.getParent().getParent();
-                whiteListPath = FileUtil.getRelativePath(indexFolder, whiteListFolder);
-                return new WhiteListIndexerPlugin(
-                    wl,
-                    IndexManager.createDocumentIndex(whiteListDir));
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                if (rootFo == null) {
+                    delete(whiteListDir);
+                    return null;
+                } else {
+                    final WhiteListQuery.WhiteList wl = WhiteListQuery.getWhiteList(rootFo);
+                    if (wl == null) {
+                        return null;
+                    }
+                    return new WhiteListIndexerPlugin(
+                        root,
+                        wl,
+                        whiteListDir);
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 return null;
+            }
+        }
+
+        private static void delete(@NonNull final File folder) throws IOException {
+            try {
+                IndexManager.writeAccess(new IndexManager.Action<Void>(){
+                    @Override
+                    public Void run() throws IOException, InterruptedException {
+                        deleteImpl(folder);
+                        return null;
+                    }
+                });
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
+            }
+        }
+
+        private static void deleteImpl (final File folder) {
+            final File[] children = folder.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    if (child.isDirectory()) {
+                        deleteImpl(child);
+                    }
+                    child.delete();
+                }
             }
         }
     }

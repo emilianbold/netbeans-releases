@@ -59,7 +59,7 @@ public class RubyModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyModel p = CssModuleSupport.getProperty("ruby-span");
+        PropertyModel p = CssModuleSupport.getPropertyModel("ruby-span");
         
         assertNotNull(p);
         

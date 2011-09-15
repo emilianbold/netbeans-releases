@@ -150,7 +150,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserQuestionException;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -225,7 +224,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      * @param forceFormElement determines whether we should force switch to form element.
      * @see OpenCookie#open
      */
-    @Override
     public void openFormEditor(boolean forceFormElement) {
         boolean alreadyOpened = opened.contains(this);
         boolean switchToForm = forceFormElement || !alreadyOpened;
@@ -345,6 +343,16 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     @Override
     protected boolean asynchronousOpen() {
         return false;
+    }
+
+    @Override
+    public void openSource() {
+        open();
+    }
+
+    @Override
+    public void openDesign() {
+        openFormEditor(true);
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected
@@ -1031,6 +1039,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             DataEditorSupport.annotateName(htmlTitle, true, modified, readOnly)
         };
     }
+
+    @Override
+    protected String messageName() {
+        String[] titles = getMVTCDisplayName(formDataObject);
+        return titles[0];
+    }
+
+    @Override
+    protected String messageHtmlName() {
+        String[] titles = getMVTCDisplayName(formDataObject);
+        return titles[1];
+    }
     
     /** Updates title (display name) of all multiviews for given form. Replans
      * to event queue thread if necessary. */
@@ -1274,7 +1294,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                     doc = openDocument();
                 }
             }
-            return (doc == null) ? null : GuardedSectionManager.getInstance(doc);
+            if (doc == null) {
+                // Issue 143655 - opening of big file canceled
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        close();
+                    }
+                });
+                return null;
+            } else {
+                return GuardedSectionManager.getInstance(doc);
+            }
         } catch (IOException ex) {
             throw new IllegalStateException("cannot open document", ex); // NOI18N
         }
@@ -1603,12 +1634,4 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
     }
 
-    @ServiceProvider(service=EditorSupport.Provider.class)
-    public static class FESProvider implements EditorSupport.Provider {
-        @Override
-        public EditorSupport create(FormDataObject formDataObject) {
-            return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
-        }
-        
-    }
 }

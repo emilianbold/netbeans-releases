@@ -3,14 +3,24 @@
 <map version="2.0">
     <mapID target="org.netbeans.modules.git.about" url="git-about.html"/>
 	<mapID target="org.netbeans.modules.git.quickref" url="git-quickref.html" />
-	<mapID target="org.netbeans.modules.git.setup" url="git-setup.html" />
+	<mapID target="org.netbeans.modules.git.clone" url="git-clone.html" />
+	<mapID target="org.netbeans.modules.git.add" url="git-add.html" />
+	<mapID target="org.netbeans.modules.git.remote" url="git-remote.html" />
 
 
 <!-- CSH -->
     <mapID target="org.netbeans.modules.git.ui.clone.RepositoryStep" url="csh/git_clone_wizard_p1.html"/>
-	<mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep " url="csh/git_clone_wizard_p2.html"/>
-	<mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep " url="csh/git_clone_wizard_p3.html"/>
-	<mapID target="org.netbeans.modules.git.ui.init.InitPanel " url="csh/git-init.html"/>
-	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep " url="csh/git-fetch-p1.html"/>
-	<mapID target="org.netbeans.modules.git.ui.fetch.FetchBranchesStep " url="csh/git-fetch-p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep" url="csh/git_clone_wizard_p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep" url="csh/git_clone_wizard_p3.html"/>
+	<mapID target="org.netbeans.modules.git.ui.init.InitPanel" url="csh/git-init.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.fetch" url="csh/git-fetch-p1.html"/>
+	<mapID target="org.netbeans.modules.git.ui.fetch.FetchBranchesStep" url="csh/git-fetch-p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.pull" url="csh/git-pull-p1.html"/>
+	<mapID target="org.netbeans.modules.git.ui.fetch.PullBranchesStep" url="csh/git-pull-p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.push" url="csh/git-push-p1.html"/>
+	<mapID target="org.netbeans.modules.git.ui.push.PushBranchesStep" url="csh/git-push-p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-push-p3.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="csh/git-chkout-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="csh/git-create-branch.html"/>
+	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>
 </map>

@@ -379,6 +379,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         if (file.isLink()) {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
+        } else if (isParentLink(file)) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
         } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -682,6 +684,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         File localFile = getLocalFile(baseLocalDir, file);
         if (file.isLink()) {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
+        } else if (isParentLink(file)) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
         } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -884,6 +888,21 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return newFile;
     }
 
+    /**
+     * Check whether any of parent file is not a symlink.
+     * @param file file to check
+     * @return {@code true} if any of parent file is a symlink, {@code false} otherwise
+     */
+    private boolean isParentLink(TransferFile file) {
+        while (file.hasParent()) {
+            TransferFile parent = file.getParent();
+            if (parent.isLink()) {
+                return true;
+            }
+            file = parent;
+        }
+        return false;
+    }
 
     public Set<TransferFile> prepareDelete(FileObject baseLocalDirectory, FileObject... filesToDelete) throws RemoteException {
         LOGGER.fine("Preparing files to delete => calling prepareUpload because in fact the same operation is done");

@@ -155,6 +155,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         this.masterView = fileView; 
         splitPane.setTopComponent(masterView.getPanel());   
         splitPane.setBottomComponent(diffView.getPanel());                   
+        masterView.requestActive();
         
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
@@ -291,7 +292,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     @Override
     public void componentActivated() {
         super.componentActivated();
-        masterView.requestActive();
+        if(masterView != null) {
+            masterView.requestActive();
+        }
     }
 
     @Override

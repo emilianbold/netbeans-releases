@@ -104,7 +104,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     public PHPDocTypeTag getTypeTag() {
         return typeTag;
     }
-       
+
     @Override
     public Kind getKind() {
         return kind;
@@ -149,7 +149,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         int startOffset = node.getStartOffset();
         if (nsNameLength > 0) {
             startOffset += nsNameLength;
-            if (namespaceName.getSegments().size() > 1) {
+            if (namespaceName.getSegments().size() > 0) {
                 startOffset += 1;
             }
         }

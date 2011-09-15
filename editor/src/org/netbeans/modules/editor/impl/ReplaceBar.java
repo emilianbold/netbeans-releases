@@ -235,20 +235,11 @@ public class ReplaceBar extends JPanel {
         padding.setOpaque(false);
         add(padding);
 
-        add(createCloseButton());
-
         searchBarFocusTraversalPolicy = createSearchBarFocusTraversalPolicy();
 
         setVisible(false);
         createFocusList();
         makeBarExpandable();
-        this.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent evt) {
-                computeLayout();
-            }
-        });
     }
 
     private SearchBar getSearchBar() {
@@ -334,6 +325,12 @@ public class ReplaceBar extends JPanel {
             }
         });
         return expPopup;
+    }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        computeLayout();
+        return super.getPreferredSize();
     }
 
     private void computeLayout() {
@@ -542,20 +539,6 @@ public class ReplaceBar extends JPanel {
         return incSearchComboBox;
     }
 
-    private JButton createCloseButton() throws MissingResourceException {
-        JButton closeButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_close.png", false)); // NOI18N
-        closeButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                looseFocus();
-            }
-        });
-        closeButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
-        closeButton.setMargin(BUTTON_INSETS);
-        return closeButton;
-    }
-
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
         jpanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 "loose-focus"); // NOI18N
@@ -595,10 +578,25 @@ public class ReplaceBar extends JPanel {
         }
     }
 
+    private ActionListener closeButtonListener;
+    private ActionListener getCloseButtonListener() {
+        if (closeButtonListener == null)
+            closeButtonListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                looseFocus();
+            }
+        };
+        return closeButtonListener;
+    }
+    
     private void unchangeSearchBarToBeOnlySearchBar() throws MissingResourceException {
-        searchBar.getCloseButton().setVisible(true);
+        searchBar.getCloseButton().removeActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
-        searchBar.getFindLabel().setPreferredSize(searchBar.getFindLabel().getMinimumSize());
+        Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
+        searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
+        searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
         searchBar.addEscapeKeystrokeFocusBackTo(searchBar);
         if (searchBar.getActualTextComponent() != null) {
             searchBar.getActualTextComponent().removeFocusListener(focusAdapterForComponent);
@@ -610,9 +608,11 @@ public class ReplaceBar extends JPanel {
     }
 
     private void changeSearchBarToBePartOfReplaceBar() throws MissingResourceException {
-        searchBar.getCloseButton().setVisible(false);
+        searchBar.getCloseButton().addActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
-        searchBar.getFindLabel().setPreferredSize(new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height));
+        Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);
+        searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
+        searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);
         this.addEscapeKeystrokeFocusBackTo(searchBar);
         if (searchBar.getActualTextComponent() != null) {
             searchBar.getActualTextComponent().addFocusListener(focusAdapterForComponent);
@@ -684,13 +684,6 @@ public class ReplaceBar extends JPanel {
             if (replaceAll) {
                 findSupport.replaceAll(findProps);
             } else {
-                if (searchBar.isSearched()) {
-                    if (backwardsCheckBox.isSelected())
-                        searchBar.findNext();
-                    else
-                        searchBar.findPrevious();
-                    searchBar.setSearched(false);
-                }
                 findSupport.replace(findProps, false);
             }
         } catch (BadLocationException ex) {

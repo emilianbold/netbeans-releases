@@ -6,16 +6,20 @@ PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
+PACKAGE    Core                            [PUBLIC]   null
+PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
-PACKAGE    User                            [PUBLIC]   null
+PACKAGE    Shit                            [PUBLIC]   null
+PACKAGE    XUser                           [PUBLIC]   null
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
+PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Test                            [PUBLIC]   App
 CLASS      A                               [PUBLIC]   Test197084.php
@@ -32,6 +36,7 @@ CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
 CLASS      Book                            [PUBLIC]   issue153707.php
+CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      C                               [PUBLIC]   test.php
@@ -83,6 +88,7 @@ CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
+CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
@@ -96,7 +102,7 @@ CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
-CLASS      SuperUser                       [PUBLIC]   User
+CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      Test                            [PUBLIC]   issue142024.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
@@ -122,12 +128,18 @@ CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
-CLASS      User                            [PUBLIC]   User
+CLASS      User                            [PUBLIC]   Core
+CLASS      User                            [PUBLIC]   Core
+CLASS      User                            [PUBLIC]   Data
+CLASS      User                            [PUBLIC]   Data
+CLASS      User                            [PUBLIC]   Shit\Data
+CLASS      User                            [PUBLIC]   Shit\Data
 CLASS      User                            [PUBLIC]   issue142051.php
 CLASS      User147427                      [PUBLIC]   issue147427.php
 CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller
+CLASS      XUser                           [PUBLIC]   XUser
 CLASS      a                               [PUBLIC]   issue137033.php
 CLASS      a147730                         [PUBLIC]   a147730.php
 CLASS      a147730                         [PUBLIC]   b147730.php

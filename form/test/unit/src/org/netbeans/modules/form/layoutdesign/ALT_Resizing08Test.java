@@ -68,6 +68,7 @@ public class ALT_Resizing08Test extends LayoutTestCase {
 
     // Resize text field to the right to snap next to the group of labels and button.
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));

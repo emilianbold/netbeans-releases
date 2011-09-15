@@ -41,11 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.project.ui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -72,7 +73,9 @@ import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
@@ -80,7 +83,11 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
+import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -90,6 +97,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -119,6 +127,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     private String presetTemplateName = null;
     private Node pleaseWait;
+    private WizardDescriptor wiz;
 
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -137,7 +146,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        TemplatesPanelGUI.this.setSelectedCategoryByName(OpenProjectListSettings.getInstance().getLastSelectedProjectCategory());
+                        setSelectedCategoryByName(OpenProjectListSettings.getInstance().getLastSelectedProjectCategory());
                     }
                 });
             }
@@ -230,7 +239,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         jLabel3.setLabelFor(null);
     }
 
-    public void propertyChange (PropertyChangeEvent event) {
+    void setWizardDescriptor(WizardDescriptor wiz) {
+        this.wiz = wiz;
+    }
+
+    @Messages("TemplatesPanelGUI_note_samples=<html>Note that samples are instructional and may not include all<br>security mechanisms required for a production environment.</html>")
+    @Override public void propertyChange (PropertyChangeEvent event) {
         if (event.getSource() == this.categoriesPanel) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue();
@@ -243,12 +257,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     }
                     DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
                     if (template != null) {
+                        FileObject fo = template.getPrimaryFile();
+                        String templatePath = fo.getPath();
                         if (!template.isValid()) {
                             // in ergonomics IDE, it is possible that dataObject
                             // no longer valid. If so, try to find it again
                             // (layer was replaced.)
-                            FileObject fo = template.getPrimaryFile();
-                            fo = FileUtil.getConfigFile(fo.getPath());
+                            fo = FileUtil.getConfigFile(templatePath);
                             if (fo != null) {
                                 try {
                                     template = DataObject.find(fo);
@@ -261,6 +276,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                             new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
                         // after change of root select the first template to make easy move in wizard
                         this.setSelectedTemplateByName (presetTemplateName);
+                        if (wiz != null) {
+                            if (templatePath.matches("Templates/Project/Samples($|/.+)")) {
+                                wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, TemplatesPanelGUI_note_samples());
+                            } else {
+                                wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+                            }
+                        }
                     }
                 }
             }

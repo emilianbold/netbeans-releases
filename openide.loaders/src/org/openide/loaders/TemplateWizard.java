@@ -52,6 +52,8 @@ import java.io.IOException;
 import java.net.*;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -118,13 +120,13 @@ public class TemplateWizard extends WizardDescriptor {
     /** Component which we are listening on for changes of steps */
     private Component lastComp;
     
-    private Set<DataObject> newObjects = null;
+    private BlockingQueue<Union2<Set<DataObject>,IOException>> newObjects = null;
 
     private ProgressHandle progressHandle;
     
     /** Creates new TemplateWizard */
     public TemplateWizard () {
-        this (new TemplateWizardIteratorWrapper.InstantiatingIterator (new TemplateWizardIterImpl ()));
+        this (new TemplateWizardIteratorWrapper(new TemplateWizardIterImpl ()));
     }
      
     /** Constructor to be called from public default one.
@@ -160,7 +162,7 @@ public class TemplateWizard extends WizardDescriptor {
     protected void initialize () {
         if (iterator != null) {
             iterator.initialize(this);
-            newObjects = null;
+            newObjects = new ArrayBlockingQueue<Union2<Set<DataObject>,IOException>>(1);
         }
         super.initialize ();
     }
@@ -187,6 +189,10 @@ public class TemplateWizard extends WizardDescriptor {
                 WizardDescriptor.InstantiatingIterator newIt = ((InstantiatingIteratorBridge) it).getOriginalIterator ();
                 if (newIt instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                     TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.ProgressInstantiatingIterator (this.iterator.getOriginalIterImpl ());
+                    this.iterator = newIterImplWrapper;
+                    this.setPanelsAndSettings(newIterImplWrapper, this);
+                } else if (newIt instanceof WizardDescriptor.BackgroundInstantiatingIterator) {
+                    TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.BackgroundInstantiatingIterator (this.iterator.getOriginalIterImpl ());
                     this.iterator = newIterImplWrapper;
                     this.setPanelsAndSettings(newIterImplWrapper, this);
                 } else if (newIt instanceof WizardDescriptor.AsynchronousInstantiatingIterator) {
@@ -358,6 +364,9 @@ public class TemplateWizard extends WizardDescriptor {
     }
     
     /** Chooses the template and instantiates it.
+     * <p>Beware that this blocks while the wizard is running;
+     * and if a {@link org.openide.WizardDescriptor.BackgroundInstantiatingIterator} might be selected,
+     * should not be called from the AWT event queue.
     * @return set of instantiated data objects (DataObject) 
     *   or null if user canceled the dialog
     * @exception IOException I/O error
@@ -368,7 +377,7 @@ public class TemplateWizard extends WizardDescriptor {
     }
 
     /** Chooses the template and instantiates it.
-    *
+     * See {@link #instantiate()} regarding threading behavior.
     * @param template predefined template that should be instantiated
     * @return set of instantiated data objects (DataObject) 
     *   or null if user canceled the dialog
@@ -380,7 +389,7 @@ public class TemplateWizard extends WizardDescriptor {
     }
 
     /** Chooses the template and instantiates it.
-    *
+     * See {@link #instantiate()} regarding threading behavior.
     * @param template predefined template that should be instantiated
     * @param targetFolder the target folder
     *
@@ -401,7 +410,7 @@ public class TemplateWizard extends WizardDescriptor {
     
     Set<DataObject> instantiateNewObjects (ProgressHandle handle) throws IOException {
         progressHandle = handle;
-        try {
+        Union2<Set<DataObject>,IOException> val;
             // #17341. The problem is handling ESC -> value is not
             // set to CANCEL_OPTION for such cases.
             Object option = getValue();
@@ -410,27 +419,27 @@ public class TemplateWizard extends WizardDescriptor {
 
                 // show wait cursor when handling instantiate
                 showWaitCursor (); 
-
-                newObjects = handleInstantiate ();
-                if (lastComp != null) {
-                    lastComp.removePropertyChangeListener(propL());
-                    lastComp = null;
+                try {
+                    val = Union2.createFirst(handleInstantiate());
+                } catch (IOException x) {
+                    val = Union2.createSecond(x);
+                } finally {
+                    showNormalCursor();
                 }
             } else {
-                if (lastComp != null) {
-                    lastComp.removePropertyChangeListener(propL());
-                    lastComp = null;
-                }
-                newObjects = null;
+                val = Union2.createFirst(null);
             }
-
-        } finally {
+            if (lastComp != null) {
+                lastComp.removePropertyChangeListener(propL());
+                lastComp = null;
+            }
             
-            // set normal cursor back
-            showNormalCursor ();
+        newObjects.add(val);
+        if (val.hasFirst()) {
+            return val.first();
+        } else {
+            throw val.second();
         }
-            
-        return newObjects;
     }
 
     /** Chooses the template and instantiates it.
@@ -501,10 +510,22 @@ public class TemplateWizard extends WizardDescriptor {
         } catch (IllegalStateException ise) {
             thrownMessage = ise;
         }
-        
+        if (getValue() == CLOSED_OPTION || getValue() == CANCEL_OPTION) {
+            return null;
+        }
         // here can return newObjects because instantiateNewObjects() was called
         // from WizardDescriptor before close dialog (on Finish)
-        return newObjects;
+        Union2<Set<DataObject>,IOException> val;
+        try {
+            val = newObjects.take();
+        } catch (InterruptedException x) {
+            throw new IOException(x);
+        }
+        if (val.hasFirst()) {
+            return val.first();
+        } else {
+            throw val.second();
+        }
     }
     
     private void showWaitCursor () {

@@ -45,6 +45,7 @@ package org.netbeans.modules.javafx2.project.ui;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -85,6 +86,20 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxDeskShortcut.setModel(jfxProps.getAddDesktopShortcutModel());
         checkBoxMenuShortcut.setModel(jfxProps.getAddStartMenuShortcutModel());
         textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
+        refreshCustomJSLabel();
+        if(jfxProps.getRuntimeCP().isEmpty()) {
+            buttonDownloadMode.setEnabled(false);
+            labelDownloadMode.setEnabled(false);
+            labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeNone")); // NOI18N
+            labelDownloadModeMessage.setEnabled(false);
+        } else {
+            refreshDownloadModeControls();
+        }
+        checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
+        labelSigning.setEnabled(jfxProps.getSigningEnabled());
+        labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
+        buttonSigning.setEnabled(jfxProps.getSigningEnabled());
+        refreshSigningLabel();
     }
 
     /** This method is called from within the constructor to
@@ -160,6 +175,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         checkBoxNoInternet.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoInternet, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
+        checkBoxNoInternet.setPreferredSize(new java.awt.Dimension(223, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -214,6 +230,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         labelIcon.setLabelFor(textFieldIcon);
         org.openide.awt.Mnemonics.setLocalizedText(labelIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelIcon.text")); // NOI18N
+        labelIcon.setPreferredSize(new java.awt.Dimension(32, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -223,6 +240,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.labelIcon.text")); // NOI18N
         labelIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelIcon.text")); // NOI18N
 
+        textFieldIcon.setPreferredSize(new java.awt.Dimension(6, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -233,6 +251,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelTop.add(textFieldIcon, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
+        buttonIcon.setPreferredSize(new java.awt.Dimension(87, 0));
         buttonIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonIconActionPerformed(evt);
@@ -249,6 +268,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
 
         labelIconRemark.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIconRemark.text")); // NOI18N
+        labelIconRemark.setPreferredSize(new java.awt.Dimension(146, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -288,7 +308,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         labelSigning.setLabelFor(labelSigningMessage);
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelSigning.text")); // NOI18N
-        labelSigning.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -299,7 +318,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelSigning.text")); // NOI18N
 
         labelSigningMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelSigningMessage.text")); // NOI18N
-        labelSigningMessage.setEnabled(false);
         labelSigningMessage.setPreferredSize(new java.awt.Dimension(170, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -309,7 +327,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelBottom.add(labelSigningMessage, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonSigning.text")); // NOI18N
-        buttonSigning.setEnabled(false);
         buttonSigning.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSigningActionPerformed(evt);
@@ -436,7 +453,7 @@ private void buttonSigningActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
         panel.store();
-        refreshSigningLabel(true);
+        refreshSigningLabel();
     }
 }//GEN-LAST:event_buttonSigningActionPerformed
 
@@ -445,7 +462,12 @@ private void checkBoxUnrestrictedAccActionPerformed(java.awt.event.ActionEvent e
     labelSigning.setEnabled(sel);
     labelSigningMessage.setEnabled(sel);
     buttonSigning.setEnabled(sel);
-    refreshSigningLabel(sel);
+    jfxProps.setSigningEnabled(sel);
+    jfxProps.setPermissionsElevated(sel);
+    if(jfxProps.getSigningEnabled() && jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
+        jfxProps.setSigningType(JFXProjectProperties.SigningType.SELF);
+    }
+    refreshSigningLabel();
 }//GEN-LAST:event_checkBoxUnrestrictedAccActionPerformed
 
 private void buttonDownloadModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDownloadModeActionPerformed
@@ -461,8 +483,21 @@ private void buttonDownloadModeActionPerformed(java.awt.event.ActionEvent evt) {
     if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
         jfxProps.setLazyJars(rc.getResources());
         jfxProps.setLazyJarsChanged(true);
+        refreshDownloadModeControls();
     }
 }//GEN-LAST:event_buttonDownloadModeActionPerformed
+
+    private void refreshDownloadModeControls() {
+        if(jfxProps.getRuntimeCP().size() > jfxProps.getLazyJars().size()) {
+            if(jfxProps.getLazyJars().isEmpty()) {
+                labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeEager")); // NOI18N
+            } else {
+                labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeMixed")); // NOI18N
+            }
+        } else {
+            labelDownloadModeMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_DownloadModeLazy")); // NOI18N
+        }
+    }
 
 private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCustomJSMessageActionPerformed
     final JFXJavaScriptCallbacksPanel rc = new JFXJavaScriptCallbacksPanel(jfxProps);
@@ -475,19 +510,33 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
         jfxProps.setJSCallbacks(rc.getResources());
         jfxProps.setJSCallbacksChanged(true);
+        refreshCustomJSLabel();
     }
 }//GEN-LAST:event_buttonCustomJSMessageActionPerformed
 
-    private void refreshSigningLabel(boolean sign) {
-        if(sign) {
-            if(JFXProjectProperties.SIGNING_KEY.equals(jfxProps.getSigning())) {
-                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Key", jfxProps.getSigningKeyAlias())); // NOI18N
-            } else {
-                // JFXProjectProperties.SIGNING_GENERATED.equals(jfxProps.getSigning())
-                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Generated")); // NOI18N
+    private void refreshCustomJSLabel() {
+        int jsDefs = 0;
+        for (Map.Entry<String,String> entry : jfxProps.getJSCallbacks().entrySet()) {
+            if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                jsDefs++;
             }
+        }
+        if(jsDefs == 0) {
+            labelCustomJSMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_CallbacksDefinedNone")); // NOI18N
         } else {
-            labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.Signing.Unsigned")); // NOI18N
+            labelCustomJSMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_CallbacksDefined", jsDefs)); // NOI18N
+        }
+    }
+
+    private void refreshSigningLabel() {
+        if(!jfxProps.getSigningEnabled() || jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
+            labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningUnsigned")); // NOI18N
+        } else {
+            if(jfxProps.getSigningType() == JFXProjectProperties.SigningType.KEY) {
+                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningKey", jfxProps.getSigningKeyAlias())); // NOI18N
+            } else {
+                labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningGenerated")); // NOI18N
+            }
         }
     }
 

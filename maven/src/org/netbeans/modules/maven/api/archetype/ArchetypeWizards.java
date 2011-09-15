@@ -47,11 +47,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.newproject.ArchetypeWizardUtils;
 import org.netbeans.modules.maven.newproject.BasicWizardPanel;
+import org.netbeans.modules.maven.newproject.MavenWizardIterator;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -64,17 +65,21 @@ public class ArchetypeWizards {
     private ArchetypeWizards() {}
 
     /**
+     * Customary location of Maven project templates.
+     * @see TemplateRegistration#folder
+     */
+    public static final String TEMPLATE_FOLDER = "Project/Maven2";
+
+    /**
      * Run a single archetype.
-     * @param handle a progress handle
      * @param projDir the new project directory (must be normalized first!) (note: parent dir is actually passed to plugin, i.e. assumes that project name matches this basedir)
      * @param vi metadata for new project
      * @param arch the archetype to process
      * @param additionalProperties any additional archetype properties, or null
-     * @param progressCounter step to set progress handle to (will step to this number +1 and +2)
      * @param updateLastUsedProjectDir true to update last-used project directory for next wizard run
      */
-    public static void createFromArchetype(ProgressHandle handle, File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additionalProperties, int progressCounter, boolean updateLastUsedProjectDir) throws IOException {
-        ArchetypeWizardUtils.createFromArchetype(handle, projDir, vi, arch, additionalProperties, progressCounter, updateLastUsedProjectDir);
+    public static void createFromArchetype(File projDir, ProjectInfo vi, Archetype arch, @NullAllowed Map<String,String> additionalProperties, boolean updateLastUsedProjectDir) throws IOException {
+        ArchetypeWizardUtils.createFromArchetype(projDir, vi, arch, additionalProperties, updateLastUsedProjectDir);
     }
 
     /**
@@ -98,8 +103,21 @@ public class ArchetypeWizards {
         return new ArchetypeWizardUtils.AddDependencyOperation(info, type);
     }
 
-    public static WizardDescriptor.Panel<WizardDescriptor> basicWizardPanel(ValidationGroup vg, boolean isFinish, Archetype archetype) {
-        return new BasicWizardPanel(vg, isFinish, archetype);
+    public static WizardDescriptor.Panel<WizardDescriptor> basicWizardPanel(ValidationGroup vg, boolean isFinish, @NullAllowed Archetype archetype) {
+        return new BasicWizardPanel(vg, archetype, isFinish, false);
+    }
+
+    /**
+     * Wizard iterator using a predetermined archetype.
+     * @since 2.28
+     */
+    public static WizardDescriptor.InstantiatingIterator<?> definedArchetype(String groupId, String artifactId, String version, @NullAllowed String repository) {
+        Archetype arch = new Archetype();
+        arch.setGroupId(groupId);
+        arch.setArtifactId(artifactId);
+        arch.setVersion(version);
+        arch.setRepository(repository);
+        return new MavenWizardIterator(arch);
     }
 
 }

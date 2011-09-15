@@ -163,6 +163,8 @@ public final class PhpProject implements Project {
     // @GuardedBy(ProjectManager.mutex())
     volatile FileObject seleniumDirectory;
     // @GuardedBy(ProjectManager.mutex())
+    volatile FileObject webRootDirectory;
+
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
@@ -181,6 +183,7 @@ public final class PhpProject implements Project {
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
+    public static final String PROP_WEB_ROOT = "webRoot"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
@@ -434,6 +437,40 @@ public final class PhpProject implements Project {
             return testDir;
         }
         return restoreDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderRestored", "MSG_SeleniumFolderTemporaryToProjectDirectory");
+    }
+
+    /**
+     * @return web root directory or sources directory if not set
+     */
+    FileObject getWebRootDirectory() {
+        if (webRootDirectory == null) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
+                public Void run() {
+                    synchronized (PhpProject.this) {
+                        if (webRootDirectory == null) {
+                            webRootDirectory = resolveWebRootDirectory();
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+        return webRootDirectory;
+    }
+
+    private FileObject resolveWebRootDirectory() {
+        String webRootProperty = eval.getProperty(PhpProjectProperties.WEB_ROOT);
+        if (webRootProperty == null) {
+            // web root directory not set, return sources
+            return getSourcesDirectory();
+        }
+        FileObject webRootDir = helper.resolveFileObject(webRootProperty);
+        if (webRootDir != null) {
+            return webRootDir;
+        }
+        // web root directory not found, return sources
+        return getSourcesDirectory();
     }
 
     private FileObject restoreDirectory(String propertyName, String infoMessageKey, String errorMessageKey) {
@@ -802,11 +839,13 @@ public final class PhpProject implements Project {
             sourcesDirectory = null;
             testsDirectory = null;
             seleniumDirectory = null;
+            webRootDirectory = null;
             ignoredFolders = null;
             resetFrameworks();
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
+            getWebRootDirectory();
             LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", sourcesDirectory);
             PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
@@ -932,6 +971,11 @@ public final class PhpProject implements Project {
                 fireIgnoredFilesChange();
             } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
                 testsDirectory = null;
+            } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
+                FileObject oldWebRoot = webRootDirectory;
+                webRootDirectory = null;
+                // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
+                propertyChangeSupport.firePropertyChange(PROP_WEB_ROOT, oldWebRoot, getWebRootDirectory());
             }
         }
     }
@@ -1004,6 +1048,9 @@ public final class PhpProject implements Project {
     }
 
     private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+
+        private static final Logger LOGGER = Logger.getLogger(PhpSearchInfo.class.getName());
+
         private final PhpProject project;
         // @GuardedBy(this)
         private SearchInfo.Files delegate = null;
@@ -1043,11 +1090,33 @@ public final class PhpProject implements Project {
         }
 
         private FileObject[] getSearchRoots() {
-            List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
-            roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
-            roots.addAll(PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
+            List<FileObject> roots = new LinkedList<FileObject>();
+            addRoots(roots, project.getSourceRoots());
+            addRoots(roots, project.getTestRoots());
+            addRoots(roots, project.getSeleniumRoots());
+            addIncludePath(roots, PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
             return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        // #197968
+        private void addRoots(List<FileObject> roots, SourceRoots sourceRoots) {
+            for (FileObject root : sourceRoots.getRoots()) {
+                if (!root.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for source roots {1}", new Object[] {root, Arrays.toString(sourceRoots.getRootNames())});
+                } else {
+                    roots.add(root);
+                }
+            }
+        }
+
+        private void addIncludePath(List<FileObject> roots, List<FileObject> includePath) {
+            for (FileObject folder : includePath) {
+                if (!folder.isFolder()) {
+                    LOGGER.log(Level.WARNING, "Not folder {0} for Include path {1}", new Object[] {folder, includePath});
+                } else {
+                    roots.add(folder);
+                }
+            }
         }
 
         @Override

@@ -82,22 +82,24 @@ class JGitSshSessionFactory extends JschConfigSessionFactory {
 
     @Override
     public synchronized RemoteSession getSession (URIish uri, CredentialsProvider credentialsProvider, FS fs, int tms) throws TransportException {
-        String host = uri.getHost();
-        CredentialItem.StringType identityFile = new JGitCredentialsProvider.IdentityFileItem("Identity file for " + host, false);
-        if (credentialsProvider.isInteractive() && credentialsProvider.get(uri, identityFile) && identityFile.getValue() != null) {
-            if (sshConfig == null) {
-                sshConfig = OpenSshConfig.get(fs);
-            }
+        if (credentialsProvider != null) {
+            String host = uri.getHost();
+            CredentialItem.StringType identityFile = new JGitCredentialsProvider.IdentityFileItem("Identity file for " + host, false);
+            if (credentialsProvider.isInteractive() && credentialsProvider.get(uri, identityFile) && identityFile.getValue() != null) {
+                if (sshConfig == null) {
+                    sshConfig = OpenSshConfig.get(fs);
+                }
 
-            final OpenSshConfig.Host hc = sshConfig.lookup(host);
-            try {
-                JSch jsch = getJSch(hc, fs);
-                // remove all identity files
-                jsch.removeAllIdentity();
-                // and add the one specified by CredentialsProvider
-                jsch.addIdentity(identityFile.getValue());
-            } catch (JSchException ex) {
-                throw new TransportException(uri, ex.getMessage(), ex);
+                final OpenSshConfig.Host hc = sshConfig.lookup(host);
+                try {
+                    JSch jsch = getJSch(hc, fs);
+                    // remove all identity files
+                    jsch.removeAllIdentity();
+                    // and add the one specified by CredentialsProvider
+                    jsch.addIdentity(identityFile.getValue());
+                } catch (JSchException ex) {
+                    throw new TransportException(uri, ex.getMessage(), ex);
+                }
             }
         }
         return super.getSession(uri, credentialsProvider, fs, tms);

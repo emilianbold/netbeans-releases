@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 
 /**
@@ -54,7 +54,7 @@ public class CssValueElement extends CssPropertyElement {
     
     private GrammarElement value; 
     
-    public CssValueElement(PropertyDescriptor property, GrammarElement value) {
+    public CssValueElement(Property property, GrammarElement value) {
         super(property);
         this.value = value;
     }

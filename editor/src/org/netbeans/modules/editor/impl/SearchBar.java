@@ -102,6 +102,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -270,14 +271,6 @@ public final class SearchBar extends JPanel {
         makeBarExpandable();
 
         setVisible(false);
-
-        this.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent evt) {
-                computeLayout();
-            }
-        });
     }
 
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
@@ -446,7 +439,6 @@ public final class SearchBar extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 searched = false;
                 // text changed - attempt incremental search
-                computeLayout();
                 if (incSearchTextField.getText().length() > 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
                 }
@@ -457,7 +449,6 @@ public final class SearchBar extends JPanel {
             public void removeUpdate(DocumentEvent e) {
                 searched = false;
                 // text changed - attempt incremental search
-                computeLayout();
                 if (incSearchTextField.getText().length() <= 3) {
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
                 }
@@ -467,7 +458,7 @@ public final class SearchBar extends JPanel {
     }
 
     private JButton createCloseButton() throws MissingResourceException {
-        JButton button = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_close.png", false)); // NOI18N
+        JButton button = CloseButtonFactory.createBigCloseButton();
         button.addActionListener(new ActionListener() {
 
             @Override
@@ -476,7 +467,6 @@ public final class SearchBar extends JPanel {
             }
         });
         button.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
-        button.setMargin(BUTTON_INSETS);
         return button;
     }
 
@@ -682,11 +672,17 @@ public final class SearchBar extends JPanel {
         remove(expandButton);
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        computeLayout();
+        return super.getPreferredSize();
+    }
+    
     void computeLayout() {
         int parentWidth = this.getParent().getWidth();
         int totalWidth = 0;
         for (Component c : this.getComponents()) {
-            if (c != padding && (c != closeButton || c.isVisible())) {
+            if (c != padding) {
                 totalWidth += c.getPreferredSize().width;
             }
         }
@@ -1131,6 +1127,6 @@ public final class SearchBar extends JPanel {
     void setSearched(boolean searched) {
         this.searched = searched;
     }
-    
+
     
 }

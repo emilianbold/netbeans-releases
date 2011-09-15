@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -59,12 +61,15 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.HelpResolver;
+import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -86,7 +91,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
-    private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/"; //NOI18N    
+    private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/properties/"; //NOI18N    
     private static final String[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new String[]{
         "default_module",
         "marquee", 
@@ -111,21 +116,54 @@ public class DefaultCssModule extends CssModule {
         "presentation_levels",
         "generated_and_replaced_content"
     };
-    private static Collection<PropertyDescriptor> propertyDescriptors;
+    private static Collection<Property> propertyDescriptors;
+
+    private static class Css21HelpResolver extends HelpResolver {
+
+        @Override
+        public String getHelp(Property property) {
+            return CssHelpResolver.instance().getPropertyHelp(property.getName());
+        }
+
+        @Override
+        public String getHelp(URL url) {
+            return CssHelpResolver.instance().getHelpText(url);
+        }
+        
+        @Override
+        public URL resolveLink(Property property, String link) {
+//            return CssHelpResolver.getHelpZIPURLasString() == null ? null :
+//            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
+//                    normalizeLink( elementHandle, link));
+            return null;
+        }
+
+        @Override
+        public int getPriority() {
+            return 100;
+        }
+
+    }
 
     @Override
-    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = new ArrayList<PropertyDescriptor>();
+            propertyDescriptors = new ArrayList<Property>();
             for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + fileName;
-                propertyDescriptors.addAll(DefaultProperties.parseSource(path));
+                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path));
             }
 
         }
         return propertyDescriptors;
     }
 
+    @Override
+    public Collection<HelpResolver> getHelpResolvers() {
+        //CSS2.1 legacy help - to be removed
+        return Arrays.asList(new HelpResolver[]{new Css21HelpResolver(), new PropertyCompatibilityHelpResolver()});
+    }
+    
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
         final Snapshot snapshot = context.getSnapshot();

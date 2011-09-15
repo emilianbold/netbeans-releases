@@ -41,6 +41,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -138,7 +140,11 @@ public class ClipboardHandler {
                         String handled = imported.get(currentSimpleName);
 
                         if (handled == null) {
-                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, simple2ImportFQN.get(currentSimpleName)));
+                            String fqn = simple2ImportFQN.get(currentSimpleName);
+
+                            if (copy.getElements().getTypeElement(fqn) == null) continue;
+
+                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, fqn));
                         }
 
                         putFQNs.put(span, handled);
@@ -170,7 +176,13 @@ public class ClipboardHandler {
         }
     }
 
+    static boolean autoImport = false; //tests
     private static void showImportDialog(final JavaSource js, final Document doc, final int caret, final Map<String, String> simple2ImportFQN, Collection<String> toShow, final List<Position[]> inSpans) {
+        if (autoImport) {
+            doImport(js, doc, caret, simple2ImportFQN, inSpans, new AtomicBoolean());
+            return;
+        }
+
         ClipboardImportPanel panel = new ClipboardImportPanel(toShow);
         final AtomicBoolean cancel = new AtomicBoolean();
         final JButton okButton = new JButton(NbBundle.getMessage(ClipboardHandler.class, "BTN_ClipboardImportOK"));
@@ -238,6 +250,8 @@ public class ClipboardHandler {
                             Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
 
                             if (type.equals(el)) continue OUTER;
+                        } else {
+                            continue;
                         }
 
                         unavailable.add(e.getValue());
@@ -342,11 +356,22 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e <= end && (el.getKind().isClass() || el.getKind().isInterface())) {
+                                    if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                                         simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                         spans.add(new int[] {s - start, e - start});
                                     }
                                     return super.visitIdentifier(node, p);
+                                }
+                                private Tree lastType;
+                                @Override
+                                public Void visitVariable(VariableTree node, Void p) {
+                                    if (lastType == node.getType()) {
+                                        scan(node.getInitializer(), null);
+                                        return null;
+                                    } else {
+                                        lastType = node.getType();
+                                        return super.visitVariable(node, p);
+                                    }
                                 }
                             }.scan(parameter.getCompilationUnit(), null);
                         }

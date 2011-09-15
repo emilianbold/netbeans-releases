@@ -241,7 +241,7 @@ class LayoutPersistenceManager implements LayoutConstants {
                 saveAlignment(interval.getRawAlignment(), false);
             } else if (interval.isEmptySpace()) {
                 sb.append('<').append(XML_EMPTY_SPACE);
-                if (interval.isDefaultPadding(false)) {
+                if (interval.isDefaultPadding()) {
                     savePaddingType(interval.getPaddingType());
                     // TBD save components for indent gap
                 }
@@ -551,8 +551,11 @@ class LayoutPersistenceManager implements LayoutConstants {
             layoutModel.setCorrected();
         }
         interval.setSizes(min, pref, max);
+        if (max == Short.MAX_VALUE) {
+            interval.setLastActualSize(Integer.MIN_VALUE);
+        }
 
-        if (interval.isDefaultPadding(false)) {
+        if (interval.isDefaultPadding()) {
             Node paddingNode = attrMap.getNamedItem(ATTR_PADDING_TYPE);
             String paddingStr = paddingNode != null ? paddingNode.getNodeValue() : null;
             PaddingType paddingType = null;

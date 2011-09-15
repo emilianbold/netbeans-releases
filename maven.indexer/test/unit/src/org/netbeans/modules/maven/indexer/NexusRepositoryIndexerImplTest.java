@@ -53,6 +53,7 @@ import org.apache.maven.index.ArtifactInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -119,6 +120,20 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
         assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).toString());
+    }
+
+    public void testLastUpdated() throws Exception { // #197670
+        installPOM("test", "art", "0", "jar");
+        install(TestFileUtils.writeZipFile(new File(getWorkDir(), "art.jar"), "stuff:whatever"), "test", "art", "0", "jar");
+        File empty = TestFileUtils.writeFile(new File(getWorkDir(), "empty"), "# placeholder\n");
+        install(empty, "test", "art", "0", "pom.lastUpdated");
+        install(empty, "test", "art", "0", "jar.lastUpdated");
+        List<NBVersionInfo> versions = nrii.getVersions("test", "art", Collections.singletonList(info));
+        assertEquals(1, versions.size());
+        NBVersionInfo v = versions.get(0);
+        assertEquals("test:art:0:test", v.toString());
+        assertEquals("jar", v.getPackaging());
+        assertEquals("jar", v.getType());
     }
 
     public void testFindClassUsages() throws Exception {

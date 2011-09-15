@@ -42,6 +42,12 @@
 package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
@@ -75,6 +81,12 @@ public final class JavaFXPlatformUtils {
      */
     public static final String PROPERTY_JAVA_FX = "javafx"; // NOI18N
 
+    // TODO any Mac OS predefined locations?
+    public static final String[] KNOWN_JFX_LOCATIONS = new String[]{
+        "C:\\Program Files\\Oracle",        // NOI18N
+        "C:\\Program Files (x86)\\Oracle"   // NOI18N
+    };
+
     private JavaFXPlatformUtils() {
     }
 
@@ -84,7 +96,7 @@ public final class JavaFXPlatformUtils {
      * @param IDE java platform instance
      * @return is JavaFX supported
      */
-    public static boolean isJavaFXEnabled(final JavaPlatform platform) {
+    public static boolean isJavaFXEnabled(@NullAllowed final JavaPlatform platform) {
         if (platform == null) {
             return false;
         }
@@ -98,9 +110,10 @@ public final class JavaFXPlatformUtils {
      * Returns path to JavaFX Runtime installation
      * 
      * @param IDE java platform name
-     * @return JavaFX Runtime location
+     * @return JavaFX Runtime location, or null if not recognized
      */
-    public static String getJavaFXRuntimePath(String platformName) {
+    @CheckForNull
+    public static String getJavaFXRuntimePath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
     }
     
@@ -108,9 +121,10 @@ public final class JavaFXPlatformUtils {
      * Returns path to JavaFX SDK installation
      * 
      * @param IDE java platform name
-     * @return JavaFX SDK location
+     * @return JavaFX SDK location, or null if not recognized
      */
-    public static String getJavaFXSDKPath(String platformName) {
+    @CheckForNull
+    public static String getJavaFXSDKPath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getSDKPropertyKey(platformName));
     }
     
@@ -119,6 +133,7 @@ public final class JavaFXPlatformUtils {
      * 
      * @return classpath entries
      */
+    @NonNull
     public static String[] getJavaFXClassPath() {
         return new String[] {
                     "${" + PROPERTY_JAVAFX_RUNTIME + "}/lib/jfxrt.jar:", // NOI18N
@@ -129,31 +144,152 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
-     * Tries to predict JavaFX Runtime location for JavaFX SDK installation
+     * Determines whether JavaFX SDK and JavaFX Runtime locations are correct
+     * 
+     * @param JavaFX SDK path
+     * @param JavaFX Runtime path
+     * @return are locations correct
+     */
+    public static boolean areJFXLocationsCorrect(@NonNull String sdkPath, @NonNull String runtimePath) {
+        return isSdkPathCorrect(sdkPath) && isRuntimePathCorrect(runtimePath);
+    }
+    
+    /**
+     * Creates new default JavaFX platform
+     * 
+     * @return instance of created JavaFX Platform, or null if creation was
+     * not successful: such platform already exists or IO exception has occurred
+     */
+    @CheckForNull
+    public static JavaPlatform createDefaultJavaFXPlatform() {
+        String sdkPath = null;
+        String runtimePath = null;
+        String javadocPath = null;
+        String srcPath = null;
+
+        for (String path : KNOWN_JFX_LOCATIONS) {
+            if (sdkPath == null) {
+                sdkPath = predictSDKLocation(path);
+            }
+            if (runtimePath == null) {
+                runtimePath = predictRuntimeLocation(path);
+            }
+            if (javadocPath == null) {
+                javadocPath = predictJavadocLocation(path);
+            }
+            if (srcPath == null) {
+                srcPath = predictSourcesLocation(path);
+            }
+
+            // SDK and RT location is enought for JFX platform definition
+            if (sdkPath != null && runtimePath != null) {
+                break;
+            }
+        }
+
+        if (sdkPath != null && runtimePath != null) {
+            return Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, javadocPath, srcPath);
+        }
+
+        return null;
+    }
+
+    /**
+     * Tries to predict JavaFX SDK location for given path
      * Can return null.
      * 
-     * @param JavaFX SDK installation folder
-     * @return JavaFX Runtime location absolute path or null
+     * @param folder where to look up
+     * @return JavaFX SDK location absolute path, or null if not predicted
      */
-    public static String guessRuntimePath(File sdkPath) {
-        File parent = sdkPath.getParentFile();
-        File[] brothers = parent.listFiles();
-        for (File brother : brothers) {
-            if (brother.getName().contains("Runtime") || brother.getName().contains("runtime")) { // NOI18N
-                return brother.getAbsolutePath();
+    @CheckForNull
+    public static String predictSDKLocation(@NonNull String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                if (toolsJar.exists()) {
+                    return child.getAbsolutePath();
+                }
             }
         }
         return null;
     }
-    
+
     /**
-     * Tries to predict Javadoc location for JavaFX SDK installation
+     * Tries to predict JavaFX Runtime location for given path
+     * Can return null.
      * 
-     * @param JavaFX SDK installation folder
-     * @return Javadoc location absolute path
+     * @param folder where to look up
+     * @return JavaFX Runtime location absolute path, or null if not predicted
      */
-    public static String guessJavadocPath(File sdkPath) {
-        return sdkPath.getAbsolutePath() + "\\docs"; // NOI18N
+    @CheckForNull
+    public static String predictRuntimeLocation(@NonNull String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            List<File> files = new ArrayList<File>(Arrays.asList(location.listFiles())); // check in neighbour folders: Win installation
+            files.add(location); // check inside SDK: Mac installation
+            for (File file : files) {
+                File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+                if (rtJar.exists()) {
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tries to predict JavaFX SDK Javadoc location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX SDK Javadoc location absolute path, or null if not predicted
+     */
+    @CheckForNull
+    public static String predictJavadocLocation(@NonNull String path) {
+        File location = new File(path);
+        if (location.exists()) {
+            File[] children = location.listFiles();
+            for (File child : children) {
+                File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
+                if (docs.exists()) {
+                    return docs.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tries to predict JavaFX SDK Sources location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX SDK Sources location absolute path, or null if not predicted
+     */
+    // TODO when sources will be availabe
+    @CheckForNull
+    public static String predictSourcesLocation(@NonNull String path) {
+        return null;
+    }
+
+    private static boolean isSdkPathCorrect(@NonNull String sdkPath) {
+        File file = new File(sdkPath);
+        if (!file.exists()) {
+            return false;
+        }
+        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        return toolsJar.exists();
     }
     
+    private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
+        File file = new File(runtimePath);
+        if (!file.exists()) {
+            return false;
+        }
+        File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+        return rtJar.exists();
+    }
+
 }

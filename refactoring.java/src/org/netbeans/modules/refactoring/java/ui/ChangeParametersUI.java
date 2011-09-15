@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -86,6 +87,11 @@ public class ChangeParametersUI implements RefactoringUI {
         Kind kind;
         while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION) {
             path = path.getParentPath();
+        }
+        
+        if(path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
+            path = info.getTrees().getPath(element);
         }
         
         return path != null

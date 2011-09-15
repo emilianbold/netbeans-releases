@@ -44,7 +44,8 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,14 +55,14 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssModule.class)
 public class ListsAndCountersModule extends CssModule {
 
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/lists_and_counters"; //NOI18N
-    private static Collection<PropertyDescriptor> propertyDescriptors;
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/lists_and_counters"; //NOI18N
+    private static Collection<Property> propertyDescriptors;
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{"marker"}); //NOI18N
 
     @Override
-    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
         }
         return propertyDescriptors;
     }

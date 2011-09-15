@@ -92,6 +92,7 @@ public final class TestAction implements ActionListener {
 }
  * </pre>
  * @since org.netbeans.modules.projectapi/1 1.23
+ * @see LookupProviderSupport#createCompositeLookup
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE, ElementType.METHOD})

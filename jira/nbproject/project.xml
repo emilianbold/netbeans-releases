@@ -11,12 +11,32 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.eclipse.mylyn.monitor.ui.dummy</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>                
+                <dependency>
                     <code-name-base>org.eclipse.core.runtime</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>              
                 <dependency>
                     <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>           
+                <dependency>
+                    <code-name-base>javax.mail</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>           
+                <dependency>
+                    <code-name-base>javax.activation</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>           
+                <dependency>
+                    <code-name-base>javax.wsdl</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>           

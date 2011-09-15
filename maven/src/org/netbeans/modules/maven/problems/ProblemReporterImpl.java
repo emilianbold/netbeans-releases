@@ -108,6 +108,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         @Override public void fileDataCreated(FileEvent fe) {
             LOG.log(Level.FINE, "due to {0} scheduling reload of {1}", new Object[] {fe.getFile(), nbproject.getPOMFile()});
             reloadTask.schedule(1000);
+            File f = FileUtil.toFile(fe.getFile());
+            if (f != null) {
+                BatchProblemNotifier.resolved(f);
+            } else {
+                LOG.log(Level.FINE, "no java.io.File from {0}", fe);
+            }
         }
     };
     private final NbMavenProjectImpl nbproject;
@@ -206,7 +212,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a).getFile();
                 }
                 LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
-                FileUtil.addFileChangeListener(fcl, f);
+                FileUtil.addFileChangeListener(fcl, FileUtil.normalizeFile(f));
             }
         }
     }
@@ -244,6 +250,9 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
                     FileUtil.removeFileChangeListener(fcl, f);
+                    if (f.isFile()) {
+                        BatchProblemNotifier.resolved(f);
+                    }
                 }
                 as.remove();
             }

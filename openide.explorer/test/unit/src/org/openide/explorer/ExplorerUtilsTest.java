@@ -44,6 +44,8 @@
 
 package org.openide.explorer;
 
+import java.awt.EventQueue;
+import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
@@ -59,6 +61,13 @@ import org.openide.util.HelpCtx;
 public class ExplorerUtilsTest extends NbTestCase {
     public ExplorerUtilsTest(String testName) {
         super(testName);
+    }
+    
+    public void testIsEnabledOnDelete() {
+        ExplorerManager em = new ExplorerManager();
+        Action a = ExplorerUtils.actionDelete(em, true);
+        assertFalse("No AWT", EventQueue.isDispatchThread());
+        assertFalse("Is disabled", a.isEnabled());
     }
 
     public void testGetHelpCtx() throws Exception {

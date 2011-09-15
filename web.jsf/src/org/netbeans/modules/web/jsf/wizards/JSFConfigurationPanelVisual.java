@@ -290,93 +290,83 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void initServerLibraries(boolean updateUI) {
         serverJsfLibraries.clear();
 
-//        final Runnable libraryFinder = new Runnable() {
-//
-//            @Override
-//            public void run() {
-                synchronized (this) {
-                    if (isServerRegistered(serverInstanceID)) {
-                        try {
-                            ServerInstance.LibraryManager libManager = Deployment.getDefault().getServerInstance(serverInstanceID).getLibraryManager();
-                            if (libManager != null) {
-                                Set<ServerLibrary> libs = new HashSet<ServerLibrary>();
-                                libs.addAll(libManager.getDeployedLibraries());
-                                libs.addAll(libManager.getDeployableLibraries());
+        synchronized (this) {
+            Set<JSFVersion> found = new HashSet<JSFVersion>();
+            if (isServerRegistered(serverInstanceID)) {
+                try {
+                    ServerInstance.LibraryManager libManager = Deployment.getDefault().getServerInstance(serverInstanceID).getLibraryManager();
+                    if (libManager != null) {
+                        Set<ServerLibrary> libs = new HashSet<ServerLibrary>();
+                        libs.addAll(libManager.getDeployedLibraries());
+                        libs.addAll(libManager.getDeployableLibraries());
 
-                                for (ServerLibrary lib : libs) {
-                                    // FIXME optimize
-                                    if ("JavaServer Faces".equals(lib.getSpecificationTitle())) { // NOI18N
-                                        if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
-                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_2_0));
-                                        } else if (Version.fromJsr277NotationWithFallback("1.2").equals(lib.getSpecificationVersion())) { // NOI18N
-                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_2));
-                                        } else if (Version.fromJsr277NotationWithFallback("1.1").equals(lib.getSpecificationVersion())) { // NOI18N
-                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_1));
-                                        } else {
-                                            LOG.log(Level.INFO, "Unknown JSF version {0}", lib.getSpecificationVersion());
-                                        }
-                                    }
+                        for (ServerLibrary lib : libs) {
+                            // FIXME optimize
+                            if ("JavaServer Faces".equals(lib.getSpecificationTitle())) { // NOI18N
+                                if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
+                                    serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_2_0));
+                                    found.add(JSFVersion.JSF_2_0);
+                                } else if (Version.fromJsr277NotationWithFallback("1.2").equals(lib.getSpecificationVersion())) { // NOI18N
+                                    serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_2));
+                                    found.add(JSFVersion.JSF_1_2);
+                                } else if (Version.fromJsr277NotationWithFallback("1.1").equals(lib.getSpecificationVersion())) { // NOI18N
+                                    serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_1));
+                                    found.add(JSFVersion.JSF_1_1);
+                                } else {
+                                    LOG.log(Level.INFO, "Unknown JSF version {0}", lib.getSpecificationVersion());
                                 }
                             }
-                        } catch (InstanceRemovedException ex) {
-                            LOG.log(Level.INFO, null, ex);
-                            // use the old way
                         }
                     }
-
-                    if (serverJsfLibraries.isEmpty()) {
-                        File[] cp;
-                        J2eePlatform platform = null;
-                        try {
-                            if (isServerRegistered(serverInstanceID)) { //NOI18N
-                                platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
-                            }
-                        } catch (InstanceRemovedException ex) {
-                            platform = null;
-                            LOG.log(Level.INFO, org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "SERVER_INSTANCE_REMOVED"), ex);
-                        }
-                        // j2eeplatform can be null, when the target server is not accessible.
-                        if (platform != null) {
-                            cp = platform.getClasspathEntries();
-                        } else {
-                            cp = new File[0];
-                        }
-
-                        try {
-                            // XXX: there should be a utility class for this:
-                            boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
-                            boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
-                            boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-
-                            JSFVersion jsfVersion = null;
-                            if (isJSF20) {
-                                jsfVersion = JSFVersion.JSF_2_0;
-                            } else if (isJSF12) {
-                                jsfVersion = JSFVersion.JSF_1_2;
-                            } else if (isJSF) {
-                                jsfVersion = JSFVersion.JSF_1_1;
-                            }
-                            if (jsfVersion != null) {
-                                serverJsfLibraries.add(new ServerLibraryItem(null, jsfVersion));
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-
-//                    SwingUtilities.invokeLater(new Runnable() {
-//                        @Override
-//                        public void run() {
-                            setServerLibraryModel(serverJsfLibraries);
-                            if (updateUI) {
-                                updatePreferredLanguages();
-                            }
-//                        }
-//                    });
+                } catch (InstanceRemovedException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    // use the old way
                 }
-//            }
-//        };
-//        RequestProcessor.getDefault().post(libraryFinder);
+            }
+
+            File[] cp;
+            J2eePlatform platform = null;
+            try {
+                if (isServerRegistered(serverInstanceID)) { //NOI18N
+                    platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                }
+            } catch (InstanceRemovedException ex) {
+                platform = null;
+                LOG.log(Level.INFO, org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "SERVER_INSTANCE_REMOVED"), ex);
+            }
+            // j2eeplatform can be null, when the target server is not accessible.
+            if (platform != null) {
+                cp = platform.getClasspathEntries();
+            } else {
+                cp = new File[0];
+            }
+
+            try {
+                // XXX: there should be a utility class for this:
+                boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
+                boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+                boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+
+                JSFVersion jsfVersion = null;
+                if (isJSF20) {
+                    jsfVersion = JSFVersion.JSF_2_0;
+                } else if (isJSF12) {
+                    jsfVersion = JSFVersion.JSF_1_2;
+                } else if (isJSF) {
+                    jsfVersion = JSFVersion.JSF_1_1;
+                }
+                if (jsfVersion != null && !found.contains(jsfVersion)) {
+                    serverJsfLibraries.add(new ServerLibraryItem(null, jsfVersion));
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            setServerLibraryModel(serverJsfLibraries);
+            if (updateUI) {
+                updatePreferredLanguages();
+            }
+        }
     }
 
     private static boolean isServerRegistered(String serverInstanceID) {
@@ -1391,6 +1381,10 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private void initJsfComponentLibraries(JSFVersion version) {
         List<JsfComponentImplementation> descriptors = componentsMap.get(version);
+        if (descriptors == null) {
+            return;
+        }
+
         for (int i = 0; i < descriptors.size(); i++) {
             JsfComponentImplementation jsfComponentDescriptor = descriptors.get(i);
             if (jsfComponentDescriptor.isInWebModule(panel.getWebModule())) {

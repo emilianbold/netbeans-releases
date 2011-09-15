@@ -162,7 +162,6 @@
 				<file title="CurrentFrame.gif"/>
 				<file title="CurrentSession.gif"/>
 				<file title="CurrentThread.gif"/>
-				<file title="dataraceicon.png"/>
 				<file title="Debug_Main_Project.gif"/>
 				<file title="deconstructors.png"/>
 				<file title="deconstructors_private.png"/>
@@ -302,19 +301,6 @@
 				<file title="who_includes.png"/>
 				<file title="who_is_included.png"/>
 			</directory>
-			<directory title="ProfilingCandC++Projects">
-				<file title="AnalyzingCPUUsageCandC++FortanApps.html"/>
-				<file title="AnalyzingIOUsageCandC++FortranApps.html"/>
-				<file title="AnalyzingMemoryUsageCandC++FortranApps.html"/>
-				<file title="AnalyzingThreadMicrostatesCandC++FortranApps.html"/>
-				<file title="AnalyzingThreadUsageCandC++FortranApps.html"/>
-				<file title="EnablingDTraceForProfilingCandC++FortranApps.html"/>
-				<file title="ManagingProfileConfigurations.html"/>
-				<file title="OverviewOfCandC++Profiling.html"/>
-				<file title="ProfilingCandC++Projects.html"/>
-				<file title="ProfilingThreadedCandC++Apps.html"/>
-				<file title="RunMonitorWindowforCandC++Fort.html"/>
-			</directory>
 			<directory title="TestingCandC++Projects">
 				<file title="c_unit_about.html"/>
 				<file title="c_unit_creatingtests.html"/>
@@ -371,7 +357,6 @@
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsPackaging.html"/>
 				<file title="ProjectPropsParser.html"/>
-				<file title="ProjectPropsProfile.html"/>
 				<file title="ProjectPropsQt.html"/>
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>

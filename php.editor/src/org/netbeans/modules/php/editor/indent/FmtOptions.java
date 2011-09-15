@@ -187,6 +187,7 @@ public class FmtOptions {
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
+    public static final String spaceAfterShortPHPTag = "spaceAfterShortPHPTag"; //NOI18N
     public static final String spaceBeforeClosePHPTag = "spaceBeforeClosePHPTag"; //NOI18N
 
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
@@ -350,6 +351,7 @@ public class FmtOptions {
 //            { spaceAfterColon, TRUE},
             { spaceAfterTypeCast, TRUE},
 	    { spaceCheckAfterKeywords, TRUE},
+            { spaceAfterShortPHPTag, TRUE},
 	    { spaceBeforeClosePHPTag, TRUE},
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
@@ -553,7 +555,7 @@ public class FmtOptions {
                     reformat.unlock();
                 }
             } else {
-                LOGGER.warning("Can't format " + doc + "; it's not BaseDocument."); //NOI18N
+                LOGGER.warning(String.format("Can't format %s; it's not BaseDocument.", doc)); //NOI18N
             }
             pane.setIgnoreRepaint(false);
             pane.scrollRectToVisible(visibleRectangle);

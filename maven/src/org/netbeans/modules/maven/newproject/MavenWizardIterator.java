@@ -45,63 +45,57 @@ package org.netbeans.modules.maven.newproject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  *@author mkleint
  */
-public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=990, displayName="#template.pickArchetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="MavenDescription.html")
+@Messages("template.pickArchetype=Project from Archetype")
+public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 1L;
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
     private transient int index;
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
-    public static final String KEY_GROUP_ID = "groupId", KEY_ARTIFACT_ID = "artifactId", KEY_VERSION = "version", KEY_REPOSITORY = "repository";
     private final Archetype archetype;
+
+    public MavenWizardIterator() {
+        this(null);
+    }
     
-    private MavenWizardIterator(Archetype archetype) {
+    public MavenWizardIterator(Archetype archetype) {
         this.archetype = archetype;
     }
 
-    /** Wizard iterator which prompts the user to select an archetype from several lists. */
-    public static WizardDescriptor.Iterator<?> pickArchetype() {
-        return new MavenWizardIterator(null);
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
+    @Messages("LBL_Maven_Quickstart_Archetype=Java Application")
+    public static WizardDescriptor.InstantiatingIterator<?> quickstart() {
+        return ArchetypeWizards.definedArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "1.1", null);
     }
 
-    /**
-     * Wizard iterator using a predetermined archetype.
-     * @param params list of keys among {@link #KEY_GROUP_ID}, {@link #KEY_ARTIFACT_ID}, {@link #KEY_VERSION}, optionally {@link #KEY_REPOSITORY}
-     */
-    public static WizardDescriptor.Iterator<?> definedArchetype(Map<String,String> params) {
-        Archetype arch = new Archetype();
-        arch.setGroupId(params.get(KEY_GROUP_ID));
-        arch.setArtifactId(params.get(KEY_ARTIFACT_ID));
-        arch.setVersion(params.get(KEY_VERSION));
-        arch.setRepository(params.get(KEY_REPOSITORY)); // null OK
-        return new MavenWizardIterator(arch);
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")
+    @Messages("LBL_Maven_POM_Archetype=POM Project")
+    public static WizardDescriptor.InstantiatingIterator<?> pomRoot() {
+        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "pom-root", "1.1", null);
     }
-    
+
     public @Override Set<FileObject> instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
-        return null;
-    }
-    
-    @Override
-    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        return ArchetypeWizardUtils.instantiate(handle, wiz);
+        return ArchetypeWizardUtils.instantiate(wiz);
     }
     
     @Override
@@ -113,10 +107,10 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         List<String> steps = new ArrayList<String>();
         if (archetype == null) {
             panels.add(new ChooseWizardPanel());
-            steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep"));
+            steps.add(LBL_CreateProjectStep());
         }
-        panels.add(new BasicWizardPanel(vg));
-        steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep2"));
+        panels.add(new BasicWizardPanel(vg, null, true, true));
+        steps.add(LBL_CreateProjectStep2());
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
             c.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
@@ -135,8 +129,9 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         panels = null;
     }
     
+    @Messages("NameFormat={0} of {1}")
     public @Override String name() {
-        return NbBundle.getMessage(MavenWizardIterator.class, "NameFormat", index + 1, panels.size());
+        return NameFormat(index + 1, panels.size());
     }
     
     @Override

@@ -791,6 +791,7 @@
 		<dtd-name>message-driven-descriptorType</dtd-name>
 		<namespace>http://www.bea.com/ns/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>MessageDrivenDescriptorType</bean-name>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.MessageDrivenDescriptorType</implements>
 		<meta-property>
 			<bean-name>Pool</bean-name>
 		</meta-property>

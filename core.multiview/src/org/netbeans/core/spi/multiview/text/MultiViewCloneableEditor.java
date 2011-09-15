@@ -47,6 +47,8 @@ package org.netbeans.core.spi.multiview.text;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -57,6 +59,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
@@ -210,7 +213,8 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     }
 
     @Messages({
-        "MSG_SaveModified=File {0} is modified. Save?"
+        "# {0} - file name", "MSG_SaveModified=File {0} is modified. Save?",
+        "MSG_SaveModified_no_name=File is modified. Save?"
     })
     @Override
     public CloseOperationState canCloseElement() {
@@ -236,7 +240,22 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
                     }
                 }
             };
-            save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sav));
+            try {
+                if (sav.getClass().getMethod("toString").getDeclaringClass() != Object.class) {
+                    save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sav));
+                } else {
+                    Logger.getLogger(MultiViewCloneableEditor.class.getName()).log(Level.WARNING, "Need to override toString in {0} with lookup {1}", new Object[] {sav.getClass(), getLookup().lookupAll(Object.class)});
+                    Node n = getLookup().lookup(Node.class);
+                    if (n != null) {
+                        // #201696: compatibility fallback.
+                        save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(n.getDisplayName()));
+                    } else {
+                        save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified_no_name());
+                    }
+                }
+            } catch (NoSuchMethodException x) {
+                assert false : x;
+            }
             return MultiViewFactory.createUnsafeCloseState("editor", save, null);
         } 
         return CloseOperationState.STATE_OK;
@@ -245,5 +264,4 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     Lookup getLookupSuper() {
         return super.getLookup();
     }
-    
 }

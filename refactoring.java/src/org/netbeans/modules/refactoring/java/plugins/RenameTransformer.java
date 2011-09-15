@@ -55,6 +55,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.Iterator;
 import java.util.Set;
@@ -147,15 +148,17 @@ public class RenameTransformer extends RefactoringVisitor {
         return null;
     }
     
-    private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
+    private void renameUsageIfMatch(final TreePath path, Tree tree, Element elementToFind) {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
             return;
+        TreePath elementPath = path;
         Trees trees = workingCopy.getTrees();
-        Element el = workingCopy.getTrees().getElement(path);
+        Element el = workingCopy.getTrees().getElement(elementPath);
+        
         if (el == null) {
-            path = path.getParentPath();
-            if (path != null && path.getLeaf().getKind() == Tree.Kind.IMPORT) {
-                ImportTree impTree = (ImportTree)path.getLeaf();
+            elementPath = elementPath.getParentPath();
+            if (elementPath != null && elementPath.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                ImportTree impTree = (ImportTree)elementPath.getLeaf();
                 if (!impTree.isStatic()) {
                     return;
                 }
@@ -169,8 +172,8 @@ public class RenameTransformer extends RefactoringVisitor {
                     return;
                 }
                 Tree classTree = ((MemberSelectTree) idTree).getExpression();
-                path = trees.getPath(workingCopy.getCompilationUnit(), classTree);
-                el = trees.getElement(path);
+                elementPath = trees.getPath(workingCopy.getCompilationUnit(), classTree);
+                el = trees.getElement(elementPath);
                 if (el == null) {
                     return;
                 }
@@ -196,7 +199,7 @@ public class RenameTransformer extends RefactoringVisitor {
             String useSuper = null;
 
             if (elementToFind!=null && elementToFind.getKind().isField()) {
-                Scope scope = workingCopy.getTrees().getScope(path);
+                Scope scope = workingCopy.getTrees().getScope(elementPath);
                 for (Element ele : scope.getLocalElements()) {
                     if ((ele.getKind() == ElementKind.LOCAL_VARIABLE || ele.getKind() == ElementKind.PARAMETER) 
                             && ele.getSimpleName().toString().equals(newName)) {
@@ -215,7 +218,7 @@ public class RenameTransformer extends RefactoringVisitor {
                 }
             }
             if (elementToFind!=null && elementToFind.getKind().isField() || elementToFind.getKind().equals(ElementKind.METHOD)) {
-                Scope scope = workingCopy.getTrees().getScope(path);
+                Scope scope = workingCopy.getTrees().getScope(elementPath);
                 TypeElement enclosingTypeElement = scope.getEnclosingClass();
                 TypeMirror superclass = enclosingTypeElement.getSuperclass();
                 Types types = workingCopy.getTypes();
@@ -239,15 +242,33 @@ public class RenameTransformer extends RefactoringVisitor {
                     }
                 }
             }
-            Tree nju;
+            Tree nju = null;
             if (useThis!=null) {
                 nju = make.setLabel(tree, useThis + newName);
             } else if (useSuper !=null) {
                 nju = make.setLabel(tree, useSuper + newName);
+            } else if(elementToFind.getKind().isClass()) {
+                boolean duplicate = duplicateDeclaration();
+                final TreePath parentPath = path.getParentPath();
+                if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                    ImportTree importTree = (ImportTree) parentPath.getLeaf();
+                    if(duplicate) {
+                        nju = make.removeCompUnitImport(workingCopy.getCompilationUnit(), importTree);
+                        tree = workingCopy.getCompilationUnit();
+                    }
+                } else {
+                    if(duplicate) {
+                        nju = make.QualIdent(make.setLabel(make.QualIdent(elementToFind), newName).toString());
+                    } else {
+                        nju = make.setLabel(tree, newName);
+                    }
+                }
             } else {
                 nju = make.setLabel(tree, newName);
             }
-            rewrite(tree, nju);
+            if(nju != null) {
+                rewrite(tree, nju);
+            }
         }
     }
 
@@ -383,5 +404,17 @@ public class RenameTransformer extends RefactoringVisitor {
             }
             workingCopy.rewriteInComment(offset + index, originalName.length(), newName);
         }
+    }
+
+    private boolean duplicateDeclaration() {
+        TreeScanner<Boolean, String> duplicateIds = new TreeScanner<Boolean, String>() {
+            @Override public Boolean visitClass(ClassTree node, String p) {
+                if(node.getSimpleName().contentEquals(p)) {
+                    return Boolean.TRUE;
+                }
+                return super.visitClass(node, p);
+            }
+        };
+        return Boolean.TRUE == duplicateIds.scan(workingCopy.getCompilationUnit(), newName);
     }
 }

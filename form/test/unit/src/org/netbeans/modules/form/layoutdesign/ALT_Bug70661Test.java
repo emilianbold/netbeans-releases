@@ -66,6 +66,7 @@ public class ALT_Bug70661Test extends LayoutTestCase {
 
     // Resize jTextField2 so it right-aligns with jTextField1.
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 383, 299));

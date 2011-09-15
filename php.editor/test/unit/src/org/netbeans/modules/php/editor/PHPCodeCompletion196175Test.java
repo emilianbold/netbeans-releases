@@ -66,11 +66,26 @@ public class PHPCodeCompletion196175Test extends PHPTestBase {
     public void testUseCase1() throws Exception {
         checkCompletion("testfiles/completion/lib/tests196175/IndexController.php", "$this->_request->^", false);
     }
-    
+
     public void testUseCase2() throws Exception {
         checkCompletion("testfiles/completion/lib/tests196175/test196175.php", "$a->^", false);
     }
-    
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/test196175_03.php", "$a->^", false);
+    }
+
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/test196175_04.php", "$a->^", false);
+    }
+
+    public void testUseCase5() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/test196175_05.php", "$a->^", false);
+    }
+
+    public void testUseCase6() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/test196175_06.php", "$a->^", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

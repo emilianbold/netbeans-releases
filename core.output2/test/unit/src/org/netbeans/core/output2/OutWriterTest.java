@@ -470,6 +470,28 @@ public class OutWriterTest extends NbTestCase {
         }
     }
     
+    public void testWriteWithBackspace() throws IOException {
+
+        OutWriter ow = new OutWriter();
+
+        ow.write("Helle\bo World");
+        assertEquals("Hello World", ow.getLines().getLine(0));
+    }
+
+    public void testWriteLineTerminators() throws IOException {
+
+        OutWriter ow = new OutWriter();
+
+        ow.write("Months:\nJanuary\nFebruary\rMarch\r\nApril\n\rMay");
+
+        assertEquals("January\n", ow.getLines().getLine(1));
+        assertEquals("February\n", ow.getLines().getLine(2));
+        assertEquals("March\n", ow.getLines().getLine(3));
+        assertEquals("April\n", ow.getLines().getLine(4));
+        assertEquals("\n", ow.getLines().getLine(5));
+        assertEquals("May", ow.getLines().getLine(6));
+    }
+
     public void testWritePartial() {
         System.out.println("testWritePartial");
         try {

@@ -56,16 +56,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -84,8 +88,9 @@ import org.openide.util.Utilities;
 public final class JFXProjectProperties {
 
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+    public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
-    public static final String JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
+    // copies of private J2SE properties
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
@@ -109,14 +114,21 @@ public final class JFXProjectProperties {
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
+    public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
+    
     public static final String PRELOADER_ENABLED = "javafx.preloader.enabled"; // NOI18N
-    public static final String PRELOADER_SOURCE_TYPE = "javafx.preloader.source.type"; // NOI18N
-    public static final String PRELOADER_SOURCE = "javafx.preloader.source"; // NOI18N
+    public static final String PRELOADER_TYPE = "javafx.preloader.type"; // NOI18N
+    public static final String PRELOADER_PROJECT = "javafx.preloader.project.path"; // NOI18N
     public static final String PRELOADER_CLASS = "javafx.preloader.class"; // NOI18N
+    public static final String PRELOADER_JAR_FILENAME = "javafx.preloader.jar.filename"; // NOI18N
+    public static final String PRELOADER_JAR_PATH = "javafx.preloader.jar.path"; // NOI18N
+    
     public static final String RUN_WORK_DIR = ProjectProperties.RUN_WORK_DIR; // NOI18N
     public static final String RUN_APP_WIDTH = "javafx.run.width"; // NOI18N
     public static final String RUN_APP_HEIGHT = "javafx.run.height"; // NOI18N
-    public static final String RUN_IN_HTMLPAGE = "javafx.run.inhtmlpage"; // NOI18N
+    public static final String RUN_IN_HTMLTEMPLATE = "javafx.run.htmltemplate"; // NOI18N
+    public static final String RUN_IN_HTMLTEMPLATE_PROCESSED = "javafx.run.htmltemplate.processed"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
@@ -124,28 +136,30 @@ public final class JFXProjectProperties {
     public static final String DEFAULT_APP_HEIGHT = "600"; // NOI18N
 
     // Deployment properties
-    public static final String BACKGROUND_UPDATE_CHECK = "javafx.deploy.backgroundupdate"; // NOI18N
+    public static final String UPDATE_MODE_BACKGROUND = "javafx.deploy.backgroundupdate"; // NOI18N
     public static final String ALLOW_OFFLINE = "javafx.deploy.allowoffline"; // NOI18N
     public static final String INSTALL_PERMANENTLY = "javafx.deploy.installpermanently"; // NOI18N
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+    public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
 
-    public static final String SIGNING_GENERATED = "generated"; //NOI18N
-    public static final String SIGNING_KEY = "key"; //NOI18N
-
-    public static final String JAVAFX_SIGNED = "javafx.signed"; //NOI18N
-    public static final String JAVAFX_SIGNING = "javafx.signing"; //NOI18N
+    // Deployment - signing
+    public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
+    public static final String JAVAFX_SIGNING_TYPE = "javafx.signing.type"; //NOI18N
     public static final String JAVAFX_SIGNING_KEYSTORE = "javafx.signing.keystore"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.alias"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.storepass"; //NOI18N
-    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keypass"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.keystore.password"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY = "javafx.signing.keyalias"; //NOI18N
+    public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keyalias.password"; //NOI18N
+    
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
     
+    // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
     private StoreGroup fxPropGroup = new StoreGroup();
@@ -180,7 +194,7 @@ public final class JFXProjectProperties {
         return activeConfig;
     }
     public void setActiveConfig(String config) {
-        activeConfig = config;
+        this.activeConfig = config;
     }
 
     // CustomizerRun - Preloader source type
@@ -250,16 +264,67 @@ public final class JFXProjectProperties {
     }
 
     // Deployment - Signing
-    String signing;
+    public enum SigningType {
+        NOSIGN("notsigned"), // NOI18N
+        SELF("self"), // NOI18N
+        KEY("key"); // NOI18N
+        private final String propertyValue;
+        SigningType(String propertyValue) {
+            this.propertyValue = propertyValue;
+        }
+        public String getString() {
+            return propertyValue;
+        }
+    }
+
+    boolean signingEnabled;
+    SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
+    boolean permissionsElevated;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
-    public String getSigning() {
-        return signing;
+    public boolean getSigningEnabled() {
+        return signingEnabled;
+    }
+    public void setSigningEnabled(boolean enabled) {
+        this.signingEnabled = enabled;
+    }
+    public boolean getPermissionsElevated() {
+        return permissionsElevated;
+    }
+    public void setPermissionsElevated(boolean enabled) {
+        this.permissionsElevated = enabled;
+    }
+    public SigningType getSigningType() {
+        return signingType;
+    }
+    public void setSigningType(SigningType type) {
+        this.signingType = type;
+    }
+    public String getSigningKeyStore() {
+        return signingKeyStore;
     }
     public String getSigningKeyAlias() {
         return signingKeyAlias;
+    }
+    public char[] getSigningKeyStorePassword() {
+        return signingKeyStorePassword;
+    }
+    public char[] getSigningKeyPassword() {
+        return signingKeyPassword;
+    }
+    public void setSigningKeyAlias(String signingKeyAlias) {
+        this.signingKeyAlias = signingKeyAlias;
+    }
+    public void setSigningKeyPassword(char[] signingKeyPassword) {
+        this.signingKeyPassword = signingKeyPassword;
+    }
+    public void setSigningKeyStore(String signingKeyStore) {
+        this.signingKeyStore = signingKeyStore;
+    }
+    public void setSigningKeyStorePassword(char[] signingKeyStorePassword) {
+        this.signingKeyStorePassword = signingKeyStorePassword;
     }
     
     // Deployment - Libraries Download Mode
@@ -273,13 +338,13 @@ public final class JFXProjectProperties {
         return lazyJars;
     }
     public void setLazyJars(List<? extends File> newLazyJars) {
-        lazyJars = newLazyJars;
+        this.lazyJars = newLazyJars;
     }
     public boolean getLazyJarsChanged() {
         return lazyJarsChanged;
     }
     public void setLazyJarsChanged(boolean changed) {
-        lazyJarsChanged = changed;
+        this.lazyJarsChanged = changed;
     }
     
     // Deployment - JavaScript Callbacks
@@ -353,20 +418,11 @@ public final class JFXProjectProperties {
             evaluator = j2sePropEval.evaluator();
             
             // Packaging
-            binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS);
-            if(evaluator.getProperty(JAVAFX_BINARY_ENCODE_CSS) == null) {
-                binaryEncodeCSS.setSelected(true); // default is true
-            }
+            binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS); // set true by default in JFXProjectGenerator
 
             // Deployment
-            allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE);
-            if(evaluator.getProperty(ALLOW_OFFLINE) == null) {
-                allowOfflineModel.setSelected(true); // default is true
-            }
-            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, BACKGROUND_UPDATE_CHECK);
-            if(evaluator.getProperty(BACKGROUND_UPDATE_CHECK) == null) {
-                backgroundUpdateCheck.setSelected(true); // default is true
-            }
+            allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE); // set true by default in JFXProjectGenerator            
+            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, UPDATE_MODE_BACKGROUND); // set true by default in JFXProjectGenerator
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
@@ -390,6 +446,16 @@ public final class JFXProjectProperties {
                  value.equalsIgnoreCase("yes") ||   //NOI18N
                  value.equalsIgnoreCase("on"));     //NOI18N
     }
+
+    public static boolean isEqual(final String s1, final String s2) {
+        return (s1 == null && s2 == null) ||
+                (s1 != null && s2 != null && s1.equals(s2));
+    }                                   
+
+    public static boolean isEqualIgnoreCase(final String s1, final String s2) {
+        return (s1 == null && s2 == null) ||
+                (s1 != null && s2 != null && s1.equalsIgnoreCase(s2));
+    }                                   
 
     public static class PropertiesTableModel extends AbstractTableModel {
         
@@ -473,8 +539,8 @@ public final class JFXProjectProperties {
         } catch (IOException ex) {
             // can be ignored
         }
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
                 v = pep.getProperty(prop);
@@ -661,13 +727,13 @@ public final class JFXProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_SOURCE_TYPE, PRELOADER_SOURCE, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLPAGE, RUN_IN_BROWSER, RUN_AS}) {
+        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
                     (//prop.equals(APPLICATION_ARGS) ||
                     prop.equals(RUN_WORK_DIR)  ||
-                    prop.equals(RUN_IN_HTMLPAGE)  ||
+                    prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                     prop.equals(RUN_IN_BROWSER)  ||
                     prop.equals(RUN_AS)  ||
                     privateProperties.containsKey(prop)) ?
@@ -725,7 +791,7 @@ public final class JFXProjectProperties {
                 EditableProperties ep =
                         (//prop.equals(APPLICATION_ARGS) ||
                          prop.equals(RUN_WORK_DIR) ||
-                         prop.equals(RUN_IN_HTMLPAGE)  ||
+                         prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                          prop.equals(RUN_IN_BROWSER)  ||
                          prop.equals(RUN_AS)  ||
                          privateCfgProps.containsKey(prop)) ?
@@ -740,27 +806,41 @@ public final class JFXProjectProperties {
                 }
             }
             index = 0;
-            for(Map<String,String> m : params.get(config)) {
-                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                    String v = propSuffix.getValue();
-                    if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
-                        if (v != null && v.length() > 0) {
-                            sharedCfgProps.setProperty(prop, v);
-                        } else {
-                            sharedCfgProps.remove(prop);
+            List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
+            if(paramsConfig != null) {
+                for(Map<String,String> m : params.get(config)) {
+                    for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                        String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                        String v = propSuffix.getValue();
+                        if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
+                            if (v != null && v.length() > 0) {
+                                sharedCfgProps.setProperty(prop, v);
+                            } else {
+                                sharedCfgProps.remove(prop);
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
             }
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 saveToFile(privatePath, privateCfgProps);
             }
         }
+        updatePreloaderDependencies();
     }
     
+    private void updatePreloaderDependencies() {
+        // depeding on the currently (de)selected preloader update project dependencies,
+        // i.e., remove deselected preloader project dependency and add selected preloader project dependency
+        
+        //TODO
+//            final Project[] p = new Project[] {ProjectManager.getDefault().findProject(preloaderDirFO)};
+//            FileObject ownerSourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
+//            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
+    }
+
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
 //        // store descriptor type
 //        DescType descType = getSelectedDescType();
@@ -778,10 +858,11 @@ public final class JFXProjectProperties {
 //            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
 //        }
         // store signing info
-        editableProps.setProperty(JAVAFX_SIGNING, signing);
-        editableProps.setProperty(JAVAFX_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
+        editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
         
@@ -790,6 +871,9 @@ public final class JFXProjectProperties {
 
         // store JavaScript callbacks
         storeJSCallbacks(editableProps);
+        
+        // store JFX SDK & RT path
+        storePlatform(editableProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -962,22 +1046,33 @@ public final class JFXProjectProperties {
     }
 
     private void initSigning(PropertyEvaluator eval) {
-        signing = eval.getProperty(JAVAFX_SIGNING);
-        if (signing == null) signing = "";
+        String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
+        String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);
+        signingEnabled = isTrue(enabled);
+        if(signedProp == null) {
+            signingType = SigningType.NOSIGN;
+        } else {
+            if(signedProp.equalsIgnoreCase(SigningType.SELF.getString())) {
+                signingType = SigningType.SELF;
+            } else {
+                if(signedProp.equalsIgnoreCase(SigningType.KEY.getString())) {
+                    signingType = SigningType.KEY;
+                } else {
+                    signingType = SigningType.NOSIGN;
+                }
+            }
+        }
         signingKeyStore = eval.getProperty(JAVAFX_SIGNING_KEYSTORE);
-        if (signingKeyStore == null) signingKeyStore = "";
+        //if (signingKeyStore == null) signingKeyStore = "";
         signingKeyAlias = eval.getProperty(JAVAFX_SIGNING_KEY);
-        if (signingKeyAlias == null) signingKeyAlias = "";
+        //if (signingKeyAlias == null) signingKeyAlias = "";
         if (eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD) != null) {
             signingKeyStorePassword = eval.getProperty(JAVAFX_SIGNING_KEYSTORE_PASSWORD).toCharArray();
         }
         if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
             signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
         }
-        // compatibility
-        if ("".equals(signing) && "true".equals(eval.getProperty(JAVAFX_SIGNED))) { //NOI18N
-            signing = SIGNING_GENERATED;
-        }
+        permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
     private void initResources (final PropertyEvaluator eval, final Project prj) {
@@ -1055,39 +1150,106 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void storePlatform(EditableProperties editableProps) {
+        String activePlatform = editableProps.getProperty("platform.active"); // NOI18N
+        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : installedPlatforms) {
+            String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+            if (platformName.equals(activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
+            }
+        }
+    }
+
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
+        
+        private boolean filling = false;
+        private ChangeListener changeListener = null;
               
         public PreloaderClassComboBoxModel() {
+            fillNoPreloaderAvailable();
+        }
+        
+        public void addChangeListener (ChangeListener l) {
+            changeListener = l;
+        }
+
+        public void removeChangeListener (ChangeListener l) {
+            changeListener = null;
+        }
+
+        public final void fillNoPreloaderAvailable() {
             removeAllElements();
             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
         }
         
-        public void fillFromProject(Project project) {
+        public void fillFromProject(final Project project, final String select, final Map<String,String> config) {
             final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
-                    removeAllElements();
-                    if(appClassNames.isEmpty()) {
-                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
-                    } else {
-                        addElements(appClassNames);
+                    if(!filling) {
+                        filling = true;
+                        removeAllElements();
+                        if(project == null) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                            return;
+                        }
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
+                        if(appClassNames.isEmpty()) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                        } else {
+                            addElements(appClassNames);
+                            if(select != null) {
+                                setSelectedItem(select);
+                            }
+                            if(config != null) {
+                                String verify = (String)getSelectedItem();
+                                if(!JFXProjectProperties.isEqual(select, verify)) {
+                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                }
+                            }
+                        }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
+                        }
+                        filling = false;
                     }
                 }
             });            
         }
 
-        public void fillFromJAR(final FileObject jarFile) {
+        public void fillFromJAR(final FileObject jarFile, final String select, final Map<String,String> config) {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
-                    removeAllElements();
-                    if(appClassNames.isEmpty()) {
-                        addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
-                    } else {
-                        addElements(appClassNames);
+                    if(!filling) {
+                        filling = true;
+                        removeAllElements();
+                        if(jarFile == null) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                            return;
+                        }
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                        if(appClassNames.isEmpty()) {
+                            addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
+                        } else {
+                            addElements(appClassNames);
+                            if(select != null) {
+                                setSelectedItem(select);
+                            }
+                            if(config != null) {
+                                String verify = (String)getSelectedItem();
+                                if(!JFXProjectProperties.isEqual(select, verify)) {
+                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                }
+                            }
+                        }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
+                        }
+                        filling = false;
                     }
                 }
             });            

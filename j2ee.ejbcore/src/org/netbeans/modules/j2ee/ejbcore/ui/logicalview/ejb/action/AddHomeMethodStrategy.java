@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -59,26 +61,28 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.action.HomeMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.CmpFromDbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Action that can always be invoked and work procedurally.
  * @author cwebster
  */
 public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
-    
+
     public AddHomeMethodStrategy(String name) {
         super (name);
     }
     public AddHomeMethodStrategy () {
         super(NbBundle.getMessage(AddHomeMethodStrategy.class, "LBL_AddHomeMethodAction"));
     }
-    
+
     protected MethodModel getPrototypeMethod() {
         return MethodModel.create(
                 "homeMethod",
@@ -98,32 +102,42 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.homeMethod(
                 getTitle(),
-                methodModel, 
+                methodModel,
                 ClasspathInfo.create(fileObject),
-                hasRemote, 
+                hasRemote,
                 hasLocal,
                 methodsNode == null ? hasLocal : methodsNode.isLocal(),
                 methodsNode == null ? hasRemote : methodsNode.isRemote(),
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }
-    
+
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.HOME;
     }
 
-    protected void generateMethod(MethodModel method, boolean isOneReturn,
-                                  boolean publishToLocal,
-                                  boolean publishToRemote, String ejbql,
+    protected void generateMethod(final MethodModel method, boolean isOneReturn,
+                                  final boolean publishToLocal,
+                                  final boolean publishToRemote, String ejbql,
                                   FileObject ejbClassFO, String ejbClass) throws IOException {
-        HomeMethodGenerator generator = HomeMethodGenerator.create(ejbClass, ejbClassFO);
-        generator.generate(method, publishToLocal, publishToRemote);
+        final HomeMethodGenerator generator = HomeMethodGenerator.create(ejbClass, ejbClassFO);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    generator.generate(method, publishToLocal, publishToRemote);
+                } catch (IOException ioe) {
+                    Logger.getLogger(CmpFromDbGenerator.class.getName()).log(Level.WARNING, null, ioe);
+                }
+            }
+        });
+
     }
 
     public boolean supportsEjb(FileObject fileObject, final String className) {
 
         boolean isEntity = false;
-        
+
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
@@ -138,7 +152,7 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
+
         return isEntity;
 
     }

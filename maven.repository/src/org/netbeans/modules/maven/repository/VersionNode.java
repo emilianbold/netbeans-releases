@@ -288,10 +288,7 @@ public class VersionNode extends AbstractNode {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
                     }
-                    RepositoryInfo local = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                    if (local != null) {
-                        RepositoryIndexer.updateIndexWithArtifacts(local, Collections.singletonList(art));
-                    }
+                    RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(art));
                     setLocalArtifact(findLocalArtifact(info, record));
                     setChildren(createChildren(localArtifact));
                 }

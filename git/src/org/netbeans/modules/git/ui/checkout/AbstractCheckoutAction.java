@@ -67,6 +67,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,8 +78,8 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
     
     private static final Logger LOG = Logger.getLogger(CheckoutRevisionAction.class.getName());
     
-    protected final void checkoutRevision (final File repository, final AbstractCheckoutRevision checkout, String progressLabelKey) {
-        if (checkout.show()) {
+    protected final void checkoutRevision (final File repository, final AbstractCheckoutRevision checkout, String progressLabelKey, HelpCtx helpCtx) {
+        if (checkout.show(helpCtx)) {
             GitProgressSupport supp = new GitProgressSupport() {
                 
                 private String revision;

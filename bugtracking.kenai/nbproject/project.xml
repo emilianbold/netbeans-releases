@@ -141,7 +141,7 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.eclipse.osgi</code-name-base>
+                        <code-name-base>org.netbeans.modules.netbinox</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

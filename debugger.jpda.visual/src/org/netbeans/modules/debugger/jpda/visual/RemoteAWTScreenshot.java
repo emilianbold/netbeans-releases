@@ -61,6 +61,7 @@ import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeListener;
@@ -79,6 +80,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -89,11 +91,14 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
+import org.netbeans.modules.debugger.jpda.visual.actions.AWTComponentBreakpointActionProvider;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToAddIntoHierarchyAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.models.ComponentBreakpointsActionsProvider;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.openide.DialogDisplayer;
@@ -103,8 +108,10 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -557,19 +564,23 @@ public class RemoteAWTScreenshot {
         @Override
         public Action[] getActions(boolean context) {
             FieldInfo fieldInfo = getField();
+            ObjectReference component = getComponent();
+            AWTComponentBreakpoint b = AWTComponentBreakpointActionProvider.findBreakpoint(component);
+            
+            List<Action> actions = new ArrayList<Action>();
+            actions.add(GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class));
+            actions.add(GoToSourceAction.get(GoToSourceAction.class));
             if (fieldInfo != null) {
-                return new SystemAction[] { GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class),
-                                            GoToSourceAction.get(GoToSourceAction.class),
-                                            GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
-                                            ShowListenersAction.get(ShowListenersAction.class),
-                                            ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
-                
-            } else {
-                return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
-                                            GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class),
-                                            ShowListenersAction.get(ShowListenersAction.class),
-                                            ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
+                actions.add(GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class));
             }
+            actions.add(null);
+            actions.add(ShowListenersAction.get(ShowListenersAction.class));
+            actions.add(null);
+            actions.add(ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class));
+            if (b != null) {
+                actions.add(CBP_CUSTOMIZE_ACTION);
+            }
+            return actions.toArray(new Action[] {});
         }
 
         @Override
@@ -611,5 +622,42 @@ public class RemoteAWTScreenshot {
                 throw new RetrievalException(e.getMessage(), e);
             }
         }
+        
+        private static final Action CBP_CUSTOMIZE_ACTION = new NodeAction() {
+
+            @Override
+            public String getName() {
+                return NbBundle.getBundle(RemoteAWTScreenshot.class).getString("CTL_Component_Breakpoint_Customize_Label");
+            }
+
+            @Override
+            protected boolean enable(Node[] activatedNodes) {
+                return true;
+            }
+
+            @Override
+            protected boolean asynchronous() {
+                return false;
+            }
+            
+            @Override
+            protected void performAction(Node[] activatedNodes) {
+                for (Node n : activatedNodes) {
+                    AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+                    if (ci != null) {
+                        ObjectReference component = ci.getComponent();
+                        AWTComponentBreakpoint b = AWTComponentBreakpointActionProvider.findBreakpoint(component);
+                        ComponentBreakpointsActionsProvider.customize(b);
+                    }
+                }
+            }
+
+            @Override
+            public HelpCtx getHelpCtx() {
+                return new HelpCtx("AWTComponentBreakpoint_Customize");
+            }
+            
+        };
+        
     }
 }

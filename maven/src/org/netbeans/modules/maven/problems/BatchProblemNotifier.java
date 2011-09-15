@@ -42,13 +42,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -63,6 +67,7 @@ import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,45 +79,62 @@ import org.openide.util.NbBundle.Messages;
  */
 public class BatchProblemNotifier {
 
-    private static final Map<File,Set<String>> projectsByReactor = new HashMap<File,Set<String>>();
+    private static final Logger LOG = Logger.getLogger(BatchProblemNotifier.class.getName());
 
-    @Messages({
-        "# {0} - directory basename", "build_title=Build {0}",
-        "# {0} - full directory path", "build_details=Run priming build in {0}"
-    })
+    /** reactors by root directory */
+    private static final Map<File,Reactor> reactors = new HashMap<File,Reactor>();
+
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
         pr.doBaseProblemChecks(p.getOriginalMavenProject());
-        if (!pr.getMissingArtifacts().isEmpty()) {
-            File basedir = p.getPOMFile().getParentFile();
-            // XXX do we need to do anything special for NbMavenProject.isErrorPlaceholder?
-            final File reactor = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
-            boolean nue = false;
-            synchronized (projectsByReactor) {
-                Set<String> projects = projectsByReactor.get(reactor);
-                if (projects == null) {
-                    projects = new TreeSet<String>();
-                    projectsByReactor.put(reactor, projects);
-                    nue = true;
+        Set<Artifact> missingArtifacts = pr.getMissingArtifacts();
+        if (!missingArtifacts.isEmpty()) {
+            Set<File> files = new HashSet<File>();
+            for (Artifact art : missingArtifacts) {
+                File file = art.getFile();
+                if (file != null) {
+                    files.add(file);
+                } else {
+                    LOG.log(Level.WARNING, "no file found for {0}", art);
+                    // XXX could also store IDs and use MavenFileOwnerQueryImpl.findCoordinates for reverse mapping if necessary
                 }
-                String path = FileUtilities.relativizeFile(reactor, basedir);
-                if (path == null) {
-                    path = basedir.getAbsolutePath();
-                }
-                projects.add(path);
             }
-            if (nue) {
-                NotificationDisplayer.getDefault().notify(
-                    build_title(reactor.getName()),
-                    ImageUtilities.image2Icon(ImageUtilities.mergeImages(
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/resources/Maven2Icon.gif", true),
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/brokenProjectBadge.png", true), 8, 0)),
-                    build_details(reactor),
-                    new ActionListener() {
-                        @Override public void actionPerformed(ActionEvent e) {
-                            showUI(reactor);
-                        }
-                    });
+            final File root = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
+            File basedir = p.getPOMFile().getParentFile();
+            String path = FileUtilities.relativizeFile(root, basedir);
+            if (path == null) {
+                path = basedir.getAbsolutePath();
+            }
+            synchronized (reactors) {
+                Reactor reactor = reactors.get(root);
+                if (reactor == null) {
+                    reactor = new Reactor(root);
+                    reactors.put(root, reactor);
+                }
+                reactor.register(path, files);
+            }
+        }
+    }
+
+    public static void closed(NbMavenProjectImpl p) {
+        File root = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
+        File basedir = p.getPOMFile().getParentFile();
+        String path = FileUtilities.relativizeFile(root, basedir);
+        if (path == null) {
+            path = basedir.getAbsolutePath();
+        }
+        synchronized (reactors) {
+            Reactor reactor = reactors.get(root);
+            if (reactor != null) {
+                reactor.unregister(path);
+            }
+        }
+    }
+
+    static void resolved(File f) {
+        synchronized (reactors) {
+            for (Reactor reactor : new ArrayList<Reactor>(reactors.values())) {
+                reactor.resolved(f);
             }
         }
     }
@@ -121,11 +143,7 @@ public class BatchProblemNotifier {
         "dialog_title=Run Priming Build",
         "# {0} - directory name of reactor", "build_label=Priming {0}"
     })
-    private static void showUI(File reactor) {
-        Set<String> projects;
-        synchronized (projectsByReactor) {
-            projects = projectsByReactor.remove(reactor);
-        }
+    private static void showUI(File reactor, Set<String> projects) {
         RunGoalsPanel pnl = new RunGoalsPanel();
         BeanRunConfig cfg = new BeanRunConfig();
         String label = build_label(reactor.getName());
@@ -146,7 +164,7 @@ public class BatchProblemNotifier {
                 }
             }
         } catch (IOException x) {
-            Logger.getLogger(BatchProblemNotifier.class.getName()).log(Level.FINE, null, x);
+            LOG.log(Level.FINE, null, x);
         }
         StringBuilder pl = new StringBuilder();
         for (String project : projects) {
@@ -160,9 +178,84 @@ public class BatchProblemNotifier {
         pnl.readConfig(cfg);
         DialogDescriptor dd = new DialogDescriptor(pnl, dialog_title());
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
+            LOG.log(Level.FINE, "running build for {0}", reactor);
             pnl.applyValues(cfg);
             RunUtils.run(cfg);
         }
+    }
+
+    private static class Reactor implements ActionListener {
+
+        final File root;
+
+        /** affected open projects, as (usually) relative paths from reactor root to sets of artifacts still missing */
+        final Map<String,Set<File>> projects = new TreeMap<String,Set<File>>();
+
+        final Notification n;
+
+        @Messages({
+            "# {0} - directory basename", "build_title=Build {0}",
+            "# {0} - full directory path", "build_details=Run priming build in {0}"
+        })
+        Reactor(File root) {
+            assert Thread.holdsLock(reactors);
+            this.root = root;
+            n = NotificationDisplayer.getDefault().notify(
+                build_title(root.getName()),
+                ImageUtilities.image2Icon(ImageUtilities.mergeImages(
+                    ImageUtilities.loadImage("org/netbeans/modules/maven/resources/Maven2Icon.gif", true),
+                    ImageUtilities.loadImage("org/netbeans/modules/maven/brokenProjectBadge.png", true), 8, 0)),
+                build_details(root), this);
+            LOG.log(Level.FINE, "created for {0}", root);
+        }
+
+        void register(String path, Set<File> files) {
+            assert Thread.holdsLock(reactors);
+            projects.put(path, files);
+            LOG.log(Level.FINE, "registered {0} for {1} in {2}", new Object[] {files, path, root});
+        }
+
+        void unregister(String path) {
+            assert Thread.holdsLock(reactors);
+            projects.remove(path);
+            LOG.log(Level.FINE, "unregistered {0} in {1}", new Object[] {path, root});
+            checkComplete();
+        }
+
+        void resolved(File f) {
+            assert Thread.holdsLock(reactors);
+            Iterator<Map.Entry<String,Set<File>>> it = projects.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String,Set<File>> entry = it.next();
+                String path = entry.getKey();
+                Set<File> files = entry.getValue();
+                if (files.remove(f)) {
+                    LOG.log(Level.FINE, "resolved {0} for {1} in {2}", new Object[] {f, path, root});
+                }
+                if (files.isEmpty()) {
+                    it.remove();
+                    LOG.log(Level.FINE, "completed {0} in {1}", new Object[] {path, root});
+                }
+            }
+            checkComplete();
+        }
+
+        private void checkComplete() {
+            if (projects.isEmpty()) {
+                n.clear();
+                reactors.remove(root);
+                LOG.log(Level.FINE, "completed {0}", root);
+            }
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            LOG.log(Level.FINE, "showing UI for {0} with {1}", new Object[] {Reactor.this.root, projects.keySet()});
+            synchronized (reactors) {
+                reactors.remove(Reactor.this.root);
+            }
+            showUI(Reactor.this.root, projects.keySet());
+        }
+        
     }
 
     private BatchProblemNotifier() {}

@@ -55,11 +55,13 @@ import org.openide.windows.InputOutput;
  */
 class OutputPack extends IOPack {
     private final IOProxy ioProxy;
+    private final InputOutput io;
 
     public OutputPack(TermComponent console,
             InputOutput io,
             ExecutionEnvironment exEnv) {
         super(console, exEnv, false);
+        this.io = io;
         this.ioProxy = IOProxy.create(exEnv, io);
     }
 
@@ -81,6 +83,12 @@ class OutputPack extends IOPack {
             Exceptions.printStackTrace(ex);
         }
         return macroMap;
+    }
+
+    @Override
+    public void switchTo() {
+        super.switchTo();
+        io.select();
     }
 
     @Override

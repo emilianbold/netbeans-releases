@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.ui.logicalview;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -217,13 +219,30 @@ public class SrcNode extends FilterNode {
     }
 
     private static final class PackageNode extends FilterNode {
+
         private final PhpProject project;
         private final boolean isTest;
+        private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (PhpProject.PROP_WEB_ROOT.equals(propertyName)) {
+                    FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+                    if (folder.equals(evt.getOldValue()) || folder.equals(evt.getNewValue())) {
+                        fireIconChange();
+                        fireOpenedIconChange();
+                    }
+                }
+            }
+        };
+
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode, new FolderChildren(project, originalNode, isTest));
             this.project = project;
             this.isTest = isTest;
+
+            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override
@@ -247,9 +266,9 @@ public class SrcNode extends FilterNode {
 
         @Override
         public Image getIcon(int type) {
-            FileObject node = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(node)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(node)) {
+            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
+                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
                 return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getIcon(type);
@@ -257,9 +276,9 @@ public class SrcNode extends FilterNode {
 
         @Override
         public Image getOpenedIcon(int type) {
-            FileObject node = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(node)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(node)) {
+            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
+                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
                 return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getOpenedIcon(type);

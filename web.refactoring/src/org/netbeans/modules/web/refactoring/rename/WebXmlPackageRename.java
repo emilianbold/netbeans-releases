@@ -69,17 +69,19 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
             if (RefactoringUtil.isPackageInfo(each)) {
                 continue;
             }
-            String oldFqn = JavaIdentifiers.getQualifiedName(each);
-            String fqn = JavaIdentifiers.getQualifiedName(each);
+            String oldName = JavaIdentifiers.getQualifiedName(each);
+            
             // #153294 - additional check before refactoring starts
-            if ( JavaIdentifiers.isValidPackageName( fqn )){
-                String newFqn = RefactoringUtil.constructNewName(each, rename);
-                result.add(new RenameItem(newFqn, oldFqn));
+            if ( JavaIdentifiers.isValidPackageName( oldName )){
+                String newName = RefactoringUtil.constructNewName(each, rename);
+                result.add(new RenameItem(newName, oldName));
             }
             else {
-                result.add(new RenameItem( null, null , new Problem(true, 
+                String packageName = oldName.substring(0, oldName.lastIndexOf("."));
+                
+                result.add(new RenameItem(new Problem(true, 
                         NbBundle.getMessage(WebXmlPackageRename.class, 
-                                "TXT_ErrInvalidPackageName" , fqn))));
+                                "TXT_ErrInvalidPackageName" , packageName))));
             }
             
         }

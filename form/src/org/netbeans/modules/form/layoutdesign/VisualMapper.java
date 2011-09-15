@@ -65,8 +65,9 @@ public interface VisualMapper extends LayoutConstants  {
      * Provides actual position and size of the interior of a component
      * container - as it appears in the visual design area. (The interior
      * differs from the outer bounds in that it should reflect the borders
-     * or other insets). The position should be in coordinates of the whole
-     * design visualization.
+     * or other insets, and also should reflect full layout size of the
+     * container even if it is clipped in the outer layout). The positions
+     * should be in coordinates of the whole design visualization.
      * @param componentId
      * @return actual interior of given component, null if the component is not
      *         currently visualized in the design area

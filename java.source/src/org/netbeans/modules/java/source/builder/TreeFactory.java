@@ -586,6 +586,13 @@ public class TreeFactory {
     
     public ExpressionTree QualIdent(Element element) {
         Symbol s = (Symbol) element;
+
+        if (s.owner != null && s.owner.name.isEmpty()) {
+            JCIdent result = make.at(NOPOS).Ident(s);
+            result.setType(s.type);
+            return result;
+        }
+        
         QualIdentTree result = new QualIdentTree(make.at(NOPOS).QualIdent(s.owner), s.name, s);
         
         result.setPos(make.pos).setType(s.type);

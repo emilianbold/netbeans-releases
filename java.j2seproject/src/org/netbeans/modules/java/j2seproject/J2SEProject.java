@@ -72,6 +72,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -163,6 +164,19 @@ public final class J2SEProject implements Project {
     static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
 
+    private static final String[] EXTENSIBLE_TARGETS = new String[] {
+        "-do-init",             //NOI18N
+        "-init-check",          //NOI18N
+        "-post-clean",          //NOI18N
+        "-pre-pre-compile",     //NOI18N
+        "-do-compile",          //NOI18N
+        "-do-compile-single",   //NOI18N
+        "jar",                  //NOI18N
+        "-post-jar",            //NOI18N
+        "run",                  //NOI18N
+        "debug",                //NOI18N
+        "profile",              //NOI18N
+    };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
@@ -211,9 +225,7 @@ public final class J2SEProject implements Project {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
-        lookup = createLookup(aux, actionProvider);
-        actionProvider.startFSListener();
+        lookup = createLookup(aux);
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -339,8 +351,7 @@ public final class J2SEProject implements Project {
         return helper;
     }
 
-    private Lookup createLookup(final AuxiliaryConfiguration aux,
-            final J2SEActionProvider actionProvider) {
+    private Lookup createLookup(final AuxiliaryConfiguration aux) {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
@@ -349,7 +360,6 @@ public final class J2SEProject implements Project {
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             refHelper.createSubprojectProvider(),
-            actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
@@ -368,7 +378,7 @@ public final class J2SEProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-            new J2SEProjectOperations(this, actionProvider),
+            new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -382,7 +392,8 @@ public final class J2SEProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
-            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS)
+            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
+            LookupProviderSupport.createActionProviderMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -811,10 +822,7 @@ public final class J2SEProject implements Project {
         //add targets here as required by the external plugins..
         @Override
         public List<String> getExtensibleTargets() {
-            String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-post-jar" //NOI18N
-            };
-            return Arrays.asList(targets);
+            return Arrays.asList(EXTENSIBLE_TARGETS);
         }
 
         @Override

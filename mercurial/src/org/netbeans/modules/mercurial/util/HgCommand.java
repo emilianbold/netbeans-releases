@@ -982,17 +982,19 @@ public class HgCommand {
         String rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags;
         List<String> filesShortPaths = new ArrayList<String>();
 
-        final String rootPath = root.getAbsolutePath();
-
+        String rootPath = root.getAbsolutePath();
+        if (!rootPath.endsWith(File.separator)) {
+            rootPath = rootPath + File.separator;
+        }
         if (list != null && !list.isEmpty()) {
             if (files != null) {
                 for (File f : files) {
                     String shortPath = f.getAbsolutePath();
                     if (shortPath.startsWith(rootPath) && shortPath.length() > rootPath.length()) {
                         if (Utilities.isWindows()) {
-                            filesShortPaths.add(shortPath.substring(rootPath.length() + 1).replace(File.separatorChar, '/')); // NOI18N
+                            filesShortPaths.add(shortPath.substring(rootPath.length()).replace(File.separatorChar, '/')); // NOI18N
                         } else {
-                            filesShortPaths.add(shortPath.substring(rootPath.length() + 1)); // NOI18N
+                            filesShortPaths.add(shortPath.substring(rootPath.length())); // NOI18N
                         }
                     }
                 }
@@ -1332,22 +1334,33 @@ public class HgCommand {
      */
     private static List<String> doLog(File repository, List<File> files,
             String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, List<String> branchNames, OutputLogger logger) throws HgException {
-        List<String> constraints = new LinkedList<String>();
+        List<String> dateConstraints = new LinkedList<String>();
         String dateStr = handleRevDates(from, to);
         if (dateStr != null) {
-            constraints.add(HG_FLAG_DATE_CMD);
-            constraints.add(dateStr);
+            dateConstraints.add(HG_FLAG_DATE_CMD);
+            dateConstraints.add(dateStr);
         }
-        String revStr = handleRevNumbers(from, to, headRev);
-        if (revStr == null) {
-            // from is probably higher than head revision, it's useless to run the command
-            return Collections.emptyList();
+        List<String> list = null;
+        // try first without and then with limiting the rev numbers
+        for (String lastRev : new String[] { null, headRev }) {
+            String revStr = handleRevNumbers(from, to, lastRev);
+            if (revStr == null) {
+                // from is probably higher than head revision, it's useless to run the command
+                return Collections.emptyList();
+            }
+            List<String> constraints = new LinkedList<String>(dateConstraints);
+            if (dateStr == null) {
+                constraints.add(HG_FLAG_REV_CMD);
+                constraints.add(revStr);
+            }
+            list = doLog(repository, files, constraints, bShowMerges, bGetFileInfo, limit, branchNames, logger);
+            if (list.size() > 0 && lastRev == null && isNoRevStrip(list.get(0))) {
+                // try again
+            } else {
+                break;
+            }
         }
-        if (dateStr == null) {
-            constraints.add(HG_FLAG_REV_CMD);
-            constraints.add(revStr);
-        }
-        return doLog(repository, files, constraints, bShowMerges, bGetFileInfo, limit, branchNames, logger);
+        return list;
     }
 
     private static List<String> doLog(File repository, List<String> revisions, int limit, OutputLogger logger) throws HgException {
@@ -1420,7 +1433,11 @@ public class HgCommand {
                 } else if (list.get(0).toLowerCase().contains(HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE)) {
                     // nothing
                 } else if (isErrorAbort(list.get(0))) {
-                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                    if (isNoRevStrip(list.get(0))) {
+                        // nothing, return error in the list
+                    } else {
+                        handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                    }
                 }
             }
             return list;
@@ -1676,8 +1693,8 @@ public class HgCommand {
      *
      * @param from
      * @param to
-     * @param headRev
-     * @return revision string or null if from is outside of valid limits - e.g. from is higher than headRev
+     * @param headRev if not <code>null</code> then from and to are compared to headRev and a relevant value is returned
+     * @return revision string or null if headRev is not null and from is outside of valid limits - e.g. from is higher than headRev
      */
     private static String handleRevNumbers(String from, String to, String headRev){
         int fromInt = -1;
@@ -1685,9 +1702,9 @@ public class HgCommand {
         int headRevInt = -1;
 
         // Handle users entering head or tip for revision, instead of a number
-        if(from != null && (from.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || from.equalsIgnoreCase(HG_HEAD_STR)))
+        if(headRev != null && from != null && (from.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || from.equalsIgnoreCase(HG_HEAD_STR)))
             from = headRev;
-        if(to != null && (to.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || to.equalsIgnoreCase(HG_HEAD_STR)))
+        if(headRev != null && to != null && (to.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || to.equalsIgnoreCase(HG_HEAD_STR)))
             to = headRev;
 
         try{
@@ -1701,7 +1718,9 @@ public class HgCommand {
             // ignore invalid numbers
         }
         try{
-            headRevInt = Integer.parseInt(headRev);
+            if (headRev != null) {
+                headRevInt = Integer.parseInt(headRev);
+            }
         }catch (NumberFormatException e){
             // ignore invalid numbers
         }
@@ -2059,12 +2078,16 @@ public class HgCommand {
 
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
+            String repoPath = repository.getAbsolutePath();
+            if (!repoPath.endsWith(File.separator)) {
+                repoPath = repoPath + File.separator;
+            }
             for(File f: commitFiles){
-                if (f.getAbsolutePath().length() <= repository.getAbsolutePath().length()) {
+                if (f.getAbsolutePath().length() <= repoPath.length()) {
                     // list contains the root itself
                     command.add(f.getAbsolutePath());
                 } else {
-                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
+                    command.add(f.getAbsolutePath().substring(repoPath.length()));
                 }
             }
             if(Utilities.isWindows()) {
@@ -2128,8 +2151,12 @@ public class HgCommand {
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
 
-        command.add(sourceFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
-        command.add(destFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+        String repoPath = repository.getAbsolutePath();
+        if (!repoPath.endsWith(File.separator)) {
+            repoPath = repoPath + File.separator;
+        }
+        command.add(sourceFile.getAbsolutePath().substring(repoPath.length()));
+        command.add(destFile.getAbsolutePath().substring(repoPath.length()));
 
         List<String> list = exec(command);
         if (!list.isEmpty() &&

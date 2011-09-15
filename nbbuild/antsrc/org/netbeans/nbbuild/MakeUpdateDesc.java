@@ -642,7 +642,7 @@ public class MakeUpdateDesc extends MatchingTask {
     static Element fakeOSGiInfoXml(Attributes attr, Properties localized, File whereFrom) {
         Document doc = XMLUtil.createDocument("module");
         Element module = doc.getDocumentElement();
-        String cnb = attr.getValue("Bundle-SymbolicName");
+        String cnb = JarWithModuleAttributes.extractCodeName(attr);
         module.setAttribute("codenamebase", cnb);
         module.setAttribute("distribution", ""); // seems to be ignored anyway
         module.setAttribute("downloadsize", "0"); // recalculated anyway
@@ -658,21 +658,44 @@ public class MakeUpdateDesc extends MatchingTask {
         String requireBundle = attr.getValue("Require-Bundle");
         if (requireBundle != null) {
             StringBuilder b = new StringBuilder();
-            for (String dep : requireBundle.split(", ")) {
+            boolean needsNetbinox = false;
+            // http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+            for (String dep : requireBundle.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
                 Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
                 if (!m.matches()) {
                     throw new BuildException("Could not parse dependency: " + dep + " in " + whereFrom);
                 }
+                String requiredBundleName = m.group(1); // dep CNB
+                if(requiredBundleName.trim().equals("org.eclipse.osgi")) {
+                    needsNetbinox = true;
+                    continue;
+                }
+                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
+                boolean isOptional = false;
+                while(m2.find()) {
+                    if(m2.group(1).equals("resolution") && m2.group(2).equals("optional")) {
+                        isOptional = true;
+                        break;
+                    }
+                }
+                if(isOptional) {
+                    continue;
+                } 
+                m2.reset();
                 if (b.length() > 0) {
                     b.append(", ");
                 }
-                b.append(m.group(1)); // dep CNB
-                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
+                b.append(requiredBundleName); // dep CNB
                 while (m2.find()) {
                     if (!m2.group(1).equals("bundle-version")) {
                         continue;
                     }
                     String val = m2.group(2);
+                    if (val.matches("[0-9]+([.][0-9]+)*")) {
+                        // non-range dep occasionally used in OSGi; no exact equivalent in NB
+                        b.append(" > ").append(val);
+                        continue;
+                    }
                     Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
                     if (!m3.matches()) {
                         throw new BuildException("Could not parse version range: " + val + " in " + whereFrom);
@@ -695,7 +718,12 @@ public class MakeUpdateDesc extends MatchingTask {
                     b.append(" > ").append(major % 100).append(rest);
                 }
             }
-            manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+            if(b.length() > 0) {
+                manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+            }
+            if(needsNetbinox) {
+                manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
+            }
         }
         String bundleCategory = loc(localized, attr, "Bundle-Category");
         if (bundleCategory != null) {

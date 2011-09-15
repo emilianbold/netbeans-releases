@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -51,6 +55,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.IntroduceParameterAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_IntroduceParameterAction")
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "OS-P"),
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceParameterAction", position = 1750)
+})
 public class IntroduceParameterAction extends JavaRefactoringGlobalAction {
     
     /** Creates a new instance of ChangeParametersAction

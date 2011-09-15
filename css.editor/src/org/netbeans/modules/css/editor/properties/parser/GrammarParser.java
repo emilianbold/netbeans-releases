@@ -43,14 +43,23 @@ package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  * Not threadsafe
  *
- * @author mfukala
+ * @author mfukala@netbeans.org
  */
 public class GrammarParser {
+    
+    public static final char INVISIBLE_PROPERTY_PREFIX = '@';
+    
+    public static boolean isArtificialElementName(CharSequence name) {
+        if(name.length() == 0) {
+            return false;
+        }
+        return name.charAt(0) == INVISIBLE_PROPERTY_PREFIX;
+    }
 
     public static GroupGrammarElement parse(String expresssion) {
         return parse(expresssion, null);
@@ -132,30 +141,7 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-
-                    //first try to resolve the refered element name with the dash prefix so
-                    //the property appearance may contain link to appearance, which in fact
-                    //will be resolved as the -appearance property:
-                    //
-                    //appearance=<appearance> |normal
-                    //-appearance=...
-                    //
-
-
-                    PropertyDescriptor p = null;
-                    if (referredElementName.charAt(0) == '-') {
-                        //referred with the dash prefix
-                        p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
-                    } else {
-                        //without explicit dash prefix, first try to resolve
-                        //with the prefix, if not found without prefix
-                        p = CssModuleSupport.getPropertyDescriptors().get("-" + referredElementName);
-                        if (p == null) {
-                            p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
-                        }
-
-                    }
-
+                    Property p = CssModuleSupport.getProperty(referredElementName);
                     if (p == null) {
                         throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
                                 + " Read input: " + input.readText()); //NOI18N

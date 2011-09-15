@@ -94,6 +94,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbLiteServerValidationPanel;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
@@ -141,7 +142,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String CSS_FOLDER = "resources/css/";  //NOI18N
 
     private transient WebModuleExtender wme;
-    
+
     public Set instantiate(TemplateWizard wizard) throws IOException
     {
         final List<String> entities = (List<String>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
@@ -168,7 +169,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY)) && "Facelets".equals(preferredLanguage);   //NOI18N
         final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
-        
+
         boolean createPersistenceUnit = (Boolean) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.CREATE_PERSISTENCE_UNIT);
 
         if (createPersistenceUnit) {
@@ -181,19 +182,19 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                     }
             }
         }
-        
+
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
-        
+
         final String title = NbBundle.getMessage(PersistenceClientIterator.class, "TITLE_Progress_Jsf_Pages"); //NOI18N
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
-        final AggregateProgressHandle handle = 
+        final AggregateProgressHandle handle =
                 AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
         final ProgressPanel progressPanel = new ProgressPanel();
         final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
-        
-        final ProgressReporter reporter = new ProgressReporterDelegate( 
-                progressContributor, progressPanel ); 
-        
+
+        final ProgressReporter reporter = new ProgressReporterDelegate(
+                progressContributor, progressPanel );
+
         final Runnable r = new Runnable() {
 
             public void run() {
@@ -214,9 +215,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             else
                             {
 //                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
-                                JpaControllerIterator.generateJpaControllers(reporter, 
-                                        entities, project, jpaControllerPkg, 
-                                        jpaControllerPackageFileObject, 
+                                JpaControllerIterator.generateJpaControllers(reporter,
+                                        entities, project, jpaControllerPkg,
+                                        jpaControllerPackageFileObject,
                                         embeddedPkSupport, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
@@ -248,7 +249,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 }
             }
         };
-        
+
         // Ugly hack ensuring the progress dialog opens after the wizard closes. Needed because:
         // 1) the wizard is not closed in the AWT event in which instantiate() is called.
         //    Instead it is closed in an event scheduled by SwingUtilities.invokeLater().
@@ -261,7 +262,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         // -  the first invocation event of our runnable
         // -  the invocation event which closes the wizard
         // -  the second invocation event of our runnable
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             private boolean first = true;
             public void run() {
@@ -274,10 +275,10 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 }
             }
         });
-        
+
         return Collections.singleton(DataFolder.findFolder(javaPackageRoot));
     }
-    
+
     private static int getProgressStepCount(boolean ajaxify, boolean jsf2Generator) {
         int count = jsf2Generator ? UTIL_CLASS_NAMES2.length+1+1 : UTIL_CLASS_NAMES.length+2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
         if (ajaxify) {
@@ -285,12 +286,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         return count;
     }
-    
+
     private static void generateJsfControllers(ProgressContributor progressContributor, final ProgressPanel progressPanel, FileObject targetFolder, String controllerPkg, String jpaControllerPkg, List<String> entities, boolean ajaxify, Project project, String jsfFolder, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean genSessionBean, int progressIndex) throws IOException {
         String progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Util_Pre"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
-        progressPanel.setText(progressMsg);     
-        
+        progressPanel.setText(progressMsg);
+
         //copy util classes
         FileObject utilFolder = targetFolder.getFileObject(UTIL_FOLDER_NAME);
         if (utilFolder == null) {
@@ -312,10 +313,10 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 progressContributor.progress(progressIndex++);
             }
         }
-        
+
         progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Controller_Converter_Pre"); //NOI18N"Preparing to generate JSF controllers and converters";
         progressContributor.progress(progressMsg, progressIndex++);
-        progressPanel.setText(progressMsg);  
+        progressPanel.setText(progressMsg);
 
         //If faces-config not exist it should be created
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
@@ -350,7 +351,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
             converterFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleConverterName, null);
         }
-        
+
         if (ajaxify) {
             progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Add_Ajax_Lib"); //NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
@@ -361,7 +362,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                         getSourceRoot(project), ClassPath.COMPILE);
             }
         }
-        
+
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
             String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
@@ -417,7 +418,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         return false;
     }
-    
+
     private static void generateJsfControllers2(
             ProgressContributor progressContributor,
             final ProgressPanel progressPanel,
@@ -486,7 +487,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
         }
-        
+
         List<TemplateData> bundleData = new ArrayList<TemplateData>();
 
         for (int i = 0; i < controllerFileObjects.length; i++) {
@@ -522,7 +523,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
 
             JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
-            
+
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
             params.put("controllerClassName", controllerClassName);
@@ -732,7 +733,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         HelpCtx helpCtx;
-         
+
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
         if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20(wm)) {    //NOI18N
@@ -743,7 +744,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
 
         wizard.putProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION, Boolean.TRUE);
-        WizardDescriptor.Panel secondPanel = new ValidationPanel(
+        WizardDescriptor.Panel secondPanel = new EjbLiteServerValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
                         helpCtx, wizard)); // NOI18N
         PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
@@ -781,11 +782,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         panels = panelsList.toArray(new WizardDescriptor.Panel[0]);
         names = namesList.toArray(new String[0]);
 
-        wizard.putProperty("NewFileWizard_Title", 
+        wizard.putProperty("NewFileWizard_Title",
             NbBundle.getMessage(PersistenceClientIterator.class, "Templates/Persistence/JsfFromDB"));
         Wizards.mergeSteps(wizard, panels, names);
     }
-    
+
     private void updateWebModuleExtender(Project project, WebModule wm, JSFFrameworkProvider fp) {
         if (wme == null) {
             ExtenderController ec = ExtenderController.create();
@@ -818,7 +819,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         return res;
     }
-    
+
     @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
@@ -859,40 +860,5 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
     public void removeChangeListener(ChangeListener l) {
     }
-    
-    /** 
-     * A panel which checks that the target project has a valid server set
-     * otherwise it delegates to the real panel.
-     */
-    private class ValidationPanel extends DelegatingWizardDescriptorPanel {
 
-        private ValidationPanel(WizardDescriptor.Panel delegate) {
-            super(delegate);
-        }
-        
-        public boolean isValid() {
-            Project project = getProject();
-            WizardDescriptor wizardDescriptor = getWizardDescriptor();
-            
-            // check that this project has a valid target server
-            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(PersistenceClientIterator.class, "ERR_MissingServer")); // NOI18N
-                return false;
-            }
-
-            // check that target server supports full JEE6 platform if Java EE 6 sources
-            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {            
-                J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                if (cap == null || !cap.isJsf2Included()) {
-                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
-                    return false;
-                }
-            }
-            
-            return super.isValid();
-        }
-    }
 }

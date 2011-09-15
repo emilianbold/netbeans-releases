@@ -318,12 +318,14 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 // However, for non-token tags, such as "<<<<" don't
                 // insert word boundary markers since it won't work - there's
                 // no word on the right...
-                if (Character.isJavaIdentifierPart(s.charAt(0))) {
-                    // isJavaIdentifierPart - roughly matches what regex
-                    // considers a word ([a-zA-Z_0-9])
+                if (n > 0) {
+                    if (Character.isJavaIdentifierPart(s.charAt(0))) {
+                        // isJavaIdentifierPart - roughly matches what regex
+                        // considers a word ([a-zA-Z_0-9])
 
-                    // \W instead of \b: Workarond for issue 30250
-                    sb.append("\\W"); // NOI18N
+                        // \W instead of \b: Workarond for issue 30250
+                        sb.append("\\W"); // NOI18N
+                    }
                 }
                 // "escape" the string here such that regexp meta
                 // characters are handled literally

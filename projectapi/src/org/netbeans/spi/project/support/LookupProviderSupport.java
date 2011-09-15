@@ -45,11 +45,15 @@
 package org.netbeans.spi.project.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.ChangeSupport;
@@ -73,6 +77,10 @@ public final class LookupProviderSupport {
     /**
      * Creates a project lookup instance that combines the content from multiple sources. 
      * A convenience factory method for implementors of Project.
+     * <p>The pattern {@code Projects/TYPE/Lookup} is conventional for the folder path, and required if
+     * {@link org.netbeans.spi.project.LookupProvider.Registration},
+     * {@link org.netbeans.spi.project.LookupMerger.Registration}, or
+     * {@link org.netbeans.spi.project.ProjectServiceProvider} are used.
      * 
      * @param baseLookup initial, base content of the project lookup created by the project owner
      * @param folderPath the path in the System Filesystem that is used as root for lookup composition, as for {@link Lookups#forPath}.
@@ -93,7 +101,19 @@ public final class LookupProviderSupport {
     public static LookupMerger<Sources> createSourcesMerger() {
         return new SourcesMerger();
     }
-    
+
+    /**
+     * Factory method for creating {@link org.netbeans.spi.project.LookupMerger} instance that merges
+     * {@link org.netbeans.spi.project.ActionProvider} instances in the project lookup.
+     * The first {@link org.netbeans.spi.project.ActionProvider} which supports the command and is
+     * enabled on it_will perform it.
+     * @return instance to include in project lookup
+     * @since 1.38
+     */
+    public static LookupMerger<ActionProvider> createActionProviderMerger() {
+        return new ActionProviderMerger();
+    }
+
     private static class SourcesMerger implements LookupMerger<Sources> {
         public @Override Class<Sources> getMergeableClass() {
             return Sources.class;
@@ -103,7 +123,7 @@ public final class LookupProviderSupport {
             return new SourcesImpl(lookup);
         }
     }
-    
+
     private static class SourcesImpl implements Sources, ChangeListener, LookupListener {
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private Lookup.Result<Sources> delegates;
@@ -174,5 +194,80 @@ public final class LookupProviderSupport {
             changeSupport.fireChange();
         }
     }
-    
+
+    private static final class ActionProviderMerger implements LookupMerger<ActionProvider> {
+        @Override
+        public Class<ActionProvider> getMergeableClass() {
+            return ActionProvider.class;
+        }
+
+        @Override
+        public ActionProvider merge(final Lookup lookup) {
+            return new MergedActionProvider(lookup);
+        }
+    }
+
+    private static final class MergedActionProvider implements ActionProvider, LookupListener {
+
+        private final Lookup.Result<ActionProvider> lkpResult;
+        @SuppressWarnings("VolatileArrayField")
+        private volatile String[] actionNamesCache;
+
+        private MergedActionProvider(final Lookup lkp) {
+            this.lkpResult = lkp.lookupResult(ActionProvider.class);
+            this.lkpResult.addLookupListener(this);
+        }
+
+        @Override
+        public String[] getSupportedActions() {
+            String[] result = actionNamesCache;
+            if (result == null) {
+                final Set<String> actionNames = new LinkedHashSet <String>();
+                for (ActionProvider ap : lkpResult.allInstances()) {
+                    actionNames.addAll(Arrays.asList(ap.getSupportedActions()));
+                }
+                result = actionNames.toArray(new String[actionNames.size()]);
+                actionNamesCache = result;
+            }
+            assert result != null;
+            return result;
+        }
+
+        @Override
+        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+            boolean found = false;
+            for (ActionProvider ap : lkpResult.allInstances()) {
+                if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                    if (ap.isActionEnabled(command, context)) {
+                        return true;
+                    } else {
+                        found = true;
+                    }
+                }
+            }
+            if (found) {
+                return false;
+            } else {
+                throw new IllegalArgumentException(command);
+            }
+        }
+
+        @Override
+        public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+            for (ActionProvider ap : lkpResult.allInstances()) {
+                if (Arrays.asList(ap.getSupportedActions()).contains(command) &&
+                    ap.isActionEnabled(command, context)) {
+                    ap.invokeAction(command, context);
+                    return;
+                }
+            }
+            throw new IllegalArgumentException(String.format(command));
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            actionNamesCache = null;
+        }
+
+    }
 }

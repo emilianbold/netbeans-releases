@@ -60,15 +60,20 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public class HomeMethodGenerator extends AbstractMethodGenerator {
-    
+
     private HomeMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
         super(ejbClass, ejbClassFileObject);
     }
-    
+
     public static HomeMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
         return new HomeMethodGenerator(ejbClass, ejbClassFileObject);
     }
 
+    /**
+     * Generates home method.
+     * <p>
+     * <b>Should be called outside EDT.</b>
+     */
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
 
         Map<String, String> interfaces = getInterfaces();
@@ -90,7 +95,7 @@ public class HomeMethodGenerator extends AbstractMethodGenerator {
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
             addMethod(methodModelCopy, fileObject, localHome);
         }
-        
+
         // remote interface
         if (generateRemote && remoteHome != null) {
             List<String> exceptions = exceptions = new ArrayList<String>(methodModel.getExceptions());
@@ -121,5 +126,5 @@ public class HomeMethodGenerator extends AbstractMethodGenerator {
         addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
 
     }
-    
+
 }

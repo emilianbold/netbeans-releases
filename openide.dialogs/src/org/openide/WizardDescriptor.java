@@ -1510,9 +1510,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
         assert panels != null;
 
-        err.log (Level.FINE, "Is AsynchronousInstantiatingIterator? " + (panels instanceof AsynchronousInstantiatingIterator));
-        err.log (Level.FINE, "Is ProgressInstantiatingIterator? " + (panels instanceof ProgressInstantiatingIterator));
-        if (panels instanceof ProgressInstantiatingIterator) {
+        if (panels instanceof BackgroundInstantiatingIterator) {
+            err.fine("is BackgroundInstantiatingIterator");
+        } else if (panels instanceof ProgressInstantiatingIterator) {
+            err.fine("is ProgressInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
             JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
@@ -1522,6 +1523,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             err.log (Level.FINE, "Show progressPanel controlled by iterator later.");
         } else if (panels instanceof AsynchronousInstantiatingIterator) {
+            err.fine("is AsynchronousInstantiatingIterator");
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
 
             JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
@@ -1874,8 +1876,25 @@ public class WizardDescriptor extends DialogDescriptor {
          * @throws IOException when instantiate fails
          * @return a set of objects created (the exact type is at the discretion of the caller)
          */
-        public Set/*<?>*/ instantiate () throws IOException;
+        @Override public Set/*<?>*/ instantiate () throws IOException;
 
+    }
+
+    /**
+     * Iterator for a wizard that will create new objects after the wizard has been closed.
+     * Suitable for cases where the instantiation might be quite time consuming, has its own progress/cancellation UI,
+     * or otherwise would be undesirable to run with the wizard dialog open.
+     * @param <Data> in practice this should be {@link WizardDescriptor}
+     * @since org.openide.dialogs 7.22
+     */
+    public interface BackgroundInstantiatingIterator<Data> extends AsynchronousInstantiatingIterator<Data> {
+
+        /**
+         * Called in a separate thread when the Finish button is clicked and the wizard is closed.
+         * @return a set of objects created (the exact type is at the discretion of the caller)
+         * @throws IOException when instantiate fails
+         */
+        @Override Set/*<?>*/ instantiate() throws IOException;
     }
 
     /**
@@ -2143,12 +2162,20 @@ public class WizardDescriptor extends DialogDescriptor {
                         if (panels instanceof AsynchronousInstantiatingIterator) {
                             err.log (Level.FINE, "Do ASYNCHRONOUS_JOBS_RP.post(performFinish)."); // NOI18N
                             ASYNCHRONOUS_JOBS_RP.post (performFinish);
+                            if (panels instanceof BackgroundInstantiatingIterator) {
+                                Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
+                                if (parentWindow != null) {
+                                    parentWindow.setVisible(false);
+                                } else {
+                                    err.log(Level.WARNING, "could not find parent window of {0}", getMessage());
+                                }
+                            }
                         } else {
                             err.log (Level.FINE, "Run performFinish."); // NOI18N
                             performFinish.run ();
                         }
 
-                        err.log (Level.FINE, "onValidPerformer on finish button exit."); // NOI18N
+                        err.log(Level.FINE, "onValidPerformer on finish button exit on {0}", panels);
 
                     }
                 };

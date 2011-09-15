@@ -153,8 +153,6 @@ public final class RandomTestContainer extends PropertyProvider {
         name2Op = new HashMap<String, Op>();
         checks = new ArrayList<Check>(3);
         rounds = new ArrayList<Round>(3);
-        // By default log operations
-        setLogOp(true);
     }
 
     public String name() {
@@ -190,8 +188,8 @@ public final class RandomTestContainer extends PropertyProvider {
         }
         this.seed = seed;
         random.setSeed(this.seed);
-        LOG.log(Level.INFO, "{0} with SEED={1,number,#}L - use container.run({1,number,#}L) for same test\n", // NOI18N
-                new Object[]{name(), this.seed});
+        dumpString(name() + " with SEED=" + this.seed + "L - use container.run(" + // NOI18N
+                this.seed + "L) for same test\n"); // NOI18N
 
         if (name2Op.isEmpty()) {
             throw new IllegalStateException("No operations defined for the test."); // NOI18N
@@ -304,13 +302,26 @@ public final class RandomTestContainer extends PropertyProvider {
     public Logger logger() {
         return LOG;
     }
+
     /**
      * Set whether operations descriptions should be logged.
+     * <br/>
+     * This is "off" by default and it can be turned on when debugging
+     * a failing test.
+     *
      * @param logOp true for logging of the operations.
      */
 
     public void setLogOp(boolean logOp) {
         putProperty(LOG_OP, logOp);
+    }
+    
+    void dumpString(String s) {
+        if (true) { // Change to false if desired
+            System.out.print(s); // Non-limited output with no extra undesired decoration
+        } else {
+            LOG.info(s);
+        }
     }
     
     /**
@@ -374,6 +385,7 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         void run(Context context) throws Exception {
+            boolean ok = false;
             try {
                 double opRatioSum = computeOpRatioSum();
                 while (context.continueRun(totalOpCount)) {
@@ -388,11 +400,13 @@ public final class RandomTestContainer extends PropertyProvider {
                     }
                     context.incrementOpCount();
                 }
-                LOG.info(container.name() + " finished successfully.");
-            } catch (Exception e) {
-                LOG.info("ERROR: " + container.name() + // NOI18N
-                        " during TESTOP[" + context.opCount() + "] (SEED=" + container.seed + "L)\n"); // NOI18N
-                throw e;
+                container.dumpString(container.name() + " finished successfully."); // NOI18N
+                ok = true;
+            } finally {
+                if (!ok) {
+                    container.dumpString("ERROR: " + container.name() + // NOI18N
+                            " during TESTOP[" + context.opCount() + "] (SEED=" + container.seed + "L)\n"); // NOI18N
+                }
             }
         }
 
@@ -518,13 +532,17 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         /**
-         * Calling of this method is only necessary when (sb != logOpBuilder()).
+         * Dump an operation description either with logOpBuilder() or another StringBuilder.
          *
          * @param sb non-null string builder.
          */
         public void logOp(StringBuilder sb) {
             if (sb != logOpBuilder) { // Only when not already appended to logOpBuilder
                 logOpBuilder.append(sb);
+            }
+            if (currentRound == null) { // If test is not running dump immediately
+                container.dumpString(logOpBuilder.toString());
+                logOpBuilder.setLength(0);
             }
         }
 
@@ -571,7 +589,7 @@ public final class RandomTestContainer extends PropertyProvider {
             roundOpCount++;
             opCount++;
             if (opCount % (container.totalOpCount / PROGRESS_COUNT) == 0) {
-                LOG.info(container.name() + ": " + opCount + " operations finished.\n"); // NOI18N
+                container.dumpString(container.name() + ": " + opCount + " operations finished.\n"); // NOI18N
             }
         }
         
@@ -582,15 +600,15 @@ public final class RandomTestContainer extends PropertyProvider {
                 logOpBuilder.setLength(0);
                 addOpLog(opLog);
             }
-            if (!opSuccess) { // Dump the logs to logger
+            if (!opSuccess) { // Dump the logs
                 StringBuilder sb = new StringBuilder(1024);
                 while (!opLogs.isEmpty()) {
                     sb.append(opLogs.removeFirst());
                 }
-                LOG.info(sb.toString());
+                container.dumpString(sb.toString());
             }
         }
-
+        
         /**
          * Set maximum number of last operations logged (older logs will be discarded).
          */

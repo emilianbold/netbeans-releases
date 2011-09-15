@@ -96,12 +96,22 @@ public abstract class CssModule {
         return null;
     }
     
-    public Collection<PropertyDescriptor> getPropertyDescriptors() {
+    public PropertySupportResolver.Factory getPropertySupportResolverFactory() {
+        return null;
+    }
+    
+    public Collection<Property> getProperties() {
         return Collections.emptyList();
     }
     
-    /** Subject to change, do not use */
-    public Collection<RenderingEngine> getExtraRenderingEngines() {
+    public Collection<HelpResolver> getHelpResolvers() {
+        return null;
+    }
+    
+    /**
+     * The module may provide an information about some extra browsers / css rendering engines
+     */
+    public Collection<Browser> getExtraBrowsers() {
         return null;
     }
     

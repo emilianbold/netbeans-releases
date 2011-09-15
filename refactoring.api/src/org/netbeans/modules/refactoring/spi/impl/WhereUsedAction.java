@@ -44,6 +44,10 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -51,6 +55,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.refactoring.api.ui.WhereUsedAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_WhereUsedAction")
+@ActionReferences({
+        @ActionReference(path = "Menu/Edit", name = "WhereUsedAction", position = 2200),
+        @ActionReference(path = "Editors/text/x-java/Popup" , name = "WhereUsedAction", position = 1400),
+        @ActionReference(path = "Loaders/text/x-java/Actions", name = "WhereUsedAction", position = 1900)
+})
 public class WhereUsedAction extends RefactoringGlobalAction {
 
     /**

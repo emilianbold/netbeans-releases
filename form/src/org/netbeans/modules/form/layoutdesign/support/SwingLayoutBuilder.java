@@ -81,17 +81,12 @@ public class SwingLayoutBuilder {
      */
     private Map<String,Component> componentIDMap;
 
-    private boolean designMode;
-
     public SwingLayoutBuilder(LayoutModel layoutModel,
-                              Container container, String containerId,
-                              boolean designMode)
-    {
+                              Container container, String containerId) {
         componentIDMap = new HashMap<String,Component>();
         this.layoutModel = layoutModel;
         this.container = container;
         this.containerLC = layoutModel.getLayoutComponent(containerId);
-        this.designMode = designMode;
     }
 
     /**
@@ -225,7 +220,7 @@ public class SwingLayoutBuilder {
         if (interval.isGroup()) {            
             if (interval.isParallel()) {
                 GroupLayout.Alignment groupAlignment = convertAlignment(interval.getGroupAlignment());
-                boolean notResizable = interval.getMaximumSize(designMode) == LayoutConstants.USE_PREFERRED_SIZE;
+                boolean notResizable = interval.getMaximumSize() == LayoutConstants.USE_PREFERRED_SIZE;
                 group = layout.createParallelGroup(groupAlignment, !notResizable);
             } else if (interval.isSequential()) {
                 group = layout.createSequentialGroup();
@@ -261,26 +256,33 @@ public class SwingLayoutBuilder {
                         composeGroup(layout, interval, first, last));
             }
         } else {
-            int minimum = interval.getMinimumSize(designMode);
-            int preferred = interval.getPreferredSize(designMode);
+            int minimum = interval.getMinimumSize();
+            int preferred = interval.getPreferredSize();
+            int maximum = interval.getMaximumSize();
             int min = convertSize(minimum, interval);
             int pref = convertSize(preferred, interval);
-            int max = convertSize(interval.getMaximumSize(designMode), interval);
+            int max = convertSize(maximum, interval);
             if (interval.isComponent()) {
                 LayoutComponent layoutComp = interval.getComponent();
                 Component comp = componentIDMap.get(layoutComp.getId());
                 assert (comp != null);
+                boolean horizontal = layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval;
                 if (minimum == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
-                    int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
-                    if ((dimension == LayoutConstants.HORIZONTAL) && comp.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
+                    if (horizontal && comp.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
                         min = 0;
                     } else if (preferred >= 0) {
                         Dimension minDim = comp.getMinimumSize();
-                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? minDim.width : minDim.height;
+                        int compMin = horizontal ? minDim.width : minDim.height;
                         if (compMin > preferred) {
                             min = convertSize(LayoutConstants.USE_PREFERRED_SIZE, interval);
                         }
                     }
+                }
+                // workaround for bug in GroupLayout that does not align properly on baseline
+                // if some component has 0 preferred width (even if actual size is bigger)
+                if (pref == 0 && max >= Short.MAX_VALUE && horizontal
+                        && layoutComp.getLayoutInterval(LayoutConstants.VERTICAL).getAlignment() == LayoutConstants.BASELINE) {
+                    pref = 1;
                 }
                 if (group instanceof GroupLayout.SequentialGroup) {
                     ((GroupLayout.SequentialGroup)group).addComponent(comp, min, pref, max);
@@ -290,11 +292,20 @@ public class SwingLayoutBuilder {
                 }
             } else {
                 assert interval.isEmptySpace();
-                if (interval.isDefaultPadding(designMode)) {
+                if (interval.isDefaultPadding()) {
                     assert (group instanceof GroupLayout.SequentialGroup);
                     GroupLayout.SequentialGroup seqGroup = (GroupLayout.SequentialGroup)group;
                     if (first || last) {
-                        seqGroup.addContainerGap(pref, max);
+                        if (last && preferred == LayoutConstants.NOT_EXPLICITLY_DEFINED
+                                && maximum != LayoutConstants.NOT_EXPLICITLY_DEFINED
+                                && maximum != LayoutConstants.USE_PREFERRED_SIZE) {
+                            // workaround GroupLayout bug - default container gap as last
+                            // should not be resizing (may cause problems), luckily it
+                            // makes no difference if it is fixed
+                            seqGroup.addContainerGap();
+                        } else {
+                            seqGroup.addContainerGap(pref, max);
+                        }
                     } else {
                         LayoutConstants.PaddingType paddingType = interval.getPaddingType();
                         if (paddingType == null || paddingType == LayoutConstants.PaddingType.RELATED) {
@@ -383,7 +394,7 @@ public class SwingLayoutBuilder {
             case LayoutConstants.NOT_EXPLICITLY_DEFINED: convertedSize = GroupLayout.DEFAULT_SIZE; break;
             case LayoutConstants.USE_PREFERRED_SIZE:
                 convertedSize = interval.isEmptySpace() ?
-                                convertSize(interval.getPreferredSize(designMode), interval) :
+                                convertSize(interval.getPreferredSize(), interval) :
                                 GroupLayout.PREFERRED_SIZE;
                 break;
             default: convertedSize = (size >= 0) ? size : GroupLayout.DEFAULT_SIZE;

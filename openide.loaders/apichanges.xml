@@ -109,6 +109,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="ToolbarPool.isFinished">
+          <api name="awt"/>
+          <summary><code>ToolbarPool.isFinished</code></summary>
+          <version major="7" minor="30"/>
+          <date day="3" month="9" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes"/>
+          <description>
+              <p>
+                  One can find out if <code>ToolbarPool</code> is initialized.
+              </p>
+          </description>
+          <class package="org.openide.awt" name="ToolbarPool"/>
+          <issue number="192207"/>
+      </change>
       <change id="Template">
           <api name="loaders"/>
           <summary>Introduced <code>Template</code></summary>

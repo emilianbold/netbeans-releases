@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
@@ -64,14 +66,20 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer {
-    private static final String DEFAULT_SDK_LOCATION = "C:\\Program Files\\Oracle\\"; // NOI18N
-    
+public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer, DocumentListener {
     private JavaPlatform platform;
     private File lastUsedFolder;
 
     public JavaFXPlatformCustomizer() {
         initComponents();
+        postInitComponents();
+    }
+
+    private void postInitComponents() {
+        sdkTextField.getDocument().addDocumentListener(this);
+        runtimeTextField.getDocument().addDocumentListener(this);
+        javadocTextField.getDocument().addDocumentListener(this);
+        srcTextField.getDocument().addDocumentListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -234,10 +242,16 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Cust
         browseJavadocButton.setEnabled(enableCheckBox.isSelected());
         browseSourcesButton.setEnabled(enableCheckBox.isSelected());
         
-        if (enableCheckBox.isSelected() && !isPlatformValid()) {
-            setErrorMessage();
+        if (enableCheckBox.isSelected()) {
+            if (isPlatformValid()) {
+                clearErrorMessage();
+                saveProperties();
+            } else {
+                setErrorMessage();
+            }
         } else {
             clearErrorMessage();
+            clearProperties();
         }
     }//GEN-LAST:event_enableCheckBoxItemStateChanged
 
@@ -251,7 +265,7 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         } else {
             String workDir = sdkTextField.getText();
             if (workDir.length() == 0) {
-                File defaultFolder = new File(DEFAULT_SDK_LOCATION);
+                File defaultFolder = new File(JavaFXPlatformUtils.KNOWN_JFX_LOCATIONS[0]);
                 if (defaultFolder.exists()) {
                     chooser.setCurrentDirectory(defaultFolder);
                 } else {
@@ -270,19 +284,15 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             sdkTextField.setText(file.getAbsolutePath());
             
             if (runtimeTextField.getText().length() == 0) {
-                runtimeTextField.setText(JavaFXPlatformUtils.guessRuntimePath(file));
+                runtimeTextField.setText(JavaFXPlatformUtils.predictRuntimeLocation(file.getParent()));
             }
 
             if (javadocTextField.getText().length() == 0) {
-                javadocTextField.setText(JavaFXPlatformUtils.guessJavadocPath(file));
+                javadocTextField.setText(JavaFXPlatformUtils.predictJavadocLocation(file.getParent()));
             }
         
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
+            if (srcTextField.getText().length() == 0) {
+                srcTextField.setText(JavaFXPlatformUtils.predictSourcesLocation(file.getParent()));
             }
         }
 }//GEN-LAST:event_browseSDKButtonActionPerformed
@@ -297,7 +307,7 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
         } else {
             String workDir = runtimeTextField.getText();
             if (workDir.length() == 0) {
-                File defaultFolder = new File(DEFAULT_SDK_LOCATION);
+                File defaultFolder = new File(JavaFXPlatformUtils.KNOWN_JFX_LOCATIONS[0]);
                 if (defaultFolder.exists()) {
                     chooser.setCurrentDirectory(defaultFolder);
                 } else {
@@ -314,14 +324,6 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             lastUsedFolder = file.getParentFile();
             runtimeTextField.setText(file.getAbsolutePath());
-
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
         }
 }//GEN-LAST:event_browseRuntimeButtonActionPerformed
 
@@ -335,7 +337,7 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
         } else {
             String workDir = javadocTextField.getText();
             if (workDir.length() == 0) {
-                File defaultFolder = new File(DEFAULT_SDK_LOCATION);
+                File defaultFolder = new File(JavaFXPlatformUtils.KNOWN_JFX_LOCATIONS[0]);
                 if (defaultFolder.exists()) {
                     chooser.setCurrentDirectory(defaultFolder);
                 } else {
@@ -362,14 +364,6 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             lastUsedFolder = file.getParentFile();
             javadocTextField.setText(file.getAbsolutePath());
-
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
         }
 }//GEN-LAST:event_browseJavadocButtonActionPerformed
 
@@ -383,7 +377,7 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         } else {
             String workDir = srcTextField.getText();
             if (workDir.length() == 0) {
-                File defaultFolder = new File(DEFAULT_SDK_LOCATION);
+                File defaultFolder = new File(JavaFXPlatformUtils.KNOWN_JFX_LOCATIONS[0]);
                 if (defaultFolder.exists()) {
                     chooser.setCurrentDirectory(defaultFolder);
                 } else {
@@ -409,14 +403,6 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             lastUsedFolder = file.getParentFile();
             srcTextField.setText(file.getAbsolutePath());
-
-            if (isPlatformValid()) {
-                saveProperties();
-                firePlatformChange();
-                clearErrorMessage();
-            } else {
-                setErrorMessage();
-            }
         }
 }//GEN-LAST:event_browseSourcesButtonActionPerformed
 
@@ -438,9 +424,28 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     // End of variables declaration//GEN-END:variables
 
     @Override
+    public void insertUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
     public void setObject(Object bean) {
         this.platform = (JavaPlatform) bean;
-        readProperties();
+        if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+            readProperties();
+        } else {
+            enableCheckBox.setSelected(false);
+        }
     }
 
     private void saveProperties() {
@@ -475,31 +480,29 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             PlatformPropertiesHandler.saveGlobalProperties(map);
         }
     }
+    
+    private void clearProperties() {
+        PlatformPropertiesHandler.clearGlobalPropertiesForPlatform(platform);
+    }
 
     private void readProperties() {
-        // TODO default platform should not have FX support
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
 
         String sdkPath = properties.get(Utils.getSDKPropertyKey(platform));
         String runtimePath = properties.get(Utils.getRuntimePropertyKey(platform));
         String javadocPath = properties.get(Utils.getJavadocPropertyKey(platform));
         String srcPath = properties.get(Utils.getSourcesPropertyKey(platform));
-        
+
         sdkTextField.setText(sdkPath);
         runtimeTextField.setText(runtimePath);
         javadocTextField.setText(javadocPath);
         srcTextField.setText(srcPath);
-        
-        if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
-            enableCheckBox.setSelected(true);
-            addToPlatformCP();
-        }
+
+        enableCheckBox.setSelected(true);
     }
     
     private boolean isPlatformValid() {
-        String sdkPath = sdkTextField.getText();
-        String runtimePath = runtimeTextField.getText();
-        return sdkPath.length() > 0 && runtimePath.length() > 0;
+        return JavaFXPlatformUtils.areJFXLocationsCorrect(sdkTextField.getText(), runtimeTextField.getText());
     }
     
     // TODO use message label and icon from Categories ?
@@ -509,11 +512,6 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
 
     private void clearErrorMessage() {
         messageLabel.setText(null);
-    }
-    
-    private void addToPlatformCP() {
-        ClassPath bootstrapLibraries = platform.getBootstrapLibraries();
-        // TODO after Tomas will give me API
     }
     
     // XXX dirty hack, change it
@@ -527,4 +525,15 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             Exceptions.printStackTrace(ex);
         }
     }
+
+    private void documentChanged() {
+        if (isPlatformValid()) {
+            saveProperties();
+            firePlatformChange();
+            clearErrorMessage();
+        } else {
+            setErrorMessage();
+        }
+    }
+
 }

@@ -481,7 +481,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
     static String getAsString (Object o) {
         if (o == null) return "null"; // NOI18N
-
+        
         if (o instanceof String)
             return "\"" + ((String)o).replace("\"", "\\\"") + "\""; // NOI18N
 
@@ -495,7 +495,18 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         else if (o instanceof Short)
             cast = "(short) ";  // NOI18N
         
-        return "new " + s + "(" + cast + o + ")"; // NOI18N
+        if(s.equals("Double") || s.equals("Float")) { // NOI18N
+            String os = o.toString();
+            if(os.equals("Infinity")) { // NOI18N
+                o = s + ".POSITIVE_INFINITY"; // NOI18N
+            } else if(os.equals("-Infinity")) { // NOI18N
+                o = s + ".NEGATIVE_INFINITY"; // NOI18N
+            } else if(os.equals("NaN")) { // NOI18N
+                o = s + ".NaN"; // NOI18N
+            }
+        }
+        
+        return " new " + s + "(" + cast + o + ")"; // NOI18N
     }
 
     static Object getDefaultValue (Class c) {

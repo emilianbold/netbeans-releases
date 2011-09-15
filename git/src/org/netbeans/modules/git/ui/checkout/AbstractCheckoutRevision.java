@@ -102,10 +102,10 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     
     protected abstract String getDialogTitle ();
 
-    boolean show() {
+    boolean show (HelpCtx helpCtx) {
         okButton = new JButton(getOkButtonLabel());
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
-        dd = new DialogDescriptor(panel, getDialogTitle(), true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(AbstractCheckoutRevision.class), null);
+        dd = new DialogDescriptor(panel, getDialogTitle(), true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, helpCtx, null);
         validateBranchCB();
         revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
             @Override

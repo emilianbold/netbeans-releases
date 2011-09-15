@@ -1,0 +1,33 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import javafx.application.Preloader;
+import javafx.application.Preloader.StateChangeNotification;
+import javafx.application.Preloader.ProgressNotification;
+import javafx.stage.Stage;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends Preloader {
+
+    @Override
+    public void start(Stage stage) throws Exception {
+    }
+    
+    @Override
+    public void handleStateChangeNotification(StateChangeNotification scn) {
+    }
+
+    @Override
+    public void handleProgressNotification(ProgressNotification pn) {
+    }   
+
+}

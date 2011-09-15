@@ -43,17 +43,13 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.SuppressWarnings;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -249,17 +245,25 @@ public final class ModelUtils {
         return result;
     }
 
+    private static final String PROBABLE_ROOTS
+            = "maven2|" // mainly for Central
+            + "maven[.]repo|" // often used for Eclipse repos
+            + "content/(?:groups|repositories|shadows)/[^/]+|" // Nexus
+            + ".+(?=/(?:javax|org|net|com)/)"; // common groupId starters
     /**
-     *          [0] type - default/legacy
-     *          [1] repo root
-     *          [2] groupId
-     *          [3] artifactId
-     *          [4] version
-     *          [5] classifier (optional, not part of path, but url's ref)
+     * 1 - root
+     * 2 - groupId as slashes
+     * 3 - artifactId
+     * 4 - version
      */
-    private static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
-    private static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
-    private static final List<String> knownRepositories = Arrays.asList(RepositoryPreferences.REPO_CENTRAL, "http://download.java.net/maven/1/", "http://download.java.net/maven/glassfish/");
+    private static Pattern DEFAULT = Pattern.compile("(.+://[^/]+/(?:(?:.+/)?(?:" + PROBABLE_ROOTS + ")/)?)(.+)/([^/]+)/([^/]+)/\\3-\\4[.]pom");
+    /**
+     * 1 - root
+     * 2 - groupId
+     * 3 - artifactId
+     * 4 - version
+     */
+    private static Pattern LEGACY = Pattern.compile("(.+/)([^/]+)/poms/([a-zA-Z0-9_]+[a-zA-Z_-]+)-([0-9].+)[.]pom");
 
     /** Returns a library descriptor corresponding to the given library,
      * or null if not recognized successfully.
@@ -269,59 +273,19 @@ public final class ModelUtils {
      */
     @SuppressWarnings("SBSC_USE_STRINGBUFFER_CONCATENATION")
     public static LibraryDescriptor checkLibrary(URL pom) {
-        String path = pom.getPath();
-        Matcher match = LEGACY.matcher(path);
-        boolean def = false;
-        if (!match.matches()) {
-            match = DEFAULT.matcher(path);
-            def = true;
+        String pomS;
+        try {
+            pomS = new URL(pom.getProtocol(), pom.getHost(), pom.getPort(), pom.getFile()).toString(); // strip ref
+        } catch (MalformedURLException x) {
+            pomS = pom.toString();
         }
-        Collection<String> repos = new LinkedHashSet<String>(knownRepositories);
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-            repos.add(info.getRepositoryUrl());
+        Matcher m1 = LEGACY.matcher(pomS);
+        if (m1.matches()) {
+            return new LibraryDescriptor("legacy", m1.group(1), m1.group(2), m1.group(3), m1.group(4), pom.getRef());
         }
-        if (match.matches()) {
-            String classifier = pom.getRef(); // may be null;
-            String repoType = def ? "default" : "legacy"; //NOI18N
-            String repoRoot = pom.getProtocol() + "://" + pom.getHost() + (pom.getPort() != -1 ? (":" + pom.getPort()) : ""); //NOI18N
-            String groupId = match.group(1);
-            String artifactId = match.group(2);
-            String version = match.group(3);
-            for (String repoString : repos) {
-                try {
-                    URL repo = new URL(repoString);
-                    String root = repo.getProtocol() + "://" + repo.getHost() + (repo.getPort() != -1 ? (":" + repo.getPort()) : ""); //NOI18N
-                    if (root.equals(repoRoot) && groupId.startsWith(repo.getPath())) {
-                        repoRoot = repoRoot + repo.getPath();
-                        groupId = groupId.substring(repo.getPath().length());
-                        break;
-                    }
-                } catch (MalformedURLException ex) {
-                    // ignore
-                }
-            }
-            if (groupId.startsWith("/")) { //NOI18N
-                groupId = groupId.substring(1);
-            }
-            //sort of hack, these are the most probable root paths.
-            if (groupId.startsWith("maven/")) {//NOI18N
-                repoRoot = repoRoot + "/maven";//NOI18N
-                groupId = groupId.substring("maven/".length());//NOI18N
-            }
-            if (groupId.startsWith("maven2/")) {//NOI18N
-                repoRoot = repoRoot + "/maven2";//NOI18N
-                groupId = groupId.substring("maven2/".length());//NOI18N
-            }
-            if (groupId.startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
-                repoRoot = repoRoot + "/mirror/eclipse/rt/eclipselink/maven.repo/";//NOI18N
-                groupId = groupId.substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
-            }
-            if (groupId.startsWith("rt/eclipselink/maven.repo/")) {//NOI18N
-                repoRoot = repoRoot + "/rt/eclipselink/maven.repo/";//NOI18N
-                groupId = groupId.substring("rt/eclipselink/maven.repo/".length());//NOI18N
-            }
-            groupId = groupId.replace('/', '.'); //NOI18N
-            return new LibraryDescriptor(repoType, repoRoot, groupId, artifactId, version, classifier);
+        Matcher m2 = DEFAULT.matcher(pomS);
+        if (m2.matches()) {
+            return new LibraryDescriptor("default", m2.group(1), m2.group(2).replace('/', '.'), m2.group(3), m2.group(4), pom.getRef());
         }
         return null;
     }

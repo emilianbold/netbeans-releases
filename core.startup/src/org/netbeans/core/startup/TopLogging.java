@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -142,6 +143,7 @@ public final class TopLogging {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(os);
 
+        Collection<Logger> keep = new LinkedList<Logger>();
         for (Map.Entry<?, ?> e: System.getProperties().entrySet()) {
             String key = (String)e.getKey();
 
@@ -156,6 +158,7 @@ public final class TopLogging {
                 ps.print(key);
                 ps.print('=');
                 ps.println(v);
+                keep.add(Logger.getLogger(key.substring(0, key.length() - 6)));
             }
         }
         ps.close();
@@ -260,6 +263,7 @@ public final class TopLogging {
 
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
+        System.setProperty("netbeans.productversion", currentVersion); // NOI18N
         ps.print("  Product Version         = " + currentVersion); // NOI18N
         for (File cluster : clusters) { // also print Hg ID if available; more precise
             File buildInfo = new File(cluster, "build_info"); // NOI18N

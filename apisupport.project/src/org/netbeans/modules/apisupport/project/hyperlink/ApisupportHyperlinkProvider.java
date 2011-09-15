@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.SourceUtils;
@@ -126,7 +127,7 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
         if (name.endsWith("\"")) {
             name = name.substring(0, name.length() - 1);
         }
-        FileObject props = findBundle(fo);
+        FileObject props = findBundle(fo); // XXX incorrect in case arg is in another package
         if (props != null) {
             try {
                 DataObject dobj = DataObject.find(props);
@@ -152,8 +153,11 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
         return null;
     }
     
-    private FileObject findBundle(FileObject javaFile) {
+    private @CheckForNull FileObject findBundle(FileObject javaFile) {
         ClassPath cp = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
         String name = cp.getResourceName(javaFile);
         if (name != null) {
             int index = name.lastIndexOf('/');

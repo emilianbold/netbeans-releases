@@ -18,8 +18,8 @@
                       <EmptySpace max="$pref" attributes="0"/>
                       <Component id="jTextField1" pref="90" max="Short.MAX_VALUE" attributes="0"/>
                   </Group>
-                  <Component id="jTextField2" alignment="leading" pref="171" max="Short.MAX_VALUE" attributes="0"/>
-                  <Component id="jTextField3" alignment="leading" pref="171" max="Short.MAX_VALUE" attributes="0"/>
+                  <Component id="jTextField2" max="Short.MAX_VALUE" attributes="0"/>
+                  <Component id="jTextField3" max="Short.MAX_VALUE" attributes="0"/>
               </Group>
               <EmptySpace min="$pref" pref="32" max="$pref" attributes="12"/>
           </Group>

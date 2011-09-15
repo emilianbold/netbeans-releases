@@ -42,13 +42,9 @@
 package org.netbeans.modules.javafx2.platform.registration;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,7 +62,7 @@ public class PlatformAutoInstaller implements Runnable {
     public void run() {
         FileObject installedSDK = findInstalledSDK();
         if (installedSDK == null) {
-            LOGGER.log(Level.INFO, "Can't find auto registered Java FX SDK instance"); // NOI18N
+            LOGGER.log(Level.INFO, "Can't find auto registered JavaFX SDK instance"); // NOI18N
             return;
         }
 
@@ -90,7 +86,7 @@ public class PlatformAutoInstaller implements Runnable {
         return installedSDK;
     }
 
-    private FileObject getRepositoryDir(String path, boolean create) {
+    private static FileObject getRepositoryDir(String path, boolean create) {
         FileObject dir = FileUtil.getConfigFile(path);
         if (dir == null && create) {
             try {
@@ -102,30 +98,24 @@ public class PlatformAutoInstaller implements Runnable {
         return dir;
     }
 
-    private void createJavaFXPlatform(FileObject installedSDK) {
+    private static void createJavaFXPlatform(FileObject installedSDK) {
         Parameters.notNull("installedSDK", installedSDK); // NOI18N
 
-        // 1. Read installedSKD properties
+        // Read installedSKD properties
         String sdkPath = getStringAttribute(installedSDK, AutomaticRegistration.SDK_ATTR);
         String runtimePath = getStringAttribute(installedSDK, AutomaticRegistration.RUNTIME_ATTR);
         if (sdkPath == null || runtimePath == null) {
-            LOGGER.log(Level.FINE, "Can't read attributes from auto registered Java FX SDK instance: {0}", installedSDK.getPath()); // NOI18N
+            LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
             return;
         }
 
-        // 2. Create java platform instance
-        FileObject platformFolder = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders().iterator().next();
-        // TODO after Tomas makes us friend for java.j2seplatform module
-        JavaPlatform platform = null;
-//        platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder);
-
-        // 3. Register Java FX platform extension
-        Map<String, String> map = new HashMap<String, String>(2);
-        map.put(Utils.getSDKPropertyKey(platform), sdkPath);
-        map.put(Utils.getRuntimePropertyKey(platform), runtimePath);
-        PlatformPropertiesHandler.saveGlobalProperties(map);
-
-        LOGGER.log(Level.INFO, "Java FX Platform instance has been successfully registered: {0}", platform); // NOI18N
+        // Create java platform instance and register JavaFX platform extension
+        JavaPlatform platform = Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, null, null);
+        if (platform != null) {
+            LOGGER.log(Level.INFO, "JavaFX Platform instance has been successfully registered: {0}", platform); // NOI18N
+        } else {
+            LOGGER.log(Level.WARNING, "Can't create Java FX Platform for {0}", sdkPath); // NOI18N
+        }
     }
 
     private static String getStringAttribute(FileObject fo, String attrName) {

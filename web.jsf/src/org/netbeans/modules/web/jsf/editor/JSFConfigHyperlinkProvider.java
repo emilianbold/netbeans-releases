@@ -47,7 +47,8 @@ import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
@@ -83,95 +84,101 @@ import org.openide.util.NbBundle;
  * @author petr
  */
 public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
-    
-    static private boolean debug = false;
-    private static Hashtable hyperlinkTable;
-    
-    private final int JAVA_CLASS = 0;
-    private final int RESOURCE_PATH = 2;
-    
+
+    private static boolean debug = false;
+    private static Map<String, JsfConfigHyperlinkType> hyperlinkMap =
+            new ConcurrentHashMap<String, JsfConfigHyperlinkType>();
+
     {
-        hyperlinkTable = new Hashtable();
-        hyperlinkTable.put("managed-bean-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("component-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("renderer-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("property-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("validator-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("attribute-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("message-bundle", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("action-listener", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("application-factory", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("converter-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("converter-for-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("faces-context-factory", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("key-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("lifecycle-factory", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("navigation-handler", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("phase-listener", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("property-resolver", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("referenced-bean-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("render-kit-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("render-kit-factory", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("value-class", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("variable-resolver", new Integer(JAVA_CLASS));      //NOI18N
-        hyperlinkTable.put("from-view-id", new Integer(RESOURCE_PATH));   //NOI18N
-        hyperlinkTable.put("to-view-id", new Integer(RESOURCE_PATH));     //NOI18N
+        hyperlinkMap.put("managed-bean-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("component-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("renderer-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("property-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("validator-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("attribute-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("message-bundle", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("action-listener", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("application-factory", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("converter-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("converter-for-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("faces-context-factory", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("key-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("lifecycle-factory", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("navigation-handler", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("phase-listener", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("property-resolver", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("referenced-bean-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("render-kit-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("render-kit-factory", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("value-class", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("variable-resolver", JsfConfigHyperlinkType.JAVA_CLASS);      //NOI18N
+        hyperlinkMap.put("from-view-id", JsfConfigHyperlinkType.RESOURCE_PATH);   //NOI18N
+        hyperlinkMap.put("to-view-id", JsfConfigHyperlinkType.RESOURCE_PATH);     //NOI18N
     }
-    
+
     private int valueOffset;
     private String [] ev = null;
-    /** Creates a new instance of StrutsHyperlinkProvider */
+    
+    /** Creates a new instance of StrutsHyperlinkProvider. */
     public JSFConfigHyperlinkProvider() {
     }
 
+    @Override
     public int[] getHyperlinkSpan(javax.swing.text.Document doc, int offset) {
         if (debug) debug (":: getHyperlinkSpan");
         if (ev != null){
-            return new int []{valueOffset, valueOffset + ev[1].length() -1};
+            return new int []{valueOffset, valueOffset + ev[1].length()};
         }
         return null;
     }
 
+    @Override
     public boolean isHyperlinkPoint(javax.swing.text.Document doc, int offset) {
         if (debug) debug (":: isHyperlinkSpan - offset: " + offset); //NOI18N
-        
-        // PENDING - this check should be removed, when 
+
+        // PENDING - this check should be removed, when
         // the issue #61704 is solved.
         DataObject dObject = NbEditorUtilities.getDataObject(doc);
         if (! (dObject instanceof JSFConfigDataObject))
             return false;
         ev = getElementValue(doc, offset);
-        if (ev != null){ 
-            if (hyperlinkTable.get(ev[0])!= null)
+        if (ev != null) {
+            if (hyperlinkMap.get(ev[0]) != null) {
                 return true;
+            }
         }
         return false;
     }
 
+    @Override
     public void performClickAction(javax.swing.text.Document doc, int offset) {
         if (debug) debug (":: performClickAction");
-        
-        if (hyperlinkTable.get(ev[0])!= null){
-            int type = ((Integer)hyperlinkTable.get(ev[0])).intValue();
-            switch (type){
-                case JAVA_CLASS: findJavaClass(ev[1], doc); break;
-                case RESOURCE_PATH: findResourcePath(ev[1], (BaseDocument)doc);break;
+
+        if (hyperlinkMap.get(ev[0]) != null) {
+            JsfConfigHyperlinkType type = (hyperlinkMap.get(ev[0]));
+            switch (type) {
+                case JAVA_CLASS:
+                    findJavaClass(ev[1], doc);
+                    break;
+                case RESOURCE_PATH:
+                    findResourcePath(ev[1], (BaseDocument) doc);
+                    break;
             }
         }
     }
-    
+
     static void debug(String message){
         System.out.println("JSFConfigHyperlinkProvider: " + message); //NoI18N
     }
-    
+
     private String[] getElementValue(javax.swing.text.Document doc, int offset){
         String tag = null;
         String value = null;
-        
+
         try {
             BaseDocument bdoc = (BaseDocument) doc;
             JTextComponent target = Utilities.getFocusedComponent();
-            
+
             if (target == null || target.getDocument() != bdoc)
                 return null;
             ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
@@ -186,7 +193,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             }
             // Find element
             // 4 - tag
-            while(token != null 
+            while(token != null
                     && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                     && !token.getImage().equals(">")))
                 token = token.getPrevious();
@@ -196,18 +203,18 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             if (debug) debug ("element: " + tag );   // NOI18N
             if (debug) debug ("value: " + value );  //NOI18N
             return new String[]{tag, value};
-            
-        } 
+
+        }
         catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         }
         return null;
     }
-    
+
     private boolean isWhiteChar(char c){
         return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
     }
-    
+
     private void findJavaClass(final String fqn, javax.swing.text.Document doc){
         FileObject fo = NbEditorUtilities.getFileObject(doc);
         if (fo != null){
@@ -216,9 +223,9 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                 try {
                     final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                     JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
-                    
+
                     js.runUserActionTask(new Task<CompilationController>() {
-                        
+
                         public void run(CompilationController cc) throws Exception {
                             Elements elements = cc.getElements();
                             TypeElement element = elements.getTypeElement(fqn.trim());
@@ -237,7 +244,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                                     String key = "goto_source_not_found"; // NOI18N
                                     String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
                                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-                                    
+
                                 }
                             }
                         }
@@ -249,9 +256,9 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             }
         }
     }
-   
-    
-    
+
+
+
     private void findResourcePath(String path, BaseDocument doc){
         //normalize path
         int qmIndex = path.indexOf('?');
@@ -262,7 +269,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             //trim the path
             path = path.substring(0, qmIndex);
         }
-        
+
         WebModule wm = WebModule.getWebModule(NbEditorUtilities.getFileObject(doc));
         if (wm != null){
             FileObject docBase= wm.getDocumentBase();
@@ -271,9 +278,9 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                 openInEditor(fo);
         }
     }
-    
-    
-    
+
+
+
     private void openInEditor(FileObject fObj){
         if (fObj != null){
             DataObject dobj = null;
@@ -282,7 +289,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             }
             catch (DataObjectNotFoundException e){
                Exceptions.printStackTrace(e);
-               return; 
+               return;
             }
             if (dobj != null){
                 Node.Cookie cookie = dobj.getCookie(OpenCookie.class);
@@ -290,5 +297,10 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                     ((OpenCookie)cookie).open();
             }
         }
+    }
+
+    private static enum JsfConfigHyperlinkType {
+        JAVA_CLASS,
+        RESOURCE_PATH
     }
 }

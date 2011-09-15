@@ -135,6 +135,7 @@ public class SelectCompletionQueryTest extends NbTestCase {
         
         // #200367: CC breaks with use of DECLARE/SET
         suite.addTest(new SelectCompletionQueryTest("selectAfterDeclare"));
+        suite.addTest(new SelectCompletionQueryTest("selectAfterSet"));
 
         return suite;
     }

@@ -471,7 +471,7 @@ public class RADVisualComponent extends RADComponent {
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
             boolean autoUndo = true;
             try {
-                layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
+                layoutModel.setUserIntervalSize(interval, dimension, newValue.intValue());
                 getNodeReference().firePropertyChangeHelper(
                     getName(), oldValue, newValue);
                 autoUndo = false;
@@ -488,7 +488,7 @@ public class RADVisualComponent extends RADComponent {
         
         @Override
         public Object getValue() {
-            int size = getComponent().getLayoutInterval(dimension).getPreferredSize(false);
+            int size = getComponent().getLayoutInterval(dimension).getPreferredSize();
             return new Integer(size);
         }
 
@@ -618,10 +618,7 @@ public class RADVisualComponent extends RADComponent {
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
             boolean autoUndo = true;
             try {
-                layoutModel.setIntervalSize(interval,
-                    resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
-                    interval.getPreferredSize(false),
-                    resizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
+                layoutModel.setUserIntervalSize(interval, dimension, interval.getPreferredSize(), resizable);
                 getNodeReference().firePropertyChangeHelper(
                     getName(), oldValue, newValue);                
                 autoUndo = false;
@@ -638,8 +635,8 @@ public class RADVisualComponent extends RADComponent {
         
         @Override
         public Object getValue() {
-            int pref = getComponent().getLayoutInterval(dimension).getPreferredSize(false);
-            int max = getComponent().getLayoutInterval(dimension).getMaximumSize(false);
+            int pref = getComponent().getLayoutInterval(dimension).getPreferredSize();
+            int max = getComponent().getLayoutInterval(dimension).getMaximumSize();
             return Boolean.valueOf((max != pref) && (max != LayoutConstants.USE_PREFERRED_SIZE));
         }
 

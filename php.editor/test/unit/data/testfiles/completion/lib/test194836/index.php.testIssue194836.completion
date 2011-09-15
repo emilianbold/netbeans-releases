@@ -1,9 +1,3 @@
 Code completion result for source line:
 $user->|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-------------------------------------
-METHOD     getLastName()                   [PUBLIC]   \User\User
-METHOD     getName()                       [PUBLIC]   User
-METHOD     getName()                       [PUBLIC]   \User\UserAbstract
-METHOD     setLastName($lastName)          [PUBLIC]   \User\UserAbstract
-METHOD     setName($name)                  [PUBLIC]   \User\UserAbstract

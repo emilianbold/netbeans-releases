@@ -106,7 +106,12 @@ public class SQLStatementAnalyzer {
         if (isKeyword("DECLARE", seq) || isKeyword("SET", seq)) {
             // find SELECT keyword below
             while (isKeyword("DECLARE", seq) || isKeyword("SET", seq)) {
-                if (!nextToken(seq, SQLTokenId.COMMA, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.STRING)) {
+                if (!nextToken(seq, SQLTokenId.COMMA,
+                        SQLTokenId.OPERATOR,
+                        SQLTokenId.IDENTIFIER,
+                        SQLTokenId.STRING,
+                        SQLTokenId.LPAREN,
+                        SQLTokenId.RPAREN)) {
                     return null;
                 }
             }
@@ -140,6 +145,16 @@ public class SQLStatementAnalyzer {
         skip:
         while (move = seq.moveNext()) {
             SQLTokenId id = seq.token().id();
+            // left paren found, skip to right paren
+            if (toSkip != null && Arrays.asList(toSkip).contains(SQLTokenId.LPAREN) && SQLTokenId.LPAREN.equals(id)) {
+                while (move = seq.moveNext()) {
+                    id = seq.token().id();
+                    if (SQLTokenId.RPAREN.equals(id)) {
+                        break;
+                    }
+                }
+                continue;
+            }
             if (toSkip != null && Arrays.asList(toSkip).contains(id)) {
                 continue;
             }

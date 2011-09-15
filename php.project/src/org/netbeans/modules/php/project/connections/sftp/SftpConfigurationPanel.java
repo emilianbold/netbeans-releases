@@ -80,6 +80,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
     private String warning = null;
+    private boolean passwordRead = false;
+
 
     public SftpConfigurationPanel() {
         initComponents();
@@ -556,7 +558,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         setHostName(cfg.getValue(SftpConnectionProvider.HOST));
         setPort(cfg.getValue(SftpConnectionProvider.PORT));
         setUserName(cfg.getValue(SftpConnectionProvider.USER));
-        setPassword(cfg.getValue(SftpConnectionProvider.PASSWORD, true));
+        setPassword(readPassword(cfg));
         setKnownHostsFile(cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE));
         setIdentityFile(cfg.getValue(SftpConnectionProvider.IDENTITY_FILE));
         setInitialDirectory(cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY));
@@ -575,6 +577,19 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(SftpConnectionProvider.TIMEOUT, getTimeout());
         cfg.putValue(SftpConnectionProvider.KEEP_ALIVE_INTERVAL, getKeepAliveInterval());
+    }
+
+    // #200530
+    /**
+     * Read password from keyring, once it is needed.
+     * @return password
+     */
+    private String readPassword(Configuration cfg) {
+        if (!passwordRead) {
+            passwordRead = true;
+            return new SftpConfiguration(cfg).getPassword();
+        }
+        return cfg.getValue(SftpConnectionProvider.PASSWORD, true);
     }
 
     private final class DefaultDocumentListener implements DocumentListener {

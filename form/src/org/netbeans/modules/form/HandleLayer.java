@@ -2203,6 +2203,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         boolean draggableLayoutComponents;
         RADVisualContainer targetContainer;
         RADVisualContainer fixedTarget;
+        boolean fixedDimension;
         Component[] showingComponents;
         Rectangle[] originalBounds; // in coordinates of HandleLayer
         Rectangle compoundBounds; // compound from original bounds
@@ -2362,6 +2363,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 return;
             }
 
+            boolean lockDimension = (modifiers & InputEvent.CTRL_MASK) != 0;
+            if (!lockDimension && fixedDimension) { // CTRL released in new layout
+                fixedTarget = null;
+                fixedDimension = false;
+            }
+
             targetContainer = getTargetContainer(p, modifiers);
 
             
@@ -2382,12 +2389,23 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     && targetContainer != null && targetContainer.getLayoutSupport() == null) {
                 p.x -= convertPoint.x;
                 p.y -= convertPoint.y;
-                formDesigner.getLayoutDesigner().move(p,
-                                                      targetContainer.getId(),
-                                                      ((modifiers & InputEvent.ALT_MASK) == 0),
-                                                      ((modifiers & InputEvent.CTRL_MASK) != 0),
-                                                      movingBounds);
-                String[] position = formDesigner.getLayoutDesigner().positionCode();
+                LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
+                layoutDesigner.move(p, targetContainer.getId(),
+                                    ((modifiers & InputEvent.ALT_MASK) == 0),
+                                    lockDimension, movingBounds);
+                // set fixed target if dimension locked by holding CTRL, but only if
+                // there's no fixed target used already (e.g. like when resizing)
+                if (lockDimension && (fixedTarget == null || fixedDimension)) {
+                    fixedDimension = true;
+                    String targetId = layoutDesigner.getDragTargetContainer();
+                    if (targetId != null) {
+                        RADComponent targetComp = getFormModel().getMetaComponent(targetId);
+                        if (targetComp instanceof RADVisualContainer) {
+                            fixedTarget = (RADVisualContainer) targetComp;
+                        }
+                    }
+                }
+                String[] position = layoutDesigner.positionCode();
                 FormEditor.getAssistantModel(getFormModel()).setContext(position[0], position[1]);
             } else {
                 if (oldDrag && isDraggableLayoutComponent()

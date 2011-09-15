@@ -72,31 +72,31 @@ import org.openide.text.Line;
  */
 public class Utils {
     //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
-    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; //NOI18N
+    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory/Debugger"; //NOI18N
     final static String  MIME_TYPE = "text/x-php5"; //NOI18N
     public static LineFactory lineFactory = new LineFactory();
-    
+
     private Utils(){
         // avoid inst-ion
     }
-    
+
     public static Line getCurrentLine() {
         FileObject fileObject = EditorContextDispatcher.getDefault().getCurrentFile();
-        
+
         if (!isPhpFile(fileObject)) {
             return null;
         }
-        
+
         return EditorContextDispatcher.getDefault().getCurrentLine();
     }
-    
+
     public static BrkpntSetCommand getCommand( DebugSession session, SessionId id,
             AbstractBreakpoint breakpoint )
     {
         if ( !breakpoint.isSessionRelated(session) ){
             return null;
         }
-        
+
         BrkpntSetCommand command = null;
         if (breakpoint instanceof LineBreakpoint) {
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
@@ -119,14 +119,14 @@ public class Utils {
                 assert false;
             }
         }
-        
+
         if (!breakpoint.isEnabled()) {
             command.setState(State.DISABLED);
         }
-        
+
         return command;
     }
-    
+
     public static AbstractBreakpoint getBreakpoint( String id ) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager()
                 .getBreakpoints();
@@ -143,22 +143,22 @@ public class Utils {
         return null;
     }
 
-    public static void cleanBreakpoint( DebugSession session , 
+    public static void cleanBreakpoint( DebugSession session ,
             String breakpointId )
     {
         BrkpntRemoveCommand removeCommand = new BrkpntRemoveCommand(
                 session.getTransactionId() , breakpointId );
         session.sendCommandLater( removeCommand );
     }
-    
+
     public static void log( Throwable exception ){
         exception.printStackTrace();
     }
-    
+
     public static void log( InvocationTargetException exception ){
         log( exception.getCause() );
     }
-    
+
     public static boolean isPhpFile(FileObject fileObject) {
         if (fileObject == null) {
             return false;
@@ -171,7 +171,7 @@ public class Utils {
 
     /**
      * NB : <code>line</code> is 1-based debugger DBGP line.
-     * It differs from editor line !  
+     * It differs from editor line !
      * @param line 1-based line in file
      * @param remoteFileName  remote file name
      * @param id current debugger session id
@@ -180,7 +180,7 @@ public class Utils {
     public static Line getLine( int line, String remoteFileName , SessionId id) {
         return lineFactory.getLine(line, remoteFileName, id);
     }
-    
+
     public static class LineFactory {
         public Line getLine(int line, String remoteFileName, SessionId id) {
             DataObject dataObject = Utils.getDataObjectByRemote(id, remoteFileName);
@@ -204,7 +204,7 @@ public class Utils {
                 Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
             return null;
-        }        
+        }
     }
 
     public static void openPhpOptionsDialog() {

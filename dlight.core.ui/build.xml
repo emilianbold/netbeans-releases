@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="dlight.core.ui" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.netbeans.modules.dlight.core.ui.</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
-</project>

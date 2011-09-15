@@ -80,11 +80,15 @@ import org.openide.filesystems.FileUtil;
 @ProjectServiceProvider(service=WsitProvider.class, projectType="org-netbeans-modules-maven")
 public class MavenWsitProvider extends WsitProvider {
 
+    private static final String META_INF_PATH = "src/main/resources/META-INF";  // NOI18N
+
+    private static final String WEB_INF_PATH = "src/main/webapp/WEB-INF";       // NOI18N
+
     private static final Logger logger = Logger.getLogger(MavenWsitProvider.class.getName());
 
-    protected static final String SERVLET_NAME = "ServletName";
-    protected static final String SERVLET_CLASS = "ServletClass";
-    protected static final String URL_PATTERN = "UrlPattern";
+    protected static final String SERVLET_NAME = "ServletName";                 // NOI18N
+    protected static final String SERVLET_CLASS = "ServletClass";               // NOI18N
+    protected static final String URL_PATTERN = "UrlPattern";                   // NOI18N
 
     public MavenWsitProvider(Project p) {
         this.project = p;
@@ -195,28 +199,38 @@ public class MavenWsitProvider extends WsitProvider {
     }
 
     @Override
-    public FileObject getConfigFilesFolder(boolean client) {
+    public FileObject getConfigFilesFolder(boolean client, boolean create ) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             J2eeModule j2eeModule = provider.getJ2eeModule();
             if (j2eeModule != null) {
                 J2eeModule.Type type = j2eeModule.getType();
                 if (J2eeModule.Type.WAR.equals(type) && !client) {
-                    FileObject dir = null;
-                    try {
-                        dir = FileUtil.createFolder(project.getProjectDirectory(), "src/main/webapp/WEB-INF");
-                    } catch (IOException ex) {
-                        logger.log(Level.FINE, ex.getLocalizedMessage());
+                    FileObject dir = project.getProjectDirectory().
+                        getFileObject(WEB_INF_PATH);
+                    if ( create ) {
+                        try {
+                            dir = FileUtil.createFolder(
+                                            project.getProjectDirectory(),
+                                            WEB_INF_PATH);
+                        }
+                        catch (IOException ex) {
+                            logger.log(Level.FINE, ex.getLocalizedMessage());
+                        }
                     }
                     return dir;
                 }
             }
         }
-        FileObject cfgDir = null;
-        try {
-            cfgDir = FileUtil.createFolder(project.getProjectDirectory(), "src/main/resources/META-INF");
-        } catch (IOException ex) {
-            logger.log(Level.FINE, ex.getLocalizedMessage());
+        FileObject cfgDir = project.getProjectDirectory().getFileObject(META_INF_PATH);
+        if ( create ){
+            try {
+                cfgDir = FileUtil.createFolder(project.getProjectDirectory(),
+                        META_INF_PATH);
+            }
+            catch (IOException ex) {
+                logger.log(Level.FINE, ex.getLocalizedMessage());
+            }
         }
         return cfgDir;
     }

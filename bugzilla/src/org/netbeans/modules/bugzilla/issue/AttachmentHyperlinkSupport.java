@@ -62,10 +62,6 @@ class AttachmentHyperlinkSupport {
     private static final char CR = '\r';
     private static final char LF = '\n';
 
-    static int[] findBoundaries(String text) {
-        return findBoundaries(text, null);
-    }
-
     static int[] findBoundaries(String text,
                                 Collection<String> knownIds) {
         if ((knownIds != null) && knownIds.isEmpty()) {

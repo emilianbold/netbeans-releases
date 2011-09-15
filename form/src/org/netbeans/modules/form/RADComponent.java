@@ -530,6 +530,7 @@ public class RADComponent {
             throw iae;
         }
 
+        FormEditor.getCodeGenerator(formModel).regenerateCode(); // Issue 201053
         if (formModel.getCodeStructure().isVariableNameReserved(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
@@ -1590,12 +1591,17 @@ public class RADComponent {
                                               List<RADProperty> normalProps,
                                               List<RADProperty> expertProps) {
         // Issue 171445 - missing cursor property
-        if ((getBeanInstance() instanceof java.awt.Component) && (nameToProperty.get("cursor") == null)) { // NOI18N
+        if (FormUtils.isStandardJavaComponent(getBeanClass())) {
             try {
-                PropertyDescriptor pd = new PropertyDescriptor("cursor", java.awt.Component.class); // NOI18N
-                RADProperty prop = createBeanProperty(pd, null, null);
-                nameToProperty.put("cursor", prop); // NOI18N
-                normalProps.add(prop);
+                if (nameToProperty.get("cursor") == null) { // NOI18N
+                    PropertyDescriptor pd = new PropertyDescriptor("cursor", java.awt.Component.class); // NOI18N
+                    RADProperty prop = createBeanProperty(pd, null, null);
+                    nameToProperty.put("cursor", prop); // NOI18N
+                    normalProps.add(prop);
+                }
+                ensureWritableProperty("minimumSize", java.awt.Component.class, prefProps, normalProps, expertProps); // NOI18N
+                ensureWritableProperty("preferredSize", java.awt.Component.class, prefProps, normalProps, expertProps); // NOI18N
+                ensureWritableProperty("maximumSize", java.awt.Component.class, prefProps, normalProps, expertProps); // NOI18N
             } catch (IntrospectionException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
@@ -1643,7 +1649,48 @@ public class RADComponent {
             checkForAddedProperties(expertProps);
         }
     }
-    
+
+    private void ensureWritableProperty(String name, Class clazz,
+            List<RADProperty> prefProps, List<RADProperty> normalProps, List<RADProperty> expertProps)
+            throws IntrospectionException {
+        Node.Property prop = nameToProperty.get(name);
+        if (prop == null || !prop.canWrite()) {
+            PropertyDescriptor pd = new PropertyDescriptor(name, clazz);
+            RADProperty radProp = createBeanProperty(pd, null, null);
+            nameToProperty.put(name, radProp);
+            boolean replaced = replaceProperty(radProp, prefProps)
+                    || replaceProperty(radProp, normalProps)
+                    || replaceProperty(radProp, expertProps);
+            if (!replaced) {
+                normalProps.add(radProp);
+            }
+        }
+    }
+
+    private static boolean replaceProperty(RADProperty newProp, List<RADProperty> props) {
+        String name = newProp.getName();
+        for (RADProperty prop : props) {
+            if (name.equals(prop.getName())) {
+                props.remove(prop);
+                if (prop.valueSet) {
+                    try {
+                        newProp.setCurrentEditor(prop.getCurrentEditor());
+                        newProp.setValue(prop.getValue());
+                    } catch (IllegalAccessException ex) {
+                        FormUtils.LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        FormUtils.LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    } catch (InvocationTargetException ex) {
+                        FormUtils.LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    }
+                }
+                props.add(newProp);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void checkForAddedProperties(List props) {
         for (Object o : props) {
             FormProperty prop = (FormProperty)o;
