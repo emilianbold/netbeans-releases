@@ -139,6 +139,13 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         }
         lastHotSpot = spot;
         setCursor(spot != null ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+        if (spot != null) {
+            ToolTipManager.sharedInstance().mouseMoved(new MouseEvent(mydivider, 0, 0, 0,
+                    spot.getRect().x + 5 , spot.getRect().y + 5, 0, false));
+        } else {
+            ToolTipManager.sharedInstance().mouseMoved(new MouseEvent(mydivider, 0, 0, 0, 0, 0, 0, false));
+            mydivider.repaint();
+        }
     }
 
     private void performAction() {
@@ -175,7 +182,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             // aqua background workaround
             if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {         // NOI18N
                 setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
-            }                  
+            }
         }
 
         public String getToolTipText(MouseEvent event) {
