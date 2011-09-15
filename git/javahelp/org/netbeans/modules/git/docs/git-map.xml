@@ -6,6 +6,9 @@
 	<mapID target="org.netbeans.modules.git.clone" url="git-clone.html" />
 	<mapID target="org.netbeans.modules.git.add" url="git-add.html" />
 	<mapID target="org.netbeans.modules.git.remote" url="git-remote.html" />
+	<mapID target="org.netbeans.modules.git.commit" url="git-com.html" />
+	<mapID target="org.netbeans.modules.git.branch" url="git-branch.html" />
+	
 
 
 <!-- CSH -->
