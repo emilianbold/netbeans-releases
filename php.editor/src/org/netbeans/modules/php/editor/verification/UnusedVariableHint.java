@@ -124,11 +124,13 @@ public class UnusedVariableHint extends AbstractRule {
 
         @Override
         public void visit(FormalParameter node) {
+            super.visit(node);
             processNode(node);
         }
 
         @Override
         public void visit(Variable node) {
+            super.visit(node);
             processNode(node);
         }
 
@@ -141,6 +143,7 @@ public class UnusedVariableHint extends AbstractRule {
 
         @Override
         public void visit(FunctionInvocation node) {
+            super.visit(node);
             if (node.getFunctionName().getName() instanceof NamespaceName) {
                 NamespaceName namespaceName = (NamespaceName) node.getFunctionName().getName();
                 if (namespaceName.getSegments().size() == 1) {
@@ -150,7 +153,6 @@ public class UnusedVariableHint extends AbstractRule {
                     }
                 }
             }
-            super.visit(node);
         }
 
     }
