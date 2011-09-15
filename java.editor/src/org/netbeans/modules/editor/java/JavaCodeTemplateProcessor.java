@@ -448,7 +448,10 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             } else if (NEW_VAR_NAME.equals(entry.getKey())) {
                 param2hints.put(param, NEW_VAR_NAME);
-                return newVarName(param.getInsertTextOffset() + 1, (String) entry.getValue());
+                Object value = entry.getValue();
+                if (!(value instanceof String) || "true".equals(value))
+                    value = null;
+                return newVarName(param.getInsertTextOffset() + 1, (String)value);
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
                 return owningClassName();

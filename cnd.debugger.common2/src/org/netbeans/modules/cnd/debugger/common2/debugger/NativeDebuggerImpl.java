@@ -138,6 +138,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected Location visitedLocation = null;
 
     protected final DebuggerAnnotation visitMarker;
+    protected final DebuggerAnnotation visitDisMarker;
     protected final DebuggerAnnotation currentPCMarker;
     protected final DebuggerAnnotation currentDisPCMarker;
 
@@ -195,6 +196,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 null,
                 true);
         visitMarker =
+                new DebuggerAnnotation(null,
+                DebuggerAnnotation.TYPE_CALLSITE,
+                null,
+                true);
+        visitDisMarker =
                 new DebuggerAnnotation(null,
                 DebuggerAnnotation.TYPE_CALLSITE,
                 null,
@@ -781,7 +787,18 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     
     public void annotateDis(boolean andShow) {
         if (visitedLocation != null) {
-            DisassemblyUtils.annotatePC(visitedLocation, currentDisPCMarker, andShow);
+            DebuggerAnnotation marker;
+            if (visitedLocation.visited()) {
+                marker = visitDisMarker;
+                currentDisPCMarker.setLine(null, isCurrent());
+            } else {
+                marker = currentDisPCMarker;
+                visitDisMarker.setLine(null, isCurrent());
+            }
+            DisassemblyUtils.annotatePC(visitedLocation, marker, andShow);
+        } else {
+            currentDisPCMarker.setLine(null, isCurrent());
+            visitDisMarker.setLine(null, isCurrent());
         }
     }
    
@@ -803,24 +820,21 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             if (visited) {
                 visitMarker.setLine(l, isCurrent());
                 currentPCMarker.setLine(null, isCurrent());
-                currentDisPCMarker.setLine(null, isCurrent());
             } else {
                 visitMarker.setLine(null, isCurrent());
 		// CR 7009746
 		if (!state.isRunning)
 		    currentPCMarker.setLine(l, isCurrent());
             }
+            // Annotate dis
+            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && Disassembly.isInDisasm()));
         } else {
             visitMarker.setLine(null, isCurrent());
+            visitDisMarker.setLine(null, isCurrent());
             currentPCMarker.setLine(null, isCurrent());
             currentDisPCMarker.setLine(null, isCurrent());
         }
         
-        if (!visited) {
-            // Annotate dis
-            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && Disassembly.isInDisasm()));
-        }
-
         // Arrange for DebuggerManager.error_sourceModified()
         // to emit something.
         this.srcOOD = srcOOD;
@@ -874,7 +888,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode);
                     }
 	    } else {
-		    setCurrentLine(null, false, false, ShowMode.NONE);
+                    annotateDis(true);
+//		    setCurrentLine(null, false, false, ShowMode.NONE);
 
                     //if (getVisitedLocation() != null) {
                         //disStateModel().updateStateModel(getVisitedLocation(), true);
@@ -1058,6 +1073,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    bpt.showAnnotationsFor(false, this);
 
         visitMarker.detach();
+        visitDisMarker.detach();
         currentPCMarker.detach();
         currentDisPCMarker.detach();        
         EditorBridge.setStatus(null);

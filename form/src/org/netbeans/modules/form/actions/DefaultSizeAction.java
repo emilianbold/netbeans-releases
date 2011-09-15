@@ -104,10 +104,6 @@ public class DefaultSizeAction extends NodeAction {
                     formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
                 }
             }
-
-            if (topDesignComponent != null) {
-                formDesigner.resetDesignerSize();
-            }
             autoUndo = false;
         } finally  {
             if (layoutUE != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {

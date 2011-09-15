@@ -66,10 +66,11 @@ public class ALT_Bug134368_2Test extends LayoutTestCase {
     }
 
     /**
-     * Resize passwordField2 (small righ-aligned) to the left so it has the same
+     * Resize passwordField2 (small right-aligned) to the left so it has the same
      * width as the first field. (This used to cause enlarging over entire form.)
      */
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 408, 134));

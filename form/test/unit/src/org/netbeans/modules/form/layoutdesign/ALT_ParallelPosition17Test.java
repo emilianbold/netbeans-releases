@@ -71,6 +71,7 @@ public class ALT_ParallelPosition17Test extends LayoutTestCase {
 
     // Resize jButton1 to right align with the toggle button.
     public void doChanges0() {
+        lm.setChangeRecording(true);
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("Form", new Rectangle(0, 0, 400, 300));

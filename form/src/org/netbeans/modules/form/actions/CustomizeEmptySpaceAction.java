@@ -207,8 +207,8 @@ private static class EmptySpaceCustomizer extends JPanel {
                 paddings = new String[] { bundle.getString("VALUE_PaddingDefault") }; // NOI18N
             }
             size.setModel(new DefaultComboBoxModel(paddings));
-            int pref = space.getPreferredSize(false);
-            int max = space.getMaximumSize(false);
+            int pref = space.getPreferredSize();
+            int max = space.getMaximumSize();
             if (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
                 size.setSelectedItem(getPaddingString(paddings, space.getPaddingType()));
             } else {
@@ -306,7 +306,7 @@ private static class EmptySpaceCustomizer extends JPanel {
     private void applyValues(LayoutComponent comp, int dimension, int direction, JComboBox size, JCheckBox resizable) {
         LayoutInterval space = LayoutUtils.getAdjacentEmptySpace(comp, dimension, direction);
         if (space != null) {
-            int pref = space.getPreferredSize(false);
+            int pref = space.getPreferredSize();
             boolean newResizable = resizable.isSelected();
             Object selSize = size.getSelectedItem();
             int newPref;
@@ -326,10 +326,7 @@ private static class EmptySpaceCustomizer extends JPanel {
                 }
                 newPadType = null;
             }
-            model.setIntervalSize(space,
-                newResizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
-                newPref,
-                newResizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
+            model.setUserIntervalSize(space, dimension, newPref, newResizable);
             if (oldPadType != null || newPadType != LayoutConstants.PaddingType.RELATED) {
                 model.setPaddingType(space, newPadType);
             } // need not change null to RELATED

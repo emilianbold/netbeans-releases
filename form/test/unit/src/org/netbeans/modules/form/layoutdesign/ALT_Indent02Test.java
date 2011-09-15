@@ -53,7 +53,7 @@ import java.util.*;
 import org.openide.filesystems.FileUtil;
 
 // Test simulating indented alignment when the whole group is aligned, but only
-// one component (in the group) is indented. The whole gorup needs to be aligned
+// one component (in the group) is indented. The whole group needs to be aligned
 // (would be S-layout otherwise). As the group moves, the leading gap before it
 // needs to be shortened.
 public class ALT_Indent02Test extends LayoutTestCase {
@@ -75,6 +75,8 @@ public class ALT_Indent02Test extends LayoutTestCase {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("jPanel5", new Rectangle(0, 0, 400, 308));
+        compBounds.put("jPanel5", new Rectangle(0, 0, 400, 308));
+        compPrefSize.put("jPanel5", new Dimension(400, 308));
         compBounds.put("jLabel20", new Rectangle(30, 35, 91, 14));
         baselinePosition.put("jLabel20-91-14", new Integer(11));
         compPrefSize.put("jLabel20", new Dimension(91, 14));

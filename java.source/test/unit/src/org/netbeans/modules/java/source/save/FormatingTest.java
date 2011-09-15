@@ -3551,6 +3551,24 @@ public class FormatingTest extends NbTestCase {
                 "package hierbas.del.litoral;\n"
                 + "\n"
                 + "/**\n"
+                + " * Test JavaDoc \n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * Test JavaDoc\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
                 + " * @author XYZ\n"
                 + " */\n"
                 + "public class Test {\n"
@@ -3684,6 +3702,45 @@ public class FormatingTest extends NbTestCase {
         preferences.remove("blankLineAfterJavadocDescription");        
         preferences.remove("wrapCommentText");        
         preferences.remove("addLeadingStarInComment");        
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is test JavaDoc for the get method.\n"
+                + "     *\n"
+                + "     * @param <S> generic param\n"
+                + "     * @param in     input\n"
+                + "     * @param o          param\n"
+                + "     * @param vararg variable length argument\n"
+                + "     */\n"
+                + "    public <S> S get(S in, Object o, String... vararg) {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is test JavaDoc for the get\n"
+                + "     * method.\n"
+                + "     *\n"
+                + "     * @param <S>    generic param\n"
+                + "     * @param in     input\n"
+                + "     * @param o      param\n"
+                + "     * @param vararg variable length argument\n"
+                + "     */\n"
+                + "    public <S> S get(S in, Object o, String... vararg) {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("alignJavadocParameterDescriptions", true);
+        reformat(doc, content, golden);
+        preferences.remove("alignJavadocParameterDescriptions");        
 
         preferences.remove("text-limit-width");
     }

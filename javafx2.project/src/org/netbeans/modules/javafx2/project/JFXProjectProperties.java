@@ -58,9 +58,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -86,6 +90,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     
+    // copies of private J2SE properties
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
@@ -276,6 +281,7 @@ public final class JFXProjectProperties {
     SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
+    boolean permissionsElevated;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
     public boolean getSigningEnabled() {
@@ -283,6 +289,12 @@ public final class JFXProjectProperties {
     }
     public void setSigningEnabled(boolean enabled) {
         this.signingEnabled = enabled;
+    }
+    public boolean getPermissionsElevated() {
+        return permissionsElevated;
+    }
+    public void setPermissionsElevated(boolean enabled) {
+        this.permissionsElevated = enabled;
     }
     public SigningType getSigningType() {
         return signingType;
@@ -850,6 +862,7 @@ public final class JFXProjectProperties {
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
+        editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
         
@@ -1059,6 +1072,7 @@ public final class JFXProjectProperties {
         if (eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD) != null) {
             signingKeyPassword = eval.getProperty(JAVAFX_SIGNING_KEY_PASSWORD).toCharArray();
         }
+        permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
     private void initResources (final PropertyEvaluator eval, final Project prj) {
@@ -1138,18 +1152,33 @@ public final class JFXProjectProperties {
 
     private void storePlatform(EditableProperties editableProps) {
         String activePlatform = editableProps.getProperty("platform.active"); // NOI18N
-        editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
-        editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
+        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : installedPlatforms) {
+            String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+            if (platformName.equals(activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
+            }
+        }
     }
 
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private boolean filling = false;
+        private ChangeListener changeListener = null;
               
         public PreloaderClassComboBoxModel() {
             fillNoPreloaderAvailable();
         }
         
+        public void addChangeListener (ChangeListener l) {
+            changeListener = l;
+        }
+
+        public void removeChangeListener (ChangeListener l) {
+            changeListener = null;
+        }
+
         public final void fillNoPreloaderAvailable() {
             removeAllElements();
             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
@@ -1182,6 +1211,9 @@ public final class JFXProjectProperties {
                                 }
                             }
                         }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
+                        }
                         filling = false;
                     }
                 }
@@ -1213,6 +1245,9 @@ public final class JFXProjectProperties {
                                     config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
                                 }
                             }
+                        }
+                        if (changeListener != null) {
+                            changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
                         }
                         filling = false;
                     }

@@ -79,6 +79,7 @@ public final class CompilerLineConvertor implements LineConvertor {
 		parsers.add(parser);
 	    }
 	}
+        parsers.addAll(ErrorParserProvider.getUniversalErorParsers(project, execEnv, relativeTo));
     }
 
     @Override
