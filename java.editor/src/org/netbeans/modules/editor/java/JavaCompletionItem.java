@@ -288,7 +288,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Completion.get().hideCompletion();
                 JTextComponent component = (JTextComponent)evt.getSource();
                 int caretOffset = component.getSelectionEnd();
-                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()), (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()), false);
                 evt.consume();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
@@ -436,13 +436,20 @@ public abstract class JavaCompletionItem implements CompletionItem {
         });
     }
     
-    static abstract class WhiteListJavaCompletionItem extends JavaCompletionItem {
+    static abstract class WhiteListJavaCompletionItem<T extends Element> extends JavaCompletionItem {
 
+        private static final String WARNING = "org/netbeans/modules/java/editor/resources/warning_badge.gif";   //NOI18N
+        private static ImageIcon warningIcon;
         private final WhiteListQuery.WhiteList whiteList;
+        private final ElementHandle<T> handle;
         private Boolean isBlackListed;
 
-        protected WhiteListJavaCompletionItem(final int substitutionOffset, final WhiteListQuery.WhiteList whiteList) {
+        protected WhiteListJavaCompletionItem(
+                final int substitutionOffset,
+                final ElementHandle<T> handle,
+                final WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset);
+            this.handle = handle;
             this.whiteList = whiteList;
         }
 
@@ -450,12 +457,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return this.whiteList;
         }
 
-        protected final boolean isBlackListed(
-                final ElementHandle<?> handle) {
+        protected final ElementHandle<T> getElementHandle() {
+            return this.handle;
+        }
+
+        protected final boolean isBlackListed() {
             if (isBlackListed == null) {
                 isBlackListed = whiteList == null ? false : !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed();
             }
             return isBlackListed;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return isBlackListed() ? false : super.instantSubstitution(component);
+        }
+
+        @Override
+        public final ImageIcon getIcon() {
+            final ImageIcon base = getBaseIcon();
+            if (base == null || !isBlackListed()) {
+                return base;
+            }
+            if (warningIcon == null) {
+                warningIcon = ImageUtilities.loadImageIcon(WARNING, false);
+            }
+            assert warningIcon != null;
+            return new ImageIcon(ImageUtilities.mergeImages(base.getImage(), warningIcon.getImage(), 8, 8));
+        }
+
+        protected ImageIcon getBaseIcon() {
+            return super.getIcon();
         }
     }
     
@@ -653,7 +685,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
     }
 
-    static class ClassItem extends WhiteListJavaCompletionItem {
+    static class ClassItem extends WhiteListJavaCompletionItem<TypeElement> {
         
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
@@ -675,7 +707,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean autoImport;
         
         private ClassItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
+            super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.dim = dim;
             this.isDeprecated = isDeprecated;
@@ -716,21 +748,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return typeHandle.getKind() == TypeKind.DECLARED ? JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle)) : null;
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(CLASS, false);
-            return icon;            
+            return icon;
         }
 
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(getColor());
-                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
+                if (isDeprecated || isBlackListed())
                     sb.append(STRIKE);
                 sb.append(escape(typeName));
                 for(int i = 0; i < dim; i++)
                     sb.append("[]"); //NOI18N
-                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
+                if (isDeprecated || isBlackListed())
                     sb.append(STRIKE_END);
                 if (enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
@@ -988,7 +1020,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(INTERFACE, false);
             return icon;            
         }
@@ -1007,7 +1039,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(ENUM, false);
             return icon;            
         }
@@ -1022,7 +1054,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(ANNOTATION, false);
             return icon;            
         }
@@ -1152,7 +1184,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
    }
 
-    static class FieldItem extends WhiteListJavaCompletionItem {
+    static class FieldItem extends WhiteListJavaCompletionItem<VariableElement> {
         
         private static final String FIELD_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private static final String FIELD_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_protected_16.png"; //NOI18N
@@ -1165,7 +1197,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
-        private ElementHandle<VariableElement> elementHandle;
         private boolean isInherited;
         private boolean isDeprecated;
         private boolean smartType;
@@ -1180,8 +1211,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String assignToVarText;
         
         private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
-            this.elementHandle = ElementHandle.create(elem);
+            super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
@@ -1212,7 +1242,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elementHandle);
+            return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
         protected String getLeftHtmlText() {
@@ -1221,10 +1251,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(FIELD_COLOR);
                 if (!isInherited)
                     sb.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     sb.append(STRIKE_END);
                 if (!isInherited)
                     sb.append(BOLD_END);
@@ -1234,18 +1264,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        @Override
-        public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
-        }
-
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(typeName);
             return rightText;
         }
         
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -1311,7 +1336,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                                 controller.toPhase(Phase.RESOLVED);
                                 final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                VariableElement ve = elementHandle.resolve(controller);
+                                VariableElement ve = getElementHandle().resolve(controller);
                                 if (ve != null)
                                     AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ve.getEnclosingElement().asType());
                             }
@@ -1355,7 +1380,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    static class MethodItem extends WhiteListJavaCompletionItem {
+    static class MethodItem extends WhiteListJavaCompletionItem<ExecutableElement> {
         
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String METHOD_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_protected_16.png"; //NOI18N
@@ -1369,7 +1394,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
-        protected ElementHandle<ExecutableElement> elementHandle;
         private boolean isInherited;
         private boolean isDeprecated;
         private boolean inImport;
@@ -1388,8 +1412,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String assignToVarText;
         
         private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
-            this.elementHandle = ElementHandle.create(elem);
+            super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
             this.inImport = inImport;
@@ -1416,7 +1439,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.enclSortText = ""; //NOI18N
             }
             this.assignToVarPos = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarPos;
-            this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
+            this.assignToVarText = this.assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
         }
         
         public int getSortPriority() {
@@ -1452,10 +1475,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 lText.append(METHOD_COLOR);
                 if (!isInherited)
                     lText.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE_END);
                 if (!isInherited)
                     lText.append(BOLD_END);
@@ -1478,11 +1501,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        @Override
-        public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
-        }
-
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(typeName);
@@ -1490,10 +1508,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elementHandle);
+            return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -1568,7 +1586,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                                     controller.toPhase(Phase.RESOLVED);
                                     final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                    ExecutableElement ee = elementHandle.resolve(controller);
+                                    ExecutableElement ee = getElementHandle().resolve(controller);
                                     if (ee != null)
                                         AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
                                 }
@@ -1659,7 +1677,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                                     controller.toPhase(Phase.RESOLVED);
                                     final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                    ExecutableElement ee = elementHandle.resolve(controller);
+                                    ExecutableElement ee = getElementHandle().resolve(controller);
                                     if (ee != null)
                                         AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
                                 }
@@ -1767,7 +1785,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         @Override
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             ImageIcon merged = merged_icon[implement? 0 : 1][level];
             if ( merged != null ) {
@@ -1811,7 +1829,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(ResultIterator resultIterator) throws Exception {
                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ExecutableElement ee = elementHandle.resolve(copy);                        
+                        ExecutableElement ee = getElementHandle().resolve(copy);
                         if (ee == null)
                             return;
                         final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
@@ -2034,7 +2052,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    static class ConstructorItem extends WhiteListJavaCompletionItem {
+    static class ConstructorItem extends WhiteListJavaCompletionItem<ExecutableElement> {
         
         private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/editor/resources/completion/constructor_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PROTECTED = "org/netbeans/modules/editor/resources/completion/constructor_protected_16.png"; //NOI18N
@@ -2044,7 +2062,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[] = new ImageIcon[4];
 
-        private ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
         private boolean smartType;
         private String simpleName;
@@ -2056,8 +2073,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         
         private ConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
-            this.elementHandle = ElementHandle.create(elem);
+            super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
             this.simpleName = name != null ? name : elem.getEnclosingElement().getSimpleName().toString();
@@ -2107,10 +2123,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 StringBuilder lText = new StringBuilder();
                 lText.append(CONSTRUCTOR_COLOR);
                 lText.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE_END);
                 lText.append(BOLD_END);
                 lText.append(COLOR_END);
@@ -2132,16 +2148,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        @Override
-        public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
-        }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elementHandle);
+            return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             ImageIcon cachedIcon = icon[level];
             if (cachedIcon != null)
@@ -2855,7 +2867,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
     }
 
-    static class AttributeValueItem extends WhiteListJavaCompletionItem {
+    static class AttributeValueItem extends WhiteListJavaCompletionItem<TypeElement> {
 
         private static final String ATTRIBUTE_VALUE = "org/netbeans/modules/java/editor/resources/attribute_value_16.png"; // NOI18N
         private static final String ATTRIBUTE_VALUE_COLOR = "<font color=#404040>"; //NOI18N
@@ -2868,7 +2880,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
 
         private AttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
+            super(substitutionOffset, ElementHandle.create(element), whiteList);
             if (value.charAt(0) == '\"' && value.charAt(value.length() - 1) != '\"') { //NOI18N
                 value = value + '\"'; //NOI18N
                 quoteAdded = true;
@@ -2937,7 +2949,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             };
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             if (delegate != null)
                 return delegate.getIcon();
             if (icon == null)
@@ -2987,7 +2999,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    static class StaticMemberItem extends WhiteListJavaCompletionItem {
+    static class StaticMemberItem extends WhiteListJavaCompletionItem<Element> {
         
         private static final String FIELD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_static_16.png"; //NOI18N
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
@@ -3001,7 +3013,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static ImageIcon icon[][] = new ImageIcon[2][3];
         
         private TypeMirrorHandle<DeclaredType> typeHandle;
-        private ElementHandle<Element> memberElementHandle;
         private boolean isDeprecated;
         private String typeName;
         private String memberName;
@@ -3013,10 +3024,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String rightText;
         
         private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
-            super(substitutionOffset, whiteList);
+            super(substitutionOffset, ElementHandle.create(memberElem), whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
-            this.memberElementHandle = ElementHandle.create(memberElem);
             this.isDeprecated = isDeprecated;
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.memberName = memberElem.getSimpleName().toString();
@@ -3065,19 +3075,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(memberElementHandle);
+            return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder lText = new StringBuilder();
-                lText.append(memberElementHandle.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
+                lText.append(getElementHandle().getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
                 lText.append(escape(typeName));
                 lText.append('.');
-                if (isDeprecated || isBlackListed(memberElementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE);
                 lText.append(memberName);
-                if (isDeprecated || isBlackListed(memberElementHandle))
+                if (isDeprecated || isBlackListed())
                     lText.append(STRIKE_END);
                 lText.append(COLOR_END);
                 if (params != null) {
@@ -3100,20 +3110,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        @Override
-        public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(memberElementHandle) ? false : super.instantSubstitution(component);
-        }
-
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(memberTypeName);
             return rightText;
         }
         
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             int level = getProtectionLevel(modifiers);
-            boolean isField = memberElementHandle.getKind().isField();
+            boolean isField = getElementHandle().getKind().isField();
             ImageIcon cachedIcon = icon[isField ? 0 : 1][level - 1];
             if (cachedIcon != null)
                 return cachedIcon;            

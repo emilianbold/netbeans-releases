@@ -53,31 +53,46 @@ import java.util.List;
 /**
  * @author Tomas Pavek
  */
-
 public final class LayoutInterval implements LayoutConstants {
-    static final int ATTRIBUTE_FILL = 1;
-    static final int ATTRIBUTE_FORMER_FILL = 2;
+
+    /** Marker attribute for a gap that can be adjusted when resizing whole
+     * container. */
+    static final int ATTR_DESIGN_CONTAINER_GAP = 4;
+    
+    /** Marker attribute for a parallel group with significant percieved
+     * boundaries on both sides (i.e. not visually open for extending). */
     static final int ATTR_CLOSED_GROUP = 32;
 
-    // attributes denoting intervals with different size behavior in design time
-    static final int ATTR_DESIGN_CONTAINER_GAP = 4;
-    static final int ATTR_DESIGN_RESIZING = 8;
-    static final int ATTR_DESIGN_SUPPRESSED_RESIZING = 16;
-    
     // attributes used during aligning
     static final int ATTR_ALIGN_PRE = 64;
     static final int ATTR_ALIGN_POST = 128;
 
-    static final int ATTR_FORCED_DEFAULT = 256;
+    /** Indicates that the current size of the interval differs from the defined
+     * preferred size (either default or explicit). It means that the actual
+     * size of the interval is determined by something else. Used for resizing
+     * gaps and components. */
+    static final int ATTR_SIZE_DIFF = 512;
 
-    static final int DESIGN_ATTRS = ATTR_DESIGN_CONTAINER_GAP
-                                    | ATTR_DESIGN_RESIZING
-                                    | ATTR_DESIGN_SUPPRESSED_RESIZING
-                                    | ATTR_ALIGN_PRE
-                                    | ATTR_ALIGN_POST;
+    /** Marks resizing intervals that are considered flexible as of their actual
+     * defined size - the system can change freely between explicit size, or
+     * default, based on other intervals in the layout. Without the attribute
+     * the size definition is preserved (i.e. explicit vs default). */
+    static final int ATTR_FLEX_SIZEDEF = 1024;
 
-    static final int ATTR_PERSISTENT_MASK = ATTRIBUTE_FILL | ATTRIBUTE_FORMER_FILL
-                                            | ATTR_CLOSED_GROUP;
+    /** Marks a root that passed an optimization routine. If not set on a root it
+     * indicates that the root needs to undergo a structure optimization. */
+    static final int ATTR_OPTIMIZED = 2048;
+
+    /** Attributes tied to actual state of layout or operation, need to be
+     * refreshed regularly. */
+    static final int REFRESHING_ATTRS = ATTR_DESIGN_CONTAINER_GAP
+                                        | ATTR_ALIGN_PRE
+                                        | ATTR_ALIGN_POST
+                                        | ATTR_SIZE_DIFF;
+
+    // values 1 and 2 were used in the past (FILL, FORMER_FILL), should be saved
+    // if loaded, should not be used for anything else now
+    static final int ATTR_PERSISTENT_MASK = 3 | ATTR_CLOSED_GROUP;
 
     // type of the interval - SINGLE, SEQUENTIAL, PARALLEL
     private int type;
@@ -111,6 +126,10 @@ public final class LayoutInterval implements LayoutConstants {
 
     // current position and size of the interval in the visual representation
     private LayoutRegion currentSpace;
+
+    private int lastActualSize = Integer.MAX_VALUE; // by default do not track actual size
+
+    private int diffToDefaultSize;
 
     // -----
     // setup methods - each setter should be called max. once after creation,
@@ -156,10 +175,18 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     void setMaximumSize(int size) {
-        // for single interval the max size must be defined
-        // for groups only two states - growing suppressed or allowed
+        // Maximum size is only expected to have two states defining resizability.
+        // For single intervals it should be USE_PREFERRED_SIZE (don't resize)
+        // or Short.MAX_VALUE (want resize).
+        // For groups it should be USE_PREFERRED_SIZE (suppressed resizing on
+        // the group regardless what the content wants) or NOT_EXPLICITLY_DEFINED
+        // (can resize, derived from the content of the group).
+        // Not all asserted, there may be some weird combinations in old forms.
         assert (isSingle() && size != NOT_EXPLICITLY_DEFINED)
                || (isGroup() && (size == USE_PREFERRED_SIZE || size == NOT_EXPLICITLY_DEFINED));
+        if (size != maxSize && size == Short.MAX_VALUE) {
+            lastActualSize = Integer.MAX_VALUE;
+        }
         maxSize = size;
     }
 
@@ -175,15 +202,34 @@ public final class LayoutInterval implements LayoutConstants {
         setMaximumSize(max);
     }
 
-    int getMinimumSize() {
+    /**
+     * Returns the minimum size of the interval. Instead of a specific size
+     * it may also return one of the constants NOT_EXPLICITLY_DEFINED or
+     * USE_PREFERRED_SIZE.
+     * @return minimum interval size, or one of the constants:
+     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
+     */
+    public int getMinimumSize() {
         return minSize;
     }
 
-    int getPreferredSize() {
+    /**
+     * Returns the preferred size of the interval. If no specific size was set,
+     * it returns NOT_EXPLICITLY_DEFINED constant.
+     * @return preferred size of the interval, or NOT_EXPLICITLY_DEFINED constant
+     */
+    public int getPreferredSize() {
         return prefSize;
     }
 
-    int getMaximumSize() {
+    /**
+     * Returns the maximum size of the interval. Instead of a specific size
+     * it may return also one of the constants NOT_EXPLICITLY_DEFINED or
+     * USE_PREFERRED_SIZE.
+     * @return maximum interval size, or one of the constants:
+     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
+     */
+    public int getMaximumSize() {
         return maxSize;
     }
 
@@ -235,63 +281,6 @@ public final class LayoutInterval implements LayoutConstants {
      */
     public int getGroupAlignment() {
         return groupAlignment;
-    }
-
-    /**
-     * Returns the minimum size of the interval. Instead of a specific size
-     * it may return also one of the constants NOT_EXPLICITLY_DEFINED or
-     * USE_PREFERRED_SIZE.
-     * @param designTime if true, size for design time layout is returned
-     *        (design time behavior may be different in terms of resizing)
-     * @return minimum interval size, or one of the constants:
-     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
-     */
-    public int getMinimumSize(boolean designTime) {
-        if (!designTime) {
-            return minSize;
-        }
-        if (hasAttribute(ATTR_DESIGN_SUPPRESSED_RESIZING)) {
-            assert !hasAttribute(ATTR_DESIGN_RESIZING);
-            return USE_PREFERRED_SIZE;
-        }
-        if (hasAttribute(ATTR_DESIGN_RESIZING)) {
-            return isEmptySpace() && (getPreferredSize(designTime) != 0) ? NOT_EXPLICITLY_DEFINED : 0;
-        }
-        return minSize;
-    }
-
-    /**
-     * Returns the preferred size of the interval. If no specific size was set,
-     * it returns NOT_EXPLICITLY_DEFINED constant.
-     * @param designTime if true, size for design time layout is returned
-     *        (design time behavior may be different in terms of resizing)
-     * @return preferred size of the interval, or NOT_EXPLICITLY_DEFINED constant
-     */
-    public int getPreferredSize(boolean designTime) {
-        return prefSize;
-    }
-
-    /**
-     * Returns the maximum size of the interval. Instead of a specific size
-     * it may return also one of the constants NOT_EXPLICITLY_DEFINED or
-     * USE_PREFERRED_SIZE.
-     * @param designTime if true, size for design time layout is returned
-     *        (design time behavior may be different in terms of resizing)
-     * @return maximum interval size, or one of the constants:
-     *         NOT_EXPLICITLY_DEFINED or USE_PREFERRED_SIZE
-     */
-    public int getMaximumSize(boolean designTime) {
-        if (!designTime) {
-            return maxSize;
-        }
-        if (hasAttribute(ATTR_DESIGN_SUPPRESSED_RESIZING)) {
-            assert !hasAttribute(ATTR_DESIGN_RESIZING);
-            return USE_PREFERRED_SIZE;
-        }
-        if (hasAttribute(ATTR_DESIGN_RESIZING)) {
-            return Short.MAX_VALUE;
-        }
-        return maxSize;
     }
 
     /**
@@ -350,9 +339,9 @@ public final class LayoutInterval implements LayoutConstants {
         return type == SINGLE && layoutComponent == null;
     }
 
-    public boolean isDefaultPadding(boolean designTime) {
-        return isEmptySpace() && (getMinimumSize(designTime) == NOT_EXPLICITLY_DEFINED
-                                  || getPreferredSize(designTime) == NOT_EXPLICITLY_DEFINED);
+    public boolean isDefaultPadding() {
+        return isEmptySpace() && (getMinimumSize() == NOT_EXPLICITLY_DEFINED
+                                  || getPreferredSize() == NOT_EXPLICITLY_DEFINED);
     }
 
     public PaddingType getPaddingType() {
@@ -444,6 +433,9 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     int add(LayoutInterval interval, int index) {
+        if (interval == null) {
+            throw new NullPointerException();
+        }
         if (getParent() == interval) {
             throw new IllegalArgumentException("Cannot add parent as a sub-interval!"); // NOI18N
         }
@@ -512,7 +504,7 @@ public final class LayoutInterval implements LayoutConstants {
     // interval kept to be available quickly for the layout designer
 
     LayoutRegion getCurrentSpace() {
-        assert !isEmptySpace(); // [temporary - nobody should be interested in gap positions]
+        assert !isEmptySpace(); // nobody should be interested in gap positions directly
         if (currentSpace == null) {
             currentSpace = new LayoutRegion();
         }
@@ -521,6 +513,32 @@ public final class LayoutInterval implements LayoutConstants {
 
     void setCurrentSpace(LayoutRegion space) {
         currentSpace = space;
+    }
+
+    int getDiffToDefaultSize() {
+        return diffToDefaultSize;
+    }
+
+    void setDiffToDefaultSize(int diff) {
+        diffToDefaultSize = diff;
+    }
+
+    /**
+     * For special purpose, to determine when to change pref. size of resizing
+     * intervals, not guaranteed to return some real size.
+     * @return the remembered size value
+     */
+    int getLastActualSize() {
+        return lastActualSize;
+    }
+
+    /**
+     * For special purpose, to determine when to change pref. size of resizing
+     * intervals.
+     * @param size the size to remember
+     */
+    void setLastActualSize(int size) {
+        lastActualSize = size;
     }
 
     // -----
@@ -543,6 +561,17 @@ public final class LayoutInterval implements LayoutConstants {
         }
 //        assert interval.isParallel();
         return interval;
+    }
+
+    static LayoutInterval getRoot(LayoutInterval interval, int type) {
+        LayoutInterval root = null;
+        do {
+            if (interval.getType() == type) {
+                root = interval;
+            }
+            interval = interval.getParent();
+        } while (interval != null);
+        return root;
     }
 
     /**
@@ -649,6 +678,7 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     /**
+     * Get a sequential neighbor for given interval in given direction.
      * @param alignment direction in which the neighbor is looked for (LEADING or TRAILING)
      * @param nonEmpty true if empty spaces (gaps) should be skipped
      * @param outOfParent true if can go up (out of the first sequential parent)
@@ -687,29 +717,6 @@ public final class LayoutInterval implements LayoutConstants {
         while (neighbor == null && parent != null && outOfParent);
 
         return neighbor;
-    }
-
-    static LayoutInterval getNeighbor(LayoutInterval interval, int parentType, int alignment) {
-        assert alignment == LEADING || alignment == TRAILING;
-        LayoutInterval sibling = null;
-        LayoutInterval parent = interval;
-        do {
-            do {
-                interval = parent;
-                parent = parent.getParent();                
-            } while ((parent != null) && (parent.getType() != parentType));
-            if (parent != null) {
-                List subs = parent.subIntervals;
-                int index = subs.indexOf(interval);
-                if ((alignment == LEADING) && (index > 0)) {
-                    sibling = (LayoutInterval)subs.get(index-1);
-                }
-                else if ((alignment == TRAILING) && (index+1 < subs.size())) {
-                    sibling = (LayoutInterval)subs.get(index+1);
-                }
-            }
-        } while ((parent != null) && (sibling == null));
-        return sibling;
     }
 
     static boolean startsWithEmptySpace(LayoutInterval interval, int alignment) {
@@ -871,6 +878,10 @@ public final class LayoutInterval implements LayoutConstants {
             return true;
         }
 
+        if (!canResize(group)) {
+            return true;
+        }
+
         Iterator it = group.getSubIntervals();
         while (it.hasNext()) {
             LayoutInterval li = (LayoutInterval) it.next();
@@ -926,13 +937,26 @@ public final class LayoutInterval implements LayoutConstants {
      * @return whether given interval would resize if given opportunity
      */
     static boolean wantResizeInLayout(LayoutInterval interval) {
-        if (!wantResize(interval))
-            return false;
+        return wantResizeInParent(interval, null);
+    }
 
-        while (interval.getParent() != null) {
+    static boolean wantResizeInParent(LayoutInterval interval, LayoutInterval parent) {
+        return canResizeInParent(interval, parent) && wantResize(interval);
+    }
+
+    static boolean canResizeInLayout(LayoutInterval interval) {
+        return canResizeInParent(interval, null);
+    }
+
+    static boolean canResizeInParent(LayoutInterval interval, LayoutInterval parent) {
+        if (!canResize(interval)) {
+            return false;
+        }
+        while (interval.getParent() != parent) {
             interval = interval.getParent();
-            if (!canResize(interval))
+            if (!canResize(interval)) {
                 return false;
+            }
         }
         return true;
     }
@@ -949,31 +973,108 @@ public final class LayoutInterval implements LayoutConstants {
         return subres;
     }
 
-    static int getIntervalCurrentSize(LayoutInterval interval, int dimension) {
+    static boolean subordinateSize(LayoutInterval interval) {
+        return interval.isSingle() && canResize(interval) && interval.getPreferredSize() == 0
+                && interval.hasAttribute(ATTR_SIZE_DIFF);
+    }
+
+    static int getCurrentSize(LayoutInterval interval, int dimension) {
+        if (dimension < 0) {
+            assert interval.isComponent();
+            dimension = interval.getComponent().getLayoutInterval(HORIZONTAL) == interval
+                    ? HORIZONTAL: VERTICAL;
+        }
         if (!interval.isEmptySpace()) {
             return interval.getCurrentSpace().size(dimension);
+        }
+        if (!canResize(interval) && interval.getPreferredSize() != NOT_EXPLICITLY_DEFINED) {
+            return interval.getPreferredSize();
+        }
+
+        int[] pos = getCurrentPositions(interval, dimension);
+        return pos[TRAILING] - pos[LEADING];
+    }
+
+    static int[] getCurrentPositions(LayoutInterval interval, int dimension) {
+        if (dimension < 0) {
+            assert interval.isComponent();
+            dimension = interval.getComponent().getLayoutInterval(HORIZONTAL) == interval
+                    ? HORIZONTAL: VERTICAL;
         }
 
         int posL;
         int posT;
 
-        LayoutInterval parent = interval.getParent();
-        if (parent.isSequential()) {
-            int index = parent.indexOf(interval);
-            posL = index > 0 ?
-                parent.getSubInterval(index-1).getCurrentSpace().positions[dimension][TRAILING] :
-                parent.getCurrentSpace().positions[dimension][LEADING];
-            posT = index+1 < parent.getSubIntervalCount() ?
-                parent.getSubInterval(index+1).getCurrentSpace().positions[dimension][LEADING] :
-                parent.getCurrentSpace().positions[dimension][TRAILING];
-        }
-        else {
-            posL = parent.getCurrentSpace().positions[dimension][LEADING];
-            posT = parent.getCurrentSpace().positions[dimension][TRAILING];
+        if (!interval.isEmptySpace()) {
+            posL = interval.getCurrentSpace().positions[dimension][LEADING];
+            posT = interval.getCurrentSpace().positions[dimension][TRAILING];
+        } else {
+            LayoutInterval parent = interval.getParent();
+            if (parent.isSequential()) {
+                int index = parent.indexOf(interval);
+                posL = index > 0 ?
+                    parent.getSubInterval(index-1).getCurrentSpace().positions[dimension][TRAILING] :
+                    (canResize(interval) ? parent.getParent() : parent).getCurrentSpace().positions[dimension][LEADING];
+                posT = index+1 < parent.getSubIntervalCount() ?
+                    parent.getSubInterval(index+1).getCurrentSpace().positions[dimension][LEADING] :
+                    (canResize(interval) ? parent.getParent() : parent).getCurrentSpace().positions[dimension][TRAILING];
+            } else {
+                posL = parent.getCurrentSpace().positions[dimension][LEADING];
+                posT = parent.getCurrentSpace().positions[dimension][TRAILING];
+            }
         }
 
-        return posT - posL;
+        return new int[] { posL, posT };
+    }
 
+    /**
+     * What size definition should the given interval have as preferred size if
+     * it it should not be an explicit value and the current state should be
+     * preserved? The choice is between 0 and NOT_EXPLICITLY_DEFINED. Zero size
+     * should be used in cases of resizing components when the natural default
+     * size would be bigger than current size, or prevent shrinking under it
+     * that was allowed so far.
+     */
+    static int getDefaultSizeDef(LayoutInterval interval) {
+        if (interval.isComponent() && LayoutInterval.canResize(interval)) {
+            LayoutComponent comp = interval.getComponent();
+            int dim = comp.getLayoutInterval(HORIZONTAL) == interval ? HORIZONTAL: VERTICAL;
+            if (subordinateSize(interval)
+                    && !interval.hasAttribute(ATTR_FLEX_SIZEDEF)
+                    && (interval.diffToDefaultSize != 0 || getCurrentSize(interval, dim) > 0)) {
+                return 0;
+            }
+            if (comp.isLayoutContainer()) {
+                if (comp.getDiffToMinimumSize(dim) < 0) {
+                    return 0;
+                }
+            } else if (interval.diffToDefaultSize < 0) {
+                return 0;
+            }
+        } else if (interval.isEmptySpace() && interval.getMinimumSize() == 0) {
+            return 0;
+        }
+        return NOT_EXPLICITLY_DEFINED;
+    }
+
+    static int getDiffToDefaultSize(LayoutInterval interval, boolean inside) {
+        if (inside && interval.isComponent()) {
+            LayoutComponent comp = interval.getComponent();
+            if (comp.isLayoutContainer()) {
+                int dim = comp.getLayoutInterval(HORIZONTAL) == interval ? HORIZONTAL: VERTICAL;
+                int outDiff = comp.getDiffToMinimumSize(dim);
+                int inDiff = comp.getDefaultLayoutRoot(dim).diffToDefaultSize;
+                if (outDiff < 0) {
+                    if (inDiff < 0) {
+                        outDiff += inDiff;
+                    } // e.g. JInternalFrame may have outDiff < 0 and inDiff > 0 (it has pref size < min size)
+                    return outDiff;
+                } else {
+                    return inDiff;
+                }
+            }
+        }
+        return interval.diffToDefaultSize;
     }
 
     /**
@@ -1098,6 +1199,16 @@ public final class LayoutInterval implements LayoutConstants {
         }
         while (interval != parent);
         return alignment;
+    }
+
+    static int getIndexInParent(LayoutInterval interval, LayoutInterval parent) {
+        while (interval != null) {
+            if (interval.getParent() == parent) {
+                return parent.indexOf(interval);
+            }
+            interval = interval.getParent();
+        }
+        return -1;
     }
 
     /**

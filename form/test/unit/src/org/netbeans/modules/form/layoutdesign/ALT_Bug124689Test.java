@@ -168,10 +168,10 @@ public class ALT_Bug124689Test extends LayoutTestCase {
         compBounds.put("jDesktopPane1", new Rectangle(18, 215, 183, 310));
         baselinePosition.put("jDesktopPane1-183-310", new Integer(-1));
         compPrefSize.put("jDesktopPane1", new Dimension(1, 1));
-        compBounds.put("jToolBar1", new Rectangle(18, 179, 100, 25));
+        compBounds.put("jToolBar1", new Rectangle(101, 179, 100, 25));
         baselinePosition.put("jToolBar1-100-25", new Integer(-1));
         compPrefSize.put("jToolBar1", new Dimension(92, 23));
-        compBounds.put("jSplitPane1", new Rectangle(18, 161, 183, 0));
+        compBounds.put("jSplitPane1", new Rectangle(101, 161, 100, 0));
         baselinePosition.put("jSplitPane1-183-0", new Integer(-1));
         compPrefSize.put("jSplitPane1", new Dimension(80, 25));
         compBounds.put("textArea1", new Rectangle(219, 298, 188, 136));
@@ -190,9 +190,9 @@ public class ALT_Bug124689Test extends LayoutTestCase {
         baselinePosition.put("jTabbedPane1-183-144", new Integer(0));
         compBounds.put("jDesktopPane1", new Rectangle(18, 215, 183, 310));
         baselinePosition.put("jDesktopPane1-183-310", new Integer(-1));
-        compBounds.put("jToolBar1", new Rectangle(18, 179, 100, 25));
+        compBounds.put("jToolBar1", new Rectangle(101, 179, 100, 25));
         baselinePosition.put("jToolBar1-100-25", new Integer(-1));
-        compBounds.put("jSplitPane1", new Rectangle(18, 161, 183, 0));
+        compBounds.put("jSplitPane1", new Rectangle(101, 161, 100, 0));
         baselinePosition.put("jSplitPane1-183-0", new Integer(-1));
         compBounds.put("textArea1", new Rectangle(219, 298, 188, 136));
         baselinePosition.put("textArea1-188-136", new Integer(0));

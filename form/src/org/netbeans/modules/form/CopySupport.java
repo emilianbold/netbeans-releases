@@ -450,12 +450,9 @@ class CopySupport {
                                         sourceComp.getId(), getComponentSize(sourceComp),
                                         targetComponent.getId());
                             }
-                        } else if (move && sourceLayout != null) { // new-to-old layout copy
-                            // need to remove layout component
-                            LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceComp.getId());
-                            if (layoutComp != null) {
-                                sourceLayout.removeComponent(sourceComp.getId(), !layoutComp.isLayoutContainer());
-                            }
+                        } else if (move && sourceLayout != null && sourceForm == targetForm) {
+                            // new-to-old layout copy, need to remove layout component from source
+                            getLayoutDesigner().removeComponentsFromParent(sourceComp.getId());
                         } // old-to-old layout copy is fully handled by MetaComponentCreator
                     } // also copying menu component needs no additional treatment
                 }

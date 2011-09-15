@@ -11,9 +11,9 @@
                   <Group type="sequential" attributes="0">
                       <EmptySpace min="$pref" pref="26" max="$pref" attributes="0"/>
                       <Component id="jPanel1" min="$pref" max="$pref" attributes="0"/>
-                      <EmptySpace min="$pref" pref="54" max="$pref" attributes="0"/>
+                      <EmptySpace pref="54" max="Short.MAX_VALUE" attributes="0"/>
                       <Component id="jPanel2" min="$pref" max="$pref" attributes="0"/>
-                      <EmptySpace pref="37" max="Short.MAX_VALUE" attributes="0"/>
+                      <EmptySpace min="$pref" pref="37" max="$pref" attributes="0"/>
                       <Group type="parallel" groupAlignment="leading" attributes="0">
                           <Component id="jButton2" alignment="trailing" min="$pref" max="$pref" attributes="0"/>
                           <Component id="jButton3" alignment="trailing" min="$pref" max="$pref" attributes="0"/>

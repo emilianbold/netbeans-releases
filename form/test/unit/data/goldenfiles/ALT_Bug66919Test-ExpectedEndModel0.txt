@@ -7,9 +7,9 @@
               <Component id="add" min="$pref" max="$pref" attributes="16"/>
               <EmptySpace max="$pref" attributes="16"/>
               <Component id="jPanel1" min="$pref" max="$pref" attributes="16"/>
-              <EmptySpace pref="6" max="Short.MAX_VALUE" attributes="12"/>
+              <EmptySpace max="Short.MAX_VALUE" attributes="12"/>
               <Group type="parallel" groupAlignment="leading" attributes="16">
-                  <Group type="sequential" alignment="trailing" attributes="0">
+                  <Group type="sequential" attributes="0">
                       <Component id="save" min="$pref" pref="114" max="$pref" attributes="0"/>
                       <EmptySpace pref="116" max="Short.MAX_VALUE" attributes="0"/>
                       <Component id="delete" min="$pref" pref="137" max="$pref" attributes="0"/>
