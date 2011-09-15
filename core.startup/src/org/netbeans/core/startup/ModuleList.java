@@ -93,7 +93,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -164,7 +163,7 @@ final class ModuleList implements Stamps.Updater {
      * enable as needed. All discovered modules are returned.
      * Write mutex only.
      */
-    public Set readInitial() {
+    public Set<Module> readInitial() {
         ev.log(Events.START_READ);
         final Set<Module> read = new HashSet<Module>();
         try {
@@ -173,6 +172,25 @@ final class ModuleList implements Stamps.Updater {
             LOG.log(Level.WARNING, null, ioe);
         }
         return read;
+    }
+    
+    final Module createModule(
+        File jarFile, ModuleHistory hist, boolean reloadable, boolean autoload, 
+        boolean eager, Integer startLevel
+    ) throws IOException {
+        Module m;
+        try {
+            if (startLevel != null) {
+                m = mgr.createBundle(jarFile, hist, reloadable, autoload, eager, startLevel);
+            } else {
+                m = mgr.create(jarFile, hist, reloadable, autoload, eager);
+            }
+        } catch (DuplicateException dupe) {
+            // XXX should this be tolerated somehow? In case the original is
+            // in fact scheduled for deletion anyway?
+            throw new IOException(dupe);
+        }
+        return m;
     }
     
     /**
@@ -427,6 +445,9 @@ final class ModuleList implements Stamps.Updater {
                    ) {
             return Boolean.valueOf(v);
         } else {
+            if (k == "startlevel") { // NOI18N 
+                return Integer.valueOf(v);
+            }
             // Other properties are of type String.
             // Intern the smaller ones which are likely to be repeated somewhere.
             if (v.length() < 100) v = v.intern();
@@ -657,9 +678,11 @@ final class ModuleList implements Stamps.Updater {
         Stamps.getModulesJARs().scheduleSave(this, "all-modules.dat", false);
     }
     
+    @Override
     public void cacheReady() {
     }
 
+    @Override
     public void flushCaches(DataOutputStream os) throws IOException {
         ObjectOutputStream oss = new ObjectOutputStream(os);
         for (Module m : mgr.getModules()) {
@@ -957,6 +980,9 @@ final class ModuleList implements Stamps.Updater {
         p.put("autoload", m.isAutoload()); // NOI18N
         p.put("eager", m.isEager()); // NOI18N
         p.put("reloadable", m.isReloadable()); // NOI18N
+        if (m.getStartLevel() > 0) {
+            p.put("startlevel", m.getStartLevel()); // NOI18N
+        }
         if (m.getHistory() instanceof ModuleHistory) {
             ModuleHistory hist = (ModuleHistory) m.getHistory();
             p.put("jar", hist.getJar()); // NOI18N
@@ -1087,7 +1113,7 @@ final class ModuleList implements Stamps.Updater {
             fileDeleted0(ev.getName(), ev.getExt()/*, ev.getTime()*/);
             fileCreated0(fo.getName(), fo.getExt()/*, ev.getTime()*/);
         }
-        
+
         private void fileCreated0(String name, String ext/*, long time*/) {
             if ("xml".equals(ext)) { // NOI18N
                 String codenamebase = name.replace('-', '.');
@@ -1340,14 +1366,9 @@ final class ModuleList implements Stamps.Updater {
                     boolean autoload = (autoloadB != null ? autoloadB.booleanValue() : false);
                     Boolean eagerB = (Boolean)props.get("eager"); // NOI18N
                     boolean eager = (eagerB != null ? eagerB.booleanValue() : false);
-                    Module m;
-                    try {
-                        m = mgr.create(jarFile, new ModuleHistory(jar, "created from " + xmlfile), reloadable, autoload, eager);
-                    } catch (DuplicateException dupe) {
-                        // XXX should this be tolerated somehow? In case the original is
-                        // in fact scheduled for deletion anyway?
-                        throw (IOException) new IOException(dupe.toString()).initCause(dupe);
-                    }
+                    Integer startLevel = (Integer)props.get("startlevel"); // NOI18N
+                    ModuleHistory hist = new ModuleHistory(jar, "created from " + xmlfile);
+                    Module m = createModule(jarFile, hist, reloadable, autoload, eager, startLevel);
                     m.addPropertyChangeListener(this);
                     // Mark the status as disabled for the moment, so in step 3 it will be turned on
                     // if in dirtyprops it was marked enabled.
@@ -1641,7 +1662,8 @@ final class ModuleList implements Stamps.Updater {
                     Boolean eagerB = (Boolean) props.get("eager"); // NOI18N
                     boolean eager = eagerB != null ? eagerB.booleanValue() : false;
                     NbInstaller.register(name, props.get("deps")); // NOI18N
-                    Module m = mgr.create(jarFile, history, reloadable, autoload, eager);
+                    Integer startLevel = (Integer)props.get("startlevel"); // NOI18N
+                    Module m = createModule(jarFile, history, reloadable, autoload, eager, startLevel);
                     NbInstaller.register(null, null);
                     read.add(m);
                     DiskStatus status = new DiskStatus();

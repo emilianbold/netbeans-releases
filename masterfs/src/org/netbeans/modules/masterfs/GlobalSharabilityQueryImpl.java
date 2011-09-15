@@ -68,11 +68,12 @@ public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementatio
     public GlobalSharabilityQueryImpl() {
     }
 
+    @Override
     public int getSharability(final File file) {
         if (visibilityQuery == null) {
             Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(VisibilityQueryImplementation.class));
             Collection allInstance = result.allInstances();
-            assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE);
+            assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE) : "Missing GVQI: " + allInstance;
             visibilityQuery = GlobalVisibilityQueryImpl.INSTANCE;
         }
         return (visibilityQuery.isVisible(file.getName())) ? SharabilityQuery.UNKNOWN : SharabilityQuery.NOT_SHARABLE;
