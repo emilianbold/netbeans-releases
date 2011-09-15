@@ -72,7 +72,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Ian Formanek
  */
 @ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
-                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=100)}) // NOI18N
+                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=550)}) // NOI18N
 public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

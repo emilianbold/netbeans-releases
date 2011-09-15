@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Zezula
  */
 @ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
-                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=90)}) // NOI18N
+                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=540)}) // NOI18N
 public class JFXProjectProfilingSupportProvider extends J2SEProjectProfilingSupportProvider {
 
     static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
