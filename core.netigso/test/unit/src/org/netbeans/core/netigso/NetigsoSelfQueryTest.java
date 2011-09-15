@@ -453,6 +453,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         private final String url;
         private final MockFramework f;
         private final NetigsoArchive archive;
+        private transient int state = Bundle.INSTALLED;
 
         public MockBundle(String url, MockFramework f) {
             this.url = url;
@@ -464,7 +465,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         @Override
         public int getState() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return state;
         }
 
         @Override
@@ -474,6 +475,7 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         @Override
         public void start() throws BundleException {
+            state = Bundle.ACTIVE;
         }
 
         @Override
