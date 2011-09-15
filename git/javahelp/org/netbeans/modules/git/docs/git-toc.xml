@@ -8,6 +8,8 @@
         <tocitem text="Git Tasks: Quick Reference" target="org.netbeans.modules.git.quickref" /> 
         <tocitem text="Cloning a Git Repository" target="org.netbeans.modules.git.clone" />
 		<tocitem text="Adding Files to a Git Repository" target="org.netbeans.modules.git.add" />  
+		<tocitem text="Committing Sources to a Git Repository" target="org.netbeans.modules.git.commit" />
+		<tocitem text="Working with Branches" target="org.netbeans.modules.git.branch" />
 		<tocitem text="Working with Remote Repositories" target="org.netbeans.modules.git.remote" />    
       </tocitem>
     </tocitem>
