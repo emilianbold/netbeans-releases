@@ -100,11 +100,15 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     // and their state
     static final G gl() {
         initGl();
-        try {
-            return taskGl.get();
-        } catch (Exception ex) {
-            taskGl = null;
-            throw new IllegalStateException(ex);
+        for (;;) {
+            try {
+                return taskGl.get();
+            } catch (InterruptedException ex) {
+                continue;
+            } catch (Exception ex) {
+                taskGl = null;
+                throw new IllegalStateException(ex);
+            }
         }
     }
     
