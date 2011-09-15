@@ -39,29 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.editor.whitelist;
+package org.netbeans.modules.whitelist.index;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LineMap;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.api.whitelist.index.WhiteListIndex;
+import org.netbeans.api.whitelist.support.WhiteListSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -75,8 +81,9 @@ import org.openide.util.Lookup;
 public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
 
     private static final String WHITE_LIST_INDEX = "whitelist"; //NOI18N
-    static final String MSG = "msg";    //NOI18N
-    static final String LINE = "line";  //NOI18N
+    private static final String MSG = "msg";    //NOI18N
+    private static final String NAME = "name";  //NOI18N
+    private static final String LINE = "line";  //NOI18N
     private static Map<URL,File> roots2whiteListDirs = new ConcurrentHashMap<URL, File>();
 
     private final URL root;
@@ -104,20 +111,16 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             @NonNull final Lookup services) {
         final Trees trees = services.lookup(Trees.class);
         assert trees != null;
-        final WhiteListScanner scanner = new WhiteListScanner(
-                trees,
-                whiteList,
-                new AtomicBoolean());
-        final List<WhiteListScanner.Problem> problems = new LinkedList<WhiteListScanner.Problem>();
-        scanner.scan(toProcess,problems);
+        final Map<? extends Tree, ? extends WhiteListQuery.Result> problems = WhiteListSupport.getWhiteListViolations(toProcess, whiteList, trees, null);
+        assert problems != null;
         final LineMap lm = toProcess.getLineMap();
         final SourcePositions sp = trees.getSourcePositions();
-        for (WhiteListScanner.Problem p : problems) {
-            final int start = (int) sp.getStartPosition(toProcess, p.tree);
+        for (Map.Entry<? extends Tree, ? extends WhiteListQuery.Result> p : problems.entrySet()) {
+            final int start = (int) sp.getStartPosition(toProcess, p.getKey());
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
                 final IndexDocument doc = IndexManager.createDocument(indexable.getRelativePath());
-                doc.addPair(MSG, p.description, false, true);
+                doc.addPair(MSG, p.getValue().getViolatedRuleDescription(), false, true);
                 doc.addPair(LINE, Integer.toString(ln), false, true);
                 index.addDocument(doc);
             }
@@ -134,10 +137,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
         try {
             index.store(true);
             roots2whiteListDirs.put(root, whiteListDir);
-            final WhiteListTaskProvider tp = WhiteListTaskProvider.getInstance();
-            if (tp != null) {
-                tp.refresh(root);
-            }
+            WhiteListIndexAccessor.getInstance().refresh(root);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -150,8 +150,61 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     }
 
     @CheckForNull
-    static File getWhiteListDir(@NonNull final URL root) {
-        return roots2whiteListDirs.get(root);
+    private static DocumentIndex getIndex(@NonNull final FileObject root) {
+        try {
+            final File whiteListFolder = roots2whiteListDirs.get(root.getURL());
+            if (whiteListFolder != null) {
+                final DocumentIndex index = IndexManager.createDocumentIndex(whiteListFolder);
+                return index.getStatus() == Index.Status.VALID ? index : null;
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return null;
+    }
+
+    @NonNull
+    public static Collection<? extends WhiteListIndex.Problem> getWhiteListViolations(
+            @NonNull final FileObject root,
+            @NullAllowed final FileObject resource) {
+        final List<WhiteListIndex.Problem> result = new ArrayList<WhiteListIndex.Problem>();
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final DocumentIndex index = getIndex(root);
+                    if (index != null) {
+                        try {
+                            for (IndexDocument doc : index.findByPrimaryKey(
+                                    resource == null ? "" : FileUtil.getRelativePath(root,resource),    //NOI18N
+                                    QueryKind.PREFIX)) {
+                                try {
+                                    final String key = doc.getPrimaryKey();
+                                    String wlName = doc.getValue(NAME);
+                                    if (wlName == null) {
+                                        wlName = "";    //NOI18N
+                                    }
+                                    final String wlDesc = doc.getValue(MSG);
+                                    final int line = Integer.parseInt(doc.getValue(LINE));
+                                    final WhiteListQuery.Result wr = new WhiteListQuery.Result(false, wlName, wlDesc);
+                                    result.add(WhiteListIndexAccessor.getInstance().createProblem(wr, root, key, line));
+                                } catch (ArithmeticException ae) {
+                                    Exceptions.printStackTrace(ae);
+                                }
+                            }
+                        } finally {
+                            index.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        } catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return result;
     }
 
     @MimeRegistration(mimeType="text/x-java",service=JavaIndexerPlugin.Factory.class)
@@ -159,7 +212,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
         @Override
         public JavaIndexerPlugin create(final URL root, final FileObject cacheFolder) {
             try {
-                File whiteListDir = getWhiteListDir(root);
+                File whiteListDir = roots2whiteListDirs.get(root);
                 if (whiteListDir == null) {
                     //First time
                     final FileObject whiteListFolder = FileUtil.createFolder(cacheFolder, WHITE_LIST_INDEX);
