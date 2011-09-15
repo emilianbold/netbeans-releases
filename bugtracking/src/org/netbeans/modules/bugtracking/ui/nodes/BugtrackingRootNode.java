@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -84,7 +85,7 @@ public class BugtrackingRootNode extends AbstractNode {
      * Creates a new instance of BugtrackingRootNode
      */
     private BugtrackingRootNode() {
-        super(new RootNodeChildren());
+        super(Children.create(new RootNodeChildren(), true));
         setName("bugtracking"); // NOI18N
         setDisplayName(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_BugtrackingNode")); // NOI18N
         setIconBaseWithExtension(ICON_BASE);
@@ -121,7 +122,7 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends Children.Keys implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
@@ -134,43 +135,21 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
-            if(key instanceof WaitNode) {
-                return new Node[] {(Node)key};
-            }
-            assert key instanceof Repository;
-            return new Node[] {((Repository)key).getNode()};
-        }
-
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            refreshKeys();
-        }
-
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<Repository>emptySet());
-            super.removeNotify();
-        }
-
-        private void refreshKeys() {
-            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
-            setKeys(Collections.singleton(waitNode));
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    List<Repository> l = new ArrayList<Repository>();
-                    l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
-                    Collections.sort(l, new RepositoryComparator());
-                    setKeys(l);
-                }
-            });
+        protected Node createNodeForKey(Repository key) {
+            return key.getNode();
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
-                refreshKeys();
-            }
+//            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+                refresh(false);
+//            }
+        }
+
+        @Override
+        protected boolean createKeys(List<Repository> toPopulate) {
+            toPopulate.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
+            Collections.sort(toPopulate, new RepositoryComparator());
+            return true;
         }
     }
 
