@@ -44,7 +44,6 @@
 
 package org.netbeans.core.netigso;
 
-import org.netbeans.core.startup.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -62,6 +61,8 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -70,6 +71,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.launch.Framework;
 
 /**
  * How does OSGi integration deals with layer registration?
@@ -79,6 +81,7 @@ import org.osgi.framework.ServiceRegistration;
 public class NetigsoServicesTest extends SetupHid implements LookupListener {
     private static Module m1;
     private static ModuleManager mgr;
+
     private int cnt;
 
     public NetigsoServicesTest(String name) {
@@ -166,10 +169,7 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
 
     static Bundle findBundle(String bsn) throws Exception {
-        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
-        assertEquals("The right class", Netigso.class, o.getClass());
-        Netigso f = (Netigso)o;
-        Bundle[] arr = f.getFramework().getBundleContext().getBundles();
+        Bundle[] arr = findFramework().getBundleContext().getBundles();
         for (Bundle b : arr) {
             if (bsn.equals(b.getSymbolicName())) {
                 return b;
@@ -202,7 +202,16 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         return f;
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         cnt++;
+    }
+
+    static Framework findFramework() {
+        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
+        assertEquals("The right class", Netigso.class, o.getClass());
+        Netigso f = (Netigso)o;
+        final Framework frame = f.getFramework();
+        return frame;
     }
 }

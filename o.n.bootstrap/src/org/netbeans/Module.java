@@ -609,6 +609,20 @@ public abstract class Module extends ModuleInfo {
     public final Object getHistory() {
         return history;
     }
+
+    /** Finds out if a module has been assigned with a specific start level.
+     * Start level is only useful for OSGi bundles. Otherwise it is always zero.
+     * 
+     * @return zero, if no specific level is assigned, positive integer if so
+     * @since 2.43
+     */
+    public final int getStartLevel() {
+        return getStartLevelImpl();
+    }
+    
+    int getStartLevelImpl() {
+        return 0;
+    }
     
     /** String representation for debugging. */
     public @Override String toString() {
