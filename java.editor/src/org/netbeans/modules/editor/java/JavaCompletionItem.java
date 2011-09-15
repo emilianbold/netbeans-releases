@@ -438,6 +438,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     static abstract class WhiteListJavaCompletionItem<T extends Element> extends JavaCompletionItem {
 
+        private static final String WARNING = "org/netbeans/modules/java/editor/resources/warning_badge.gif";   //NOI18N
+        private static ImageIcon warningIcon;
         private final WhiteListQuery.WhiteList whiteList;
         private final ElementHandle<T> handle;
         private Boolean isBlackListed;
@@ -469,6 +471,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public boolean instantSubstitution(JTextComponent component) {
             return isBlackListed() ? false : super.instantSubstitution(component);
+        }
+
+        @Override
+        public final ImageIcon getIcon() {
+            final ImageIcon base = getBaseIcon();
+            if (base == null || !isBlackListed()) {
+                return base;
+            }
+            if (warningIcon == null) {
+                warningIcon = ImageUtilities.loadImageIcon(WARNING, false);
+            }
+            assert warningIcon != null;
+            return new ImageIcon(ImageUtilities.mergeImages(base.getImage(), warningIcon.getImage(), 8, 8));
+        }
+
+        protected ImageIcon getBaseIcon() {
+            return super.getIcon();
         }
     }
     
@@ -729,9 +748,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return typeHandle.getKind() == TypeKind.DECLARED ? JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle)) : null;
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(CLASS, false);
-            return icon;            
+            return icon;
         }
 
         protected String getLeftHtmlText() {
@@ -1001,7 +1020,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(INTERFACE, false);
             return icon;            
         }
@@ -1020,7 +1039,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(ENUM, false);
             return icon;            
         }
@@ -1035,7 +1054,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(ANNOTATION, false);
             return icon;            
         }
@@ -1251,7 +1270,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return rightText;
         }
         
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -1492,7 +1511,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -1766,7 +1785,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         @Override
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             ImageIcon merged = merged_icon[implement? 0 : 1][level];
             if ( merged != null ) {
@@ -2134,7 +2153,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return JavaCompletionProvider.createDocTask(getElementHandle());
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             int level = getProtectionLevel(modifiers);
             ImageIcon cachedIcon = icon[level];
             if (cachedIcon != null)
@@ -2930,7 +2949,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             };
         }
 
-        protected ImageIcon getIcon() {
+        protected ImageIcon getBaseIcon() {
             if (delegate != null)
                 return delegate.getIcon();
             if (icon == null)
@@ -3097,7 +3116,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return rightText;
         }
         
-        protected ImageIcon getIcon(){
+        protected ImageIcon getBaseIcon(){
             int level = getProtectionLevel(modifiers);
             boolean isField = getElementHandle().getKind().isField();
             ImageIcon cachedIcon = icon[isField ? 0 : 1][level - 1];
