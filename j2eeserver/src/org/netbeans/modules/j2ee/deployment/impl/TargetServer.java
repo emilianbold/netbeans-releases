@@ -54,6 +54,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
@@ -514,7 +516,32 @@ public class TargetServer {
                 }
                 case PROFILE: {
                     ProfilerServerSettings settings = Lookup.getDefault().lookup(Profiler.class).getSettings(instance.getUrl(), false);
-                    instance.startProfile(settings, false, ui);
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    ServerInstance.StateListener sl = new ServerInstance.StateListener() {
+
+                        @Override
+                        public void stateChanged(int oldState, int newState) {
+                            if (newState == ServerInstance.STATE_STOPPED ||
+                                    newState == ServerInstance.STATE_PROFILING) {
+                                latch.countDown();
+                            }
+                        }
+                    };
+
+                    instance.addStateListener(sl);
+                    try {
+                        instance.startProfile(settings, false, ui);
+                        try {
+                            // need to wait for profiler to load the agent etc.
+                            // 60 seconds timeout; instrumentation may slow down the startup significantly
+                            latch.await(60, TimeUnit.SECONDS);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            // proceed to exit
+                        }
+                    } finally {
+                        instance.removeStateListener(sl);
+                    }
                     break;
                 }
                 case RUN: {

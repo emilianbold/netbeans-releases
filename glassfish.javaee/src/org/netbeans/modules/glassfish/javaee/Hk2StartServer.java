@@ -453,38 +453,29 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
 
                 @Override
                 public void operationStateChanged(OperationState newState, String message) {
-                    if (OperationState.COMPLETED.equals(newState)) {
-                        // Make sure the server really is ready before we
-                        // advertise that it is ready
+                    if (newState == OperationState.RUNNING) {
+                        // wait for the profiler agent to initialize
+                        int t = 0;
+                        Logger.getLogger("glassfish-javaee").log(Level.FINE,"t == {0}", t); // NOI18N
+
+                        // Leave as soon as the profiler reaches state STATE_BLOCKING - 
+                        //   we need the ant execution thread to for the profiler client;
+                        // Note: It does not make sense to wait for STATE_RUNNING or STATE_PROFILING
+                        //       as the profiler won't reach them unless the client is connected
                         try {
-                            int t = 0;
-                            Logger.getLogger("glassfish-javaee").log(Level.FINE,"t == {0}", t); // NOI18N
-
-                            // Wait for the profiler to start completely...
-                            while (!(ProfilerSupport.getState() == ProfilerSupport.STATE_PROFILING) &&
-                                    t < 30000) {
+                            while (!(ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING)
+                                    && t < 30000) {
                                 Thread.sleep(1000);
                                 t += 1000;
-                                Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.1 == {0}", t);  // NOI18N
+                                Logger.getLogger("glassfish-javaee").log(Level.FINE, "t.1 == {0}", t);  // NOI18N
                             }
-
-                            int port = Integer.parseInt(ip.getProperty(GlassfishModule.ADMINPORT_ATTR));
-                            // Wait for the admin port to be 'running'
-                            while (//!Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                                   // ip.getProperty(GlassfishModule.ADMINPORT_ATTR)) &&
-                                    !org.netbeans.modules.glassfish.spi.Utils.isLocalPortOccupied(port) &&
-                                    t < 60000) {
-                                Thread.sleep(1000);
-                                t += 1000;
-                                Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.2 == {0}", t);  // NOI18N
-                            }
-                            Logger.getLogger("glassfish-javaee").log(Level.FINE, "t.3 == {0}", t);  // NOI18N
                         } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
                         }
                     }
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                            CommandType.START, translateState(newState), ActionType.EXECUTE,
-                            message));
+                        CommandType.START, translateState(newState), ActionType.EXECUTE,
+                        message));
                 }
             }, jdkRoot, settings.getJvmArgs());
         }
