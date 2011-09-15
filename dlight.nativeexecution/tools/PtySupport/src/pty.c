@@ -2,7 +2,7 @@
  * File:   pty_start.c
  * Author: ak119685
  *
- * Created on 22 Апрель 2010 г., 12:32
+ * Created on 22 ?????? 2010 ?., 12:32
  */
 
 #include "pty_fork.h"
@@ -15,12 +15,15 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#include <libgen.h>
+
 #if defined __CYGWIN__ && !defined WCONTINUED
 //added for compatibility with cygwin 1.5
 #define WCONTINUED 0
 #endif
 
 static void set_noecho(int);
+const char* progname;
 
 /*
  * 
@@ -39,20 +42,21 @@ int main(int argc, char** argv) {
     int idx;
     int nopt = 1;
 
+    progname = basename(argv[0]);
+
     for (idx = 1; idx < argc; idx++) {
         if (argv[idx][0] == '-') {
             if (strcmp(argv[idx], "-p") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {
-                    printf("ERROR missing pty after -p\n");
-                    exit(-1);
+                    err_quit("missing pty after -p\n");
                 }
                 pty = argv[idx];
                 nopt += 2;
             } else if (strcmp(argv[idx], "--env") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {
-                    printf("ERROR missing variable=value pair after --env\n");
+                    err_quit("missing variable=value pair after --env\n");
                     exit(-1);
                 }
 
