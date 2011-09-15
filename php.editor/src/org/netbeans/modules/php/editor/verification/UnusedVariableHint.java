@@ -83,7 +83,20 @@ import org.openide.util.NbBundle.Messages;
 public class UnusedVariableHint extends AbstractRule {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
-    private static final String THIS_VARIABLE = "this"; //NOI18N
+    private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+
+    static {
+        UNCHECKED_VARIABLES.add("this"); //NOI18N
+        UNCHECKED_VARIABLES.add("GLOBALS"); //NOI18N
+        UNCHECKED_VARIABLES.add("_SERVER"); //NOI18N
+        UNCHECKED_VARIABLES.add("_GET"); //NOI18N
+        UNCHECKED_VARIABLES.add("_POST"); //NOI18N
+        UNCHECKED_VARIABLES.add("_FILES"); //NOI18N
+        UNCHECKED_VARIABLES.add("_COOKIE"); //NOI18N
+        UNCHECKED_VARIABLES.add("_SESSION"); //NOI18N
+        UNCHECKED_VARIABLES.add("_REQUEST"); //NOI18N
+        UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
+    }
 
     @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
@@ -165,7 +178,7 @@ public class UnusedVariableHint extends AbstractRule {
 
         public void addNodeUsage(ASTNode node) {
             Identifier identifier = getIdentifier(node);
-            if (identifier != null && !identifier.getName().equals(THIS_VARIABLE)) {
+            if (identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())) {
                 int inScopeOffset = resolveInScopeOffset(node);
                 VariableScope variableScope = model.getVariableScope(inScopeOffset);
                 Map<String, List<Identifier>> scopeVars = getScopeVariables(variableScope);
@@ -246,7 +259,7 @@ public class UnusedVariableHint extends AbstractRule {
         private void checkVariableScope(VariableScope variableScope) {
             Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
             for (VariableName variableName : declaredVariables) {
-                if (!getPureName(variableName).equals(THIS_VARIABLE)) {
+                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName))) {
                     checkVariableName(variableName, variableScope);
                 }
             }
