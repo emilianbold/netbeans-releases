@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.modules.cnd.dwarfdiscovery.provider.support;
 
-import java.io.File;
-import java.util.Collection;
-import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
-import org.openide.util.Lookup;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.Exceptions;
 
 /**
- * Provides implementation of <code>SharabilityQueryImplementation</code> that
- * is tightly coupled with <code>GlobalVisibilityQueryImpl</code> which is based on regular
- * expression provided by users via  property in IDESettings with property name 
- * IDESettings.PROP_IGNORED_FILES in Tools/Options.  
  *
- * Invisible files are considered as not shared. 
- *
- * @author Radek Matous
+ * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class, position=0)
-public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementation {
-    private GlobalVisibilityQueryImpl visibilityQuery;
-    /** Creates a new instance of GlobalSharabilityQueryImpl */
-    public GlobalSharabilityQueryImpl() {
+public class RemoteJarServiceProvider {
+    private static final Class<?> service = Offset2LineService.class;
+    private static final String localAbsPath;
+    static {
+        localAbsPath = findPaths();
     }
 
-    @Override
-    public int getSharability(final File file) {
-        if (visibilityQuery == null) {
-            Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(VisibilityQueryImplementation.class));
-            Collection allInstance = result.allInstances();
-            assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE) : "Missing GVQI: " + allInstance;
-            visibilityQuery = GlobalVisibilityQueryImpl.INSTANCE;
+    private static String findPaths() {
+        try {
+            return service.getProtectionDomain().getCodeSource().getLocation().getPath();
+        } catch (Throwable thr) {
+            Exceptions.printStackTrace(thr);
+            return null;
         }
-        return (visibilityQuery.isVisible(file.getName())) ? SharabilityQuery.UNKNOWN : SharabilityQuery.NOT_SHARABLE;
-    }    
+    }
+
+    public static NativeProcess getJavaProcess(String java, Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setCharset(Charset.forName("UTF-8")); // NOI18N
+        npb.setExecutable(java); //NOI18N
+        List<String> args = new ArrayList<String>();
+        args.add("-cp"); //NOI18N
+        args.add(localAbsPath); //NOI18N
+        args.add(clazz.getName());
+        args.addAll(Arrays.asList(arguments));
+        npb.setArguments(args.toArray(new String[args.size()]));
+        return npb.call();
+    }
 }

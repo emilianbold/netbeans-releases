@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,8 +53,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -162,7 +159,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextField = new JTextField();
         projectFolderBrowseButton = new JButton();
         projectFolderScrollPane = new JScrollPane();
-        projectFolderTextArea = new JTextArea();
+        projectFolderTextPane = new JTextPane();
 
         setFocusTraversalPolicy(null);
 
@@ -184,34 +181,28 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
 
         projectFolderScrollPane.setBorder(null);
 
-        projectFolderTextArea.setBackground(UIManager.getDefaults().getColor("Label.background"));
-        projectFolderTextArea.setEditable(false);
-        projectFolderTextArea.setFont(projectFolderTextArea.getFont().deriveFont(projectFolderTextArea.getFont().getStyle() | Font.BOLD));
-        projectFolderTextArea.setLineWrap(true);
-        projectFolderTextArea.setText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
-        projectFolderTextArea.setToolTipText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
-        projectFolderTextArea.setWrapStyleWord(true);
-        projectFolderTextArea.setBorder(null);
-        projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("nb.warningForeground"));
-        projectFolderTextArea.setEnabled(false);
-        projectFolderScrollPane.setViewportView(projectFolderTextArea);
-        projectFolderTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleName")); // NOI18N
-        projectFolderTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderTextPane.setBackground(UIManager.getDefaults().getColor("Label.background"));
+        projectFolderTextPane.setBorder(null);
+        projectFolderTextPane.setFont(new Font("Dialog", 1, 12)); // NOI18N
+        projectFolderTextPane.setText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
+        projectFolderScrollPane.setViewportView(projectFolderTextPane);
+        projectFolderTextPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextPane.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderTextPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(projectFolderScrollPane)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(projectFolderCheckBox)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(projectFolderLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
+                        .addComponent(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(projectFolderBrowseButton))
+            .addComponent(projectFolderScrollPane, GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -223,7 +214,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
                     .addComponent(projectFolderLabel)
                     .addComponent(projectFolderBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, 85, GroupLayout.PREFERRED_SIZE))
+                .addComponent(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
 
         projectFolderCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -234,8 +225,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
         projectFolderBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderBrowseButton.AccessibleContext.accessibleName")); // NOI18N
         projectFolderBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        projectFolderScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleName")); // NOI18N
-        projectFolderScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleDescription")); // NOI18N
@@ -255,8 +246,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     private JCheckBox projectFolderCheckBox;
     private JLabel projectFolderLabel;
     private JScrollPane projectFolderScrollPane;
-    private JTextArea projectFolderTextArea;
     private JTextField projectFolderTextField;
+    private JTextPane projectFolderTextPane;
     // End of variables declaration//GEN-END:variables
 
     @Override

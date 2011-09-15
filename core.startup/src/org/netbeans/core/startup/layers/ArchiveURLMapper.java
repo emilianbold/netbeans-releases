@@ -84,11 +84,12 @@ public class ArchiveURLMapper extends URLMapper {
         assert fo != null;
         if (type == URLMapper.EXTERNAL || type == URLMapper.INTERNAL) {
             if (fo.isValid()) {
+                File archiveFile = null;
                 try {
                     FileSystem fs = fo.getFileSystem();
                     if (fs instanceof JarFileSystem) {
                         JarFileSystem jfs = (JarFileSystem) fs;
-                        File archiveFile = jfs.getJarFile();
+                        archiveFile = jfs.getJarFile();
                         if (isRoot(archiveFile)) {
                             return new URL("jar:" + archiveFile.toURI() + "!/" +
                                     new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
@@ -96,6 +97,7 @@ public class ArchiveURLMapper extends URLMapper {
                         }
                     }
                 } catch (/*IO,URISyntax*/Exception e) {
+                    Exceptions.attachMessage(e, "fo: " + fo + " archiveFile: " + archiveFile); // NOI18N
                     Exceptions.printStackTrace(e);
                 }
             }

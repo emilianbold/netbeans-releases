@@ -80,7 +80,7 @@ public class ModuleFactory {
             throw ex;
         }
     }
-
+    
     /**
      * This method creates a "fixed" module. Fixed modules cannot be
      * realoaded, are always enabled and are typically present on the

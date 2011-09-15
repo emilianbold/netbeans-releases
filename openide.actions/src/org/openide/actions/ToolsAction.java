@@ -51,9 +51,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -63,7 +63,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -99,12 +98,21 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     // Global ActionManager listener monitoring all available actions
     // and their state
     static final G gl() {
+        return gl(Long.MAX_VALUE);
+    }
+    static final G gl(long timeOut) {
         initGl();
-        try {
-            return taskGl.get();
-        } catch (Exception ex) {
-            taskGl = null;
-            throw new IllegalStateException(ex);
+        for (;;) {
+            try {
+                return taskGl.get(timeOut, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException ex) {
+                return null;
+            } catch (InterruptedException ex) {
+                continue;
+            } catch (Exception ex) {
+                taskGl = null;
+                throw new IllegalStateException(ex);
+            }
         }
     }
     
@@ -294,9 +302,19 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
 
         
+        @NbBundle.Messages({
+            "LAB_ToolsActionInitializing=Initializing..."
+        })
         @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            if (timestamp == gl().getTimestamp()) {
+            G g = gl(50);
+            if (g == null) {
+                JMenuItem init = new JMenuItem();
+                init.setText(Bundle.LAB_ToolsActionInitializing());
+                init.setEnabled(false);
+                return new JMenuItem[] { init };
+            }
+            if (timestamp == g.getTimestamp()) {
                 return items;
             }
             // generate directly list of menu items

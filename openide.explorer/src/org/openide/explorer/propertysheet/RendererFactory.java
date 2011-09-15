@@ -119,8 +119,8 @@ final class RendererFactory {
     private TextFieldRenderer textFieldRenderer;
     private ButtonPanel buttonPanel;
     private IconPanel iconPanel;
-    private ReusablePropertyModel mdl;
-    private ReusablePropertyEnv env;
+    private final ReusablePropertyModel mdl;
+    private final ReusablePropertyEnv env;
     private PropertyChangeListener activeThemeListener;
     private boolean tableUI;
     private boolean suppressButton;
@@ -133,6 +133,7 @@ final class RendererFactory {
         this.tableUI = tableUI;
         this.env = env;
         this.mdl = mdl;
+        assert mdl != null && env != null;
 
         
         //reset renderers when windows theme is changing (classic <-> xp)
