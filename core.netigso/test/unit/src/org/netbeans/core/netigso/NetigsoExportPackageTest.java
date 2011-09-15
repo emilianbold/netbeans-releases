@@ -39,49 +39,59 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.remote;
+package org.netbeans.core.netigso;
 
-import java.lang.reflect.Field;
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import org.netbeans.MockEvents;
+import org.netbeans.MockModuleInstaller;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 
-/**
- *
- * @author Jaroslav Bachorik
- */
-public class RemoteFXService {
-    final private static Thread accessThread = new Thread(new Runnable() {
-        public void run() {
-            while (!Thread.interrupted()) {
-                access();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }, "FX Access Thread (Visual Debugger)"); // NOI18N
-    
-    public static void startAccessLoop() {
-        setDebugMode();
-        accessThread.setDaemon(true);
-        accessThread.setPriority(Thread.MIN_PRIORITY);
-        accessThread.start();
+public class NetigsoExportPackageTest extends NetigsoHid {
+
+    public NetigsoExportPackageTest(String name) {
+        super(name);
     }
-
-    /**
-     * JavaFX runtime is boobietrapped with various checks for {@linkplain com.sun.javafx.runtime.SystemProperties#isDebug() }
-     * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
-     */
-    private static void setDebugMode() {
+    
+    
+    public void testNetigsoExportPackage() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        HashSet<Module> b = null;
+        boolean ok = false;
         try {
-            Class spClz = Class.forName("com.sun.javafx.runtime.SystemProperties");
-            Field dbgFld = spClz.getDeclaredField("isDebug");
-            dbgFld.setAccessible(true);
-            dbgFld.set(null, Boolean.TRUE);
-        } catch (Exception e) {
-            e.printStackTrace();
+            String mfBar = "Bundle-SymbolicName: org.bar\n" +
+                "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
+                "Import-Package: org.foo\n" +
+                "\n\n";
+
+            String mfSimple = "OpenIDE-Module: org.foo/1\n"
+                    + "OpenIDE-Module-Specification-Version: 1.2\n"
+                    + "OpenIDE-Module-Public-Packages: org.wrong.foo.*\n"
+                    + "OpenIDE-Module-Friends: few.unknown\n"
+                    + "Netigso-Export-Package: org.foo\n"
+                    + "\n\n";
+
+            
+            File j1 = changeManifest(new File(jars, "simple-module.jar"), mfSimple);
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            Module m1 = mgr.create(j1, null, false, false, false);
+            Module m2 = mgr.create(j2, null, false, false, false);
+            b = new HashSet<Module>(Arrays.asList(m1, m2));
+            mgr.enable(b);
+            ok = true;
+            assertTrue("Enabled OK", m2.isEnabled());
+        } finally {
+            if (ok) {
+                mgr.disable(b);
+            }
+            mgr.mutexPrivileged().exitWriteAccess();
         }
     }
     
-    private static void access() {};
 }

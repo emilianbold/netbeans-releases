@@ -268,6 +268,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             try {
                 LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
                 b.start();
+                if (b.getState() == Bundle.INSTALLED && isRealBundle(b)) {
+                    throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
+                }
             } catch (BundleException possible) {
                 if (isRealBundle(b)) {
                     throw possible;
@@ -423,9 +426,12 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
      *   make sense to represent this module as bundle
      */
     private static InputStream fakeBundle(ModuleInfo m) throws IOException {
+        String netigsoExp = (String) m.getAttribute("Netigso-Export-Package"); // NOI18N
         String exp = (String) m.getAttribute("OpenIDE-Module-Public-Packages"); // NOI18N
-        if ("-".equals(exp)) { // NOI18N
-            return null;
+        if (netigsoExp == null) {
+            if ("-".equals(exp) || m.getAttribute("OpenIDE-Module-Friends") != null) { // NOI18N
+                return null;
+            }
         }
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Manifest man = new Manifest();
@@ -437,7 +443,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             String spec = threeDotsWithMajor(m.getSpecificationVersion().toString(), m.getCodeName());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
         }
-        if (exp != null) {
+        if (netigsoExp != null) {
+            man.getMainAttributes().putValue("Export-Package", netigsoExp); // NOI18N
+        } else if (exp != null) {
             man.getMainAttributes().putValue("Export-Package", exp.replaceAll("\\.\\*", "")); // NOI18N
         } else {
             man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N

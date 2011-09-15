@@ -49,6 +49,8 @@ import javax.swing.ListModel;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -67,6 +69,10 @@ public class QueryRefreshTest extends NbTestCase {
         super(arg0);
     }
 
+//    public static Test suite() {
+//        return NbModuleSuite.create(QueryRefreshTest.class, null, null); 
+//    }
+    
     @Override
     protected Level logLevel() {
         return Level.ALL;
