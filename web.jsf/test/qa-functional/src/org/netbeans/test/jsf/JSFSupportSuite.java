@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,48 +33,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.test.jsf;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test JSF support in Java EE 6 project.
+ * Run all tests in the same instance of the IDE.
  *
- * @author Lukasz Grela
  * @author Jiri Skrivanek
- * @author Jindrich Sedek
  */
-public class JsfFunctionalEE6Test extends JsfFunctionalTest {
+public class JSFSupportSuite extends J2eeTestCase {
 
-    public static final String[] TESTS = {
-        "testNewJSFWebProject",
-        "testCleanAndBuildProject",
-        "testCompileAllJSP",
-        "testRedeployProject",
-        "testManagedBeanWizard",
-        "testManagedBeanDelete",
-        "testAddJSFToProject",
-        "testShutdownDb",
-        "testFinish"
-    };
-
-    public JsfFunctionalEE6Test(String name) {
+    public JSFSupportSuite(String name) {
         super(name);
-        PROJECT_NAME = "WebJSFProjectEE6";
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalEE6Test.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalTest.class, JsfFunctionalTest.TESTS);
+        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalEE6Test.class, JsfFunctionalEE6Test.TESTS);
         return NbModuleSuite.create(conf);
-    }
-
-    @Override
-    protected String getEEVersion() {
-        return JAVA_EE_6;
     }
 }
