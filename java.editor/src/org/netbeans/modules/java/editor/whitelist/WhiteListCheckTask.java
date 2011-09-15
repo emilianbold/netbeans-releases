@@ -42,12 +42,14 @@
 package org.netbeans.modules.java.editor.whitelist;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -65,6 +67,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.api.whitelist.support.WhiteListSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -96,29 +99,34 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
         if (whiteList == null) {
             return;
         }
-        final List<WhiteListScanner.Problem> problems = new LinkedList<WhiteListScanner.Problem>();
-        final WhiteListScanner scanner = new WhiteListScanner(
-                info.getTrees(),
-                whiteList,
-                canceled);
         final CompilationUnitTree cu = info.getCompilationUnit();
-        try {
-            scanner.scan(cu, problems);
-        } catch (WhiteListScanner.Cancel cancel) {
+        final Map<? extends Tree, ? extends WhiteListQuery.Result> problems = WhiteListSupport.getWhiteListViolations(
+                cu,
+                whiteList,
+                info.getTrees(),
+                new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return canceled.get();
+                    }
+                });
+        if (problems == null) {
+            //Canceled
             return;
         }
         final SourcePositions sp = info.getTrees().getSourcePositions();
         final List<ErrorDescription> errors = new ArrayList<ErrorDescription>(problems.size());
-        for (WhiteListScanner.Problem problem : problems) {
+        for (Map.Entry<? extends Tree, ? extends WhiteListQuery.Result> problem : problems.entrySet()) {
             if (canceled.get()) {
                 return;
             }
-            final int start = (int) sp.getStartPosition(cu, problem.tree);
-            final int end = (int) sp.getEndPosition(cu, problem.tree);
+            final Tree tree = problem.getKey();
+            final int start = (int) sp.getStartPosition(cu, tree);
+            final int end = (int) sp.getEndPosition(cu, tree);
             if (start >= 0 && end >= 0) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.WARNING,
-                        problem.description,
+                        problem.getValue().getViolatedRuleDescription(),
                         file,
                         start,
                         end));
