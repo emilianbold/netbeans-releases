@@ -8,7 +8,7 @@
 <#if package?? && package != "">
 <AnchorPane id="AnchorPane" prefHeight="200.0" prefWidth="320.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${package}.${name}">
 <#else>
-<AnchorPane id="AnchorPane" prefHeight="200.0" prefWidth="320.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${name}">
+<AnchorPane id="AnchorPane" prefHeight="200.0" prefWidth="320.0" xmlns:fx="http://javafx.com/fxml" fx:controller="MISSING_PACKAGE_NAME.${name}">
 </#if>
   <children>
     <Button layoutX="126.0" layoutY="90.0" text="Click Me!" onAction="#handleButtonAction" />
