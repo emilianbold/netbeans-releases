@@ -620,7 +620,11 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   <api name="Netigso-Export-Package" category="stable" group="property" type="export">
+   If a NetBeans module's manifest contains tag <code>Netigso-Export-Package</code>,
+   then it is used as a value of <code>Export-Package</code> OSGi tag, when
+   re-exporting the module as OSGi bundle.
+   </api>
   </p>
  </answer>
 

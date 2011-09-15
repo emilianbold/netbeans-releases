@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -151,7 +150,7 @@ public abstract class NetigsoFramework {
         toEnable.addAll(newlyEnabling);
     }
 
-    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) {
+    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
         boolean found = false;
         if (framework == null) {
             for (Module m : toEnable) {
@@ -189,7 +188,7 @@ public abstract class NetigsoFramework {
         return additional;
     }
 
-    private static boolean delayedInit() {
+    private static boolean delayedInit() throws InvalidException {
         List<NetigsoModule> init;
         synchronized (NetigsoFramework.class) {
             init = toInit;
@@ -198,12 +197,23 @@ public abstract class NetigsoFramework {
                 return true;
             }
         }
+        InvalidException thrw = null;
         for (NetigsoModule nm : init) {
             try {
                 nm.start();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                nm.setEnabled(false);
+                InvalidException invalid = new InvalidException(nm, ex.getMessage());
+                if (thrw == null) {
+                    invalid.initCause(ex);
+                } else {
+                    invalid.initCause(thrw);
+                }
+                thrw = invalid;
             }
+        }
+        if (thrw != null) {
+            throw thrw;
         }
         return false;
     }
