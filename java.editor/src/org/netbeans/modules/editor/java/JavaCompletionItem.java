@@ -288,7 +288,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Completion.get().hideCompletion();
                 JTextComponent component = (JTextComponent)evt.getSource();
                 int caretOffset = component.getSelectionEnd();
-                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()), (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()), false);
                 evt.consume();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
@@ -1439,7 +1439,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.enclSortText = ""; //NOI18N
             }
             this.assignToVarPos = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarPos;
-            this.assignToVarText = assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
+            this.assignToVarText = this.assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
         }
         
         public int getSortPriority() {
