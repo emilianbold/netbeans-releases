@@ -86,7 +86,7 @@ public class NbClipboardTest extends NbTestCase {
             macCheck();
         } else {
             NbClipboard ec = new NbClipboard();
-            assertTrue("By default we still do use slow hacks", ec.slowSystemClipboard);
+            assertFalse("By default we do not use slow hacks", ec.slowSystemClipboard);
         }
     }
     public void testPropOnJDK15AndLater() {
