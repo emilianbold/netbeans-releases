@@ -339,7 +339,7 @@ public class OracleInstance {
             boolean redeploy = false;
             List<Application> apps = am.listApplications(serviceGroup, serviceName);
             for (Application app : apps) {
-                if (app.getApplicationName().equals(appId)) {
+                if (app.getApplicationName() != null && app.getApplicationName().equals(appId)) {
                     redeploy = true;
                     break;
                 }
@@ -401,7 +401,7 @@ public class OracleInstance {
             return DeploymentStatus.UNKNOWN;
         } catch (Throwable t) {
             if (owe != null) {
-                owe.print(t.toString());
+                t.printStackTrace(owe);
             }
             return DeploymentStatus.UNKNOWN;
         } finally {
