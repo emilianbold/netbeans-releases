@@ -230,10 +230,18 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	if (runargs == null)
 	    runargs = "";
         String command = "runargs " + runargs; //NOI18N
-        String[] files = dbxDebugger().getIOPack().getIOFiles();
-        if (files != null) {
-            command += " < " + files[0] + " > " + files[1]; //NOI18N
-        }
+	// maybe conflict with "Standard output" implementation
+	boolean has_redir = runargs.contains("<") || runargs.contains(">");
+	String[] files = dbxDebugger().getIOPack().getIOFiles();
+	if (has_redir) {
+	    if (files != null && !files[0].contains("debuggerFifo")) {
+		command += " < " + files[0] + " > " + files[1]; //NOI18N
+	    }
+	} else {
+	    if (files != null) {
+		command += " < " + files[0] + " > " + files[1]; //NOI18N
+	    }
+	}
 	dbx().sendCommand(0, 0, command);
     }
 
