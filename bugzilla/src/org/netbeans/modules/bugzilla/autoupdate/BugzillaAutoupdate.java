@@ -71,7 +71,7 @@ public class BugzillaAutoupdate {
     static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.bugzilla.supported.version"); // NOI18N
-        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.4"); // NOI18N
+        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : BugzillaVersion.BUGZILLA_4_0; // NOI18N
     }
     static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 

@@ -53,8 +53,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
+import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -66,6 +68,7 @@ import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
 import org.netbeans.modules.jira.LogHandler;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryRefreshTest;
 import org.openide.util.Lookup;
 
 /**
@@ -81,9 +84,8 @@ public class RepositoryTest extends NbTestCase {
         super(arg0);
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
+    public static Test suite() {
+        return NbModuleSuite.create(RepositoryTest.class, null, null); 
     }
 
     @Override

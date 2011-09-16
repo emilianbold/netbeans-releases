@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -132,6 +132,7 @@ public class AutoupdateCheckScheduler {
         final long startTime = System.currentTimeMillis ();
         RequestProcessor.Task t = Installer.RP.post (doCheckAvailableUpdates, delay);
         t.addTaskListener (new TaskListener () {
+            @Override
             public void taskFinished (Task task) {
                 task.removeTaskListener (this);
                 long time = (System.currentTimeMillis () - startTime - delay) / 1000;
@@ -144,6 +145,7 @@ public class AutoupdateCheckScheduler {
     
     private static Runnable getRefresher (final UpdateUnitProvider p, final Collection<String> problems, final ProgressHandle progress) {
         return new Runnable () {
+            @Override
             public void run () {
                 try {
                     err.log (Level.FINE, "Start refresh " + p.getName () + "[" + p.getDisplayName () + "]");
@@ -172,6 +174,7 @@ public class AutoupdateCheckScheduler {
     }
     
     private static Runnable doCheckAvailableUpdates = new Runnable () {
+        @Override
         public void run () {
             if (SwingUtilities.isEventDispatchThread ()) {
                 Installer.RP.post (doCheckAvailableUpdates);
@@ -453,8 +456,10 @@ public class AutoupdateCheckScheduler {
             }
             Collection<LazyUnit> updates = LazyUnit.loadLazyUnits (OperationType.UPDATE);
             boolean hasUpdates = updates != null && ! updates.isEmpty ();
-            notifyAvailable (updates, OperationType.UPDATE);
-            if (! hasUpdates) {
+            if (Utilities.shouldCheckAvailableUpdates ()) {
+                notifyAvailable (updates, OperationType.UPDATE);
+            }
+            if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
                 Collection<LazyUnit> newUnits = LazyUnit.loadLazyUnits (OperationType.INSTALL);
                 notifyAvailable (newUnits, OperationType.INSTALL);
             }
@@ -494,6 +499,7 @@ public class AutoupdateCheckScheduler {
         // Some modules found
         ActionListener onMouseClickAction = new ActionListener () {
             @SuppressWarnings("unchecked")
+            @Override
             public void actionPerformed ( ActionEvent ae ) {
                 boolean wizardFinished = false;
                 RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
