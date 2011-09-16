@@ -75,6 +75,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="WhiteListRsult">
+            <api name="whitelist"/>
+            <summary>WhiteList.Result changed to support merged WhiteLists</summary>
+            <version major="1" minor="3"/>
+            <date day="16" month="9" year="2011"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes" modification="yes" semantic="compatible" source="incompatible" binary="incompatible"/>
+            <description>
+                <p>
+                    WhiteListQuery.Result has been split into Result and RuleDescription to support merging
+                    of whitelist results.
+                </p>
+            </description>
+            <class package="org.netbeans.api.whitelist" name="WhiteListQuery"/>
+            <issue number="202187"/>
+        </change>
         <change id="WhiteListIndex">
             <api name="whitelist"/>
             <summary>Added WhiteListQuery to check violations of runtime restrictions</summary>

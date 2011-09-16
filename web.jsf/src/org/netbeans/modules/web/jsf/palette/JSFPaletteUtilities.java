@@ -70,17 +70,24 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Libor Kotouc
  */
 public final class JSFPaletteUtilities {
+
+    private static final String SCRIPT_ENGINE_ATTR = "javax.script.ScriptEngine"; //NOI18N
+    private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
+
+    private static ScriptEngineManager manager;
+
 //    private static final String JSF_CORE_PREFIX = "f";  //NOI18N
 //    private static final String JSF_CORE_URI = "http://java.sun.com/jsf/core";  //NOI18N
 //    private static final String JSF_HTML_PREFIX = "h";  //NOI18N
 //    private static final String JSF_HTML_URI = "http://java.sun.com/jsf/html";  //NOI18N
-//    
+//
 //    public static String findJsfCorePrefix(JTextComponent target) {
 //        String res = getTagLibPrefix(target, JSF_CORE_URI);
 //        if (res == null)
@@ -148,12 +155,12 @@ public final class JSFPaletteUtilities {
         FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
         return fobj;
     }
-    
+
     public static void insert(String s, final JTextComponent target) throws BadLocationException {
         Document doc = target.getDocument();
         if (doc != null && doc instanceof BaseDocument) {
             final String str = (s == null) ? "" : s;
-        
+
             final BaseDocument baseDoc = (BaseDocument) doc;
             final Reformat formatter = Reformat.get(baseDoc);
             Runnable edit = new Runnable() {
@@ -165,14 +172,14 @@ public final class JSFPaletteUtilities {
                         if (start >= 0) {
                             int end = start + str.length();
                             formatter.reformat(start, end);
-                            
+
                         }
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);
                     }
                 }
             };
-            
+
             formatter.lock();
             try {
                 baseDoc.runAtomic(edit);
@@ -181,7 +188,7 @@ public final class JSFPaletteUtilities {
             }
         }
     }
-    
+
     private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
         int start = -1;
         try {
@@ -190,17 +197,15 @@ public final class JSFPaletteUtilities {
             int p0 = Math.min(caret.getDot(), caret.getMark());
             int p1 = Math.max(caret.getDot(), caret.getMark());
             doc.remove(p0, p1 - p0);
-            
+
             //replace selected text by the inserted one
             start = caret.getDot();
             doc.insertString(start, s, null);
         } catch (BadLocationException ble) {
         }
-        
+
         return start;
     }
-    
-    private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, FileObject target) throws IOException {
         Writer w = new OutputStreamWriter(target.getOutputStream());
@@ -217,9 +222,7 @@ public final class JSFPaletteUtilities {
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, Charset targetEncoding, Writer w) throws IOException {
         Charset sourceEnc = FileEncodingQuery.getEncoding(template);
-        ScriptEngineManager manager;
-        manager = new ScriptEngineManager();
-        ScriptEngine eng = manager.getEngineByName("freemarker"); // NOI18N
+        ScriptEngine eng = getScriptEngine(template);
         Bindings bind = eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
         bind.putAll(values);
         bind.put(ENCODING_PROPERTY_NAME, targetEncoding.name());
@@ -236,6 +239,32 @@ public final class JSFPaletteUtilities {
         }
     }
 
+    /**
+     * Used core method for getting {@code ScriptEngine} from {@code
+     * org.netbeans.modules.templates.ScriptingCreateFromTemplateHandler}.
+     */
+    protected static ScriptEngine getScriptEngine(FileObject fo) {
+        Object obj = fo.getAttribute(SCRIPT_ENGINE_ATTR);
+        // create.ftl, edit.ftl etc. templates doens't have stored any script engine
+        if (obj == null) {
+            obj = "freemarker"; //NOI18N
+        }
+
+        if (obj instanceof ScriptEngine) {
+            return (ScriptEngine) obj;
+        }
+        if (obj instanceof String) {
+            synchronized (JSFPaletteUtilities.class) {
+                if (manager == null) {
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
+                }
+            }
+            return manager.getEngineByName((String) obj);
+        }
+        return null;
+    }
+
     public static void reformat(DataObject dob) {
         try {
             EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
@@ -245,7 +274,7 @@ public final class JSFPaletteUtilities {
 
             final StyledDocument doc = ec.openDocument();
             final Reformat reformat = Reformat.get(doc);
-            
+
             reformat.lock();
             try {
                 NbDocument.runAtomicAsUser(doc, new Runnable() {
