@@ -55,15 +55,17 @@ public class SmartyFramework extends PhpProgram {
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
-     * Open delimiter in SMARTY templates
+     * Open delimiter in SMARTY templates.
      */
-    static String delimiterDefaultOpen = SmartyOptions.getInstance().getDefaultOpenDelimiter();
+    private static String delimiterDefaultOpen = SmartyOptions.getInstance().getDefaultOpenDelimiter();
     /**
-     * Close delimiter in SMARTY templates
+     * Close delimiter in SMARTY templates.
      */
-    static String delimiterDefaultClose = SmartyOptions.getInstance().getDefaultCloseDelimiter();
-
-    public static int depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
+    private static String delimiterDefaultClose = SmartyOptions.getInstance().getDefaultCloseDelimiter();
+    /**
+     * Depth of scanning for TPL templates in PHP project.
+     */
+    private static int depthOfScanningForTpl = -1;
 
     public SmartyFramework() {
         super(null);
@@ -102,7 +104,13 @@ public class SmartyFramework extends PhpProgram {
         } else {
             return delimiterDefaultOpen;
         }
-        
+    }
+
+    public static int getDepthOfScanningForTpl() {
+        if (depthOfScanningForTpl == -1) {
+            depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
+        }
+        return depthOfScanningForTpl;
     }
 
     public static void setDelimiterDefaultClose(String delimiterDefaultClose) {
