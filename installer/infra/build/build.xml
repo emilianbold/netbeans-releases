@@ -2174,8 +2174,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u27"/>
-	    <param name="jdk.full.version"            value="1.6.0.27.7"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-6u28"/>
+	    <param name="jdk.full.version"            value="1.6.0.28.4"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u20"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
@@ -2184,8 +2184,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk7-bundles" if="do.build.jdk7">
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-7"/>
-	    <param name="jdk.full.version"            value="1.7.0.0.147"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-7u1"/>
+	    <param name="jdk.full.version"            value="1.7.0.1.4"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
