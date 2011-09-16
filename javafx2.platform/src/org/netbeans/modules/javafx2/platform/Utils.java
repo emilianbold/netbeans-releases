@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -169,7 +171,13 @@ public final class Utils {
         Parameters.notNull("sdkPath", sdkPath); // NOI18N
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
         
-        FileObject platformFolder = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders().iterator().next();
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        // 32b vs 64b check
+//        if (!isFXmatchesRunningVM(runtimePath)) {
+//            return null;
+//        }
+        
+        FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
         JavaPlatform platform = null;
         try {
             platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
@@ -193,4 +201,23 @@ public final class Utils {
         return platform;
     }
     
+    public static boolean isFXmatchesRunningVM(String runtimePath) {
+        try {
+            Properties properties = System.getProperties();
+            String libPath = properties.getProperty("java.library.path"); // NOI18N
+            String extendedPath = libPath + File.pathSeparatorChar + runtimePath + File.separatorChar + "bin" + File.separatorChar; // NOI18N
+            properties.setProperty("java.library.path", extendedPath); // NOI18N
+            System.setProperties(properties);
+
+            System.loadLibrary("mat"); // NOI18N
+            
+            properties.setProperty("java.library.path", libPath); // NOI18N
+            System.setProperties(properties);
+//            System.loadLibrary(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat"); // NOI18N
+        } catch (UnsatisfiedLinkError e) {
+            return false;
+        }
+        return true;
+    }
+
 }
