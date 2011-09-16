@@ -61,6 +61,18 @@ public class ProxyAutoConfigTest extends NbTestCase {
         assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt http://pac/pac.txt http://pac/pac.txt"));
     }
     
+    public void testGetProxyAutoConfigWithNewLineURL() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt\nhttp://pac/pac.txt"));
+    }
+    
+    public void testGetProxyAutoConfigWithLineTerminatorURL() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt\rhttp://pac/pac.txt"));
+    }
+    
+    public void testGetProxyAutoConfigWithBothTerminatorsURL() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt\r\nhttp://pac/pac.txt"));
+    }
+    
     public void testGetProxyAutoConfigWithInvalidURL() {
         assertNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
     }
