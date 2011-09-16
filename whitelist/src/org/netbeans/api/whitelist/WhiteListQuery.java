@@ -41,7 +41,7 @@
  */
 package org.netbeans.api.whitelist;
 
-import com.sun.istack.internal.NotNull;
+import org.netbeans.api.annotations.common.NonNull;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -188,7 +188,7 @@ public final class WhiteListQuery {
          * Creates result which disallows operation in question and lists rules
          * which forbid such operation.
          */
-        public Result(@NotNull List<RuleDescription> violatedRules) {
+        public Result(@NonNull List<RuleDescription> violatedRules) {
             this.allowed = false;
             this.violatedRules = violatedRules;
         }
