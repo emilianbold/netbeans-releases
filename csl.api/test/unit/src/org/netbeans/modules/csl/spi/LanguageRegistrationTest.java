@@ -42,9 +42,15 @@
 
 package org.netbeans.modules.csl.spi;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
@@ -71,13 +77,52 @@ public class LanguageRegistrationTest extends NbTestCase {
 
         @Override
         public org.netbeans.api.lexer.Language getLexerLanguage() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new Lang("text/x-test").language();
         }
 
         @Override
         public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return "test language";
         }
         
     }
+    
+    private static enum TestTokenId implements TokenId {
+
+        TOKEN_ID1,
+        TOKEN_ID2;
+
+        private TestTokenId() {
+        }
+
+        @Override
+        public String primaryCategory() {
+            return null;
+        }
+    } // End of TestTokenId
+
+    private static final class Lang extends LanguageHierarchy<TestTokenId> {
+
+        private String mimeType;
+
+        public Lang(String mimeType) {
+            this.mimeType = mimeType;
+        }
+
+        @Override
+        protected Lexer<TestTokenId> createLexer(LexerRestartInfo<TestTokenId> info) {
+            return null;
+        }
+
+        @Override
+        protected Collection<TestTokenId> createTokenIds() {
+            return EnumSet.allOf(TestTokenId.class);
+        }
+
+        @Override
+        public String mimeType() {
+            return mimeType;
+        }
+    } // End of Lang class
+    
 }

@@ -51,6 +51,7 @@ import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -115,6 +116,17 @@ public class GsfDataObject extends MultiDataObject {
     protected int associateLookup() {
         return 1;
     }
+
+    @Override
+    public void setModified(boolean modif) {
+        super.setModified(modif);
+        if (!modif) {
+            GenericEditorSupport ges = getLookup().lookup(GenericEditorSupport.class);
+            ges.removeSaveCookie();
+        }
+    }
+    
+    
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
         return getCookieSet().getCookie(type);
@@ -265,6 +277,10 @@ public class GsfDataObject extends MultiDataObject {
         
         protected @Override void notifyUnmodified() {
             super.notifyUnmodified();
+            removeSaveCookie();
+        }
+
+        final void removeSaveCookie() {
             ((Environment)this.env).removeSaveCookie();
         }
 
@@ -282,7 +298,10 @@ public class GsfDataObject extends MultiDataObject {
             // Enter the file object in to InputAtrributes. It can be used by lexer.
             InputAttributes attributes = new InputAttributes();
             FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-            attributes.setValue(language.getGsfLanguage().getLexerLanguage(), FileObject.class, fileObject, false);
+            final GsfLanguage lng = language.getGsfLanguage();
+            if (lng != null) {
+                attributes.setValue(lng.getLexerLanguage(), FileObject.class, fileObject, false);
+            }
             doc.putProperty(InputAttributes.class, attributes);
             return doc;
         }
