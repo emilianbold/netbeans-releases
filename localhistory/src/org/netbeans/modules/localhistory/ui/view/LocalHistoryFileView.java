@@ -161,6 +161,10 @@ public class LocalHistoryFileView implements VersioningListener {
     void requestActive() {
          tablePanel.requestActivate();
     }
+
+    File[] getFiles() {
+        return files;
+    }
                      
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.

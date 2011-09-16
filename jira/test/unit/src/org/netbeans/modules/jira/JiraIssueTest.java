@@ -67,20 +67,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
-import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
-import org.eclipse.mylyn.internal.tasks.core.TaskList;
-import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
@@ -89,16 +84,15 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
  * @author tomas
  */
 public class JiraIssueTest extends NbTestCase {
-
+    
     public JiraIssueTest(String arg0) {
         super(arg0);
     }
-
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }   
     
+    public static Test suite() {
+        return NbModuleSuite.create(JiraIssueTest.class, null, null);
+    }
+
     @Override
     protected void setUp() throws Exception {    
         Jira.getInstance(); // force JiraCorePlugin init

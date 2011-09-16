@@ -72,15 +72,20 @@ import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.*;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.history.LinkButton;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
+import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -272,8 +277,39 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
 
     }
 
+    @NbBundle.Messages({
+        "MSG_SaveModified=File {0} is modified. Save?"
+    })
     @Override
     public CloseOperationState canCloseElement() {
+        File file = masterView.getFiles()[0];
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo != null) {
+            final DataObject dataObject;
+            try {
+                dataObject = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                return CloseOperationState.STATE_OK;
+            }
+            if(dataObject != null && dataObject.isModified()) {
+                AbstractAction save = new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
+                        if(sc != null) {
+                            try {
+                                sc.save();
+                            } catch (IOException ex) {
+                                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    }
+                };
+                save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(dataObject.getPrimaryFile().getNameExt()));
+                return MultiViewFactory.createUnsafeCloseState("editor", save, null);
+            }
+        }    
         return CloseOperationState.STATE_OK;
     }
 

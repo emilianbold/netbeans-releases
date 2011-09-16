@@ -49,8 +49,28 @@ made subject to such option by the copyright holder.
 <apichanges>
 <apidefs>
     <apidef name="spi">Netigso Integration SPI</apidef>
+    <apidef name="general">OSGi Related Behavior</apidef>
 </apidefs>
 <changes>
+    <change id="no.friends">
+      <api name="general"/>
+      <summary>Friend API is no longer accessible</summary>
+      <version major="1" minor="11"/>
+      <date day="14" month="9" year="2011"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="incompatible">
+          In previous version OSGi bundles could access NetBeans APIs which
+          enumerated list of "friends" without any restrictions. This has been
+          restricted. If you need a friend access, consider writing real 
+          NetBeans module.
+      </compatibility>
+      <description>
+          Only NetBeans modules with public API can be accessed from OSGi bundles.
+          One can specify direct value for
+          <a href="@TOP@/architecture-summary.html#property-Netigso-Export-Package">Netigso-Export-Package</a>
+          to export also non-public APIs.
+     </description>
+    </change>
     <change id="archive">
       <api name="spi"/>
       <summary>Netigso grants access to archives</summary>
