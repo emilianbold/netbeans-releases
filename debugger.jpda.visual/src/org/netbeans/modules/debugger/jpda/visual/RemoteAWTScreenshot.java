@@ -52,35 +52,22 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveType;
-import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.TreeMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -91,28 +78,24 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
-import org.netbeans.modules.debugger.jpda.visual.actions.AWTComponentBreakpointActionProvider;
+import org.netbeans.modules.debugger.jpda.visual.actions.ComponentBreakpointActionProvider;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToAddIntoHierarchyAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
 import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
 import org.netbeans.modules.debugger.jpda.visual.models.ComponentBreakpointsActionsProvider;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Takes screenshot of a remote application.
@@ -431,32 +414,32 @@ public class RemoteAWTScreenshot {
         ci.setType(component.referenceType().name());
         logger.log(Level.FINE, "  Component ''{0}'' class=''{1}'' bounds = {2}", new Object[]{ci.getName(), ci.getType(), r});
         
-        ci.addPropertySet(new PropertySet("main", "Main", "The main properties") {
-            @Override
-            public Property<?>[] getProperties() {
-                return new Property[] {
-                    new ReadOnly("name", String.class, "Component Name", "The name of the component") {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return ci.getName();
-                        }
-                    },
-                    new ReadOnly("type", String.class, "Component Type", "The type of the component") {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return ci.getType();
-                        }
-                    },
-                    new ReadOnly("bounds", String.class, "Component Bounds", "The bounds of the component in the window.") {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            Rectangle r = ci.getWindowBounds();
-                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
-                        }
-                    },
-                };
-            }
-        });
+//        ci.addPropertySet(new PropertySet("main", "Main", "The main properties") {
+//            @Override
+//            public Property<?>[] getProperties() {
+//                return new Property[] {
+//                    new ReadOnly("name", String.class, "Component Name", "The name of the component") {
+//                        @Override
+//                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+//                            return ci.getName();
+//                        }
+//                    },
+//                    new ReadOnly("type", String.class, "Component Type", "The type of the component") {
+//                        @Override
+//                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+//                            return ci.getType();
+//                        }
+//                    },
+//                    new ReadOnly("bounds", String.class, "Component Bounds", "The bounds of the component in the window.") {
+//                        @Override
+//                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+//                            Rectangle r = ci.getWindowBounds();
+//                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
+//                        }
+//                    },
+//                };
+//            }
+//        });
         
         if (isInstanceOfClass((ClassType) component.referenceType(), containerClass)) {
             ArrayReference componentsArray = (ArrayReference) component.invokeMethod(tawt, getComponents, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -565,7 +548,7 @@ public class RemoteAWTScreenshot {
         public Action[] getActions(boolean context) {
             FieldInfo fieldInfo = getField();
             ObjectReference component = getComponent();
-            AWTComponentBreakpoint b = AWTComponentBreakpointActionProvider.findBreakpoint(component);
+            ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
             
             List<Action> actions = new ArrayList<Action>();
             actions.add(GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class));
@@ -643,10 +626,10 @@ public class RemoteAWTScreenshot {
             @Override
             protected void performAction(Node[] activatedNodes) {
                 for (Node n : activatedNodes) {
-                    AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+                    JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
                     if (ci != null) {
                         ObjectReference component = ci.getComponent();
-                        AWTComponentBreakpoint b = AWTComponentBreakpointActionProvider.findBreakpoint(component);
+                        ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
                         ComponentBreakpointsActionsProvider.customize(b);
                     }
                 }

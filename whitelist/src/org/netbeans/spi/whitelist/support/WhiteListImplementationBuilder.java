@@ -43,6 +43,7 @@ package org.netbeans.spi.whitelist.support;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,11 +209,13 @@ final class WhiteListImplementationBuilder {
                     ruleName = Bundle.RULE_Meth();
                     ruleDesc = Bundle.DESC_Meth(displayName(element), model.getDisplayName());
                 }
+                return new WhiteListQuery.Result(
+                        // TODO: whitelist ID should be configurable via a setter method:
+                        Collections.singletonList(new WhiteListQuery.RuleDescription(ruleName, ruleDesc, null))
+                        );
+            } else {
+                return new WhiteListQuery.Result();
             }
-            return new WhiteListQuery.Result(
-                    b,
-                    ruleName,
-                    ruleDesc);
         }
 
         @Override

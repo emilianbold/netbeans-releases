@@ -53,14 +53,20 @@ import org.openide.util.NbPreferences;
 public final class SmartyOptions {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
-    private static final String PREFERENCES_PATH = "smarty"; // NOI18N
+    protected static final String PREFERENCES_PATH = "smarty"; // NOI18N
 
     private static final SmartyOptions INSTANCE = new SmartyOptions();
 
-    // default params
+    // default values for Smarty properties
+    public static final int DEFAULT_TPL_SCANNING_DEPTH = 1;
+
+    // preferences properties names
     private static final String OPEN_DELIMITER = "{"; // NOI18N
     private static final String CLOSE_DELIMITER = "}"; // NOI18N
-    private static final int TPL_SCANNING_DEPTH = 1;
+    protected static final String PROP_TPL_SCANNING_DEPTH = "tpl-scanning-depth";
+
+    // TODO - temporary property which should be removed release after NB71
+    protected static final String PROP_TPL_SCANNING_DEPTH_OLD = "1";
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -103,16 +109,32 @@ public final class SmartyOptions {
         SmartyFramework.setDelimiterDefaultClose(delimiter);
     }
 
-    private Preferences getPreferences() {
+    private static Preferences getPreferences() {
         return NbPreferences.forModule(SmartyOptions.class).node(PREFERENCES_PATH);
     }
 
+    /**
+     * Temporary method for updating Smarty php module preferences to use
+     * {@link #PROP_TPL_SCANNING_DEPTH} property name instead of
+     * {@link #PROP_TPL_SCANNING_DEPTH_OLD}.
+     */
+    public static void updateSmartyScanningDepthProperty() {
+        Preferences preferences = getPreferences();
+
+        int originalValue = preferences.getInt(PROP_TPL_SCANNING_DEPTH_OLD, -1);
+        if (originalValue != -1) {
+            preferences.remove(PROP_TPL_SCANNING_DEPTH_OLD);
+            preferences.putInt(PROP_TPL_SCANNING_DEPTH, originalValue);
+        }
+    }
+
     public int getScanningDepth() {
-        return Integer.parseInt(getPreferences().get(String.valueOf(TPL_SCANNING_DEPTH), "1")); // NOI18N
+        updateSmartyScanningDepthProperty();
+        return getPreferences().getInt(PROP_TPL_SCANNING_DEPTH, DEFAULT_TPL_SCANNING_DEPTH);
     }
 
     public void setScanningDepth(int depth) {
-        getPreferences().put(String.valueOf(TPL_SCANNING_DEPTH), String.valueOf(depth));
+        getPreferences().putInt(PROP_TPL_SCANNING_DEPTH, depth);
         SmartyFramework.setDepthOfScanningForTpl(depth);
     }
 }

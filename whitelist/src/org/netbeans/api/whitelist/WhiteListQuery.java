@@ -41,11 +41,15 @@
  */
 package org.netbeans.api.whitelist;
 
+import org.netbeans.api.annotations.common.NonNull;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.whitelist.WhiteListQueryImplementationMerged;
 import org.netbeans.modules.whitelist.project.WhiteListCategoryPanel;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
@@ -63,8 +67,8 @@ import org.openide.util.Parameters;
  */
 public final class WhiteListQuery {
 
-    private static final Lookup.Result<? extends WhiteListQueryImplementation> queries =
-        Lookup.getDefault().lookupResult(WhiteListQueryImplementation.class);
+    private static final WhiteListQueryImplementation mergedGlobalWhiteLists = 
+        new WhiteListQueryImplementationMerged(Lookup.getDefault());
 
     private WhiteListQuery(){}
 
@@ -77,11 +81,9 @@ public final class WhiteListQuery {
     @CheckForNull
     public static WhiteList getWhiteList(@NonNull final FileObject file) {
         Parameters.notNull("file", file);   //NOI18N
-        for (WhiteListQueryImplementation query : queries.allInstances()) {
-            final WhiteListImplementation whiteListImpl = query.getWhiteList(file);
-            if (whiteListImpl != null) {
-                return new WhiteList(whiteListImpl);
-            }
+        final WhiteListImplementation whiteListImpl = mergedGlobalWhiteLists.getWhiteList(file);
+        if (whiteListImpl != null) {
+            return new WhiteList(whiteListImpl);
         }
         return null;
     }
@@ -172,14 +174,23 @@ public final class WhiteListQuery {
      */
     public static final class Result {
         private final boolean allowed;
-        private final String violatedRuleName;
-        private final String violatedRuleDescription;
+        private final List<RuleDescription> violatedRules;
 
+        /**
+         * Creates result which allows operation in question.
+         */
+        public Result() {
+            this.allowed = true;
+            this.violatedRules = null;
+        }
 
-        public Result(boolean allowed, String violatedRuleName, String violatedRuleDescription) {
-            this.allowed = allowed;
-            this.violatedRuleName = violatedRuleName;
-            this.violatedRuleDescription = violatedRuleDescription;
+        /**
+         * Creates result which disallows operation in question and lists rules
+         * which forbid such operation.
+         */
+        public Result(@NonNull List<RuleDescription> violatedRules) {
+            this.allowed = false;
+            this.violatedRules = violatedRules;
         }
 
         /**
@@ -191,21 +202,61 @@ public final class WhiteListQuery {
         }
 
         /**
-         * Returns description of violated rule if {@link WhiteListQuery.Result#isAllowed}
+         * Returns rules which forbid this operation if {@link WhiteListQuery.Result#isAllowed}
          * returned false otherwise returns null.
-         * @return the description of violated rule.
+         * @return list of violated rules or null
          */
-        public String getViolatedRuleDescription() {
-            return violatedRuleDescription;
+        public List<RuleDescription> getViolatedRules() {
+            return violatedRules;
+        }
+        
+    }
+    
+    /**
+     * Description of a whitelisting rule.
+     * 
+     * @since 1.3
+     */
+    public static final class RuleDescription {
+        
+        private final String ruleName;
+        private final String ruleDescription;
+        private final String whiteListID;
+
+        /**
+         * @param ruleName rule name
+         * @param ruleDescription rule description
+         * @param whiteListID whitelist ID; can be null if whitelist does not have ID
+         */
+        public RuleDescription(@NonNull String ruleName, @NonNull String ruleDescription, @NullAllowed String whiteListID) {
+            this.ruleName = ruleName;
+            this.ruleDescription = ruleDescription;
+            this.whiteListID = whiteListID;
         }
 
         /**
-         * Returns name of violated rule if {@link WhiteListQuery.Result#isAllowed}
-         * returned false otherwise returns null.
-         * @return the name of violated rule.
+         * Returns description of rule.
+         * @return the description of rule
          */
-        public String getViolatedRuleName() {
-            return violatedRuleName;
+        public String getRuleDescription() {
+            return ruleDescription;
         }
+
+        /**
+         * Returns name of rule.
+         * @return the name of rule
+         */
+        public String getRuleName() {
+            return ruleName;
+        }
+
+        /**
+         * Returns ID of whitelist which owns this rule.
+         * @return  whitelist ID or null if whitelist is not user selectable and does not have an ID
+         */
+        public String getWhiteListID() {
+            return whiteListID;
+        }
+        
     }
 }

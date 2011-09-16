@@ -108,7 +108,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     
     private Set<ModelListener> listeners = new CopyOnWriteArraySet<ModelListener>();
     
-    private AWTComponentInfo selectedCI = null;
+    private JavaComponentInfo selectedCI = null;
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
     private List<RemoteListener> customListenersList;
     private List<RemoteListener> swingListenersList;
@@ -121,8 +121,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         ScreenshotUIManager uiManager = ScreenshotUIManager.getActive();
         if (uiManager != null) {
             ComponentInfo ci = uiManager.getSelectedComponent();
-            if (ci instanceof AWTComponentInfo) {
-                selectedCI = (AWTComponentInfo) ci;
+            if (ci instanceof JavaComponentInfo) {
+                selectedCI = (JavaComponentInfo) ci;
             }
         }
         /*Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
@@ -135,7 +135,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             public void resultChanged(LookupEvent ev) {
                 Collection<? extends Node> nodeInstances = nodeLookupResult.allInstances();
                 for (Node n : nodeInstances) {
-                    AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+                    JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
                     if (ci != null) {
                         if (!ci.equals(selectedCI)) {
                             selectedCI = ci;
@@ -160,7 +160,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
-            AWTComponentInfo ci = selectedCI;
+            JavaComponentInfo ci = selectedCI;
             if (ci != null) {
                 String componentName = ci.getDisplayName();
                 List<RemoteListener> componentListeners;
@@ -490,7 +490,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final AWTComponentInfo ci = selectedCI;
+            final JavaComponentInfo ci = selectedCI;
             if (ci == null) return ;
             final ReferenceType[] listenerClasses;
             final List<LoggingEventListener> listenersToRemove = new ArrayList<LoggingEventListener>();
@@ -560,7 +560,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return clazz;
         }
         
-        private ReferenceType[] selectListenerClass(AWTComponentInfo ci, Collection<LoggingEventListener> listenersToRemove) {
+        private ReferenceType[] selectListenerClass(JavaComponentInfo ci, Collection<LoggingEventListener> listenersToRemove) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
             System.err.println("Attachable Listeners = "+attachableListeners);
             Set<LoggingEventListener> currentLoggingListeners = null;
@@ -635,7 +635,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final AWTComponentInfo ci = selectedCI;
+            final JavaComponentInfo ci = selectedCI;
             if (ci == null) return ;
             String listenerClass;
             if (lc != null) {
@@ -686,7 +686,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             return clazz;
         }
         
-        private String selectListenerClass(AWTComponentInfo ci) {
+        private String selectListenerClass(JavaComponentInfo ci) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
             System.err.println("Attachable Listeners = "+attachableListeners);
             String[] listData = new String[attachableListeners.size()];
@@ -713,7 +713,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         private ClassObjectReference listenerClass;
 
         @Override
-        public void eventsData(AWTComponentInfo ci, String[] data, String[] stack) {
+        public void eventsData(JavaComponentInfo ci, String[] data, String[] stack) {
             RemoteEvent re = new RemoteEvent(data, stack);
             /*
             System.err.println("Have data about "+ci.getType()+":");//\n  "+Arrays.toString(data));

@@ -60,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -200,16 +201,34 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         }
     }
 
+    @NbBundle.Messages({
+        "MSG_Violations=Multiple rules were violated:"
+    })
+    static String formatViolationDescription(WhiteListQuery.Result result) {
+        assert result.getViolatedRules() != null : result;
+        if (result.getViolatedRules().size() == 1) {
+            return result.getViolatedRules().get(0).getRuleDescription();
+        } else {
+            StringBuilder sb = new StringBuilder(Bundle.MSG_Violations());
+            for (WhiteListQuery.RuleDescription rule : result.getViolatedRules()) {
+                sb.append("\n - ");
+                sb.append(rule.getRuleDescription());
+            }
+            return sb.toString();
+        }
+    }
+    
     @CheckForNull
     private static Map.Entry<FileObject,Task> createTask(@NonNull final WhiteListIndex.Problem problem) {
         final FileObject file = problem.getFile();
         if (file == null) {
             return null;
         }
+        assert !problem.getResult().isAllowed() : problem;
         final Task task = Task.create(
             file,
             "nb-whitelist-warning", //NOI18N
-            problem.getResult().getViolatedRuleDescription(),
+            formatViolationDescription(problem.getResult()),
             problem.getLine());
         return new Map.Entry<FileObject, Task>() {
             @Override

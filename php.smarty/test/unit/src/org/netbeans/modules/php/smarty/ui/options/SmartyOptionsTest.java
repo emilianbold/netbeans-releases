@@ -39,61 +39,50 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.breakpoints;
+package org.netbeans.modules.php.smarty.ui.options;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.ObjectReference;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
+import java.util.prefs.Preferences;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ComponentBreakpointImpl {
-    
-    protected final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
+public class SmartyOptionsTest extends NbTestCase {
 
-    void notifyRemoved() {
-        for (Breakpoint b : serviceBreakpoints) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
-        }
-        serviceBreakpoints.clear();
+    public SmartyOptionsTest(String name) {
+        super(name);
     }
 
-    void enable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.enable();
-        }
+    public void testScanningDepthForObsoleteProperty() throws Exception {
+        removeAllScanningDepthRelatedProperties();
+        getSmartyPreferences().putInt(SmartyOptions.PROP_TPL_SCANNING_DEPTH_OLD, 3);
+
+        assertEquals(3, SmartyOptions.getInstance().getScanningDepth());
     }
 
-    void disable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.disable();
-        }
+    public void testScanningDepthForNewProperty() throws Exception {
+        removeAllScanningDepthRelatedProperties();
+        getSmartyPreferences().putInt(SmartyOptions.PROP_TPL_SCANNING_DEPTH, 3);
+
+        assertEquals(3, SmartyOptions.getInstance().getScanningDepth());
+    }
+
+    public void testScanningDepthForNotExistingProperty() throws Exception {
+        removeAllScanningDepthRelatedProperties();
         
+        assertEquals(1, SmartyOptions.getInstance().getScanningDepth());
     }
-    
-    void setSuspend(int suspend) {
-        for (JPDABreakpoint b : serviceBreakpoints) {
-            b.setSuspend(suspend);
-        }
+
+    private void removeAllScanningDepthRelatedProperties() {
+        Preferences preferences = getSmartyPreferences();
+        preferences.remove(SmartyOptions.PROP_TPL_SCANNING_DEPTH_OLD);
+        preferences.remove(SmartyOptions.PROP_TPL_SCANNING_DEPTH);
     }
+
+    private static Preferences getSmartyPreferences() {
+        return NbPreferences.forModule(SmartyOptions.class).node(SmartyOptions.PREFERENCES_PATH);
+    }
+
 }

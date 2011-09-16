@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.web.project;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
@@ -68,6 +68,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
@@ -454,5 +455,18 @@ public class Utils {
         return filter;
     }
 
+    /**
+     * Is this library contains classes folder instead of a jar?
+     */
+    public static boolean isLibraryDirectoryBased(ClassPathSupport.Item item) {
+        assert item.getType() == ClassPathSupport.Item.TYPE_LIBRARY : item;
+        Library l = item.getLibrary();
+        List<URL> cp = l.getContent("classpath"); // NOI18N
+        if (cp.size() > 0 && cp.get(0).toString().startsWith("file:")) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+        
     
 }

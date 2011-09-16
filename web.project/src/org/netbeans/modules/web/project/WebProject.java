@@ -448,6 +448,11 @@ public final class WebProject implements Project {
                             if (item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                                 break;
                             }
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                                    Utils.isLibraryDirectoryBased(item) ? 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                            break;
                         default:
                             item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
                                     ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);

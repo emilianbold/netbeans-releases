@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -79,7 +79,7 @@ public class ShowListenersAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
                 TopComponent tc = WindowManager.getDefault().findTopComponent("eventsView");
                 if (tc == null) {

@@ -79,6 +79,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -115,6 +116,32 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         retrieve();
         addProperties();
         findComponentFields();
+        this.addPropertySet(new PropertySet("main", "Main", "The main properties") {
+            @Override
+            public Property<?>[] getProperties() {
+                return new Property[] {
+                    new ReadOnly("name", String.class, "Component Name", "The name of the component") {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            return JavaComponentInfo.this.getName();
+                        }
+                    },
+                    new ReadOnly("type", String.class, "Component Type", "The type of the component") {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            return JavaComponentInfo.this.getType();
+                        }
+                    },
+                    new ReadOnly("bounds", String.class, "Component Bounds", "The bounds of the component in the window.") {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            Rectangle r = JavaComponentInfo.this.getWindowBounds();
+                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
+                        }
+                    },
+                };
+            }
+        });
     }
     
     abstract protected void retrieve() throws RetrievalException;
@@ -158,9 +185,8 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     @Override
     public String getDisplayName() {
         String typeName = getTypeName();
-        String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
         String text = (componentText != null) ? " \"" + componentText + "\"" : "";
-        return fieldName + "[" + typeName + "]" + text;
+        return getFieldName() + "[" + typeName + "]" + text;
     }
 
     @Override
@@ -170,7 +196,7 @@ abstract public class JavaComponentInfo implements ComponentInfo {
             if (isCustomType()) {
                 typeName = "<b>" + typeName + "</b>";
             }
-            String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
+
             String text;
             if (componentText != null) {
                 text = escapeHTML(componentText);
@@ -178,10 +204,14 @@ abstract public class JavaComponentInfo implements ComponentInfo {
             } else {
                 text = "";
             }
-            return fieldName + "[" + typeName + "]" + text;
+            return getFieldName() + "[" + typeName + "]" + text;
         } else {
             return null;
         }
+    }
+    
+    protected String getFieldName() {
+        return (fieldInfo != null) ? fieldInfo.getName() + " " : "";
     }
 
     final public String getType() {
@@ -197,7 +227,10 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     }
     
     public static boolean isCustomType(String type) {
-        return !(type.startsWith("java.awt.") || type.startsWith("javax.swing."));  // NOI18N
+        return !(type.startsWith("java.awt.") || 
+                 type.startsWith("javax.swing.") || 
+                 type.startsWith("javafx.") ||
+                 type.startsWith("com.sun.javafx."));  // NOI18N
     }
 
     @Override

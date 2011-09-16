@@ -39,61 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.breakpoints;
+package org.netbeans.modules.whitelist;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.ObjectReference;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
+import org.netbeans.spi.project.LookupMerger;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author Martin Entlicher
- */
-public abstract class ComponentBreakpointImpl {
-    
-    protected final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
+public class WhiteListQueryMerger implements LookupMerger<WhiteListQueryImplementation> {
 
-    void notifyRemoved() {
-        for (Breakpoint b : serviceBreakpoints) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
-        }
-        serviceBreakpoints.clear();
+    public Class<WhiteListQueryImplementation> getMergeableClass() {
+        return WhiteListQueryImplementation.class;
     }
 
-    void enable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.enable();
-        }
-    }
-
-    void disable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.disable();
-        }
-        
-    }
-    
-    void setSuspend(int suspend) {
-        for (JPDABreakpoint b : serviceBreakpoints) {
-            b.setSuspend(suspend);
-        }
+    public WhiteListQueryImplementation merge(Lookup lookup) {
+        return new WhiteListQueryImplementationMerged(lookup);
     }
 }

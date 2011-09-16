@@ -1015,6 +1015,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         blocksField.getDocument().addDocumentListener(cyclicDependencyListener);
         dependsField.getDocument().addDocumentListener(cyclicDependencyListener);
         addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
+        duplicateField.getDocument().addDocumentListener(new DuplicateListener());
     }
 
     private void attachHideStatusListener() {
@@ -1098,6 +1099,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean noComponent = false;
     private boolean noVersion = false;
     private boolean noTargetMilestione = false;
+    private boolean noDuplicateId = false;
     private List<String> fieldErrors = new LinkedList<String>();
     private List<String> fieldWarnings = new LinkedList<String>();
     private void updateMessagePanel() {
@@ -1130,7 +1132,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(invalidKeywordLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione) {
+        if (noDuplicateId) {
+            JLabel noDuplicateLabel = new JLabel();
+            noDuplicateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noDuplicateId")); // NOI18N
+            noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(noDuplicateLabel);
+        }
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -1145,7 +1153,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
         } else {
@@ -2560,6 +2568,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         duplicateLabel.setVisible(shown);
         duplicateField.setVisible(shown);
         duplicateButton.setVisible(shown && duplicateField.isEditable());
+        updateNoDuplicateId();
     }//GEN-LAST:event_resolutionComboActionPerformed
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
@@ -3170,6 +3179,31 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
     }
 
+    private class DuplicateListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            updateNoDuplicateId();
+        }
+    }
+
+    private void updateNoDuplicateId() {
+        boolean newNoDuplicateId = "DUPLICATE".equals(resolutionCombo.getSelectedItem()) && "".equals(duplicateField.getText().trim());
+        if(newNoDuplicateId != noDuplicateId) {
+            noDuplicateId = newNoDuplicateId;
+            updateMessagePanel();
+        }
+    }
+    
     private static class CustomFieldInfo {
         CustomIssueField field;
         JLabel label;
