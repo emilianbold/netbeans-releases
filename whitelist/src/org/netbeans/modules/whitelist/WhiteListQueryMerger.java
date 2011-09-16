@@ -39,26 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.whitelist.support;
+package org.netbeans.modules.whitelist;
 
-import org.netbeans.modules.whitelist.WhiteListQueryMerger;
-import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.project.LookupMerger;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- * Support for writing {@link WhiteListQueryImplementation}.
- * @author David Konecny
- * @author Tomas Zezula
- */
-public class WhiteListQueryMergerSupport {
+public class WhiteListQueryMerger implements LookupMerger<WhiteListQueryImplementation> {
 
-    /**
-     * Placed in a lookup this class will merge all other WhiteListQueryImplementation
-     * registered in the same lookup. All individual WhiteListQueryImplementation must
-     * allow invocation and/or overriding of a method to get positive return.
-     */
-    public static LookupMerger<WhiteListQueryImplementation> createWhiteListQueryMerger() {
-        return new WhiteListQueryMerger();
+    public Class<WhiteListQueryImplementation> getMergeableClass() {
+        return WhiteListQueryImplementation.class;
     }
-    
+
+    public WhiteListQueryImplementation merge(Lookup lookup) {
+        return new WhiteListQueryImplementationMerged(lookup);
+    }
 }
