@@ -41,14 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * ReusablePropertyEnv.java
- *
- * Created on February 6, 2003, 6:17 PM
- */
 package org.openide.explorer.propertysheet;
-
-import org.openide.nodes.Node;
 
 import java.beans.*;
 
@@ -78,6 +71,7 @@ final class ReusablePropertyEnv extends PropertyEnv {
 
     /** Creates a new instance of ReusablePropertyEnv */
     public ReusablePropertyEnv() {
+        mdl = new ReusablePropertyModel(this);
     }
 
     public ReusablePropertyModel getReusablePropertyModel() {
@@ -93,6 +87,9 @@ final class ReusablePropertyEnv extends PropertyEnv {
     }
 
     void setReusablePropertyModel(ReusablePropertyModel mdl) {
+        if (mdl == null) {
+            throw new NullPointerException();
+        }
         this.mdl = mdl;
     }
 

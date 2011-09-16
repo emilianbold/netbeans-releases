@@ -45,17 +45,14 @@
 package org.openide.explorer.propertysheet;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.beans.*;
-import java.lang.reflect.*;
 import javax.swing.*;
 
-import org.openide.*;
 
-import junit.framework.*;
 
 import org.netbeans.junit.*;
-import java.lang.ref.WeakReference;
 
 /** A test of a property panel.
  */
@@ -83,10 +80,6 @@ public final class PropertyPanelTest extends NbTestCase {
         super(name);
     }
     
-    public static void main (String[] args) {
-        junit.textui.TestRunner.run (new NbTestSuite (PropertyPanelTest.class));
-    }
-    
     //
     // Sample property impl
     //
@@ -102,6 +95,7 @@ public final class PropertyPanelTest extends NbTestCase {
     }
    
     JFrame jf;
+    @Override
     protected void setUp() throws Exception {
         PropUtils.forceRadioButtons=false;
         jf = new JFrame();
@@ -137,6 +131,19 @@ public final class PropertyPanelTest extends NbTestCase {
         });
         Thread.currentThread().sleep(500);
     }    
+    
+    public void testCanComputePreferredSize() throws Exception {
+        final PropertyPanel pp = new PropertyPanel();
+        assertNotNull("Don't throw an exception", pp.getPreferredSize());
+        
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                pp.addNotify();
+                assertNotNull("Don't throw an exception", pp.getPreferredSize());
+            }
+        });
+    }
 
     public void testCompatibilityWhenUsingNodePropertyAndAskingForPropertyModel () throws Exception {
         final Ed editor = new Ed ();
