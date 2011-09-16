@@ -67,6 +67,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -89,7 +90,7 @@ public class SmartyOptionsPanel extends JPanel {
 
         setOpenDelimiter(SmartyOptions.getInstance().getDefaultOpenDelimiter());
         setCloseDelimiter(SmartyOptions.getInstance().getDefaultCloseDelimiter());
-        setDepthOfScanning(SmartyOptions.getInstance().getScanningDepth());
+        setDepthOfScanning(SmartyFramework.getDepthOfScanningForTpl());
 
         openDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
         closeDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
@@ -290,7 +291,7 @@ public class SmartyOptionsPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class SmartyDocumentListener implements DocumentListener {
-        
+
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
@@ -304,5 +305,5 @@ public class SmartyOptionsPanel extends JPanel {
             fireChange();
         }
     }
-    
+
 }
