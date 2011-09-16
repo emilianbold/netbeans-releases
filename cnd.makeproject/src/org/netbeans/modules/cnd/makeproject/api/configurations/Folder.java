@@ -582,7 +582,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 myNativeFileItemSet.add(item);
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "can not add folder's {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
+                    log.log(Level.FINE, "can not add folder''s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
                 }
             }
         }
