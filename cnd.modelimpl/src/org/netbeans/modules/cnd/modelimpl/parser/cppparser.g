@@ -1793,6 +1793,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         |   LITERAL_union  {ts = tsUNION;}
         )
         (options {greedy=true;} : type_attribute_specification)?
+        (LITERAL___symbolic!)?
         (   id = qualified_id
             (options{generateAmbigWarnings = false;}:
                 {
