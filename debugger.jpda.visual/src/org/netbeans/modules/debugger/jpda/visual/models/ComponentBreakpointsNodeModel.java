@@ -43,7 +43,7 @@ package org.netbeans.modules.debugger.jpda.visual.models;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -68,8 +68,8 @@ public class ComponentBreakpointsNodeModel implements NodeModel {
     
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof AWTComponentBreakpoint) {
-            AWTComponentBreakpoint ab = (AWTComponentBreakpoint) node;
+        if (node instanceof ComponentBreakpoint) {
+            ComponentBreakpoint ab = (ComponentBreakpoint) node;
             String componentName;
             if (ab.getComponent() != null && ab.getComponent().getComponentInfo() != null) {
                 componentName = ab.getComponent().getComponentInfo().getDisplayName();
@@ -86,8 +86,8 @@ public class ComponentBreakpointsNodeModel implements NodeModel {
     public String getIconBase(Object node) throws UnknownTypeException {
         boolean disabled = !((Breakpoint) node).isEnabled();
         boolean invalid = ((Breakpoint) node).getValidity() == VALIDITY.INVALID;
-        if (node instanceof AWTComponentBreakpoint) {
-            String condition = ((AWTComponentBreakpoint) node).getCondition();
+        if (node instanceof ComponentBreakpoint) {
+            String condition = ((ComponentBreakpoint) node).getCondition();
             boolean conditional = condition != null && condition.trim().length() > 0;
             String iconBase;
             if (disabled) {
@@ -113,8 +113,8 @@ public class ComponentBreakpointsNodeModel implements NodeModel {
 
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
-        if (node instanceof AWTComponentBreakpoint) {
-            AWTComponentBreakpoint ab = (AWTComponentBreakpoint) node;
+        if (node instanceof ComponentBreakpoint) {
+            ComponentBreakpoint ab = (ComponentBreakpoint) node;
             String componentName;
             if (ab.getComponent() != null && ab.getComponent().getComponentInfo() != null) {
                 componentName = ab.getComponent().getComponentInfo().getDisplayName();

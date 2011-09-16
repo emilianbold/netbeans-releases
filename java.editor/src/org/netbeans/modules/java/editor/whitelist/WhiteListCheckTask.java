@@ -123,10 +123,11 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             final Tree tree = problem.getKey();
             final int start = (int) sp.getStartPosition(cu, tree);
             final int end = (int) sp.getEndPosition(cu, tree);
+            assert !problem.getValue().isAllowed() : problem;
             if (start >= 0 && end >= 0) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.WARNING,
-                        problem.getValue().getViolatedRuleDescription(),
+                        WhiteListTaskProvider.formatViolationDescription(problem.getValue()),
                         file,
                         start,
                         end));

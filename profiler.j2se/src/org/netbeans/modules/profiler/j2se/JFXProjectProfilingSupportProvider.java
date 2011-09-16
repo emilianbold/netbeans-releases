@@ -39,24 +39,57 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.breakpoints;
+package org.netbeans.modules.profiler.j2se;
 
-import java.beans.BeanDescriptor;
-import java.beans.SimpleBeanInfo;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author martin
+ * @author Tomas Hurka
+ * @author Tomas Zezula
  */
-public class AWTComponentBreakpointBeanInfo extends SimpleBeanInfo {
-    
-    public AWTComponentBreakpointBeanInfo() {}
-    
-    @Override
-    public BeanDescriptor getBeanDescriptor() {
-        return new BeanDescriptor(
-                AWTComponentBreakpoint.class,
-                AWTComponentBreakpointCustomizer.class);
+@ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
+                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=540)}) // NOI18N
+public class JFXProjectProfilingSupportProvider extends J2SEProjectProfilingSupportProvider {
+
+    static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+
+    public JFXProjectProfilingSupportProvider(Project p) {
+        super(p);
     }
 
+    @Override
+    public boolean checkProjectCanBeProfiled(FileObject profiledClassFile) {
+        if (profiledClassFile == null && isFXProject()) {
+            Project p = getProject();
+            final PropertyEvaluator pp = getProjectProperties(p);
+            String profiledClass = pp.getProperty("main.class"); // NOI18N
+
+            if ((profiledClass == null) || "".equals(profiledClass)) {
+                return false;
+            }
+            return true;
+        }
+        return super.checkProjectCanBeProfiled(profiledClassFile);
+    }
+
+    private boolean isFXProject() {
+        final PropertyEvaluator ep = getProjectProperties(getProject());
+        if (ep == null) {
+            return false;
+        }
+        return isTrue(ep.getProperty(JAVAFX_ENABLED));
+    }
+
+    private static boolean isTrue(final String value) {
+        return value != null
+                && (value.equalsIgnoreCase("true") || //NOI18N
+                value.equalsIgnoreCase("yes") || //NOI18N
+                value.equalsIgnoreCase("on"));     //NOI18N
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,70 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.beans.Customizer;
 import javax.swing.JComponent;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
-
-import org.netbeans.spi.debugger.ui.BreakpointType;
-
+import javax.swing.JPanel;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.NbBundle;
-
 
 /**
-* @author Martin Entlicher
-*/
-@BreakpointType.Registration(displayName="#CTL_AWTComponent_breakpoint_type_name")
-public class AWTComponentBreakpointType extends BreakpointType {
+ *
+ * @author martin
+ */
+public class ComponentBreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    private Reference<AWTComponentBreakpointPanel> customizerRef = new WeakReference<AWTComponentBreakpointPanel>(null);
-
-    @Override
-    public String getCategoryDisplayName () {
-        return NbBundle.getMessage (
-            AWTComponentBreakpointType.class,
-            "CTL_Java_breakpoint_events_cathegory_name"
-        );
-    }
+    private ComponentBreakpoint b;
+    private JComponent c;
     
     @Override
-    public JComponent getCustomizer () {
-        AWTComponentBreakpointPanel panel = new AWTComponentBreakpointPanel();
-        customizerRef = new WeakReference<AWTComponentBreakpointPanel>(panel);
-        return panel;
+    public void setObject(Object bean) {
+        if (!(bean instanceof ComponentBreakpoint)) {
+            throw new IllegalArgumentException(bean.toString());
+        }
+        this.b = (ComponentBreakpoint) bean;
+        init(b);
+    }
+    
+    private void init(ComponentBreakpoint b) {
+        c = new ComponentBreakpointPanel(b);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        add(c, gbc);
     }
 
     @Override
-    public Controller getController() {
-        AWTComponentBreakpointPanel panel = customizerRef.get();
-        if (panel != null) {
-            return panel.getController();
+    public boolean ok() {
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
         } else {
-            return null;
+            cc = (Controller) c;
         }
+        return cc.ok();
     }
 
     @Override
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (AWTComponentBreakpointType.class, 
-            "CTL_AWTComponent_breakpoint_type_name"
-        );
-    }
-    
-    @Override
-    public boolean isDefault () {
-        ScreenshotUIManager activeScreenshotManager = ScreenshotUIManager.getActive();
-        if (activeScreenshotManager != null) {
-            ComponentInfo ci = activeScreenshotManager.getSelectedComponent();
-            return (ci instanceof AWTComponentInfo);
+    public boolean cancel() {
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
         }
-        return false;
+        return cc.cancel();
     }
+
 }

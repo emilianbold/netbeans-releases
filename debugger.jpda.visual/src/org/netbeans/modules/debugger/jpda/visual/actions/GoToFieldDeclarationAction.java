@@ -41,22 +41,19 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.FieldInfo;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -69,20 +66,25 @@ public class GoToFieldDeclarationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            final AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+            final JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
                 final FieldInfo fieldInfo = ci.getField();
-                GoToSourceAction.RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        org.netbeans.api.debugger.jpda.Field fieldVariable;
-                        JPDADebuggerImpl debugger = ci.getThread().getDebugger();
-                        Variable variable = debugger.getVariable(fieldInfo.getParent().getComponent());
-                        fieldVariable = ((ObjectVariable) variable).getField(fieldInfo.getName());
-                        SourcePath ectx = debugger.getSession().lookupFirst(null, SourcePath.class);
-                        ectx.showSource (fieldVariable);
-                    }
-                });
+                if (fieldInfo != null) {
+                    GoToSourceAction.RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            org.netbeans.api.debugger.jpda.Field fieldVariable;
+                            JPDADebuggerImpl debugger = ci.getThread().getDebugger();
+                            Variable variable = debugger.getVariable(fieldInfo.getParent().getComponent());
+                            fieldVariable = ((ObjectVariable) variable).getField(fieldInfo.getName());
+                            SourcePath ectx = debugger.getSession().lookupFirst(null, SourcePath.class);
+                            ectx.showSource (fieldVariable);
+                        }
+                    });
+                } else {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/visual/actions/Bundle").getString("MSG_NoFieldInfo"), NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(d);
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,28 +34,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.profiler.categories.j2ee;
-
-import org.netbeans.lib.profiler.ProfilerClient;
-import org.netbeans.lib.profiler.results.RuntimeCCTNode;
-import org.netbeans.lib.profiler.results.cpu.CPUCallGraphBuilder;
-import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory;
-
-
-/**
- * @author ads
  *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class TestGraphBuilder extends CPUCallGraphBuilder {
+package org.netbeans.modules.whitelist;
 
-    
-    protected RuntimeCCTNode getAppRootNode() {
-        return super.getAppRootNode();
+import org.netbeans.spi.project.LookupMerger;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+
+public class WhiteListQueryMerger implements LookupMerger<WhiteListQueryImplementation> {
+
+    public Class<WhiteListQueryImplementation> getMergeableClass() {
+        return WhiteListQueryImplementation.class;
     }
 
-    protected void doStartup(ProfilerClient profilerClient) {
-        super.doStartup(profilerClient);
-        setFactory(new CPUCCTNodeFactory(isCollectingTwoTimeStamps()));
+    public WhiteListQueryImplementation merge(Lookup lookup) {
+        return new WhiteListQueryImplementationMerged(lookup);
     }
 }

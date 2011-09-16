@@ -225,7 +225,7 @@ class HostsListTableModel extends AbstractTableModel {
                 }
 
             } catch (UnknownHostException ex) {
-                RemoteUtil.LOGGER.log(Level.WARNING, "Exception when filling hosts table", ex); //NOI18N
+                RemoteUtil.LOGGER.log(Level.INFO, "Exception when filling hosts table", ex); //NOI18N
             } finally {
                 if (proceed) {
                     // thay means we exited by counter => we are done

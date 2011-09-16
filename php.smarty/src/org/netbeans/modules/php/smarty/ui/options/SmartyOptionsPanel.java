@@ -67,6 +67,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -81,6 +82,9 @@ public class SmartyOptionsPanel extends JPanel {
 
     private final transient ChangeSupport changeSupport = new ChangeSupport(this);
 
+    /** Maximum scanning depth which appears in options combo box. */
+    private static final int MAX_SCANNING_DEPTH = 3;
+
     public SmartyOptionsPanel() {
         initComponents();
 
@@ -89,7 +93,7 @@ public class SmartyOptionsPanel extends JPanel {
 
         setOpenDelimiter(SmartyOptions.getInstance().getDefaultOpenDelimiter());
         setCloseDelimiter(SmartyOptions.getInstance().getDefaultCloseDelimiter());
-        setDepthOfScanning(SmartyOptions.getInstance().getScanningDepth());
+        setDepthOfScanning(SmartyFramework.getDepthOfScanningForTpl());
 
         openDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
         closeDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
@@ -102,7 +106,7 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     private void setDepthOfScanningComboBox() {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i <= MAX_SCANNING_DEPTH; i++) {
             depthOfScanningComboBox.addItem(String.valueOf(i));
         }
     }
@@ -128,6 +132,13 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     public void setDepthOfScanning(int depth) {
+        // can happen after lowering possible maximum scanning depth or by
+        //  manually updated preferences
+        if (depth > MAX_SCANNING_DEPTH) {
+            depth = MAX_SCANNING_DEPTH;
+        } else if (depth < 0) {
+            depth = 0;
+        }
         this.depthOfScanningComboBox.setSelectedIndex(depth);
     }
 
@@ -290,7 +301,7 @@ public class SmartyOptionsPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class SmartyDocumentListener implements DocumentListener {
-        
+
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
@@ -304,5 +315,5 @@ public class SmartyOptionsPanel extends JPanel {
             fireChange();
         }
     }
-    
+
 }

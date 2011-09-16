@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,27 +41,69 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.profiler.categories.j2ee;
 
-import org.netbeans.lib.profiler.ProfilerClient;
-import org.netbeans.lib.profiler.results.RuntimeCCTNode;
-import org.netbeans.lib.profiler.results.cpu.CPUCallGraphBuilder;
-import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
+
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.swing.JComponent;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
+
+import org.netbeans.spi.debugger.ui.BreakpointType;
+
+import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 
 /**
- * @author ads
- *
- */
-public class TestGraphBuilder extends CPUCallGraphBuilder {
+* @author Martin Entlicher
+*/
+@BreakpointType.Registration(displayName="#CTL_AWTComponent_breakpoint_type_name")
+public class ComponentBreakpointType extends BreakpointType {
 
+    private Reference<ComponentBreakpointPanel> customizerRef = new WeakReference<ComponentBreakpointPanel>(null);
+
+    @Override
+    public String getCategoryDisplayName () {
+        return NbBundle.getMessage (
+            ComponentBreakpointType.class,
+            "CTL_Java_breakpoint_events_cathegory_name"
+        );
+    }
     
-    protected RuntimeCCTNode getAppRootNode() {
-        return super.getAppRootNode();
+    @Override
+    public JComponent getCustomizer () {
+        ComponentBreakpointPanel panel = new ComponentBreakpointPanel();
+        customizerRef = new WeakReference<ComponentBreakpointPanel>(panel);
+        return panel;
     }
 
-    protected void doStartup(ProfilerClient profilerClient) {
-        super.doStartup(profilerClient);
-        setFactory(new CPUCCTNodeFactory(isCollectingTwoTimeStamps()));
+    @Override
+    public Controller getController() {
+        ComponentBreakpointPanel panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String getTypeDisplayName () {
+        return NbBundle.getMessage (ComponentBreakpointType.class, 
+            "CTL_AWTComponent_breakpoint_type_name"
+        );
+    }
+    
+    @Override
+    public boolean isDefault () {
+        ScreenshotUIManager activeScreenshotManager = ScreenshotUIManager.getActive();
+        if (activeScreenshotManager != null) {
+            ComponentInfo ci = activeScreenshotManager.getSelectedComponent();
+            return (ci instanceof AWTComponentInfo);
+        }
+        return false;
     }
 }
