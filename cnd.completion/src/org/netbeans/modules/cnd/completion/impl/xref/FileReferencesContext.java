@@ -142,7 +142,10 @@ public final class FileReferencesContext extends CsmProgressAdapter {
         }
         Set<CsmEnum> enums = new HashSet<CsmEnum>();
         for(CsmEnumerator e : enumerators) {
-            enums.add(e.getEnumeration());
+            CsmEnum parent = e.getEnumeration();
+            if (parent != null) {
+                enums.add(parent);
+            }
         }
         for(CsmEnum e : enums) {
             for(CsmEnumerator i : e.getEnumerators()) {
