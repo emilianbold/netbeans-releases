@@ -71,6 +71,11 @@ import org.netbeans.modules.xml.retriever.*;
  */
 public class URLResourceRetriever implements ResourceRetriever{
     
+    /**
+     * HTTP Location header name
+     */
+    private static final String HTTP_REDIRECT_LOCATION = "Location";
+    
     private static final String URI_SCHEME = "http"; //NOI18N
     /** Creates a new instance of FileResourceRetriever */
     public URLResourceRetriever() {
@@ -107,43 +112,63 @@ public class URLResourceRetriever implements ResourceRetriever{
         
     }
     
+    /**
+     * Sets up newly opened connection. E.g. for HTTPS, certificate / host
+     * verification can be disabled.
+     * <p/>
+     * The default implementation does nothing.
+     * 
+     * @param c new connection instance
+     */
+    protected void configureURLConnection(URLConnection ucn) {}
+    
+    private HttpURLConnection doConfigureURLConnection(URLConnection ucn) {
+        assert ucn instanceof HttpURLConnection;
+        HttpURLConnection hucn = ((HttpURLConnection)ucn);
+        hucn.setFollowRedirects(false);
+        configureURLConnection(ucn);
+        return hucn;
+    }
+    
     long streamLength = 0;
     URL effectiveURL = null;
     public InputStream getInputStreamOfURL(URL downloadURL, Proxy proxy) throws IOException{
         
         URLConnection ucn = null;
         
-        if(Thread.currentThread().isInterrupted())
-            return null;
-        if(proxy != null)
-            ucn = downloadURL.openConnection(proxy);
-        else
-            ucn = downloadURL.openConnection();
-        HttpURLConnection hucn = null;
-        if(ucn instanceof HttpURLConnection){
-            hucn = ((HttpURLConnection)ucn);
-            hucn.setFollowRedirects(false);
-        }
-        if(Thread.currentThread().isInterrupted())
-            return null;
-        ucn.connect();
-        //follow HTTP redirects
-        while( (hucn.getResponseCode() == hucn.HTTP_MOVED_TEMP) ||
-                (hucn.getResponseCode() == hucn.HTTP_MOVED_PERM) ) {
-            String addr = hucn.getHeaderField("Location");
-            downloadURL = new URL(addr);
-            if(proxy != null)
-                ucn = downloadURL.openConnection(proxy);
-            else
-                ucn = downloadURL.openConnection();
-            if(ucn instanceof HttpURLConnection){
-                hucn = ((HttpURLConnection)ucn);
-                hucn.setFollowRedirects(false);
+        // loop until no more redirections are 
+        for (;;) {
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
             }
+            if(proxy != null) {
+                ucn = downloadURL.openConnection(proxy);
+            } else {
+                ucn = downloadURL.openConnection();
+            }
+            HttpURLConnection hucn = doConfigureURLConnection(ucn);
+
             if(Thread.currentThread().isInterrupted())
                 return null;
+        
             ucn.connect();
+
+            int rc = hucn.getResponseCode();
+            boolean isRedirect = 
+                    rc == HttpURLConnection.HTTP_MOVED_TEMP ||
+                    rc == HttpURLConnection.HTTP_MOVED_PERM;
+            if (!isRedirect) {
+                break;
+            }
+
+            String addr = hucn.getHeaderField(HTTP_REDIRECT_LOCATION);
+            URL newURL = new URL(addr);
+            if (!downloadURL.getProtocol().equalsIgnoreCase(newURL.getProtocol())) {
+                throw new ResourceRedirectException(newURL);
+            }
+            downloadURL = newURL;
         }
+
         ucn.setReadTimeout(10000);
         InputStream is = ucn.getInputStream();
         streamLength = ucn.getContentLength();

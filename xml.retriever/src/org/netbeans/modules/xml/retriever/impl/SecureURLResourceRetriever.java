@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -91,11 +92,18 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
         URI currURI = new URI(effAddr);
         HashMap<String, InputStream> result = null;
         if (acceptedCertificates==null) acceptedCertificates = new HashSet();
-        setRetrieverTrustManager((HttpsURLConnection) currURI.toURL().openConnection());
         InputStream is = getInputStreamOfURL(currURI.toURL(), ProxySelector.getDefault().select(currURI).get(0));
         result = new HashMap<String, InputStream>();
         result.put(effectiveURL.toString(), is);
         return result;
+    }
+
+    @Override
+    protected void configureURLConnection(URLConnection ucn) {
+        super.configureURLConnection(ucn);
+        if (ucn instanceof HttpsURLConnection) {
+            setRetrieverTrustManager((HttpsURLConnection)ucn);
+        }
     }
     
     // Install the trust manager for retriever
