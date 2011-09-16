@@ -41,46 +41,28 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ObjectReference;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author martin
  */
-public class AWTComponentBreakpointImpl extends ComponentBreakpointImpl implements PropertyChangeListener {
-    
-    private AWTComponentBreakpoint cb;
-    private JPDADebugger debugger;
-
-    public AWTComponentBreakpointImpl(AWTComponentBreakpoint cb, JPDADebugger debugger) {
-        this.cb = cb;
-        this.debugger = debugger;
-        initServiceBreakpoints();
-        cb.addPropertyChangeListener(this);
+public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
+    public AWTComponentBreakpointImpl(ComponentBreakpoint cb, JPDADebugger debugger) {
+        super(cb, debugger);
     }
-    
-    private void initServiceBreakpoints() {
+
+    @Override
+    protected void initServiceBreakpoints() {
         //MethodBreakpoint mb = MethodBreakpoint.create("", "");
         ObjectReference component = cb.getComponent().getComponent(debugger);
         Variable variableComponent = ((JPDADebuggerImpl) debugger).getVariable(component);
@@ -124,50 +106,4 @@ public class AWTComponentBreakpointImpl extends ComponentBreakpointImpl implemen
             serviceBreakpoints.add(mbShow);
         }
     }
-    
-    private void addMethodBreakpoint(MethodBreakpoint mb, ObjectVariable variableComponent) {
-        mb.setHidden(true);
-        mb.setInstanceFilters(debugger, new ObjectVariable[] { variableComponent });
-        mb.addJPDABreakpointListener(new JPDABreakpointListener() {
-            @Override
-            public void breakpointReached(JPDABreakpointEvent event) {
-                navigateToCustomCode(event.getThread());
-            }
-        });
-        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-        serviceBreakpoints.add(mb);
-    }
-    
-    private void navigateToCustomCode(final JPDAThread thread) {
-        CallStackFrame callStackFrame = null;
-        try {
-            CallStackFrame[] callStack = thread.getCallStack();
-            for (CallStackFrame csf : callStack) {
-                String cn = csf.getClassName();
-                if (JavaComponentInfo.isCustomType(cn)) {
-                    callStackFrame = csf;
-                    break;
-                }
-            }
-        } catch (AbsentInformationException ex) {
-        }
-        if (callStackFrame != null) {
-            ((JPDAThreadImpl) thread).getDebugger().setPreferredTopFrame(callStackFrame);
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-        if (Breakpoint.PROP_ENABLED.equals(propertyName)) {
-            if (cb.isEnabled()) {
-                enable();
-            } else {
-                disable();
-            }
-        } else if (JPDABreakpoint.PROP_SUSPEND.equals(propertyName)) {
-            setSuspend(cb.getSuspend());
-        }
-    }
-
 }

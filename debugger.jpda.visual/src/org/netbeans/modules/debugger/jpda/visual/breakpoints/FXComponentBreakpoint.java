@@ -41,62 +41,17 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.beans.Customizer;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
-import org.netbeans.spi.debugger.ui.Controller;
-
 /**
  *
- * @author martin
+ * @author Jaroslav Bachorik
  */
-public class AWTComponentBreakpointCustomizer extends JPanel implements Customizer, Controller {
-
-    private AWTComponentBreakpoint b;
-    private JComponent c;
-    
-    @Override
-    public void setObject(Object bean) {
-        if (!(bean instanceof AWTComponentBreakpoint)) {
-            throw new IllegalArgumentException(bean.toString());
-        }
-        this.b = (AWTComponentBreakpoint) bean;
-        init(b);
-    }
-    
-    private void init(AWTComponentBreakpoint b) {
-        c = new AWTComponentBreakpointPanel(b);
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        add(c, gbc);
+public class FXComponentBreakpoint extends ComponentBreakpoint {
+    public FXComponentBreakpoint(ComponentDescription component) {
+        super(component);
     }
 
     @Override
-    public boolean ok() {
-        Controller cc;
-        if (c instanceof ControllerProvider) {
-            cc = ((ControllerProvider) c).getController();
-        } else {
-            cc = (Controller) c;
-        }
-        return cc.ok();
-    }
-
-    @Override
-    public boolean cancel() {
-        Controller cc;
-        if (c instanceof ControllerProvider) {
-            cc = ((ControllerProvider) c).getController();
-        } else {
-            cc = (Controller) c;
-        }
-        return cc.cancel();
-    }
-
+    public int supportedTypes() {
+        return TYPE_ADD | TYPE_REMOVE | TYPE_SHOW | TYPE_HIDE;
+    }    
 }

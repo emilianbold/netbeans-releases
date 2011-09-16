@@ -41,59 +41,58 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ObjectReference;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 
 /**
  *
- * @author Martin Entlicher
+ * @author martin
  */
-public abstract class ComponentBreakpointImpl {
-    
-    protected final List<JPDABreakpoint> serviceBreakpoints = new LinkedList<JPDABreakpoint>();
-
-    void notifyRemoved() {
-        for (Breakpoint b : serviceBreakpoints) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
-        }
-        serviceBreakpoints.clear();
+public class FXComponentBreakpointImpl extends BaseComponentBreakpointImpl {
+    public FXComponentBreakpointImpl(ComponentBreakpoint cb, JPDADebugger debugger) {
+        super(cb, debugger);
     }
 
-    void enable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.enable();
-        }
-    }
-
-    void disable() {
-        for (Breakpoint b : serviceBreakpoints) {
-            b.disable();
-        }
+    @Override
+    protected void initServiceBreakpoints() {
+        //MethodBreakpoint mb = MethodBreakpoint.create("", "");
+        ObjectReference component = cb.getComponent().getComponent(debugger);
+        Variable variableComponent = ((JPDADebuggerImpl) debugger).getVariable(component);
+        //mb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
         
-    }
-    
-    void setSuspend(int suspend) {
-        for (JPDABreakpoint b : serviceBreakpoints) {
-            b.setSuspend(suspend);
+        int type = cb.getType();
+        if (((type & AWTComponentBreakpoint.TYPE_ADD) != 0) || ((type & AWTComponentBreakpoint.TYPE_REMOVE) != 0)) {
+            MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
+            mb.setMethodSignature("(Ljavafx/scene/Parent)V");
+            addMethodBreakpoint(mb, (ObjectVariable)variableComponent);
         }
+        if (((type & AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type & AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
+            MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setVisible");
+            mb.setMethodSignature("(Z)V");
+            addMethodBreakpoint(mb, (ObjectVariable) variableComponent);
+        }
+//        if (((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
+//            MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "repaint");
+//            // void repaint(long tm, int x, int y, int width, int height)
+//            mbShow.setMethodSignature("(JIIII)V");
+//            mbShow.setHidden(true);
+//            mbShow.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
+//            mbShow.addJPDABreakpointListener(new JPDABreakpointListener() {
+//                @Override
+//                public void breakpointReached(JPDABreakpointEvent event) {
+//
+//                }
+//            });
+//            DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
+//            serviceBreakpoints.add(mbShow);
+//        }
     }
 }

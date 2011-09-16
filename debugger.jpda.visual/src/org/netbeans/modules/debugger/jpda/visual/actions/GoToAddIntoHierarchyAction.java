@@ -77,7 +77,13 @@ public class GoToAddIntoHierarchyAction extends NodeAction {
                     for (int i = 0; i < frames.length; i++) {
                         String className = frames[i].getClassName();
                         String methodName = frames[i].getMethodName();
-                        if (!JavaComponentInfo.isCustomType(className) && methodName.startsWith("add")) {   // NOI18N
+                        if (!JavaComponentInfo.isCustomType(className) &&
+                            (methodName.startsWith("add") || 
+                             methodName.startsWith("onChanged") ||
+                             methodName.startsWith("setParent") ||
+                             methodName.startsWith("callObservers")
+                            )
+                        ){   // NOI18N
                             continue;
                         }
                         type = className;

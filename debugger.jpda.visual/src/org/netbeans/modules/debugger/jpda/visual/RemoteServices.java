@@ -74,8 +74,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -349,16 +347,20 @@ public class RemoteServices {
         }
     }
     
-    public static List<RemoteListener> getAttachedListeners(RemoteAWTScreenshot.AWTComponentInfo ci) throws PropertyVetoException {
+    public static List<RemoteListener> getAttachedListeners(final JavaComponentInfo ci) throws PropertyVetoException {
         final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
         final JPDAThreadImpl thread = ci.getThread();
         final ObjectReference component = ci.getComponent();
         runOnStoppedThread(thread, new Runnable() {
             @Override
             public void run() {
-                retrieveAttachedListeners(thread, component, rlisteners);
+                if (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) {
+                    retrieveAttachedListeners(thread, component, rlisteners);
+                } else {
+                    retrieveAttachedFXListeners(thread, component, rlisteners);
+                }
             }
-        }, ServiceType.AWT);
+        }, (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) ? ServiceType.AWT : ServiceType.FX);
         return rlisteners;
     }
         
@@ -403,7 +405,56 @@ public class RemoteServices {
         }
     }
     
-    public static List<ReferenceType> getAttachableListeners(RemoteAWTScreenshot.AWTComponentInfo ci) {
+    private static void retrieveAttachedFXListeners(JPDAThreadImpl thread, ObjectReference component, List<RemoteListener> rlisteners) {
+        ThreadReference t = thread.getThreadReference();
+        ReferenceType clazz = component.referenceType();
+        List<Method> visibleMethods = clazz.visibleMethods();
+        for (Method m : visibleMethods) {
+            String name = m.name();
+            if (!name.startsWith("getOn")) {
+                continue;
+            }
+            if (m.argumentTypeNames().size() > 0) {
+                continue;
+            }
+            Value result;
+            try {
+                result = component.invokeMethod(t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (result == null) {
+                    continue;
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                continue;
+            }
+            String listenerType = null;
+            try {
+                Type returnType = m.returnType();
+                if (returnType.name().equals("javafx.event.EventHandler")) {
+                    listenerType = name.substring(5);
+                }
+//                if (returnType instanceof ArrayType) {
+//                    ArrayType art = (ArrayType) returnType;
+//                    listenerType = art.componentTypeName();
+//                }
+            } catch (ClassNotLoadedException ex) {
+                continue;
+            }
+            if (listenerType == null) {
+                continue;
+            }
+            RemoteListener rl = new RemoteListener(listenerType, (ObjectReference)result);
+            rlisteners.add(rl);
+//            ArrayReference array = (ArrayReference) result;
+//            List<Value> listeners = array.getValues();
+//            for (Value v : listeners) {
+//                RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
+//                rlisteners.add(rl);
+//            }
+        }
+    }
+    
+    public static List<ReferenceType> getAttachableListeners(JavaComponentInfo ci) {
         ObjectReference component = ci.getComponent();
         ReferenceType clazz = component.referenceType();
         List<Method> visibleMethods = clazz.visibleMethods();
@@ -444,7 +495,7 @@ public class RemoteServices {
         return listenerClasses;
     }
     
-    public static ObjectReference attachLoggingListener(final RemoteAWTScreenshot.AWTComponentInfo ci,
+    public static ObjectReference attachLoggingListener(final JavaComponentInfo ci,
                                                         final ClassObjectReference listenerClass,
                                                         final LoggingListenerCallBack listener) throws PropertyVetoException {
         final JPDAThreadImpl thread = ci.getThread();
@@ -536,7 +587,7 @@ public class RemoteServices {
         return listenerPtr[0];
     }
     
-    public static boolean detachLoggingListener(final RemoteAWTScreenshot.AWTComponentInfo ci,
+    public static boolean detachLoggingListener(final JavaComponentInfo ci,
                                                 final ClassObjectReference listenerClass,
                                                 final ObjectReference listener) throws PropertyVetoException {
         final JPDAThreadImpl thread = ci.getThread();
@@ -690,7 +741,7 @@ public class RemoteServices {
     
     public static interface LoggingListenerCallBack {
         
-        public void eventsData(RemoteAWTScreenshot.AWTComponentInfo ci, String[] data, String[] stack);
+        public void eventsData(JavaComponentInfo ci, String[] data, String[] stack);
         
     }
     
