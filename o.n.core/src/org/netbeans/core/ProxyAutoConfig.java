@@ -83,10 +83,22 @@ public class ProxyAutoConfig {
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
     private static final String NS_PROXY_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
 
+    /**
+     * 
+     * @param pacFile The string to be parsed into a URI
+     * @return ProxyAutoConfig for given pacFile or <code>null</code> if constructor failed
+     */
     public static synchronized ProxyAutoConfig get(String pacFile) {
         if (file2pac.get(pacFile) == null) {
             LOGGER.fine("Init ProxyAutoConfig for " + pacFile);
-            file2pac.put(pacFile, new ProxyAutoConfig(pacFile));
+            ProxyAutoConfig instance = null;
+            try {
+                instance = new ProxyAutoConfig(pacFile);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(ProxyAutoConfig.class.getName()).warning("Parsing " + pacFile + " to URI throws " + ex);
+            } finally {
+                file2pac.put(pacFile, instance);
+            }
         }
         return file2pac.get(pacFile);
     }
@@ -95,18 +107,15 @@ public class ProxyAutoConfig {
     private final Task initTask;
     private final URI pacURI;
 
-    private ProxyAutoConfig(final String pacURL) {
+    private ProxyAutoConfig(final String pacURL) throws URISyntaxException {
         assert file2pac.get(pacURL) == null : "Only once object for " + pacURL + " must exist.";
-        try {
-            pacURI = new URI(pacURL);
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(pacURL + " throws " + ex, ex);
-        }
+        final String normPAC = normalizePAC(pacURL);
+        pacURI = new URI(normPAC);
         initTask = RP.post(new Runnable() {
 
             @Override
             public void run() {
-                initEngine(pacURL);
+                initEngine(normPAC);
             }
         });
     }
@@ -330,5 +339,13 @@ public class ProxyAutoConfig {
             }
         }
         return builder.toString();
+    }
+
+    private String normalizePAC(String pacURL) {
+        int index;
+        if ((index = pacURL.indexOf(" ")) != -1) { // NOI18N
+            pacURL = pacURL.substring(0, index);
+        }
+        return pacURL.trim();
     }
 }

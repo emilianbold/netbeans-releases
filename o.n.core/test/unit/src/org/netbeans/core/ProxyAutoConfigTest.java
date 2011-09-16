@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,41 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.core;
 
-package org.netbeans.modules.jira.autoupdate;
-
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.jira.JiraTestUtil;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * @author Jirka Rechtacek
  */
-public class JiraNotSupportedTest extends JiraPluginUCTestCase {
-
-    public JiraNotSupportedTest(String testName) {
-        super(testName);
+public class ProxyAutoConfigTest extends NbTestCase {
+    public ProxyAutoConfigTest(String name) {
+        super(name);
     }
-
-    public static Test suite() {
-        return NbModuleSuite.create(JiraNotSupportedTest.class, null, null);
+    
+    public void testGetProxyAutoConfig() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt"));
     }
-        
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("netbeans.t9y.jira.supported.version", "0.0.0");
-        super.setUp();
+    
+    // #issue 201995
+    public void testGetProxyAutoConfigWithMultipleURL() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/pac.txt http://pac/pac.txt http://pac/pac.txt"));
     }
-
-    public void testIsNotSupportedJIRAVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkSupportedJiraServerVersion(JiraTestUtil.getRepository()));
+    
+    public void testGetProxyAutoConfigWithInvalidURL() {
+        assertNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
     }
-
 }

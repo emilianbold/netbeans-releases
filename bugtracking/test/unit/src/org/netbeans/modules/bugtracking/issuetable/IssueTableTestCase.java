@@ -59,11 +59,6 @@ public class IssueTableTestCase extends NbTestCase {
     }
 
     @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }   
-    
-    @Override
     protected void tearDown() throws Exception {        
     }
 

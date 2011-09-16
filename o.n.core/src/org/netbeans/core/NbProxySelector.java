@@ -189,7 +189,7 @@ public final class NbProxySelector extends ProxySelector {
                         LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
                         res.add(Proxy.NO_PROXY);
                     } else {
-                        res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
+                        res.addAll(pac.findProxyForURL(uri)); // NOI18N
                     }
                 }
                 res.add (Proxy.NO_PROXY);
@@ -209,7 +209,7 @@ public final class NbProxySelector extends ProxySelector {
                     LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
                     res.add(Proxy.NO_PROXY);
                 } else {
-                    res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
+                    res.addAll(pac.findProxyForURL(uri)); // NOI18N
                 }
                 res.add (Proxy.NO_PROXY);
                 break;

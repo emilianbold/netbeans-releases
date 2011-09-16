@@ -66,7 +66,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExClipboard;
 
 @org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.awt.datatransfer.Clipboard.class), @org.openide.util.lookup.ServiceProvider(service=org.openide.util.datatransfer.ExClipboard.class)})
@@ -101,11 +100,8 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
         if (System.getProperty("netbeans.slow.system.clipboard.hack") != null) {
             slowSystemClipboard = Boolean.getBoolean("netbeans.slow.system.clipboard.hack"); // NOI18N
-        } else if (Utilities.isMac()) {
+        } else {
             slowSystemClipboard = false;
-        }
-        else {
-            slowSystemClipboard = true;
         }
 
 
