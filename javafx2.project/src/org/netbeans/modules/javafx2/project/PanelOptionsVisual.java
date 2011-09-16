@@ -59,6 +59,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -84,7 +85,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
     
-    private final JavaFXProjectWizardIterator.WizardType type;
+    private final WizardType type;
     private PanelConfigureProject panel;
     
     private ComboBoxModel platformsModel;
@@ -97,7 +98,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     private boolean isMainClassValid;
     private boolean isPreloaderNameValid;
     
-    PanelOptionsVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
+    PanelOptionsVisual(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
         this.type = type;
 
@@ -138,6 +139,13 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 break;
+            case PRELOADER:
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                createMainCheckBox.setText(NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createPrealoaderCheckBox")); // NOI18N
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
+                break;
             case EXTISTING:
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
@@ -157,7 +165,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         final String propName = event.getPropertyName();
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(propName)) {
             final String projectName = (String) event.getNewValue();
-            mainClassTextField.setText(createMainClassName(projectName));
+            mainClassTextField.setText(createMainClassName(projectName, type));
             txtPreloaderProject.setText(createPreloaderProjectName(projectName));
         } else if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(propName)) {
             projectLocation = (String) event.getNewValue();
@@ -193,7 +201,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         return projectName + "-Preloader"; // NOI18N
     }
     
-    private static String createMainClassName(final String projectName) {
+    private static String createMainClassName(final String projectName, final WizardType type) {
 
         final StringBuilder pkg = new StringBuilder();
         final StringBuilder main = new StringBuilder();
@@ -249,7 +257,8 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
             }
         }
         if (main.length() == 0) {
-            main.append(NbBundle.getMessage(PanelOptionsVisual.class, "TXT_ClassName")); // NOI18N
+            main.append(NbBundle.getMessage(PanelOptionsVisual.class,
+                    type == WizardType.PRELOADER ? "TXT_ClassNamePreloader" : "TXT_ClassName")); // NOI18N
         }
         return pkg.length() == 0 ? main.toString() : String.format("%s.%s", pkg.toString(), main.toString()); // NOI18N
     }

@@ -311,7 +311,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             switch (type) {
                 case APPLICATION:
                     int baseCount = WizardSettings.getNewApplicationCount() + 1;
-                    String formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaApplication"); // NOI18N
+                    String formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXApplication"); // NOI18N
+                    while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
+                        baseCount++;
+                    }
+                    settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    break;
+                case PRELOADER:
+                    baseCount = WizardSettings.getNewApplicationCount() + 1;
+                    formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXPreloaderApplication"); // NOI18N
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
                     }

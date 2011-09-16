@@ -70,6 +70,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -111,9 +112,9 @@ public class JFXProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
+    static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
             final String manifestFile, final String librariesDefinition,
-            final String platformName, final String preloader) throws IOException {
+            final String platformName, final String preloader, final WizardType type) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
         
@@ -124,8 +125,7 @@ public class JFXProjectGenerator {
             @Override
             public void run() throws IOException {
                 h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
-                        manifestFile == null, librariesDefinition, platformName,
-                        preloader, false);
+                        librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
                 ProjectManager.getDefault().saveProject(p);
@@ -144,7 +144,7 @@ public class JFXProjectGenerator {
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
                 dirFO.createFolder("test"); // NOI18N
                 if (mainClass != null) {
-                    createMainClass(mainClass, srcFolder);
+                    createMainClass(mainClass, srcFolder, type);
                 }
             }
         });
@@ -163,7 +163,8 @@ public class JFXProjectGenerator {
     public static AntProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders,
             final String manifestFile, final String librariesDefinition,
-            final String buildXmlName, final String platformName, final String preloader) throws IOException {
+            final String buildXmlName, final String platformName,
+            final String preloader, final WizardType type) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI8N
         Parameters.notNull("sourceFolders", sourceFolders); //NOI18N
@@ -175,8 +176,8 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false,
-                        librariesDefinition, platformName, preloader, false);
+                h[0] = createProject(dirFO, name, null, null, null, manifestFile,
+                        librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
@@ -263,19 +264,19 @@ public class JFXProjectGenerator {
     }
 
     static AntProjectHelper createPreloaderProject(final File dir, final String name,
-            final String librariesDefinition, final String platformName) throws IOException {
+            final String librariesDefinition, final String platformName, final String preloaderClassName) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
+        Parameters.notNull("preloaderClassName", preloaderClassName);   //NOI18N
 
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                String preloaderClassName = JavaFXProjectWizardIterator.generatePreloaderClassName(name);
                 h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
-                        JavaFXProjectWizardIterator.MANIFEST_FILE, false, librariesDefinition,
-                        platformName, null, true);
+                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
+                        platformName, null, WizardType.PRELOADER);
                 
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
@@ -330,8 +331,9 @@ public class JFXProjectGenerator {
 
     private static AntProjectHelper createProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, String mainClass, String manifestFile,
-            boolean isLibrary, String librariesDefinition, String platformName,
-            String preloader, boolean isPreloader) throws IOException {
+            String librariesDefinition, String platformName, String preloader,
+            WizardType type) throws IOException {
+        
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -341,6 +343,7 @@ public class JFXProjectGenerator {
         final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
         explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
         data.appendChild(explicitPlatformEl);
+        
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
         if (srcRoot != null) {
@@ -384,7 +387,7 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
         ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
 
-        if (isPreloader) {
+        if (type == WizardType.PRELOADER) {
             ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true"); // NOI18N
             ep.setComment(JFXProjectProperties.JAVAFX_PRELOADER, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_preloader")}, false); // NOI18N
             ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
@@ -393,7 +396,7 @@ public class JFXProjectGenerator {
             ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
             ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
-            if (!isLibrary) {
+            if (type != WizardType.LIBRARY) {
                 ep.setProperty(JFXProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
                 ep.setComment(JFXProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.fxclass")}, false); // NOI18N
             }
@@ -643,7 +646,7 @@ public class JFXProjectGenerator {
         }
     }
 
-    private static void createMainClass(String mainClassName, FileObject srcFolder) throws IOException {
+    private static void createMainClass(String mainClassName, FileObject srcFolder, WizardType type) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf('.'); // NOI18N
         String mName, pName;
         if (lastDotIdx == -1) {
@@ -658,7 +661,9 @@ public class JFXProjectGenerator {
             return;
         }
 
-        FileObject template = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+        FileObject template = type == WizardType.PRELOADER ?
+                FileUtil.getConfigFile("Templates/javafx/FXPreloader.java") : // NOI18N
+                FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
         if (template == null) {
             return; // Don't know the template
         }
