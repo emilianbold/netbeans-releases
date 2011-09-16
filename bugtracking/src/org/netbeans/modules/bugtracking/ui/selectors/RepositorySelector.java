@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
@@ -70,13 +71,19 @@ public class RepositorySelector {
         if(!selectorPanel.open()) {
             return null;
         }
-        Repository repo = selectorPanel.getRepository();
+        final Repository repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
         }        
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                BugtrackingRootNode.selectNode(repo.getDisplayName());
+            }
+        });
         return repo;
     }
 
