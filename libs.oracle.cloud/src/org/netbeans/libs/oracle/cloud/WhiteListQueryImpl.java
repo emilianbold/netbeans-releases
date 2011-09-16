@@ -42,6 +42,7 @@
 package org.netbeans.libs.oracle.cloud;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
@@ -52,6 +53,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.whitelist.WhiteListQuery.Operation;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
+import org.netbeans.api.whitelist.WhiteListQuery.RuleDescription;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -65,6 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
     private IClassConfiguration icc;
+    private static final String WHITELIST_ID = "oracle.cloud";
 
     public WhiteListQueryImpl() {
         icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();
@@ -82,7 +85,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
 
     @Override
     public String getId() {
-        return "oracle.cloud";
+        return WHITELIST_ID;
     }
     
     private static class WhiteListImpl implements WhiteListImplementation {
@@ -106,7 +109,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case ANNOTATION_TYPE:
                     res = icc.checkClassAllowed(vmSignatures[0]);
                     if (!res.isAllowed()) {
-                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                        return new Result(Collections.singletonList(new RuleDescription(NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage(), WHITELIST_ID)));
                     }
                     break;
                 case CONSTRUCTOR:
@@ -115,19 +118,19 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                     List<String> params = paramsOnly(vmSignatures[2]);
                     res = icc.checkMethodAllowed(vmSignatures[0], methodName, params);
                     if (!res.isAllowed()) {
-                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                        return new Result(Collections.singletonList(new RuleDescription(NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage(), WHITELIST_ID)));
                     }
                     break;
                 case FIELD:
                     String fieldName = vmSignatures[1];
                     res = icc.checkFieldAllowed(vmSignatures[0], fieldName);
                     if (!res.isAllowed()) {
-                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                        return new Result(Collections.singletonList(new RuleDescription(NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage(), WHITELIST_ID)));
                     }
                     break;
                 
             }
-            return new Result(true, null, null);
+            return new Result();
         }
         
         @NonNull
