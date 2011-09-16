@@ -148,10 +148,13 @@ public class Commands {
             try {
                 String tmp = list.getMainAttributes().getValue("children"); // NOI18N
                 if (null != tmp) {
+                    appsList = tmp;
                     appsList = URLDecoder.decode(tmp, "UTF-8"); // NOI18N
                 }
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8");
+                Logger.getLogger("glassfish").log(Level.WARNING, "Could not URL decode with UTF-8"); //NOI18N
+            } catch (IllegalArgumentException iae) {
+                // ignore this for now
             }
             if(appsList == null || appsList.length() == 0) {
                 // no applications deployed...

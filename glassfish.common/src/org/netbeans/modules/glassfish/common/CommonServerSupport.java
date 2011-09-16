@@ -672,7 +672,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
                         @Override
                         public void operationStateChanged(OperationState newState, String message) {
-                            if (OperationState.FAILED == newState) {
+                            if (OperationState.FAILED == newState && !"".equals(message)) { // NOI18N
                                 NotifyDescriptor nd = new NotifyDescriptor.Message(message);
                                 DialogDisplayer.getDefault().notifyLater(nd);
                                 Logger.getLogger("glassfish").log(Level.INFO, message);

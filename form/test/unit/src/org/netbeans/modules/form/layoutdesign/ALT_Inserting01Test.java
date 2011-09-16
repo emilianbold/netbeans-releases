@@ -1225,12 +1225,12 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         prefPadding.put("jTextField1-jButton2-0-0-2", new Integer(10)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType
         // > MOVE
         {
-            Point p = new Point(98,56);
+            Point p = new Point(101,56);
             String containerId= "Form";
             boolean autoPositioning = true;
             boolean lockDimension = false;
             Rectangle[] bounds = new Rectangle[] {
-                new Rectangle(65, 39, 75, 23)
+                new Rectangle(68, 39, 75, 23)
                 };
             ld.move(p, containerId, autoPositioning, lockDimension, bounds);
         }
@@ -1260,18 +1260,17 @@ public class ALT_Inserting01Test extends LayoutTestCase {
         prefPadding.put("jTextField1-jButton2-0-0-2", new Integer(10)); // comp1Id-comp2Id-dimension-comp2Alignment-paddingType
         // > MOVE
         {
-            Point p = new Point(97,56);
+            Point p = new Point(100,56);
             String containerId= "Form";
             boolean autoPositioning = true;
             boolean lockDimension = false;
             Rectangle[] bounds = new Rectangle[] {
-                new Rectangle(64, 39, 75, 23)
+                new Rectangle(67, 39, 75, 23)
                 };
             ld.move(p, containerId, autoPositioning, lockDimension, bounds);
         }
         // < MOVE
         // > END MOVING
-        compPrefSize.put("jButton2", new Dimension(75, 23));
         compPrefSize.put("jButton2", new Dimension(75, 23));
         ld.endMoving(true);
         // < END MOVING

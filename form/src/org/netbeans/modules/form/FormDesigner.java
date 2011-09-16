@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
+import javax.swing.undo.UndoableEdit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -588,8 +589,13 @@ public class FormDesigner {
      * returns <code>false</code> otherwise.
      */
     public boolean isInDesigner(RADVisualComponent metacomp) {
-        Object comp = replicator.getClonedComponent(metacomp);
-        return comp instanceof Component ? componentLayer.isAncestorOf((Component)comp) : false;
+        if (replicator != null) { // not on un-initialized designer
+            Object comp = replicator.getClonedComponent(metacomp);
+            if  (comp instanceof Component) {
+                return componentLayer.isAncestorOf((Component)comp);
+            }
+        }
+        return false;
     }
 
     void updateWholeDesigner() {
@@ -610,11 +616,22 @@ public class FormDesigner {
         RepaintManager.currentManager(componentLayer).validateInvalidComponents();
 
         LayoutModel layoutModel = formModel.getLayoutModel();
+        // If after a change (FormModel has a compound edit started, i.e. it's not
+        // just after form loaded) that was not primarily in layout, start undo
+        // edit in LayoutModel as well: some changes can be done when updating to
+        // actual visual state that was affected by changes elsewhere.
+        UndoableEdit layoutUndoEdit = formModel.isCompoundEditInProgress()
+                                      && !layoutModel.isUndoableEditInProgress()
+                ? layoutModel.getUndoableEdit() : null;
+
         if (getLayoutDesigner().updateCurrentState() && fireChange) {
             formModel.fireFormChanged(true); // hack: to regenerate code once again
         }
 
-        layoutModel.endUndoableEdit();
+        if (layoutModel.endUndoableEdit() && layoutUndoEdit != null) {
+            formModel.addUndoableEdit(layoutUndoEdit);
+        }
+
         updateResizabilityActions();
         componentLayer.repaint();
     }
@@ -867,10 +884,6 @@ public class FormDesigner {
         }
     }
 
-    public void resetDesignerSize() {
-        setDesignerSize(null, null);
-    }
-
     void storeDesignerSize(Dimension size) { // without firing model change
         if (topDesignComponent instanceof RADVisualFormContainer)
             ((RADVisualFormContainer)topDesignComponent).setDesignerSizeImpl(size);
@@ -927,15 +940,27 @@ public class FormDesigner {
             Dimension designerSize = new Dimension(getDesignerSize());
             designerSize.width -= wDiff;
             designerSize.height -= hDiff;
-            Dimension minSize = topCont.getMinimumSize();
             boolean corrected = false;
-            if (designerSize.width < minSize.width) {
-                designerSize.width = minSize.width;
-                corrected = true;
-            }
-            if (designerSize.height < minSize.height) {
-                designerSize.height = minSize.height;
-                corrected = true;
+            if (layoutDesigner != null && layoutDesigner.isPreferredSizeChanged()) {
+                Dimension prefSize = topCont.getPreferredSize();
+                if (designerSize.width != prefSize.width) {
+                    designerSize.width = prefSize.width;
+                    corrected = true;
+                }
+                if (designerSize.height != prefSize.height) {
+                    designerSize.height = prefSize.height;
+                    corrected = true;
+                }
+            } else {
+                Dimension minSize = topCont.getMinimumSize();
+                if (designerSize.width < minSize.width) {
+                    designerSize.width = minSize.width;
+                    corrected = true;
+                }
+                if (designerSize.height < minSize.height) {
+                    designerSize.height = minSize.height;
+                    corrected = true;
+                }
             }
 
             if (corrected) {
@@ -1780,6 +1805,9 @@ public class FormDesigner {
             formEditor.setFormDesigner(designer);
             ComponentInspector.getInstance().setFormDesigner(designer);
             PaletteUtils.setContext(formEditor.getFormDataObject().getPrimaryFile());
+            if (designer.layoutDesigner != null) {
+                designer.layoutDesigner.setActive(true);
+            }
         } else if (selectedDesigner == designer) {
             selectedDesigner = null;
             ComponentInspector.getInstance().setFormDesigner(null);
@@ -1891,10 +1919,10 @@ public class FormDesigner {
         @Override
         public Rectangle getComponentBounds(String componentId) {
             Component visual = getVisualComponent(componentId, true, false);
-            Rectangle rect = null;
-            if (visual != null) {
-                rect = componentBoundsToTop(visual);
+            if (visual == null) {
+                return null;
             }
+            Rectangle rect = componentBoundsToTop(visual);
             
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compBounds.put(\"" + componentId + "\", new Rectangle(" +  //NOI18N
@@ -1915,6 +1943,13 @@ public class FormDesigner {
             Container cont = metacont.getContainerDelegate(visual);
 
             Rectangle rect = componentBoundsToTop(cont);
+            Dimension dim = cont.getMinimumSize();
+            if (dim.width > rect.width) {
+                rect.width = dim.width;
+            }
+            if (dim.height > rect.height) {
+                rect.height = dim.height;
+            }
             Insets insets = cont.getInsets();
             rect.x += insets.left;
             rect.y += insets.top;
@@ -2127,8 +2162,21 @@ public class FormDesigner {
 
         @Override
         public void rebuildLayout(String contId) {
-            replicator.updateContainerLayout((RADVisualContainer)getMetaComponent(contId));
+            RADVisualContainer metacont = (RADVisualContainer)getMetaComponent(contId);
+            replicator.updateContainerLayout(metacont);
             replicator.getLayoutBuilder(contId).doLayout();
+
+            // The layout is rebuilt due to additional changes made when updating
+            // LayoutDesigner to actual visual appearance. But the primary change
+            // that caused this could happen in a different container. We need to
+            // ensure we also have this rebuild done again after undo/redo, so
+            // recording a change for that.
+            if (formModel.isCompoundEditInProgress()) {
+                FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.CONTAINER_LAYOUT_CHANGED);
+                ev.setComponentAndContainer(metacont, metacont);
+                formModel.addUndoableEdit(ev.getUndoableEdit());
+            } // Note: if FormModel had no compound edit started, then this would be a
+              // first change (correction) after the form is loaded. Not to be undone.
         }
 
         @Override
@@ -2284,7 +2332,7 @@ public class FormDesigner {
                 return;
             }
 
-            FormModelEvent[] events = this.events;
+            FormModelEvent[] events = sortEvents(this.events);
             this.events = null;
 
             int prevType = 0;
@@ -2356,6 +2404,9 @@ public class FormDesigner {
                     
                     replicator.updateComponentProperty(eventProperty);
                     updateConnectedProperties(eventProperty, eventComponent);
+                    if (layoutDesigner != null && formModel.isCompoundEditInProgress()) {
+                        layoutDesigner.componentDefaultSizeChanged(eventComponent.getId());
+                    }
                     
                     updateDone = true;
                 }
@@ -2400,6 +2451,51 @@ public class FormDesigner {
             }
         }
         
+        private FormModelEvent[] sortEvents(FormModelEvent[] events) {
+            LinkedList<FormModelEvent> l = new LinkedList();
+            for (FormModelEvent event : events) {
+                l.add(event);
+                if (event.getContainer() instanceof RADVisualContainer) {
+                    for (int i=0; i < l.size(); i++) {
+                        FormModelEvent e = l.get(i);
+                        if (e == event){
+                            break;
+                        }
+                        if (e.getContainer() instanceof RADVisualContainer
+                                && eventsOrder(e, event) == 0) {
+                            // we want subcontainers updated before parent's
+                            // layout is rebuilt, and CONTAINER_LAYOUT_CHANGED
+                            // processed at the end (after add/remove changes)
+                            l.remove(e);
+                            l.add(e);
+                        } else {
+                            i++;
+                        }
+                    }
+                }
+            }
+            return l.toArray(new FormModelEvent[l.size()]);
+        }
+
+        /**
+         * @return 1: order is e1 then e2,
+         *         0: order is e2 then e1,
+         *        -1: order not determined
+         */
+        private int eventsOrder(FormModelEvent e1, FormModelEvent e2) {
+            RADVisualContainer cont1 = (RADVisualContainer) e1.getContainer();
+            RADVisualContainer cont2 = (RADVisualContainer) e2.getContainer();
+            if (e2.getChangeType() == FormModelEvent.CONTAINER_LAYOUT_CHANGED
+                    && (cont2 == cont1 || cont2.isParentComponent(cont1))) {
+                return 1;
+            }
+            if (e1.getChangeType() == FormModelEvent.CONTAINER_LAYOUT_CHANGED
+                    && (cont1 == cont2 || cont1.isParentComponent(cont2))) {
+                return 0;
+            }
+            return -1;
+        }
+
         private void updateConnectedProperties(RADProperty eventProperty, RADComponent eventComponent){
             for (RADComponent component : formModel.getAllComponents()){
                 RADProperty[] properties = component.getKnownBeanProperties();

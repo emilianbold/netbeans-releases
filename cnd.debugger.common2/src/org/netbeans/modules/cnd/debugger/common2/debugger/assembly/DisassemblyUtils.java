@@ -120,7 +120,7 @@ public class DisassemblyUtils {
                 DisInfoPanel.setLocation(location);
             }
         } else {
-            pcMarker.detach();
+            pcMarker.setLine(null, true);
         }
     }
 }

@@ -69,6 +69,7 @@ import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
@@ -82,6 +83,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.packageadmin.RequiredBundle;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  *
@@ -162,6 +164,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected void start() {
         try {
+            String startLevel = NbBundle.getMessage(Netigso.class, "FRAMEWORK_START_LEVEL");
+            if (startLevel.length() > 0) {
+                setFrameworkStartLevel(framework.getBundleContext(), Integer.parseInt(startLevel));
+            }
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
@@ -386,6 +392,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                     }
                     LOG.log(Level.FINE, "Installing bundle {0}", loc);
                     b = bc.installBundle(loc);
+                    int startLevel = m.getStartLevel();
+                    if (startLevel > 0) {
+                        setBundleStartLevel(bc, b, startLevel);
+                    }
                 }
             } else {
                 InputStream is = fakeBundle(m);
@@ -405,6 +415,39 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         } catch (BundleException ex) {
             throw new IOException(ex);
         }
+    }
+
+    private void setFrameworkStartLevel(BundleContext bc, int startLevel) {
+        ServiceReference sr = bc.getServiceReference("org.osgi.service.startlevel.StartLevel"); // NOI18N
+        StartLevel level = null;
+        if (sr != null) {
+            level = (StartLevel) bc.getService(sr);
+            if (level != null) {
+                level.setStartLevel(startLevel);
+                return;
+            }
+        }
+        LOG.log(
+            Level.WARNING, 
+            "Cannot set framewok startLevel to {1} reference: {2} level {3}", 
+            new Object[]{null, startLevel, sr, level}
+        );
+    }
+    private void setBundleStartLevel(BundleContext bc, Bundle b, int startLevel) {
+        ServiceReference sr = bc.getServiceReference("org.osgi.service.startlevel.StartLevel"); // NOI18N
+        StartLevel level = null;
+        if (sr != null) {
+            level = (StartLevel) bc.getService(sr);
+            if (level != null) {
+                level.setBundleStartLevel(b, startLevel);
+                return;
+            }
+        }
+        LOG.log(
+            Level.WARNING, 
+            "Cannot set startLevel for {0} to {1} reference: {2} level {3}", 
+            new Object[]{b.getSymbolicName(), startLevel, sr, level}
+        );
     }
     
     private static String threeDotsWithMajor(String version, String withMajor) {

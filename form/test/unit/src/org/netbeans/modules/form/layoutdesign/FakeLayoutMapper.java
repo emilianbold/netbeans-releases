@@ -88,31 +88,51 @@ public class FakeLayoutMapper implements VisualMapper {
     
     // -------
 
+    @Override
     public Rectangle getComponentBounds(String componentId) {
-        return (Rectangle) compBounds.get(componentId);
+        Rectangle r = (Rectangle) compBounds.get(componentId);
+        if (r == null && "Form".equals(componentId)) { // NOI18N
+            return getContainerInterior(componentId);
+        }
+        return r;
     }
 
+    @Override
     public Rectangle getContainerInterior(String componentId) {
         return (Rectangle) contInterior.get(componentId);
     }
 
+    @Override
     public Dimension getComponentMinimumSize(String componentId) {
-        return (Dimension) compMinSize.get(componentId);
+        Dimension d = (Dimension) compMinSize.get(componentId);
+        if (d == null) {
+            d = getComponentPreferredSize(componentId);
+        }
+        return d;
     }
 
+    @Override
     public Dimension getComponentPreferredSize(String componentId) {
-        return (Dimension) compPrefSize.get(componentId);
+        Dimension d = (Dimension) compPrefSize.get(componentId);
+        if (d == null && "Form".equals(componentId)) {
+            Rectangle r = getContainerInterior(componentId);
+            d = new Dimension(r.width, r.height);
+        }
+        return d;
     }
 
+    @Override
     public boolean hasExplicitPreferredSize(String componentId) {
         return ((Boolean) hasExplicitPrefSize.get(componentId)).booleanValue();
     }
 
+    @Override
     public int getBaselinePosition(String componentId, int width, int height) {
         String id = componentId + "-" + width + "-" + height; //NOI18N
         return ((Integer) baselinePosition.get(id)).intValue();
     }
 
+    @Override
     public int getPreferredPadding(String comp1Id,
                                    String comp2Id,
                                    int dimension,
@@ -125,6 +145,7 @@ public class FakeLayoutMapper implements VisualMapper {
         return pad != null ? pad.intValue() : 6;
     }
 
+    @Override
     public int getPreferredPaddingInParent(String parentId,
                                            String compId,
                                            int dimension,
@@ -135,14 +156,17 @@ public class FakeLayoutMapper implements VisualMapper {
         return pad != null ? pad.intValue() : 10;
     }
 
+    @Override
     public boolean[] getComponentResizability(String compId, boolean[] resizability) {
         resizability[0] = resizability[1] = true;
         return resizability;
     }
 
+    @Override
     public void rebuildLayout(String contId) {
     }
 
+    @Override
     public void setComponentVisibility(String componentId, boolean visible) {
     }
 }

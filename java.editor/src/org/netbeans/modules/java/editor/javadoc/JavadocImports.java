@@ -433,26 +433,15 @@ public final class JavadocImports {
             return null;
         }
 
-        ParamTag ptag = (ParamTag) tag;
         int[] tagSpan = positions.getTagSpan(tag);
         Token<JavadocTokenId> result = null;
 
-        if (ptag.isTypeParameter()) {
-            jdTokenSequence.move(tagSpan[0]);
-            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
-                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
-                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.HTML_TAG
-                    ) {
-                result = jdTokenSequence.token();
-            }
-        } else {
-            jdTokenSequence.move(tagSpan[0]);
-            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
-                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
-                    && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT
-                    ) {
-                result = jdTokenSequence.token();
-            }
+        jdTokenSequence.move(tagSpan[0]);
+        if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
+                && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
+                && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT
+                ) {
+            result = jdTokenSequence.token();
         }
         
         return result;

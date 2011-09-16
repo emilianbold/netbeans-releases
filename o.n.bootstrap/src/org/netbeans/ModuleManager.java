@@ -598,6 +598,34 @@ public final class ModuleManager extends Modules {
         subCreate(m);
         return m;
     }
+    
+    /** Create a module from a JAR representing an OSGi bundle 
+     * and adds it to the managed set.
+     * Behavior is the same as {@link #create(java.io.File, java.lang.Object, boolean, boolean, boolean)}
+     * just adds additional start level info.
+     * 
+     * @param startLevel an OSGi start level. Zero indicates, no changes to default level.
+     * @throws InvalidException if the JAR does not represent an OSGi bundle
+     * @since 2.43
+     */
+    public Module createBundle(
+        File jar, Object history, boolean reloadable, boolean autoload, 
+        boolean eager, int startLevel
+    ) throws IOException, DuplicateException {
+        assertWritable();
+        ev.log(Events.START_CREATE_REGULAR_MODULE, jar);
+        Module m = moduleFactory.create(jar.getAbsoluteFile(),
+                        history, reloadable, autoload, eager, this, ev);
+        if (m instanceof NetigsoModule) {
+            NetigsoModule nm = (NetigsoModule)m;
+            nm.setStartLevel(startLevel);
+        } else {
+            throw new InvalidException("Expecting an OSGI bundle in " + jar);
+        }
+        ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
+        subCreate(m);
+        return m;
+    }
 
     /** Create a fixed module (e.g. from classpath).
      * Will initially be disabled.

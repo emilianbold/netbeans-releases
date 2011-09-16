@@ -320,57 +320,6 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
         return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
     
-    private Image getCloseTabImage() {
-        if( null == closeTabImage ) {
-            if( isWindowsVistaLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_enabled.png"); // NOI18N
-            } else if( isWindowsXPLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_enabled.png"); // NOI18N
-            } else if( isWindowsLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_enabled.png"); // NOI18N
-            } else if( isAquaLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_enabled.png"); // NOI18N
-            } else {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_enabled.png"); // NOI18N
-            }
-        }
-        return closeTabImage;
-    }
-    
-    private Image getCloseTabPressedImage() {
-        if( null == closeTabPressedImage ) {
-            if( isWindowsVistaLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_pressed.png"); // NOI18N
-            } else if( isWindowsXPLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_pressed.png"); // NOI18N
-            } else if( isWindowsLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_pressed.png"); // NOI18N
-            } else if( isAquaLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_pressed.png"); // NOI18N
-            } else {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_pressed.png"); // NOI18N
-            }
-        }
-        return closeTabPressedImage;
-    }
-    
-    private Image getCloseTabRolloverImage() {
-        if( null == closeTabMouseOverImage ) {
-            if( isWindowsVistaLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_rollover.png"); // NOI18N
-            } else if( isWindowsXPLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_rollover.png"); // NOI18N
-            } else if( isWindowsLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_rollover.png"); // NOI18N
-            } else if( isAquaLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_rollover.png"); // NOI18N
-            } else {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_rollover.png"); // NOI18N
-            }
-        }
-        return closeTabMouseOverImage;
-    }
-    
     private void setPressedCloseButtonIndex(int index) {
         if (pressedCloseButtonIndex == index)
             return;
@@ -564,30 +513,18 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 }
             };
             add(label);
-            add(new TabButton());
-        }
+            JButton tabCloseButton = CloseButtonFactory.createCloseButton();
+            tabCloseButton.addActionListener(new ActionListener() {
 
-        private class TabButton extends JButton implements ActionListener {
-            public TabButton() {
-                int size = 16;
-                setPreferredSize(new Dimension(size, size));
-                setContentAreaFilled(false);
-                setFocusable(false);
-                setBorder(BorderFactory.createEmptyBorder());
-                setBorderPainted(false);
-                setRolloverEnabled(true);
-                addActionListener(this);
-                setIcon(ImageUtilities.image2Icon(getCloseTabImage()));
-                setRolloverIcon(ImageUtilities.image2Icon(getCloseTabRolloverImage()));
-                setPressedIcon(ImageUtilities.image2Icon(getCloseTabPressedImage()));
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                int i = indexOfTabComponent(ButtonTab.this);
-                if (i != -1) {
-                    fireCloseRequest(CloseButtonTabbedPane.this.getComponentAt(i));
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int i = indexOfTabComponent(ButtonTab.this);
+                    if (i != -1) {
+                        fireCloseRequest(CloseButtonTabbedPane.this.getComponentAt(i));
+                    }
                 }
-            }
+            });
+            add(tabCloseButton);
         }
     }
 

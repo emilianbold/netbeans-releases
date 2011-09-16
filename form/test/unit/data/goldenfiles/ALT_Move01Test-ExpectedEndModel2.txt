@@ -2,19 +2,19 @@
   <Root id="Form">
     <DimensionLayout dim="horizontal">
       <Group type="parallel" groupAlignment="leading" attributes="0">
-          <Group type="sequential" alignment="leading" attributes="0">
-              <EmptySpace min="$pref" pref="32" max="$pref" attributes="16"/>
-              <Component id="jLabel2" min="$pref" max="$pref" attributes="16"/>
-              <EmptySpace pref="255" max="Short.MAX_VALUE" attributes="16"/>
-              <Component id="jTextField2" min="$pref" max="$pref" attributes="16"/>
-              <EmptySpace min="$pref" pref="20" max="$pref" attributes="12"/>
-          </Group>
-          <Group type="sequential" alignment="leading" attributes="0">
+          <Group type="sequential" attributes="0">
               <EmptySpace max="$pref" attributes="16"/>
               <Component id="jLabel1" min="$pref" max="$pref" attributes="16"/>
               <EmptySpace max="$pref" attributes="16"/>
               <Component id="jTextField1" min="$pref" max="$pref" attributes="16"/>
               <EmptySpace pref="293" max="Short.MAX_VALUE" attributes="8"/>
+          </Group>
+          <Group type="sequential" alignment="leading" attributes="0">
+              <EmptySpace min="$pref" pref="32" max="$pref" attributes="16"/>
+              <Component id="jLabel2" min="$pref" max="$pref" attributes="16"/>
+              <EmptySpace max="Short.MAX_VALUE" attributes="16"/>
+              <Component id="jTextField2" min="$pref" max="$pref" attributes="16"/>
+              <EmptySpace min="$pref" pref="20" max="$pref" attributes="12"/>
           </Group>
       </Group>
     </DimensionLayout>

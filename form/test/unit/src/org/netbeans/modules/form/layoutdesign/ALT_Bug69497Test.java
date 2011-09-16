@@ -71,14 +71,12 @@ public class ALT_Bug69497Test extends LayoutTestCase {
 
     // Call Date (jLabel7) originally on baseline with couponField textfield is
     // moved left and up to top-align with couponField.
-    // In vertical dimension, the main sequence needs to be divided correctly,
-    // merged with incorrectly placed jLabel1, and a subgroup created for
-    // jLabel7 in parallel with couponField and callDateField. Rest of the
-    // sequence needs to follow unchanged.
     public void doChanges0() {
         ld.externalSizeChangeHappened();
         // > UPDATE CURRENT STATE
         contInterior.put("myJPanel", new Rectangle(0, 0, 203, 183));
+        compBounds.put("myJPanel", new Rectangle(0, 0, 203, 183));
+        compPrefSize.put("myJPanel", new Dimension(203,183));
         compBounds.put("jLabel7", new Rectangle(27, 104, 62, 15));
         baselinePosition.put("jLabel7-62-15", new Integer(11));
         compPrefSize.put("jLabel7", new Dimension(43, 14));

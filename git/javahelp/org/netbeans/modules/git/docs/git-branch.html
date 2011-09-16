@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css"/>
+        <meta content="Helen" name="generator"/>
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+<title>Git: Working with Branches</title>
+</head>
+<body>
+<h2>Git: Working with Branches </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The IDE enables you to maintain different versions of an entire code base using branches, which involves: </p>
+   <ul>
+     <li><a href="#create">creating</a></li>
+     <li><a href="#ckout">checking out</a></li>
+	 <li><a href="#merge">merging</a></li>
+	 <li><a href="#del">deleting</a></li>
+   </ul>
+<h3><a name="create"></a>Creating a Branch</h3>
+  <p>Creating a branch enables you to work on a separate version of your file system for stabilization or experimentation purposes without disturbing the main trunk.</p> 
+  <h4>To create a local branch:</h4>     
+        <ol>
+            <li>In the Projects or Files window, choose a project or folder from the repository in which you want to create the branch.</li>
+			<li>Choose Team &gt; Git &gt; Branch &gt; Create Branch from the main menu (alternatively, right-click the versioned project or folder and choose Git &gt; Branch &gt; Create Branch in the popup menu). The Create Branch dialog box displays.</li>
+			<li>In the Branch Name field, enter the name of the branch being created.</li>	
+			<li>Type a specific revision of the selected item by entering a commit ID, existing branch, or tag name in the Revision field or press Select to view the list of revisions maintained in the repository and choose a required one.</li>
+			<li>Review the Commit ID, Author, Message fields information specific to the revision being branched from and click Create.<br/>The branch is added to the <tt>Branches/Local</tt> folder of the Git repository.</li>
+</ol>
+<h3><a name="ckout"></a>Checking Out</h3>
+<p>To edit files on a branch that already exists, you can check out the branch to copy the files to your Working Tree.</p>
+<h4>To check out a revision:</h4>
+<ol>
+<li>Choose Team &gt; Git &gt; Checkout &gt; Checkout Revision from the main menu. The Checkout Selected Revision dialog box displays.</li>
+<li>Specify the revision required by entering a commit ID, existing branch, or tag name in the Revision field or press Select to view the list of revisions maintained in the repository and specify a required one. 
+<h4>Note:</h4>
+        <ul class="note">
+             <li>If the specified revision refers to a valid commit that is not marked with a branch name, your HEAD becomes detached and you are no longer on any branch.</li>
+        </ul>
+</li>
+<li>Review the Commit ID, Author, Message fields information specific to the revision being checked out.</li>
+<li>To create a new branch out of the checked out revision, choose the Checkout as New Branch option and enter the name in the Branch Name field.</li>
+<li>Press Checkout to check out revision.<br/>Files in the Working Tree and in the Index are updated to match the version in the specified revision.</li>
+</ol>
+<h3><a name="merge"></a>Merging</h3>
+<p>Merging enables you to port modifications from a repository revision to the Working Tree.</p>
+<h4>To merge:</h4>
+<ol>
+<li>Choose Team &gt; Git &gt; Merge Revision from the main menu.<br/>The Merge Revision dialog box displays.</li>
+<li>Specify the revision required by entering a commit ID, existing branch, or tag name in the Revision field or press Select to view the list of revisions maintained in the repository and specify a required one.</li>
+<li>Review the Commit ID, Author, Message fields information specific to the revision being merged.</li>
+<li>Press Merge.<br/>A three-way merge between the current branch, your Working Tree contents, and the specified branch is done.
+<h4>Note:</h4>
+        <ul class="note">
+             <li>After merging you must still <a href="git-com.html">commit</a> the changes in order for them to be added to the HEAD.</li>
+        </ul></li>
+</ol>
+<h3><a name="del"></a>Deleting</h3>
+<p>You can  delete an unnecessary local branch.</p>
+<h4>To delete a branch:</h4>
+<ol>
+<li>Choose Team &gt; Git &gt; Repository Browser from the main menu.</li>
+<li>In the Git Repository Browser, choose the branch to be deleted.
+<h4>Note:</h4>
+        <ul class="note">
+             <li>The branch must be inactive, i.e. not currently checked out into the Working Tree.</li>
+        </ul></li>
+<li>Right-click the selected branch and choose Delete Branch from the popup menu.</li>
+<li>In the Delete Branch dialog box, press OK to confirm the branch deletion.<br/>The branch is removed from the local repository as well as the Git Repository Browser.</li>
+</ol>
+<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+		<dd><a href="git-about.html">About Git Support</a></dd>
+	    <dd><a href="git-quickref.html">Git Tasks: Quick Reference</a></dd>
+	    <dd><a href="git-remote.html">Git: Working with Remote Repositories</a></dd> 
+	    
+</dl>  
+<hr/>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+</body>
+</html>

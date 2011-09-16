@@ -175,6 +175,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         checkBoxNoInternet.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoInternet, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
+        checkBoxNoInternet.setPreferredSize(new java.awt.Dimension(223, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -229,6 +230,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         labelIcon.setLabelFor(textFieldIcon);
         org.openide.awt.Mnemonics.setLocalizedText(labelIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelIcon.text")); // NOI18N
+        labelIcon.setPreferredSize(new java.awt.Dimension(32, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -238,6 +240,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.labelIcon.text")); // NOI18N
         labelIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelIcon.text")); // NOI18N
 
+        textFieldIcon.setPreferredSize(new java.awt.Dimension(6, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -248,6 +251,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelTop.add(textFieldIcon, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
+        buttonIcon.setPreferredSize(new java.awt.Dimension(87, 0));
         buttonIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonIconActionPerformed(evt);
@@ -264,6 +268,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
 
         labelIconRemark.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIconRemark.text")); // NOI18N
+        labelIconRemark.setPreferredSize(new java.awt.Dimension(146, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -303,7 +308,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         labelSigning.setLabelFor(labelSigningMessage);
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelSigning.text")); // NOI18N
-        labelSigning.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -314,7 +318,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelSigning.text")); // NOI18N
 
         labelSigningMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelSigningMessage.text")); // NOI18N
-        labelSigningMessage.setEnabled(false);
         labelSigningMessage.setPreferredSize(new java.awt.Dimension(170, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -324,7 +327,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelBottom.add(labelSigningMessage, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonSigning.text")); // NOI18N
-        buttonSigning.setEnabled(false);
         buttonSigning.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSigningActionPerformed(evt);
@@ -461,6 +463,7 @@ private void checkBoxUnrestrictedAccActionPerformed(java.awt.event.ActionEvent e
     labelSigningMessage.setEnabled(sel);
     buttonSigning.setEnabled(sel);
     jfxProps.setSigningEnabled(sel);
+    jfxProps.setPermissionsElevated(sel);
     if(jfxProps.getSigningEnabled() && jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
         jfxProps.setSigningType(JFXProjectProperties.SigningType.SELF);
     }

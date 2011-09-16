@@ -52,7 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author raccah
  */
-@ServiceProvider(service=RegisteredDDCatalog.class)
+@ServiceProvider(service=RegisteredDDCatalog.class,path="Servers/GlassFish")
 public class RegisteredDDCatalogImpl implements RegisteredDDCatalog {
     private void registerRunTimeDDCatalog(RunTimeDDCatalog catalog, ServerInstanceProvider gip) {
         if (catalog != null) {

@@ -74,6 +74,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -103,7 +104,7 @@ public class SrcNode extends FilterNode {
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
         super(node, new FolderChildren(project, node, isTest), new ProxyLookup(
                 folder.getNodeDelegate().getLookup(),
-                Lookups.singleton(SearchInfoFactory.createSearchInfo(folder.getPrimaryFile(), true, new FileObjectFilter[] {project.getFileObjectFilter()}))));
+                createLookupWithSearchInfo(project, folder.getPrimaryFile())));
 
         this.project = project;
         this.isTest = isTest;
@@ -184,6 +185,10 @@ public class SrcNode extends FilterNode {
         return COMMON_ACTIONS[2];
     }
 
+    public static Lookup createLookupWithSearchInfo(PhpProject project, FileObject folder) {
+        return Lookups.singleton(SearchInfoFactory.createSearchInfo(folder, true, new FileObjectFilter[] {project.getFileObjectFilter()}));
+    }
+
     /**
      * Children for node that represents folder (SrcNode or PackageNode)
      */
@@ -238,7 +243,8 @@ public class SrcNode extends FilterNode {
 
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
-            super(originalNode, new FolderChildren(project, originalNode, isTest));
+            super(originalNode, new FolderChildren(project, originalNode, isTest),
+                    SrcNode.createLookupWithSearchInfo(project, originalNode.getLookup().lookup(FileObject.class)));
             this.project = project;
             this.isTest = isTest;
 
@@ -358,4 +364,5 @@ public class SrcNode extends FilterNode {
             return fileObject;
         }
     }
+
 }

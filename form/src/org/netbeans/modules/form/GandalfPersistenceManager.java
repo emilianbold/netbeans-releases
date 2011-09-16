@@ -991,12 +991,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     
                     // Issue 200093, 200665
                     Integer lctSetting = (Integer)formModel.getSettings().get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
-                    if (lctSetting == null && !FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
-                        // Old form that has no layout code target set, but
-                        // it uses Free Design => it was created before
-                        // layout code target property was added, i.e.,
-                        // it uses the library, not JDK 6 code
-                        formModel.getSettings().setLayoutCodeTarget(JavaCodeGenerator.LAYOUT_CODE_LIBRARY);
+                    if (lctSetting == null) {
+                        FormEditor fe = FormEditor.getFormEditor(formModel);
+                        if (fe != null && !fe.needPostCreationUpdate()) {
+                            // Old form that has no layout code target set, but
+                            // it uses Free Design => it was created before
+                            // layout code target property was added, i.e.,
+                            // it uses the library, not JDK 6 code
+                            formModel.getSettings().setLayoutCodeTarget(JavaCodeGenerator.LAYOUT_CODE_LIBRARY);
+                        }
                     }
                 }
                 catch (Exception ex) {

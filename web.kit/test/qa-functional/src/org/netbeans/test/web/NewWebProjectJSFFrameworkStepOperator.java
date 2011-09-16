@@ -47,6 +47,7 @@ import org.netbeans.jemmy.operators.*;
  * NbDialog.
  *
  * @author dkolar
+ * @author Jiri Skrivanek
  * @version 1.0
  */
 public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOperator {
@@ -59,9 +60,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     }
     private JTabbedPaneOperator _tbpJTabbedPane;
     private String _selectPageConfiguration = "Configuration";
-    private JCheckBoxOperator _cbValidateXML;
-    private JTextFieldOperator _txtJSFServletName;
-    private JCheckBoxOperator _cbVerifyObjects;
     private JTextFieldOperator _txtServletURLMapping;
     private String _selectPageLibraries = "Libraries";
     private JRadioButtonOperator _rbRegisteredLibraries;
@@ -71,15 +69,10 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     private JTextFieldOperator _txtJSFDirectory;
     private JButtonOperator _btBrowse;
     private JRadioButtonOperator _rbCreateNewLibrary;
-    private JRadioButtonOperator _rbDoNotAppendAnyLibrary;
     private JLabelOperator _lblLibraryName;
     private JLabelOperator _lblJSFDirectory;
     private JTableOperator _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
-    private JTextFieldOperator _txtDefaultJavaPackage;//VW JSF
-    private JLabelOperator _lblTheURLPatternHasToBeEntered;
-    private JLabelOperator _lblTheURLPatternIsNotValid;//Struts as well
-    private JLabelOperator _lblIsNotValidPathForAFolder;
-    private JLabelOperator _lblDefaultJavaPackageNameIsInvalid;//VW JSF    
+    private JRadioButtonOperator _rbServerLibrary;
 
     //******************************
     // Subcomponents definition part
@@ -98,20 +91,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         }
     }
 
-    /*
-     * Selects a Visual Web Framework to be added
-     */
-    public boolean setVWJSFFrameworkCheckbox() {
-        Integer vwjsfRow = tabSelectTheFrameworksYouWantToUseInYourWebApplication().findCellRow("org.netbeans.modules.visualweb.project.jsf");
-        if (vwjsfRow != -1) {
-            tabSelectTheFrameworksYouWantToUseInYourWebApplication().clickOnCell(vwjsfRow, 0);
-            return true;
-        } else {
-            System.err.println("No Visual Web framework found!");
-            return false;
-        }
-
-    }
     /*
      * Selects a Struts Framework to be added
      */
@@ -143,56 +122,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     }
 
 //*********************************************************************
-    /** Tries to find null JTextField in this dialog.
-     * @return JTextFieldOperator
-     */
-    public JTextFieldOperator txtDefaultJavaPackage() {
-        if (_txtDefaultJavaPackage == null) {
-            _txtDefaultJavaPackage = new JTextFieldOperator(this, 2);
-        }
-        return _txtDefaultJavaPackage;
-    }
-
-    /** Tries to find "The URL Pattern is not valid." WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTheURLPatternIsNotValid() {
-        if (_lblTheURLPatternIsNotValid == null) {
-            _lblTheURLPatternIsNotValid = new JLabelOperator(this, "The URL Pattern is not valid.");
-        }
-        return _lblTheURLPatternIsNotValid;
-    }
-
-    /** Tries to find "\"\" is not valid path for a folder." WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblIsNotValidPathForAFolder() {
-        if (_lblIsNotValidPathForAFolder == null) {
-            _lblIsNotValidPathForAFolder = new JLabelOperator(this, "\"\" is not valid path for a folder.");
-        }
-        return _lblIsNotValidPathForAFolder;
-    }
-
-    /** Tries to find "The URL Pattern has to be entered." WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblTheURLPatternHasToBeEntered() {
-        if (_lblTheURLPatternHasToBeEntered == null) {
-            _lblTheURLPatternHasToBeEntered = new JLabelOperator(this, "The URL Pattern has to be entered.");
-        }
-        return _lblTheURLPatternHasToBeEntered;
-    }
-
-    /** Tries to find "Default java package name is invalid" WizardDescriptor$FixedHeightLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblDefaultJavaPackageNameIsInvalid() {
-        if (_lblDefaultJavaPackageNameIsInvalid == null) {
-            _lblDefaultJavaPackageNameIsInvalid = new JLabelOperator(this, "Default java package name is invalid");
-        }
-        return _lblDefaultJavaPackageNameIsInvalid;
-    }
-
     /** Tries to find null JTabbedPane in this dialog.
      * @return JTabbedPaneOperator
      */
@@ -203,45 +132,12 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         return _tbpJTabbedPane;
     }
 
-    /** Tries to find "Validate XML" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbValidateXML() {
-        if (_cbValidateXML == null) {
-            _cbValidateXML = new JCheckBoxOperator(selectPageConfiguration(), org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_XML"));
-        }
-        selectPageConfiguration();
-        return _cbValidateXML;
-    }
-
-    /** Tries to find null JTextField in this dialog.
-     * @return JTextFieldOperator
-     */
-    public JTextFieldOperator txtJSFServletName() {
-        if (_txtJSFServletName == null) {
-            _txtJSFServletName = new JTextFieldOperator(selectPageConfiguration());
-        }
-        selectPageConfiguration();
-        return _txtJSFServletName;
-    }
-
-    /** Tries to find "Verify Objects" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbVerifyObjects() {
-        if (_cbVerifyObjects == null) {
-            _cbVerifyObjects = new JCheckBoxOperator(selectPageConfiguration(), "Verify Objects");
-        }
-        selectPageConfiguration();
-        return _cbVerifyObjects;
-    }
-
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtServletURLMapping() {
         if (_txtServletURLMapping == null) {
-            _txtServletURLMapping = new JTextFieldOperator(selectPageConfiguration(), 1);
+            _txtServletURLMapping = new JTextFieldOperator(selectPageConfiguration());
         }
         selectPageConfiguration();
         return _txtServletURLMapping;
@@ -313,17 +209,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         return _rbCreateNewLibrary;
     }
 
-    /** Tries to find "Do not append any library." JRadioButton in this dialog.
-     * @return JRadioButtonOperator
-     */
-    public JRadioButtonOperator rbDoNotAppendAnyLibrary() {
-        if (_rbDoNotAppendAnyLibrary == null) {
-            _rbDoNotAppendAnyLibrary = new JRadioButtonOperator(selectPageLibraries(), "Do not append any library.");
-        }
-        selectPageLibraries();
-        return _rbDoNotAppendAnyLibrary;
-    }
-
     /** Tries to find "Library Name:" JLabel in this dialog.
      * @return JLabelOperator
      */
@@ -340,7 +225,7 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
      */
     public JLabelOperator lblJSFDirectory() {
         if (_lblJSFDirectory == null) {
-            _lblJSFDirectory = new JLabelOperator(selectPageLibraries(), "JSF Directory:");
+            _lblJSFDirectory = new JLabelOperator(selectPageLibraries(), "JSF Folder:");
         }
         selectPageLibraries();
         return _lblJSFDirectory;
@@ -354,6 +239,17 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
             _tabSelectTheFrameworksYouWantToUseInYourWebApplication = new JTableOperator(this);
         }
         return _tabSelectTheFrameworksYouWantToUseInYourWebApplication;
+    }
+
+    /** Tries to find "Server Library" JRadioButton in this dialog.
+     * @return JRadioButtonOperator
+     */
+    public JRadioButtonOperator rbServerLibrary() {
+        if (_rbServerLibrary == null) {
+            _rbServerLibrary = new JRadioButtonOperator(selectPageLibraries(), "Server Library:");
+        }
+        selectPageLibraries();
+        return _rbServerLibrary;
     }
 
     //****************************************
@@ -371,45 +267,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     public JTabbedPaneOperator selectPageConfiguration() {
         tbpJTabbedPane().selectPage(_selectPageConfiguration);
         return tbpJTabbedPane();
-    }
-
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkValidateXML(boolean state) {
-        if (cbValidateXML().isSelected() != state) {
-            cbValidateXML().push();
-        }
-    }
-
-    /** gets text for txtJSFServletName
-     * @return String text
-     */
-    public String getJSFServletName() {
-        return txtJSFServletName().getText();
-    }
-
-    /** sets text for txtJSFServletName
-     * @param text String text
-     */
-    public void setJSFServletName(String text) {
-        txtJSFServletName().setText(text);
-    }
-
-    /** types text for txtJSFServletName
-     * @param text String text
-     */
-    public void typeJSFServletName(String text) {
-        txtJSFServletName().typeText(text);
-    }
-
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkVerifyObjects(boolean state) {
-        if (cbVerifyObjects().isSelected() != state) {
-            cbVerifyObjects().push();
-        }
     }
 
     /** gets text for txtServletURLMapping
@@ -515,33 +372,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         rbCreateNewLibrary().push();
     }
 
-    /** clicks on "Do not append any library." JRadioButton
-     */
-    public void doNotAppendAnyLibrary() {
-        rbDoNotAppendAnyLibrary().push();
-    }
-
-    /** gets text for txtDefaultJavaPackage
-     * @return String text
-     */
-    public String getDefaultJavaPackage() {
-        return txtDefaultJavaPackage().getText();
-    }
-
-    /** sets text for txtDefaultJavaPackage
-     * @param text String text
-     */
-    public void setDefaultJavaPackage(String text) {
-        txtDefaultJavaPackage().setText(text);
-    }
-
-    /** types text for txtDefaultJavaPackage
-     * @param text String text
-     */
-    public void typeDefaultJavaPackage(String text) {
-        txtDefaultJavaPackage().typeText(text);
-    }
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -550,9 +380,6 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
     @Override
     public void verify() {
         tbpJTabbedPane();
-        cbValidateXML();
-        txtJSFServletName();
-        cbVerifyObjects();
         txtServletURLMapping();
         rbRegisteredLibraries();
         cboJComboBox();
@@ -560,10 +387,15 @@ public class NewWebProjectJSFFrameworkStepOperator extends NewProjectWizardOpera
         txtJSFDirectory();
         btBrowse();
         rbCreateNewLibrary();
-        rbDoNotAppendAnyLibrary();
         lblLibraryName();
         lblJSFDirectory();
         tabSelectTheFrameworksYouWantToUseInYourWebApplication();
-        lblTheURLPatternHasToBeEntered();
+    }
+    
+    /** Returns error message shown in description area.
+     * @return message in description area
+     */
+    public String getErrorMessage() {
+        return new JTextPaneOperator(this).getToolTipText();
     }
 }

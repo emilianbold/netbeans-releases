@@ -122,21 +122,16 @@ public class LayoutUtils implements LayoutConstants {
                 LayoutInterval li = interval.getSubInterval(i);
                 if (li.isEmptySpace()) {
                     i += d;
-                }
-//                else if (li.isComponent()) {
-//                    return li;
-//                }
-                else {
+                } else {
                     return getOutermostComponent(li, dimension, alignment);
                 }
             }
-//            return null;
-        }
-        else if (interval.isParallel()) {
+        } else if (interval.isParallel()) {
             LayoutInterval best = null;
             int pos = Integer.MAX_VALUE;
             for (int i=0, n=interval.getSubIntervalCount(); i < n; i++) {
-                LayoutInterval li = getOutermostComponent(interval.getSubInterval(i), dimension, alignment);
+                LayoutInterval li = interval.getSubInterval(i);
+                li = getOutermostComponent(li, dimension, alignment);
                 if (li != null) {
                     if (LayoutInterval.isAlignedAtBorder(li, interval, alignment)) {
                         return li;
@@ -151,12 +146,80 @@ public class LayoutUtils implements LayoutConstants {
             }
             return best;
         }
-//        else if (interval.isComponent()) {
-//            return interval;
-//        }
         return null;
     }
-    
+
+    /**
+     * @param exclude except this one
+     * @return true if there is a component placed directly or with default gap
+     *         at the group edge (does not have to be aligned)
+     */
+    static boolean anythingAtGroupEdge(LayoutInterval group, LayoutInterval exclude, int dimension, int alignment) {
+        List<LayoutInterval> list = new LinkedList<LayoutInterval>();
+        list.add(group);
+        while (!list.isEmpty()) {
+            LayoutInterval interval = list.remove(0);
+            if (interval.isParallel()) {
+                for (Iterator<LayoutInterval> it = interval.getSubIntervals(); it.hasNext(); ) {
+                    LayoutInterval li = it.next();
+                    if (li != exclude
+                        && (LayoutInterval.isAlignedAtBorder(li, interval, alignment)
+                            || LayoutInterval.isPlacedAtBorder(li, interval, dimension, alignment))) {
+                        if (li.isComponent()) {
+                            return true;
+                        } else if (li.isGroup()) {
+                            list.add(li);
+                        }
+                    }
+                }
+            } else if (interval.isSequential()) {
+                LayoutInterval li = interval.getSubInterval(
+                        alignment==LEADING ? 0 : interval.getSubIntervalCount()-1);
+                if (li.isComponent()
+                    || (li.isEmptySpace() && li.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                        && !LayoutInterval.canResize(li))) {
+                    return true;
+                } else if (li.isParallel()) {
+                    list.add(li);
+                }
+            }
+        }
+        return false;
+    }
+
+    static int getPositionWithoutGap(Collection<LayoutInterval> intervals, int dimension, int alignment) {
+        assert alignment == LEADING || alignment == TRAILING;
+        int outermostPos = Integer.MIN_VALUE;
+        for (LayoutInterval li : intervals) {
+            assert !li.isEmptySpace();
+            LayoutInterval interval = null;
+            if (li.isSequential()) {
+                int idx = (alignment == LEADING ? 0 : li.getSubIntervalCount()-1);
+                while (idx >= 0 && idx < li.getSubIntervalCount()) {
+                    interval = li.getSubInterval(idx);
+                    if (!interval.isEmptySpace()) {
+                        break;
+                    } else {
+                        interval = null;
+                        idx += (alignment == LEADING ? 1 : -1);
+                    }
+                }
+            } else {
+                interval = li;
+            }
+            if (interval != null) {
+                int pos = interval.getCurrentSpace().positions[dimension][alignment];
+                if (LayoutRegion.isValidCoordinate(pos)
+                        && (outermostPos == Integer.MIN_VALUE
+                            || (alignment == LEADING && pos < outermostPos)
+                            || (alignment == TRAILING && pos > outermostPos))) {
+                    outermostPos = pos;
+                }
+            }
+        }
+        return outermostPos;
+    }
+
     /**
      * Returns size of the empty space represented by the given layout interval.
      *
@@ -190,8 +253,8 @@ public class LayoutUtils implements LayoutConstants {
         }
         
         // Find sources and targets inside srcInt and targetInt
-        List sources = edgeSubComponents(srcInt, TRAILING);
-        List targets = edgeSubComponents(targetInt, LEADING);        
+        List sources = edgeSubComponents(srcInt, TRAILING, false);
+        List targets = edgeSubComponents(targetInt, LEADING, false);
 
         // Calculate size of gap from sources and targets and their positions
         return getSizesOfDefaultGap(sources, targets, interval.getPaddingType(),
@@ -330,8 +393,20 @@ public class LayoutUtils implements LayoutConstants {
         return interval.getCurrentSpace().positions[dimension][alignment];
     }
 
+    static int determineDimension(LayoutInterval interval) {
+        Iterator<LayoutInterval> it = getComponentIterator(interval);
+        if (it.hasNext()) {
+            LayoutInterval comp = it.next();
+            return comp == comp.getComponent().getLayoutInterval(HORIZONTAL)
+                    ? HORIZONTAL : VERTICAL;
+        }
+        return -1;
+    }
+
     /**
-     * Returns list of components that reside in the <code>root</code>
+     * Lists components under given interval that lie at given side of the
+     * interval.
+     * edge.in the <code>root</code>
      * layout interval - the list contains only components whose layout
      * intervals lie at the specified edge (<code>LEADING</code>
      * or <code>TRAILING</code>) of the <code>root</code> layout interval.
@@ -341,7 +416,8 @@ public class LayoutUtils implements LayoutConstants {
      * @return <code>List</code> of <code>LayoutInterval</code>s that
      * represent <code>LayoutComponent</code>s.
      */
-    static List<LayoutInterval> edgeSubComponents(LayoutInterval root, int edge) {
+    static List<LayoutInterval> edgeSubComponents(LayoutInterval root, int edge, boolean aligned) {
+        assert edge == LEADING || edge == TRAILING;
         List<LayoutInterval> components = null;
         List<LayoutInterval> candidates = new LinkedList<LayoutInterval>();
         if (root != null) {
@@ -358,7 +434,10 @@ public class LayoutUtils implements LayoutConstants {
                 } else {
                     Iterator<LayoutInterval> subs = candidate.getSubIntervals();
                     while (subs.hasNext()) {
-                        candidates.add(subs.next());
+                        LayoutInterval li = subs.next();
+                        if (!aligned || LayoutInterval.isAlignedAtBorder(li, edge)) {
+                            candidates.add(li);
+                        }
                     }
                 }
             } else if (candidate.isComponent()) {
@@ -366,6 +445,13 @@ public class LayoutUtils implements LayoutConstants {
             }
         }
         return components;
+    }
+
+    static boolean alignedIntervals(LayoutInterval interval1, LayoutInterval interval2, int alignment) {
+        LayoutInterval parent = LayoutInterval.getCommonParent(interval1, interval2);
+        return parent != null && parent.isParallel()
+               && LayoutInterval.isAlignedAtBorder(interval1, parent, alignment)
+               && LayoutInterval.isAlignedAtBorder(interval2, parent, alignment);
     }
 
     /**
@@ -409,7 +495,7 @@ public class LayoutUtils implements LayoutConstants {
      * under another interval (in given dimension).
      */
     static boolean contentOverlap(LayoutInterval interval1, LayoutInterval interval2, int dimension) {
-        return contentOverlap(interval1, interval2, -1, -1, dimension);
+        return contentOverlap(interval1, interval2, 0, interval2.getSubIntervalCount()-1, dimension);
     }
 
     /**
@@ -455,10 +541,28 @@ public class LayoutUtils implements LayoutConstants {
     }
 
     /**
+     * Finds out whether given space overlaps with some component under given
+     * interval. Unlike other contentOverlap methods that are for one dimension
+     * only, here we look for a full overlap. It can be that a space overlaps
+     * some components (intersects in coordinates) in each dimension, but none
+     * in both dimensions together.
+     */
+    static boolean contentOverlap(LayoutRegion space, LayoutInterval interval) {
+        for (Iterator<LayoutInterval> it=getComponentIterator(interval); it.hasNext(); ) {
+            LayoutRegion compSpace = it.next().getCurrentSpace();
+            if (LayoutRegion.overlap(space, compSpace, HORIZONTAL, 0)
+                    && LayoutRegion.overlap(space, compSpace, VERTICAL, 0)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks the layout structure of the orthogonal dimension whether
      * an overlap of a component interval with another interval (or its
      * subintervals) is prevented - i.e. if in the orthogonal dimension the
-     * intervals of the same components are placed sequentially.
+     * intervals of the given components are placed sequentially.
      */
     static boolean isOverlapPreventedInOtherDimension(LayoutInterval compInterval,
                                                       LayoutInterval interval,
@@ -481,11 +585,11 @@ public class LayoutUtils implements LayoutConstants {
         return true;
     }
 
-    static Iterator getComponentIterator(LayoutInterval interval) {
+    static Iterator<LayoutInterval> getComponentIterator(LayoutInterval interval) {
         return new ComponentIterator(interval, 0, interval.getSubIntervalCount()-1);
     }
 
-    static Iterator getComponentIterator(LayoutInterval interval, int startIndex, int endIndex) {
+    static Iterator<LayoutInterval> getComponentIterator(LayoutInterval interval, int startIndex, int endIndex) {
         return new ComponentIterator(interval, startIndex, endIndex);
     }
 

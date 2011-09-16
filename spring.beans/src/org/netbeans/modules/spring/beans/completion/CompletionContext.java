@@ -49,6 +49,8 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
@@ -60,13 +62,14 @@ import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 /**
  * Tracks context information for a code completion scenario
- * 
+ *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class CompletionContext {
@@ -79,11 +82,11 @@ public class CompletionContext {
         ATTRIBUTE_VALUE,
         NONE
     };
-    
+
     private CompletionType completionType = CompletionType.NONE;
     private int caretOffset;
     private DocumentContext documentContext;
-    private String typedChars = ""; 
+    private String typedChars = "";
     private char lastTypedChar;
     private XMLSyntaxSupport support;
     private FileObject fileObject;
@@ -102,27 +105,37 @@ public class CompletionContext {
         if(!copyResult) {
             return;
         }
-        
+
         Object sdp = bDoc.getProperty(Document.StreamDescriptionProperty);
         internalDoc.putProperty(Document.StreamDescriptionProperty, sdp);
         this.support = (XMLSyntaxSupport) internalDoc.getSyntaxSupport();
         this.documentContext = DocumentContext.create(internalDoc, caretOffset);
-        
+
         // get last inserted character from the actual document
-        this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar(); 
-        
+        this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar();
+
         if(documentContext == null) {
             return;
         }
-        
+
         TokenItem token = documentContext.getCurrentToken();
         if(token == null) {
             return;
         }
-        
-        boolean tokenBoundary = (token.getOffset() == caretOffset) 
+
+        // see issue #191651
+        // ExtSyntaxSupport returns token on base of caretoffset and caretoffset+1 which
+        //  returns ERROR token at line ending (just "/" means error). In that cases
+        //  is fake WS token created with position between previous and current error
+        //  token for purposes of CC. Possibly will be extended about more characters.
+        if (token.getTokenID().getNumericID() == XMLDefaultTokenContext.ERROR_ID
+                && token.getImage().equals("/")) {
+            token = new WsToken(caretOffset, token);
+        }
+
+        boolean tokenBoundary = (token.getOffset() == caretOffset)
                 || ((token.getOffset() + token.getImage().length()) == caretOffset);
-        
+
         int id = token.getTokenID().getNumericID();
         SyntaxElement element = documentContext.getCurrentElement();
         switch (id) {
@@ -232,13 +245,13 @@ public class CompletionContext {
             //user enters white-space character
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
-                
+
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
                     prev = prev.getPrevious();
                 }
-                
+
                 if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID
                         && prev.getOffset() + prev.getImage().length() == caretOffset) {
                     typedChars = prev.getImage();
@@ -255,7 +268,7 @@ public class CompletionContext {
                 break;
         }
     }
-    
+
     private boolean copyDocument(final BaseDocument src, final BaseDocument dest) {
         final boolean[] retVal = new boolean[]{true};
 
@@ -277,39 +290,39 @@ public class CompletionContext {
         } finally {
             src.readUnlock();
         }
-        
+
         return retVal[0];
     }
 
     public CompletionType getCompletionType() {
         return completionType;
     }
-    
+
     public String getTypedPrefix() {
         return typedChars;
     }
-    
+
     public FileObject getFileObject() {
         return this.fileObject;
     }
-    
+
     public DocumentContext getDocumentContext() {
         return this.documentContext;
     }
-    
+
     public int getCaretOffset() {
         return caretOffset;
     }
-    
+
     public Node getTag() {
         SyntaxElement element = documentContext.getCurrentElement();
         return (element instanceof Tag) ? (Node) element : null;
     }
-    
+
     public TokenItem getCurrentToken() {
         return documentContext.getCurrentToken();
     }
-    
+
     public List<String> getExistingAttributes() {
         if (existingAttributes == null) {
             existingAttributes = new ArrayList<String>();
@@ -325,23 +338,64 @@ public class CompletionContext {
                 item = item.getPrevious();
             }
         }
-        
+
         return existingAttributes;
     }
 
     /**
-     * Returns the type of completion query. The returned value is one of 
+     * Returns the type of completion query. The returned value is one of
      * the query types defined in <code>CompletionProvider</code>
-     * 
+     *
      * @see CompletionProvider
-     * 
+     *
      * @return completion query type
      */
     public int getQueryType() {
         return queryType;
     }
-    
+
     public Document getDocument() {
         return internalDoc;
+    }
+
+    private class WsToken implements TokenItem {
+
+        private final int caretOffset;
+        private final TokenItem currentToken;
+
+        public WsToken(int caretOffset, TokenItem currentToken) {
+            this.caretOffset = caretOffset;
+            this.currentToken = currentToken;
+        }
+
+        @Override
+        public TokenID getTokenID() {
+            return XMLDefaultTokenContext.WS;
+        }
+
+        @Override
+        public TokenContextPath getTokenContextPath() {
+            return currentToken.getTokenContextPath();
+        }
+
+        @Override
+        public int getOffset() {
+            return caretOffset;
+        }
+
+        @Override
+        public String getImage() {
+            return " ";
+        }
+
+        @Override
+        public TokenItem getNext() {
+            return currentToken;
+        }
+
+        @Override
+        public TokenItem getPrevious() {
+            return currentToken.getPrevious();
+        }
     }
 }

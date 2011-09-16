@@ -86,7 +86,10 @@ public final class LayoutComponent implements LayoutConstants {
 
     // Subcomponents of this component.
     private List<LayoutComponent> subComponents;
-    
+
+    // Difference of actual visualized size to component's minimum size.
+    private int[] diffToMinSize;
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // horizontal size-link
@@ -202,6 +205,10 @@ public final class LayoutComponent implements LayoutConstants {
         layoutIntervals[dimension] = interval;
     }
 
+    LayoutRegion getCurrentSpace() {
+        return getLayoutInterval(HORIZONTAL).getCurrentSpace();
+    }
+
     public boolean isLayoutContainer() {
         return layoutRoots != null;
     }
@@ -216,6 +223,18 @@ public final class LayoutComponent implements LayoutConstants {
 
     LayoutInterval[] getParentRoots() {
         return parentComponent != null ? parentComponent.getLayoutRoots(layoutIntervals[0]) : null;
+    }
+
+    void setDiffToMinimumSize(int dimension, int diff) {
+        if (diffToMinSize == null) {
+            diffToMinSize = new int[DIM_COUNT];
+        }
+        diffToMinSize[dimension] = diff;
+    }
+
+    int getDiffToMinimumSize(int dimension) {
+        assert isLayoutContainer();
+        return diffToMinSize != null ? diffToMinSize[dimension] : 0;
     }
 
     // -----
