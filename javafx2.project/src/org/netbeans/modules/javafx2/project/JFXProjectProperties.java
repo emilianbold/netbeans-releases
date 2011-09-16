@@ -860,6 +860,21 @@ public final class JFXProjectProperties {
 //            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
     }
 
+    private void storeActiveConfig() throws IOException {
+        String configPath = "nbproject/private/config.properties"; // NOI18N
+        // should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
+        if (activeConfig == null) {
+            try {
+                deleteFile(configPath);
+            } catch (IOException ex) {
+            }
+        } else {
+            final EditableProperties configProps = readFromFile(configPath);
+            configProps.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, activeConfig);
+            saveToFile(configPath, configProps);
+        }
+    }
+    
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
 //        // store descriptor type
 //        DescType descType = getSelectedDescType();
@@ -1030,6 +1045,7 @@ public final class JFXProjectProperties {
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
                     storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
+                    storeActiveConfig();
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
