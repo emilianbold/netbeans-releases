@@ -307,19 +307,25 @@ public class FileElementsCollector {
         CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
         if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
+            CsmNamespace namespace = nsd.getNamespace();
             if (nsd.getName().length() == 0) {
                 // this is unnamed namespace and it should be considered as
                 // it declares using itself
-                if (global) {
-                    globalDirectVisibleNamespaces.add(nsd.getNamespace());
-                } else {
-                    localDirectVisibleNamespaces.add(nsd.getNamespace());
+                if (namespace != null) {
+                    // due to not synchronized access to code model parent namespace can be null
+                    if (global) {
+                        globalDirectVisibleNamespaces.add(namespace);
+                    } else {
+                        localDirectVisibleNamespaces.add(namespace);
+                    }
                 }
             }
             if (endOffset < end) {
                 // put in the end of list
-                localDirectVisibleNamespaces.remove(nsd.getNamespace());
-                localDirectVisibleNamespaces.add(nsd.getNamespace());
+                if (namespace != null) {
+                    localDirectVisibleNamespaces.remove(namespace);
+                    localDirectVisibleNamespaces.add(namespace);
+                }
                 gatherLocalNamespaceElementsFromMaps(nsd, 0, endOffset, global);
                 gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset, false);
             }

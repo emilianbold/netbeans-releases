@@ -1262,12 +1262,19 @@ final class Central implements ControllerHandler {
             }
         }
         
+        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+
         // Now close those which needed.
         for(Iterator it = tcs.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
             if(tc.isOpened()) {
                 // Whether to ignore closing flag.
                 if(openedTcsBefore.contains(tc)) {
+                    continue;
+                }
+                //#202131 - avoid endless opening and closing of window groups
+                //when non-document window from a TC group is dropped into editor area
+                if( wmi.isEditorTopComponent( tc ) ) {
                     continue;
                 }
                 

@@ -91,6 +91,9 @@ public @interface ServiceProvider {
      * An optional list of implementations (given as fully-qualified class names) which this implementation supersedes.
      * If specified, those implementations will not be loaded even if they were registered.
      * Useful on occasion to cancel a generic implementation and replace it with a more advanced one.
+     *
+     * <p><i>Note:</i> Dollar sign ($) is used in inner class names. For example
+     * <code>org.netbeans.modules.openfile.FileChooser$JavaFilesFilter</code>.</p>
      */
     String[] supersedes() default {};
 

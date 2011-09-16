@@ -59,12 +59,13 @@ import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.jira.*;
-import java.util.logging.Level;
+import junit.framework.Test;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
 import org.netbeans.modules.jira.issue.NbJiraIssue.WorkLog;
@@ -82,7 +83,7 @@ public class NbJiraIssueTest extends NbTestCase {
     private static JiraRepository repository;
     protected static final String TEST_PROJECT = "NBJIRAISSUEDEV";
     protected static final String REPO_PASSWD = "unittest";
-    protected static final String REPO_URL = "http://kenai-test.czech.sun.com:8090";
+    protected static final String REPO_URL = "http://bugtracking-test.cz.oracle.com:8090";
     protected static final String REPO_USER = "unittest";
 //    protected static final String TEST_PROJECT = "OVRABEC_JIRA";
 //    protected static final String REPO_PASSWD = "*****";
@@ -126,9 +127,8 @@ public class NbJiraIssueTest extends NbTestCase {
         super(arg0);
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
+    public static Test suite() {
+        return NbModuleSuite.create(NbJiraIssueTest.class, null, null);
     }
 
     @Override

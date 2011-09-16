@@ -170,14 +170,20 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         selModel.addChangeListener(this);
 
         if( isAqua ) {
+            Color bkColor = UIManager.getColor("NbSplitPane.background"); //NOI18N
+            if( null == bkColor )
+                bkColor = getBackground().darker();
             if( dataModel.getOrientation() == SlideBarDataModel.SOUTH ) {
-                setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+                setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.NORTH ) {
-                setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+                setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.WEST ) {
-                setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 4));
+                setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, bkColor), 
+                        BorderFactory.createEmptyBorder(1, 0, 0, 3)));
             } else if( dataModel.getOrientation() == SlideBarDataModel.EAST ) {
-                setBorder(BorderFactory.createEmptyBorder(1, 4, 0, 0));
+                setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 1, 0, 0, bkColor),
+                        BorderFactory.createEmptyBorder(1, 3, 0, 0)));
             }
         }
         if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N

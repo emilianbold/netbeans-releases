@@ -105,9 +105,12 @@ class FoldingTaskListModel extends TaskListModel {
         int groupRow = 0;
         synchronized( groups ) {
             for( FoldingGroup g : groups ) {
-                if( row < groupRow+g.getRowCount() )
-                    return g.getTaskAt( row-groupRow-1 );
-                groupRow += g.getRowCount();
+                synchronized (g.TASK_LOCK) {
+                    if( row < groupRow+g.getRowCount() ) {
+                        return g.getTaskAt( row-groupRow-1 );
+                    }
+                    groupRow += g.getRowCount();
+                }
             }
         }
         return null;
