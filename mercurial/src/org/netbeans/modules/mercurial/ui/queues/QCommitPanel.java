@@ -134,7 +134,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         DiffProvider diffProvider = new QDiffProvider(parentRevision);
         VCSCommitPanelModifier msgProvider = RefreshPanelModifier.getDefault("refresh"); //NOI18N
         // own node computer, displays files not modified in cache but files returned by qdiff
-        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QDiffNodesProvider(parentRevision));
+        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QRefreshNodesProvider(parentRevision));
     }
     
     @Override
@@ -360,11 +360,14 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     /**
      * Used in qrefresh panel, provides also files that are already part of a patch
+     * So it displays:
+     * - all local modifications against the WC parent (qtip)
+     * - plus all files already in the patch, i.e. difference between qtip and parent revision
      */
-    private static final class QDiffNodesProvider implements NodesProvider {
+    private static final class QRefreshNodesProvider implements NodesProvider {
         private final HgRevision parent;
 
-        private QDiffNodesProvider (HgRevision parentRevision) {
+        private QRefreshNodesProvider (HgRevision parentRevision) {
             this.parent = parentRevision;
         }
 
@@ -372,8 +375,18 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         public QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished) {
             try {
                 if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
-                    Map<File, FileInformation> statuses = HgCommand.getStatus(repository, Arrays.asList(roots), parent.getRevisionNumber(), HgRevision.CURRENT.getRevisionNumber());
+                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, new HashSet<File>(Arrays.asList(roots))));
+                    Map<File, FileInformation> statuses = getLocalChanges(roots, cache);
                     statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
+                    Map<File, FileInformation> patchChanges = HgCommand.getStatus(repository, Arrays.asList(roots), parent.getRevisionNumber(), QPatch.TAG_QTIP);
+                    patchChanges.keySet().retainAll(HgUtils.flattenFiles(roots, patchChanges.keySet()));
+                    for (Map.Entry<File, FileInformation> e : patchChanges.entrySet()) {
+                        if (!statuses.containsKey(e.getKey())) {
+                            statuses.put(e.getKey(), new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, null, false));
+                        }
+                    }
+
                     refreshFinished[0] = true;
 
                     if(statuses.isEmpty()) {
@@ -399,6 +412,15 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
             return null;
+        }
+
+        private Map<File, FileInformation> getLocalChanges (File[] roots, FileStatusCache cache) {
+            File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
+            Map<File, FileInformation> retval = new HashMap<File, FileInformation>(files.length);
+            for (File file : files) {
+                retval.put(file, cache.getCachedStatus(file));
+            }
+            return retval;
         }
         
     }
