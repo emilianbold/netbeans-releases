@@ -62,6 +62,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.retriever.*;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -76,7 +78,7 @@ import org.openide.util.NbBundle;
  */
 public class RetrieverTask {
     
-    
+    private static final Logger LOG = Logger.getLogger(RetrieverTask.class.getName());
     
     private File saveFile;
     
@@ -107,17 +109,33 @@ public class RetrieverTask {
                 //this will prevent a cycle in recursion.
                 throw new IOException("File already exists"); //NOI18N
             }
-            ResourceRetriever rr = ResourceRetrieverFactory.getResourceRetriever(baseAddress, sourceToBeGot);
-            if(rr == null )
-                throw new RuntimeException("No Retriever for this Resource address :"+sourceToBeGot); //NOI18N
+
+            HashMap<String, InputStream> srcAddrNContent;
+            ResourceRetriever rr;
             
-            if(isAlreadyDownloadedInThisSession(rr.getEffectiveAddress(baseAddress , sourceToBeGot))){
-                String fileExists = NbBundle.getMessage(RetrieverTask.class,
-                        "EXCEPTION_CYCLIC_REFERENCE_INDICATOR");
-                throw new IOException(fileExists);
+            for (;;) {
+                try {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Retrieving from: " + sourceToBeGot);
+                    }
+                    rr = ResourceRetrieverFactory.getResourceRetriever(baseAddress, sourceToBeGot);
+                    if(rr == null )
+                        throw new RuntimeException("No Retriever for this Resource address :"+sourceToBeGot); //NOI18N
+
+                    if(isAlreadyDownloadedInThisSession(rr.getEffectiveAddress(baseAddress , sourceToBeGot))){
+                        String fileExists = NbBundle.getMessage(RetrieverTask.class,
+                                "EXCEPTION_CYCLIC_REFERENCE_INDICATOR");
+                        throw new IOException(fileExists);
+                    }
+
+                    srcAddrNContent = rr.retrieveDocument(baseAddress , sourceToBeGot);
+                    break;
+                } catch (ResourceRedirectException ex) {
+                    LOG.fine("Redirected to: " + ex.getRedirectedUrl());
+                    sourceToBeGot = ex.getRedirectedUrl().toExternalForm();
+                }
             }
-            
-            HashMap<String, InputStream> srcAddrNContent = rr.retrieveDocument(baseAddress , sourceToBeGot);
+    
             if(srcAddrNContent == null)
                 return null;
             String effectiveSrcAddr = srcAddrNContent.keySet().iterator().next();
