@@ -364,39 +364,7 @@ public abstract class Module extends ModuleInfo {
             } else {
                 specVers = null;
             }
-            // Token provides
-            String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
-            if (providesS == null) {
-                provides = ZERO_STRING_ARRAY;
-            } else {
-                StringTokenizer tok = new StringTokenizer(providesS, ", "); // NOI18N
-                provides = new String[tok.countTokens()];
-                for (int i = 0; i < provides.length; i++) {
-                    String provide = tok.nextToken();
-                    if (provide.indexOf(',') != -1) {
-                        throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module-Provides: " + provide); // NOI18N
-                    }
-                    if (verifyCNBs) {
-                        Dependency.create(Dependency.TYPE_MODULE, provide);
-                    }
-                    if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
-                    provides[i] = provide;
-                }
-                if (new HashSet<String>(Arrays.asList(provides)).size() < provides.length) {
-                    throw new IllegalArgumentException("Duplicate entries in OpenIDE-Module-Provides: " + providesS); // NOI18N
-                }
-            }
-            String[] additionalProvides = mgr.refineProvides (this);
-            if (additionalProvides != null) {
-                if (provides == null) {
-                    provides = additionalProvides;
-                } else {
-                    ArrayList<String> l = new ArrayList<String> ();
-                    l.addAll (Arrays.asList (provides));
-                    l.addAll (Arrays.asList (additionalProvides));
-                    provides = l.toArray (provides);
-                }
-            }
+            computeProvides(attr, verifyCNBs);
             
             // Exports
             String exportsS = attr.getValue("OpenIDE-Module-Public-Packages"); // NOI18N
@@ -465,6 +433,42 @@ public abstract class Module extends ModuleInfo {
             initDeps(deps, attr);
         } catch (IllegalArgumentException iae) {
             throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
+        }
+    }
+
+    final void computeProvides(Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
+        // Token provides
+        String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
+        if (providesS == null) {
+            provides = ZERO_STRING_ARRAY;
+        } else {
+            StringTokenizer tok = new StringTokenizer(providesS, ", "); // NOI18N
+            provides = new String[tok.countTokens()];
+            for (int i = 0; i < provides.length; i++) {
+                String provide = tok.nextToken();
+                if (provide.indexOf(',') != -1) {
+                    throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module-Provides: " + provide); // NOI18N
+                }
+                if (verifyCNBs) {
+                    Dependency.create(Dependency.TYPE_MODULE, provide);
+                }
+                if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
+                provides[i] = provide;
+            }
+            if (new HashSet<String>(Arrays.asList(provides)).size() < provides.length) {
+                throw new IllegalArgumentException("Duplicate entries in OpenIDE-Module-Provides: " + providesS); // NOI18N
+            }
+        }
+        String[] additionalProvides = mgr.refineProvides (this);
+        if (additionalProvides != null) {
+            if (provides == null) {
+                provides = additionalProvides;
+            } else {
+                ArrayList<String> l = new ArrayList<String> ();
+                l.addAll (Arrays.asList (provides));
+                l.addAll (Arrays.asList (additionalProvides));
+                provides = l.toArray (provides);
+            }
         }
     }
 
