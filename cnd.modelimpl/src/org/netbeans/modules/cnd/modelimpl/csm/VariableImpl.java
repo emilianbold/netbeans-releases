@@ -87,9 +87,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public static<T> VariableImpl<T> create(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(pos, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(registerInProject, variableImpl);
-        if (registerInProject && (type instanceof TypeImpl)) {
-            ((TypeImpl)type).setOwner(variableImpl);
-        }
         return variableImpl;
     }
 
@@ -106,9 +103,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(global, variableImpl);
-        if (global && (type instanceof TypeImpl)) {
-            ((TypeImpl)type).setOwner(variableImpl);
-        }
         return variableImpl;
     }
 
@@ -460,9 +454,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this._extern = (pack & 2) == 2;
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
-        if (type instanceof TypeImpl) {
-            ((TypeImpl)type).setOwner(this);
-        }
 
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // could be null UID (i.e. parameter)

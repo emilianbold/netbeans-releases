@@ -49,16 +49,16 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -106,13 +106,6 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             if (CsmKindUtilities.isNamespace(result)) {
                 referencedNamespace = (CsmNamespace)result;
                 _setReferencedNamespace(referencedNamespace);
-                if (referencedNamespace != null) {
-                    if (UIDProviderIml.isPersistable(UIDs.get(this))) {
-                        if (UIDProviderIml.isPersistable(UIDs.get(referencedNamespace))) {
-                            RepositoryUtils.put(this);
-                        }
-                    }
-                }
             }
         }
         return referencedNamespace;
@@ -120,11 +113,34 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
     
     private CsmNamespace _getReferencedNamespace() {
         // can be null if namespace was removed 
-        return UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
+        CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
+        if (referencedNamespaceUID == null) {
+            FileImpl file = (FileImpl) getContainingFile();
+            CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
+            if (typeReference != null) {
+                CsmObject referencedObject = typeReference.getReferencedObject();
+                if (CsmKindUtilities.isNamespace(referencedObject)) {
+                    referencedNamespace =  (CsmNamespace) referencedObject;
+                    referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+                    //System.out.println("Hit "+referencedNamespace);
+                }    
+            }
+        }
+        return referencedNamespace;
     }    
 
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
         this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+        
+        if (referencedNamespace == null) {
+            FileImpl file = (FileImpl) getContainingFile();
+            file.removeResolvedReference(new CsmUsingReferenceImpl(this));
+        }
+        if (referencedNamespaceUID != null && referencedNamespace != null && CsmBaseUtilities.isValid(referencedNamespace)) {
+            FileImpl file = (FileImpl) getContainingFile();
+            file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedNamespace);
+        }
+        
         assert this.referencedNamespaceUID != null || referencedNamespace == null;
     }
  
@@ -178,4 +194,66 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
         this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
     }  
     
+    private static class CsmUsingReferenceImpl implements CsmReference {
+        private final UsingDirectiveImpl using;
+
+        public CsmUsingReferenceImpl(UsingDirectiveImpl using) {
+            this.using = using;
+}
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DIRECT_USAGE;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return null;
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return using.getStartOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return using.getEndOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            return using.getName();
+        }
+
+        @Override
+        public String toString() {
+            return using.getName()+"["+using.getStartOffset()+","+using.getEndOffset()+"]"; //NOI18N
+        }
+    }
 }

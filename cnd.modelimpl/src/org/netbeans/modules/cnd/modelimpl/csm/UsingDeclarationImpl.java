@@ -57,17 +57,17 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -238,15 +238,8 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 synchronized (this) {
                     lastParseCount = newParseCount;
                     _setReferencedDeclaration(referencedDeclaration);
-                    if (referencedDeclaration != null) {
-                        if (UIDProviderIml.isPersistable(UIDs.get(this))) {
-                            if (UIDProviderIml.isPersistable(UIDs.get(referencedDeclaration))) {
-                                RepositoryUtils.put(this);
-                            }
-                        }
-                    }
                 }
-            }            
+            }
         }
         return referencedDeclaration;
     }
@@ -261,6 +254,18 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
             refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
         }
+        if (referencedDeclarationUID == null) {
+            FileImpl file = (FileImpl) getContainingFile();
+            CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
+            if (typeReference != null) {
+                CsmObject referencedObject = typeReference.getReferencedObject();
+                if (CsmKindUtilities.isDeclaration(referencedObject)) {
+                    referencedDeclaration = (CsmDeclaration) referencedObject;
+                    refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
+                    //System.out.println("Hit "+referencedDeclaration);
+                }
+            }
+        }
         // can be null if namespace was removed 
         return referencedDeclaration;
     }    
@@ -270,8 +275,14 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
         } else {
             refDeclaration = null;
+            FileImpl file = (FileImpl) getContainingFile();
+            file.removeResolvedReference(new CsmUsingReferenceImpl(this));
         }
         this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
+        if (referencedDeclarationUID != null && referencedDeclaration != null && CsmBaseUtilities.isValid(referencedDeclaration)) {
+            FileImpl file = (FileImpl) getContainingFile();
+            file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedDeclaration);
+        }
         assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
 
@@ -356,5 +367,68 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
 
         this.visibility = PersistentUtils.readVisibility(input);
+    }
+    
+    private static class CsmUsingReferenceImpl implements CsmReference {
+        private final UsingDeclarationImpl using;
+
+        public CsmUsingReferenceImpl(UsingDeclarationImpl using) {
+            this.using = using;
+}
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DIRECT_USAGE;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return null;
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return using.getStartOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return using.getEndOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            return using.getName();
+        }
+
+        @Override
+        public String toString() {
+            return using.getName()+"["+using.getStartOffset()+","+using.getEndOffset()+"]"; //NOI18N
+        }
     }
 }
