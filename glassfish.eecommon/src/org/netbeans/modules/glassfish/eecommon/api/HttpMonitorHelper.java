@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,10 +52,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,8 +174,8 @@ public class HttpMonitorHelper {
         BufferedWriter fw= null;
         boolean deleteNew = true;
         try {
-            fr = new BufferedReader(new FileReader(webXML));
-            fw = new BufferedWriter(new FileWriter(newWebXML));
+            fr = new BufferedReader(new InputStreamReader(new FileInputStream(webXML),"ISO-8859-1"));
+            fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newWebXML),"ISO-8859-1"));
             while (true) {
                 String line = fr.readLine();
                 if (line == null)
@@ -202,7 +202,7 @@ public class HttpMonitorHelper {
         } catch (Exception e) {
             if (null != fw && deleteNew) {
                 if (!newWebXML.delete()) {
-                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed and left bogus file: " + newWebXML.getAbsolutePath());
+                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed and left bogus file: {0}", newWebXML.getAbsolutePath());
                 }
             }
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed", e);
@@ -531,6 +531,7 @@ public class HttpMonitorHelper {
             this.spy=spy;
         }
         
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals("enabled")){ // NOI18N
                 spy.setEnabled(((Boolean)evt.getNewValue()).booleanValue());
@@ -547,6 +548,7 @@ public class HttpMonitorHelper {
             this.httpMonitorInfo=httpMonitorInfo;
         }
         
+        @Override
         public void resultChanged(LookupEvent lookupEvent) {
             java.util.Iterator it = res.allInstances ().iterator ();
             boolean moduleFound=false;
