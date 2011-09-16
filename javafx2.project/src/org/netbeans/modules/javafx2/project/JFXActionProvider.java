@@ -94,9 +94,22 @@ public class JFXActionProvider implements ActionProvider {
         if ((target=(command))!=null) {
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
+            String runAs = JFXProjectUtils.getFXProjectRunAs(prj);
+            if(runAs == null) {
+                runAs = JFXProjectProperties.RunAsType.STANDALONE.getString();
+            }
             try {
-                final Properties p = new Properties();
-                ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
+                if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
+                    final Properties p = new Properties();
+                    ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
+                } else {
+                    if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                        target = "jfxws-".concat(command); //NOI18N
+                        final Properties p = new Properties();
+                        ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
+                    } else { //JFXProjectProperties.RunAsType.INBROWSER
+                    }
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

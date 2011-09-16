@@ -260,4 +260,17 @@ public final class JFXProjectUtils {
         return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }
 
+    /**
+     * Checks what Run model is selected in current configuration of JFX Run Project Property panel
+     * @param prj the project to check
+     * @return string value of JFXProjectProperties.RunAsType type or null meaning JFXProjectProperties.RunAsType.STANDALONE
+     */
+    public static String getFXProjectRunAs(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (ep == null) {
+            return null;
+        }
+        return ep.evaluator().getProperty(JFXProjectProperties.RUN_AS);
+    }
+    
 }

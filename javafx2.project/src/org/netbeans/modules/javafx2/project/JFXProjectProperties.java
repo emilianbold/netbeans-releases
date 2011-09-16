@@ -232,6 +232,16 @@ public final class JFXProjectProperties {
             return propertyValue;
         }
     }
+    public RunAsType getActiveRunAs() {
+        String runAs = RUN_CONFIGS.get(activeConfig).get(RUN_AS);
+        if(isEqualIgnoreCase(runAs, RunAsType.ASWEBSTART.getString())) {
+            return RunAsType.ASWEBSTART;
+        }
+        if(isEqualIgnoreCase(runAs, RunAsType.INBROWSER.getString())) {
+            return RunAsType.INBROWSER;
+        }
+        return RunAsType.STANDALONE;
+    }
 //    RunAsType runModel;
 //    public RunAsType getRunModel() {
 //        return runModel;
@@ -394,14 +404,20 @@ public final class JFXProjectProperties {
     }
 
     /** Getter method */
-    public static JFXProjectProperties getInstanceIfExists(Lookup context) {
-        Project proj = context.lookup(Project.class);
+    public static JFXProjectProperties getInstanceIfExists(Project proj) {
+        assert proj != null;
         String projDir = proj.getProjectDirectory().getPath();
         JFXProjectProperties prop = propInstance.get(projDir);
         if(prop != null) {
             return prop;
         }
         return null;
+    }
+
+    /** Getter method */
+    public static JFXProjectProperties getInstanceIfExists(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        return getInstanceIfExists(proj);
     }
 
     public static void cleanup(Lookup context) {
