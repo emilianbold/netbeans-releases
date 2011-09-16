@@ -74,6 +74,9 @@ public interface ResourceRetriever {
     
     /**
      * Given the base doc address and the current address (that could be either relative or absoulte), determine the final address to fetch doc and get the stream of that doc.
+     * The method may throw {@link ResourceRedirectException} if the Retriever resolves the resource
+     * to a different URL incompatible with the Retriever instance.
+     * 
      * @param baseAddress address of the base document where the link was found
      * @param documentAddress current document address as mentioned in the base doc
      * @return Hash map has the "key" as the final address from where the file was fetched and "value" has the input sream of the file.
