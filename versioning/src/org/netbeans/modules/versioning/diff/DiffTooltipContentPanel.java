@@ -43,15 +43,29 @@
  */
 package org.netbeans.modules.versioning.diff;
 
-import org.netbeans.api.diff.Difference;
-import org.openide.text.CloneableEditorSupport;
-
-import javax.swing.*;
-import javax.swing.text.*;
-import java.io.StringReader;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
-import java.awt.*;
+import java.io.StringReader;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
+import org.netbeans.api.diff.Difference;
 import org.netbeans.editor.EditorUI;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * @author Maros Sandor
@@ -110,7 +124,8 @@ class DiffTooltipContentPanel extends JComponent {
         }
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
         else if (maxWidth < 150) maxWidth += 10;
-        originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
+        maxWidth = Math.min(maxWidth * 7 / 6, parentPane.getVisibleRect().width);
+        originalTextPane.setPreferredSize(new Dimension(maxWidth, height));
 
         if (!originalTextPane.isEditable()) {
             originalTextPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
@@ -141,8 +156,9 @@ class DiffTooltipContentPanel extends JComponent {
         if (height > 0) {
             Dimension size = originalTextPane.getPreferredSize();
             Dimension scrollpaneSize = jsp.getPreferredSize();
+            height += jsp.getHorizontalScrollBar().getPreferredSize().height;
 
-            jsp.setPreferredSize(new Dimension(maxWidth * 7 / 6 + Math.max(0, scrollpaneSize.width - size.width), height + Math.max(0, scrollpaneSize.height - size.height)));
+            jsp.setPreferredSize(new Dimension(maxWidth + Math.max(0, scrollpaneSize.width - size.width), height + Math.max(0, scrollpaneSize.height - size.height)));
             SwingUtilities.getWindowAncestor(originalTextPane).pack();
         }
         originalTextPane = null;
