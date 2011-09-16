@@ -290,6 +290,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         int mEndIndex = measuredEndIndex;
         int stopIndex = mEndIndex << 1;
         boolean wrapInfoChecked = false;
+        boolean nonPrintableCharsVisible = false;
         for (; mEndIndex < viewCount; mEndIndex++) {
             EditorView view = get(mEndIndex);
             // First assign parent to the view and then ask for preferred span.
@@ -302,8 +303,12 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                     if (docText == null) {
                         mEndOffset = pView.getStartOffset() + startOffset(mEndIndex); // Needed for TextLayout creation
                         docText = DocumentUtilities.getText(docView.getDocument());
+                        nonPrintableCharsVisible = docView.op.isNonPrintableCharactersVisible();
                     }
                     String text = docText.subSequence(mEndOffset, mEndOffset + view.getLength()).toString();
+                    if (nonPrintableCharsVisible) {
+                        text = text.replace(' ', DocumentViewOp.PRINTING_SPACE);
+                    }
                     TextLayout textLayout = docView.op.createTextLayout(text, hView.getAttributes());
                     hView.setTextLayout(textLayout);
                  }
