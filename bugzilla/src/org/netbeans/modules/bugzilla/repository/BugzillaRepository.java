@@ -507,14 +507,26 @@ public class BugzillaRepository extends Repository {
      */
     public synchronized BugzillaConfiguration getConfiguration() {
         if(bc == null) {
-            bc = createConfiguration(false);
+            BugzillaConfiguration conf = createConfiguration(false);
+            if(conf.isValid()) {
+                bc = conf;
+            } 
         }
         return bc;
     }
 
     public synchronized void refreshConfiguration() {
         BugzillaConfiguration conf = createConfiguration(true);
-        bc = conf;
+        if(conf.isValid()) {
+            bc = conf;
+        } else {
+            // Hard to say at this point why the attempt to refresh the 
+            // configuration failed - could be just a temporary networking issue.
+            // This is called only from ensureConfigurationUptodate(), so even if
+            // the metadata might not be uptodate anymore, they still may be 
+            // sufficient for what the user plans to do. So let's cross the 
+            // fingers and keep bc the way it is.
+        }
     }
 
     protected BugzillaConfiguration createConfiguration(boolean forceRefresh) {
