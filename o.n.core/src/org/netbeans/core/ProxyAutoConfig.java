@@ -343,6 +343,12 @@ public class ProxyAutoConfig {
 
     private String normalizePAC(String pacURL) {
         int index;
+        if ((index = pacURL.indexOf("\n")) != -1) { // NOI18N
+            pacURL = pacURL.substring(0, index);
+        }
+        if ((index = pacURL.indexOf("\r")) != -1) { // NOI18N
+            pacURL = pacURL.substring(0, index);
+        }
         if ((index = pacURL.indexOf(" ")) != -1) { // NOI18N
             pacURL = pacURL.substring(0, index);
         }
