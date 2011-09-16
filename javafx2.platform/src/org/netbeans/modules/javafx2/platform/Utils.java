@@ -56,6 +56,7 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * Utility class for platform properties manipulation
@@ -173,9 +174,9 @@ public final class Utils {
         
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         // 32b vs 64b check
-//        if (!isFXmatchesRunningVM(runtimePath)) {
-//            return null;
-//        }
+        if (!isArchitechtureCorrect(runtimePath)) {
+            return null;
+        }
         
         FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
         JavaPlatform platform = null;
@@ -201,20 +202,24 @@ public final class Utils {
         return platform;
     }
     
-    public static boolean isFXmatchesRunningVM(String runtimePath) {
+    /**
+     * Determines whether architecture (32b vs 64b) of currently running VM
+     * matches given JavaFX Runtime
+     * 
+     * @param runtimePath JavaFX Runtime location
+     * @return is correct architecture
+     */
+    public static boolean isArchitechtureCorrect(@NonNull String runtimePath) {
+        Parameters.notNull("runtimePath", runtimePath); // NOI18N
         try {
-            Properties properties = System.getProperties();
-            String libPath = properties.getProperty("java.library.path"); // NOI18N
-            String extendedPath = libPath + File.pathSeparatorChar + runtimePath + File.separatorChar + "bin" + File.separatorChar; // NOI18N
-            properties.setProperty("java.library.path", extendedPath); // NOI18N
-            System.setProperties(properties);
-
-            System.loadLibrary("mat"); // NOI18N
-            
-            properties.setProperty("java.library.path", libPath); // NOI18N
-            System.setProperties(properties);
-//            System.loadLibrary(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat"); // NOI18N
-        } catch (UnsatisfiedLinkError e) {
+            if (Utilities.isUnix() || Utilities.isMac()) {
+                // TODO check is it "mat.so" on Mac OS
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.so"); // NOI18N
+                return true;
+            } else if (Utilities.isWindows()) {
+                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
+            }
+        } catch (Throwable t) {
             return false;
         }
         return true;
