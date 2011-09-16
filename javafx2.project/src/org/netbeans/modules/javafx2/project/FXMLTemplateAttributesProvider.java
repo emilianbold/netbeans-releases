@@ -43,9 +43,11 @@ package org.netbeans.modules.javafx2.project;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -76,7 +78,18 @@ public final class FXMLTemplateAttributesProvider implements CreateFromTemplateA
         
         ClassPath cp = ClassPath.getClassPath(targetFO, ClassPath.SOURCE);
         if (cp == null) {
-            LOG.warning("No classpath was found for folder: " + target.getPrimaryFile()); // NOI18N
+            LOG.log(
+                Level.WARNING,
+                "No classpath was found for folder: {0}",   // NOI18N
+                FileUtil.getFileDisplayName(targetFO));
+        } else if (cp.findOwnerRoot(targetFO) == null) {
+            LOG.log(
+                Level.WARNING,
+                "Folder {0} is not on its classpath: {1}",  // NOI18N
+                new Object[] {
+                    FileUtil.getFileDisplayName(targetFO),
+                    cp.toString(ClassPath.PathConversionMode.PRINT)
+                });
         }
         else {
             result.put("package", cp.getResourceName(targetFO, '.', false)); // NOI18N

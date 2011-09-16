@@ -44,14 +44,15 @@ package org.netbeans.modules.whitelist;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 public class WhiteListQueryMerger implements LookupMerger<WhiteListQueryImplementation> {
 
+    @Override
     public Class<WhiteListQueryImplementation> getMergeableClass() {
         return WhiteListQueryImplementation.class;
     }
 
+    @Override
     public WhiteListQueryImplementation merge(Lookup lookup) {
         return new WhiteListQueryImplementationMerged(lookup);
     }
