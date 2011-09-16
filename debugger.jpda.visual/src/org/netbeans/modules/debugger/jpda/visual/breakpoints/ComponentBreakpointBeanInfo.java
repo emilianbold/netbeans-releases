@@ -48,15 +48,15 @@ import java.beans.SimpleBeanInfo;
  *
  * @author martin
  */
-public class AWTComponentBreakpointBeanInfo extends SimpleBeanInfo {
+public class ComponentBreakpointBeanInfo extends SimpleBeanInfo {
     
-    public AWTComponentBreakpointBeanInfo() {}
+    public ComponentBreakpointBeanInfo() {}
     
     @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(
-                AWTComponentBreakpoint.class,
-                AWTComponentBreakpointCustomizer.class);
+                ComponentBreakpoint.class,
+                ComponentBreakpointCustomizer.class);
     }
 
 }

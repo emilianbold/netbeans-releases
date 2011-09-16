@@ -49,14 +49,14 @@ package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ActionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ConditionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint.ComponentDescription;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint.ComponentDescription;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -68,32 +68,35 @@ import org.openide.util.NbBundle;
  *
  * @author martin
  */
-public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements ControllerProvider {
+public class ComponentBreakpointPanel extends javax.swing.JPanel implements ControllerProvider {
     
     private static final String         HELP_ID = "NetbeansDebuggerBreakpointComponentJPDA"; // NOI18N
-    private AWTComponentBreakpoint      breakpoint;
+    private ComponentBreakpoint         breakpoint;
     private LineBreakpoint              fakeActionsBP;
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private CBController                controller = new CBController();
     private boolean                     createBreakpoint = false;
     
-    private static AWTComponentBreakpoint createBreakpoint () {
-        AWTComponentBreakpoint.ComponentDescription componentDescription = null;
+    private static ComponentBreakpoint createBreakpoint () {
+        ComponentBreakpoint cb = null;
+        ComponentBreakpoint.ComponentDescription componentDescription = null;
         ScreenshotUIManager activeScreenshotManager = ScreenshotUIManager.getActive();
         if (activeScreenshotManager != null) {
             ComponentInfo ci = activeScreenshotManager.getSelectedComponent();
-            if (ci instanceof AWTComponentInfo) {
-                componentDescription = new AWTComponentBreakpoint.ComponentDescription(
+            if (ci instanceof JavaComponentInfo) {
+                componentDescription = new ComponentBreakpoint.ComponentDescription(
                         ci,
-                        ((AWTComponentInfo) ci).getThread().getDebugger(),
-                        ((AWTComponentInfo) ci).getComponent());
+                        ((JavaComponentInfo) ci).getThread().getDebugger(),
+                        ((JavaComponentInfo) ci).getComponent());
             }
+
+            if (componentDescription == null) {
+                componentDescription = new ComponentBreakpoint.ComponentDescription("");
+            }
+            
+            cb = (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) ? new AWTComponentBreakpoint(componentDescription) : new FXComponentBreakpoint(componentDescription);
         }
-        if (componentDescription == null) {
-            componentDescription = new AWTComponentBreakpoint.ComponentDescription("");
-        }
-        AWTComponentBreakpoint cb = new AWTComponentBreakpoint(componentDescription);
         /*cb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 
                 ("CTL_Line_Breakpoint_Print_Text")
@@ -102,16 +105,16 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     }
     
 
-    public AWTComponentBreakpointPanel() {
+    public ComponentBreakpointPanel() {
         this (createBreakpoint (), true);
     }
     
     /** Creates new form AWTComponentBreakpointPanel */
-    public AWTComponentBreakpointPanel(AWTComponentBreakpoint cb) {
+    public ComponentBreakpointPanel(ComponentBreakpoint cb) {
         this(cb, false);
     }
     
-    public AWTComponentBreakpointPanel(AWTComponentBreakpoint cb, boolean createBreakpoint) {
+    public ComponentBreakpointPanel(ComponentBreakpoint cb, boolean createBreakpoint) {
         this.breakpoint = cb;
         this.createBreakpoint = createBreakpoint;
         initComponents();
@@ -122,8 +125,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         }
         componentTextField.setText(componentName);
         addRemoveCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_ADD) != 0 || (type & AWTComponentBreakpoint.TYPE_REMOVE) != 0);
+        addRemoveCheckBox.setVisible(((ComponentBreakpoint.TYPE_ADD | ComponentBreakpoint.TYPE_REMOVE) & cb.supportedTypes()) > 0);
         showHideCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_SHOW) != 0 || (type & AWTComponentBreakpoint.TYPE_HIDE) != 0);
+        showHideCheckBox.setVisible(((ComponentBreakpoint.TYPE_SHOW | ComponentBreakpoint.TYPE_HIDE) & cb.supportedTypes()) > 0);
         repaintCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0);
+        repaintCheckBox.setVisible(((ComponentBreakpoint.TYPE_REPAINT) & cb.supportedTypes()) > 0);
         conditionsPanel = new ConditionsPanel(HELP_ID);
         conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
@@ -134,7 +140,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         
         fakeActionsBP = LineBreakpoint.create("", 0);
         fakeActionsBP.setPrintText (
-            NbBundle.getBundle (AWTComponentBreakpointPanel.class).getString 
+            NbBundle.getBundle (ComponentBreakpointPanel.class).getString 
                 ("CTL_Component_Breakpoint_Print_Text")
         );
 
@@ -176,20 +182,20 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
 
         setLayout(new java.awt.GridBagLayout());
 
-        sPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "TTL_ComponentBreakpointSettings"))); // NOI18N
+        sPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "TTL_ComponentBreakpointSettings"))); // NOI18N
 
-        componentLabel.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentLabel.text")); // NOI18N
+        componentLabel.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.componentLabel.text")); // NOI18N
 
         componentTextField.setEditable(false);
-        componentTextField.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentTextField.text")); // NOI18N
+        componentTextField.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.componentTextField.text")); // NOI18N
 
-        componentActionLabel.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentActionLabel.text")); // NOI18N
+        componentActionLabel.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.componentActionLabel.text")); // NOI18N
 
-        addRemoveCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.addRemoveCheckBox.text")); // NOI18N
+        addRemoveCheckBox.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.addRemoveCheckBox.text")); // NOI18N
 
-        showHideCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.showHideCheckBox.text")); // NOI18N
+        showHideCheckBox.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.showHideCheckBox.text")); // NOI18N
 
-        repaintCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.repaintCheckBox.text")); // NOI18N
+        repaintCheckBox.setText(org.openide.util.NbBundle.getMessage(ComponentBreakpointPanel.class, "ComponentBreakpointPanel.repaintCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout sPanelLayout = new javax.swing.GroupLayout(sPanel);
         sPanel.setLayout(sPanelLayout);
@@ -198,7 +204,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
             .addGroup(sPanelLayout.createSequentialGroup()
                 .addComponent(componentLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(componentTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
+                .addComponent(componentTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
             .addGroup(sPanelLayout.createSequentialGroup()
                 .addComponent(componentActionLabel)
                 .addContainerGap())
@@ -207,11 +213,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
                 .addGroup(sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(showHideCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addRemoveCheckBox, javax.swing.GroupLayout.Alignment.LEADING))
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addContainerGap(173, Short.MAX_VALUE))
             .addGroup(sPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(repaintCheckBox)
-                .addContainerGap(279, Short.MAX_VALUE))
+                .addContainerGap(289, Short.MAX_VALUE))
         );
         sPanelLayout.setVerticalGroup(
             sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -309,7 +315,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         private void checkValid() {
             ComponentDescription component = breakpoint.getComponent();
             if (component == null || component.getComponentInfo() == null) {
-                setErrorMessage(NbBundle.getMessage(AWTComponentBreakpointPanel.class, "MSG_No_Component_Spec"));
+                setErrorMessage(NbBundle.getMessage(ComponentBreakpointPanel.class, "MSG_No_Component_Spec"));
                 setValid(false);
             } else {
                 setValid(true);
@@ -328,12 +334,12 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
-            AWTComponentBreakpointPanel.this.addPropertyChangeListener(l);
+            ComponentBreakpointPanel.this.addPropertyChangeListener(l);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            AWTComponentBreakpointPanel.this.removePropertyChangeListener(l);
+            ComponentBreakpointPanel.this.removePropertyChangeListener(l);
         }
 
 
