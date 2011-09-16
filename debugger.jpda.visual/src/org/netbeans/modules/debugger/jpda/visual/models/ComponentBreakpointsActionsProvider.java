@@ -56,8 +56,8 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpointPanel;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpointPanel;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -96,7 +96,7 @@ public class ComponentBreakpointsActionsProvider implements NodeActionsProviderF
     @Override
     public Action[] getActions (NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
-        if (!(node instanceof AWTComponentBreakpoint)) 
+        if (!(node instanceof ComponentBreakpoint)) 
             return original.getActions (node);
         
         Action[] oas = original.getActions (node);
@@ -108,7 +108,7 @@ public class ComponentBreakpointsActionsProvider implements NodeActionsProviderF
     
     @Override
     public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof AWTComponentBreakpoint) 
+        if (node instanceof ComponentBreakpoint) 
             customize ((Breakpoint) node);
         else
             original.performDefaultAction (node);
@@ -116,8 +116,8 @@ public class ComponentBreakpointsActionsProvider implements NodeActionsProviderF
     
     public static JComponent getCustomizerComponent(Breakpoint b) {
         JComponent c = null;
-        if (b instanceof AWTComponentBreakpoint) {
-            c = new AWTComponentBreakpointPanel((AWTComponentBreakpoint) b);
+        if (b instanceof ComponentBreakpoint) {
+            c = new ComponentBreakpointPanel((ComponentBreakpoint) b);
         }
 
         c.getAccessibleContext().setAccessibleDescription(

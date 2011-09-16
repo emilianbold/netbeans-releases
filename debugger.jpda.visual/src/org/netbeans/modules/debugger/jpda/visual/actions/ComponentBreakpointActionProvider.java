@@ -50,8 +50,11 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.FXComponentBreakpoint;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.nodes.Node;
@@ -65,16 +68,16 @@ import org.openide.util.Utilities;
  * @author Martin Entlicher
  */
 @ActionsProvider.Registration(path="netbeans-JPDASession", actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-debugger-visual-component" })
-public class AWTComponentBreakpointActionProvider extends ActionsProviderSupport {
+public class ComponentBreakpointActionProvider extends ActionsProviderSupport {
     
-    public AWTComponentBreakpointActionProvider() {
+    public ComponentBreakpointActionProvider() {
         final Result<Node> nodeLookupResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
         LookupListener ll = new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 Collection<? extends Node> nodeInstances = nodeLookupResult.allInstances();
                 for (Node n : nodeInstances) {
-                    AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+                    JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
                     if (ci != null) {
                         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
                         return ;
@@ -100,14 +103,19 @@ public class AWTComponentBreakpointActionProvider extends ActionsProviderSupport
     
     static void doAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
                 ObjectReference component = ci.getComponent();
-                AWTComponentBreakpoint b = findBreakpoint(component);
+                ComponentBreakpoint b = findBreakpoint(component);
                 if (b == null) {
                     JPDADebugger debugger = ci.getThread().getDebugger();
-                    b = new AWTComponentBreakpoint(
-                            new AWTComponentBreakpoint.ComponentDescription(ci, debugger, component));
+                    b = (ci instanceof AWTComponentInfo) ? 
+                            new AWTComponentBreakpoint(
+                                new ComponentBreakpoint.ComponentDescription(ci, debugger, component)
+                            ) :
+                            new FXComponentBreakpoint(
+                                new ComponentBreakpoint.ComponentDescription(ci, debugger, component)
+                            );
                     DebuggerManager.getDebuggerManager().addBreakpoint(b);
                 } else {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(b);
@@ -117,13 +125,13 @@ public class AWTComponentBreakpointActionProvider extends ActionsProviderSupport
         
     }
 
-    public static AWTComponentBreakpoint findBreakpoint (ObjectReference component) {
+    public static ComponentBreakpoint findBreakpoint (ObjectReference component) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (int i = 0; i < breakpoints.length; i++) {
-            if (!(breakpoints[i] instanceof AWTComponentBreakpoint)) {
+            if (!(breakpoints[i] instanceof ComponentBreakpoint)) {
                 continue;
             }
-            AWTComponentBreakpoint ab = (AWTComponentBreakpoint) breakpoints[i];
+            ComponentBreakpoint ab = (ComponentBreakpoint) breakpoints[i];
             Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
             if (currentSession != null) {
                 JPDADebugger debugger = currentSession.lookupFirst(null, JPDADebugger.class);
