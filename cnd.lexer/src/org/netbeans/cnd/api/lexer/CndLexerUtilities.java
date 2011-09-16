@@ -733,6 +733,9 @@ public final class CndLexerUtilities {
             CppTokenId.__VOLATILE,
             CppTokenId.__VOLATILE__,
             CppTokenId.__THREAD,
+            CppTokenId.__GLOBAL,
+            CppTokenId.__HIDDEN,
+            CppTokenId.__SYMBOLIC,
             CppTokenId.__UNUSED__,};
         addToFilter(ids, filterToModify);
     }
