@@ -82,6 +82,9 @@ public class SmartyOptionsPanel extends JPanel {
 
     private final transient ChangeSupport changeSupport = new ChangeSupport(this);
 
+    /** Maximum scanning depth which appears in options combo box. */
+    private static final int MAX_SCANNING_DEPTH = 3;
+
     public SmartyOptionsPanel() {
         initComponents();
 
@@ -103,7 +106,7 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     private void setDepthOfScanningComboBox() {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i <= MAX_SCANNING_DEPTH; i++) {
             depthOfScanningComboBox.addItem(String.valueOf(i));
         }
     }
@@ -129,6 +132,13 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     public void setDepthOfScanning(int depth) {
+        // can happen after lowering possible maximum scanning depth or by
+        //  manually updated preferences
+        if (depth > MAX_SCANNING_DEPTH) {
+            depth = MAX_SCANNING_DEPTH;
+        } else if (depth < 0) {
+            depth = 0;
+        }
         this.depthOfScanningComboBox.setSelectedIndex(depth);
     }
 
