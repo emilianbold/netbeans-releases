@@ -57,12 +57,16 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.WatchpointEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -106,7 +110,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private static final Map<JPDADebugger, Map<ObjectReference, Stack>> componentsAndStackTraces
             = new WeakHashMap<JPDADebugger, Map<ObjectReference, Stack>>();
     
-    private Breakpoint trackComponentBreakpoint;
+    private Collection<Breakpoint> trackComponentBreakpoints = new ArrayList<Breakpoint>();
 
     @Override
     public void engineAdded(DebuggerEngine engine) {
@@ -156,18 +160,33 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
         }
         boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", false);
-        if (debugger != null && trackComponentChanges) {
-            FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
-            fb.setHidden(true);
-            fb.addJPDABreakpointListener(new JPDABreakpointListener() {
-                @Override
-                public void breakpointReached(JPDABreakpointEvent event) {
-                    componentParentChanged(debugger, event);
-                    event.resume();
-                }
-            });
-            DebuggerManager.getDebuggerManager().addBreakpoint(fb);
-            trackComponentBreakpoint = fb;
+        if (debugger != null) {
+            if (trackComponentChanges) {
+                FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
+                fb.setHidden(true);
+                fb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                    @Override
+                    public void breakpointReached(JPDABreakpointEvent event) {
+                        componentParentChanged(debugger, event);
+                        event.resume();
+                    }
+                });
+                DebuggerManager.getDebuggerManager().addBreakpoint(fb);
+                trackComponentBreakpoints.add(fb);
+                
+                MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
+                mb.setHidden(true);
+                mb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                    @Override
+                    public void breakpointReached(JPDABreakpointEvent event) {
+                        componentParentChanged(debugger, event);
+                        event.resume();
+                    }
+                });
+                DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+                trackComponentBreakpoints.add(mb);
+            }
+            
         }
     }
 
@@ -232,9 +251,12 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (debugger != null) {
             stopDebuggerRemoteService(debugger);
         }
-        if (trackComponentBreakpoint != null) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(trackComponentBreakpoint);
-            trackComponentBreakpoint = null;
+        if (!trackComponentBreakpoints.isEmpty()) {
+            Iterator<Breakpoint> it = trackComponentBreakpoints.iterator();
+            while (it.hasNext()) {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());
+                it.remove();
+            }
         }
     }
     
@@ -268,12 +290,17 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     
     private static void componentParentChanged(JPDADebugger debugger, JPDABreakpointEvent event) {
         ObjectReference component = null;
+
         try {
             java.lang.reflect.Field f = event.getClass().getDeclaredField("event"); // NOI18N
             f.setAccessible(true);
             Event jdievent = (Event) f.get(event);
             if (jdievent instanceof WatchpointEvent) {
                 component = ((WatchpointEvent) jdievent).object();
+            } else {
+                JPDAThread t = event.getThread();
+                JDIVariable v = (JDIVariable)t.getCallStack(0, 1)[0].getThisVariable();
+                component = (ObjectReference)v.getJDIValue();
             }
         } catch (Exception ex) {}
         if (component != null) {

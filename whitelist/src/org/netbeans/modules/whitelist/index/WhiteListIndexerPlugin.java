@@ -120,7 +120,11 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
                 final IndexDocument doc = IndexManager.createDocument(indexable.getRelativePath());
-                doc.addPair(MSG, p.getValue().getViolatedRuleDescription(), false, true);
+                assert !p.getValue().isAllowed() : "only violations should be stored"; // NOI18N
+                for (WhiteListQuery.RuleDescription rule : p.getValue().getViolatedRules()) {
+                    doc.addPair(MSG, rule.getRuleDescription(), false, true);
+                    // TODO: whitelist ID should be stored here as well, no?
+                }
                 doc.addPair(LINE, Integer.toString(ln), false, true);
                 index.addDocument(doc);
             }
@@ -184,9 +188,16 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
                                     if (wlName == null) {
                                         wlName = "";    //NOI18N
                                     }
-                                    final String wlDesc = doc.getValue(MSG);
+                                    final String wlDesc[] = doc.getValues(MSG);
+                                    assert wlDesc.length > 0 : "";
+                                    List<WhiteListQuery.RuleDescription> violatedRules = new ArrayList<WhiteListQuery.RuleDescription>();
+                                    for (String desc : wlDesc) {
+                                        // TODO: whitelist ID is not stored currently is that ok?
+                                        // TODO: how is whitelist name stored?? I did not find it anywhere
+                                        violatedRules.add(new WhiteListQuery.RuleDescription(wlName, desc, null));
+                                    }
                                     final int line = Integer.parseInt(doc.getValue(LINE));
-                                    final WhiteListQuery.Result wr = new WhiteListQuery.Result(false, wlName, wlDesc);
+                                    final WhiteListQuery.Result wr = new WhiteListQuery.Result(violatedRules);
                                     result.add(WhiteListIndexAccessor.getInstance().createProblem(wr, root, key, line));
                                 } catch (ArithmeticException ae) {
                                     Exceptions.printStackTrace(ae);

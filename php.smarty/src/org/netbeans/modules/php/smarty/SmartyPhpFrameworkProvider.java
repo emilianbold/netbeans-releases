@@ -69,6 +69,8 @@ import org.openide.util.NbBundle;
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(SmartyPhpFrameworkProvider.class.getName());
+
     /** Preferences property if the given {@link PhpModule} contains Smarty framework or not. */
     public static final String PROP_SMARTY_AVAILABLE = "smarty-framework"; // NOI18N
 
@@ -157,6 +159,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
 
             // TODO - can be removed one release after NB71
+            SmartyOptions.updateSmartyScanningDepthProperty();
             updateSmartyAvailableProperty(preferences);
 
             if (preferences.getBoolean(PROP_SMARTY_AVAILABLE, false)) {
@@ -169,7 +172,9 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                 @Override
                 public void run() {
                     FileObject sourceDirectory = phpModule.getSourceDirectory();
-                    if (locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0)) {
+                    int scanningDepth = SmartyFramework.getDepthOfScanningForTpl();
+                    LOGGER.log(Level.FINEST, "Locating for Smarty templates in depth={0}", scanningDepth);
+                    if (locatedTplFiles(sourceDirectory, scanningDepth, 0)) {
                         isSmartyFound.set(true);
                     }
                 }
@@ -182,8 +187,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
             return isSmartyFound.get();
         } finally {
-            Logger.getLogger(SmartyPhpFrameworkProvider.class.getName()).log(
-                    Level.FINE, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
+            LOGGER.log(Level.FINE, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
         }
     }
 

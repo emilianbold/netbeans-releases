@@ -75,7 +75,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
 
         {
             put("if", new ArrayList<String>(Arrays.asList("else", "elseif")));  //NOI18N
-            put("foreach", new ArrayList<String>(Arrays.asList("foreachelsef")));  //NOI18N
+            put("foreach", new ArrayList<String>(Arrays.asList("foreachelse")));  //NOI18N
             put("section", new ArrayList<String>(Arrays.asList("sectionelse")));  //NOI18N
         }
     };

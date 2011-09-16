@@ -61,28 +61,28 @@ import org.openide.util.NbBundle;
 * @author Martin Entlicher
 */
 @BreakpointType.Registration(displayName="#CTL_AWTComponent_breakpoint_type_name")
-public class AWTComponentBreakpointType extends BreakpointType {
+public class ComponentBreakpointType extends BreakpointType {
 
-    private Reference<AWTComponentBreakpointPanel> customizerRef = new WeakReference<AWTComponentBreakpointPanel>(null);
+    private Reference<ComponentBreakpointPanel> customizerRef = new WeakReference<ComponentBreakpointPanel>(null);
 
     @Override
     public String getCategoryDisplayName () {
         return NbBundle.getMessage (
-            AWTComponentBreakpointType.class,
+            ComponentBreakpointType.class,
             "CTL_Java_breakpoint_events_cathegory_name"
         );
     }
     
     @Override
     public JComponent getCustomizer () {
-        AWTComponentBreakpointPanel panel = new AWTComponentBreakpointPanel();
-        customizerRef = new WeakReference<AWTComponentBreakpointPanel>(panel);
+        ComponentBreakpointPanel panel = new ComponentBreakpointPanel();
+        customizerRef = new WeakReference<ComponentBreakpointPanel>(panel);
         return panel;
     }
 
     @Override
     public Controller getController() {
-        AWTComponentBreakpointPanel panel = customizerRef.get();
+        ComponentBreakpointPanel panel = customizerRef.get();
         if (panel != null) {
             return panel.getController();
         } else {
@@ -92,7 +92,7 @@ public class AWTComponentBreakpointType extends BreakpointType {
 
     @Override
     public String getTypeDisplayName () {
-        return NbBundle.getMessage (AWTComponentBreakpointType.class, 
+        return NbBundle.getMessage (ComponentBreakpointType.class, 
             "CTL_AWTComponent_breakpoint_type_name"
         );
     }

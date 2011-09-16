@@ -64,11 +64,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 // LATER import org.netbeans.modules.nativeexecution.support.Authentication;
 
 /**
@@ -368,13 +372,22 @@ public class CndRemote {
 //
 //	return host;
 //    }
+    
+    private static EngineType getDebuggerType(CompilerSet cs) {
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
+        if (debuggerTool != null) {
+            DebuggerDescriptor descriptor = (DebuggerDescriptor) debuggerTool.getDescriptor();
+            return EngineTypeManager.getEngineTypeForDebuggerDescriptor(descriptor);
+        }
+        return null;
+    }
 
     /**
      * Convert information described by host into CND-style and stuff it
      * into 'conf' and the relevant cset.
      * Sort of the reverse of hostFromConfiguration().
      */
-    public static void fillConfiguratioFromHost(Configuration conf, Host host) {
+    public static void fillConfigurationFromHost(Configuration conf, EngineType engine, Host host) {
 	MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
 	if (! makeConfiguration.isMakefileConfiguration())
 	    return;
@@ -391,20 +404,16 @@ public class CndRemote {
 
 	if (csm == null || ! csconf.isValid())
 	    return;
-
-	// default compiler set of configuration is GNU, this work around the problem
-	// IZ 150946 was filed to request API to set compiler set in MakeConfiguration
-	String csname = "SunStudio"; // NOI18N
-	StringConfiguration compilerSetName = new StringConfiguration(null, csname);
-	csconf.setCompilerSetName(compilerSetName);
-	
-	// 6762221
-	// String csname = csconf.getOption(); <== default GNU
-	CompilerSet cs = csm.getCompilerSet(csname);
-	if (cs == null) {
-	    // See IZ 147560
-	    return;
-	}
+        //see CR 7077657 we need to use the toolchain that supports the engine selected
+        CompilerSet compilerSet = csconf.getCompilerSet();
+        if (engine != getDebuggerType(compilerSet)) {
+            for (CompilerSet cs : csm.getCompilerSets()) {
+                if (engine == getDebuggerType(cs)) {
+                    csconf.setValue(cs.getName());
+                    break;
+                }
+            }
+        };
 
 	String base = host.getRemoteStudioLocation();
 	base += "/bin"; // NOI18N

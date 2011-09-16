@@ -1,7 +1,7 @@
 __thread int x199899 = 4;
 struct BinaryTree199899;
-//struct __symbolic BinaryTree199899 node199899;
-//__hidden struct __symbolic BinaryTree199899 node199899_2;
+struct __symbolic BinaryTree199899 node199899;
+__hidden struct __symbolic BinaryTree199899 node199899_2;
 __global const float lversion199899 = 1.2;
 __symbolic int taxrate199899; 
 __hidden struct employee199899 {

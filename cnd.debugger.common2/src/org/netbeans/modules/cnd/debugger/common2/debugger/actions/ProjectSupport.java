@@ -340,7 +340,7 @@ public final class ProjectSupport {
      */
 
     private static void populateConfiguration(ProjectSeed seed) {
-
+        
 	// we may not always have an executable, especially under core|attach!
 	if (!isAuto(seed.executable) && isAbsolute(seed.executable)) {
 	    seed.conf.getMakefileConfiguration().getOutput().
@@ -410,7 +410,7 @@ public final class ProjectSupport {
 		public void run() {
 		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
-		    CndRemote.fillConfiguratioFromHost(seed.conf, host);
+		    CndRemote.fillConfigurationFromHost(seed.conf, seed.engineType, host);
 		}
 	});
     }

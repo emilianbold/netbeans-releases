@@ -41,12 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import com.sun.jdi.ObjectReference;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,7 +64,7 @@ public class ToggleComponentBreakpointAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        AWTComponentBreakpointActionProvider.doAction(activatedNodes);
+        ComponentBreakpointActionProvider.doAction(activatedNodes);
     }
 
     @Override
