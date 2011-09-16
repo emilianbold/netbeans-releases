@@ -69,6 +69,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.api.whitelist.support.WhiteListSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -127,7 +128,7 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             if (start >= 0 && end >= 0) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.WARNING,
-                        WhiteListTaskProvider.formatViolationDescription(problem.getValue()),
+                        formatViolationDescription(problem.getValue()),
                         file,
                         start,
                         end));
@@ -152,6 +153,23 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
     @Override
     public void cancel() {
         canceled.set(true);
+    }
+
+    @NbBundle.Messages({
+        "MSG_Violations=Multiple rules were violated:"
+    })
+    private static String formatViolationDescription(WhiteListQuery.Result result) {
+        assert result.getViolatedRules() != null : result;
+        if (result.getViolatedRules().size() == 1) {
+            return result.getViolatedRules().get(0).getRuleDescription();
+        } else {
+            StringBuilder sb = new StringBuilder(Bundle.MSG_Violations());
+            for (WhiteListQuery.RuleDescription rule : result.getViolatedRules()) {
+                sb.append("\n - "); //NOI18N
+                sb.append(rule.getRuleDescription());
+            }
+            return sb.toString();
+        }
     }
 
     @MimeRegistration(mimeType="text/x-java", service=TaskFactory.class)

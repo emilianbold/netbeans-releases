@@ -89,7 +89,6 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     private static final Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
     //@GuardedBy("TASKS")
     private static boolean clearing;
-    private static volatile WhiteListTaskProvider INSTANCE;
 
     //@GuardedBy("this")
     private Callback currentCallback;
@@ -201,49 +200,38 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         }
     }
 
-    @NbBundle.Messages({
-        "MSG_Violations=Multiple rules were violated:"
-    })
-    static String formatViolationDescription(WhiteListQuery.Result result) {
-        assert result.getViolatedRules() != null : result;
-        if (result.getViolatedRules().size() == 1) {
-            return result.getViolatedRules().get(0).getRuleDescription();
-        } else {
-            StringBuilder sb = new StringBuilder(Bundle.MSG_Violations());
-            for (WhiteListQuery.RuleDescription rule : result.getViolatedRules()) {
-                sb.append("\n - ");
-                sb.append(rule.getRuleDescription());
-            }
-            return sb.toString();
-        }
-    }
-    
     @CheckForNull
-    private static Map.Entry<FileObject,Task> createTask(@NonNull final WhiteListIndex.Problem problem) {
+    private static Map.Entry<FileObject,List<? extends Task>> createTask(@NonNull final WhiteListIndex.Problem problem) {
         final FileObject file = problem.getFile();
         if (file == null) {
             return null;
         }
-        assert !problem.getResult().isAllowed() : problem;
-        final Task task = Task.create(
-            file,
-            "nb-whitelist-warning", //NOI18N
-            formatViolationDescription(problem.getResult()),
-            problem.getLine());
-        return new Map.Entry<FileObject, Task>() {
-            @Override
-            public FileObject getKey() {
-                return file;
-            }
-            @Override
-            public Task getValue() {
-                return task;
-            }
-            @Override
-            public Task setValue(Task value) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        final WhiteListQuery.Result result = problem.getResult();
+        assert result != null;
+        assert !result.isAllowed() : problem;
+        final List<Task> tasks = new ArrayList<Task>(result.getViolatedRules().size());
+        for (WhiteListQuery.RuleDescription ruleDesc : result.getViolatedRules()) {
+            tasks.add(Task.create(
+                file,
+                "nb-whitelist-warning", //NOI18N
+                ruleDesc.getRuleDescription(),
+                problem.getLine()));
+        }
+        return new Map.Entry<FileObject, List< ? extends Task>>() {
+                @Override
+                public FileObject getKey() {
+                    return file;
+                }
+                @Override
+                public List<? extends Task> getValue() {
+                    return tasks;
+                }
+
+                @Override
+                public List<? extends Task> setValue(List<? extends Task> value) {
+                    throw new UnsupportedOperationException();
+                }
+            };
     }
 
     private static void updateErrorsInRoot(
@@ -255,14 +243,14 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
         final Map<FileObject,List<Task>> filesToTasks = new HashMap<FileObject,List<Task>>();
         for (WhiteListIndex.Problem problem : WhiteListIndex.getDefault().getWhiteListViolations(root, null)) {
-            final Map.Entry<FileObject,Task> task = createTask(problem);
+            final Map.Entry<FileObject,List<? extends Task>> task = createTask(problem);
             if (task != null) {
                 List<Task> tasks = filesToTasks.get(task.getKey());
                 if (tasks == null) {
                     tasks = new ArrayList<Task>();
                     filesToTasks.put(task.getKey(), tasks);
                 }
-                tasks.add(task.getValue());
+                tasks.addAll(task.getValue());
             }
         }
         for (Map.Entry<FileObject,List<Task>> e : filesToTasks.entrySet()) {
@@ -286,9 +274,9 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         @NonNull final FileObject file) {
         final List<Task> tasks = new ArrayList<Task>();
         for (WhiteListIndex.Problem problem : WhiteListIndex.getDefault().getWhiteListViolations(root, file)) {
-            final Map.Entry<FileObject,Task> task = createTask(problem);
+            final Map.Entry<FileObject,List<? extends Task>> task = createTask(problem);
             if (task != null) {
-                tasks.add(task.getValue());
+                tasks.addAll(task.getValue());
             }
         }
         final Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
