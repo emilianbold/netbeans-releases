@@ -76,6 +76,7 @@ public final class OpenedEditors {
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final PropertyChangeListener componentListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             OpenedEditors.this.propertyChange(evt);
         }
@@ -89,6 +90,7 @@ public final class OpenedEditors {
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 stateChanged(evt);
             }
@@ -190,13 +192,13 @@ public final class OpenedEditors {
 //    }
 
     private synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (SHOW_TIME) { System.err.println("OpenedEditors.propertyChange()"); }
+        if (SHOW_TIME) { System.err.println("OpenedEditors.propertyChange() " + (evt == null ? "null" : evt.getPropertyName())); }
 
         JTextComponent c = (JTextComponent) evt.getSource();
         FileObject originalFile = visibleEditors2Files.get(c);
         FileObject newFile = getFileObject(c);
-
-        if (originalFile != newFile) {
+        
+        if (originalFile != null && originalFile != newFile) {
             if (SHOW_TIME) { System.err.println("OpenedEditord: new files found: " + newFile.getNameExt()); }
             if (newFile != null) {
                 visibleEditors2Files.put(c, newFile);
