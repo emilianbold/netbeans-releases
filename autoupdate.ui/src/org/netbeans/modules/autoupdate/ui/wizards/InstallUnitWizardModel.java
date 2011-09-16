@@ -90,7 +90,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     @Override
     public OperationContainer getBaseContainer () {
         OperationContainer c = getBaseContainerImpl();
-        assert support != null : "Container: " + c + " but null support";
+        assert support != null || c.listAll().isEmpty() : "Non empty container: " + c + " but null support";
         return c;
     }
     
