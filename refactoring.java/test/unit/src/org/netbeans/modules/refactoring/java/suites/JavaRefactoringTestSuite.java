@@ -57,6 +57,8 @@ public class JavaRefactoringTestSuite {
             ChangeParametersTest.class,
             UseSuperTypeTest.class,
             MoveClassTest.class,
+            EncapsulateFieldsTest.class,
+            PullUpTest.class,
             JavaRefactoringActionsProviderTest.class};
         TestSuite testSuite = new TestSuite(classes);
         testSuite.addTest(FindUsagesTest.suite());
