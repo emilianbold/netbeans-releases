@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -88,7 +89,16 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         setTableGeneration(tg);
        
         if (ProviderUtil.isValidServerInstanceOrNone(project)){
-            connectDatasources();
+            if(SwingUtilities.isEventDispatchThread()){
+                connectDatasources();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectDatasources();
+                    }
+                });
+            }
         }
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
