@@ -87,11 +87,11 @@ public class MakefileDataObject extends MultiDataObject {
 
     @Messages("Source=&Source")
     @MultiViewElement.Registration(
-        displayName="#Source",
-        iconBase="org/netbeans/modules/cnd/script/resources/MakefileDataIcon.gif",
+        displayName="#Source", // NOI18N
+        iconBase="org/netbeans/modules/cnd/script/resources/MakefileDataIcon.gif", // NOI18N
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         mimeType=MIMENames.MAKEFILE_MIME_TYPE,
-        preferredID="makefile.source",
+        preferredID="makefile.source", // NOI18N
         position=1
     )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
