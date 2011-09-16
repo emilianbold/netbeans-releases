@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
 
 package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -350,6 +349,7 @@ public class DomainEditor {
     }
 
     static class InnerResolver implements EntityResolver {
+        @Override
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             StringReader reader = new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
             InputSource source = new InputSource(reader);
@@ -368,9 +368,9 @@ public class DomainEditor {
      */
     private boolean saveDomainScriptFile(Document domainScriptDocument, String domainScriptFilePath, boolean indent) {
         boolean result = false;
-        FileWriter domainScriptFileWriter = null;
+        OutputStreamWriter domainXmlWriter = null;
         try {
-            domainScriptFileWriter = new FileWriter(domainScriptFilePath);
+            domainXmlWriter = new OutputStreamWriter(new FileOutputStream(domainScriptFilePath),"UTF-8");
             try {
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
@@ -389,7 +389,7 @@ public class DomainEditor {
                 }
                 
                 DOMSource domSource = new DOMSource(domainScriptDocument);
-                StreamResult streamResult = new StreamResult(domainScriptFileWriter);
+                StreamResult streamResult = new StreamResult(domainXmlWriter);
                 
                 transformer.transform(domSource, streamResult);
                 result = true;
@@ -402,12 +402,12 @@ public class DomainEditor {
             result = false;
         } finally {
             try { 
-                if (domainScriptFileWriter != null)  {
-                    domainScriptFileWriter.close(); 
+                if (domainXmlWriter != null)  {
+                    domainXmlWriter.close(); 
                 }
             } catch (IOException ioex2) {
                 System.err.println("SunAS8IntegrationProvider: cannot close output stream for " + domainScriptFilePath); 
-            };
+            }
         }
         
         return result;
@@ -587,7 +587,7 @@ public class DomainEditor {
 
         Map<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
         if(! cpMap.containsKey(SAMPLE_CONNPOOL)){
-            if (cpMap.size() == 0) {
+            if (cpMap.isEmpty()) {
                 System.err.println("Cannot create sample datasource :" + SAMPLE_DATASOURCE); //N0I18N
                 return false;
             }
