@@ -44,6 +44,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Container;
 import java.awt.Font;
 import java.io.CharConversionException;
 import java.io.File;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
@@ -347,6 +349,26 @@ public class Controller {
         }
     }
 
+    /** Detect whether output tab is in a window that is in sliding mode.
+     * Issue #202093.
+     */
+    private static boolean isInSlidingMode(OutputTab tab) {
+        for (Container p = tab; p != null; p = p.getParent()) {
+            if (p instanceof JComponent) {
+                JComponent jp = (JComponent) p;
+                Object sliding = jp.getClientProperty("isSliding");
+                if (sliding != null) {
+                    if (sliding.equals(Boolean.TRUE)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Handles IOEvents posted into the AWT Event Queue by NbIO instances whose methods have
      * been called, as received by an OutputTab which has identified the event as being
@@ -382,7 +404,7 @@ public class Controller {
                 if (tab == null) {
                     tab = createOutputTab(io);
                 }
-		if (io.isFocusTaken()) {
+		if (io.isFocusTaken() || isInSlidingMode(tab)) {
 		    ioContainer.requestActive();
 		}
 
