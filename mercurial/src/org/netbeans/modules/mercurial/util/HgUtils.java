@@ -79,6 +79,7 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1344,6 +1345,44 @@ itor tabs #66700).
     public static boolean isRepositoryLocked (File repository) {
         String[] locks = getHgFolderForRoot(repository).list();
         return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
+    }
+
+    public static boolean contains (File[] roots, File file) {
+        for (File root : roots) {
+            if (Utils.isAncestorOrEqual(root, file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Flattens the given collection of files and removes those that do not respect the flat folder logic, i.e. those that lie deeper under a flat folder.
+     * @param roots selected files with flat folders
+     */
+    public static Set<File> flattenFiles (File[] roots, Collection<File> files) {
+        File[][] split = Utils.splitFlatOthers(roots);
+        Set<File> filteredFiles = new HashSet<File>(files);
+        if (split[0].length > 0) {
+            outer:
+            for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
+                File f = it.next();
+                // file is directly under a flat folder
+                for (File flat : split[0]) {
+                    if (f.getParentFile().equals(flat)) {
+                        continue outer;
+                    }
+                }
+                // file lies under a recursive folder
+                for (File folder : split[1]) {
+                    if (Utils.isAncestorOrEqual(folder, f)) {
+                        continue outer;
+                    }
+                }
+                it.remove();
+            }
+        }
+        return filteredFiles;
     }
 
     /**
