@@ -166,7 +166,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             pane.addMouseMotionListener(this);
             pane.addMouseListener(this);
         } finally {
-            BugtrackingManager.LOG.log(Level.INFO, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
+            BugtrackingManager.LOG.log(Level.FINE, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
         }
     }
 

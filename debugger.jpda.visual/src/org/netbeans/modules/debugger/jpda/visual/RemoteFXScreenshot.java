@@ -79,11 +79,19 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
+import org.netbeans.modules.debugger.jpda.visual.actions.ComponentBreakpointActionProvider;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToAddIntoHierarchyAction;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
+import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.models.ComponentBreakpointsActionsProvider;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Takes screenshot of a remote application.
@@ -455,6 +463,15 @@ public class RemoteFXScreenshot {
             super(t, component, ServiceType.FX);
             init();
         }
+
+        @Override
+        protected String getFieldName() {
+            String fName = super.getFieldName();
+            if (fName.isEmpty()) {
+                return getName();
+            }
+            return fName;
+        }
         
         @Override
         protected void retrieve() throws RetrievalException {
@@ -549,7 +566,26 @@ public class RemoteFXScreenshot {
                 
         @Override
         public Action[] getActions(boolean context) {
-            return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class) };
+            FieldInfo fieldInfo = getField();
+            ObjectReference component = getComponent();
+            ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
+            
+            List<Action> actions = new ArrayList<Action>();
+            if (fieldInfo != null) {
+                actions.add(GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class));
+            }
+            actions.add(GoToSourceAction.get(GoToSourceAction.class));
+            if (fieldInfo != null) {
+                actions.add(GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class));
+            }
+//            actions.add(null);
+//            actions.add(ShowListenersAction.get(ShowListenersAction.class));
+            actions.add(null);
+            actions.add(ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class));
+            if (b != null) {
+                actions.add(CBP_CUSTOMIZE_ACTION);
+            }
+            return actions.toArray(new Action[] {});
         }
         
         @Override
@@ -582,5 +618,41 @@ public class RemoteFXScreenshot {
             }
             return this;
         }
+        
+        private static final Action CBP_CUSTOMIZE_ACTION = new NodeAction() {
+
+            @Override
+            public String getName() {
+                return NbBundle.getBundle(RemoteFXScreenshot.class).getString("CTL_Component_Breakpoint_Customize_Label");
+            }
+
+            @Override
+            protected boolean enable(Node[] activatedNodes) {
+                return true;
+            }
+
+            @Override
+            protected boolean asynchronous() {
+                return false;
+            }
+            
+            @Override
+            protected void performAction(Node[] activatedNodes) {
+                for (Node n : activatedNodes) {
+                    JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
+                    if (ci != null) {
+                        ObjectReference component = ci.getComponent();
+                        ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
+                        ComponentBreakpointsActionsProvider.customize(b);
+                    }
+                }
+            }
+
+            @Override
+            public HelpCtx getHelpCtx() {
+                return new HelpCtx("ComponentBreakpoint_Customize");
+            }
+            
+        };
     }
 }

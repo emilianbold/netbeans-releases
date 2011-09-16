@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugtracking.ui.nodes;
-
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 /**
- * Subclassed to get custom icon.
  *
- * @author Tomas Stupka
+ * @author Jaroslav Bachorik
  */
-final class WaitNode extends AbstractNode {
-    public WaitNode(String name) {
-        super(Children.LEAF);
-        setDisplayName(name);
-        setIconBaseWithExtension("org/netbeans/modules/bugtracking/ui/resources/wait.gif");  // NOI18N
+public class FXComponentBreakpoint extends ComponentBreakpoint {
+    public FXComponentBreakpoint(ComponentDescription component) {
+        super(component);
     }
+
+    @Override
+    public int supportedTypes() {
+        return TYPE_ADD | TYPE_REMOVE | TYPE_SHOW | TYPE_HIDE;
+    }    
 }

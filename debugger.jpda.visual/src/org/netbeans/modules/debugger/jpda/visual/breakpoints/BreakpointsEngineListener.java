@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 
 
 
@@ -275,8 +276,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
     
     private void createBreakpointImpl (Breakpoint b) {
-        if (!(b instanceof AWTComponentBreakpoint)) return ;
-        AWTComponentBreakpoint ab = (AWTComponentBreakpoint) b;
+        if (!(b instanceof ComponentBreakpoint)) return ;
+        ComponentBreakpoint ab = (ComponentBreakpoint) b;
         synchronized (breakpointToImpl) {
             if (breakpointToImpl.containsKey (b)) return;
             ObjectReference component = ab.getComponent().getComponent(debugger);
@@ -285,7 +286,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
             }
             breakpointToImpl.put(b, preliminaryBreakpointImpl);
         }
-        AWTComponentBreakpointImpl bpi = new AWTComponentBreakpointImpl(ab, debugger);
+        ComponentBreakpointImpl bpi = (ab.getComponent().getComponentInfo() instanceof AWTComponentInfo) ?
+                                        new AWTComponentBreakpointImpl(ab, debugger) :
+                                        new FXComponentBreakpointImpl(ab, debugger);
         ComponentBreakpointImpl bpiToRemove = null;
         synchronized (breakpointToImpl) {
             if (bpi == null) {

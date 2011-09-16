@@ -53,22 +53,22 @@ import org.netbeans.spi.debugger.ui.Controller;
  *
  * @author martin
  */
-public class AWTComponentBreakpointCustomizer extends JPanel implements Customizer, Controller {
+public class ComponentBreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    private AWTComponentBreakpoint b;
+    private ComponentBreakpoint b;
     private JComponent c;
     
     @Override
     public void setObject(Object bean) {
-        if (!(bean instanceof AWTComponentBreakpoint)) {
+        if (!(bean instanceof ComponentBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
         }
-        this.b = (AWTComponentBreakpoint) bean;
+        this.b = (ComponentBreakpoint) bean;
         init(b);
     }
     
-    private void init(AWTComponentBreakpoint b) {
-        c = new AWTComponentBreakpointPanel(b);
+    private void init(ComponentBreakpoint b) {
+        c = new ComponentBreakpointPanel(b);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
