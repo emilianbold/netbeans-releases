@@ -978,36 +978,31 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case QUESTION:
                         nrQuestions++;
                         CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
-                        loop: while(true) {
-                            switch (topID) {
-                                case CONSTANT:
-                                case VARIABLE:
-                                case METHOD:
-                                case CONSTRUCTOR:
-                                case ARRAY:
-                                case DOT:
-                                case ARROW:
-                                case SCOPE:
-                                case PARENTHESIS:
-                                case UNARY_OPERATOR:
-                                case MEMBER_POINTER:
-                                case GENERIC_TYPE_OPEN:
-                                case METHOD_OPEN:
-                                case ARRAY_OPEN:
-                                case SPECIAL_PARENTHESIS_OPEN:
-                                case MEMBER_POINTER_OPEN:
-                                case OPERATOR:
-                                case CONVERSION:
-                                    popExp();
-                                    top = peekExp();
-                                    topID = getValidExpID(top);
-                                    if(top == null) {
-                                        break loop;
-                                    }
-                                    break;
-                                default:
-                                    break loop;
-                            }
+                        switch (topID) {
+                            case CONSTANT:
+                            case VARIABLE:
+                            case METHOD:
+                            case CONSTRUCTOR:
+                            case ARRAY:
+                            case DOT:
+                            case ARROW:
+                            case SCOPE:
+                            case PARENTHESIS:
+                            case UNARY_OPERATOR:
+                            case MEMBER_POINTER:
+                            case GENERIC_TYPE_OPEN:
+                            case METHOD_OPEN:
+                            case ARRAY_OPEN:
+                            case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
+                            case MEMBER_POINTER_OPEN:
+                            case OPERATOR:
+                                popExp();
+                                ternary.addParameter(top);
+                                break;
+                            default:
+                                errorState = true;
+                                break;
                         }
                         pushExp(ternary);
                         break;
