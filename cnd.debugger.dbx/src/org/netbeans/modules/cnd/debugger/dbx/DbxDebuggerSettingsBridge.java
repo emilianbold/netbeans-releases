@@ -234,7 +234,7 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	boolean has_redir = runargs.contains("<") || runargs.contains(">");
 	String[] files = dbxDebugger().getIOPack().getIOFiles();
 	if (has_redir) {
-	    if (files != null && !files[0].contains("debuggerFifo")) {
+	    if (files != null && !files[0].contains("debuggerFifo")) { //NOI18N
 		command += " < " + files[0] + " > " + files[1]; //NOI18N
 	    }
 	} else {
