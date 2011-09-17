@@ -654,9 +654,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             type = ((ArrayType)type).getComponentType();
                             return type;
                         case DECLARED:
-                            Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
-                            if (types.hasNext())
-                                return types.next();
+                            while (type instanceof DeclaredType) {
+                                Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
+                                if (types.hasNext())
+                                    return types.next();
+                                type = ((TypeElement)((DeclaredType)type).asElement()).getSuperclass();
+                            }
                             return cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
                     }
                 }

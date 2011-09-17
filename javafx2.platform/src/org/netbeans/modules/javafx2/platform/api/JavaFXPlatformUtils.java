@@ -275,6 +275,9 @@ public final class JavaFXPlatformUtils {
     }
 
     private static boolean isSdkPathCorrect(@NonNull String sdkPath) {
+        if (sdkPath.isEmpty()) {
+            return false;
+        }
         File file = new File(sdkPath);
         if (!file.exists()) {
             return false;
@@ -284,6 +287,9 @@ public final class JavaFXPlatformUtils {
     }
     
     private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
+        if (runtimePath.isEmpty()) {
+            return false;
+        }
         File file = new File(runtimePath);
         if (!file.exists()) {
             return false;

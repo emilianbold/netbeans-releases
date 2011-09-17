@@ -103,7 +103,7 @@ public class ComputeOverriders {
         this.cancel = cancel;
     }
     
-    private static Set<URL> findReverseSourceRoots(final URL thisSourceRoot, Map<URL, List<URL>> sourceDeps, final FileObject thisFile) {
+    private static Set<URL> findReverseSourceRoots(final URL thisSourceRoot, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> rootPeers, final FileObject thisFile) {
         long startTime = System.currentTimeMillis();
 
         try {
@@ -126,6 +126,9 @@ public class ComputeOverriders {
             final Set<URL> result = new HashSet<URL>();
             final LinkedList<URL> todo = new LinkedList<URL> ();
             todo.add (thisSourceRoot);
+            List<URL> peers = rootPeers != null ? rootPeers.get(thisSourceRoot) : null;
+            if (peers != null)
+                todo.addAll(peers);
             while (!todo.isEmpty()) {
                 final URL u = todo.removeFirst();
                 if (!result.contains(u)) {
@@ -315,7 +318,7 @@ public class ComputeOverriders {
 
     static List<URL> reverseSourceRootsInOrderOverride;
 
-    private List<URL> reverseSourceRootsInOrder(CompilationInfo info, URL thisSourceRoot, FileObject thisSourceRootFO, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, boolean interactive) {
+    private List<URL> reverseSourceRootsInOrder(CompilationInfo info, URL thisSourceRoot, FileObject thisSourceRootFO, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, Map<URL, List<URL>> rootPeers, boolean interactive) {
         if (reverseSourceRootsInOrderOverride != null) {
             return reverseSourceRootsInOrderOverride;
         }
@@ -323,7 +326,7 @@ public class ComputeOverriders {
         Set<URL> sourceRootsSet;
 
         if (sourceDeps.containsKey(thisSourceRoot)) {
-            sourceRootsSet = findReverseSourceRoots(thisSourceRoot, sourceDeps, info.getFileObject());
+            sourceRootsSet = findReverseSourceRoots(thisSourceRoot, sourceDeps, rootPeers, info.getFileObject());
         } else {
             sourceRootsSet = new HashSet<URL>();
 
@@ -381,7 +384,8 @@ public class ComputeOverriders {
             return null;
         }
 
-        List<URL> sourceRoots = reverseSourceRootsInOrder(info, thisSourceRootURL, thisSourceRoot, sourceDeps, binaryDeps, interactive);
+        Map<URL, List<URL>> rootPeers = getRootPeers();
+        List<URL> sourceRoots = reverseSourceRootsInOrder(info, thisSourceRootURL, thisSourceRoot, sourceDeps, binaryDeps, rootPeers, interactive);
 
         if (sourceRoots == null) {
             return null;
@@ -608,4 +612,54 @@ public class ComputeOverriders {
         }
     }
 
+    static Map<URL, List<URL>> rootPeers;
+
+    private static Map<URL, List<URL>> getRootPeers() {
+        if (rootPeers != null) {
+            return rootPeers;
+        }
+        
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+
+        if (l == null) {
+            return null;
+        }
+
+        Class clazz = null;
+        String method = null;
+
+        try {
+            clazz = l.loadClass("org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController");
+            method = "getRootPeers";
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        }
+
+        try {
+            Method getDefault = clazz.getDeclaredMethod("getDefault");
+            Object instance = getDefault.invoke(null);
+            Method peersMethod = clazz.getDeclaredMethod(method);
+
+            return (Map<URL, List<URL>>) peersMethod.invoke(instance);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        } catch (SecurityException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        } catch (ClassCastException ex) {
+            Logger.getLogger(GoToImplementation.class.getName()).log(Level.FINE, null, ex);
+            return null;
+        }
+    }
 }

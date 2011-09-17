@@ -1791,7 +1791,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if ( merged != null ) {
                 return merged;
             }
-            ImageIcon superIcon = super.getIcon();                        
+            ImageIcon superIcon = super.getBaseIcon();                        
             merged = new ImageIcon( ImageUtilities.mergeImages(
                 superIcon.getImage(), 
                 implement ? implementBadge.getImage() : overrideBadge.getImage(), 

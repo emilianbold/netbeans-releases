@@ -8,8 +8,8 @@ package ${package};
 
 </#if>
 import javafx.application.Preloader;
-import javafx.application.Preloader.StateChangeNotification;
 import javafx.application.Preloader.ProgressNotification;
+import javafx.application.Preloader.StateChangeNotification;
 import javafx.stage.Stage;
 
 /**

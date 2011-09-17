@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -54,6 +56,7 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * Utility class for platform properties manipulation
@@ -169,7 +172,13 @@ public final class Utils {
         Parameters.notNull("sdkPath", sdkPath); // NOI18N
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
         
-        FileObject platformFolder = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders().iterator().next();
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        // 32b vs 64b check
+        if (!isArchitechtureCorrect(runtimePath)) {
+            return null;
+        }
+        
+        FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
         JavaPlatform platform = null;
         try {
             platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
@@ -193,4 +202,27 @@ public final class Utils {
         return platform;
     }
     
+    /**
+     * Determines whether architecture (32b vs 64b) of currently running VM
+     * matches given JavaFX Runtime
+     * 
+     * @param runtimePath JavaFX Runtime location
+     * @return is correct architecture
+     */
+    public static boolean isArchitechtureCorrect(@NonNull String runtimePath) {
+        Parameters.notNull("runtimePath", runtimePath); // NOI18N
+        try {
+            if (Utilities.isUnix() || Utilities.isMac()) {
+                // TODO check is it "mat.so" on Mac OS
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
+                return true;
+            } else if (Utilities.isWindows()) {
+                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
+            }
+        } catch (Throwable t) {
+            return false;
+        }
+        return true;
+    }
+
 }

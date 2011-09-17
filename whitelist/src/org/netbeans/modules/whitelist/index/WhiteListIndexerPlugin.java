@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,8 +82,9 @@ import org.openide.util.Lookup;
 public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
 
     private static final String WHITE_LIST_INDEX = "whitelist"; //NOI18N
-    private static final String MSG = "msg";    //NOI18N
-    private static final String NAME = "name";  //NOI18N
+    private static final String RULE_MSG = "msg";    //NOI18N
+    private static final String RULE_NAME = "name";  //NOI18N
+    private static final String WHITE_LIST_ID = "whitelist";   //NOI18N
     private static final String LINE = "line";  //NOI18N
     private static Map<URL,File> roots2whiteListDirs = new ConcurrentHashMap<URL, File>();
 
@@ -116,17 +118,24 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
         final LineMap lm = toProcess.getLineMap();
         final SourcePositions sp = trees.getSourcePositions();
         for (Map.Entry<? extends Tree, ? extends WhiteListQuery.Result> p : problems.entrySet()) {
+            assert !p.getValue().isAllowed() : "only violations should be stored"; // NOI18N
             final int start = (int) sp.getStartPosition(toProcess, p.getKey());
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
-                final IndexDocument doc = IndexManager.createDocument(indexable.getRelativePath());
-                assert !p.getValue().isAllowed() : "only violations should be stored"; // NOI18N
                 for (WhiteListQuery.RuleDescription rule : p.getValue().getViolatedRules()) {
-                    doc.addPair(MSG, rule.getRuleDescription(), false, true);
-                    // TODO: whitelist ID should be stored here as well, no?
+                    //Lucene API does not promise that the field are returned in the order they were
+                    ///added (currently it behavis in this way but may be changed in the future).
+                    //see http://www.gossamer-threads.com/lists/lucene/java-dev/64013
+                    final IndexDocument doc = IndexManager.createDocument(indexable.getRelativePath());
+                    final String wlID = rule.getWhiteListID();
+                    if (wlID != null) {
+                        doc.addPair(WHITE_LIST_ID, wlID, true, true);
+                    }
+                    doc.addPair(RULE_NAME, rule.getRuleName(),true,true);
+                    doc.addPair(RULE_MSG, rule.getRuleDescription(), false, true);
+                    doc.addPair(LINE, Integer.toString(ln), false, true);
+                    index.addDocument(doc);
                 }
-                doc.addPair(LINE, Integer.toString(ln), false, true);
-                index.addDocument(doc);
             }
         }
     }
@@ -184,20 +193,15 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
                                     QueryKind.PREFIX)) {
                                 try {
                                     final String key = doc.getPrimaryKey();
-                                    String wlName = doc.getValue(NAME);
-                                    if (wlName == null) {
-                                        wlName = "";    //NOI18N
-                                    }
-                                    final String wlDesc[] = doc.getValues(MSG);
-                                    assert wlDesc.length > 0 : "";
-                                    List<WhiteListQuery.RuleDescription> violatedRules = new ArrayList<WhiteListQuery.RuleDescription>();
-                                    for (String desc : wlDesc) {
-                                        // TODO: whitelist ID is not stored currently is that ok?
-                                        // TODO: how is whitelist name stored?? I did not find it anywhere
-                                        violatedRules.add(new WhiteListQuery.RuleDescription(wlName, desc, null));
-                                    }
+                                    final String wlName = doc.getValue(WHITE_LIST_ID);
+                                    final String ruleName = doc.getValue(RULE_NAME);
+                                    assert ruleName != null;
+                                    final String ruleDesc = doc.getValue(RULE_MSG);
+                                    assert ruleDesc != null;
                                     final int line = Integer.parseInt(doc.getValue(LINE));
-                                    final WhiteListQuery.Result wr = new WhiteListQuery.Result(violatedRules);
+                                    final WhiteListQuery.Result wr = new WhiteListQuery.Result(
+                                            Collections.singletonList(
+                                                new WhiteListQuery.RuleDescription(ruleName, ruleDesc, wlName)));
                                     result.add(WhiteListIndexAccessor.getInstance().createProblem(wr, root, key, line));
                                 } catch (ArithmeticException ae) {
                                     Exceptions.printStackTrace(ae);

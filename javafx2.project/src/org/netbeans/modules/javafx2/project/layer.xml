@@ -29,14 +29,26 @@
         </folder>
         
         <folder name="Project">
-            <folder name="Standard">
+            <folder name="JavaFX">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX"/>
+                <attr name="position" intvalue="195"/>
+
                 <file name="javafxApp.xml">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/Standard/javafxApp.xml"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX/javafxApp.xml"/>
                     <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
                     <attr name="position" intvalue="105"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXApp.html"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator"/>
+                </file>
+
+                <file name="preloaderApp.xml">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX/preloaderApp.xml"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                    <attr name="position" intvalue="205"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXPreloaderApp.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.preloader"/>
                 </file>
             </folder>
         </folder>

@@ -53,7 +53,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.whitelist.WhiteListQuery;
-import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.openide.filesystems.FileObject;
@@ -61,7 +60,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**

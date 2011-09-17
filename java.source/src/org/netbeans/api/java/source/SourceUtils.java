@@ -350,7 +350,7 @@ public class SourceUtils {
                 if (sqName.length() > 0)
                     sqName.insert(0, '.');
                 sqName.insert(0, simple);
-                if (cs.useSingleClassImport() && toImport == null) {
+                if (cs.useSingleClassImport() && (toImport == null || !cs.importInnerClasses())) {
                     toImport = element;
                 }
                 boolean matchFound = false;
