@@ -232,6 +232,16 @@ public final class JFXProjectProperties {
             return propertyValue;
         }
     }
+    public RunAsType getActiveRunAs() {
+        String runAs = RUN_CONFIGS.get(activeConfig).get(RUN_AS);
+        if(isEqualIgnoreCase(runAs, RunAsType.ASWEBSTART.getString())) {
+            return RunAsType.ASWEBSTART;
+        }
+        if(isEqualIgnoreCase(runAs, RunAsType.INBROWSER.getString())) {
+            return RunAsType.INBROWSER;
+        }
+        return RunAsType.STANDALONE;
+    }
 //    RunAsType runModel;
 //    public RunAsType getRunModel() {
 //        return runModel;
@@ -394,14 +404,20 @@ public final class JFXProjectProperties {
     }
 
     /** Getter method */
-    public static JFXProjectProperties getInstanceIfExists(Lookup context) {
-        Project proj = context.lookup(Project.class);
+    public static JFXProjectProperties getInstanceIfExists(Project proj) {
+        assert proj != null;
         String projDir = proj.getProjectDirectory().getPath();
         JFXProjectProperties prop = propInstance.get(projDir);
         if(prop != null) {
             return prop;
         }
         return null;
+    }
+
+    /** Getter method */
+    public static JFXProjectProperties getInstanceIfExists(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        return getInstanceIfExists(proj);
     }
 
     public static void cleanup(Lookup context) {
@@ -844,6 +860,21 @@ public final class JFXProjectProperties {
 //            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
     }
 
+    private void storeActiveConfig() throws IOException {
+        String configPath = "nbproject/private/config.properties"; // NOI18N
+        // should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
+        if (activeConfig == null) {
+            try {
+                deleteFile(configPath);
+            } catch (IOException ex) {
+            }
+        } else {
+            final EditableProperties configProps = readFromFile(configPath);
+            configProps.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, activeConfig);
+            saveToFile(configPath, configProps);
+        }
+    }
+    
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
 //        // store descriptor type
 //        DescType descType = getSelectedDescType();
@@ -1014,6 +1045,7 @@ public final class JFXProjectProperties {
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
                     storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
+                    storeActiveConfig();
                     OutputStream os = null;
                     FileLock lock = null;
                     try {

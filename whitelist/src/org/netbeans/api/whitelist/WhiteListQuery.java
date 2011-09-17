@@ -41,7 +41,7 @@
  */
 package org.netbeans.api.whitelist;
 
-import org.netbeans.api.annotations.common.NonNull;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -174,21 +174,21 @@ public final class WhiteListQuery {
      */
     public static final class Result {
         private final boolean allowed;
-        private final List<RuleDescription> violatedRules;
+        private final List<? extends RuleDescription> violatedRules;
 
         /**
          * Creates result which allows operation in question.
          */
         public Result() {
             this.allowed = true;
-            this.violatedRules = null;
+            this.violatedRules = Collections.<RuleDescription>emptyList();
         }
 
         /**
          * Creates result which disallows operation in question and lists rules
          * which forbid such operation.
          */
-        public Result(@NonNull List<RuleDescription> violatedRules) {
+        public Result(@NonNull List<? extends RuleDescription> violatedRules) {
             this.allowed = false;
             this.violatedRules = violatedRules;
         }
@@ -202,18 +202,18 @@ public final class WhiteListQuery {
         }
 
         /**
-         * Returns rules which forbid this operation if {@link WhiteListQuery.Result#isAllowed}
-         * returned false otherwise returns null.
-         * @return list of violated rules or null
+         * Returns rules which forbid this operation.
+         * @return list of violated rules
          */
-        public List<RuleDescription> getViolatedRules() {
+        @NonNull
+        public List<? extends RuleDescription> getViolatedRules() {
             return violatedRules;
         }
         
     }
     
     /**
-     * Description of a whitelisting rule.
+     * Description of a white listing rule.
      * 
      * @since 1.3
      */
@@ -238,6 +238,7 @@ public final class WhiteListQuery {
          * Returns description of rule.
          * @return the description of rule
          */
+        @NonNull
         public String getRuleDescription() {
             return ruleDescription;
         }
@@ -246,6 +247,7 @@ public final class WhiteListQuery {
          * Returns name of rule.
          * @return the name of rule
          */
+        @NonNull
         public String getRuleName() {
             return ruleName;
         }
@@ -254,6 +256,7 @@ public final class WhiteListQuery {
          * Returns ID of whitelist which owns this rule.
          * @return  whitelist ID or null if whitelist is not user selectable and does not have an ID
          */
+        @CheckForNull
         public String getWhiteListID() {
             return whiteListID;
         }

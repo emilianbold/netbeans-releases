@@ -221,8 +221,15 @@ public class GetterSetterGenerator implements CodeGenerator {
                             } else {
                                 int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                                 ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getVariables())
-                                    variableElements.add((VariableElement)elementHandle.resolve(copy));
+                                for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
+                                    VariableElement elem = (VariableElement)elementHandle.resolve(copy);
+                                    if (elem == null) {
+                                        String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalMember"); //NOI18N
+                                        org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                                        return;
+                                    }
+                                    variableElements.add(elem);
+                                }
                                 GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
                             }
                         }

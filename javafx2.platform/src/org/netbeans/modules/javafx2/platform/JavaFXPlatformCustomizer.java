@@ -502,7 +502,13 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
     }
     
     private boolean isPlatformValid() {
-        return JavaFXPlatformUtils.areJFXLocationsCorrect(sdkTextField.getText(), runtimeTextField.getText());
+        final String sdkPath = sdkTextField.getText();
+        final String runtimePath = runtimeTextField.getText();
+        boolean correctLocations = JavaFXPlatformUtils.areJFXLocationsCorrect(sdkPath, runtimePath);
+        if (!correctLocations) {
+            return false;
+        }
+        return Utils.isArchitechtureCorrect(runtimePath);
     }
     
     // TODO use message label and icon from Categories ?

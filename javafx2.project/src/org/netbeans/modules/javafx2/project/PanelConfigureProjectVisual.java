@@ -65,16 +65,23 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     PanelConfigureProjectVisual(PanelConfigureProject panel, JavaFXProjectWizardIterator.WizardType type) {
 //        this.panel = panel;
-        initComponents();
         this.type = type;
+        initComponents();
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
         switch (type) {
             case APPLICATION:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
-                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
+                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXApp")); // NOI18N
                 jSeparator1.setVisible(true);
-                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaApp")); // NOI18N
-                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaApp")); // NOI18N
+                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXApp")); // NOI18N
+                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaFXApp")); // NOI18N
+                break;
+            case PRELOADER:
+                projectLocationPanel = new PanelProjectLocationVisual(panel, type);
+                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXPreloaderApp")); // NOI18N
+                jSeparator1.setVisible(true);
+                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXPreloaderApp")); // NOI18N
+                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaFXPreloaderApp")); // NOI18N
                 break;
             case LIBRARY:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
