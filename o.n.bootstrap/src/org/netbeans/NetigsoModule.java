@@ -71,11 +71,8 @@ final class NetigsoModule extends Module {
         super(mgr, ev, history, reloadable, autoload, eager);
         this.jar = jar;
         this.manifest = mani;
-    }
-
-    @Override
-    public String[] getProvides() {
-        return new String[0];
+        
+        computeProvides(mani.getMainAttributes(), false);
     }
 
     @Override

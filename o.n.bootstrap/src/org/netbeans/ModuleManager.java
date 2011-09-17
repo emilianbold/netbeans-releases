@@ -457,6 +457,29 @@ public final class ModuleManager extends Modules {
         invalidateClassLoader();
     }
 
+    private static void checkMissingModules(
+        Set<Module> requested, List<Module> reallyEnabled
+    ) throws InvalidException {
+        InvalidException ex = null;
+        HashSet<Module> reallyEnabledSet = new HashSet<Module>(reallyEnabled);
+        
+        for (Module m : requested) {
+            if (reallyEnabledSet.contains(m)) {
+                continue;
+            }
+            InvalidException newEx = new InvalidException(
+                m, "Requested by OSGi bundle" // NOI18N
+            );
+            if (ex != null) {
+                newEx.initCause(ex);
+            }
+            ex = newEx;
+        }
+        if (ex != null) {
+            throw ex;
+        }
+    }
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -1049,6 +1072,7 @@ public final class ModuleManager extends Modules {
             if (!enableMore.isEmpty()) {
                 Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
                 List<Module> toEnableMore = simulateEnable(enableMore, false);
+                checkMissingModules(enableMore, toEnableMore);
                 toEnable.addAll(toEnableMore);
                 Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
                 continue;

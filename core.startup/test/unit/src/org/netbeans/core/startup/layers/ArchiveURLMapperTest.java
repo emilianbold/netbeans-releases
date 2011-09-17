@@ -44,18 +44,17 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.netbeans.ProxyURLStreamHandlerFactory;
+import org.netbeans.junit.Log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.netbeans.junit.NbTestCase;
@@ -134,6 +133,36 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertTrue (rootFo.getFileSystem() instanceof JarFileSystem);
         File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
         assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
+    }
+    
+    public void testDocxFiles() throws Exception {
+        File docx = new File(getWorkDir(), "ms-docx.jar");
+        JarOutputStream jos = new JarOutputStream(new FileOutputStream(docx));
+        ZipEntry entry = new ZipEntry("[Content.xml]");
+        jos.putNextEntry(entry);
+        jos.write("content".getBytes());
+        jos.close();
+        
+        FileObject docxFO = URLMapper.findFileObject(docx.toURI().toURL());
+        assertNotNull(docxFO);
+        assertTrue(FileUtil.isArchiveFile(docxFO));
+        
+        FileObject docxRoot = FileUtil.getArchiveRoot(docxFO);
+        assertNotNull("Root found", docxRoot);
+        FileObject content = docxRoot.getFileObject("[Content.xml]");
+        assertNotNull("content.xml found", content);
+        
+        assertEquals("Has right bytes", "content", content.asText());
+        
+        CharSequence log = Log.enable("", Level.WARNING);
+        URL u = URLMapper.findURL(content, URLMapper.EXTERNAL);
+        InputStream is = u.openStream();
+        byte[] arr = new byte[30];
+        int len = is.read(arr);
+        assertEquals("Len is content", "content".length(), len);
+        assertEquals("OK", "content", new String(arr, 0, len));
+        
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
 
     @RandomlyFails

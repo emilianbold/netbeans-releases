@@ -91,9 +91,14 @@ public class ArchiveURLMapper extends URLMapper {
                         JarFileSystem jfs = (JarFileSystem) fs;
                         archiveFile = jfs.getJarFile();
                         if (isRoot(archiveFile)) {
-                            return new URL("jar:" + archiveFile.toURI() + "!/" +
+                            try {
+                                return new URL("jar:" + archiveFile.toURI() + "!/" +
                                     new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
                                     (fo.isFolder() && !fo.isRoot() ? "/" : "")); // NOI18N
+                            } catch (URISyntaxException syntax) {
+                                return new URL("jar:" + archiveFile.toURI() + "!/" + fo.getPath()
+                                        + ((fo.isFolder() && !fo.isRoot()) ? "/" : "")); // NOI18N
+                            }
                         }
                     }
                 } catch (/*IO,URISyntax*/Exception e) {
