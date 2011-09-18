@@ -476,6 +476,9 @@ public class RemoteFXScreenshot {
         @Override
         protected void retrieve() throws RetrievalException {
             VirtualMachine vm = getThread().getDebugger().getVirtualMachine();
+            if (vm == null) {
+                throw new RetrievalException(NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_NoDebugger"));
+            }
             ThreadReference tr = getThread().getThreadReference();
             ClassType compClass = (ClassType)getComponent().referenceType();
             try {

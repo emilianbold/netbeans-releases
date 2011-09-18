@@ -529,6 +529,9 @@ public class RemoteAWTScreenshot {
             super(t, component, ServiceType.AWT);
             
             vm = getThread().getDebugger().getVirtualMachine();
+            if (vm == null) {
+                throw new RetrievalException(NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_NoDebugger"));
+            }
             containerClass = RemoteServices.getClass(vm, "java.awt.Container");
             componentClass = RemoteServices.getClass(vm, "java.awt.Component");
             getBounds = componentClass.concreteMethodByName("getBounds", "()Ljava/awt/Rectangle;");
