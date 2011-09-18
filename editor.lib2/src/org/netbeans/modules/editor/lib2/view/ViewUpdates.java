@@ -259,6 +259,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     try {
                         if (viewBuilder.initModUpdate(insertOffset, insertLength, fetchRebuildRegion())) {
                             if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                                docView.validChange().documentEvent = evt;
                                 break; // Creation finished successfully
                             }
                         }
@@ -301,6 +302,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                         // Possibly clear rebuild region - all the views will be re-inited anyway
                         if (viewBuilder.initModUpdate(removeOffset, -removeLength, fetchRebuildRegion())) {
                             if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                                docView.validChange().documentEvent = evt;
                                 break; // Creation finished successfully
                             }
                         }
