@@ -129,6 +129,12 @@ public final class ViewHierarchyImpl {
     static final Logger SETTINGS_LOG = Logger.getLogger("org.netbeans.editor.view.settings"); // -J-Dorg.netbeans.editor.view.settings.level=FINE
     
     /**
+     * Logger related to view hierarchy events generation.
+     * <br/>
+     */
+    static final Logger EVENT_LOG = Logger.getLogger("org.netbeans.editor.view.event"); // -J-Dorg.netbeans.editor.view.event.level=FINE
+    
+    /**
      * Logger for tracking view hierarchy locking.
      * <br/>
      * FINER stores the stack of the lock thread of view hierarchy in lockStack variable
@@ -287,15 +293,24 @@ public final class ViewHierarchyImpl {
 
     void fireChange(ViewHierarchyChange change) {
         ViewHierarchyEvent evt = ViewApiPackageAccessor.get().createEvent(viewHierarchy, change);
+        if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+            ViewHierarchyImpl.EVENT_LOG.fine("Firing event: " + evt + "\n"); // NOI18N
+        }
         for (ViewHierarchyListener l : listenerList.getListeners()) {
             l.viewHierarchyChanged(evt);
         }
     }
-    
+
     private void ensureLocker(LockedViewHierarchy lock) {
         if (lock != this.lock) {
             throw new IllegalStateException("Not locker of view hierarchy for component:\n" + textComponent); // NOI18N
         }
+    }
+
+    @Override
+    public String toString() {
+        // Use toStringUnlocked() otherwise stack overflow
+        return (docView != null) ? docView.getDumpId() : "<NULL-docView>"; // NOI18N
     }
 
 }
