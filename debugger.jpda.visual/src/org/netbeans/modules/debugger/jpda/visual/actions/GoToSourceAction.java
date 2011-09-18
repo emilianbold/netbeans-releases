@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -49,8 +53,13 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
@@ -94,13 +103,58 @@ public class GoToSourceAction extends NodeAction {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            type = EditorContextBridge.getRelativePath (type);
-            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(type, true);
+            String typePath = EditorContextBridge.getRelativePath (type);
+            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(typePath, true);
+            final int lineNumber = findClassLine(url, type);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    EditorContextBridge.getContext().showSource(url, 1, null);
+                    EditorContextBridge.getContext().showSource(url, lineNumber, null);
                 }
             });
+        }
+    }
+    
+    private static int findClassLine(String url, String clazz) {
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException ex) {
+            return 1;
+        }
+        // TODO: Add getClassLineNumber() into EditorContext
+        String editorContextImplName = "org.netbeans.modules.debugger.jpda.projects.EditorContextImpl"; // NOI18N
+        Class editorContextImpl;
+        try {
+            editorContextImpl = Thread.currentThread().getContextClassLoader().loadClass(editorContextImplName);
+        } catch (ClassNotFoundException cnfex) {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            if (cl == null) {
+                return 1;
+            }
+            try {
+                editorContextImpl = cl.loadClass(editorContextImplName);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+                return 1;
+            }
+        }
+        try {
+            Method getClassLineNumber = editorContextImpl.getDeclaredMethod(
+                    "getClassLineNumber", FileObject.class, String.class, String[].class);  // NOI18N
+            getClassLineNumber.setAccessible(true);
+            Future<Integer> lineNumberFuture = (Future<Integer>) getClassLineNumber.invoke(null, fo, clazz, new String[] {});
+            if (lineNumberFuture == null) {
+                return 1;
+            }
+            Integer line = lineNumberFuture.get();
+            if (line == null) {
+                return 1;
+            } else {
+                return line.intValue();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return 1;
         }
     }
 
