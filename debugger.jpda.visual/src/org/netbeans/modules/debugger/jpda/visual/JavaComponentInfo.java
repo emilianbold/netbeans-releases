@@ -117,39 +117,6 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         retrieve();
         addProperties();
         findComponentFields();
-        this.addPropertySet(new PropertySet("main", NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropMain"),
-                                                    NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropMainDescr")) {
-            @Override
-            public Property<?>[] getProperties() {
-                return new Property[] {
-                    new ReadOnly("name", String.class,
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropName"),
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropNameDescr")) {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return JavaComponentInfo.this.getName();
-                        }
-                    },
-                    new ReadOnly("type", String.class,
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropType"),
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropTypeDescr")) {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return JavaComponentInfo.this.getType();
-                        }
-                    },
-                    new ReadOnly("bounds", String.class,
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropBounds"),
-                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropBoundsDescr")) {
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            Rectangle r = JavaComponentInfo.this.getWindowBounds();
-                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
-                        }
-                    },
-                };
-            }
-        });
     }
     
     abstract protected void retrieve() throws RetrievalException;
@@ -320,6 +287,39 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     }
     
     private void addProperties() {
+        addPropertySet(new PropertySet("main", NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropMain"),
+                                               NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropMainDescr")) {
+            @Override
+            public Property<?>[] getProperties() {
+                return new Property[] {
+                    new ReadOnly("name", String.class,
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropName"),
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropNameDescr")) {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            return JavaComponentInfo.this.getName();
+                        }
+                    },
+                    new ReadOnly("type", String.class,
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropType"),
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropTypeDescr")) {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            return JavaComponentInfo.this.getType();
+                        }
+                    },
+                    new ReadOnly("bounds", String.class,
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropBounds"),
+                                 NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentPropBoundsDescr")) {
+                        @Override
+                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                            Rectangle r = JavaComponentInfo.this.getWindowBounds();
+                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
+                        }
+                    },
+                };
+            }
+        });
         // TODO: Try to find out the BeanInfo of the class
         List<Method> allMethods = component.referenceType().allMethods();
         //System.err.println("Have "+allMethods.size()+" methods.");
