@@ -303,7 +303,8 @@ public class SourceUtils {
         Parameters.notNull("handle", handle);   //NOI18N
         return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
     }
-    
+
+
     /**Resolve full qualified name in the given context. Adds import statement as necessary.
      * Returns name that resolved to a given FQN in given context (either simple name
      * or full qualified name). Handles import conflicts.
