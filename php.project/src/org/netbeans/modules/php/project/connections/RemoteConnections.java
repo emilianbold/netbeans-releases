@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,9 +58,11 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.api.RemotePreferences;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
 import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.openide.util.ChangeSupport;
@@ -351,6 +352,9 @@ public final class RemoteConnections {
             Preferences remoteConnections = getPreferences();
             try {
                 for (String name : remoteConnections.childrenNames()) {
+                    if (name.equals(RemotePreferences.GENERAL_PREFERENCES)) {
+                        continue;
+                    }
                     Preferences node = remoteConnections.node(name);
                     Map<String, String> value = new TreeMap<String, String>();
                     for (String key : node.keys()) {
