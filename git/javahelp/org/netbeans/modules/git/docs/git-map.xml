@@ -10,6 +10,7 @@
 	<mapID target="org.netbeans.modules.git.branch" url="git-branch.html" />
 	<mapID target="org.netbeans.modules.git.options" url="git-options.html" />
 	<mapID target="org.netbeans.modules.git.compare" url="git-diffviewer.html" />
+	<mapID target="org.netbeans.modules.git.initialize" url="git-initialize.html" />
 	
 
 
