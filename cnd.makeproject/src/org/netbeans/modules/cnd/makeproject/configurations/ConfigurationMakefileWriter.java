@@ -540,6 +540,23 @@ public class ConfigurationMakefileWriter {
                     conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS)) {
                 qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
             }
+            
+            // On Solaris with OSS toolchain installed and added to PATH we still should pass -spec to qmake
+            // or the following error message will appear:
+            // QMAKESPEC has not been set, so configuration cannot be deduced.
+            // Error processing project file: nbproject/qt-Debug.pro 
+            
+            if (qmakeSpec.length() == 0 &&
+                (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
+                 conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
+                compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());                
+                if (qmakeSpec == null) {
+                    // Never should be here, but still...
+                    qmakeSpec = "solaris-cc";  // NOI18N
+                }
+            }
+            
             if (!qmakeSpec.isEmpty()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
