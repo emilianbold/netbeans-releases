@@ -55,7 +55,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
 
 /**
  *
@@ -67,15 +67,15 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
     public CustomizerInstanceGeneral(final OracleJ2EEInstance aij) {
         initComponents();
         
-        Collection<CloudSupport.WLDomain> domains = CloudSupport.getCloudUsableInstances();
-        CloudSupport.WLDomain selected = null;
-        for (CloudSupport.WLDomain domain : domains) {
+        Collection<DomainSupport.WLDomain> domains = DomainSupport.getUsableDomainInstances(null);
+        DomainSupport.WLDomain selected = null;
+        for (DomainSupport.WLDomain domain : domains) {
             if (domain.getUrl().equals(aij.getOracleInstance().getOnPremiseServerInstanceId())) {
                 selected = domain;
                 break;
             }
         }
-        List<CloudSupport.WLDomain> weblogics = new ArrayList<CloudSupport.WLDomain>(CloudSupport.getCloudUsableInstances());
+        List<DomainSupport.WLDomain> weblogics = new ArrayList<DomainSupport.WLDomain>(DomainSupport.getUsableDomainInstances(null));
         boolean noServers = weblogics.isEmpty();
         if (selected == null) {
             if (aij.getOracleInstance().getOnPremiseServerInstanceId() != null) {
@@ -102,7 +102,7 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
 
             @Override
             public void contentsChanged(ListDataEvent e) {
-                final CloudSupport.WLDomain domain = (CloudSupport.WLDomain)classpathComboBox.getSelectedItem();
+                final DomainSupport.WLDomain domain = (DomainSupport.WLDomain)classpathComboBox.getSelectedItem();
                 String url = null;
                 if (domain != null) {
                     url = domain.getUrl();

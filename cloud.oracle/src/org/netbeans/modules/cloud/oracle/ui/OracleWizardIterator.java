@@ -49,8 +49,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
-import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport;
-import org.netbeans.modules.j2ee.weblogic9.cloud.CloudSupport.WLDomain;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport.WLDomain;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.ChangeSupport;
@@ -98,7 +98,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         String serviceName = (String)wizard.getProperty(OracleWizardPanel.SERVICE_NAME);
         assert serviceName != null;
         
-        Collection<WLDomain> localInstances = CloudSupport.getCloudUsableInstances();
+        Collection<WLDomain> localInstances = DomainSupport.getUsableDomainInstances(null);
         OracleInstance instance = new OracleInstance(name, username, pwd, adminURL, 
                 instanceURL, cloudURL, serviceGroup, serviceName,
                 localInstances.isEmpty() ? null : localInstances.iterator().next().getUrl());

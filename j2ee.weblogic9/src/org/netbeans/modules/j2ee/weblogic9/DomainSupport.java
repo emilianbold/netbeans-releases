@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.cloud;
+package org.netbeans.modules.j2ee.weblogic9;
 
 import java.util.Collection;
 import java.util.Set;
@@ -58,27 +58,30 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
  *
  * @author Petr Hejl
  */
-public final class CloudSupport {
+public final class DomainSupport {
 
-    private static final Logger LOGGER = Logger.getLogger(CloudSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DomainSupport.class.getName());
 
-//    private static final Version MINIMAL_WL_VERSION =
-//            Version.fromJsr277OrDottedNotationWithFallback("10.3.6"); // NOI18N
-
-    private CloudSupport() {
+    private DomainSupport() {
         super();
     }
-    
-    public static Collection<WLDomain> getCloudUsableInstances() {
+
+    /**
+     * Returns list of domains suitable for given Weblogic version
+     * 
+     * @param minimalWeblogicVersion weblogic version or null if any weblogic domain is acceptable
+     * @return collection of domains
+     */
+    public static Collection<WLDomain> getUsableDomainInstances(Version minimalWeblogicVersion) {
         Set<WLDomain> domains = new TreeSet<WLDomain>();
         for (String url : Deployment.getDefault().getInstancesOfServer(WLDeploymentFactory.SERVER_ID)) {
             try {
                 WLDeploymentManager dm = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDisconnectedDeploymentManager(url);
-//                if (MINIMAL_WL_VERSION.isBelowOrEqual(dm.getDomainVersion())) {
+                if (minimalWeblogicVersion == null || minimalWeblogicVersion.isBelowOrEqual(dm.getDomainVersion())) {
                     ServerInstance inst = Deployment.getDefault().getServerInstance(url);
                     domains.add(new WLDomain(inst.getDisplayName(),
                             url, dm.getDomainVersion()));
-//                }
+                }
             } catch (DeploymentManagerCreationException ex) {
                 // noop ignore
                 LOGGER.log(Level.FINE, null, ex);
