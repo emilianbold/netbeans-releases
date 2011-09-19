@@ -129,6 +129,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
@@ -158,6 +159,7 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
@@ -189,7 +191,7 @@ public class EjbJarProject implements Project, FileChangeListener {
     private final ReferenceHelper refHelper;
     private FileObject libFolder = null;
     private final GeneratedFilesHelper genFilesHelper;
-    private final Lookup lookup;
+    private Lookup lookup;
     private final UpdateHelper updateHelper;
     private final EjbJarProvider ejbModule;
     private final CopyOnSaveSupport css;
@@ -211,6 +213,7 @@ public class EjbJarProject implements Project, FileChangeListener {
     private AntBuildExtender buildExtender;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
+    private WhiteListUpdater whiteListUpdater;
     
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
@@ -323,6 +326,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                  }
              }
          );    
+        // whitelist updater listens on project properties and pays attention to whitelist changes
+        whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -459,6 +464,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
+                WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
                 QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createSFBLookupMerger(),
@@ -467,7 +473,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                 QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
-            return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
+        lookup = base;
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
     }
     
     public ClassPathProviderImpl getClassPathProvider () {

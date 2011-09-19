@@ -124,6 +124,7 @@
                 <friend>org.netbeans.libs.oracle.cloud</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <package>org.netbeans.api.whitelist</package>
                 <package>org.netbeans.api.whitelist.index</package>
                 <package>org.netbeans.api.whitelist.support</package>
