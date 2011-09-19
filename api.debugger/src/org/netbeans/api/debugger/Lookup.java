@@ -68,6 +68,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -228,6 +232,7 @@ abstract class Lookup implements ContextProvider {
         private String rootFolder;
         private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
         private final HashMap<String, Object> instanceCache = new HashMap<String, Object>();
+        private final HashMap<String, FutureInstance> instanceFutureCache = new HashMap<String, FutureInstance>();
         private final HashMap<String, Object> origInstanceCache = new HashMap<String, Object>();
         private final HashMap<String, Item> lookupItemsCache = new HashMap<String, Item>();
         private Lookup context;
@@ -790,41 +795,89 @@ abstract class Lookup implements ContextProvider {
                     if (lookupItem != null) {
                         String cn = getClassName(lookupItem);
                         synchronized (instanceCreationLock) {
+                            FutureInstance fi = null;
+                            FutureInstance fiex = null;
                             synchronized(instanceCache) {
                                 instance = instanceCache.get (cn);
+                                if (instance == null) {
+                                    fiex = instanceFutureCache.get(cn);
+                                    if (fiex == null) {
+                                        fi = new FutureInstance();
+                                        instanceFutureCache.put(cn, fi);
+                                    }
+                                }
                             }
                             if (instance == null) {
-                                instance = lookupItem.getInstance();
-                                Object origInstance = instance;
-                                //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
-                                Item lookupItemToCache = lookupItem;
-                                if (instance instanceof ContextAwareService) {
-                                    ContextAwareService cas = (ContextAwareService) instance;
-                                    instance = cas.forContext(Lookup.MetaInf.this.context);
-                                    //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
-                                    lookupItem = null;
-                                }
-                                synchronized (instanceCache) {
-                                    instanceCache.put (cn, instance);
-                                    origInstanceCache.put(cn, origInstance);
-                                    // Hold the lookup item.
-                                    // This is holding the underlying instance data object,
-                                    // and prevents from it's GC and therefore from creating
-                                    // a new instance later on (the new Item.creatorOf() would return false)
-                                    lookupItemsCache.put(cn, lookupItemToCache);
+                                if (fiex != null) {
+                                    // The instance is being created, wait for it, do not create a second instance.
+                                    try {
+                                        instance = fiex.get();
+                                    } catch (InterruptedException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("WAITED for instance "+instance+" to be created by a parallel thread.");
+                                    }
+                                } else {
+                                    instance = lookupItem.getInstance();
+                                    Object origInstance = instance;
+                                    //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
+                                    Item lookupItemToCache = lookupItem;
+                                    if (instance instanceof ContextAwareService) {
+                                        ContextAwareService cas = (ContextAwareService) instance;
+                                        instance = cas.forContext(Lookup.MetaInf.this.context);
+                                        //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
+                                        lookupItem = null;
+                                    }
+                                    synchronized (instanceCache) {
+                                        instanceCache.put (cn, instance);
+                                        origInstanceCache.put(cn, origInstance);
+                                        // Hold the lookup item.
+                                        // This is holding the underlying instance data object,
+                                        // and prevents from it's GC and therefore from creating
+                                        // a new instance later on (the new Item.creatorOf() would return false)
+                                        lookupItemsCache.put(cn, lookupItemToCache);
+                                        instanceFutureCache.remove(cn);
+                                    }
                                 }
                             }
                         }
                     }
                     if (instance == null) {
                         synchronized (instanceCreationLock) {
+                            FutureInstance fi = null;
+                            FutureInstance fiex = null;
                             synchronized(instanceCache) {
                                 instance = instanceCache.get (className);
+                                if (instance == null) {
+                                    fiex = instanceFutureCache.get(className);
+                                    if (fiex == null) {
+                                        fi = new FutureInstance();
+                                        instanceFutureCache.put(className, fi);
+                                    }
+                                }
                             }
                             if (instance == null) {
-                                instance = ContextAwareSupport.createInstance (className, Lookup.MetaInf.this.context);
-                                synchronized (instanceCache) {
-                                    instanceCache.put (className, instance);
+                                if (fiex != null) {
+                                    // The instance is being created, wait for it, do not create a second instance.
+                                    try {
+                                        instance = fiex.get();
+                                    } catch (InterruptedException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("WAITED for instance "+instance+" to be created by a parallel thread.");
+                                    }
+                                } else {
+                                    instance = ContextAwareSupport.createInstance (className, Lookup.MetaInf.this.context);
+                                    fi.setInstance(instance);
+                                    synchronized (instanceCache) {
+                                        /*if (className.endsWith("EngineProvider")) {
+                                            System.err.println("PUTTING created instance "+instance+" into the instance cache, which already contains instance "+instanceCache.get(className));
+                                        }*/
+                                        instanceCache.put (className, instance);
+                                        instanceFutureCache.remove(className);
+                                    }
                                 }
                             }
                         }
@@ -851,6 +904,47 @@ abstract class Lookup implements ContextProvider {
             }
             
         }
+    }
+    
+    private static final class FutureInstance implements Future<Object> {
+        
+        private static final Object NONE = new Object();
+        
+        private Object instance = NONE;
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public boolean isCancelled() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public synchronized boolean isDone() {
+            return this.instance != NONE;
+        }
+
+        @Override
+        public synchronized Object get() throws InterruptedException {
+            while (this.instance == NONE) {
+                wait();
+            }
+            return this.instance;
+        }
+
+        @Override
+        public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+        
+        synchronized void setInstance(Object instance) {
+            this.instance = instance;
+            notifyAll();
+        }
+        
     }
     
     /**
