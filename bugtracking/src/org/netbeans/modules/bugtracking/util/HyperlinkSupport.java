@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -58,6 +57,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -70,9 +70,10 @@ public final class HyperlinkSupport {
     final static String STACKTRACE_ATTRIBUTE = "attribute.stacktrace.link";     // NOI18N
     final static String TYPE_ATTRIBUTE = "attribute.type.link";                 // NOI18N
     final static String URL_ATTRIBUTE = "attribute.url.link";                   // NOI18N
-    public final static String LINK_ATTRIBUTE = "attribute.simple.link";               // NOI18N
+    public final static String LINK_ATTRIBUTE = "attribute.simple.link";        // NOI18N
     private final MotionListener motionListener;
     private final java.awt.event.MouseListener mouseListener;
+    private RequestProcessor rp = new RequestProcessor("Bugtracking hyperlinks", 50); // NOI18N
     
     private HyperlinkSupport() { 
         motionListener = new MotionListener();
@@ -83,34 +84,59 @@ public final class HyperlinkSupport {
         return instance;
     }
     
-    public void registerForStacktraces(JTextPane pane) {
+    public void registerForStacktraces(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        pane.addMouseMotionListener(motionListener);
-        StackTraceSupport.register(pane);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                StackTraceSupport.register(pane);
+                pane.addMouseMotionListener(motionListener);
+            }
+        });    
     }
     
-    public void registerForTypes(JTextPane pane) {
+    public void registerForTypes(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        pane.addMouseMotionListener(motionListener);
-        FindTypesSupport.getInstance().register(pane);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                FindTypesSupport.getInstance().register(pane);
+                pane.addMouseMotionListener(motionListener);
+            }
+        });
     }
     
-    public void registerForURLs(JTextPane pane) {
+    public void registerForURLs(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        pane.addMouseMotionListener(motionListener);
-        WebUrlHyperlinkSupport.register(pane);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                WebUrlHyperlinkSupport.register(pane);
+                pane.addMouseMotionListener(motionListener);
+            }
+        });    
     }
     
-    public void registerLink(JTextPane pane, int pos[], Link link) {
+    public void registerLink(final JTextPane pane, final int pos[], final Link link) {
         pane.removeMouseMotionListener(motionListener);
-        pane.addMouseMotionListener(motionListener);
-        registerLinkIntern(pane, pos, link);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                registerLinkIntern(pane, pos, link);
+                pane.addMouseMotionListener(motionListener);
+            }
+        });    
     }
     
-    public void registerForIssueLinks(JTextPane pane, final Link issueLink, IssueFinder issueFinder) {
+    public void registerForIssueLinks(final JTextPane pane, final Link issueLink, final IssueFinder issueFinder) {
         pane.removeMouseMotionListener(motionListener);
-        pane.addMouseMotionListener(motionListener);
-        registerLinkIntern(pane, issueFinder.getIssueSpans(pane.getText()), issueLink);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                registerLinkIntern(pane, issueFinder.getIssueSpans(pane.getText()), issueLink);
+                pane.addMouseMotionListener(motionListener);
+            }
+        });    
     }
 
     private void registerLinkIntern(JTextPane pane, int[] pos, Link link) {
