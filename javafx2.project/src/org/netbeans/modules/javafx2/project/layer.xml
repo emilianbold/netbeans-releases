@@ -17,13 +17,13 @@
             <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
                 <attr name="position" intvalue="25"/>
             </file>
-            <file name="jfx-impl-platform.inc" url="templates/jfx-impl-platform.inc_">
+            <file name="jfx-impl-platform.xmlinc" url="templates/jfx-impl-platform.xmlinc_">
                 <attr name="position" intvalue="35"/>
             </file>
-            <file name="jfx-impl-parameters.inc" url="templates/jfx-impl-parameters.inc_">
+            <file name="jfx-impl-parameters.xmlinc" url="templates/jfx-impl-parameters.xmlinc_">
                 <attr name="position" intvalue="45"/>
             </file>
-            <file name="jfx-impl-callbacks.inc" url="templates/jfx-impl-callbacks.inc_">
+            <file name="jfx-impl-callbacks.xmlinc" url="templates/jfx-impl-callbacks.xmlinc_">
                 <attr name="position" intvalue="55"/>
             </file>
         </folder>
