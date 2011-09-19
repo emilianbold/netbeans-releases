@@ -46,7 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.index.WhiteListIndex;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -157,11 +160,16 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
             "MSG_Dialog_Title=Continue deployment?"
     })
     public static boolean isWhitelistViolated(Project p) {
+        SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length == 0) {
+            return false;
+        }
         Collection problems = WhiteListIndex.getDefault().
-                getWhiteListViolations(p.getProjectDirectory(), null, "oracle.cloud");
+                getWhiteListViolations(sgs[0].getRootFolder(), null, "oracle.cloud");
         if (problems.size() > 0) {
             if (DialogDisplayer.getDefault().notify(
-                    new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title())) == NotifyDescriptor.YES_OPTION) {
+                    new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title())) != NotifyDescriptor.YES_OPTION) {
+                return true;
             }
         }
         return false;
