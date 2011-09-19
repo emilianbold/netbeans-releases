@@ -413,31 +413,33 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         public ParameterElement resolveVariable(ParameterElement param) {
-            Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-            VariableName variableToUse = null;
-            if (declaredVariables != null) {
-                int oldOffset = 0;
-                for (VariableName variable : declaredVariables) {
-                    if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                        if (isPreviousVariable(variable)) {
-                            if (hasCorrectType(variable, param.getTypes())) {
-                                if (variable.getName().equals(param.getName())) {
-                                    variableToUse = variable;
-                                    break;
-                                }
-                                int newOffset = variable.getNameRange().getStart();
-                                if (newOffset > oldOffset) {
-                                    oldOffset = newOffset;
-                                    variableToUse = variable;
+            if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
+                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                VariableName variableToUse = null;
+                if (declaredVariables != null) {
+                    int oldOffset = 0;
+                    for (VariableName variable : declaredVariables) {
+                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                            if (isPreviousVariable(variable)) {
+                                if (hasCorrectType(variable, param.getTypes())) {
+                                    if (variable.getName().equals(param.getName())) {
+                                        variableToUse = variable;
+                                        break;
+                                    }
+                                    int newOffset = variable.getNameRange().getStart();
+                                    if (newOffset > oldOffset) {
+                                        oldOffset = newOffset;
+                                        variableToUse = variable;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (variableToUse != null) {
-                usedVariables.add(variableToUse);
-                return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUse != null) {
+                    usedVariables.add(variableToUse);
+                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                }
             }
             return param;
         }
