@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -56,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -67,7 +68,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -100,12 +100,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
-    private CsmObject owner;
 
     // package-local - for facory only
     TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
         super(file, offset == null ? getStartOffset(ast) : offset.getStartOffset(), offset == null ? getEndOffset(ast) : offset.getEndOffset());
-        this._setClassifier(classifier);
+        this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
@@ -113,7 +112,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
             CndUtils.assertTrueInConsole(false, "why null classifier?");
-            this._setClassifier(initClassifier(ast));
+            this.initClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {
             setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
@@ -537,7 +536,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 lastCache = newCachePair;
             }
             classifier = _getClassifier();
-            putTypeOwner();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -614,18 +612,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         return obj;
     }     
-    
-    void setOwner(CsmObject owner) {
-        this.owner = owner;
-    }
-
-    protected void putTypeOwner() {
-        if (owner != null) {
-            if (UIDProviderIml.isPersistable(UIDs.get(owner))) {
-                RepositoryUtils.put(owner);
-            }
-        }
-    }
     
     protected CsmClassifier renderClassifier(CharSequence[] qname) {
         CsmClassifier result = null;
@@ -763,13 +749,41 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     protected CsmClassifier _getClassifier() {
-        CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
+        CsmClassifier classifier = null;
+        if (classifierUID != null) {
+            classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
+        } else {
+            FileImpl file = (FileImpl) getContainingFile();
+            CsmReference typeReference = file.getResolvedReference(new CsmTypeReferenceImpl(this));
+            if (typeReference != null) {
+                CsmObject referencedObject = typeReference.getReferencedObject();
+                if (CsmKindUtilities.isClassifier(referencedObject)) {
+                    classifier = (CsmClassifier) referencedObject;
+                    //System.out.println("Hit "+classifier);
+                }
+            }
+        }
         // can be null if cached one was removed
         return classifier;
     }
 
-    final void _setClassifier(CsmClassifier classifier) {
+    private void initClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        assert (classifierUID != null || classifier == null);
+    }
+
+    final void _setClassifier(final CsmClassifier classifier) {
+        if (classifier == null) {
+            FileImpl file = (FileImpl) getContainingFile();
+            file.removeResolvedReference(new CsmTypeReferenceImpl(this));
+        }
+        this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        if (classifierUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+            //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
+           ) {
+            final FileImpl file = (FileImpl) getContainingFile();
+            file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+        }
         assert (classifierUID != null || classifier == null);
     }
 
@@ -871,4 +885,67 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return "CachePair{" + "parseCount=" + parseCount + ", fileUID=" + fileUID + '}'; // NOI18N
         }
     }    
+
+    private static class CsmTypeReferenceImpl implements CsmReference {
+        private final TypeImpl type;
+
+        public CsmTypeReferenceImpl(TypeImpl type) {
+            this.type = type;
+}
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DIRECT_USAGE;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return null;
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return null;
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return type.getStartOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return type.getEndOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            return type.classifierText;
+        }
+
+        @Override
+        public String toString() {
+            return type.classifierText+"["+type.getStartOffset()+","+type.getEndOffset()+"]"; //NOI18N
+        }
+    }
 }

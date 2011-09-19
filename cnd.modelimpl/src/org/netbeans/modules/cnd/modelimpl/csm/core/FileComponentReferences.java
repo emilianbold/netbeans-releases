@@ -89,6 +89,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     }
 
     private final SortedMap<ReferenceImpl, CsmUID<CsmObject>> references;
+    private final SortedMap<ReferenceImpl, CsmUID<CsmObject>> type2classifier;
     private final ReadWriteLock referencesLock = new ReentrantReadWriteLock();
     private final CsmUID<CsmFile> fileUID;
 
@@ -107,6 +108,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     public FileComponentReferences(FileImpl file) {
         super(new FileReferencesKey(file));
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
+        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         this.fileUID = file.getUID();
         put();
     }
@@ -116,12 +118,14 @@ public class FileComponentReferences extends FileComponent implements Persistent
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         fileUID = defaultFactory.readUID(input);
         references = defaultFactory.readReferencesSortedToUIDMap(input, fileUID);
+        type2classifier = defaultFactory.readReferencesSortedToUIDMap(input, fileUID);
     }
 
     // only for EMPTY static field
     private FileComponentReferences() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
+        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         fileUID = null;
     }
 
@@ -129,6 +133,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         referencesLock.writeLock().lock();
         try {
             references.clear();
+            type2classifier.clear();
         } finally {
             referencesLock.writeLock().unlock();
         }
@@ -168,8 +173,30 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return res;
     }
 
-
     CsmReference getReference(int offset) {
+        return getReferenceImpl(offset, references);
+    }
+
+    CsmReference getResolvedReference(CsmReference ref) {
+        referencesLock.readLock().lock();
+        try {
+            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.tailMap(new ReferenceImpl(ref.getStartOffset(), ref.getEndOffset(), ref.getText())).entrySet()) {
+                if (entry.getKey().start == ref.getStartOffset() && 
+                    entry.getKey().end == ref.getEndOffset() &&
+                        entry.getKey().identifier.equals(ref.getText())) {
+                    //request_hit++;
+                    return entry.getKey();
+                } else {
+                    return null;
+                }
+            }
+        } finally {
+            referencesLock.readLock().unlock();
+        }
+        return null;
+    }
+    
+    CsmReference getReferenceImpl(int offset, SortedMap<ReferenceImpl, CsmUID<CsmObject>> storage) {
         //if (request > 0 && request%1000 == 0) {
         //    System.err.println("Reference statictic:");
         //    System.err.println("\tRequest:"+request+" hit "+request_hit);
@@ -178,7 +205,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         //request++;
         referencesLock.readLock().lock();
         try {
-            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.tailMap(new ReferenceImpl(offset)).entrySet()) {
+            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : storage.tailMap(new ReferenceImpl(offset)).entrySet()) {
                 if (entry.getKey().start <= offset && offset < entry.getKey().end) {
                     //request_hit++;
                     return entry.getKey();
@@ -192,7 +219,28 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return null;
     }
 
+    boolean addResolvedReference(CsmReference ref, CsmObject cls) {
+         return addReferenceImpl(ref, cls, type2classifier);
+    }
+
+    void removeResolvedReference(CsmReference ref) {
+        CsmUID<CsmObject> remove;
+        referencesLock.writeLock().lock();
+        try {
+            remove = type2classifier.remove(new ReferenceImpl(ref.getStartOffset(), ref.getEndOffset(), ref.getText()));
+        } finally {
+            referencesLock.writeLock().unlock();
+        }
+        if (remove != null) {
+            put();
+        }
+    }
+    
     boolean addReference(CsmReference ref, CsmObject referencedObject) {
+         return addReferenceImpl(ref, referencedObject, references);
+    }
+    
+    private boolean addReferenceImpl(CsmReference ref, CsmObject referencedObject, Map<ReferenceImpl, CsmUID<CsmObject>> storage) {
         //respons++;
         if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
             // ignore local references
@@ -222,7 +270,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         //}
         referencesLock.writeLock().lock();
         try {
-            references.put(refImpl, referencedUID);
+            storage.put(refImpl, referencedUID);
         } finally {
             referencesLock.writeLock().unlock();
         }
@@ -264,6 +312,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 defaultFactory.writeUID(entry.getValue(), out);
                 entry.getKey().write(defaultFactory, out);
             }
+            out.writeInt(type2classifier.size());
+            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.entrySet()) {
+                defaultFactory.writeUID(entry.getValue(), out);
+                entry.getKey().write(defaultFactory, out);
+            }
         } finally {
             referencesLock.readLock().unlock();
         }
@@ -287,6 +340,18 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.refKind = null;
             this.refObj = null;
             this.identifier = null;
+            this.ownerUID = null;
+            this.closestTopLevelObjectUID = null;
+        }
+
+        // to remove
+        private ReferenceImpl(int start, int end, CharSequence identifier) {
+            this.start = start;
+            this.end = end;
+            this.file = null;
+            this.refKind = null;
+            this.refObj = null;
+            this.identifier = identifier;
             this.ownerUID = null;
             this.closestTopLevelObjectUID = null;
         }
@@ -427,7 +492,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
         @Override
         public String toString() {
-            return "ReferenceImpl{" + "file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";start=" + start + ";end=" + end + ";identifier=" + identifier + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
+            return identifier+"["+start+","+end+"] file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
         }
     }
 }

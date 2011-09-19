@@ -234,7 +234,7 @@ public class CsmCompletionExpression {
         OP[CppTokenId.ARROWMBR.ordinal()] = 14;
         OP[CppTokenId.SCOPE.ordinal()] = 18;
         OP[CppTokenId.COLON.ordinal()] = 3 | RIGHT_ASSOCIATIVE;
-        OP[CppTokenId.QUESTION.ordinal()] = 3 | RIGHT_ASSOCIATIVE;
+        OP[CppTokenId.QUESTION.ordinal()] = 0 | RIGHT_ASSOCIATIVE;
         OP[CppTokenId.LBRACKET.ordinal()] = 16;
         OP[CppTokenId.RBRACKET.ordinal()] = 0; // stop
         OP[CppTokenId.PLUSPLUS.ordinal()] = 16;
