@@ -60,6 +60,10 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Object that provides main functionality for xml document.
  * Instance holds all synchronization related state information.
@@ -80,6 +84,10 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
     
+    /**
+     * Factory for editor
+     */
+    private TextEditorSupport.TextEditorSupportFactory editorSupportFactory;
 
     /** Create new XMLDataObject
      *
@@ -99,18 +107,19 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         if (fo.getMIMEType().indexOf("xml") == -1) { // NOI18N
             mimetype = XMLKit.MIME_TYPE;
         }
-        final TextEditorSupport.TextEditorSupportFactory editorFactory =
+        editorSupportFactory =
             TextEditorSupport.findEditorSupportFactory (this, mimetype);
-        editorFactory.registerCookies (set);
+        editorSupportFactory.registerCookies (set);
         CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
         set.add (ViewCookie.class, viewCookieFactory);
         InputSource is = DataObjectAdapters.inputSource (this);
         //enable "Save As"
         set.assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs(FileObject folder, String fileName) throws IOException {
-                editorFactory.createEditor().saveAs( folder, fileName );
+                editorSupportFactory.createEditor().saveAs( folder, fileName );
             }
         });
+        
         // add check and validate cookies
         set.add (new CheckXMLSupport (is));
         set.add (new ValidateXMLSupport (is));        
@@ -121,9 +130,49 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         this.addPropertyChangeListener (this);  //??? - strange be aware of firing cycles
     }
     
+    /**
+     * Cached instance of cookie lookup + CES
+     */
+    private Lookup doLookup;
+
+    /**
+     * Adds CloneableEditorSupport to the standard lookup contents, so that {@link CloneableEditorSupportRedirector}
+     * finds it right from the start. Supposedly fixes defect #192537
+     * 
+     * @return lookup instance with additional contents
+     */
     @Override
     public final Lookup getLookup() {
-        return getCookieSet().getLookup();
+        if (doLookup == null) {
+            doLookup = new ProxyLookup(
+                getCookieSet().getLookup(),
+                Lookups.fixed(new Object[] { CloneableEditorSupport.class }, new InstanceContent.Convertor() {
+
+                @Override
+                public Object convert(Object obj) {
+                    assert obj == CloneableEditorSupport.class;
+                    return editorSupportFactory.createEditor();
+                }
+
+                @Override
+                public String displayName(Object obj) {
+                    return XMLDataObject.this.getName();
+                }
+
+                @Override
+                public String id(Object obj) {
+                    return obj.toString();
+                }
+
+                @Override
+                public Class type(Object obj) {
+                    return (Class)obj;
+                }
+
+                }
+            ));
+        }
+        return doLookup;
     }
 
     /**

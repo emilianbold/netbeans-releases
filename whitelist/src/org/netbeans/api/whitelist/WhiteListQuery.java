@@ -131,6 +131,7 @@ public final class WhiteListQuery {
          * @param operation the operation which should be tested
          * @return a {@link Result} holding the details.
          */
+        @NonNull
         public final Result check(
             @NonNull final ElementHandle<?> element,
             @NonNull final Operation operation) {

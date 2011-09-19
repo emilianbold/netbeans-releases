@@ -47,11 +47,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,8 +69,14 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
@@ -847,19 +857,47 @@ public final class JFXProjectProperties {
                 saveToFile(privatePath, privateCfgProps);
             }
         }
-        updatePreloaderDependencies();
     }
     
-    private void updatePreloaderDependencies() {
+    private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
         // depeding on the currently (de)selected preloader update project dependencies,
-        // i.e., remove deselected preloader project dependency and add selected preloader project dependency
-        
-        //TODO
-//            final Project[] p = new Project[] {ProjectManager.getDefault().findProject(preloaderDirFO)};
-//            FileObject ownerSourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
-//            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
+        // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
+        Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
+        String projDir = active.get(PRELOADER_PROJECT);
+        File projDirF = new File(projDir);
+        if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
+            FileObject srcRoot = null;
+            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                if (!isTest(sg.getRootFolder(),project)) {
+                    srcRoot = sg.getRootFolder();
+                    break;
+                }
+            }
+            if(srcRoot != null) {
+                projDirF = FileUtil.normalizeFile(projDirF);
+                FileObject prelFO = FileUtil.toFileObject(projDirF);
+                final Project[] p = new Project[] {ProjectManager.getDefault().findProject(prelFO)};
+                ProjectClassPathModifier.addProjects(p, srcRoot, ClassPath.COMPILE);
+            }
+        }
     }
 
+    private static boolean isTest(final FileObject root, final Project project) {
+        assert root != null;
+        assert project != null;
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        for (ClassPath.Entry entry : cp.entries()) {
+            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+            for (FileObject srcRoot : srcRoots) {
+                if (project.equals(FileOwnerQuery.getOwner(srcRoot))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    
     private void storeActiveConfig() throws IOException {
         String configPath = "nbproject/private/config.properties"; // NOI18N
         // should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
@@ -1072,6 +1110,7 @@ public final class JFXProjectProperties {
                             os.close();
                         }
                     }
+                    updatePreloaderDependencies(Collections.unmodifiableMap(RUN_CONFIGS));
                     return null;
                 }
             });
