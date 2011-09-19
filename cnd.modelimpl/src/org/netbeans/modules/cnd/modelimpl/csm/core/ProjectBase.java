@@ -1307,6 +1307,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (isDisposing()) {
             return null;
         }
+        final CsmModelState modelState = ModelImpl.instance().getState();
+        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            return null;
+        }
         csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
         if (isDisposing()) {

@@ -470,6 +470,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
         try {
+            final CsmModelState modelState = ModelImpl.instance().getState();
+            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                return;
+            }
             if (!inEnsureParsed.compareAndSet(false, true)) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
             }
