@@ -65,6 +65,7 @@ import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
@@ -87,36 +88,66 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class DefaultCssModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class DefaultCssEditorModule extends CssEditorModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/properties/"; //NOI18N    
-    private static final String[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new String[]{
-        "default_module",
-        "marquee", 
-        "ruby", 
-        "multi-column_layout", 
-        "values_and_units", 
-        "text", 
-        "writing_modes",
-        "generated_content_for_paged_media",
-        "fonts",
-        "basic_box_model",
-        "speech",
-        "grid_positioning",
-        "flexible_box_layout",
-        "image_values",
-        "animations",
-        "transforms_2d",
-        "transforms_3d",
-        "transitions",
-        "line",
-        "hyperlinks",
-        "presentation_levels",
-        "generated_and_replaced_content"
+    private static final CssModule[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new CssModule[]{
+        module("default_module", "CSS 2.1", "http://www.w3.org/TR/CSS2"),
+        module("marquee", "Marquee", "http://www.w3.org/TR/css3-marquee"),
+        module("ruby", "Ruby", "http://www.w3.org/TR/css3-ruby"),
+        module("multi-column_layout", "Multi-column Layout", "http://www.w3.org/TR/css3-multicol"),
+        module("values_and_units", "Values and Units", "http://www.w3.org/TR/css3-values"),
+        module("text", "Text", "http://www.w3.org/TR/css3-text"),
+        module("writing_modes", "Writing Modes", "http://www.w3.org/TR/css3-writing-modes"),
+        module("generated_content_for_paged_media", "Generated Content for Paged Media", "http://www.w3.org/TR/css3-gcpm"),
+        module("fonts", "Fonts", "http://www.w3.org/TR/css3-fonts"),
+        module("basic_box_model", "Basic Box Model", "http://www.w3.org/TR/css3-box"),
+        module("speech", "Speech", "http://www.w3.org/TR/css3-speech"),
+        module("grid_positioning", "Grid Positioning", "http://www.w3.org/TR/css3-grid"),
+        module("flexible_box_layout", "Flexible Box Layout", "http://www.w3.org/TR/css3-flexbox"),
+        module("image_values", "Image Values and Replaced Content", "http://www.w3.org/TR/css3-images"),
+        module("animations", "Animations", "http://www.w3.org/TR/css3-animations"),
+        module("transforms_2d", "2D Transforms", "http://www.w3.org/TR/css3-2d-transforms"),
+        module("transforms_3d", "3D Transforms", "http://www.w3.org/TR/css3-3d-transforms"),
+        module("transitions", "Transitions", "http://www.w3.org/TR/css3-transitions"),
+        module("line", "Line Layout", "http://www.w3.org/TR/css3-linebox"),
+        module("hyperlinks", "Hyperlink Presentation", "http://www.w3.org/TR/css3-hyperlinks"),
+        module("presentation_levels", "Presentation Levels", "http://www.w3.org/TR/css3-preslev"),
+        module("generated_and_replaced_content", "Generated and Replaced Content", "http://www.w3.org/TR/css3-content")
     };
     private static Collection<Property> propertyDescriptors;
+
+    private static CssModule module(String name, String displayName, String url) {
+        return new DefaultCssModule(name, displayName, url);
+    }
+
+    private static class DefaultCssModule implements CssModule {
+
+        private String name, displayName, url;
+
+        public DefaultCssModule(String name, String displayName, String url) {
+            this.name = name;
+            this.displayName = displayName;
+            this.url = url;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String getSpecificationURL() {
+            return url;
+        }
+    }
 
     private static class Css21HelpResolver extends HelpResolver {
 
@@ -125,11 +156,6 @@ public class DefaultCssModule extends CssModule {
             return CssHelpResolver.instance().getPropertyHelp(property.getName());
         }
 
-        @Override
-        public String getHelp(URL url) {
-            return CssHelpResolver.instance().getHelpText(url);
-        }
-        
         @Override
         public URL resolveLink(Property property, String link) {
 //            return CssHelpResolver.getHelpZIPURLasString() == null ? null :
@@ -142,16 +168,15 @@ public class DefaultCssModule extends CssModule {
         public int getPriority() {
             return 100;
         }
-
     }
 
     @Override
     public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = new ArrayList<Property>();
-            for (String fileName : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
-                String path = MODULE_PATH_BASE + fileName;
-                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path));
+            for (CssModule module : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
+                String path = MODULE_PATH_BASE + module.getName();
+                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path, module));
             }
 
         }
@@ -161,9 +186,13 @@ public class DefaultCssModule extends CssModule {
     @Override
     public Collection<HelpResolver> getHelpResolvers() {
         //CSS2.1 legacy help - to be removed
-        return Arrays.asList(new HelpResolver[]{new Css21HelpResolver(), new PropertyCompatibilityHelpResolver()});
+        return Arrays.asList(new HelpResolver[]{
+            new Css21HelpResolver(), 
+            new PropertyCompatibilityHelpResolver(),
+            new StandardPropertiesHelpResolver()
+        });
     }
-    
+
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
         final Snapshot snapshot = context.getSnapshot();
