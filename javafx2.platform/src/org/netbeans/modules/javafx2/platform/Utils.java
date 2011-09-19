@@ -222,8 +222,7 @@ public final class Utils {
         
         try {
             if (Utilities.isUnix() || Utilities.isMac()) {
-                // TODO check is it "mat.so" on Mac OS
-//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
+                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
                 return true;
             } else if (Utilities.isWindows()) {
                 System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
