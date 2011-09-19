@@ -206,17 +206,17 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
 
         @Override
         public boolean needsStartForConfigure() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            return false;
         }
 
         @Override
         public boolean needsStartForTargetList() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            return false;
         }
 
         @Override
         public boolean needsStartForAdminConfig() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            return false;
         }
 
         @Override

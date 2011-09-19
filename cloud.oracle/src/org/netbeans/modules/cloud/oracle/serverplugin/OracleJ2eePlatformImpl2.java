@@ -82,7 +82,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
         assert dm instanceof OracleDeploymentManager;
         this.dm = (OracleDeploymentManager)dm;
         moduleTypes.add(Type.WAR);
-        moduleTypes.add(Type.EJB);
+        //moduleTypes.add(Type.EJB); // EJB does not seem to be supported
         moduleTypes.add(Type.EAR);
     }
     
