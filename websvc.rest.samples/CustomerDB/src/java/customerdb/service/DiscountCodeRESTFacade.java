@@ -42,102 +42,102 @@
  * made subject to such option by the copyright holder.
  */
 
-package customerdb.service;
 
-import javax.naming.InitialContext;
+
+package customerdb.service;
+import customerdb.controller.DiscountCodeJpaController;
 import javax.naming.NamingException;
-import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
+import javax.persistence.EntityManagerFactory;import javax.transaction.UserTransaction;
+import javax.naming.InitialContext;
+import customerdb.DiscountCode;
+import java.net.URI;
+import java.util.List;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+
+
 
 /**
- * Utility class for dealing with persistence.
  *
- * @author PeterLiu
+ * @author __USER__
  */
-public class PersistenceService {
-    private static String DEFAULT_PU = "CustomerDBPU";
-    
-    private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
-        @Override
-        protected PersistenceService initialValue() {
-            return new PersistenceService();
-        }
-    };
-    
-    private EntityManager em;
-    
-    private UserTransaction utx;
-    
-    private PersistenceService() {
+@Path("customerdb.discountcode")
+public class DiscountCodeRESTFacade {
+
+    private EntityManagerFactory getEntityManagerFactory() throws NamingException {
+        return (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence-factory");
+    }
+
+    private DiscountCodeJpaController getJpaController() {
         try {
-            this.em = (EntityManager) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
-            this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+            UserTransaction utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+            return new DiscountCodeJpaController(utx, getEntityManagerFactory());
         } catch (NamingException ex) {
             throw new RuntimeException(ex);
-        }
+        }    }
+
+    public DiscountCodeRESTFacade() {
     }
-    
-    /**
-     * Returns an instance of PersistenceService.
-     *
-     * @return an instance of PersistenceService
-     */
-    public static PersistenceService getInstance() {
-        return instance.get();
-    }
-    
-    
-    private static void removeInstance() {
-        instance.remove();
-    }
-    
-    /**
-     * Returns an instance of EntityManager.
-     *
-     * @return an instance of EntityManager
-     */
-    public EntityManager getEntityManager() {
-        return em;
-    }
-    
-    /**
-     * Begins a resource transaction.
-     */
-    public void beginTx() {
+
+    @POST
+    @Consumes({"application/xml", "application/json"})
+    public Response create(DiscountCode entity) {
         try {
-            utx.begin();
-            em.joinTransaction();
+            getJpaController().create(entity);
+            return Response.created(URI.create(entity.getDiscountCode().toString())).build();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            return Response.notModified(ex.getMessage()).build();
         }
     }
-    
-    /**
-     * Commits a resource transaction.
-     */
-    public void commitTx() {
+
+    @PUT
+    @Consumes({"application/xml", "application/json"})
+    public Response edit(DiscountCode entity) {
         try {
-            utx.commit();
+            getJpaController().edit(entity);
+            return Response.ok().build();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            return Response.notModified(ex.getMessage()).build();
         }
     }
-    
-    /**
-     * Rolls back a resource transaction.
-     */
-    public void rollbackTx() {
+
+    @DELETE
+    @Path("{id}")
+    public Response remove(@PathParam("id") String id) {
         try {
-            utx.rollback();
+            getJpaController().destroy(id.charAt(0));
+            return Response.ok().build();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            return Response.notModified(ex.getMessage()).build();
         }
     }
-    
-    /**
-     * Closes this instance.
-     */
-    public void close() {
-        removeInstance();
+
+    @GET
+    @Path("{id}")
+    @Produces({"application/xml", "application/json"})
+    public DiscountCode find(@PathParam("id") String id) {
+        return getJpaController().findDiscountCode(id.charAt(0));
     }
+
+    @GET
+    @Produces({"application/xml", "application/json"})
+    public List<DiscountCode> findAll() {
+        return getJpaController().findDiscountCodeEntities();
+    }
+
+    @GET
+    @Path("{max}/{first}")
+    @Produces({"application/xml", "application/json"})
+    public List<DiscountCode> findRange(@PathParam("max") Integer max, @PathParam("first") Integer first) {
+        return getJpaController().findDiscountCodeEntities(max, first);
+    }
+
+    @GET
+    @Path("count")
+    @Produces("text/plain")
+    public String count() {
+        return String.valueOf(getJpaController().getDiscountCodeCount());
+
+    }
+    
 }
