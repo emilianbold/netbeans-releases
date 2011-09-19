@@ -706,6 +706,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return field.getName(field.isStatic());
         }
 
+        @Override
         protected String getTypeName() {
             Set<TypeResolver> types = getField().getInstanceTypes();
             String typeName = types.isEmpty() ? "?" : types.size() > 1 ?  "mixed" : "?";//NOI18N
