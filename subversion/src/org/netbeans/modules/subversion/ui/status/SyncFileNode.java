@@ -102,6 +102,10 @@ public class SyncFileNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
     
+    /**
+     * Careful, returned file may not be normalized
+     * @return 
+     */
     public File getFile() {
         return node.getFile();
     }
@@ -130,7 +134,7 @@ public class SyncFileNode extends AbstractNode {
      */
     @Override
     public <T extends Cookie> T getCookie(Class<T> klass) {
-        FileObject fo = FileUtil.toFileObject(getFile());
+        FileObject fo = node.getFileObject();
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
