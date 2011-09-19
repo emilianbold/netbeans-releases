@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.editor.hints.common.Utilities;
@@ -81,7 +82,16 @@ public class AddAnnotationArgument implements Fix {
             public void cancel() {}
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                Utilities.addAnnotationArgument(workingCopy, element, annMirror, argumentName,argumentValue);
+                Element annotationElement  = annMirror.getAnnotationType().asElement();
+                if ( annotationElement != null ){
+                    Utilities.addAnnotationArgument(workingCopy, 
+                            ElementHandle.create(element), 
+                            ElementHandle.create(annotationElement), argumentName,
+                            argumentValue);
+                }
+                else {
+                    return;
+                }
             }
         };
         
