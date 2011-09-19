@@ -331,7 +331,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     doSomething();
                 } catch (Throwable thrwn) {
                     if (MethodOrder.isShuffled()) {
-                        thrwn = Log.wrapWithAddendum(thrwn, "(executed in shuffle mode, run with -DNbTestCase.order=" + MethodOrder.getSeed() + " to reproduce the order)", false);
+                        thrwn = Log.wrapWithAddendum(thrwn, "(executed in shuffle mode, run with -DNbTestCase.order=" + MethodOrder.getSeed() + " to reproduce the order)", true);
                     }
                     this.t = Log.wrapWithMessages(thrwn);
                 } finally {
