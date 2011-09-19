@@ -39,28 +39,53 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor;
 
-import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-@ServiceProvider(service = CssEditorModule.class)
-public class InternetExplorerModule extends BrowserSupportModule {
+public class URLRetriever {
+    
+    private static final WeakHashMap<String, String> PAGES_CACHE = new WeakHashMap<String, String>();
+    
+    public static String getURLContentAndCache(URL url) {
+        //strip off the anchor url part
+        String path = url.getPath();
 
-    public InternetExplorerModule() {
-        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", "ms", "ie20"), "internet_explorer");
+        //try to load from cache
+        String file_content = PAGES_CACHE.get(path);
+        if (file_content == null) {
+            try {
+                InputStream is = url.openStream();
+                byte buffer[] = new byte[8096];
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int count = 0;
+                do {
+                    count = is.read(buffer);
+                    if (count > 0) {
+                        baos.write(buffer, 0, count);
+                    }
+                } while (count > 0);
+
+                is.close();
+                file_content = baos.toString();
+                baos.close();
+            } catch (java.io.IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot read css help file.", e); //NOI18N
+            }
+
+            PAGES_CACHE.put(path, file_content);
+        }
+        
+        return file_content;
     }
-
-    @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
-    }
-
-      
+    
 }

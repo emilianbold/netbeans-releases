@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Property;
@@ -71,8 +72,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class PagedMediaModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class PagedMediaModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/paged_media"; //NOI18N
     private static Collection<Property> propertyDescriptors;
@@ -100,7 +101,7 @@ public class PagedMediaModule extends CssModule {
     @Override
     public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
     }
@@ -202,4 +203,20 @@ public class PagedMediaModule extends CssModule {
             }
         };
     }
+
+    @Override
+    public String getName() {
+        return "paged_media"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Paged Media";
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-page";
+    }
+    
 }

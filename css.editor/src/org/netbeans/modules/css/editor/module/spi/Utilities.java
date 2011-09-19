@@ -162,7 +162,7 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath) {
+    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
         Collection<Property> properties = new ArrayList<Property>();
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
@@ -176,7 +176,7 @@ public class Utilities {
 
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
-                Property prop = new Property(parsed_name, value);
+                Property prop = new Property(parsed_name, value, module);
                 properties.add(prop);
             }
 
