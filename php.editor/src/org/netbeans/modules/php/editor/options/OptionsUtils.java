@@ -57,6 +57,7 @@ public final class OptionsUtils {
     private static final AtomicBoolean INITED = new AtomicBoolean(false);
 
     private static final PreferenceChangeListener PREFERENCES_TRACKER = new PreferenceChangeListener() {
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
 
