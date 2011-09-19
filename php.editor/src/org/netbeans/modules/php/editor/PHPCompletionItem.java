@@ -216,7 +216,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         ElementHandle elem = getElement();
         if (elem instanceof MethodElement) {
             final MethodElement method = (MethodElement) elem;
-            if (method.isConstructor()) {
+            if (method.isConstructor() && request.context.equals(CompletionContext.NEW_CLASS)) {
                 elem = method.getType();
             }
         }
