@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.php.editor.options;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
