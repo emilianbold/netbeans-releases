@@ -47,7 +47,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,10 +75,15 @@ import org.openide.util.lookup.Lookups;
 public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     private OracleDeploymentManager dm;
+    private final Set<Type> moduleTypes = new HashSet<Type>();
+    
 
     public OracleJ2eePlatformImpl2(DeploymentManager dm) {
         assert dm instanceof OracleDeploymentManager;
         this.dm = (OracleDeploymentManager)dm;
+        moduleTypes.add(Type.WAR);
+        moduleTypes.add(Type.EJB);
+        moduleTypes.add(Type.EAR);
     }
     
     @Override
@@ -149,7 +153,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public Set<Type> getSupportedTypes() {
-        return Collections.<Type>singleton(Type.WAR);
+        return moduleTypes;
     }
 
     @Override
