@@ -43,7 +43,10 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -54,7 +57,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -64,9 +67,20 @@ public class CMakeDataObject extends MultiDataObject {
 
     public CMakeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
+        registerEditor(MIMENames.CMAKE_MIME_TYPE, true);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         cookies.add(new CMakeExecSupport(getPrimaryEntry()));
+    }
+
+    @MultiViewElement.Registration(displayName = "#Source",
+    iconBase = "org/netbeans/modules/cnd/loaders/CMakefileDataIcon.gif",
+    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+    mimeType = MIMENames.CMAKE_MIME_TYPE,
+    preferredID = "cmakefile.source",
+    position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
@@ -86,7 +100,7 @@ public class CMakeDataObject extends MultiDataObject {
         }
 
         /** Get the support for methods which need it */
-        private final CMakeExecSupport getSupport() {
+        private CMakeExecSupport getSupport() {
             return getCookie(CMakeExecSupport.class);
         }
 

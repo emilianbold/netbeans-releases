@@ -42,32 +42,35 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
 
 public class CMakeIncludeDataObject extends MultiDataObject {
+    private static final String CMAKE_INCLUDE_MIME_TYPE="text/cmake"; //NOI18N
 
     public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        registerEditor(CMAKE_INCLUDE_MIME_TYPE, true);
+    }
+
+    @MultiViewElement.Registration(displayName = "#Source",
+    iconBase = "org/netbeans/modules/cnd/loaders/cmake.gif",
+    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+    mimeType = CMAKE_INCLUDE_MIME_TYPE,
+    preferredID = "cmakeincludefile.source",
+    position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 }
