@@ -87,7 +87,6 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
-import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

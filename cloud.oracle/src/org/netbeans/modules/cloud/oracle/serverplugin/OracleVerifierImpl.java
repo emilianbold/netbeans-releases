@@ -44,7 +44,7 @@ package org.netbeans.modules.cloud.oracle.serverplugin;
 import java.io.OutputStream;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
-import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
+import org.netbeans.libs.oracle.cloud.api.WhiteListTool;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
