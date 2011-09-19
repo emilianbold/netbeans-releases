@@ -111,7 +111,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     }
     
     public static ProjectCustomizer.CompositeCategoryProvider createWhiteListCategoryProvider(Map attrs) {
-        return new Factory("true".equals(attrs.get("show"))); //NOI18N
+        return new Factory(Boolean.TRUE.equals((Boolean)attrs.get("show"))); //NOI18N
     }
 
     @Override
