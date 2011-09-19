@@ -75,6 +75,8 @@ import org.openide.util.Exceptions;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.editor.Utilities;
@@ -147,6 +149,17 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                     public void run() {
                         try {
                             int startOffset = pane.getCaretPosition();
+                            GuardedSectionManager manager = GuardedSectionManager.getInstance((StyledDocument) doc);
+                            if (manager != null) {
+                                for (GuardedSection guard : manager.getGuardedSections()) {
+                                    if (guard.contains(doc.createPosition(startOffset), true)) {
+                                        startOffset = guard.getEndPosition().getOffset() + 1;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                            
                             doc.insertString(startOffset, code, null);
                             Position start = doc.createPosition(startOffset);
                             Position end = doc.createPosition(startOffset + code.length());
