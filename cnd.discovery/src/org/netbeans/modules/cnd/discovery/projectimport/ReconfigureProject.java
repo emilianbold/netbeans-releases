@@ -139,8 +139,7 @@ public class ReconfigureProject {
         compilerSet = set.getCompilerSet();
         assert compilerSet != null;
         isSunCompiler = compilerSet.getCompilerFlavor().isSunStudioCompiler();
-        Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
-        for(Item item : important.getAllItemsAsArray()){
+        for(Item item :  pdp.getConfigurationDescriptor().getExternalFileItemsAsArray()){
             DataObject dao = item.getDataObject();
             if (dao != null) {
                 String mime = dao.getPrimaryFile().getMIMEType();

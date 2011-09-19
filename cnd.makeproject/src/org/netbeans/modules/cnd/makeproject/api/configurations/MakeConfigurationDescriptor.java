@@ -522,7 +522,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public Item[] getExternalFileItemsAsArray() {
-        return externalFileItems.getItemsAsArray();
+        if (externalFileItems != null) {
+            return externalFileItems.getItemsAsArray();
+        }
+        return new Item[]{};
     }
 
     public Folder getExternalItemFolder() {
