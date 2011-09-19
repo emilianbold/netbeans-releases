@@ -463,7 +463,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (!typeNames.isEmpty()) {
                 for (TypeResolver type : possibleTypes) {
                     if (typeNames.contains(type.getRawTypeName()) || type.getRawTypeName().equals("mixed") ||
-                            (typeNames.contains("real") && type.getRawTypeName().equals("float"))) { // NOI18N
+                            (typeNames.contains("real") && type.getRawTypeName().equals("float")) ||
+                            (typeNames.contains("int") && type.getRawTypeName().equals("integer"))) { // NOI18N
                         return true;
                     }
                 }
