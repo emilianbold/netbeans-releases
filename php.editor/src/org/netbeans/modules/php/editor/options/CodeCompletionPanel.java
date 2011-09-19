@@ -137,6 +137,7 @@ public class CodeCompletionPanel extends JPanel {
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
         return new PreferencesCustomizer.Factory() {
 
+            @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 return new CodeCompletionPreferencesCustomizer(preferences);
             }
@@ -146,6 +147,7 @@ public class CodeCompletionPanel extends JPanel {
     private void initAutoCompletion() {
         // full
         autoCompletionFullRadioButton.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     setAutoCompletionState(false);
@@ -153,6 +155,7 @@ public class CodeCompletionPanel extends JPanel {
             }
         });
         autoCompletionCustomizeRadioButton.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     setAutoCompletionState(true);
@@ -525,6 +528,7 @@ public class CodeCompletionPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultRadioButtonListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 validateData();
@@ -533,6 +537,7 @@ public class CodeCompletionPanel extends JPanel {
     }
 
     private final class DefaultCheckBoxListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             validateData();
         }
@@ -546,18 +551,22 @@ public class CodeCompletionPanel extends JPanel {
             this.preferences = preferences;
         }
 
+        @Override
         public String getId() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getDisplayName() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(CodeCompletionPanel.class);
         }
 
+        @Override
         public JComponent getComponent() {
             return new CodeCompletionPanel(preferences);
         }
