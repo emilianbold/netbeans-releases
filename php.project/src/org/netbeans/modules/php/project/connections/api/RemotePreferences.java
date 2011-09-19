@@ -41,6 +41,12 @@
  */
 package org.netbeans.modules.php.project.connections.api;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.project.PhpPreferences;
 import org.openide.util.Parameters;
@@ -51,10 +57,10 @@ import org.openide.util.Parameters;
  */
 public final class RemotePreferences {
 
-    public static final String GENERAL_PREFERENCES = "general"; // NOI18N
-
+    private static final Logger LOGGER = Logger.getLogger(RemotePreferences.class.getName());
     // do not change arbitrary - consult with layer's folder OptionsExport
     private static final String REMOTE_CONNECTIONS = "RemoteConnections"; // NOI18N
+    private static final String GENERAL_PREFERENCES = "general"; // NOI18N
 
     private final String type;
     private final boolean importEnabled;
@@ -78,11 +84,46 @@ public final class RemotePreferences {
     }
 
     /**
+     * Get all server configurations of all types.
+     * @return all server configurations of all types
+     */
+    public static Map<String, Map<String, String>> getServerConfigs() {
+        Map<String, Map<String, String>> serverConfigs = new HashMap<String, Map<String, String>>();
+        Preferences remoteConnections = getServerConfigsPreferences();
+        try {
+            for (String name : remoteConnections.childrenNames()) {
+                if (name.equals(RemotePreferences.GENERAL_PREFERENCES)) {
+                    // ignore "general" node
+                    continue;
+                }
+                Preferences node = remoteConnections.node(name);
+                Map<String, String> value = new TreeMap<String, String>();
+                for (String key : node.keys()) {
+                    value.put(key, node.get(key, null));
+                }
+                serverConfigs.put(name, value);
+            }
+        } catch (BackingStoreException bse) {
+            LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
+        }
+        return serverConfigs;
+    }
+
+    /**
      * Get preferences themselves.
      * @return the preferences themselves
      */
     public Preferences getPreferences() {
         return PhpPreferences.getPreferences(importEnabled).node(REMOTE_CONNECTIONS).node(GENERAL_PREFERENCES).node(type);
+    }
+
+    // XXX could be moved into "servers" subnode
+    /**
+     * Get root node of server configurations.
+     * @return root node of server configurations
+     */
+    public static Preferences getServerConfigsPreferences() {
+        return PhpPreferences.getPreferences(true).node(REMOTE_CONNECTIONS);
     }
 
 }

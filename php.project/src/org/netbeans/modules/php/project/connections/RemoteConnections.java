@@ -50,13 +50,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.api.RemotePreferences;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
@@ -75,8 +73,6 @@ public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
-    // Do not change arbitrary - consult with layer's folder OptionsExport
-    private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
     private static final List<RemoteConnectionProvider> CONNECTION_PROVIDERS =
@@ -106,10 +102,6 @@ public final class RemoteConnections {
         RemoteConnectionsPanel panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
         return panel;
-    }
-
-    private static Preferences getPreferences() {
-        return PhpPreferences.getPreferences(true).node(PREFERENCES_PATH);
     }
 
     /**
@@ -276,7 +268,7 @@ public final class RemoteConnections {
     }
 
     private void saveRemoteConnections(List<RemoteConfiguration> remoteConfigurations) {
-        final Preferences remoteConnectionsPreferences = getPreferences();
+        final Preferences remoteConnectionsPreferences = RemotePreferences.getServerConfigsPreferences();
         for (String name : configManager.configurationNames()) {
             if (name == null) {
                 // default config
@@ -349,22 +341,7 @@ public final class RemoteConnections {
         }
 
         private void readConfigs() {
-            Preferences remoteConnections = getPreferences();
-            try {
-                for (String name : remoteConnections.childrenNames()) {
-                    if (name.equals(RemotePreferences.GENERAL_PREFERENCES)) {
-                        continue;
-                    }
-                    Preferences node = remoteConnections.node(name);
-                    Map<String, String> value = new TreeMap<String, String>();
-                    for (String key : node.keys()) {
-                        value.put(key, node.get(key, null));
-                    }
-                    configs.put(name, value);
-                }
-            } catch (BackingStoreException bse) {
-                LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
-            }
+            configs.putAll(RemotePreferences.getServerConfigs());
         }
     }
 }
