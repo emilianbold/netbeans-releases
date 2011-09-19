@@ -74,10 +74,10 @@ public class CMakeDataObject extends MultiDataObject {
     }
 
     @MultiViewElement.Registration(displayName = "#Source",
-    iconBase = "org/netbeans/modules/cnd/loaders/CMakefileDataIcon.gif",
+    iconBase = "org/netbeans/modules/cnd/loaders/CMakefileDataIcon.gif", //NOI18N
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
     mimeType = MIMENames.CMAKE_MIME_TYPE,
-    preferredID = "cmakefile.source",
+    preferredID = "cmakefile.source", //NOI18N
     position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
