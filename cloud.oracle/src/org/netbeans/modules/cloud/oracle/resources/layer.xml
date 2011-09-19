@@ -100,12 +100,26 @@
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="SaaSServices">
         <folder name="Oracle">
             <!-- <file name="Opportunity.xml" url="/org/netbeans/modules/cloud/oracle/resources/Opportunity.xml"/> -->
             <file name="CustomerAccount.xml" url="/org/netbeans/modules/cloud/oracle/resources/CustomerAccount.xml"/>
         </folder>
     </folder>
+
+
+    <!-- This registration is here temporarily - its proper home is weblogic module -->
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="WebLogic9">
+                <file name="WhitelistVerifier.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLVerifier"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
     
 </filesystem>

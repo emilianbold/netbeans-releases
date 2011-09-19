@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.optional;
+package org.netbeans.modules.cloud.oracle.serverplugin;
 
 import java.io.OutputStream;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -47,14 +47,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
-import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
+import org.netbeans.libs.oracle.cloud.api.WhiteListTool;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * This class is here temporarily - its proper home is weblogic module.
  */
-public class WLVerifier extends VerifierSupport {
+public class WebLogicVerifier extends VerifierSupport {
 
     @Override
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
