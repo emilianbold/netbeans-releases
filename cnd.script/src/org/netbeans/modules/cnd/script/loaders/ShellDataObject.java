@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.script.loaders;
 
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
@@ -51,9 +53,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.MultiDataObject;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  *  Represents a Shell object in the Repository.
@@ -67,14 +71,28 @@ public class ShellDataObject extends MultiDataObject {
     public ShellDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
 
+        registerEditor(MIMENames.SHELL_MIME_TYPE, true);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         cookies.add(new ShellExecSupport(getPrimaryEntry()));
     }
 
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
+    }
+
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(
+        displayName="#Source", // NOI18N
+        iconBase="org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif", // NOI18N
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType=MIMENames.SHELL_MIME_TYPE,
+        preferredID="shell.source", // NOI18N
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override

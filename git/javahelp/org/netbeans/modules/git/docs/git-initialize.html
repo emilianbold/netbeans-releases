@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Git: Initializing</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Git: Initializing</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE enables you to initialize a Git repository from existing files that are not in source control yet.</p>
+        
+        <h4>To initialize a Git repository:</h4>
+        
+        <ol>
+            <li>In the Projects window, select an unversioned project and choose either:
+            
+                <ul>
+                    <li>Versioning &gt; Initialize Git Repository from the node's 
+                        right-click menu.</li>
+                    <li>Team &gt; Git &gt; Initialize from the
+                        IDE's main menu.</li>
+                </ul></li>
+                
+            <li>In the Initialize a Git Repository dialog box, specify the path to the repository you are going to store your versioned files  or click Browse and browse for the directory required.</li>
+			<li>Click OK.<br>
+            A .git subfolder is created in your NetBeans project folder,   which is your Git repository where all the data of your project   snapshots are stored. You can  view files being added to the 
+            repository from the Output window (Ctrl-4).
+            <ul>
+            <li>All the project files are marked <em>Added</em> in your Working Tree.</li>
+            <li>After you initialized the Git repository, you either <a href="git-add.html">add</a> files or directly <a href="git-com.html">commit</a> them to the Git repository.</li>
+            </ul>
+			</li>
+        </ol>
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_about.html">About Projects</a></dd>            
+            <dd><a href="git-about.html">About Git Support</a></dd>
+        </dl>
+        <hr><small><a href="credits.html">Legal Notices</a></small>
+        
+    </body>
+</html>

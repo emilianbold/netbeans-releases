@@ -171,7 +171,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     private static String computeFitText(JLabel label) {
         String text = label.getText();
-        if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
+        if(text == null) text = "";
+        if (text.length() <= VISIBLE_START_CHARS + 3) return text;
         
         Icon icon = label.getIcon();
         int iconWidth = icon != null ? icon.getIconWidth() : 0;
@@ -320,6 +321,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
             Object o = p.getValue();
             if(o instanceof String) {
                 String s = (String) o;
+                if(s == null) s = "";                                               // NOI18N
                 s = TextUtils.escapeForHTMLLabel(s);
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>");                                                // NOI18N

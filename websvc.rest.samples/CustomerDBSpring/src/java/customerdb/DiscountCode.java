@@ -59,7 +59,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author srividhyanarayanan
+ * @author __USER__
  */
 @Entity
 @Table(name = "DISCOUNT_CODE")
