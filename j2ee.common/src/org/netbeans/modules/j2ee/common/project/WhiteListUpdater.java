@@ -66,8 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- *
- * @author david
+ * Support for propagating whitelist changes to subprojects.
  */
 public final class WhiteListUpdater  implements PropertyChangeListener {
 
@@ -155,6 +154,12 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
         }
     }
 
+    /**
+     * A helper which which is here only for lack of better place - shows dialog whether
+     * deployment should continue when whitelist violations are present in project.
+     * @param p
+     * @return 
+     */
     @NbBundle.Messages({
             "MSG_WhitelistViolations=Whitelist violations were detected in project being deployed. Are you sure you want to continue deployment?",
             "MSG_Dialog_Title=Continue deployment?"
