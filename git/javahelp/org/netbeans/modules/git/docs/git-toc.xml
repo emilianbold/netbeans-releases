@@ -6,7 +6,8 @@
       <tocitem text="Git">
         <tocitem text="About Git" target="org.netbeans.modules.git.about" />
         <tocitem text="Git Tasks: Quick Reference" target="org.netbeans.modules.git.quickref" /> 
-        <tocitem text="Cloning a Git Repository" target="org.netbeans.modules.git.clone" />
+        <tocitem text="Initializing a Git Repository" target="org.netbeans.modules.git.initialize" />
+		<tocitem text="Cloning a Git Repository" target="org.netbeans.modules.git.clone" />
 		<tocitem text="Adding Files to a Git Repository" target="org.netbeans.modules.git.add" />  
 		<tocitem text="Committing Sources to a Git Repository" target="org.netbeans.modules.git.commit" />
 		<tocitem text="Comparing File Revisions" target="org.netbeans.modules.git.compare" />
