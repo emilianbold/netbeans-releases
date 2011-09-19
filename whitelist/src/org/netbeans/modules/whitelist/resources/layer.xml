@@ -86,6 +86,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.whitelist.project.WhiteListCategoryPanel.createWhiteListCategoryProvider"/>
                     <attr name="position" intvalue="115"/>
+                    <attr name="show" boolvalue="true"/>
                 </file>
             </folder>
             <folder name="Lookup">
