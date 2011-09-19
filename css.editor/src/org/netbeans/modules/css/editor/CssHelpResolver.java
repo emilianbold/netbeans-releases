@@ -101,7 +101,7 @@ public class CssHelpResolver {
         }
     }
 
-    public String getHelpText(URL url) {
+    private String getHelpText(URL url) {
         if (url == null) {
             return null;
         }
@@ -185,6 +185,7 @@ public class CssHelpResolver {
 
     }
 
+    //needed for resolving links
     public URL getPropertyHelpURL(String propertyName) {
         String hzurl = CssHelpResolver.getHelpZIPURLasString();
         if(hzurl == null) {
