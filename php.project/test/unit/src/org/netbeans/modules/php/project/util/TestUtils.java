@@ -46,9 +46,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
+import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.modules.InstalledFileLocator;
@@ -70,7 +72,7 @@ public final class TestUtils {
         // noop
     }
 
-    public static Project createPhpProject(File workDir) throws IOException {
+    public static PhpProject createPhpProject(File workDir) throws IOException {
         String projectName = "phpProject" + new Random().nextInt();
         File projectDir = new File(workDir, projectName);
         File srcDir = projectDir;
@@ -87,7 +89,8 @@ public final class TestUtils {
 
         final Project project = ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         ProjectManager.getDefault().saveProject(project);
-        return project;
+        Assert.assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
+        return (PhpProject) project;
     }
 
     //~ Inner classes
