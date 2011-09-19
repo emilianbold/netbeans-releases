@@ -6,6 +6,36 @@
             <code-name-base>org.netbeans.modules.javafx2.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.ant.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.debugger.jpda.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.form.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.persistence.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javafx2.editor</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -27,6 +57,13 @@
                     <code-name-base>org.netbeans.modules.javafx2.samples</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.maven.kit</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>4.14</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

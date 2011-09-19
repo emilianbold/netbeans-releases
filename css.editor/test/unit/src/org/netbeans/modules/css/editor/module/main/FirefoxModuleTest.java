@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 
 /**
  *
@@ -55,7 +55,7 @@ public class FirefoxModuleTest extends CssModuleTestBase {
     }
     
     public void testBrowser() {
-        CssModule firefoxModule = getCssModuleByClass(FirefoxModule.class);
+        CssEditorModule firefoxModule = getCssModuleByClass(FirefoxModule.class);
         assertNotNull(firefoxModule);
         
         Browser firefox = firefoxModule.getExtraBrowsers().iterator().next();

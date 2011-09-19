@@ -295,6 +295,8 @@ public class MarkBlock {
     * @return relation of compared block against this guarded block
     */
     public int compare(int startPos, int endPos) {
+        if (startMark == null || endMark == null)
+            return INVALID;
         try {
             int startThis = startMark.getOffset();
             int endThis = endMark.getOffset();
@@ -303,7 +305,6 @@ public class MarkBlock {
                 startThis = endThis;
                 endThis = tmp;
             }
-            int ret = 0;
             if (startPos == endPos) { // tested empty
                 if (startThis == endThis) { // both empty
                     if (startPos < startThis) {

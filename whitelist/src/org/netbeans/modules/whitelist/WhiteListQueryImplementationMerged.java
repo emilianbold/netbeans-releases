@@ -165,9 +165,11 @@ public class WhiteListQueryImplementationMerged implements WhiteListQueryImpleme
             final Map<WhiteListImplementation,ChangeListener> map = new IdentityHashMap<WhiteListImplementation,ChangeListener>();
             for (WhiteListQueryImplementation wlq : lr.allInstances()) {
                 final WhiteListImplementation wl = wlq.getWhiteList(file);
-                final ChangeListener cl = WeakListeners.change(this, wl);
-                wl.addChangeListener(cl);
-                map.put(wl, cl);
+                if (wl != null) {
+                    final ChangeListener cl = WeakListeners.change(this, wl);
+                    wl.addChangeListener(cl);
+                    map.put(wl, cl);
+                }
             }
             synchronized (this) {
                 if (cache == null) {
