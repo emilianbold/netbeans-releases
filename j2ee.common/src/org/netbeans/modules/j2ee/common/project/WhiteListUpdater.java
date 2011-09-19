@@ -44,9 +44,11 @@ package org.netbeans.modules.j2ee.common.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.whitelist.WhiteListQuery;
+import org.netbeans.api.whitelist.index.WhiteListIndex;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -54,6 +56,10 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -144,6 +150,21 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
             // if classpath changes refresh whitelists as well:
             updateWhitelist(null, getServerWhiteList());
         }
+    }
+
+    @NbBundle.Messages({
+            "MSG_WhitelistViolations=Whitelist violations were detected in project being deployed. Are you sure you want to continue deployment?",
+            "MSG_Dialog_Title=Continue deployment?"
+    })
+    public static boolean isWhitelistViolated(Project p) {
+        Collection problems = WhiteListIndex.getDefault().
+                getWhiteListViolations(p.getProjectDirectory(), null, "oracle.cloud");
+        if (problems.size() > 0) {
+            if (DialogDisplayer.getDefault().notify(
+                    new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title())) == NotifyDescriptor.YES_OPTION) {
+            }
+        }
+        return false;
     }
 
 }
