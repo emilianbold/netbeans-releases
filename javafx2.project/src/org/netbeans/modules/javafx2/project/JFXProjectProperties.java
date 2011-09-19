@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -856,13 +857,12 @@ public final class JFXProjectProperties {
                 saveToFile(privatePath, privateCfgProps);
             }
         }
-        updatePreloaderDependencies(configs);
     }
     
     private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
         // depeding on the currently (de)selected preloader update project dependencies,
         // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
-        Map<String,String> active = configs.get(activeConfig);
+        Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
         String projDir = active.get(PRELOADER_PROJECT);
         File projDirF = new File(projDir);
         if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
@@ -1110,6 +1110,7 @@ public final class JFXProjectProperties {
                             os.close();
                         }
                     }
+                    updatePreloaderDependencies(Collections.unmodifiableMap(RUN_CONFIGS));
                     return null;
                 }
             });
