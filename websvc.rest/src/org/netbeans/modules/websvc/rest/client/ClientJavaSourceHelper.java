@@ -158,12 +158,25 @@ public class ClientJavaSourceHelper {
                             restLibs.toArray(new Library[restLibs.size()]),
                             targetFo,
                             ClassPath.COMPILE);
-                } catch (java.io.IOException ex) {
+                } 
+                catch (IOException ex) {
                     // the libraries are likely not available
-                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
+                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
+                            Level.INFO, "Cannot add Jersey libraries" , ex);    // NOI18N
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(
-                                NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_CannotAddJerseyLib"),
+                                NbBundle.getMessage(ClientJavaSourceHelper.class, 
+                                        "MSG_CannotAddJerseyLib"),              // NOI18N
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    return;
+                }
+                catch (UnsupportedOperationException ex) {
+                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
+                            Level.INFO, "Project doesn't support classpath modification" , ex);    // NOI18N
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ClientJavaSourceHelper.class, 
+                                        "MSG_CannotModifyClasspath"),              // NOI18N
                                 NotifyDescriptor.WARNING_MESSAGE));
                     return;
                 }
