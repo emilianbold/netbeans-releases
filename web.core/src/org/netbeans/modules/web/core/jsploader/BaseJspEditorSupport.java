@@ -66,6 +66,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.web.core.palette.JspPaletteFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.DataEditorSupport;
@@ -93,6 +94,7 @@ import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
@@ -114,7 +116,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     private final DocumentListener DOCUMENT_LISTENER;
 
     public BaseJspEditorSupport(JspDataObject obj) {
-        super(obj, new BaseJspEnv(obj));
+        super(obj, null, new BaseJspEnv(obj));
         DataObject data = getDataObject();
         if ((data != null) && (data instanceof JspDataObject)) {
             setMIMEType(JspLoader.getMimeType((JspDataObject) data));
@@ -199,6 +201,11 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         });
     }
 
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
+    }
+    
     @Override
     protected StyledDocument createStyledDocument(EditorKit kit) {
         StyledDocument doc = super.createStyledDocument(kit);

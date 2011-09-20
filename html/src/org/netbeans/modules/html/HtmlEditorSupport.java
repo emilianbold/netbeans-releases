@@ -62,6 +62,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.html.palette.HtmlPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
@@ -77,6 +78,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -124,7 +126,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
     /** Constructor. */
     HtmlEditorSupport(HtmlDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
 
         //set the FileObject's mimetype - text/html or text/xhtml
         setMIMEType(obj.getPrimaryFile().getMIMEType());
@@ -133,6 +135,11 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     @Override
     protected boolean asynchronousOpen() {
 	return true;
+    }
+
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(HtmlLoader.HTML_MIMETYPE, getDataObject());
     }
 
     @Override
