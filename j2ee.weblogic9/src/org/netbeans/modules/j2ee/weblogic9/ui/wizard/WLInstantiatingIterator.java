@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -151,6 +150,11 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         String displayName = (String) wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
 
+        result.add(instantiate(displayName));
+        return result;
+    }
+
+    private InstanceProperties instantiate(String displayName) throws IOException {
         // if all the data is normally validated - create the instance and
         // attach the additional properties
         Map<String, String> props = new HashMap<String, String>();
@@ -169,11 +173,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
         
-        // add the created instance properties to the result set
-        result.add(ip);
-
-        // return the result
-        return result;
+        return ip;
     }
 
     /**
@@ -239,8 +239,10 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         this.serverRoot = serverRoot;
 
         // reinit the instances list
-        serverPropertiesPanel.getVisual().updateInstancesList();
-        serverPropertiesPanel.getVisual().updateJpa2Button();
+        if (serverPropertiesPanel != null) {
+            serverPropertiesPanel.getVisual().updateInstancesList();
+            serverPropertiesPanel.getVisual().updateJpa2Button();
+        }
     }
 
     /**

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Cloud">
+        <file name="OracleServerInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.OracleServerInstanceProvider.getProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.OracleServerInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+        <file name="org-netbeans-modules-cloud-oracle-OracleServerWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.OracleServerWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.cloud.oracle.ui.Bundle#Oracle_Node_Name"/>
+        </file>
+    </folder>
+
+    <folder name="Servers">
+        <file name="OracleJ2EEServerInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceProvider.getProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+<!--        <file name="org-netbeans-modules-cloud-oracle-serverplugin-OracleJ2EEServerWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </file> -->
+    </folder>
+    
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="Oracle Public Cloud">
+                
+                <!-- 
+                    An instance of the class implementing the DeploymentFactory 
+                    interface, it will be used as the main entry point for the
+                    plugin
+                -->
+                <file name="Factory.instance">
+                    <attr name="urlPattern" stringvalue="^oracle:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                
+                <!--
+                    An instance of the factory for creating the nodes that will 
+                    appear in the Server Registry, namely the Manager (Instance)
+                    node and the Target node
+                -->
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.RegistryNodeFactoryImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+                </file>
+                
+                <!--
+                    An instance of the class implementing the 
+                    J2eeDeploymentFactory interface, it will be used to create 
+                    objects that describe the environment that exists on a 
+                    particular instance of the server
+                -->
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2eePlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                
+                <file name="WhitelistVerifier.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleVerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+                <!--
+                    A factory that creates objects that provide optional 
+                    functionality for the plugin, i.e. starting/stopping the
+                    server, getting a custom wizard for instance registration, 
+                    etc.
+                -->
+                <file name="ModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.ModuleConfigurationFactoryImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                
+                <file name="OptionalDeploymentManagerFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                
+                <file name="Descriptor" url="nbdep.xml"/>
+                
+                <folder name="DeploymentFileNames">
+                    <folder name="EAR">
+                        <file name="META-INF\weblogic-application.xml"/>
+                    </folder>
+                    <folder name="WAR">
+                        <file name="WEB-INF\weblogic.xml"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="META-INF\weblogic-ejb-jar.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="SaaSServices">
+        <folder name="Oracle">
+            <!-- <file name="Opportunity.xml" url="/org/netbeans/modules/cloud/oracle/resources/Opportunity.xml"/> -->
+            <file name="CustomerAccount.xml" url="/org/netbeans/modules/cloud/oracle/resources/CustomerAccount.xml"/>
+        </folder>
+    </folder>
+
+
+    <!-- This registration is here temporarily - its proper home is weblogic module -->
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="WebLogic9">
+                <file name="WhitelistVerifier.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.WebLogicVerifier"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <!-- END OF weblogic registration -->
+
+    <!-- This registration is here temporarily - its proper home is server module -->
+    <folder name="UI">
+        <folder name="Runtime">
+            <file name="Cloud.instance">
+               <attr name="instanceCreate" methodvalue="org.openide.nodes.NodeOp.factory"/>
+               <attr name="name" stringvalue="cloud"/>
+               <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Name"/>
+               <attr name="shortDescription" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Short_Description"/>
+               <attr name="iconResource" stringvalue="org/netbeans/modules/server/ui/resources/cloud.png"/>
+               <attr name="original" methodvalue="org.netbeans.modules.server.ui.node.RootNode.getCloudInstance"/>
+               <attr name="position" intvalue="444"/>
+             </file>
+         </folder>
+     </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="CloudManagerAction3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-server-ui-manager-CloudManagerAction.instance"/>
+                <attr name="position" intvalue="810"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="System">
+            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.server.ui.node.AddCloudInstanceAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#LBL_Add_Cloud_Instance"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-server-ui-manager-CloudManagerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.server.resources.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.server.ui.manager.CloudManagerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.manager.Bundle#CTL_CloudManager"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>       
+    </folder>
+    <folder name="Cloud">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.shadow">
+                <attr name="position" intvalue="123"/>
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance"/>
+            </file>
+            <file name="JSeparator1.instance">
+                <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="505"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- END OF server registration -->
+    
+    
+</filesystem>
