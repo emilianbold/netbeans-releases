@@ -62,7 +62,7 @@ public class WebLogicVerifier extends VerifierSupport {
         if (p == null) {
             return;
         }
-        if (WhiteListQuery.isWhiteListEnabledInProject(p, "oracle.cloud")) { // NOI18N
+        if (WhiteListQuery.isWhiteListEnabledInProject(p, "oracle")) { // NOI18N
             WhiteListTool.execute(FileUtil.toFile(target));
         }
     }
