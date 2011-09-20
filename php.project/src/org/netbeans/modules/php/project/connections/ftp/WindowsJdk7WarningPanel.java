@@ -177,7 +177,7 @@ public final class WindowsJdk7WarningPanel extends JPanel {
 
     private void issueLinkLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_issueLinkLabelMousePressed
         try {
-            URL url = new URL("http://netbeans.org/bugzilla/show_bug.cgi?id=201449"); // NOI18N
+            URL url = new URL("http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7077696"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
