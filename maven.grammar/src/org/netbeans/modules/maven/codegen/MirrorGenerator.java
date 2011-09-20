@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -66,6 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class MirrorGenerator implements CodeGenerator {
 
+    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=CodeGenerator.Factory.class, position=100)
     public static class Factory implements CodeGenerator.Factory {
         
         public List<? extends CodeGenerator> create(Lookup context) {
