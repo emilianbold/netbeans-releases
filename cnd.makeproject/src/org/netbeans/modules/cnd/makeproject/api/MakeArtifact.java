@@ -44,11 +44,22 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public class MakeArtifact {
     public static final int TYPE_UNKNOWN = 0;
@@ -66,7 +77,11 @@ public class MakeArtifact {
     private final int configurationType;
     private final String configurationName;
     private final boolean active;
-    private final MakeConfiguration makeConfiguration;
+    // configuration of artifact, can be null
+    // if configuration null it can be counted by configuration of enclosed project, path to atifact project and configuration name
+    private MakeConfiguration makeConfiguration;
+    // configuraten of enclosed project
+    private MakeConfiguration parentMakeConfiguration;
     // Artifact
     private boolean build;
     private String workingDirectory;
@@ -84,7 +99,7 @@ public class MakeArtifact {
 	    String buildCommand, 
 	    String cleanCommand, 
 	    String output,
-            MakeConfiguration makeConfiguration) {
+            MakeConfiguration parentMakeConfiguration) {
 	this.projectLocation = projectLocation;
 	this.configurationType = configurationType;
 	this.configurationName = configurationName;
@@ -94,6 +109,22 @@ public class MakeArtifact {
 	this.buildCommand = buildCommand;
 	this.cleanCommand = cleanCommand;
 	this.output = output;
+        this.parentMakeConfiguration = parentMakeConfiguration;
+    }
+
+    private MakeArtifact(
+	    String projectLocation,
+	    int configurationType, 
+	    String configurationName, 
+	    boolean active, 
+	    boolean build, 
+	    String workingDirectory, 
+	    String buildCommand, 
+	    String cleanCommand, 
+	    String output,
+            MakeConfiguration parentMakeConfiguration,
+            MakeConfiguration makeConfiguration) {
+        this(projectLocation, configurationType, configurationName, active, build, workingDirectory, buildCommand, cleanCommand, output, parentMakeConfiguration);
         this.makeConfiguration = makeConfiguration;
     }
 
@@ -243,7 +274,41 @@ public class MakeArtifact {
     }
 
     public String getOutput() {
-        return makeConfiguration.expandMacros(output);
+        initCinfiguration();
+        if (makeConfiguration != null) {
+            return makeConfiguration.expandMacros(output);
+        } else {
+            String val = CndPathUtilitities.expandMacro(output, MakeConfiguration.CND_CONF_MACRO, configurationName); // NOI18N
+            return parentMakeConfiguration.expandMacros(val);
+        }
+    }
+    
+    private void initCinfiguration() {
+        if (makeConfiguration == null) {
+            try {
+                String projectPath = projectLocation;
+                FileSystem fs = parentMakeConfiguration.getBaseFSPath().getFileSystem();
+                if (!CndPathUtilitities.isPathAbsolute(projectLocation)) {
+                    projectPath = parentMakeConfiguration.getBaseFSPath().getPath() + FileSystemProvider.getFileSeparatorChar(fs) + projectPath;
+                }
+                projectPath = FileSystemProvider.normalizeAbsolutePath(projectPath, fs);
+                FileObject toFileObject = fs.findResource(projectPath);
+                if (toFileObject != null) {
+                    Project findProject = ProjectManager.getDefault().findProject(toFileObject);
+                    ProjectConfigurationProvider<Configuration> lookup = findProject.getLookup().lookup(ProjectConfigurationProvider.class);
+                    for(Configuration c : lookup.getConfigurations()) {
+                        if (configurationName.equals(c.getName())) {
+                            makeConfiguration = (MakeConfiguration) c;
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public String getStoredOutput() {
@@ -280,6 +345,7 @@ public class MakeArtifact {
                 buildCommand,
                 cleanCommand,
                 output,
+                parentMakeConfiguration,
                 makeConfiguration);
     }
 }

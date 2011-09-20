@@ -89,7 +89,10 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
             result.requireCdiEnabled(element, model);
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
             ElementHandle<TypeElement> handle = ElementHandle.create(element);
-            helper.addInterceptedBean( result , handle.resolve( result.getInfo()));
+            if ( helper != null ){
+                helper.addInterceptedBean( result , 
+                        handle.resolve( result.getInfo()));
+            }
         }
         
         

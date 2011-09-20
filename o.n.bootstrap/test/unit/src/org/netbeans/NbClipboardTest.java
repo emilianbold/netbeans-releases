@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 
 /** Basic tests on NbClipboard
@@ -75,12 +76,12 @@ public class NbClipboardTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         System.getProperties().remove("netbeans.slow.system.clipboard.hack");
+        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
+        f.setAccessible(true);
+        f.set(null, -1);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
+    @RandomlyFails // NB-Core-Build #7133: we do not use...
     public void testDefaultOnJDK15AndLater() throws Exception {
         if (Utilities.isMac()) {
             macCheck();
@@ -107,9 +108,6 @@ public class NbClipboardTest extends NbTestCase {
     }
 
     private void macCheck() throws NoSuchFieldException, SecurityException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException {
-        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
-        f.setAccessible(true);
-        f.set(null, -1);
         assertTrue("Is mac", Utilities.isMac());
 
         NbClipboard ec = new NbClipboard();

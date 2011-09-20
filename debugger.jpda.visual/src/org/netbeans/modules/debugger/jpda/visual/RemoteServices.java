@@ -131,12 +131,22 @@ public class RemoteServices {
     public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
-        ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
-        Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-        List<JPDAClassType> l = t.getDebugger().getClassesByName("org/netbeans/modules/debugger/jpda/visual/remote/RemoteFXService");
+        
+        ReferenceType threadType = tawt.referenceType();
+        Method getContextCl = ((ClassType)threadType).concreteMethodByName("getContextClassLoader", "()Ljava/lang/ClassLoader;");
+        
+        ObjectReference cl = (ObjectReference)tawt.invokeMethod(tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         t.notifyMethodInvoking();
         try {
-            ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            ClassType classLoaderClass = null;
+            if (cl != null) {
+                classLoaderClass = (ClassType)cl.referenceType();
+            } else {
+                classLoaderClass = getClass(vm, ClassLoader.class.getName());
+                Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+                cl = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            }
+
             List<RemoteClass> remoteClasses = getRemoteClasses();
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
@@ -159,7 +169,7 @@ public class RemoteServices {
                         }
                         uploaded = false;
                         while (!uploaded) {
-                            theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                            theUploadedClass = (ClassObjectReference) cl.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
                             if (basicClass == null && rc.name.indexOf('$') < 0) {
                                 try {
                                     // Disable collection only of the basic class

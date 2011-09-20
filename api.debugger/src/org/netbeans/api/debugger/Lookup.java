@@ -829,6 +829,7 @@ abstract class Lookup implements ContextProvider {
                                         //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
                                         lookupItem = null;
                                     }
+                                    fi.setInstance(instance);
                                     synchronized (instanceCache) {
                                         instanceCache.put (cn, instance);
                                         origInstanceCache.put(cn, origInstance);

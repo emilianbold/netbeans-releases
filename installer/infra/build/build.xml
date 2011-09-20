@@ -385,7 +385,7 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="tomcat.version"      value="7.0.14"/>
+	<set property="tomcat.version"      value="7.0.21"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
 
 

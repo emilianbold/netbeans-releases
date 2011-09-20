@@ -116,6 +116,9 @@ abstract public class BaseComponentBreakpointImpl extends ComponentBreakpointImp
             }
         } else if (JPDABreakpoint.PROP_SUSPEND.equals(propertyName)) {
             setSuspend(cb.getSuspend());
+        } else if (ComponentBreakpoint.PROP_TYPE.equals(propertyName)) {
+            notifyRemoved();
+            initServiceBreakpoints();
         }
     }
 }

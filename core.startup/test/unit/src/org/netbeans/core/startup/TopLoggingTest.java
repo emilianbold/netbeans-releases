@@ -464,7 +464,8 @@ public class TopLoggingTest extends NbTestCase {
 
         fail("msg shall be logged to file: " + disk);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7167
     public void testLetsTryToReportToABugInAWT() throws Exception {
         class R implements Runnable {
             public RuntimeException ex;
