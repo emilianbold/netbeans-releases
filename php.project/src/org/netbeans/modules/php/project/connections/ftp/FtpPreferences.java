@@ -39,29 +39,54 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.connections.ftp;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.util.TestUtils;
-import org.openide.util.test.MockLookup;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.connections.api.RemotePreferences;
 
-public class PhpProjectTest extends NbTestCase {
+/**
+ * FTP preferences.
+ * @see RemotePreferences
+ */
+public final class FtpPreferences {
 
-    public PhpProjectTest(String name) {
-        super(name);
+    private static final FtpPreferences INSTANCE = new FtpPreferences();
+    private static final String WINDOWS_JDK7_WARNING = "windows.jdk7.warning"; // NOI18N
+
+
+    private FtpPreferences() {
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        MockLookup.setLayersAndInstances();
+    /**
+     * Get instance of FTP preferences.
+     * @return instance of FTP preferences
+     */
+    public static FtpPreferences getInstance() {
+        return INSTANCE;
     }
 
-    public void testCreateProject() throws Exception {
-        Project project = TestUtils.createPhpProject(getWorkDir());
-        assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
-        assertNotNull("PhpModule should be found", project.getLookup().lookup(PhpModule.class));
+    /**
+     * {@code True} if warning about possible firewall issue on Windows should be shown.
+     * <p>
+     * See issue #202021 for more information.
+     * @return {@code true} if warning about possible firewall issue on Windows should be shown
+     */
+    public boolean getWindowsJdk7Warning() {
+        return getPreferences(true).getBoolean(WINDOWS_JDK7_WARNING, true);
+    }
+
+    /**
+     * Set the state of warning about possible firewall issue on Windows.
+     * <p>
+     * See issue #202021 for more information.
+     * @param shown {@code true} if the warning should be shown, {@code false} otherwise
+     */
+    public void setWindowsJdk7Warning(boolean shown) {
+        getPreferences(true).putBoolean(WINDOWS_JDK7_WARNING, shown);
+    }
+
+    private Preferences getPreferences(boolean importEnabled) {
+        return RemotePreferences.forType(FtpConnectionProvider.FTP_CONNECTION_TYPE, importEnabled).getPreferences();
     }
 
 }

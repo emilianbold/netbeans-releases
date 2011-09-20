@@ -214,7 +214,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
                     .addComponent(projectFolderLabel)
                     .addComponent(projectFolderBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(projectFolderScrollPane))
         );
 
         projectFolderCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleName")); // NOI18N
