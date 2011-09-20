@@ -86,7 +86,7 @@ public final class RootNode extends AbstractNode {
 
     private static RootNode node;
     private static RootNode cloudNode;
-    
+
     private ServerRegistry registry;
 
     private RootNode(ChildFactory factory, String displayName, String shortDesc, String iconBase, ServerRegistry registry) {
@@ -120,13 +120,13 @@ public final class RootNode extends AbstractNode {
         return node;
     }
 
-    @ServicesTabNodeRegistration(
+/*    @ServicesTabNodeRegistration(
         name = "cloud",
         displayName = "org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Name",
         shortDescription = "org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Short_Description",
         iconResource = "org/netbeans/modules/server/ui/resources/cloud.png",
         position = 444
-    )
+    )*/
     public static synchronized RootNode getCloudInstance() {
         if (cloudNode == null) {
             ChildFactory factory = new ChildFactory(ServerRegistry.getCloudInstance());

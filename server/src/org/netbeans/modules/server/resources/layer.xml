@@ -51,10 +51,10 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-server-ui-manager-ServerManagerAction.instance"/>
                 <attr name="position" intvalue="800"/>
             </file>
-            <file name="CloudManagerAction3.shadow">
+<!--            <file name="CloudManagerAction3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-server-ui-manager-CloudManagerAction.instance"/>
                 <attr name="position" intvalue="810"/>
-            </file>
+            </file> -->
         </folder>
     </folder>
     
@@ -66,12 +66,12 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
-            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance">
+<!--            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.server.ui.node.AddCloudInstanceAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#LBL_Add_Cloud_Instance"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
-            </file>
+            </file> -->
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-server-ui-manager-ServerManagerAction.instance">
@@ -81,14 +81,14 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
-            <file name="org-netbeans-modules-server-ui-manager-CloudManagerAction.instance">
+<!--            <file name="org-netbeans-modules-server-ui-manager-CloudManagerAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.server.resources.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.server.ui.manager.CloudManagerAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.manager.Bundle#CTL_CloudManager"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
-            </file>
-        </folder>       
+            </file> -->
+        </folder>
     </folder>
     <folder name="Servers">
         <folder name="Actions">
@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Cloud">
-        <folder name="Actions">
+<!--        <folder name="Actions">
             <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.shadow">
                 <attr name="position" intvalue="123"/>
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance"/>
@@ -113,6 +113,6 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="505"/>
             </file>
-        </folder>
+        </folder> -->
     </folder>
 </filesystem>
