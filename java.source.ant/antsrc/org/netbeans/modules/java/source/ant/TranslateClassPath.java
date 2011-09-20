@@ -136,51 +136,27 @@ public class TranslateClassPath extends Task {
             URL entry = FileUtil.urlForArchiveOrDir(entryFile);
             
             SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
-            boolean appendEntry = false;
 
             if (!disableSources && r.preferSources() && r.getRoots().length > 0) {
-                List<File> translated = new LinkedList<File>();
-                
                 for (FileObject source : r.getRoots()) {
                     File sourceFile = FileUtil.toFile(source);
 
                     if (sourceFile == null) {
                         log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
-                        appendEntry = true;
                         continue;
                     }
 
                     Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
-                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), false, false);
+                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true, true);
 
                     if (bamiResult == null) {
-                        appendEntry = true;
                         continue;
                     }
-                    
+
                     if (!bamiResult) {
                         throw new UserCancel();
                     }
-                    
-                    for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
-                        FileObject binaryFO = URLMapper.findFileObject(binary);
-                        File cache = binaryFO != null ? FileUtil.toFile(binaryFO) : null;
-
-                        if (cache != null) {
-                            translated.add(cache);
-                        }
-
-                        if (sourceFile != null) {
-                            translated.add(sourceFile);
-                        }
-                    }
                 }
-
-                if (appendEntry) {
-                    translated.add(entryFile);
-                }
-                
-                return translated.toArray(new File[0]);
             }
         } catch (IOException ex) {
             throw new BuildException(ex);
