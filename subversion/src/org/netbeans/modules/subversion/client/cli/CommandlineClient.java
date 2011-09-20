@@ -83,6 +83,7 @@ import org.netbeans.modules.subversion.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
+import org.netbeans.modules.subversion.client.parser.ParserSvnStatus;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
@@ -829,7 +830,26 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         } else {
             try {
                 ISVNStatus[] statuses = getStatus(new File[]{file});
-                return statuses.length > 0 ? statuses[0] : null;
+                return statuses.length > 0 ? statuses[0] : new ParserSvnStatus(
+                        file,                                
+                        null,
+                        0,
+                        "unknown",                            // NOI18N   
+                        SVNStatusKind.UNVERSIONED.toString(),
+                        SVNStatusKind.UNVERSIONED.toString(),
+                        null,
+                        0,
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false,
+                        null);
             } catch (SVNClientException ex) {
                 if (!supportedMetadataFormat && SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
                     return new SVNStatusUnversioned(file);
