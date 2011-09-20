@@ -80,6 +80,7 @@ import org.xml.sax.SAXException;
 public class POMDataObject extends MultiDataObject {
 
     public static final String MIME_TYPE = "text/x-maven-pom+xml";
+    public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 

@@ -43,7 +43,9 @@
 package org.netbeans.modules.maven.codegen;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
@@ -59,6 +61,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author mkleint
  */
+@MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=CodeGeneratorContextProvider.class)
 public class ContextProvider implements CodeGeneratorContextProvider {
 
     public void runTaskWithinContext(Lookup context, Task task) {
