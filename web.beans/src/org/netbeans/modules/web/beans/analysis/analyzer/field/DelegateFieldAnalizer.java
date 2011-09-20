@@ -100,7 +100,9 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
         }
         EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
                 result);
-        helper.addDelegate(result, element );
+        if ( helper != null ){
+            helper.addDelegate(result, element );
+        }
         if ( cancel.get()){
             return;
         }

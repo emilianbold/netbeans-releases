@@ -90,7 +90,9 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
             result.requireCdiEnabled(element, model);
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
             ElementHandle<ExecutableElement> handle = ElementHandle.create(element);
-            helper.addInterceptedMethod(result, handle.resolve( result.getInfo()));
+            if ( helper != null ){
+                helper.addInterceptedMethod(result, handle.resolve( result.getInfo()));
+            }
         }
         if (AnnotationUtil.isLifecycleCallback(element, model.getCompilationController() )) {
             if (hasInterceptorBindings) {

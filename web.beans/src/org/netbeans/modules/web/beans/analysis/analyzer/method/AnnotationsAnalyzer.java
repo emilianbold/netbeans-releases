@@ -114,7 +114,9 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
         }
         if ( observesCount >0 ){
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
-            helper.addObserver( result , element );
+            if ( helper != null ){
+                helper.addObserver( result , element );
+            }
         }
         String firstAnnotation = null;
         String secondAnnotation = null;

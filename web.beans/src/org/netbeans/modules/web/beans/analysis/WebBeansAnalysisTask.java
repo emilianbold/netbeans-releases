@@ -157,6 +157,9 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
         }
         finally {
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(getResult());
+            if ( helper == null ){
+                return;
+            }
             helper.publish( getResult() );
         }
     }
