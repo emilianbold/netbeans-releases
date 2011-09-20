@@ -75,13 +75,18 @@ made subject to such option by the copyright holder.
                 <project>../../api.web.webmodule</project>
                 <project>../../api.xml</project>
                 <project>../../apisupport.ant</project>
+                <project>../../apisupport.crudsample</project>
+                <project>../../apisupport.facebooksample</project>
                 <project>../../apisupport.feedreader</project>
                 <project>../../apisupport.harness</project>
+                <project>../../apisupport.installer</project>
+                <project>../../apisupport.installer.maven</project>
                 <project>../../apisupport.kit</project>
+                <project>../../apisupport.osgidemo</project>
                 <project>../../apisupport.paintapp</project>
                 <project>../../apisupport.project</project>
                 <project>../../apisupport.refactoring</project>
-                <project>../../apisupport.tc.cobertura</project>
+                <project>../../apisupport.restsample</project>
                 <project>../../applemenu</project>
                 <project>../../autoupdate.pluginimporter</project>
                 <project>../../autoupdate.services</project>
@@ -90,6 +95,9 @@ made subject to such option by the copyright holder.
                 <project>../../bugtracking</project>
                 <project>../../bugtracking.bridge</project>
                 <project>../../bugzilla</project>
+                <project>../../bugzilla.exceptionreporter</project>
+                <project>../../c.jcraft.jsch</project>
+                <project>../../c.jcraft.jzlib</project>
                 <project>../../classfile</project>
                 <project>../../cnd</project>
                 <project>../../cnd.antlr</project>
@@ -100,19 +108,20 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.asm</project>
                 <project>../../cnd.callgraph</project>
                 <project>../../cnd.classview</project>
+                <project>../../cnd.cncppunit</project>
                 <project>../../cnd.completion</project>
-                <project>../../cnd.debugger.common</project>
-                <project>../../cnd.debugger.gdb</project>
+                <project>../../cnd.debugger.common2</project>
+                <project>../../cnd.debugger.gdb2</project>
                 <project>../../cnd.discovery</project>
                 <project>../../cnd.dwarfdiscovery</project>
                 <project>../../cnd.dwarfdump</project>
                 <project>../../cnd.editor</project>
                 <project>../../cnd.folding</project>
-                <project>../../cnd.gizmo</project>
                 <project>../../cnd.gotodeclaration</project>
                 <project>../../cnd.highlight</project>
                 <project>../../cnd.kit</project>
                 <project>../../cnd.lexer</project>
+                <project>../../cnd.litemodel</project>
                 <project>../../cnd.makeproject</project>
                 <project>../../cnd.model.services</project>
                 <project>../../cnd.modeldiscovery</project>
@@ -125,6 +134,12 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.remote</project>
                 <project>../../cnd.repository</project>
                 <project>../../cnd.repository.api</project>
+                <project>../../cnd.script</project>
+                <project>../../cnd.simpleunit</project>
+                <project>../../cnd.source</project>
+                <project>../../cnd.spellchecker.bindings</project>
+                <project>../../cnd.testrunner</project>
+                <project>../../cnd.toolchain</project>
                 <project>../../cnd.utils</project>
                 <project>../../core.browser</project>
                 <project>../../core.execution</project>
@@ -133,12 +148,15 @@ made subject to such option by the copyright holder.
                 <project>../../core.kit</project>
                 <project>../../core.multiview</project>
                 <project>../../core.nativeaccess</project>
+                <project>../../core.netigso</project>
+                <project>../../core.osgi</project>
                 <project>../../core.output2</project>
                 <project>../../core.startup</project>
                 <project>../../core.ui</project>
                 <project>../../core.windows</project>
                 <project>../../csl.api</project>
                 <project>../../css.editor</project>
+                <project>../../css.lib</project>
                 <project>../../css.visual</project>
                 <project>../../db</project>
                 <project>../../db.core</project>
@@ -154,55 +172,34 @@ made subject to such option by the copyright holder.
                 <project>../../debugger.jpda</project>
                 <project>../../debugger.jpda.ant</project>
                 <project>../../debugger.jpda.heapwalk</project>
+                <project>../../debugger.jpda.kit</project>
                 <project>../../debugger.jpda.projects</project>
                 <project>../../debugger.jpda.ui</project>
+                <project>../../debugger.jpda.visual</project>
                 <project>../../defaults</project>
                 <project>../../deployment.deviceanywhere</project>
-<!--                <project>../../deployment.wm</project>-->
                 <project>../../derby</project>
                 <project>../../diff</project>
-                <project>../../dlight</project>
-                <project>../../dlight.annotationsupport</project>
-                <project>../../dlight.collector.procfs</project>
-                <project>../../dlight.collector.stdout</project>
-                <project>../../dlight.core.stack</project>
-                <project>../../dlight.core.ui</project>
-                <project>../../dlight.cpu</project>
-                <project>../../dlight.db.derby</project>
-                <project>../../dlight.db.h2</project>
-                <project>../../dlight.dtrace</project>
-                <project>../../dlight.extras</project>
-                <project>../../dlight.fops</project>
-                <project>../../dlight.indicators</project>
                 <project>../../dlight.kit</project>
-                <project>../../dlight.management</project>
-                <project>../../dlight.memory</project>
-                <project>../../dlight.msa</project>
-                <project>../../dlight.msa.support</project>
+                <project>../../dlight.libs.common</project>
                 <project>../../dlight.nativeexecution</project>
-                <project>../../dlight.perfan</project>
-                <project>../../dlight.procfs</project>
-                <project>../../dlight.spi</project>
-                <project>../../dlight.sync</project>
-                <project>../../dlight.threadmap.support</project>
-                <project>../../dlight.threads</project>
-                <project>../../dlight.tools</project>
-                <project>../../dlight.toolsui</project>
+                <project>../../dlight.remote</project>
+                <project>../../dlight.remote.impl</project>
+                <project>../../dlight.terminal</project>
                 <project>../../dlight.util</project>
-                <project>../../dlight.visualizers</project>
                 <project>../../editor</project>
                 <project>../../editor.actions</project>
                 <project>../../editor.bookmarks</project>
                 <project>../../editor.bracesmatching</project>
                 <project>../../editor.codetemplates</project>
                 <project>../../editor.completion</project>
-                <project>../../editor.deprecated.pre61settings</project>
+                <project>../../editor.deprecated.pre65formatting</project>
                 <project>../../editor.errorstripe</project>
                 <project>../../editor.errorstripe.api</project>
                 <project>../../editor.fold</project>
                 <project>../../editor.guards</project>
-                <project>../../editor.highlights</project>
                 <project>../../editor.indent</project>
+                <project>../../editor.indent.project</project>
                 <project>../../editor.kit</project>
                 <project>../../editor.lib</project>
                 <project>../../editor.lib2</project>
@@ -221,12 +218,15 @@ made subject to such option by the copyright holder.
                 <project>../../extexecution.destroy</project>
                 <project>../../favorites</project>
                 <project>../../form</project>
+                <project>../../form.binding</project>
                 <project>../../form.j2ee</project>
                 <project>../../form.kit</project>
+                <project>../../form.nb</project>
+                <project>../../form.refactoring</project>
+                <project>../../git</project>
                 <project>../../glassfish.common</project>
                 <project>../../glassfish.eecommon</project>
                 <project>../../glassfish.javaee</project>
-                <project>../../glassfish.jruby</project>
                 <project>../../gototest</project>
                 <project>../../groovy.editor</project>
                 <project>../../groovy.grails</project>
@@ -236,11 +236,8 @@ made subject to such option by the copyright holder.
                 <project>../../groovy.refactoring</project>
                 <project>../../groovy.samples</project>
                 <project>../../groovy.support</project>
-                <project>../../gsf</project>
-                <project>../../gsf.api</project>
                 <project>../../gsf.codecoverage</project>
                 <project>../../gsf.testrunner</project>
-                <project>../../gsfpath.api</project>
                 <project>../../hibernate</project>
                 <project>../../hibernatelib</project>
                 <project>../../hibernateweb</project>
@@ -248,25 +245,22 @@ made subject to such option by the copyright holder.
                 <project>../../html.editor</project>
                 <project>../../html.editor.lib</project>
                 <project>../../html.lexer</project>
+                <project>../../html.parser</project>
+                <project>../../html.validation</project>
                 <project>../../httpserver</project>
                 <project>../../hudson</project>
                 <project>../../hudson.ant</project>
-                <project>../../hudson.kenai</project>
+                <project>../../hudson.git</project>
                 <project>../../hudson.maven</project>
                 <project>../../hudson.mercurial</project>
                 <project>../../hudson.subversion</project>
+                <project>../../hudson.tasklist</project>
                 <project>../../i18n</project>
                 <project>../../i18n.form</project>
                 <project>../../ide.branding</project>
                 <project>../../ide.branding.kit</project>
                 <project>../../ide.ergonomics</project>
                 <project>../../ide.kit</project>
-                <project>../../identity.ant</project>
-                <project>../../identity.kit</project>
-                <project>../../identity.profile.api</project>
-                <project>../../identity.profile.ui</project>
-                <project>../../identity.samples</project>
-                <project>../../identity.server.manager</project>
                 <project>../../image</project>
                 <project>../../j2ee.ant</project>
                 <project>../../j2ee.api.ejbmodule</project>
@@ -280,6 +274,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2ee.ddloaders</project>
                 <project>../../j2ee.earproject</project>
                 <project>../../j2ee.eclipselink</project>
+                <project>../../j2ee.eclipselinkmodelgen</project>
                 <project>../../j2ee.ejbcore</project>
                 <project>../../j2ee.ejbjarproject</project>
                 <project>../../j2ee.ejbrefactoring</project>
@@ -297,7 +292,6 @@ made subject to such option by the copyright holder.
                 <project>../../j2ee.platform</project>
                 <project>../../j2ee.samples</project>
                 <project>../../j2ee.sun.appsrv</project>
-                <project>../../j2ee.sun.appsrv81</project>
                 <project>../../j2ee.sun.dd</project>
                 <project>../../j2ee.sun.ddui</project>
                 <project>../../j2ee.toplinklib</project>
@@ -307,8 +301,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.kit</project>
                 <project>../../j2me.cdc.platform</project>
                 <project>../../j2me.cdc.platform.nokias80</project>
-<!--                <project>../../j2me.cdc.platform.nsicom</project>-->
-<!--                <project>../../j2me.cdc.platform.ricoh</project>-->
+                <project>../../j2me.cdc.platform.ojec</project>
                 <project>../../j2me.cdc.platform.semc</project>
                 <project>../../j2me.cdc.platform.sjmc</project>
                 <project>../../j2me.cdc.platform.sun</project>
@@ -316,8 +309,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.project.execui</project>
                 <project>../../j2me.cdc.project.execuiimpl</project>
                 <project>../../j2me.cdc.project.nokiaS80</project>
-<!--                <project>../../j2me.cdc.project.nsicom</project>-->
-<!--                <project>../../j2me.cdc.project.ricoh</project>-->
+                <project>../../j2me.cdc.project.ojec</project>
                 <project>../../j2me.cdc.project.savaje</project>
                 <project>../../j2me.cdc.project.semc</project>
                 <project>../../j2me.cdc.project.sjmc</project>
@@ -330,6 +322,8 @@ made subject to such option by the copyright holder.
                 <project>../../java.guards</project>
                 <project>../../java.helpset</project>
                 <project>../../java.hints</project>
+                <project>../../java.hints.declarative</project>
+                <project>../../java.hints.processor</project>
                 <project>../../java.j2seplatform</project>
                 <project>../../java.j2seproject</project>
                 <project>../../java.kit</project>
@@ -340,9 +334,30 @@ made subject to such option by the copyright holder.
                 <project>../../java.project</project>
                 <project>../../java.source</project>
                 <project>../../java.source.ant</project>
+                <project>../../java.source.queries</project>
+                <project>../../java.source.queriesimpl</project>
                 <project>../../java.sourceui</project>
+                <project>../../javacard.apdu.io</project>
+                <project>../../javacard.apdufile</project>
+                <project>../../javacard.common</project>
+                <project>../../javacard.console</project>
+                <project>../../javacard.filemodels</project>
+                <project>../../javacard.kit</project>
+                <project>../../javacard.oberthur</project>
+                <project>../../javacard.platform.ui</project>
+                <project>../../javacard.project</project>
+                <project>../../javacard.ri.bundle</project>
+                <project>../../javacard.ri.platform</project>
+                <project>../../javacard.spi</project>
                 <project>../../javadoc</project>
                 <project>../../javaee.api</project>
+                <project>../../javaee.beanvalidation</project>
+                <project>../../javaee.specs.support</project>
+                <project>../../javafx2.editor</project>
+                <project>../../javafx2.kit</project>
+                <project>../../javafx2.platform</project>
+                <project>../../javafx2.project</project>
+                <project>../../javafx2.samples</project>
                 <project>../../javahelp</project>
                 <project>../../javascript.editing</project>
                 <project>../../javascript.hints</project>
@@ -355,20 +370,18 @@ made subject to such option by the copyright holder.
                 <project>../../jellytools.ide</project>
                 <project>../../jellytools.java</project>
                 <project>../../jellytools.platform</project>
-                <project>../../jellytools.ruby</project>
                 <project>../../jemmy</project>
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
                 <project>../../junit</project>
-                <project>../../kenai</project>
-                <project>../../kenai.maven</project>
-                <project>../../kenai.ui</project>
+                <project>../../keyring</project>
+                <project>../../keyring.impl</project>
                 <project>../../languages</project>
                 <project>../../languages.diff</project>
+                <project>../../languages.ini</project>
                 <project>../../languages.manifest</project>
                 <project>../../languages.yaml</project>
                 <project>../../lexer</project>
-                <project>../../lexer.editorbridge</project>
                 <project>../../lexer.nbbridge</project>
                 <project>../../lib.cvsclient</project>
                 <project>../../lib.profiler</project>
@@ -378,42 +391,42 @@ made subject to such option by the copyright holder.
                 <project>../../lib.terminalemulator</project>
                 <project>../../lib.uihandler</project>
                 <project>../../libs.aguiswinglayout</project>
-                <project>../../libs.bugtracking</project>
-                <project>../../libs.bugzilla</project>
+                <project>../../libs.antlr3.runtime</project>
                 <project>../../libs.bytelist</project>
                 <project>../../libs.cglib</project>
-                <project>../../libs.commons_codec</project>
                 <project>../../libs.commons_fileupload</project>
-                <project>../../libs.commons_logging</project>
                 <project>../../libs.commons_net</project>
+                <project>../../libs.elimpl</project>
+                <project>../../libs.felix</project>
                 <project>../../libs.freemarker</project>
+                <project>../../libs.git</project>
                 <project>../../libs.glassfish_logging</project>
-                <project>../../libs.httpunit</project>
                 <project>../../libs.ini4j</project>
-                <project>../../libs.jakarta_oro</project>
                 <project>../../libs.javacapi</project>
                 <project>../../libs.javacimpl</project>
                 <project>../../libs.javacup</project>
                 <project>../../libs.jaxb</project>
                 <project>../../libs.jna</project>
-                <project>../../libs.jrubyparser</project>
-                <project>../../libs.jsch</project>
                 <project>../../libs.jsr223</project>
-                <project>../../libs.junit4</project>
                 <project>../../libs.jvyamlb</project>
-                <project>../../libs.jzlib</project>
                 <project>../../libs.lucene</project>
+                <project>../../libs.nbi.ant</project>
+                <project>../../libs.nbi.engine</project>
+                <project>../../libs.osgi</project>
                 <project>../../libs.ppawtlayout</project>
                 <project>../../libs.smack</project>
                 <project>../../libs.springframework</project>
                 <project>../../libs.svnClientAdapter</project>
+                <project>../../libs.svnClientAdapter.javahl</project>
+                <project>../../libs.svnClientAdapter.svnkit</project>
                 <project>../../libs.swingx</project>
                 <project>../../libs.xerces</project>
-                <project>../../libs.yydebug</project>
                 <project>../../localhistory</project>
                 <project>../../masterfs</project>
                 <project>../../maven</project>
                 <project>../../maven.apisupport</project>
+                <project>../../maven.checkstyle</project>
+                <project>../../maven.coverage</project>
                 <project>../../maven.embedder</project>
                 <project>../../maven.grammar</project>
                 <project>../../maven.graph</project>
@@ -424,8 +437,10 @@ made subject to such option by the copyright holder.
                 <project>../../maven.junit</project>
                 <project>../../maven.kit</project>
                 <project>../../maven.model</project>
+                <project>../../maven.osgi</project>
                 <project>../../maven.persistence</project>
                 <project>../../maven.profiler</project>
+                <project>../../maven.refactoring</project>
                 <project>../../maven.repository</project>
                 <project>../../maven.samples</project>
                 <project>../../maven.search</project>
@@ -437,7 +452,6 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.databindingme</project>
                 <project>../../mobility.deployment.ftpscp</project>
                 <project>../../mobility.deployment.nokia</project>
-<!--                <project>../../mobility.deployment.ricoh</project>-->
                 <project>../../mobility.deployment.sonyericsson</project>
                 <project>../../mobility.deployment.webdav</project>
                 <project>../../mobility.editor</project>
@@ -449,7 +463,6 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.licensing</project>
                 <project>../../mobility.midpexamples</project>
                 <project>../../mobility.plugins.mpowerplayer</project>
-                <project>../../mobility.proguard</project>
                 <project>../../mobility.project</project>
                 <project>../../mobility.project.ant</project>
                 <project>../../mobility.project.bridge</project>
@@ -457,25 +470,44 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.svgcore</project>
                 <project>../../mvd</project>
                 <project>../../nbjunit</project>
+                <project>../../netbinox</project>
+                <project>../../o.apache.commons.codec</project>
+                <project>../../o.apache.commons.httpclient</project>
+                <project>../../o.apache.commons.io</project>
+                <project>../../o.apache.commons.lang</project>
+                <project>../../o.apache.commons.logging</project>
                 <project>../../o.apache.tools.ant.module</project>
+                <project>../../o.apache.ws.commons.util</project>
                 <project>../../o.apache.xml.resolver</project>
+                <project>../../o.apache.xmlrpc</project>
+                <project>../../o.eclipse.core.contenttype</project>
+                <project>../../o.eclipse.core.jobs</project>
+                <project>../../o.eclipse.core.net</project>
+                <project>../../o.eclipse.core.runtime</project>
+                <project>../../o.eclipse.core.runtime.compatibility.auth</project>
+                <project>../../o.eclipse.equinox.app</project>
+                <project>../../o.eclipse.equinox.common</project>
+                <project>../../o.eclipse.equinox.preferences</project>
+                <project>../../o.eclipse.equinox.registry</project>
+                <project>../../o.eclipse.equinox.security</project>
+                <project>../../o.eclipse.jgit</project>
+                <project>../../o.eclipse.mylyn.bugzilla.core</project>
+                <project>../../o.eclipse.mylyn.commons.core</project>
+                <project>../../o.eclipse.mylyn.commons.net</project>
+                <project>../../o.eclipse.mylyn.commons.xmlrpc</project>
+                <project>../../o.eclipse.mylyn.tasks.core</project>
                 <project>../../o.jdesktop.beansbinding</project>
                 <project>../../o.jdesktop.layout</project>
-                <project>../../o.jruby</project>
-                <project>../../o.jruby.distro</project>
-                <project>../../o.kxml2</project>
                 <project>../../o.mozilla.rhino.patched</project>
                 <project>../../o.n.bootstrap</project>
                 <project>../../o.n.core</project>
                 <project>../../o.n.insane</project>
-<!--                <project>../../o.n.mobility.lib.activesync</project>-->
                 <project>../../o.n.swing.dirchooser</project>
                 <project>../../o.n.swing.outline</project>
                 <project>../../o.n.swing.plaf</project>
                 <project>../../o.n.swing.tabcontrol</project>
                 <project>../../o.n.upgrader</project>
                 <project>../../o.openidex.util</project>
-                <project>../../o.rubyforge.debugcommons</project>
                 <project>../../openide.actions</project>
                 <project>../../openide.awt</project>
                 <project>../../openide.compat</project>
@@ -491,26 +523,36 @@ made subject to such option by the copyright holder.
                 <project>../../openide.text</project>
                 <project>../../openide.util</project>
                 <project>../../openide.util.enumerations</project>
+                <project>../../openide.util.lookup</project>
                 <project>../../openide.windows</project>
                 <project>../../options.api</project>
                 <project>../../options.editor</project>
                 <project>../../options.keymap</project>
                 <project>../../parsing.api</project>
+                <project>../../parsing.lucene</project>
                 <project>../../php.api.phpmodule</project>
                 <project>../../php.dbgp</project>
                 <project>../../php.editor</project>
                 <project>../../php.help</project>
                 <project>../../php.kit</project>
+                <project>../../php.phpdoc</project>
+                <project>../../php.phpdoc.documentation</project>
                 <project>../../php.project</project>
                 <project>../../php.refactoring</project>
                 <project>../../php.samples</project>
+                <project>../../php.smarty</project>
                 <project>../../php.symfony</project>
+                <project>../../php.zend</project>
                 <project>../../print</project>
                 <project>../../print.editor</project>
                 <project>../../profiler</project>
+                <project>../../profiler.api</project>
                 <project>../../profiler.attach</project>
                 <project>../../profiler.attach.impl</project>
+                <project>../../profiler.categorization.api</project>
+                <project>../../profiler.drilldown</project>
                 <project>../../profiler.freeform</project>
+                <project>../../profiler.heapwalker</project>
                 <project>../../profiler.j2ee</project>
                 <project>../../profiler.j2ee.generic</project>
                 <project>../../profiler.j2ee.jboss</project>
@@ -518,13 +560,19 @@ made subject to such option by the copyright holder.
                 <project>../../profiler.j2ee.tomcat</project>
                 <project>../../profiler.j2ee.weblogic</project>
                 <project>../../profiler.j2se</project>
+                <project>../../profiler.j2se.impl</project>
+                <project>../../profiler.kit</project>
+                <project>../../profiler.nbimpl</project>
                 <project>../../profiler.nbmodule</project>
+                <project>../../profiler.options</project>
                 <project>../../profiler.oql</project>
                 <project>../../profiler.oql.language</project>
+                <project>../../profiler.ppoints</project>
                 <project>../../profiler.projectsupport</project>
-                <project>../../profiler.selector.java</project>
-                <project>../../profiler.selector.spi</project>
+                <project>../../profiler.selector.api</project>
                 <project>../../profiler.selector.ui</project>
+                <project>../../profiler.snaptracer</project>
+                <project>../../profiler.stp</project>
                 <project>../../profiler.utilities</project>
                 <project>../../progress.ui</project>
                 <project>../../project.ant</project>
@@ -537,34 +585,25 @@ made subject to such option by the copyright holder.
                 <project>../../projectui.buildmenu</project>
                 <project>../../projectuiapi</project>
                 <project>../../properties</project>
+                <project>../../properties.based.dataobjects</project>
                 <project>../../properties.syntax</project>
                 <project>../../queries</project>
                 <project>../../refactoring.api</project>
                 <project>../../refactoring.java</project>
-                <project>../../registration</project>
-                <project>../../reglib</project>
-                <project>../../ruby</project>
-                <project>../../ruby.codecoverage</project>
-                <project>../../ruby.debugger</project>
-                <project>../../ruby.extrahints</project>
-                <project>../../ruby.help</project>
-                <project>../../ruby.hints</project>
-                <project>../../ruby.javaint</project>
-                <project>../../ruby.kit</project>
-                <project>../../ruby.platform</project>
-                <project>../../ruby.project</project>
-                <project>../../ruby.railsprojects</project>
-                <project>../../ruby.rakeproject</project>
-                <project>../../ruby.refactoring</project>
-                <project>../../ruby.rhtml</project>
-                <project>../../ruby.samples.depot</project>
-                <project>../../ruby.testrunner</project>
                 <project>../../schema2beans</project>
                 <project>../../sendopts</project>
                 <project>../../server</project>
                 <project>../../servletapi</project>
                 <project>../../servletjspapi</project>
                 <project>../../settings</project>
+                <project>../../simple.project.templates</project>
+                <project>../../spellchecker</project>
+                <project>../../spellchecker.apimodule</project>
+                <project>../../spellchecker.bindings.htmlxml</project>
+                <project>../../spellchecker.bindings.java</project>
+                <project>../../spellchecker.bindings.properties</project>
+                <project>../../spellchecker.dictionary_en</project>
+                <project>../../spellchecker.kit</project>
                 <project>../../spi.actions</project>
                 <project>../../spi.debugger.ui</project>
                 <project>../../spi.editor.hints</project>
@@ -577,15 +616,14 @@ made subject to such option by the copyright holder.
                 <project>../../spring.webmvc</project>
                 <project>../../subversion</project>
                 <project>../../svg.perseus</project>
+                <project>../../swing.customizerlayout</project>
                 <project>../../swing.validation</project>
-                <project>../../swingapp</project>
                 <project>../../target.iterator</project>
                 <project>../../tasklist.kit</project>
                 <project>../../tasklist.projectint</project>
                 <project>../../tasklist.todo</project>
                 <project>../../tasklist.ui</project>
-                <project>../../team.kit</project>
-                <project>../../templates</project>
+                <project>../../terminal</project>
                 <project>../../timers</project>
                 <project>../../tomcat5</project>
                 <project>../../uihandler</project>
@@ -596,7 +634,7 @@ made subject to such option by the copyright holder.
                 <project>../../utilities.project</project>
                 <project>../../versioning</project>
                 <project>../../versioning.indexingbridge</project>
-                <project>../../versioning.system.cvss</project>
+                <project>../../versioning.system.cvss.installer</project>
                 <project>../../versioning.util</project>
                 <project>../../vmd.analyzer</project>
                 <project>../../vmd.codegen</project>
@@ -619,25 +657,33 @@ made subject to such option by the copyright holder.
                 <project>../../vmd.properties</project>
                 <project>../../vmd.screen</project>
                 <project>../../vmd.structure</project>
+                <project>../../web.beans</project>
                 <project>../../web.client.javascript.debugger.ant</project>
                 <project>../../web.client.tools.api</project>
+                <project>../../web.common</project>
                 <project>../../web.core</project>
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
+                <project>../../web.el</project>
                 <project>../../web.examples</project>
                 <project>../../web.freeform</project>
                 <project>../../web.helpset</project>
+                <project>../../web.indent</project>
                 <project>../../web.jsf</project>
                 <project>../../web.jsf.editor</project>
+                <project>../../web.jsf.icefaces</project>
                 <project>../../web.jsf.kit</project>
                 <project>../../web.jsf.navigation</project>
+                <project>../../web.jsf.richfaces</project>
                 <project>../../web.jsf12</project>
                 <project>../../web.jsf12ri</project>
                 <project>../../web.jsf20</project>
+                <project>../../web.jsfapi</project>
                 <project>../../web.jspparser</project>
                 <project>../../web.jstl11</project>
                 <project>../../web.kit</project>
                 <project>../../web.monitor</project>
+                <project>../../web.primefaces</project>
                 <project>../../web.project</project>
                 <project>../../web.refactoring</project>
                 <project>../../web.struts</project>
@@ -657,6 +703,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.metro.lib</project>
                 <project>../../websvc.metro.model</project>
                 <project>../../websvc.metro.samples</project>
+                <project>../../websvc.owsm</project>
                 <project>../../websvc.projectapi</project>
                 <project>../../websvc.rest</project>
                 <project>../../websvc.rest.samples</project>
@@ -688,6 +735,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.wsstack.jaxws</project>
                 <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
+                <project>../../whitelist</project>
                 <project>../../xml</project>
                 <project>../../xml.axi</project>
                 <project>../../xml.catalog</project>
