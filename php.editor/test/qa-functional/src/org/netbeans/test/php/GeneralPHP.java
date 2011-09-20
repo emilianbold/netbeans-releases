@@ -596,31 +596,26 @@ public class GeneralPHP extends JellyTestCase {
                 }
             }
             iWalkUpLine--;
-            /*
-            if( !--iWalkUpLine )
-            {
-            fail( "Unable to find start of flex result." );
+            if (iWalkUpLine == 0) {
+                fail("Unable to find start of text: " + sIdealCode);
             }
-             */
         }
 
         // Move down line by line till whole ideal code found
         int iWalkDownLine = iWalkUpLine + 1;
         while (true) {
-            String sNext = eoCode.getText(iWalkDownLine);
-            sLine = Suppress(sLine + sNext);
-            //System.out.println( "===" + sLine + "===" );
-            if (sIdealCode.equals(sLine)) {
-                break;
-            }
+            try {
+                String sNext = eoCode.getText(iWalkDownLine);
+                sLine = Suppress(sLine + sNext);
+                //System.out.println( "===" + sLine + "===" );
+                if (sIdealCode.equals(sLine)) {
+                    break;
+                }
 
-            iWalkDownLine++;
-            /*
-            if( == ++iWalkDownLine )
-            {
-            fail( "End of file reached before ideal code found." );
+                iWalkDownLine++;
+            } catch (JemmyException e) {
+                fail("End of file reached before ideal code found: " + sIdealCode + " instead found: " + sLine);
             }
-             */
         }
 
         if (bDeleteAfter) {
