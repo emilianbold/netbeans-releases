@@ -99,7 +99,7 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             mbShow.addJPDABreakpointListener(new JPDABreakpointListener() {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
-
+                    navigateToCustomCode(event.getThread());
                 }
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
