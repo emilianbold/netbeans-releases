@@ -123,6 +123,9 @@ public class CdiGlyphAction extends AbstractAction {
             String annotationType = desc.getAnnotationType();
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.
                 getInstance( getFile(comp));
+            if ( helper == null ){
+                return false;
+            }
             List<CDIAnnotation> cdiAnnotations = helper.getAnnotations();
             for (CDIAnnotation cdiAnnotation : cdiAnnotations) {
                 String cdiAnnotationType = cdiAnnotation.getAnnotationType();
