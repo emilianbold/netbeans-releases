@@ -340,22 +340,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     public void replace(int index, int length, View[] views) {
         replaceViews(index, length, views);
     }
-    
-    void addChange(double startY, double endY, double deltaY) {
+
+    ViewHierarchyChange validChange() {
         if (change == null) {
             change = new ViewHierarchyChange();
-            change.startY = startY;
-            change.endY = endY;
-            change.deltaY = deltaY;
-
-        } else { // Merge new change with original one
-            change.startY = Math.min(startY, change.startY);
-            if (endY > change.endY) { // Lies before the shifted area
-                endY -= change.deltaY; // make original coordinate
-                change.endY = Math.max(endY, change.endY);
-            }
-            change.deltaY += deltaY;
         }
+        return change;
     }
 
     void checkFireEvent() {

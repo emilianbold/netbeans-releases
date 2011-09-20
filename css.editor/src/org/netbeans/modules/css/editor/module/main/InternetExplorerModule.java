@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -50,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
+@ServiceProvider(service = CssEditorModule.class)
 public class InternetExplorerModule extends BrowserSupportModule {
 
     public InternetExplorerModule() {

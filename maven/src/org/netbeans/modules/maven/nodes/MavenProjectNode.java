@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileUtil;
@@ -120,7 +121,7 @@ public class MavenProjectNode extends AbstractNode {
 
     public @Override String getHtmlDisplayName() {
         String packaging = project.getOriginalMavenProject().getPackaging();
-        if (NbMavenProjectImpl.getIconPath(packaging) != null) {
+        if (project.getLookup().lookup(SpecialIcon.class) != null) {
             return null;
         }
         try {

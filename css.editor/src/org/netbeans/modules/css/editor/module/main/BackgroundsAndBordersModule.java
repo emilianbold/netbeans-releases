@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
@@ -50,19 +51,32 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class BackgroundsAndBordersModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class BackgroundsAndBordersModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/backgrounds_and_borders"; //NOI18N
-    
     private static Collection<Property> propertyDescriptors;
-    
-      @Override
+
+    @Override
     public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+        if (propertyDescriptors == null) {
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
     }
-   
+
+    @Override
+    public String getName() {
+        return "backgrounds_and_borders"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Backgrounds and Borders";
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-background";
+    }
 }

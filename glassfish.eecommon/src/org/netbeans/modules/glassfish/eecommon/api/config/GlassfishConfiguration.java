@@ -650,7 +650,7 @@ public abstract class GlassfishConfiguration implements
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                if (defaultcr.equals(contextRoot)) {
+                if (null != defaultcr && defaultcr.equals(contextRoot)) {
                     // remove the context-root entry from the DD file... if it exists
                     final FileObject sunDDFO = getSunDD(primarySunDD, false);
                     if (null != sunDDFO) {

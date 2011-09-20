@@ -221,7 +221,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         synchronized(versioningSystems) {
             // inline unloadVersioningSystems();
             for (VersioningSystem system : versioningSystems) {
-                system.removePropertyChangeListener(this);
+                if(system instanceof DelegatingVCS) {
+                    ((DelegatingVCS)system).unregisterVersioningManager();
+                } else {
+                    system.removePropertyChangeListener(this);
+                }
             }
             versioningSystems.clear();
             localHistory = null;
@@ -233,7 +237,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
                 }
-                system.addPropertyChangeListener(this);
+                if(system instanceof DelegatingVCS) {
+                    ((DelegatingVCS)system).registerVersioningManager();
+                } else {
+                    system.addPropertyChangeListener(this);
+                }
             }
             // inline loadVersioningSystems(systems);
         }

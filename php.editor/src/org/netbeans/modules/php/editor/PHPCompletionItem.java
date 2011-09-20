@@ -216,7 +216,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         ElementHandle elem = getElement();
         if (elem instanceof MethodElement) {
             final MethodElement method = (MethodElement) elem;
-            if (method.isConstructor()) {
+            if (method.isConstructor() && request.context.equals(CompletionContext.NEW_CLASS)) {
                 elem = method.getType();
             }
         }
@@ -413,31 +413,33 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         public ParameterElement resolveVariable(ParameterElement param) {
-            Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-            VariableName variableToUse = null;
-            if (declaredVariables != null) {
-                int oldOffset = 0;
-                for (VariableName variable : declaredVariables) {
-                    if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                        if (isPreviousVariable(variable)) {
-                            if (hasCorrectType(variable, param.getTypes())) {
-                                if (variable.getName().equals(param.getName())) {
-                                    variableToUse = variable;
-                                    break;
-                                }
-                                int newOffset = variable.getNameRange().getStart();
-                                if (newOffset > oldOffset) {
-                                    oldOffset = newOffset;
-                                    variableToUse = variable;
+            if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
+                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                VariableName variableToUse = null;
+                if (declaredVariables != null) {
+                    int oldOffset = 0;
+                    for (VariableName variable : declaredVariables) {
+                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                            if (isPreviousVariable(variable)) {
+                                if (hasCorrectType(variable, param.getTypes())) {
+                                    if (variable.getName().equals(param.getName())) {
+                                        variableToUse = variable;
+                                        break;
+                                    }
+                                    int newOffset = variable.getNameRange().getStart();
+                                    if (newOffset > oldOffset) {
+                                        oldOffset = newOffset;
+                                        variableToUse = variable;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (variableToUse != null) {
-                usedVariables.add(variableToUse);
-                return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUse != null) {
+                    usedVariables.add(variableToUse);
+                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                }
             }
             return param;
         }
@@ -463,7 +465,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (!typeNames.isEmpty()) {
                 for (TypeResolver type : possibleTypes) {
                     if (typeNames.contains(type.getRawTypeName()) || type.getRawTypeName().equals("mixed") ||
-                            (typeNames.contains("real") && type.getRawTypeName().equals("float"))) { // NOI18N
+                            (typeNames.contains("real") && type.getRawTypeName().equals("float")) ||
+                            (typeNames.contains("int") && type.getRawTypeName().equals("integer"))) { // NOI18N
                         return true;
                     }
                 }
@@ -706,6 +709,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return field.getName(field.isStatic());
         }
 
+        @Override
         protected String getTypeName() {
             Set<TypeResolver> types = getField().getInstanceTypes();
             String typeName = types.isEmpty() ? "?" : types.size() > 1 ?  "mixed" : "?";//NOI18N

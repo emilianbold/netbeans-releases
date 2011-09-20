@@ -275,7 +275,7 @@ public class ExtKit extends BaseKit {
         static final long serialVersionUID =4257043398248915291L;
 
         public BuildPopupMenuAction() {
-            super(NO_RECORDING);
+            super(buildPopupMenuAction, NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
