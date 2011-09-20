@@ -49,7 +49,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.awt.font.FontRenderContext;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,6 +80,8 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
@@ -100,23 +101,19 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.MimeTypeInitializer;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.EditorActionsProvider;
-import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.SearchAndReplaceBarHandler;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
-import org.netbeans.modules.editor.lib2.highlighting.HighlightsLayerFilter;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -953,13 +950,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         AnnotationTypesFolder.getAnnotationTypesFolder();
 
         // initialize coloring map (#69232)
-        ColoringMap cmap = ColoringMap.get(getContentType());
-
         // initialize fonts (#170423)
-        Coloring defaultColoring = cmap.getMap().get("default"); //NOI18N
-        if (defaultColoring != null) {
-            defaultColoring.getFont().getMaxCharBounds(new FontRenderContext(null, true, true));
-        }
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.get(getContentType())).lookup(FontColorSettings.class);
+        fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
 
         // initialize HighlightsLayers (#172381)
         Document doc = createDefaultDocument();
