@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -55,7 +54,6 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  * Utility class for platform properties manipulation
