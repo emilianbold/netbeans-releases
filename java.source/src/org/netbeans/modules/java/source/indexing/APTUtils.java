@@ -69,8 +69,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -93,18 +92,21 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
+    private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
+    private final SourceLevelQuery.Result sourceLevel;
     private volatile ClassLoaderRef classLoaderCache;
 
-    private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions) {
+    private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions, SourceLevelQuery.Result sourceLevel) {
         this.root = root;
         this.processorPath = preprocessorPath;
         this.aptOptions = aptOptions;
+        this.sourceLevel = sourceLevel;
     }
 
     public static APTUtils get(final FileObject root) {
@@ -171,21 +173,23 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (pp == null) {
             return null;
         }
-        Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
-        APTUtils utils = new APTUtils(root, pp, options);
+        AnnotationProcessingQuery.Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
+        SourceLevelQuery.Result sourceLevel = SourceLevelQuery.getSourceLevel2(root);
+        APTUtils utils = new APTUtils(root, pp, options, sourceLevel);
         pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
         pp.getRoots();//so that the ClassPath starts listening on the filesystem
         options.addChangeListener(WeakListeners.change(utils, options));
+        sourceLevel.addChangeListener(WeakListeners.change(utils, sourceLevel));
 
         return utils;
     }
 
     public boolean aptEnabledOnScan() {
-        return aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN);
+        return aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.ON_SCAN);
     }
 
     public boolean aptEnabledInEditor() {
-        return aptOptions.annotationProcessingEnabled().contains(Trigger.IN_EDITOR);
+        return aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.IN_EDITOR);
     }
 
     public Collection<? extends Processor> resolveProcessors(boolean onScan) {
@@ -289,7 +293,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         boolean vote = false;
         try {
             URL url = fo.getURL();
-            boolean apEnabledOnScan = aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN);
+            if (JavaIndex.ensureAttributeValue(url, SOURCE_LEVEL_ROOT, sourceLevel.getSourceLevel(), checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            boolean apEnabledOnScan = aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.ON_SCAN);
             if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, apEnabledOnScan ? Boolean.TRUE.toString() : null, checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to change in annotation processing options"); //NOI18N
                 vote = true;

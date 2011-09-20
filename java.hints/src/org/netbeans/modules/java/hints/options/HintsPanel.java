@@ -729,6 +729,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         renderer.setBackground( selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor() );
         renderer.setForeground( selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor() );
         renderer.setEnabled( true );
+        renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
 
         Object data = ((DefaultMutableTreeNode)value).getUserObject();
         if ( data instanceof HintCategory ) {
@@ -741,8 +742,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             HintMetadata treeRule = (HintMetadata)data;
             if (treeRule.options.contains(Options.QUERY)) {
                 renderer.setFont(renderer.getFont().deriveFont(Font.ITALIC));
-            } else {
-                renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
             }
             renderer.setText( treeRule.displayName );
 

@@ -353,7 +353,6 @@ class LayoutFeeder implements LayoutConstants {
 
             List<IncludeDesc> inclusions = new LinkedList<IncludeDesc>();
             boolean preserveOriginal;
-            boolean originalPreserved = false;
             boolean originalSignificant = dragger.isResizing(dimension) && originalPos1 != null
                     && (originalPos1.snapped()
                         || newPos == null || newPos.nextTo || newPos.interval == null // no new snap in parallel
@@ -373,10 +372,10 @@ class LayoutFeeder implements LayoutConstants {
             } else if (newPos != null) {
                 // snapped in dragger, always find the position
                 aEdge = newPos.alignment;
-                aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
+                aSnappedParallel = newPos.snapped && !newPos.nextTo ? newPos.interval : null;
                 aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
                 aPaddingType = newPos.paddingType;
-                preserveOriginal = originalSignificant;//dragger.isResizing(dim);
+                preserveOriginal = originalSignificant;
             } else if (dragger.isResizing(dim) && originalPos1 != null) {
                 // resizing only in this dimension and without snap, check for
                 // possible growing in parallel with part of its own parent sequence
@@ -407,11 +406,6 @@ class LayoutFeeder implements LayoutConstants {
                     if ((preferred == null || (preserveOriginal && originalPos1.alignment == aEdge))
                             && dragger.isResizing()) {
                         preferred = originalPos1;
-                    } else if (preferred != null && preserveOriginal) {
-                        IncludeDesc analyzed = inclusions.get(1);
-                        if (analyzed.parent == originalPos1.parent) {
-                            originalPreserved = true;
-                        }
                     }
                     mergeParallelInclusions(inclusions, preferred, preserveOriginal);
                     assert inclusions.size() == 1;
@@ -421,22 +415,18 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc found = inclusions.get(0);
             inclusions.clear();
             if (preserveOriginal) { // i.e. resizing in this dimension
-                if (!originalPreserved) {
-                    inclusion1 = originalPos1;
-                    if (found != originalPos1) {
-                        if (newPos != null) {
-                            inclusion2 = found;
-                        }
-                        LayoutInterval foundP = found.parent;
-                        LayoutInterval origP = originalPos1.parent;
-                        if ((foundP == origP && found.newSubGroup)
-                              || (origP.isSequential() && foundP.isParallel() && foundP.isParentOf(origP)
-                                  && LayoutUtils.contentOverlap(addingInterval, origP, dim))) {
-                            inclusion1.newSubGroup = true;
-                        }
+                inclusion1 = originalPos1;
+                if (found != originalPos1) {
+                    if (newPos != null) {
+                        inclusion2 = found;
                     }
-                } else {
-                    inclusion1 = found;
+                    LayoutInterval foundP = found.parent;
+                    LayoutInterval origP = originalPos1.parent;
+                    if ((foundP == origP && found.newSubGroup)
+                          || (origP.isSequential() && foundP.isParallel() && foundP.isParentOf(origP)
+                              && LayoutUtils.contentOverlap(addingInterval, origP, dim))) {
+                        inclusion1.newSubGroup = true;
+                    }
                 }
             } else {
                 inclusion1 = found;
@@ -5367,11 +5357,15 @@ class LayoutFeeder implements LayoutConstants {
             }
             return startIndex > endIndex
                    || !LayoutUtils.contentOverlap(addingSpace, iDesc.parent, startIndex, endIndex, dimension^1);
+        } else if (iDesc.snappedParallel != null) {
+            return iDesc.snappedParallel == iDesc.parent
+                   || !iDesc.parent.isParentOf(iDesc.snappedParallel)
+                   || LayoutInterval.isPlacedAtBorder(iDesc.snappedParallel, iDesc.parent, dimension, iDesc.alignment);
+        } else {
+            return iDesc.neighbor == null
+                   || (iDesc.alignment == LEADING && iDesc.index >= 1)
+                   || (iDesc.alignment == TRAILING && iDesc.index == 0);
         }
-
-        return iDesc.neighbor == null
-               || (iDesc.alignment == LEADING && iDesc.index >= 1)
-               || (iDesc.alignment == TRAILING && iDesc.index == 0);
     }
 
     private static int getAddDirection(LayoutRegion adding,

@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.Utils;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -66,7 +68,18 @@ public class PlatformAutoInstaller implements Runnable {
             return;
         }
 
-        createJavaFXPlatform(installedSDK);
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        boolean fxPlatformExists = false;
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                fxPlatformExists = true;
+                break;
+            }
+        }
+        
+        if (!fxPlatformExists) {
+            createJavaFXPlatform(installedSDK);
+        }
     }
 
     private FileObject findInstalledSDK() {
@@ -106,6 +119,16 @@ public class PlatformAutoInstaller implements Runnable {
         String runtimePath = getStringAttribute(installedSDK, AutomaticRegistration.RUNTIME_ATTR);
         if (sdkPath == null || runtimePath == null) {
             LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
+            return;
+        }
+
+        if (sdkPath == null || runtimePath == null) {
+            LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
+            return;
+        }
+        
+        if (!JavaFXPlatformUtils.areJFXLocationsCorrect(sdkPath, runtimePath)) {
+            LOGGER.log(Level.FINE, "JavaFX SDK and/or JavaFX Runtime locations are not correct"); // NOI18N
             return;
         }
 

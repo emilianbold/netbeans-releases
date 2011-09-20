@@ -54,4 +54,3 @@ tboudreau@netbeans.org=javacard*/*,properties.based.dataobjects/*,simple.project
 tomcatint-commits@serverplugins.netbeans.org=tomcat*/*
 tstupka@netbeans.org=bug*/*,*jira*/*,c.atlassian.connector.eclipse.commons.core/*
 TheOldToxophilist@netbeans.org=coherence/*
-manowar@netbeans.org=javafx2*/*

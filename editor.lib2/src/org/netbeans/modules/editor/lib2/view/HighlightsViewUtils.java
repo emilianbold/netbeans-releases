@@ -494,12 +494,13 @@ public class HighlightsViewUtils {
     }
 
     static View breakView(int axis, int breakPartStartOffset, float x, float len,
-            HighlightsView fullView, int partShift, int partLength, TextLayout textLayout)
+            HighlightsView fullView, int partShift, int partLength, TextLayout partTextLayout)
     {
         if (axis == View.X_AXIS) {
             DocumentView docView = fullView.getDocumentView();
             // [TODO] Should check for RTL text
-            if (docView != null && textLayout != null && partLength > 1) {
+            assert (partTextLayout != null) : "Null partTextLayout";
+            if (docView != null && partLength > 1) {
                 // The logic
                 int fullViewStartOffset = fullView.getStartOffset();
                 int partStartOffset = fullViewStartOffset + partShift;
@@ -514,49 +515,60 @@ public class HighlightsViewUtils {
                 assert (breakCharIndex >= 0);
                 float breakCharIndexX;
                 if (breakCharIndex != 0) {
-                    TextHitInfo hit = TextHitInfo.afterOffset(breakCharIndex);
-                    float[] locs = textLayout.getCaretInfo(hit);
+                    TextHitInfo hit = TextHitInfo.leading(breakCharIndex);
+                    float[] locs = partTextLayout.getCaretInfo(hit);
                     breakCharIndexX = locs[0];
                 } else {
                     breakCharIndexX = 0f;
                 }
-                TextHitInfo hitInfo = x2Index(textLayout, breakCharIndexX + len);
-                int breakPartEndOffset = partStartOffset + hitInfo.getCharIndex();
+                TextHitInfo hitInfo = x2Index(partTextLayout, breakCharIndexX + len);
+                // Check that the width is not too wide
+                float[] locs = partTextLayout.getCaretInfo(hitInfo);
+                float endX = locs[0];
+                if (endX - breakCharIndexX > len) {
+                    if (hitInfo.getCharIndex() > 0) {
+                        hitInfo = TextHitInfo.leading(hitInfo.getCharIndex() - 1);
+                    }
+                }
+
                 // Now perform corrections if wrapping at word boundaries is required
                 // Currently a simple impl that checks adjacent char(s) in backward direction
                 // is used. Consider BreakIterator etc. if requested.
                 // If break is inside a word then check for word boundary in backward direction.
                 // If none is found then go forward to find a word break if possible.
-                if (docView.op.getLineWrapType() == LineWrapType.WORD_BOUND) {
-                    CharSequence docText = DocumentUtilities.getText(docView.getDocument());
-                    if (breakPartEndOffset > breakPartStartOffset) {
-                        boolean searchNonLetterForward = false;
-                        char ch = docText.charAt(breakPartEndOffset - 1);
-                        // [TODO] Check surrogates
-                        if (Character.isLetterOrDigit(ch)) {
-                            if (breakPartEndOffset < docText.length() &&
-                                    Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
-                            {
-                                // Inside word
-                                // Attempt to go back and search non-letter
-                                int offset = breakPartEndOffset - 1;
-                                while (offset >= breakPartStartOffset && Character.isLetterOrDigit(docText.charAt(offset))) {
-                                    offset--;
-                                }
-                                offset++;
-                                if (offset == breakPartStartOffset) {
-                                    searchNonLetterForward = true;
-                                } else { // move the break offset back
-                                    breakPartEndOffset = offset;
+                int breakPartEndOffset = partStartOffset + hitInfo.getCharIndex();
+                if (breakPartEndOffset > breakPartStartOffset) {
+                    if (docView.op.getLineWrapType() == LineWrapType.WORD_BOUND) {
+                        CharSequence docText = DocumentUtilities.getText(docView.getDocument());
+                        if (breakPartEndOffset > breakPartStartOffset) {
+                            boolean searchNonLetterForward = false;
+                            char ch = docText.charAt(breakPartEndOffset - 1);
+                            // [TODO] Check surrogates
+                            if (Character.isLetterOrDigit(ch)) {
+                                if (breakPartEndOffset < docText.length() &&
+                                        Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
+                                {
+                                    // Inside word
+                                    // Attempt to go back and search non-letter
+                                    int offset = breakPartEndOffset - 1;
+                                    while (offset >= breakPartStartOffset && Character.isLetterOrDigit(docText.charAt(offset))) {
+                                        offset--;
+                                    }
+                                    offset++;
+                                    if (offset == breakPartStartOffset) {
+                                        searchNonLetterForward = true;
+                                    } else { // move the break offset back
+                                        breakPartEndOffset = offset;
+                                    }
                                 }
                             }
-                        }
-                        if (searchNonLetterForward) {
-                            breakPartEndOffset++; // char at breakPartEndOffset already checked
-                            while (breakPartEndOffset < partStartOffset + partLength &&
-                                    Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
-                            {
-                                breakPartEndOffset++;
+                            if (searchNonLetterForward) {
+                                breakPartEndOffset++; // char at breakPartEndOffset already checked
+                                while (breakPartEndOffset < partStartOffset + partLength &&
+                                        Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
+                                {
+                                    breakPartEndOffset++;
+                                }
                             }
                         }
                     }
@@ -565,13 +577,13 @@ public class HighlightsViewUtils {
                 // Length must be > 0; BTW TextLayout can't be constructed with empty string.
                 boolean breakFailed = (breakPartEndOffset - breakPartStartOffset == 0) ||
                         (breakPartEndOffset - breakPartStartOffset >= partLength);
-                if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
-                    ViewHierarchyImpl.BUILD_LOG.fine("HV.breakView(): <"  + partStartOffset + // NOI18N
-                            "," + (partStartOffset+partLength) + // NOI18N
-                        "> => <" + breakPartStartOffset + "," + (partStartOffset+breakPartEndOffset) + // NOI18N
-                        ">, x=" + x + ", len=" + len + // NOI18N
-                        ", charIndexX=" + breakCharIndexX + "\n"); // NOI18N
-                }
+//                if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+//                    ViewHierarchyImpl.BUILD_LOG.fine("HV.breakView(): <"  + partStartOffset + // NOI18N
+//                            "," + (partStartOffset+partLength) + // NOI18N
+//                        "> => <" + breakPartStartOffset + "," + (partStartOffset+breakPartEndOffset) + // NOI18N
+//                        ">, x=" + x + ", len=" + len + // NOI18N
+//                        ", charIndexX=" + breakCharIndexX + "\n"); // NOI18N
+//                }
                 if (breakFailed) {
                     return null;
                 }

@@ -741,7 +741,7 @@ final class ViewBuilder {
         }
         if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
             ViewHierarchyImpl.BUILD_LOG.fine("Non-Retained Views: " + // NOI18N
-                    ((i0 != i1) ? "<" + i0 + "," + i1 + ">" : "NONE") + " of " + addedCount + "\n"); // NOI18N
+                    ((i0 != i1) ? "<" + i0 + "," + i1 + ">" : "NONE") + " of " + addedCount + " new pViews\n"); // NOI18N
         }
         
         

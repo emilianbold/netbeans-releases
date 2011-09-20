@@ -258,18 +258,13 @@ final class WrapInfo extends GapList<WrapLine> {
         return "Invalid wrapLine["  + wrapLineIndex + "]:\n" + toString((ParagraphView)pView); // NOI18N
     }
 
-    public String appendInfo(StringBuilder sb, ParagraphView paragraphView, int indent) { // Expected to append newline at end
-        sb.append("\n"); // NOI18N
-        DocumentView docView;
-        if (paragraphView != null && ((docView = paragraphView.getDocumentView()) != null)) {
-            float visibleWidth = docView.op.getVisibleRect().width;
-            sb.append(" visibleWidth=").append(visibleWidth); // NOI18N
-        }
+    public String appendInfo(StringBuilder sb, ParagraphView paragraphView, int indent) { // Expected to not append append newline at end
         int wrapLineCount = size();
         int digitCount = ArrayUtilities.digitCount(wrapLineCount);
         for (int i = 0; i < wrapLineCount; i++) {
-            sb.append('\n');
-            ArrayUtilities.appendSpaces(sb, indent + 2);
+            sb.append('\n'); // Expected to append newline first
+            ArrayUtilities.appendSpaces(sb, indent + 4);
+            sb.append("WL");
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             WrapLine wrapLine = get(i);
             sb.append("SV:"); // NOI18N

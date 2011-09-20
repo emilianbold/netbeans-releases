@@ -76,7 +76,6 @@ import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -122,7 +121,6 @@ import org.openide.util.Utilities;
 public class JavaCustomIndexer extends CustomIndexer {
 
             static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
-    private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
@@ -466,23 +464,6 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (Indexable i : files) {
                 indexImpl.setDirty(i.getURL());
             }
-        }
-    }
-
-    public static void verifySourceLevel(@NonNull FileObject root, @NonNull FileObject file, @NonNull String sourceLevel) throws IOException {
-        URL rootURL = root.getURL();
-        
-        if (!sourceLevel.equals(JavaIndex.getAttribute(rootURL, SOURCE_LEVEL_ROOT, sourceLevel))) {
-            String rootSourceLevel = SourceLevelQuery.getSourceLevel(root);
-
-            if (!sourceLevel.equals(rootSourceLevel)) {
-                //#181454: mismatching source levels for file and root, may cause infinite rescanning:
-                JavaIndex.LOG.log(Level.WARNING, "Source level for file and for its root differ (file={0}, root={1})", new Object[]{sourceLevel, rootSourceLevel});
-                return;
-            }
-            
-            JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-            IndexingManager.getDefault().refreshIndex(rootURL, null);
         }
     }
 
@@ -853,11 +834,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                     vote = false;
                 }
 
-                String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
-                if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
-                    JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-                    vote = false;
-                }
                 if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
                     JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
                     vote = false;

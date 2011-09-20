@@ -43,23 +43,17 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,14 +79,20 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
+import org.openide.cookies.InstanceCookie;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -150,6 +150,8 @@ public final class JFXProjectProperties {
     public static final String RUN_IN_HTMLTEMPLATE = "javafx.run.htmltemplate"; // NOI18N
     public static final String RUN_IN_HTMLTEMPLATE_PROCESSED = "javafx.run.htmltemplate.processed"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
+    public static final String RUN_IN_BROWSER_PATH = "javafx.run.inbrowser.path"; // NOI18N
+    public static final String RUN_IN_BROWSER_ARGUMENTS = "javafx.run.inbrowser.arguments"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
     public static final String DEFAULT_APP_WIDTH = "800"; // NOI18N
@@ -182,6 +184,8 @@ public final class JFXProjectProperties {
     // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
+    private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
+
     private StoreGroup fxPropGroup = new StoreGroup();
     
     // Packaging
@@ -925,21 +929,6 @@ public final class JFXProjectProperties {
     }
     
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
-//        // store descriptor type
-//        DescType descType = getSelectedDescType();
-//        if (descType != null) {
-//            editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
-//        }
-//        //Store Mixed Code
-//        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
-//        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
-//        //Store jar indexing
-//        if (editableProps.getProperty(JAR_INDEX) == null) {
-//            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
-//        }
-//        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
-//            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
-//        }
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
@@ -947,16 +936,15 @@ public final class JFXProjectProperties {
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
         editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
-        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
-        
+        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
         // store resources
         storeResources(editableProps);
-
         // store JavaScript callbacks
         storeJSCallbacks(editableProps);
-        
         // store JFX SDK & RT path
         storePlatform(editableProps);
+        // store selected browser executable path
+        storeBrowserPath(privProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -1291,6 +1279,21 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void storeBrowserPath(EditableProperties editableProps){
+        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
+        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
+            if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
+                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
+                String path = proc.getProcessName();
+                editableProps.setProperty(RUN_IN_BROWSER_PATH, path);
+                //String args = proc.getArguments();
+                //editableProps.setProperty(RUN_IN_BROWSER_ARGUMENTS, args);
+                break;
+            }
+        }
+    }
+    
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private boolean filling = false;
