@@ -123,6 +123,7 @@ public final class JFXProjectProperties {
     public static final String JAVADOC_ENCODING = "javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM = "javadoc.additionalparam"; // NOI18N
     public static final String BUILD_SCRIPT = "buildfile"; //NOI18N
+    public static final String DIST_JAR = "dist.jar"; // NOI18N
 
     // Packaging properties
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
@@ -1213,12 +1214,17 @@ public final class JFXProjectProperties {
             }
         }
         paths = PropertyUtils.tokenizePath(rcp);
+        String mainJar = eval.getProperty(DIST_JAR);
+        final File mainFile = PropertyUtils.resolveFile(prjDir, mainJar);
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (f.equals(mainFile)) {
+                continue;
+            }
             if (bc == null || !bcDir.equals(f)) {
                 resFileList.add(f);
                 if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
