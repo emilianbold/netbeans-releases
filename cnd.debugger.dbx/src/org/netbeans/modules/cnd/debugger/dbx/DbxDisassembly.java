@@ -89,6 +89,12 @@ public class DbxDisassembly extends Disassembly {
     protected void reload() {
         reloadDis(false);
     }
+
+    @Override
+    public void reset() {
+        address = 0;
+        super.reset();
+    }
     
     private void reloadDis(boolean force) {
         if (!opened) {
