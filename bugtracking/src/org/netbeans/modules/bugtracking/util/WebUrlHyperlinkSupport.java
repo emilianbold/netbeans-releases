@@ -68,20 +68,25 @@ import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.Searc
 class WebUrlHyperlinkSupport {
 
     static void register(final JTextPane pane) {
-        StyledDocument doc = pane.getStyledDocument();
+        final StyledDocument doc = pane.getStyledDocument();
         String text = pane.getText();
         final int[] boundaries = findBoundaries(text);
         if ((boundaries != null) && (boundaries.length != 0)) {
             Style defStyle = StyleContext.getDefaultStyleContext()
                              .getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
+            final Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
             hlStyle.addAttribute(HyperlinkSupport.URL_ATTRIBUTE, new UrlAction());
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);
 
-            for (int i = 0; i < boundaries.length; i+=2) {
-                doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < boundaries.length; i+=2) {
+                        doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
+                    }
+                }
+            });
         }
         pane.addMouseListener(new MouseAdapter() {
             @Override
