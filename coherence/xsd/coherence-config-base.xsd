@@ -34,8 +34,7 @@
         in a Java command line using the -D<name>=<value> option. -->
         
     <xsd:complexType name="coherence-system-property-type">
-        <xsd:attribute name="system-property" type="xsd:normalizedString"
-            use="optional" />
+        <xsd:attribute name="system-property" type="xsd:normalizedString" use="optional" />
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 

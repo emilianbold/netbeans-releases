@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.coherence.editor.pof;
 
-import com.sun.istack.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -677,7 +677,6 @@ private void btnDeleteImageActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     @Override
     public void componentActivated() {
-        Logger.getLogger(this.getClass()).log(Level.INFO, "*** APH-I1 : Allowed Subclasses : " + getRoot().getAllowSubclasses().getValue());
         refreshBindings();
     }
 
