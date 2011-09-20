@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
                 <project>../../debugger.jpda.ui</project>
                 <project>../../defaults</project>
                 <project>../../deployment.deviceanywhere</project>
-                <project>../../deployment.wm</project>
+<!--                <project>../../deployment.wm</project>-->
                 <project>../../derby</project>
                 <project>../../diff</project>
                 <project>../../dlight</project>
@@ -307,7 +307,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.kit</project>
                 <project>../../j2me.cdc.platform</project>
                 <project>../../j2me.cdc.platform.nokias80</project>
-                <project>../../j2me.cdc.platform.nsicom</project>
+<!--                <project>../../j2me.cdc.platform.nsicom</project>-->
 <!--                <project>../../j2me.cdc.platform.ricoh</project>-->
                 <project>../../j2me.cdc.platform.semc</project>
                 <project>../../j2me.cdc.platform.sjmc</project>
@@ -316,7 +316,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.project.execui</project>
                 <project>../../j2me.cdc.project.execuiimpl</project>
                 <project>../../j2me.cdc.project.nokiaS80</project>
-                <project>../../j2me.cdc.project.nsicom</project>
+<!--                <project>../../j2me.cdc.project.nsicom</project>-->
 <!--                <project>../../j2me.cdc.project.ricoh</project>-->
                 <project>../../j2me.cdc.project.savaje</project>
                 <project>../../j2me.cdc.project.semc</project>
@@ -468,7 +468,7 @@ made subject to such option by the copyright holder.
                 <project>../../o.n.bootstrap</project>
                 <project>../../o.n.core</project>
                 <project>../../o.n.insane</project>
-                <project>../../o.n.mobility.lib.activesync</project>
+<!--                <project>../../o.n.mobility.lib.activesync</project>-->
                 <project>../../o.n.swing.dirchooser</project>
                 <project>../../o.n.swing.outline</project>
                 <project>../../o.n.swing.plaf</project>

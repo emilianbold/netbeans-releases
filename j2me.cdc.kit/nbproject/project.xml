@@ -31,12 +31,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.platform.nsicom</code-name-base>
-                    <run-dependency>
-                        <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.platform.ojec</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -82,12 +76,6 @@
                     <code-name-base>org.netbeans.modules.j2me.cdc.project.nokiaS80</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.project.nsicom</code-name-base>
-                    <run-dependency>
-                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
