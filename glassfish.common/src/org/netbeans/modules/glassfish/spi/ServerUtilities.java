@@ -194,7 +194,9 @@ public final class ServerUtilities {
     public InstantiatingIterator getAddInstanceIterator() {
         return new ServerWizardIterator(new ServerDetails[] { 
             ServerDetails.GLASSFISH_SERVER_3, 
-            ServerDetails.GLASSFISH_SERVER_3_1
+            ServerDetails.GLASSFISH_SERVER_3_1,
+            ServerDetails.GLASSFISH_SERVER_3_1_1,
+            ServerDetails.GLASSFISH_SERVER_3_1_2
         });
     }
     
