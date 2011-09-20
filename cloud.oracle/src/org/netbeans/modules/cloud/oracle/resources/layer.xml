@@ -114,12 +114,69 @@
         <folder name="DeploymentPlugins">
             <folder name="WebLogic9">
                 <file name="WhitelistVerifier.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLVerifier"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.WebLogicVerifier"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
                 </file>
             </folder>
         </folder>
     </folder>
+    <!-- END OF weblogic registration -->
+
+    <!-- This registration is here temporarily - its proper home is server module -->
+    <folder name="UI">
+        <folder name="Runtime">
+            <file name="Cloud.instance">
+               <attr name="instanceCreate" methodvalue="org.openide.nodes.NodeOp.factory"/>
+               <attr name="name" stringvalue="cloud"/>
+               <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Name"/>
+               <attr name="shortDescription" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Short_Description"/>
+               <attr name="iconResource" stringvalue="org/netbeans/modules/server/ui/resources/cloud.png"/>
+               <attr name="original" methodvalue="org.netbeans.modules.server.ui.node.RootNode.getCloudInstance"/>
+               <attr name="position" intvalue="444"/>
+             </file>
+         </folder>
+     </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="CloudManagerAction3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-server-ui-manager-CloudManagerAction.instance"/>
+                <attr name="position" intvalue="810"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="System">
+            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.server.ui.node.AddCloudInstanceAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.node.Bundle#LBL_Add_Cloud_Instance"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-server-ui-manager-CloudManagerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.server.resources.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.server.ui.manager.CloudManagerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.server.ui.manager.Bundle#CTL_CloudManager"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>       
+    </folder>
+    <folder name="Cloud">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.shadow">
+                <attr name="position" intvalue="123"/>
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance"/>
+            </file>
+            <file name="JSeparator1.instance">
+                <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="505"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- END OF server registration -->
     
     
 </filesystem>
