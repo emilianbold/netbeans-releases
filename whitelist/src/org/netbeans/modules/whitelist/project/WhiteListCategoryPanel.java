@@ -111,7 +111,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     }
     
     public static ProjectCustomizer.CompositeCategoryProvider createWhiteListCategoryProvider(Map attrs) {
-        return new Factory(); //NOI18N
+        return new Factory(Boolean.TRUE.equals((Boolean)attrs.get("show"))); //NOI18N
     }
 
     @Override
@@ -125,7 +125,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
  
         private static final String CATEGORY_WHITELIST = "WhiteList"; // NOI18N
 
-        public Factory() {
+        private final boolean alwaysShowWhiteListPanel;
+        
+        public Factory(boolean showWhiteListPanel) {
+            alwaysShowWhiteListPanel = showWhiteListPanel;
         }
 
         public ProjectCustomizer.Category createCategory(Lookup context) {
@@ -133,7 +136,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             if (p == null) {
                 return null;
             }
-            if (!isWhiteListPanelEnabled(p) || getUserSelectableWhiteLists().size() == 0) {
+            if (getUserSelectableWhiteLists().isEmpty()) {
+                return null;
+            }
+            if (!isWhiteListPanelEnabled(p) && !alwaysShowWhiteListPanel) {
                 return null;
             }
             return ProjectCustomizer.Category.create(
