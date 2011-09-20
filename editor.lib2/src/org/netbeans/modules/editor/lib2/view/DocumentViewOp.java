@@ -509,9 +509,15 @@ public final class DocumentViewOp
                 // that calls getPreferredSpan() would attempt to reinit the views again
                 // (failing in HighlightsViewFactory on usageCount).
                 setStatusBits(CHILDREN_VALID);
-                viewUpdates.reinitAllViews();
-                
-                
+                try {
+                    viewUpdates.reinitAllViews();
+                } finally {
+                    // In case of an error in VH code the children would stay null
+                    if (docView.children == null) {
+                        // Prevent VH to look like active when children == null
+                        clearStatusBits(CHILDREN_VALID);
+                    }
+                }
             }
         }
     }

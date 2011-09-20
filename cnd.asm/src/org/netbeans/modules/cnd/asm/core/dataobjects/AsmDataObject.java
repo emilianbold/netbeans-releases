@@ -46,8 +46,10 @@ package org.netbeans.modules.cnd.asm.core.dataobjects;
 
 import java.io.IOException;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.asm.core.editor.AsmEditorSupport;
-import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -55,6 +57,8 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 public class AsmDataObject extends MultiDataObject {
     public AsmDataObject(FileObject fo, AsmDataLoader loader) throws DataObjectExistsException, IOException {
@@ -63,6 +67,18 @@ public class AsmDataObject extends MultiDataObject {
         CookieSet cookies = getCookieSet();                       
         cookies.add(new AsmEditorSupport(this));
     }
+  
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(displayName = "#Source", //NOI18N 
+    iconBase = AsmDataLoaderBeanInfo.IMAGE_ICON_BASE,
+    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+    preferredID = "asm.source", //NOI18N
+    mimeType = MIMENames.ASM_MIME_TYPE,
+    position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
 
     public void addSaveCookie(SaveCookie save) {
         getCookieSet().add(save);
@@ -78,9 +94,9 @@ public class AsmDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
+   protected int associateLookup() {
+       return 1;
+   }
 
 }
 

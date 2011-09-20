@@ -47,7 +47,10 @@ package org.netbeans.modules.websvc.editor.hints.fixes;
 import java.io.IOException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.editor.hints.common.Utilities;
@@ -79,7 +82,15 @@ public class RemoveAnnotationArgument implements Fix {
             public void cancel() {}
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                Utilities.removeAnnotationArgument(workingCopy, element, annMirror, argumentName);
+                Element annotationElement  = annMirror.getAnnotationType().asElement();
+                if ( annotationElement != null ){
+                    Utilities.removeAnnotationArgument(workingCopy, 
+                            ElementHandle.create(element), 
+                            ElementHandle.create(annotationElement), argumentName);
+                }
+                else {
+                    return;
+                }
             }
         };
         

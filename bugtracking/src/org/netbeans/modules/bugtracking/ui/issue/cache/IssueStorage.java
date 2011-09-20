@@ -122,6 +122,10 @@ class IssueStorage {
         FileLock lock = FileLocks.getLock(data);
         try {
             synchronized(lock) {
+                final File parentFile = data.getParentFile();
+                if(!parentFile.exists()) {
+                    parentFile.mkdirs();
+                }
                 long ret = -1;
                 if(data.exists()) {
                     DataInputStream is = null;
@@ -553,18 +557,18 @@ class IssueStorage {
             });
             if(issues != null) {
                 for (File issue : issues) {
-                    String id = issue.getName();
-                    id = id.substring(0, id.length() - ISSUE_SUFIX.length());
-                    if(!livingIssues.contains(id)) {
-                        BugtrackingManager.LOG.log(Level.FINE, "removing issue {0}", new Object[] {id}); // NOI18N
-                        FileLock lock = FileLocks.getLock(issue);
-                        try {
-                            synchronized(lock) {
+                    FileLock lock = FileLocks.getLock(issue);
+                    try {
+                        String id = issue.getName();
+                        id = id.substring(0, id.length() - ISSUE_SUFIX.length());
+                        synchronized(lock) {
+                            if(!livingIssues.contains(id)) {
+                                BugtrackingManager.LOG.log(Level.FINE, "removing issue {0}", new Object[] {id}); // NOI18N
                                 issue.delete();
                             }
-                        } finally {
-                            if(lock != null) lock.release();
                         }
+                    } finally {
+                        if(lock != null) lock.release();
                     }
                 }
             }

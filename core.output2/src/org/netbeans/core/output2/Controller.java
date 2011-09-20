@@ -356,7 +356,7 @@ public class Controller {
         for (Container p = tab; p != null; p = p.getParent()) {
             if (p instanceof JComponent) {
                 JComponent jp = (JComponent) p;
-                Object sliding = jp.getClientProperty("isSliding");
+                Object sliding = jp.getClientProperty("isSliding"); //NOI18N
                 if (sliding != null) {
                     if (sliding.equals(Boolean.TRUE)) {
                         return true;

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE project [
-   <!ENTITY platform-impl SYSTEM "jfx-impl-platform.inc">
-   <!ENTITY parameters-impl SYSTEM "jfx-impl-parameters.inc">
-   <!ENTITY callbacks-impl SYSTEM "jfx-impl-callbacks.inc">
+   <!ENTITY platform-impl SYSTEM "jfx-impl-platform.xmlinc">
+   <!ENTITY parameters-impl SYSTEM "jfx-impl-parameters.xmlinc">
+   <!ENTITY callbacks-impl SYSTEM "jfx-impl-callbacks.xmlinc">
 ]>
 
 <project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:fx="javafx:com.sun.javafx.tools.ant">
@@ -259,7 +259,6 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${javafx.main.class}"
-                preloaderClass=""
                 fallbackClass="${javafx.fallback.class}">
                 <!-- PARAMETERS -->
                 &parameters-impl;
@@ -377,9 +376,13 @@
                 <permissions elevated="${permissions.elevated}"/>
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
                 <!-- PLATFORM -->
-                &platform-impl;
+                <fx:platform javafx="2.0+">
+                    &platform-impl;
+                </fx:platform>
                 <!-- CALLBACKS -->
-                &callbacks-impl;
+                <callbacks>
+                    &callbacks-impl;
+                </callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>
@@ -396,9 +399,13 @@
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
                 <template file="${javafx.run.htmltemplate}" tofile="${javafx.run.htmltemplate.processed}"/>
                 <!-- PLATFORM -->
-                &platform-impl;
+                <fx:platform javafx="2.0+">
+                    &platform-impl;
+                </fx:platform>
                 <!-- CALLBACKS -->
-                &callbacks-impl;
+                <callbacks>
+                    &callbacks-impl;
+                </callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>

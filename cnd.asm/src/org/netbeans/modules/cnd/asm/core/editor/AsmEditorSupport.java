@@ -47,8 +47,10 @@ package org.netbeans.modules.cnd.asm.core.editor;
 // (Rev 61)
 import java.io.*;
 
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.cnd.asm.core.dataobjects.AsmDataObject;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.text.*;
 import org.openide.loaders.DataObject;
 
@@ -75,9 +77,14 @@ public class AsmEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public AsmEditorSupport(DataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
     }
-
+  
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(MIMENames.ASM_MIME_TYPE, getDataObject());
+    }
+    
     /** 
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified

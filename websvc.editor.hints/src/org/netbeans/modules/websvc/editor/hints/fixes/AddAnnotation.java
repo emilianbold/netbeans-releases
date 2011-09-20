@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.editor.hints.fixes;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.editor.hints.common.Utilities;
@@ -76,7 +77,7 @@ public class AddAnnotation implements Fix {
             public void cancel() {}
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                Utilities.addAnnotation(workingCopy, element, annotation);
+                Utilities.addAnnotation(workingCopy, ElementHandle.create(element), annotation);
             }
         };
         

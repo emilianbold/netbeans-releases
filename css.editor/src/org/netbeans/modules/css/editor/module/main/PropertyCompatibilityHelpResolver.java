@@ -75,11 +75,6 @@ public class PropertyCompatibilityHelpResolver extends HelpResolver {
     }
 
     @Override
-    public String getHelp(URL url) {
-        return null;
-    }
-
-    @Override
     public URL resolveLink(Property property, String link) {
         return null;
     }

@@ -221,6 +221,7 @@ METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php
 METHOD     foo($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     foo()                           [PUBLIC]   issue200178.php
 METHOD     foo_TestCCOnMethods()           [PUBLIC]   test_cc_on_methods.php
+METHOD     functionName($param)            [PUBLIC]   issue202281.php
 METHOD     getBook()                       [PUBLIC]   mixedtypes.php
 METHOD     getBook()                       [PUBLIC]   mixedtypes_1.php
 METHOD     getBookMagazine()               [PUBLIC]   mixedtypes.php
