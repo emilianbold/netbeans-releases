@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -72,7 +73,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     private boolean scanned;
     private MethodDeclaration originalNode;
     private ModelVisitor visitor;
-    
+
 
     //new contructors
     MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo, ModelVisitor visitor) {
@@ -83,7 +84,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         originalNode = nodeInfo.getOriginalNode();
         this.visitor = visitor;
     }
-    
+
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         assert inScope instanceof TypeScope;
@@ -96,6 +97,10 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
         scanned = true;
+    }
+
+    public static MethodScopeImpl createElement(Scope scope, PHPDocMethodTag node) {
+        return new MethodScopeImpl(scope, MagicMethodDeclarationInfo.create(node));
     }
 
     @Override
@@ -256,6 +261,6 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             scanned =  true;
             visitor.scanNoLazy(originalNode, this);
         }
-        
+
     }
 }
