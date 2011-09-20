@@ -39,63 +39,29 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
-
-import java.awt.EventQueue;
-import java.awt.Image;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.windows.TopComponent;
+package org.netbeans.modules.coherence.xml.pof;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigTextView implements MultiViewDescription {
+public interface PofConfigVisitor {
 
-    private PofConfigSourceEditor editor = null;
-    private PofConfigEditorSupport support = null;
+    // PofConfig Top Level
+    void visit(PofConfig pofConfig);
 
-    public PofConfigTextView(PofConfigEditorSupport support) {
-        this.support = support;
-    }
-
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ONLY_OPENED;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "XML";
-    }
-
-    @Override
-    public Image getIcon() {
-        return ImageUtilities.loadImage(org.openide.util.NbBundle.getMessage(PofConfigTextView.class, "PofConfig.file.icon"));
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public String preferredID() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    public MultiViewElement createElement() {
-        assert EventQueue.isDispatchThread();
-        if (editor == null) {
-            editor = new PofConfigSourceEditor(support);
-//            result = Utilities.actionsGlobalContext().lookupResult(Object.class);
-//            result.addLookupListener(this);
-//            resultChanged(new LookupEvent(result));
-        }
-        return editor;
-    }
+    void visit(AllowInterfaces allowInterfaces);
+    void visit(AllowSubclasses allowSubclasses);
+    void visit(ClassName className);
+    void visit(DefaultSerializer defaultSerializer);
+    void visit(Include include);
+    void visit(InitParam initParam);
+    void visit(InitParams initParams);
+    void visit(ParamType paramType);
+    void visit(ParamValue paramValue);
+    void visit(Serializer serializer);
+    void visit(SerializerType serializerType);
+    void visit(TypeId typeId);
+    void visit(UserType userType);
+    void visit(UserTypeList userTypeList);
 }

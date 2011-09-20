@@ -203,60 +203,76 @@ public class PHPBracketCompleterFileBasedTest extends PHPTestBase {
     public void testIssue167816_02()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue167816_02.php");
     }
-    
+
     public void testIssue166424_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue166424_01.php");
     }
-    
+
     public void testIssue166424_02()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue166424_02.php");
     }
-    
+
     public void testIssue166424_03()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue166424_03.php");
     }
-    
+
     public void testIssue191892_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue191892_01.php");
     }
-    
+
     public void testIssue191856_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue191856_01.php");
     }
-    
+
     public void testIssue195771_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_01.php");
     }
-    
+
     public void testIssue195771_02()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_02.php");
     }
-    
+
     public void testIssue195771_03()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_03.php");
     }
-    
+
     public void testIssue195771_04()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_04.php");
     }
-    
+
     public void testIssue195771_05()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_05.php");
     }
-    
+
     public void testIssue195771_06()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_06.php");
     }
-    
+
     public void testIssue195771_07()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue195771_07.php");
     }
-    
+
     public void testIssue197924_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue197924_01.php");
     }
-    
+
     public void testIssue197924_02()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue197924_02.php");
+    }
+
+    public void testIssue196596_01()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue196596_01.php");
+    }
+
+    public void testIssue196596_02()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue196596_02.php");
+    }
+
+    public void testIssue196596_03()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue196596_03.php");
+    }
+
+    public void testIssue196596_04()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue196596_04.php");
     }
 }

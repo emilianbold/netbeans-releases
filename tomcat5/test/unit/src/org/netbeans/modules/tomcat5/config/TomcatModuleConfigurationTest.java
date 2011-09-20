@@ -555,6 +555,9 @@ public class TomcatModuleConfigurationTest extends TestBase {
         }
     }
 
+    public void testOldCreate50MethodForAutoupdateModule() {
+        assertNotNull(TomcatModuleConfigurationFactory.create50());
+    }
 
     private J2eeModule createJ2eeModule(String fileName, String content) throws Exception {
         File file = new File(getWorkDir(), fileName);
