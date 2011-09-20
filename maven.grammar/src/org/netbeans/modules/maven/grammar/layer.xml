@@ -166,14 +166,6 @@ made subject to such option by the copyright holder.
     
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
-                <folder name="HyperlinkProviders">
-                    <file name="MavenHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.maven.hyperlinks.HyperlinkProviderImpl"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder>
-            </folder>
             <folder name="x-maven-pom+xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.grammar.Bundle"/>
                 <folder name="CodeTemplates">

@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.hyperlinks;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -62,6 +63,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * adds hyperlinking support to pom.xml files..
  * @author mkleint
  */
+@MimeRegistration(mimeType="text/xml", service=HyperlinkProvider.class)
 public class HyperlinkProviderImpl implements HyperlinkProvider {
     
     /** Creates a new instance of HyperlinkProvider */
