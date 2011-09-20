@@ -217,9 +217,16 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION,
                 PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
                 PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
-                PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE,
+                PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_TOKEN,
                 PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG);
             Token <?extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
+            while (keyToken.id() == PHPTokenId.PHP_TOKEN) {
+                if ("?".equals(keyToken.text().toString())) { //NOI18N
+                    return null;
+                }
+                ts.movePrevious();
+                keyToken = LexUtilities.findPreviousToken(ts, lookFor);
+            }
             if (keyToken.id() == PHPTokenId.PHP_CASE) {
                 return null;
             }

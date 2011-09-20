@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.tomcat5.config;
 
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 
 /**
@@ -55,11 +58,14 @@ import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
  * 
  * @author sherold
  */
-public class TomcatModuleConfigurationFactory implements ModuleConfigurationFactory {
+public class TomcatModuleConfigurationFactory implements ModuleConfigurationFactory2 {
     
     private final TomcatVersion version;
-    
-    /** Creates a new instance of TomcatModuleConfigurationFactory */
+
+    public TomcatModuleConfigurationFactory() {
+        this(null);
+    }
+
     private TomcatModuleConfigurationFactory(TomcatVersion version) {
         this.version = version;
     }
@@ -68,19 +74,19 @@ public class TomcatModuleConfigurationFactory implements ModuleConfigurationFact
         return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_50);
     }
     
-    public static TomcatModuleConfigurationFactory create55() {
-        return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_55);
-    }
-    
-    public static TomcatModuleConfigurationFactory create60() {
-        return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_60);
+    public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
+        // XXX is there a better value for unknown tomcat ?
+        return new TomcatModuleConfiguration(j2eeModule,
+                version != null ? version : TomcatVersion.TOMCAT_70);
     }
 
-    public static TomcatModuleConfigurationFactory create70() {
-        return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_70);
-    }
-    
-    public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
-        return new TomcatModuleConfiguration(j2eeModule, version);
+    @Override
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
+        try {
+            TomcatManager manager = (TomcatManager) TomcatFactory.getInstance().getDisconnectedDeploymentManager(instanceUrl);
+            return new TomcatModuleConfiguration(j2eeModule, manager.getTomcatVersion());
+        } catch (DeploymentManagerCreationException ex) {
+            return create(j2eeModule);
+        }
     }
 }

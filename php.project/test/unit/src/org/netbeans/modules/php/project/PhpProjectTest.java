@@ -41,17 +41,10 @@
  */
 package org.netbeans.modules.php.project;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Random;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
-import org.netbeans.modules.php.project.util.PhpProjectGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.php.project.util.TestUtils;
 import org.openide.util.test.MockLookup;
 
 public class PhpProjectTest extends NbTestCase {
@@ -66,29 +59,9 @@ public class PhpProjectTest extends NbTestCase {
     }
 
     public void testCreateProject() throws Exception {
-        Project project = createPhpProject();
+        Project project = TestUtils.createPhpProject(getWorkDir());
         assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
         assertNotNull("PhpModule should be found", project.getLookup().lookup(PhpModule.class));
-    }
-
-    private Project createPhpProject() throws IOException {
-        String projectName = "phpProject" + new Random().nextInt();
-        File projectDir = new File(getWorkDir(), projectName);
-        File srcDir = projectDir;
-
-        final PhpProjectGenerator.ProjectProperties properties = new PhpProjectGenerator.ProjectProperties()
-                .setProjectDirectory(projectDir)
-                .setSourcesDirectory(srcDir)
-                .setName(projectName)
-                .setUrl("http://localhost/" + projectName)
-                .setCharset(Charset.defaultCharset())
-                .setPhpVersion(PhpVersion.PHP_53);
-
-        AntProjectHelper antProjectHelper = PhpProjectGenerator.createProject(properties, null);
-
-        final Project project = ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(project);
-        return project;
     }
 
 }

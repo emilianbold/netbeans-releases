@@ -246,6 +246,14 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
     
     public String getOutputFile(Item item, MakeConfiguration conf, boolean expanded) {
         String filePath = item.getPath(true);
+        // qmake generated Makefile expects to find all object files in one directory 
+        // the project directory by default. So for Qt projects we need to get rid of any paths.
+        // In other case in won't be possible to compile single file, which is not located 
+        // in not a project directory.
+        // See Bug 189542 - compile single file (QT)
+        if (conf.isQmakeConfiguration()) {            
+            filePath = CndPathUtilitities.getBaseName(filePath);
+        }
         String fileName = filePath;
         String suffix = ".o"; // NOI18N
         boolean append = false;

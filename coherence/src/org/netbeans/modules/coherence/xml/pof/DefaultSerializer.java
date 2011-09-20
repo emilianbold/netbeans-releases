@@ -41,75 +41,11 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
-
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "className",
-    "initParams"
-})
-@XmlRootElement(name = "default-serializer")
-public class DefaultSerializer {
-
-    @XmlElement(name = "class-name", required = true)
-    protected String className;
-    @XmlElement(name = "init-params")
-    protected InitParams initParams;
-
-    /**
-     * Gets the value of the className property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getClassName() {
-        return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setClassName(String value) {
-        this.className = value;
-    }
-
-    /**
-     * Gets the value of the initParams property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link InitParams }
-     *     
-     */
-    public InitParams getInitParams() {
-        return initParams;
-    }
-
-    /**
-     * Sets the value of the initParams property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link InitParams }
-     *     
-     */
-    public void setInitParams(InitParams value) {
-        this.initParams = value;
-    }
-
+public interface DefaultSerializer extends SerializerType {
+    
+    static String XML_TAG_NAME = "default-serializer";
 }
