@@ -122,7 +122,6 @@ public final class ModificationResult {
     public static @NonNull ModificationResult runModificationTask(final @NonNull Collection<Source> sources, final @NonNull UserTask task) throws ParseException {
         final ModificationResult result = new ModificationResult(sources);
         final ElementOverlay overlay = new ElementOverlay();
-        final JavacParser[] theParser = new JavacParser[1];
         ParserManager.parse(sources, new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
@@ -141,7 +140,6 @@ public final class ModificationResult {
                     }
                     final JavacTaskImpl jt = copy.impl.getJavacTask();
                     Log.instance(jt.getContext()).nerrors = 0;
-                    theParser[0] = copy.impl.getParser();
                     final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
                     if (diffs != null && diffs.size() > 0)
                         result.diffs.put(copy.getFileObject(), diffs);
@@ -164,8 +162,6 @@ public final class ModificationResult {
                 return null;
             }
         });
-        if (theParser[0] != null)
-            theParser[0].invalidate();
         return result;
     }
     
