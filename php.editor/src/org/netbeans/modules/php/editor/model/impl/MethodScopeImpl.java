@@ -72,7 +72,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     private boolean scanned;
     private MethodDeclaration originalNode;
     private ModelVisitor visitor;
-    
+
 
     //new contructors
     MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo, ModelVisitor visitor) {
@@ -83,7 +83,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         originalNode = nodeInfo.getOriginalNode();
         this.visitor = visitor;
     }
-    
+
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         assert inScope instanceof TypeScope;
@@ -256,6 +256,6 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             scanned =  true;
             visitor.scanNoLazy(originalNode, this);
         }
-        
+
     }
 }
