@@ -211,6 +211,7 @@ public class NbEditorKit extends ExtKit implements Callable {
 //                                       new ToggleToolbarAction(),
 //                                       new NbToggleLineNumbersAction(),
                                        new NbGenerateGoToPopupAction(),
+                                       new NbBuildPopupMenuAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -369,7 +370,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
-    @EditorActionRegistration(name = buildPopupMenuAction)
+//    @EditorActionRegistration(name = buildPopupMenuAction)
     public static class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
         static final long serialVersionUID =-8623762627678464181L;
