@@ -105,7 +105,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -128,7 +127,6 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -641,14 +639,6 @@ public class JavacParser extends Parser {
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
-            }
-            sourceLevel = SourceLevelQuery.getSourceLevel(file);
-            if (root != null && sourceLevel != null) {
-                try {
-                    JavaCustomIndexer.verifySourceLevel(root, file, sourceLevel);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
             }
         }
         FQN2Files dcc = null;
