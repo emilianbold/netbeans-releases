@@ -723,9 +723,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), 
-                    new JpaSupportImpl(this), new JsxWsPoliciesSupportImpl(this),
-                    new JaxRsStackSupportImpl(this));
+            List content = new ArrayList();
+            Collections.addAll(content, new File(getPlatformRoot()), new JpaSupportImpl(this),
+                new JsxWsPoliciesSupportImpl(this), new JaxRsStackSupportImpl(this));
+            Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
