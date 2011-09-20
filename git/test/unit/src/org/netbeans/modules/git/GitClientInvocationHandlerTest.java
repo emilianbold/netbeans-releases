@@ -373,6 +373,87 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         assertTrue(expectedMethods.isEmpty());
     }
 
+    /**
+     * tests that we don't miss any network commands.
+     * If a method is added to GitClient, we NEED to evaluate and decide if it's a network one. If it is and we miss the command, 
+     * the NbAuthenticator might pop up an undesired auth dialog (#200692).
+     * @throws Exception
+     */
+    public void testNetworkMethods () throws Exception {
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
+                "add",
+                "addNotificationListener",
+                "blame",
+                "catFile",
+                "catIndexEntry",
+                "checkout",
+                "checkoutRevision",
+                "clean",
+                "commit",
+                "copyAfter",
+                "createBranch",
+                "createTag",
+                "deleteBranch",
+                "deleteTag",
+                "exportCommit",
+                "exportDiff",
+                "fetch",
+                "getBranches",
+                "getCommonAncestor",
+                "getConflicts",
+                "getPreviousRevision",
+                "getRemote",
+                "getRemotes",
+                "getRepositoryState",
+                "getStatus",
+                "getTags",
+                "getUser",
+                "init",
+                "ignore",
+                "listModifiedIndexEntries",
+                "listRemoteBranches",
+                "listRemoteTags",
+                "log",
+                "merge",
+                "pull",
+                "push",
+                "remove",
+                "removeNotificationListener",
+                "removeRemote",
+                "rename",
+                "reset",
+                "revert",
+                "setCallback",
+                "setRemote",
+                "unignore"));
+        Set<String> networkMethods = new HashSet<String>(Arrays.asList(
+                "fetch",
+                "listRemoteBranches",
+                "listRemoteTags",
+                "pull",
+                "push"));
+        Field f = GitClientInvocationHandler.class.getDeclaredField("NETWORK_COMMANDS");
+        f.setAccessible(true);
+        Set<String> actualNetworkCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+
+        Method[] methods = GitClient.class.getDeclaredMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (Method m : methods) {
+            String methodName = m.getName();
+            assertTrue(methodName, allTestedMethods.contains(methodName));
+            if (networkMethods.contains(methodName)) {
+                assertTrue(methodName, actualNetworkCommands.contains(methodName));
+                networkMethods.remove(methodName);
+            }
+        }
+        assertTrue(networkMethods.isEmpty());
+    }
+
     public void testIndexingBridge () throws Exception {
         indexingLogger.setLevel(Level.ALL);
         LogHandler h = new LogHandler();
