@@ -220,16 +220,16 @@ public final class Utils {
             return true;
         }
         
-        try {
-            if (Utilities.isUnix() || Utilities.isMac()) {
-                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
-                return true;
-            } else if (Utilities.isWindows()) {
-                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
-            }
-        } catch (Throwable t) {
-            return false;
-        }
+//        try {
+//            if (Utilities.isUnix() || Utilities.isMac()) {
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
+//                return true;
+//            } else if (Utilities.isWindows()) {
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
+//            }
+//        } catch (Throwable t) {
+//            return false;
+//        }
         return true;
     }
 
