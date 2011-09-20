@@ -37,7 +37,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.platform.ricoh</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2me.cdc.platform.ojec</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -50,12 +50,6 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.platform.sjmc</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.platform.ojec</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -97,7 +91,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.project.ricoh</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2me.cdc.project.ojec</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -116,18 +110,6 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.project.sjmc</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.project.ojec</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.deployment.ricoh</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
