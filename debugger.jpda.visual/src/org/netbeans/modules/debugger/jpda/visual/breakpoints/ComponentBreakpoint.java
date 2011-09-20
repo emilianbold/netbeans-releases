@@ -63,6 +63,8 @@ abstract public class ComponentBreakpoint extends Breakpoint {
     public static final int TYPE_HIDE = 8;
     public static final int TYPE_REPAINT = 16;
     
+    public static final String PROP_TYPE = "type";  // NOI18N
+    
     private ComponentDescription component;
     private int type = 15;
     private boolean enabled = true;
@@ -98,7 +100,9 @@ abstract public class ComponentBreakpoint extends Breakpoint {
     }
     
     public void setType(int type) {
+        int oldType = this.type;
         this.type = type;
+        firePropertyChange(PROP_TYPE, oldType, type);
     }
     
     abstract public int supportedTypes();

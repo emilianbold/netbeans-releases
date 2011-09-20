@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -58,58 +59,64 @@ import org.openide.util.Utilities;
 
 /**
  * Strategy for visual support for adding various methods into an EJB.
- * 
+ *
  * @author Pavel Buzek
  * @author Martin Adamek
  */
 public abstract class AbstractAddMethodStrategy {
-    
+
     private final String name;
-    
+
     public AbstractAddMethodStrategy(String name) {
         this.name = name;
     }
-    
+
     protected abstract MethodModel getPrototypeMethod();
-    
+
     /** Describes method type handled by this action. */
     public abstract MethodType.Kind getPrototypeMethodKind();
-    
+
     protected abstract MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException;
 
     protected abstract void generateMethod(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote,
             String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException;
-    
+
     public abstract boolean supportsEjb(FileObject fileObject, String className);
 
     public String getTitle() {
         return name;
     }
-    
-    public void addMethod(FileObject fileObject, String className) throws IOException {
+
+    public void addMethod(final FileObject fileObject, final String className) throws IOException {
         if (className == null) {
             return;
         }
         MethodModel methodModel = getPrototypeMethod();
-        MethodCustomizer methodCustomizer = createDialog(fileObject, methodModel);
+        final MethodCustomizer methodCustomizer = createDialog(fileObject, methodModel);
         if (methodCustomizer.customizeMethod()) {
-            try {
-                MethodModel method = methodCustomizer.getMethodModel();
-                boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
-                boolean publishToLocal = methodCustomizer.publishToLocal();
-                boolean publishToRemote = methodCustomizer.publishToRemote();
-                String ejbql = methodCustomizer.getEjbQL();
-                generateMethod(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        MethodModel method = methodCustomizer.getMethodModel();
+                        boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
+                        boolean publishToLocal = methodCustomizer.publishToLocal();
+                        boolean publishToRemote = methodCustomizer.publishToRemote();
+                        String ejbql = methodCustomizer.getEjbQL();
+                        generateMethod(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            });
         }
     }
-    
+
     protected EjbJar getEjbModule(FileObject fileObject) {
         return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
     }
-    
+
     protected static MethodsNode getMethodsNode() {
         Node[] nodes = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]);
         if (nodes.length != 1) {
@@ -117,5 +124,5 @@ public abstract class AbstractAddMethodStrategy {
         }
         return nodes[0].getLookup().lookup(MethodsNode.class);
     }
-    
+
 }
