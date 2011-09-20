@@ -47,6 +47,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 
 /**Should be used for services that are to be registered to the MimeLookup and that
  * need a specific subfolder to be used for the registration (optional, mime-type root
@@ -54,6 +55,7 @@ import java.lang.annotation.Target;
  *
  * @author Jan Lahoda
  * @since 1.19
+ * @see MimeRegistration
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
