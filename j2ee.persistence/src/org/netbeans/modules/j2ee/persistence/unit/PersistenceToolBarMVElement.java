@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.j2ee.persistence.unit;
 
+import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -328,10 +331,16 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     
     
     private class PersistenceUnitNode extends org.openide.nodes.AbstractNode {
+        PersistenceUnit pu;
         PersistenceUnitNode(Children children, PersistenceUnit persistenceUnit) {
             super(children);
             setDisplayName(persistenceUnit.getName());
             setIconBaseWithExtension("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
+            this.pu = persistenceUnit;
+        }
+        
+        PersistenceUnit getPersistenceUnit(){
+            return pu;
         }
         
         @Override
@@ -501,13 +510,22 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            SectionPanel sectionPanel = ((SectionPanel.HeaderButton)evt.getSource()).getSectionPanel();
-            PersistenceUnit punit = (PersistenceUnit) sectionPanel.getKey();
+            JButton but = (JButton) evt.getSource();
+            SectionContainer sc = null;
+            for(Container c=but.getParent(); c!=null; c=c.getParent()){
+                if(c instanceof SectionContainer){
+                    sc = (SectionContainer) c;
+                    break;
+                }
+            }
+            PersistenceUnitNode pun = (PersistenceUnitNode) sc.getNode();
+
+            PersistenceUnit punit = pun.getPersistenceUnit();
             org.openide.DialogDescriptor desc = new ConfirmDialog(NbBundle.getMessage(PersistenceToolBarMVElement.class,"LBL_ConfirmRemove", punit.getName()));
             java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
             dialog.setVisible(true);
             if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
+                sc.removeSection(sc);
                 puDataObject.removePersistenceUnit(punit);
             }
         }
