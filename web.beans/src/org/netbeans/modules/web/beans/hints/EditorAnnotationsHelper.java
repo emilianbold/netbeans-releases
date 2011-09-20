@@ -246,6 +246,9 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
             return;
         }
         Tree var = result.getInfo().getTrees().getTree( element );
+        if ( var == null ){
+            return;
+        }
         List<Integer> position = CdiEditorAnalysisFactory.getElementPosition( 
                 result.getInfo(),  var );
         Document document;
