@@ -41,101 +41,26 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
+import java.util.List;
 
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "typeId",
-    "className",
-    "serializer"
-})
-@XmlRootElement(name = "user-type")
-public class UserType {
+public interface UserType extends PofConfigComponent, UserTypeListElement {
 
-    @XmlElement(name = "type-id")
-    protected String typeId;
-    @XmlElement(name = "class-name", required = true)
-    protected String className;
-    protected Serializer serializer;
+    static String XML_TAG_NAME = "user-type";
 
-    /**
-     * Gets the value of the typeId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTypeId() {
-        return typeId;
-    }
+    public TypeId getTypeId();
+    
+    public void setTypeId(TypeId element);
 
-    /**
-     * Sets the value of the typeId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTypeId(String value) {
-        this.typeId = value;
-    }
+    public ClassName getClassName();
+    
+    public void setClassName(ClassName element);
 
-    /**
-     * Gets the value of the className property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getClassName() {
-        return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setClassName(String value) {
-        this.className = value;
-    }
-
-    /**
-     * Gets the value of the serializer property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Serializer }
-     *     
-     */
-    public Serializer getSerializer() {
-        return serializer;
-    }
-
-    /**
-     * Sets the value of the serializer property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Serializer }
-     *     
-     */
-    public void setSerializer(Serializer value) {
-        this.serializer = value;
-    }
+    public Serializer getSerializer();
+    
+    public void setSerializer(Serializer element);
 
 }

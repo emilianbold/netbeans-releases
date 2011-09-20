@@ -39,14 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+/*
+ * EditUserTypeDialog.java
+ *
+ * Created on 11-Jan-2011, 12:05:27
+ */
+
 package org.netbeans.modules.coherence.editor.pof;
 
-import org.netbeans.modules.coherence.xml.pof.UserType;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.coherence.xml.pof.UserType;
 
 /**
  *
@@ -127,10 +133,10 @@ public class EditUserTypeDialog extends javax.swing.JDialog {
 
     private void initialise(UserType userType) {
         if (userType != null) {
-            tfTypeId.setText(userType.getTypeId());
-            tfClassname.setText(userType.getClassName());
+            tfTypeId.setText(userType.getTypeId().getValue().toString());
+            tfClassname.setText(userType.getClassName().getValue());
             if (userType.getSerializer() != null) {
-                tfSerializerClassname.setText(userType.getSerializer().getClassName());
+                tfSerializerClassname.setText(userType.getSerializer().getClassName().getValue());
             }
         }
     }
@@ -218,7 +224,7 @@ public class EditUserTypeDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tfSerializerClassname, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
+                .addComponent(tfSerializerClassname, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -251,7 +257,7 @@ public class EditUserTypeDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfClassname, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
+                        .addComponent(tfClassname, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 

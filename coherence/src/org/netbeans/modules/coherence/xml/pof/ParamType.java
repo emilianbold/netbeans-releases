@@ -39,41 +39,57 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
-
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+package org.netbeans.modules.coherence.xml.pof;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public interface ParamType extends PofConfigComponent {
+    static String XML_TAG_NAME = "param-type";
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    public enum Type {
+        STRING ("string"),
+        JAVA_LANG_STRING ("java.lang.String"),
+        INT ("int"),
+        JAVA_LANG_INTEGER ("java.lang.Integer"),
+        LONG ("long"),
+        JAVA_LANG_LONG ("java.lang.Long"),
+        BOOLEAN ("boolean"),
+        JAVA_LANG_BOOLEAN ("java.lang.Boolean"),
+        DOUBLE ("double"),
+        JAVA_LANG_DOUBLE ("java.lang.Double"),
+        FLOAT ("float"),
+        JAVA_LANG_FLOAT ("java.lang.Float"),
+        DECIMAL ("decimal"),
+        JAVA_LANG_BIGDECIMAL ("java.math.BigDecimal"),
+        FILE ("file"),
+        JAVA_IO_FILE ("java.io.File"),
+        DATE ("date"),
+        JAVA_SQL_DATE ("java.sql.Date"),
+        TIME ("time"),
+        JAVA_SQL_TIME ("java.sql.Time"),
+        DATETIME ("datetime"),
+        JAVA_SQL_TIMESTAMP ("java.sql.Timestamp"),
+        XML ("xml"),
+        COM_TANGOSOL_RUN_XML_XMLELEMENT ("com.tangosol.run.xml.XmlElement");
+
+        private final String typeName;
+        
+        Type(String typeName) {
+            this.typeName = typeName;
+        }
+        
+        public String type() { return typeName; } 
+        public static Type getType(String type) {
+            for (Type t : values()) {
+                if (t.type().equals(type)) return t;
+            }
+            
+            return null;
+        }
     }
 
-    @Override
-    protected int associateLookup() {
-        return 1;
-    }
-
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
-    }
+    public Type getParamType();
+    public void setParamType(Type type);
 }

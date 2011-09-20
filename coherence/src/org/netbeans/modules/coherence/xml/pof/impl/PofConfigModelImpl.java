@@ -39,41 +39,65 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof.impl;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfig;
+import org.netbeans.modules.coherence.xml.pof.PofConfigComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfigComponentFactory;
+import org.netbeans.modules.coherence.xml.pof.PofConfigModel;
+import org.netbeans.modules.xml.xam.ComponentUpdater;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public class PofConfigModelImpl extends AbstractDocumentModel<PofConfigComponent> implements PofConfigModel {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    private PofConfigImpl myRoot;
+    private PofConfigComponentFactoryImpl myFactory;
+    private SyncUpdateVisitor mySyncUpdateVisitor;
+
+    public PofConfigModelImpl(ModelSource source) {
+        super(source);
+        myFactory = new PofConfigComponentFactoryImpl(this);
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public PofConfigComponent createRootComponent(Element element) {
+        PofConfigImpl poc = (PofConfigImpl)getFactory().createComponent(element, null);
+        
+        if (poc != null) myRoot = poc;
+        else return null;
+        
+        return getPofConfig();
     }
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+    @Override
+    protected ComponentUpdater<PofConfigComponent> getComponentUpdater() {
+        if (mySyncUpdateVisitor == null) mySyncUpdateVisitor = new SyncUpdateVisitor();
+        return mySyncUpdateVisitor;
+    }
+
+    @Override
+    public PofConfigComponent getRootComponent() {
+        return myRoot;
+    }
+
+    @Override
+    public PofConfigComponent createComponent(PofConfigComponent parent, Element element) {
+        return getFactory().createComponent(element, parent);
+    }
+
+    @Override
+    public PofConfig getPofConfig() {
+        return (PofConfig)getRootComponent();
+    }
+
+    @Override
+    public PofConfigComponentFactory getFactory() {
+        return myFactory;
     }
 }

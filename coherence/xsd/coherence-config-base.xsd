@@ -1,0 +1,1234 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <xsd:annotation>
+        <xsd:documentation>
+            Copyright (c) 2000, 2011, Oracle and/or its affiliates. All
+            rights reserved.
+
+            Oracle is a registered trademarks of Oracle Corporation and/or
+            its affiliates.
+
+            This software is the confidential and proprietary information of
+            Oracle Corporation. You shall not disclose such confidential and
+            proprietary information and shall use it only in accordance with the
+            terms of the license agreement you entered into with Oracle.
+
+            This notice may not be removed or altered.     
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:annotation>
+        <xsd:documentation>
+            Oracle Coherence Base Schema definitions that is included by
+            the different schema files. 
+        </xsd:documentation>
+    </xsd:annotation>
+
+
+    <!-- The system-property mechanism allows the value of certain elements 
+        be replaced with values passed into a JVM using the system properties specified 
+        in a Java command line using the -D<name>=<value> option. -->
+        
+    <xsd:complexType name="coherence-system-property-type">
+        <xsd:attribute name="system-property" type="xsd:normalizedString"
+            use="optional" />
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+    <!-- param-name attribute -->
+    <xsd:complexType name="coherence-param-name-type">
+        <xsd:attribute name="param-name" type="xsd:string" use="optional" />
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+    <!-- Empty token to support format of <en system-property=foo></en> -->
+    <xsd:simpleType name="coherence-empty-token">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+    <!-- param type of format {value} -->
+    <xsd:simpleType name="coherence-param-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\{(.*)\})" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- param type with the option for an empty value -->
+    <xsd:simpleType name="coherence-base-type">
+        <xsd:union memberTypes="coherence-param-type coherence-empty-token" />
+    </xsd:simpleType>
+
+
+    <!-- substitute type of format @port@ -->
+    <xsd:simpleType name="coherence-substitute-token-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(@(.*)@)" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-substitute-base-type">
+        <xsd:union memberTypes="coherence-base-type coherence-substitute-token-type" />
+    </xsd:simpleType>
+
+
+    <!-- Integer types -->
+    <xsd:simpleType name="coherence-integer-type">
+        <xsd:union memberTypes="xsd:integer coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-integer-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-integer-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- Positive Integer types -->
+    <xsd:simpleType name="coherence-positiveInteger-type">
+        <xsd:union memberTypes="xsd:positiveInteger coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-positiveInteger-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-positiveInteger-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- NonNegative Integer types -->
+    <xsd:simpleType name="coherence-nonNegativeInteger-type">
+        <xsd:union memberTypes="coherence-base-type xsd:nonNegativeInteger" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-nonNegativeInteger-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-nonNegativeInteger-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Double types -->
+    <xsd:simpleType name="coherence-double-type">
+        <xsd:union memberTypes="xsd:double coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-double-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-double-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!--  Decimal with a range from 0.00 to 1.00 inclusively -->
+    <xsd:simpleType name="coherence-decimal-01inc-base-type">
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0.0" />
+            <xsd:maxInclusive value="1.0" />
+            <xsd:fractionDigits value="2" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-decimal-01inc-type">
+        <xsd:union memberTypes="coherence-decimal-01inc-base-type coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-decimal-01inc-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-decimal-01inc-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!--  Decimal with a range from 0 to 1 exclusively - significant to 2 digits-->
+    <xsd:simpleType name="coherence-decimal-01ex-base-type">
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minExclusive value="0" />
+            <xsd:maxExclusive value="1" />
+            <xsd:fractionDigits value="2" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-decimal-01ex-type">
+        <xsd:union memberTypes="coherence-decimal-01ex-base-type coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-decimal-01ex-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-decimal-01ex-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- Boolean types -->
+    <xsd:simpleType name="coherence-boolean-type">
+        <xsd:union memberTypes="xsd:boolean coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-boolean-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-boolean-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- NmToken type -->
+    <xsd:simpleType name="coherence-nmtoken-type">
+        <xsd:union memberTypes="xsd:NMTOKEN coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-nmtoken-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:NMTOKEN">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- String type -->
+    <xsd:simpleType name="coherence-simple-string-type">
+        <xsd:union memberTypes="xsd:string coherence-base-type" />
+    </xsd:simpleType>
+
+    <!-- need string type to be complex -->
+    <xsd:complexType name="coherence-string-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-simple-string-type">
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="coherence-string-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-string-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- Class type, in case we enhance the class type -->
+    <xsd:simpleType name="coherence-className-type">
+        <xsd:union memberTypes="xsd:string coherence-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-className-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-className-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- Time Type -->
+    <xsd:simpleType name="coherence-base-time-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                Time string type. Values of elements of this type must be
+                in the following format:
+
+                (\d)+(\.\d+)?(MS|ms|S|s|M|m|H|h|D|d)?
+
+                where the first non-digits (from left to right) indicate the
+                unit of time duration:
+
+                -MS or ms (milliseconds)
+                -S or s (seconds)
+                -M or m
+                (minutes)
+                -H or h (hours)
+                -D or d (days)
+
+                If the value does not contain a unit, a unit of
+                seconds is assumed.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\d)+(\.\d+)?(MS|ms|S|s|M|m|H|h|D|d)?" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- accept time, empty value, or parameter -->
+    <xsd:simpleType name="coherence-time-type">
+        <xsd:union memberTypes="coherence-base-type coherence-base-time-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-time-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-time-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- MemorySize Type -->
+    <xsd:simpleType name="coherence-base-memorySize-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                Memory size string type. Values of elements of this type must
+                be in the
+
+                following format:
+
+                (\d)+(\.\d+)?(K|k|M|m|G|g|T|t)?(B|b)?
+
+                where the first non-digit (from left to right) indicates the
+                factor with which the preceding decimal value should be multiplied:
+
+                -K or k
+                (kilo, 2^10)
+                -M or m (mega, 2^20)
+                -G or g (giga, 2^30)
+                -T or t (tera,
+                2^40)
+
+                If the value does not contain a factor, a factor of one is assumed.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(\d)+(\.\d+)?(K|k|M|m|G|g|T|t)?(B|b)?" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-memorySize-type">
+        <xsd:union memberTypes="coherence-base-type coherence-base-memorySize-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-memorySize-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-memorySize-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- percentage Type -->
+    <xsd:simpleType name="coherence-base-percentage-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                percentage type. 
+             </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(100%)|(\d{1,2}[%])" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-percentage-type">
+        <xsd:union memberTypes="coherence-base-type coherence-base-percentage-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-percentage-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-percentage-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!--  percentage or memory type  -->
+    <xsd:simpleType name="coherence-percentage-memory-type">
+        <xsd:union memberTypes="coherence-memorySize-type coherence-percentage-type" />
+    </xsd:simpleType>
+    
+    <xsd:complexType name="coherence-percentage-memory-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-percentage-memory-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+
+    <!-- IP type -->
+    <xsd:simpleType name="IPType">
+        <xsd:restriction base="xsd:string">
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-IP-type">
+        <xsd:simpleContent>
+            <xsd:extension base="IPType">
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="coherence-IP-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="IPType">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- Hostname type defined a name token that must start with an alpha character -->
+    <xsd:simpleType name="HostNameType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:pattern value="([A-Za-z]{1}.*)" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+    <!-- address type defined as either being an IPType or a HostNameType -->
+    <xsd:simpleType name="IPHostNameType">
+        <xsd:union memberTypes="HostNameType IPType" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-IPHostName-type">
+        <xsd:simpleContent>
+            <xsd:extension base="IPHostNameType">
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="coherence-IPHostName-system-properyt-type">
+        <xsd:simpleContent>
+            <xsd:extension base="IPHostNameType">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- param-type types -->
+    <xsd:simpleType name="paramType-type">
+        <xsd:restriction base="xsd:normalizedString">
+            <xsd:enumeration value="string" />
+            <xsd:enumeration value="String" />
+            <xsd:enumeration value="java.lang.String" />
+            <xsd:enumeration value="int" />
+            <xsd:enumeration value="Int" />
+            <xsd:enumeration value="java.lang.Integer" />
+            <xsd:enumeration value="long" />
+            <xsd:enumeration value="Long" />
+            <xsd:enumeration value="java.lang.Long" />
+            <xsd:enumeration value="boolean" />
+            <xsd:enumeration value="Boolean" />
+            <xsd:enumeration value="java.lang.Boolean" />
+            <xsd:enumeration value="double" />
+            <xsd:enumeration value="Double" />
+            <xsd:enumeration value="java.lang.Double" />
+            <xsd:enumeration value="float" />
+            <xsd:enumeration value="Float" />
+            <xsd:enumeration value="java.lang.Float" />
+            <xsd:enumeration value="decimal" />
+            <xsd:enumeration value="Decimal" />
+            <xsd:enumeration value="java.math.BigDecimal" />
+            <xsd:enumeration value="file" />
+            <xsd:enumeration value="File" />
+            <xsd:enumeration value="java.io.File" />
+            <xsd:enumeration value="date" />
+            <xsd:enumeration value="Date" />
+            <xsd:enumeration value="java.sql.Date" />
+            <xsd:enumeration value="time" />
+            <xsd:enumeration value="Time" />
+            <xsd:enumeration value="java.sql.Time" />
+            <xsd:enumeration value="datetime" />
+            <xsd:enumeration value="Datetime" />
+            <xsd:enumeration value="java.sql.Timestamp" />
+            <xsd:enumeration value="xml" />
+            <xsd:enumeration value="Xml" />
+            <xsd:enumeration value="com.tangosol.run.xml.XmlElement" />
+            <xsd:enumeration value="java.lang.ClassLoader" />
+            <xsd:enumeration value="com.tangosol.net.BackingMapManagerContext" />
+            <xsd:enumeration value="com.tangosol.net.CacheService" />
+            <xsd:enumeration value="com.tangosol.net.InvocationService" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="coherence-paramType-type">
+        <xsd:union memberTypes="coherence-base-type paramType-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="coherence-paramType-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-paramType-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <!-- port type -->
+    <xsd:simpleType name="port-limit-type">
+        <xsd:restriction base="xsd:positiveInteger">
+            <xsd:maxInclusive value="65535" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="port-union-type">
+        <xsd:union memberTypes="port-limit-type coherence-substitute-base-type" />
+    </xsd:simpleType>
+
+    <xsd:complexType name="port-system-property-type">
+        <xsd:simpleContent>
+            <xsd:extension base="port-union-type">
+                <xsd:attribute name="system-property" type="xsd:normalizedString"
+                    use="optional" />
+                <xsd:anyAttribute namespace="##other" processContents="lax"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:element name="port" type="port-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The port element specifies a port used by a socket.
+
+                Valid values are from 1 to 65535.
+
+                Used in: local-address, socket-address,
+                unicast-listener, multicast-listener, socket-address
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+
+    <xsd:element name="name" type="coherence-string-type">
+    </xsd:element>
+
+    <xsd:element name="description" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The description element is used to provide text describing
+                the parent element.
+
+                Used in: param
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+
+    <xsd:element name="enabled" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The enabled element specifies whether or not a proxy managed
+                by the proxy service is enabled.
+
+                Valid values are true and false and force.
+
+                Default value is true.
+
+                Used in: cache-service-proxy, invocation-service-proxy
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="address" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The address element specifies the IP address used by a socket.
+
+                Used in: local-address, socket-address
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="to-address" type="coherence-IP-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The to-address element specifies the ending IP address (inclusive)
+                for a range of hosts.
+
+                Used in: host-range     
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="from-address" type="coherence-IP-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The from-address element specifies the starting IP address for a range
+                of
+                hosts.
+
+                Used in: host-range  
+        </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="autostart" type="coherence-boolean-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The autostart element is intended to be used by cache servers
+                (i.e. com.tangosol.net.DefaultCacheServer). It specifies
+                whether or not the cache services associated with the
+                cache scheme should be automatically started at a cluster node.
+
+                Valid values are "true" or "false". Default value is false.
+
+                Used in: replicated-scheme, distributed-scheme,
+                transactional-scheme, optimistic-scheme, invocation-scheme,
+                near-scheme,read-write-backing-map-scheme,reporter
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:group name="instance">
+        <xsd:annotation>
+            <xsd:documentation>
+                The instance entity defines the selection of an implementation class
+                or class-factory name and init-params.
+
+                Used in: class-scheme, partitioned-quorum-policy-schem
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="1">
+                <xsd:element ref="class-name" />
+                <xsd:sequence>
+                    <xsd:element ref="class-factory-name" />
+                    <xsd:element ref="method-name" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:choice>
+            <xsd:element ref="init-params" minOccurs="0" />
+            <xsd:any namespace="##other" processContents="lax" 
+                minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:group>
+
+    <xsd:element name="instance">
+        <xsd:annotation>
+            <xsd:documentation>
+                The instance element defines the selection of an implementation class
+                or class-factory name and init-params.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:group ref="instance" />
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="class-name"
+        type="coherence-className-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The class-name element specifies a fully specified name of a Java
+                class.
+
+                Note: in all schemes except the class-scheme, the specified class must:
+                a) extend the corresponding scheme implementation class
+                b) use
+                identical set of parameters for its constructors
+
+                Used in: class-scheme, local-scheme, near-scheme,
+                overflow-scheme,
+                read-write-backing-map-scheme,
+                external-scheme,
+                paged-external-scheme, async-store-manager, custom-store-manager,
+                lh-file-manager, bdb-store-manager, nio-file-manager,
+                nio-memory-manager, serializer,configurable-cache-factory-config,
+                access-controller, callback-handler, instance, host-filter
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="class-factory-name" type="coherence-string-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The class-factory-name element specifies a fully specified name of a
+                Java
+                class that will be used by the factory approach for the class-scheme.
+
+                Used in: class-scheme
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="method-name" type="coherence-string-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The method-name element specifies a fully specified name of a static
+                factory
+                method that will be used by the factory approach for the class-scheme.
+
+                Used in: method-scheme      
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="init-params">
+        <xsd:annotation>
+            <xsd:documentation>
+                The init-params element contains class initialization parameter
+                configuration info.
+
+                Used in: class-scheme, local-scheme, near-scheme,
+                overflow-scheme,
+                read-write-backing-map-scheme,
+                versioned-backing-map-scheme,
+                external-scheme,
+                paged-external-scheme, async-store-manager,
+                custom-store-manager,
+                lh-file-manager, bdb-store-manager,
+                nio-file-manager,
+                nio-memory-manager, serializer, address-provider
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="init-param" minOccurs="1" maxOccurs="unbounded" />
+                <xsd:any namespace="##other" processContents="lax" 
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="init-param-type">
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:element ref="param-name" minOccurs="0"/>
+                <xsd:element ref="param-type" minOccurs="0"/>
+            </xsd:choice>
+            <xsd:element ref="param-value" />
+            <xsd:any namespace="##other" processContents="lax" 
+                minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+    <xsd:element name="init-param" type="init-param-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The init-param element contains the single class initialization
+                parameter configuration info.
+
+                Used in: init-params     
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="param-name" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The param-name element specifies the name of the initialization
+                parameter.
+
+                When param-name is specified, if the class being constructed and
+                configured implements the XmlConfigurable interface, then a 
+                series of init-param elements can be transposed in order to 
+                build a configuration XML with which
+                to configure the constructed object. For example, consider the
+                following init-params element:
+
+                <init-params>
+                    <init-param>
+                        <param-name>shape</param-name>
+                        <param-value>circle</param-value>
+                    </init-param>
+                    <init-param>
+                        <param-name>color</param-name>
+                        <param-value>blue</param-value>
+                    </init-param>
+                </init-params>
+
+                If transposed, the result would be:
+
+                <some-arbitrary-element-name>
+                    <shape>circle</shape>
+                    <color>blue</color>
+                </some-arbitrary-element-name>
+
+                Used in: init-param
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="param-type"
+        type="coherence-paramType-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The param-type element specifies the Java type of initialization
+                parameter.
+
+                Supported types are:
+                - string - indicates that the value is a java.lang.String
+                - boolean - indicates that the value is a java.lang.Boolean
+                - int -
+                indicates that the value is a java.lang.Integer
+                - long - indicates
+                that the value is a java.lang.Long
+                - double - indicates that the
+                value is a java.lang.Double
+                - decimal - indicates that the value is a
+                java.math.BigDecimal
+                - file - indicates that the value is a
+                java.io.File
+                - date - indicates that the value is a java.sql.Date
+                -
+                time - indicates that the value is a java.sql.Time
+                - datetime -
+                indicates that the value is a java.sql.Timestamp
+                - xml - indicates
+                that the value is the param-value XmlElement
+
+                - java.lang.ClassLoader - the param-value must be "{class-loader}"
+                -
+                com.tangosol.net.BackingMapManagerContext - the param-value must be
+                "{manager-context}"
+                - {scheme-ref} - the param-value must be a name
+                of an existing
+                "scheme-name" element
+                - {cache-ref} - the param-value
+                should be a valid cache name
+
+                The value is converted to the specified type, and the target
+                constructor or method must have a parameter of that type in 
+                order for the instantiation to succeed.
+
+                Used in: init-param
+             </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="param-value">
+        <xsd:annotation>
+            <xsd:documentation>
+                The param-value element specifies a value of the initialization
+                parameter.
+
+                The value is in a format specific to the type of the parameter.
+
+                There are following pre-defined values (macros):
+                - {class-loader} -
+                represents the context ClassLoader
+                - {manager-context} - represents
+                the the backing map manager context
+                - {cache-name} - represents the
+                cache name
+
+                The value element can also contain a user-defined macro in the
+                following format:
+                {user-defined-parameter default-value}
+
+                The values for user-defined parameters could be specified by the
+                corresponding init-param elements in the 
+                caching-scheme-mapping/cache-mapping section. For example, the 
+                following cache-mapping elements assigns a value of 10000 to 
+                the custom parameter called "back-size-limit":
+
+                <cache-mapping>
+                    <cache-name>dist-*</cache-name>
+                    <scheme-name>example-distributed</scheme-name>
+                    <init-params>
+                        <init-param>
+                            <param-name>back-size-limit</param-name>
+                            <param-value>10000</param-value>
+                        </init-param>
+                    </init-params>
+                </cache-mapping>
+
+                That parameter could be used by any elements in the corresponding
+                scheme. In our case, the following scheme would resolve the value 
+                of the "high-units" to 10000:
+
+                <local-scheme>
+                    <scheme-name>example-backing-map</scheme-name>
+                    <high-units>{back-size-limit 0}</high-units>
+                </local-scheme>
+
+                Used in: init-param
+
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType mixed="true">
+            <xsd:attribute name="system-property" type="xsd:normalizedString"
+                use="optional" />
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!--  Note that <socket-provider> has two different definitions. One definitions
+          is for use in the operational config file for <socket-providers>. That 
+          definition is specified inline for the <socket-providers> elemnent so as to not
+          conflict with the definition below. 
+          The second definition below is for use in both the cache-configuration file 
+          (tcp-initiator, tcp-acceptor, defaults) and in the operational config file
+          (unicast-listener). Since this is shared, it has been moved down to the base file. 
+          Since an inline definition of <socket-provider> is allowed in both files the 
+          sub-elements also have to be moved into this base definition file.  
+    -->      
+
+    <xsd:element name="socket-provider">
+        <xsd:annotation>
+            <xsd:documentation>
+                The socket-provider element contains the
+                configuration info for a socket and
+                channel factory that implements
+                the com.tangosol.net.SocketProvider
+                interface.
+
+                In addition to defining a socket-provider, 
+                it is also acceptable and in fact
+                preferred to provide the name of a provider 
+                from the socket-providers configuration within 
+                the operational configuration.
+
+                Used in: tcp-initiator, tcp-acceptor, defaults, unicast-listener
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType mixed="true">
+            <xsd:sequence>
+                <xsd:choice minOccurs="0">
+                    <xsd:element ref="system" />
+                    <xsd:element ref="ssl" />
+                    <xsd:element ref="tcp" />
+                    <xsd:element ref="instance" />
+                </xsd:choice>
+                <xsd:any namespace="##other" processContents="lax" 
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>            
+            <xsd:attribute name="system-property" type="xsd:normalizedString"
+                use="optional" />
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="system">
+        <xsd:annotation>
+            <xsd:documentation>
+                The system element specifies a SocketProvider implementation that
+                produces instances of the JVM's default socket and channel 
+                implementations.
+
+                Used in: socket-provider
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType />
+    </xsd:element>
+
+    <xsd:element name="tcp">
+        <xsd:annotation>
+            <xsd:documentation>
+                The tcp element specifies a SocketProvider implementation that produces
+                TCP based sockets and channel implementations.
+
+                Used in: socket-provider
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType />
+    </xsd:element>
+
+
+    <xsd:complexType name="ssl-type">
+        <xsd:sequence>
+            <xsd:element ref="protocol" minOccurs="0" />
+            <xsd:element ref="provider" minOccurs="0" />
+            <xsd:element ref="executor" minOccurs="0" />
+            <xsd:element ref="identity-manager" minOccurs="0" />
+            <xsd:element ref="trust-manager" minOccurs="0" />
+            <xsd:element ref="hostname-verifier" minOccurs="0" />
+            <xsd:any namespace="##other" processContents="lax" 
+                minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+
+
+    <xsd:element name="ssl" type="ssl-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The ssl element contains the configuration info for a socket provider
+                that produces socket and channel implementations which utilize SSL.
+
+                Used in: socket-provider
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="protocol-type">
+        <xsd:simpleContent>
+            <xsd:extension base="coherence-string-type">
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:element name="protocol" type="protocol-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The protocol element specifies the name of the protocol used by the
+                socket and channel implementations produced by the SSL SocketProvider.
+
+                Default value is "TLS".
+
+                Used in: ssl
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+
+    <xsd:element name="provider">
+        <xsd:annotation>
+            <xsd:documentation>
+                The provider element contains the configuration info for a security
+                provider that extends the java.security.Provider class.
+
+                Used in: ssl, identity-manager, trust-manager
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice>
+                <xsd:element ref="name" />
+                <xsd:group ref="instance" />
+            </xsd:choice>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="executor">
+        <xsd:annotation>
+            <xsd:documentation>
+                The executor element contains the configuration info for a
+                java.util.concurrent.Executor instance.
+
+                Used in: ssl
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:group ref="instance" />
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="identity-manager">
+        <xsd:annotation>
+            <xsd:documentation>
+                The identity-manager element contains the configuration info for
+                initializing a javax.net.ssl.KeyManager instance.
+
+                The manager provides the key material used to authenticate the local
+                connection to its peer. If no key material is available, the
+                connection will be unable to present authentication credentials.
+
+                Used in: ssl
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="algorithm" minOccurs="0" />
+                <xsd:element ref="provider" minOccurs="0" />
+                <xsd:element ref="key-store" minOccurs="0" />
+                <xsd:element ref="password" />
+                <xsd:any namespace="##other" processContents="lax" 
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="algorithm" type="coherence-string-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The algorithm element specifies the name of a key or trust management
+                algorithm.
+
+                Default value is "SunX509".
+
+                Used in: identity-manager, trust-manager
+        </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="key-store">
+        <xsd:annotation>
+            <xsd:documentation>
+                The key-store element contains the configuration info for a
+                java.security.KeyStore instance.
+
+                Used in: identity-manager, trust-manager
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="url" />
+                <xsd:element ref="password" minOccurs="0" />
+                <xsd:element ref="type" minOccurs="0" />
+                <xsd:any namespace="##other" processContents="lax" 
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="type" type="coherence-string-type">
+    </xsd:element>
+
+    <xsd:element name="url" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The url element contains a Uniform Resource Locator (URL) string.
+
+                Used in: key-store
+             </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="password" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The password element specifies the name of a private key or key store
+                password.
+
+                Used in: identity-manager, key-store
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="trust-manager">
+        <xsd:annotation>
+            <xsd:documentation>
+                The trust-manager element contains the configuration info for
+                initializing a javax.net.ssl.TrustManager instance.
+
+                A TrustManager is responsible for managing the trust material that is
+                used when making trust decisions, and for deciding whether credentials
+                presented by a peer should be accepted.
+
+                A valid trust-manager configuration will contain at least one child
+                element.
+
+                Used in: ssl
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element minOccurs="0" ref="algorithm" />
+                <xsd:element minOccurs="0" ref="provider" />
+                <xsd:element minOccurs="0" ref="key-store" />
+                <xsd:any namespace="##other" processContents="lax" 
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="hostname-verifier">
+        <xsd:annotation>
+            <xsd:documentation>
+                The hostname-verifier element contains the configuration info for a
+                javax.net.ssl.HostnameVerifier instance.
+
+                During SSL handshaking, if the URL's hostname and the server's
+                identification hostname mismatch, the verification mechanism 
+                will call back to this instance to determine if the connection 
+                should be allowed.
+
+                Used in: ssl
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:group ref="instance" />
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="directory" type="coherence-string-system-property-type">
+        <xsd:annotation>
+            <xsd:documentation>
+                The directory element specifies the pathname for the [root] directory
+                that a disk persistence manager or flashjournal-manager will use to 
+                store files in. If not specified or specifies a non-existent directory, 
+                a temporary file in the default location will be used.
+
+                Applicable with the "LH" file-manager in the external-scheme, the
+                lh-file-manager, the bdb-store-manager, the nio-file-manager, and
+                the "file-mapped" type for backup-storage,
+
+                Used in: external-scheme, backup-storage,
+                lh-file-manager, bdb-store-manager, nio-file-manager,flashjournal-manager
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="async-limit">
+        <xsd:annotation>
+            <xsd:documentation>
+                The async-limit element specifies the maximum number of bytes that 
+                will be queued to be written asynchronously.
+                
+                Setting the value to zero does not disable asynchronous writes;
+                instead, the value of zero indicates that the implementation default 
+                for the maximum number of bytes should be used.
+
+                The value of this element must be in the following format:
+
+                [\d]+[[.][\d]+]?[K|k|M|m]?[B|b]?
+
+                where the first non-digit (from left to right) indicates the factor with
+                which the preceding decimal value should be multiplied:
+
+                -K (kilo, 2^10)
+                -M (mega, 2^20)
+
+                If the value does not contain a factor, a factor of one is assumed.
+
+                Valid values are any positive memory sizes and zero.
+
+                Default value is 4M.
+
+                Used in: external-scheme, async-store-manager, async-limit    
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:restriction base="coherence-string-type">
+                    <xsd:pattern value="((\d)+((.)(\d)+)?[K|k|M|m]?[B|b]?)" />
+                </xsd:restriction>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

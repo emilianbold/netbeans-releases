@@ -39,41 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import java.util.List;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public interface SerializerType extends PofConfigComponent {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
-    }
+    static String XML_TAG_NAME = "serializer-type";
 
-    @Override
-    protected int associateLookup() {
-        return 1;
-    }
+    public ClassName getClassName();
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
-    }
+    public void setClassName(ClassName element);
+    
+    public InitParams getInitParams();
+    
+    public void setInitParams(InitParams element);
+
 }

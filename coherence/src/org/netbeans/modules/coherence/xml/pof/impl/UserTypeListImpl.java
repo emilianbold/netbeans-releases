@@ -39,41 +39,75 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof.impl;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import java.util.List;
+import org.netbeans.modules.coherence.xml.pof.Include;
+import org.netbeans.modules.coherence.xml.pof.PofConfigComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfigVisitor;
+import org.netbeans.modules.coherence.xml.pof.UserType;
+import org.netbeans.modules.coherence.xml.pof.UserTypeList;
+import org.netbeans.modules.coherence.xml.pof.UserTypeListElement;
+import org.netbeans.modules.coherence.xml.pof.ValueNotPermittedException;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public class UserTypeListImpl extends PofConfigComponentImpl implements UserTypeList {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    public UserTypeListImpl(PofConfigModelImpl model, Element e) {
+        super(model, e);
+    }
+    
+    public UserTypeListImpl(PofConfigModelImpl model) {
+        super(model, createNewElement(XML_TAG_NAME, model));
+    }
+    
+    @Override
+    public String getTagName() {
+        return UserTypeList.XML_TAG_NAME;
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public void accept(PofConfigVisitor visitor) {
+        visitor.visit(this);
     }
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+    @Override
+    public Class<? extends PofConfigComponent> getComponentType() {
+        return UserTypeList.class;
     }
+
+    @Override
+    public List<Include> getIncludes() {
+        return getChildren(Include.class);
+    }
+
+    @Override
+    public List<UserType> getUserTypes() {
+        return getChildren(UserType.class);
+    }
+
+    @Override
+    public List<UserTypeListElement> getElements() {
+        return getChildren(UserTypeListElement.class);
+    }
+
+    @Override
+    public void addElement(UserTypeListElement element) throws ValueNotPermittedException {
+        appendChild(UserTypeListElement.USERTYPELIST_ELEMENT, element);
+    }
+
+    @Override
+    public void addElement(int index, UserTypeListElement element) throws ValueNotPermittedException {
+        insertAtIndex(UserTypeListElement.USERTYPELIST_ELEMENT, element, index);
+    }
+
+    @Override
+    public void removeElement(UserTypeListElement element) {
+        removeChild( UserTypeListElement.USERTYPELIST_ELEMENT,  element );
+    }
+    
 }

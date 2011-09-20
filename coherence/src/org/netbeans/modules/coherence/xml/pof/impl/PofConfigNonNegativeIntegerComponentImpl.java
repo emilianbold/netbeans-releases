@@ -39,41 +39,41 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof.impl;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfigNonNegativeIntegerComponent;
+import org.netbeans.modules.coherence.xml.pof.ValueNotPermittedException;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public abstract class PofConfigNonNegativeIntegerComponentImpl extends PofConfigComponentImpl implements PofConfigNonNegativeIntegerComponent {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    public PofConfigNonNegativeIntegerComponentImpl(PofConfigModelImpl model, Element e) {
+        super(model, e);
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public Integer getValue() {
+        return Integer.valueOf(getText());
     }
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+    @Override
+    public void setValue(int value) throws ValueNotPermittedException {
+        setValue(Integer.valueOf(value));
     }
+    
+    @Override
+    public void setValue(Integer value) throws ValueNotPermittedException {
+        if (value  != null && value.intValue() >=0) {
+            setText(getTagName(), value.toString());
+        } else if (value == null) {
+            setText(getTagName(), null);
+        } else {
+            throw new ValueNotPermittedException();
+        }
+    }
+
 }

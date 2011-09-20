@@ -39,97 +39,40 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.xml.pof;
+package org.netbeans.modules.coherence.xml.pof.impl;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import org.netbeans.modules.coherence.xml.pof.PofConfigComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfigVisitor;
+import org.netbeans.modules.coherence.xml.pof.Serializer;
+import org.w3c.dom.Element;
 
 /**
- * This object contains factory methods for each 
- * Java content interface and Java element interface 
- * generated in the org.netbeans.modules.coherence.xml.pof package. 
- * <p>An ObjectFactory allows you to programatically 
- * construct new instances of the Java representation 
- * for XML content. The Java representation of XML 
- * content can consist of schema derived interfaces 
- * and classes representing the binding of schema 
- * type definitions, element declarations and model 
- * groups.  Factory methods for each of these are 
- * provided in this class.
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlRegistry
-public class ObjectFactory {
+public class SerializerImpl extends SerializerTypeImpl implements Serializer {
 
-
-    /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.netbeans.modules.coherence.xml.pof
-     * 
-     */
-    public ObjectFactory() {
+    public SerializerImpl(PofConfigModelImpl model, Element e) {
+        super(model, e);
+    }
+    
+    public SerializerImpl(PofConfigModelImpl model) {
+        super(model, createNewElement(Serializer.XML_TAG_NAME, model));
+    }
+    
+    @Override
+    public String getTagName() {
+        return Serializer.XML_TAG_NAME;
     }
 
-    /**
-     * Create an instance of {@link UserType }
-     * 
-     */
-    public UserType createUserType() {
-        return new UserType();
+    @Override
+    public void accept(PofConfigVisitor visitor) {
+        visitor.visit(this);
     }
 
-    /**
-     * Create an instance of {@link Serializer }
-     * 
-     */
-    public Serializer createSerializer() {
-        return new Serializer();
+    @Override
+    public Class<? extends PofConfigComponent> getComponentType() {
+        return Serializer.class;
     }
-
-    /**
-     * Create an instance of {@link InitParams }
-     * 
-     */
-    public InitParams createInitParams() {
-        return new InitParams();
-    }
-
-    /**
-     * Create an instance of {@link InitParam }
-     * 
-     */
-    public InitParam createInitParam() {
-        return new InitParam();
-    }
-
-    /**
-     * Create an instance of {@link PofConfig }
-     * 
-     */
-    public PofConfig createPofConfig() {
-        return new PofConfig();
-    }
-
-    /**
-     * Create an instance of {@link UserTypeList }
-     * 
-     */
-    public UserTypeList createUserTypeList() {
-        return new UserTypeList();
-    }
-
-    /**
-     * Create an instance of {@link DefaultSerializer }
-     * 
-     */
-    public DefaultSerializer createDefaultSerializer() {
-        return new DefaultSerializer();
-    }
-
-    /**
-     * Create an instance of {@link Include }
-     * 
-     */
-    public Include createInclude() {
-        return new Include();
-    }
-
+    
 }

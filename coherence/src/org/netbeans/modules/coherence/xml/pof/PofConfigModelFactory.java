@@ -39,41 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.coherence.xml.pof.impl.PofConfigModelImpl;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public class PofConfigModelFactory extends AbstractModelFactory<PofConfigModel> {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    private final static PofConfigModelFactory instance = new PofConfigModelFactory();
+
+    public static PofConfigModelFactory getInstance() {
+        return instance;
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public PofConfigModel createModel(ModelSource ms) {
+        return new PofConfigModelImpl(ms);
     }
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+    @Override
+    public synchronized PofConfigModel getModel(ModelSource source) {
+        return (PofConfigModel) super.getModel(source);
     }
 }

@@ -39,41 +39,62 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.editor.pof;
+package org.netbeans.modules.coherence.xml.pof.impl;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import java.util.List;
+import org.netbeans.modules.coherence.xml.pof.InitParam;
+import org.netbeans.modules.coherence.xml.pof.InitParams;
+import org.netbeans.modules.coherence.xml.pof.PofConfigComponent;
+import org.netbeans.modules.coherence.xml.pof.PofConfigVisitor;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class PofConfigDataObject extends MultiDataObject {
+public class InitParamsImpl extends PofConfigComponentImpl implements InitParams {
 
-    public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor("text/coh-pof+xml", true);
+    public InitParamsImpl(PofConfigModelImpl model, Element e) {
+        super(model, e);
+    }
+    
+    public InitParamsImpl(PofConfigModelImpl model) {
+        super(model, createNewElement(XML_TAG_NAME, model));
+    }
+    
+    @Override
+    public String getTagName() {
+        return InitParams.XML_TAG_NAME;
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public void accept(PofConfigVisitor visitor) {
+        visitor.visit(this);
     }
 
-    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
-    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
-    mimeType = "text/coh-pof+xml",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "PofConfig",
-    position = 2000)
-    public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+    @Override
+    public Class<? extends PofConfigComponent> getComponentType() {
+        return InitParams.class;
     }
+
+    @Override
+    public List<InitParam> getInitParams() {
+        return getChildren( InitParam.class);
+    }
+
+    @Override
+    public void addInitParam(InitParam element) {
+        appendChild(InitParam.XML_TAG_NAME, element);
+    }
+
+    @Override
+    public void addInitParam(int index, InitParam element) {
+        insertAtIndex(InitParam.XML_TAG_NAME, element, index);
+    }
+
+    @Override
+    public void removeInitParam(InitParam element) {
+        removeChild(InitParam.XML_TAG_NAME, element);
+    }
+    
 }
