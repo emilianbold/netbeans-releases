@@ -1,7 +1,7 @@
 Name: Oracle Cloud SDK
 Version: 1.0
 License: OTN License
-OSR: xxx
+OSR: Oracle
 Description: Software Development Kit for Oracle Public Cloud
 Origin: http://www.oracle.com/technetwork/licenses/standard-license-152015.html
 Files: oracle.cloud.paas.api.jar, whitelist.jar

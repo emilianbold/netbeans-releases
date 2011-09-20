@@ -138,7 +138,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     }
     
     private LibraryImplementation[] getJavaEELibrary() {
-        Library l = LibraryManager.getDefault().getLibrary("javaee-api-6.0");
+        Library l = LibraryManager.getDefault().getLibrary("javaee-api-5.0");
         
         LibraryImplementation library = new J2eeLibraryTypeProvider().createLibrary();
 
