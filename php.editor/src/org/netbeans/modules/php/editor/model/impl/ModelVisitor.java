@@ -219,12 +219,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        super.visit(node);
         PHPDocTag.Type kind = node.getKind();
         ScopeImpl currentScope = modelBuilder.getCurrentScope();
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
         }
+        MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
+        modelBuilder.setCurrentScope(methodScope);
+        super.visit(node);
+        modelBuilder.reset();
     }
 
     @Override
