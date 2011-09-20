@@ -936,8 +936,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     @Override
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        DocumentView.super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
         sb.append("; Bounds:<");
         sb.append(hasExtraStartBound() ? startPos.getOffset() : "DOC-START");
         sb.append(","); // NOI18N
@@ -969,7 +969,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     public String toStringUnlocked() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
     public String toStringDetail() {
@@ -984,7 +984,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     public String toStringDetailUnlocked() { // Dump everything
-        return appendViewInfo(new StringBuilder(200), 0, -2).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -2).toString();
     }
 
 }
