@@ -622,12 +622,26 @@ public class MercurialInterceptor extends VCSInterceptor {
                 if (exists) {
                     hgFolders.put(hgFolder, newTimestamps);
                     if (list == null) {
-                        FileUtil.addRecursiveListener(list = new FileChangeAdapter(), hgFolder);
+                        final FileChangeListener fList = list = new FileChangeAdapter();
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.addRecursiveListener(fList, hgFolder);
+                            }
+                        });
                     }
                     hgFolderRLs.put(hgFolder, list);
                 } else {
                     if (list != null) {
-                        FileUtil.removeRecursiveListener(list, hgFolder);
+                        final FileChangeListener fList = list;
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.removeRecursiveListener(fList, hgFolder);
+                            }
+                        });
                     }
                     Mercurial.STATUS_LOG.log(Level.FINE, "refreshHgFolderTimestamp: {0} no longer exists", hgFolder.getAbsolutePath()); //NOI18N
                 }
