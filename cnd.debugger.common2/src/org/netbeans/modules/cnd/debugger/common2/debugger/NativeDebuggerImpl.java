@@ -768,7 +768,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected final void deleteMarkLocations() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setCurrentLine(null, false, false, ShowMode.NONE);
+                setCurrentLine(null, false, false, ShowMode.NONE, false);
             }
         });
     }
@@ -776,7 +776,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected final void resetCurrentLine() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setCurrentLine(null, false, false, ShowMode.NONE);
+                setCurrentLine(null, false, false, ShowMode.NONE, false);
             }
         });
     }
@@ -810,11 +810,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     
-    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode) {
+    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode, boolean focus) {
 
         if (l != null) {
 	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !Disassembly.isInDisasm())) {
-		EditorBridge.showInEditor(l);
+		EditorBridge.showInEditor(l, focus);
             }
 
             if (visited) {
@@ -864,10 +864,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Else, if user has requested disassembly or no source information is
      * available, bring up the disassembler.
      */
-    private void updateLocation(final boolean andShow, final ShowMode showModeOverride) {
+    private void updateLocation(final boolean andShow, final ShowMode showModeOverride, final boolean focus) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (isSrcRequested() && haveSource()) {
+                if (haveSource()) {
                     // Locations should already be in local path form.
 		    final String mFileName = fmap().engineToWorld(getVisitedLocation().src());
 		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
@@ -885,7 +885,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                                 }
                             }
                         }
-			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode);
+			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
                     }
 	    } else {
                     annotateDis(true);
@@ -901,14 +901,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 }
             }
         });
-    }
-    
-    private void setSrcRequested(boolean srcRequested) {
-	this.srcRequested = srcRequested;
-    }
-
-    protected final boolean isSrcRequested() {
-	return srcRequested;
     }
 
     private boolean haveSource() {
@@ -929,20 +921,19 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}
-	setSrcRequested(true);
-	updateLocation(true, ShowMode.SOURCE);
+	updateLocation(true, ShowMode.SOURCE, false);
     }
     
     public void showCurrentDis() {
         Disassembly.open();
-        updateLocation(true, ShowMode.DIS);
+        updateLocation(true, ShowMode.DIS, false);
     }
 
     public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();
         getDisassembly().stateUpdated();
-	updateLocation(true, ShowMode.AUTO);
+	updateLocation(true, ShowMode.AUTO, false);
     }
 
     public void setSrcOODMessage(String msg) {
@@ -1012,14 +1003,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 //							  disController(),
 //							  disStateModel(),
 //							  breakpointModel());
-	updateLocation(true, ShowMode.AUTO);
+        
+        // need to focus here, otherwise EditorContext does not see that the editor has updated
+	updateLocation(true, srcRequested ? ShowMode.SOURCE : ShowMode.DIS, true);
+        
 	// CR 6986846
-	//if (!(isSrcRequested() || haveSource())) {
-	if ((getVisitedLocation() != null) && !haveSource()) {
+	if (!srcRequested) {
 	   Disassembly.open();
 	}
 
         visitMarker.attach(true);
+        visitDisMarker.attach(true);
         currentPCMarker.attach(true);
         currentDisPCMarker.attach(true);
         EditorBridge.setStatus(srcOODMessage);
@@ -1071,7 +1065,12 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
 	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
 	    bpt.showAnnotationsFor(false, this);
-
+        
+        // remember src/dis state
+        srcRequested = !Disassembly.isInDisasm();
+        
+        getDisassembly().reset();
+        
         visitMarker.detach();
         visitDisMarker.detach();
         currentPCMarker.detach();

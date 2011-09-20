@@ -395,6 +395,12 @@ public class GdbDisassembly extends Disassembly {
         }
         return res;
     }
+
+    @Override
+    public void reset() {
+        address = "";
+        super.reset();
+    }
     
     private static class GdbDisLine implements DisLine {
         private final String address;

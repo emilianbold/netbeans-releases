@@ -114,7 +114,7 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
     private void updateAnnotations(boolean andShow) {
-        debugger.annotateDis(andShow);
+        debugger.annotateDis(andShow || isInDisasm());
         for (DebuggerAnnotation annotation : bptAnnotations) {
             annotation.detach();
         }
@@ -380,6 +380,12 @@ public abstract class Disassembly implements StateModel.Listener {
     
     protected final void setText(DisText text) {
         this.disText = text;
+    }
+    
+    public void reset() {
+        DisText emptyText = new DisText();
+        emptyText.save();
+        setText(emptyText);
     }
     
     protected class DisText {

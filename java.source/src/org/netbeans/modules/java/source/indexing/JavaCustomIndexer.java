@@ -216,7 +216,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     compileResult.aptGenerated.clear();
                                 }
                             }
-                            finished = true;
+                            finished = compileResult.success;
                         } finally {
                             try {
                                 javaContext.finish();
