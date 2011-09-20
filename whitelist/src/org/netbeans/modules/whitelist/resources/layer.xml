@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.whitelist.project.WhiteListCategoryPanel.createWhiteListCategoryProvider"/>
                     <attr name="position" intvalue="115"/>
+                    <attr name="show" boolvalue="true"/>
                 </file>
             </folder>
             <folder name="Lookup">
@@ -70,6 +71,22 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.whitelist.project.WhiteListCategoryPanel.createWhiteListCategoryProvider"/>
                     <attr name="position" intvalue="115"/>
+                </file>
+            </folder>
+            <folder name="Lookup">
+                <file name="WhitelistingProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.LookupProvider"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.whitelist.project.WhiteListLookupProvider"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+            <folder name="Customizer">
+                <file name="Whitelisting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.whitelist.project.WhiteListCategoryPanel.createWhiteListCategoryProvider"/>
+                    <attr name="position" intvalue="115"/>
+                    <attr name="show" boolvalue="true"/>
                 </file>
             </folder>
             <folder name="Lookup">
