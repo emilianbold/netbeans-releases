@@ -7,7 +7,20 @@
     <target name="zip-examples" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/javafx2/samples/resources/"/>
         <mkdir dir="${examples}"/>
+        
         <zip basedir="BrickBreaker" destfile="${examples}/BrickBreaker.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="FXML-LoginDemo" destfile="${examples}/FXML-LoginDemo.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="SwingInterop" destfile="${examples}/SwingInterop.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>

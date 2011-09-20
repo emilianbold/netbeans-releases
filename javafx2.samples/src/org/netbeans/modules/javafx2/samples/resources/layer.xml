@@ -18,6 +18,27 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/BrickBreaker.html"/>
                         <attr name="prjType" stringvalue="javafx2"/>
                     </file>
+
+                    <file name="FXML-LoginDemo.zip" url="FXML-LoginDemo.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/FXML-LoginDemo.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="200"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/FXML-LoginDemo.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="SwingInterop.zip" url="SwingInterop.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/SwingInterop.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/SwingInterop.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
                 </folder>
             </folder>
         </folder>
