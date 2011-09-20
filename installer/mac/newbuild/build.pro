@@ -24,8 +24,8 @@
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.14"/>
-    <property name="tomcat.id" value="7.0.14"/>
+    <property name="tomcat.version" value="7.0.21"/>
+    <property name="tomcat.id" value="7.0.21"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
