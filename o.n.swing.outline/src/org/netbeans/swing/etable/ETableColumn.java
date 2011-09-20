@@ -604,9 +604,9 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
 
             if (sortRank != 0) {
                 if (sortedColumns.size () > 1) {
-                    label.setText((value == null) ?
+                    valueString = (valueString == null || valueString.isEmpty()) ?
                         Integer.toString(sortRank) :
-                        sortRank+" "+valueString);
+                        sortRank+" "+valueString;
                 }
                 // don't use deriveFont() - see #49973 for details
                 label.setFont (new Font (getFont ().getName (), Font.BOLD, getFont ().getSize ()));
@@ -622,9 +622,8 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
                         sortIcon = new SortDownIcon();
                     }
                 }
-            } else { // sortRank == 0
-                label.setText(valueString);
             }
+            label.setText(valueString);
             if (sortIcon == null) {
                 if (customIcon == null) {
                     Icon dummy = new Icon() {
