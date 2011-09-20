@@ -67,7 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
     private IClassConfiguration icc;
-    private static final String WHITELIST_ID = "oracle.cloud";
+    private static final String WHITELIST_ID = "oracle";
 
     public WhiteListQueryImpl() {
         icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();

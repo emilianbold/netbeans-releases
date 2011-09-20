@@ -170,7 +170,7 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
             return false;
         }
         Collection problems = WhiteListIndex.getDefault().
-                getWhiteListViolations(sgs[0].getRootFolder(), null, "oracle.cloud");
+                getWhiteListViolations(sgs[0].getRootFolder(), null, "oracle");
         if (problems.size() > 0) {
             if (DialogDisplayer.getDefault().notify(
                     new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title())) != NotifyDescriptor.YES_OPTION) {
