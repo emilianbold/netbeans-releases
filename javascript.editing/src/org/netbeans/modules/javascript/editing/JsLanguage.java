@@ -49,6 +49,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
@@ -64,6 +66,8 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 
 /*
@@ -77,6 +81,16 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     protected static boolean jsClassPathRegistered = false; // protected for setting from tests
 
+    @MultiViewElement.Registration(displayName = "#LBL_JSEditorTab",
+        iconBase = "org/netbeans/modules/javascript/editing/javascript.png",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = "css.source",
+        mimeType = "text/javascript",
+        position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+    
     public JsLanguage() {
         registerJsClassPathIfNeeded();
     }

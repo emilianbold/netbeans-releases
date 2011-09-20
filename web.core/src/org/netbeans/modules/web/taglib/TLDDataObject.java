@@ -51,6 +51,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.web.core.jsploader.JspLoader;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -61,6 +64,7 @@ import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for TLDLoader(data loader).
  * This class is final only for performance reasons,
@@ -75,6 +79,18 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7581377241494497816L;
     
+      @MultiViewElement.Registration(
+            displayName="#LBL_TLDEditorTab",
+            iconBase="org/netbeans/modules/web/taglib/resources/tag.gif",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="tld.source",
+            mimeType=TLDLoader.TLD_MIMETYPE,
+            position=1
+        )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     public TLDDataObject ()
     	throws DataObjectExistsException, IOException {
 	super(null, null);
@@ -135,7 +151,12 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
     protected synchronized Node createNodeDelegate () {
 	return new TLDNode(this);
     }
-    
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
      // Accessibility from TXTEditorSupport:
     org.openide.nodes.CookieSet getCookieSet0() {
         return getCookieSet();
