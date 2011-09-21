@@ -127,6 +127,8 @@ import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -3710,7 +3712,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
                         timeStamps.resetToNow();
                         timeStamps.store();
-                        return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
+                        nopCustomIndexers(root, indexers, sourceForBinaryRoot);
+                        for (Map.Entry<File,Index> e : IndexManager.getOpenIndexes().entrySet()) {
+                            if (Util.isParentOf(dataFolder, e.getKey())) {
+                                e.getValue().getStatus(true);
+                            }
+                        }
+                        return true;
                     } else {
                         //todo: optimize for java.io.Files
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
