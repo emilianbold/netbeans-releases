@@ -104,6 +104,10 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
             </file>
+            <file name="tutorial1-1.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial1-1.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="110"/>
+            </file>
             <file name="tutorial2.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial2.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
