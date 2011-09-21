@@ -787,8 +787,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             List<Object[]> newModel = new LinkedList<Object[]>();
             for (int i = 0; i < preConfiguration.length; i++) {
                 ParameterInfo parameterInfo = preConfiguration[i];
-                newModel.add(new Object[] {parameterInfo.getName(),
-                    parameterInfo.getType(),
+                newModel.add(new Object[] {parameterInfo.getType(),
+                    parameterInfo.getName(),
                     parameterInfo.getDefaultValue() == null? "" : parameterInfo.getDefaultValue(),
                     parameterInfo.getOriginalIndex(),
                     model.isRemovable(parameterInfo.getOriginalIndex())});
