@@ -674,7 +674,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      * @deprecated Use Editor Settings API instead.
      */
     public Coloring getDefaultColoring() {
-        Coloring c = getCMInternal().get(FontColorNames.DEFAULT_COLORING);
+        FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(FontColorSettings.class);
+        Coloring c = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
         assert c != null : "No default coloring!"; //NOI18N
         return c;
     }
