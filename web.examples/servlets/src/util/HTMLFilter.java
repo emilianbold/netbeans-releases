@@ -25,13 +25,17 @@ package util;
 
 public final class HTMLFilter {
 
-
     /**
      * Filter the specified message string for characters that are sensitive
      * in HTML.  This avoids potential attacks caused by including JavaScript
      * codes in the request URL that is often reported in error messages.
      *
+     * WARNING: This method isn't able to filter every single attack possible.
+     * If you need to secure your application completely, you should look for
+     * some third party libraries or write that on your own
+     * 
      * @param message The message string to be filtered
+     * @return filtered message
      */
     public static String filter(String message) {
 
@@ -62,7 +66,4 @@ public final class HTMLFilter {
         return (result.toString());
 
     }
-
-
 }
-
