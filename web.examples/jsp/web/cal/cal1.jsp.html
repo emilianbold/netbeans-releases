@@ -1,4 +1,5 @@
 <html><body><pre>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 &lt;HTML>
 &lt;!--
   Copyright 2004 The Apache Software Foundation
@@ -30,13 +31,12 @@
 	if (table.getProcessError() == false) {
 %>
 
-&lt;!-- html table goes here -->
 &lt;CENTER>
 &lt;TABLE WIDTH=60% BGCOLOR=yellow CELLPADDING=15>
 &lt;TR>
-&lt;TD ALIGN=CENTER> &lt;A HREF=cal1.jsp?date=prev> prev &lt;/A>
-&lt;TD ALIGN=CENTER> Calendar:&lt;%= table.getDate() %>&lt;/TD>
-&lt;TD ALIGN=CENTER> &lt;A HREF=cal1.jsp?date=next> next &lt;/A>
+&lt;TD ALIGN=CENTER> &lt;A HREF=cal1.jsp?date=prev> Prev &lt;/A>
+&lt;TD ALIGN=CENTER> &lt;c:out value="Calendar: ${table.date}" />&lt;/TD>
+&lt;TD ALIGN=CENTER> &lt;A HREF=cal1.jsp?date=next> Next &lt;/A>
 &lt;/TR>
 &lt;/TABLE>
 
@@ -46,32 +46,29 @@
 &lt;TH> Time &lt;/TH>
 &lt;TH> Appointment &lt;/TH>
 &lt;/TR>
-&lt;FORM METHOD=POST ACTION=cal1.jsp>
-&lt;%
-	for(int i=0; i&lt;table.getEntries().getRows(); i++) {
-	   cal.Entry entr = table.getEntries().getEntry(i);	
-%>
-	&lt;TR>
+&lt;FORM METHOD="POST" ACTION="cal1.jsp">
+    &lt;c:forEach begin="0" end="${table.entries.rows - 1}" var="index">
+        &lt;c:set var="entry" value="${table.entries.getEntry(index)}" />
+        &lt;TR>
 	&lt;TD> 
-	&lt;A HREF=cal2.jsp?time=&lt;%= entr.getHour() %>>
-		&lt;%= entr.getHour() %> &lt;/A>
+	&lt;A HREF="cal2.jsp?time=${entry.hour}">
+            &lt;c:out value="${entry.hour}" />
+        &lt;/A>
 	&lt;/TD>
-	&lt;TD BGCOLOR=&lt;%= entr.getColor() %>>
-	&lt;% out.print(util.HTMLFilter.filter(entr.getDescription())); %>
+	&lt;TD BGCOLOR="${entry.color}">
+            &lt;c:out value="${entry.description}" />
 	&lt;/TD> 
 	&lt;/TR>
-&lt;%
-	}
-%>
+    &lt;/c:forEach>
 &lt;/FORM>
 &lt;/TABLE>
 &lt;BR>
 
-&lt;!-- footer -->
 &lt;TABLE WIDTH=60% BGCOLOR=yellow CELLPADDING=15>
 &lt;TR>
-&lt;TD ALIGN=CENTER>  &lt;% out.print(util.HTMLFilter.filter(table.getName())); %> : 
-		     &lt;% out.print(util.HTMLFilter.filter(table.getEmail())); %> &lt;/TD>
+&lt;TD ALIGN=CENTER>
+    &lt;c:out value="${table.name} : ${table.email}" />
+&lt;/TD>
 &lt;/TR>
 &lt;/TABLE>
 &lt;/CENTER>
@@ -80,17 +77,13 @@
 	} else {
 %>
 &lt;font size=5>
-	You must enter your name and email address correctly.
+    You must enter your name and email address correctly.
 &lt;/font>
 &lt;%
 	}
 %>
 
-
 &lt;/BODY>
 &lt;/HTML>
-
-
-
 
 </pre></body></html>

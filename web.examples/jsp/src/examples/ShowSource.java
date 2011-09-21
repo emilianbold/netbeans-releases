@@ -16,11 +16,13 @@
 package examples;
 
 
-import javax.servlet.*;
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import validators.DebugValidator;
 
 /**
  * Display the sources of the JSP file.
@@ -34,39 +36,48 @@ public class ShowSource
         this.jspFile = jspFile;
     }
 
+    @Override
     public int doEndTag() throws JspException {
 	if ((jspFile.indexOf( ".." ) >= 0) ||
             (jspFile.toUpperCase().indexOf("/WEB-INF/") != 0) ||
-            (jspFile.toUpperCase().indexOf("/META-INF/") != 0))
+            (jspFile.toUpperCase().indexOf("/META-INF/") != 0)) {
+            
 	    throw new JspTagException("Invalid JSP file " + jspFile);
+        }
 
-        InputStream in
-            = pageContext.getServletContext().getResourceAsStream(jspFile);
+        InputStream in = pageContext.getServletContext().getResourceAsStream(jspFile);
 
-        if (in == null)
+        if (in == null) {
             throw new JspTagException("Unable to find JSP file: "+jspFile);
+        }
 
-        InputStreamReader reader = new InputStreamReader(in);
 	JspWriter out = pageContext.getOut();
-
 
         try {
             out.println("<body>");
             out.println("<pre>");
-            for(int ch = in.read(); ch != -1; ch = in.read())
-                if (ch == '<')
+            for(int ch = in.read(); ch != -1; ch = in.read()) {
+                if (ch == '<') {
                     out.print("&lt;");
-                else
+                } else {
                     out.print((char) ch);
-            out.println("</pre>");
-            out.println("</body>");
+                }
+                out.println("</pre>");
+                out.println("</body>");
+            }
         } catch (IOException ex) {
-            throw new JspTagException("IOException: "+ex.toString());
+            throw new JspTagException("IOException: " + ex.toString());
+        } finally {
+            closeInputStream(in);
         }
         return super.doEndTag();
     }
+    
+    private void closeInputStream(InputStream is) {
+        try {
+            is.close();
+        } catch (IOException ex) {
+            Logger.getLogger(DebugValidator.class.getName()).log(Level.SEVERE, "Problem occurs during I/O operation", ex);
+        }
+    }
 }
-
-    
-        
-    
