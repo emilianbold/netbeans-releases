@@ -99,7 +99,8 @@ import org.openide.util.lookup.Lookups;
 */
 
 public class NbToolTip extends FileChangeAdapter {
-    
+
+    // -J-Dorg.netbeans.modules.editor.NbToolTip.level=FINE
     private static final Logger LOG = Logger.getLogger(NbToolTip.class.getName());
     
     private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap<String,WeakReference<NbToolTip>>();

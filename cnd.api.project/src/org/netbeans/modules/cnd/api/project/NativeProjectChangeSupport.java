@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.pdf;
+package org.netbeans.modules.cnd.api.project;
 
-import java.beans.IntrospectionException;
-import java.io.File;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import org.openide.nodes.BeanNode;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import static java.util.logging.Level.FINER;
-
+import java.util.List;
 
 /**
- * New PDF settings.
- *
- * @author Libor Kramolis
- * @author  Marian Petras
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class Settings {
+public interface NativeProjectChangeSupport {
+    
+    public void fireFilesAdded(List<NativeFileItem> fileItems);
 
-    private static final Logger LOG = Logger.getLogger(Settings.class.getName());
+    public void fireFilesRemoved(List<NativeFileItem> fileItems);
 
-    public static final String PROP_PDF_VIEWER = "PDFViewer";           //NOI18N
+    public void fireFileRenamed(String oldPath, NativeFileItem newFileItem);
 
-    private static final Settings INSTANCE = new Settings();
-
-    /**
-     * Default instance of this system option,
-     * for the convenience of associated classes.
-     */
-    public static Settings getDefault() {
-        return INSTANCE;
-    }
-
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(Settings.class);
-    }
-
-    public File getPDFViewer() {
-        String fileName = getPreferences().get(PROP_PDF_VIEWER, null);
-        return ((fileName != null) && (fileName.length() != 0))
-               ? new File(fileName)
-               : null;
-    }
-
-    public void setPDFViewer(File viewer) {
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("Settings[" + this + "].setPDFViewer: " + viewer);//NOI18N
-        }
-
-        getPreferences().put(PROP_PDF_VIEWER, (viewer != null)
-                                              ? viewer.toString()
-                                              : "");                    //NOI18N
-    }
-
+    public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
 }

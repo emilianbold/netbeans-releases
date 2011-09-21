@@ -285,6 +285,7 @@
                 <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
                     <include name="lib/*.jar"/>
+                    <exclude name="lib/${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
@@ -300,6 +301,7 @@
                     <include name="${jfx.deployment.jar}"/>
                     <include name="lib/*.jar"/>
                     <exclude name="lib/${javafx.preloader.jar.filename}"/>
+                    <exclude name="lib/${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
