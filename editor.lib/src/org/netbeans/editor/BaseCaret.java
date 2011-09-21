@@ -2087,11 +2087,16 @@ AtomicLockListener, FoldHierarchyListener {
         if (addedFoldCnt > 0) {
             FoldHierarchy hierarchy = (FoldHierarchy)evt.getSource();
             Fold collapsed = null;
+            boolean wasExpanded = false;
             while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && collapsed.getStartOffset() < caretOffset &&
                     collapsed.getEndOffset() > caretOffset) {
                 hierarchy.expand(collapsed);                
+                wasExpanded = true;
             }
-            scrollToView = true;
+            // prevent unneeded scrolling; the user may have scrolled out using mouse already
+            // so scroll only if the added fold may affect Y axis. Actually it's unclear why
+            // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
+            scrollToView = wasExpanded;
         } else {
             int startOffset = Integer.MAX_VALUE;
             // Set the caret's offset to the end of just collapsed fold if necessary
