@@ -1,4 +1,4 @@
-/*
+t s/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -37,7 +37,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 
 /**
  *
@@ -63,9 +62,6 @@ public class PanelConfigureProject implements  WizardDescriptor.Panel,
         return component;
     }
 
-    public HelpCtx getHelp() {
-        return new HelpCtx( PanelConfigureProject.class  );
-    }
 
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;
