@@ -49,10 +49,13 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionContext;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.core.stack.storage.FunctionContextStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -90,7 +93,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         synchronized(lock) {
             filtersCopy = new ArrayList<DataFilter>(filters);
         }
-        if (functionDescription.getOffsetColumnName() == null) {
+        if (functionDescription.getOffsetColumnName() == null && functionDescription.getContextIDColumnName() == null) {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, filtersCopy, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {
@@ -113,6 +116,24 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     @Override
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
+        Collection<? extends FunctionContextStorage> fcStorages = Lookup.getDefault().lookupAll(FunctionContextStorage.class);
+
+        if (fcStorages != null) {
+            for (FunctionContextStorage fcStorage : fcStorages) {
+                FunctionContext context = fcStorage.getFunctionContext(functionCall.getFunction().getContextID());
+
+                if (context == null) {
+                    continue;
+                }
+
+                SourceFileInfoDataProvider infoProvider = context.getLookup().lookup(SourceFileInfoDataProvider.class);
+
+                if (infoProvider != null) {
+                    return infoProvider.getSourceFileInfo(functionCall);
+                }
+            }
+        }
+
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 

@@ -103,6 +103,7 @@ import org.netbeans.modules.dlight.spi.support.SQLStatementsCache;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.util.Util;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NotImplementedException;
 
@@ -114,7 +115,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
 
     private static final Logger LOG = DLightLogger.getLogger(SQLStackDataStorage.class);
     private static final CallStackEntryParser defaultParser = new DefaultStackParserImpl();
-    private final List<DataTableMetadata> tableMetadatas;
+    private static final HashMap<Class<?>, String> classToType = new HashMap<Class<?>, String>();
+    
+    private final HashMap<String, DataTableMetadata> tableMetadatas;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private DBProxy dbProxy;
     private SQLRequestsProcessor requestsProcessor;
@@ -124,8 +127,19 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
     private CppSymbolDemangler demangler;
     private ServiceInfoDataStorage serviceInfoDataStorage;
 
+    static {
+        classToType.put(Byte.class, "tinyint");     // NOI18N
+        classToType.put(Short.class, "smallint");   // NOI18N
+        classToType.put(Integer.class, "int");      // NOI18N
+        classToType.put(Long.class, "bigint");      // NOI18N
+        classToType.put(Double.class, "double");    // NOI18N
+        classToType.put(Float.class, "real");       // NOI18N
+        classToType.put(String.class, "varchar");   // NOI18N
+        classToType.put(Time.class, "bigint");      // NOI18N
+    }
+    
     public SQLStackDataStorage() {
-        tableMetadatas = new ArrayList<DataTableMetadata>();
+        tableMetadatas = new HashMap<String, DataTableMetadata>();
     }
 
     @Override
@@ -164,6 +178,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
         dbProxy = new DBProxy(requestsProcessor, requestsProvider);
 
         initTables();
+        loadSchema();
     }
 
     private <T extends DataFilter> Collection<T> getDataFilters(List<DataFilter> filters, Class<T> clazz) {
@@ -178,7 +193,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
 
     @Override
     public boolean hasData(DataTableMetadata data) {
-        return data.isProvidedBy(tableMetadatas);
+        return data.isProvidedBy(new ArrayList<DataTableMetadata>(tableMetadatas.values()));
     }
 
     @Override
@@ -198,7 +213,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
 
     @Override
     public void createTables(List<DataTableMetadata> tableMetadatas) {
-        this.tableMetadatas.addAll(tableMetadatas);
+        for (DataTableMetadata dataTableMetadata : tableMetadatas) {
+            this.tableMetadatas.put(dataTableMetadata.getName(), dataTableMetadata);
+        }
     }
 
     // For tests ... 
@@ -268,6 +285,51 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
             }
         }
     }
+
+    private void loadSchema() {
+        try {
+            ResultSet rs = sqlStorage.select("INFORMATION_SCHEMA.TABLES", null, // NOI18N
+                    "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'"); // NOI18N
+            
+            if (rs == null) {
+                return;
+            }
+            
+            while (rs.next()) {
+                String tableName = rs.getString(1);
+                loadTable(tableName);
+            }
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    protected Class<?> typeToClass(String type) {
+        Set<Class<?>> clazzes = classToType.keySet();
+        for (Class<?> clazz : clazzes) {
+            if (classToType.get(clazz).equalsIgnoreCase(type)) {
+                return clazz;
+            }
+        }
+        return String.class;
+    }
+    
+    private void loadTable(String tableName) {
+        try {
+            ResultSet rs = sqlStorage.select("INFORMATION_SCHEMA.COLUMNS", null, "SELECT COLUMN_NAME, "// NOI18N
+                    + "TYPE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE '" + tableName + "'");// NOI18N
+            List<Column> columns = new ArrayList<Column>();
+            while (rs.next()) {
+                Column c = new Column(rs.getString("COLUMN_NAME"), typeToClass(rs.getString("TYPE_NAME")));// NOI18N
+                columns.add(c);
+            }
+            DataTableMetadata result = new DataTableMetadata(tableName, columns, null);
+//            sqlStorage.loadTable(result);
+            tableMetadatas.put(tableName, result);
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }    
 
     @Override
     public long putStack(long contextID, List<CharSequence> stack) {
@@ -440,7 +502,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
                     Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
                     for (FunctionMetric m : metrics) {
                         try {
-                            rs.findColumn(m.getMetricID());
                             Object value = rs.getObject(m.getMetricID());
                             if (m.getMetricValueClass() == Time.class && value != null) {
                                 value = new Time(Long.valueOf(value.toString()));

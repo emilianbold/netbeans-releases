@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
 public final class GotoSourceActionProvider {
 
     private final RequestProcessor RP = new RequestProcessor(GotoSourceActionProvider.class.getName(), 1);
-    private final FunctionsListDataProvider dataprovider;
+    private final SourceFileInfoDataProvider dataprovider;
     private final SourceSupportProvider sourceSupportProvider;
     private final LinkedBlockingQueue<Request> queue = new LinkedBlockingQueue<Request>();
     private final ReentrantLock lock = new ReentrantLock();
@@ -79,7 +79,7 @@ public final class GotoSourceActionProvider {
             new HashMap<Integer, GotoSourceAction>();
     private Future<?> task = null;
 
-    public GotoSourceActionProvider(SourceSupportProvider sourceSupportProvider, FunctionsListDataProvider dataprovider) {
+    public GotoSourceActionProvider(SourceSupportProvider sourceSupportProvider, SourceFileInfoDataProvider dataprovider) {
         this.dataprovider = dataprovider;
         this.sourceSupportProvider = sourceSupportProvider;
     }
