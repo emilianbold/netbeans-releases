@@ -430,6 +430,7 @@ class FoldingTaskListModel extends TaskListModel {
                     
                     TreeSet<Task> s = sortedTasks;
                     sortedTasks = new TreeSet<Task>(comparator);
+                    sortedTasks.addAll(s);
                     tasksList = null;
         
                     if( isExpanded() ) {
