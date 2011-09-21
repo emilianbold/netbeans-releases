@@ -194,13 +194,14 @@ public class SourceLevelQuery {
 
         /**
          * Add a listener to changes of source level.
+         * If {@link #supportsChanges} is false, the listener will never be notified.
          * @param listener a listener to add
          */
         public void addChangeListener(@NonNull ChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
             final SourceLevelQueryImplementation2.Result _delegate = getDelegate();
             if (_delegate == null) {
-                throw new UnsupportedOperationException("Listening is not supported");  //NOI18N
+                return;
             }
             cs.addChangeListener(listener);
             synchronized (this) {
@@ -225,7 +226,7 @@ public class SourceLevelQuery {
             Parameters.notNull("listener", listener);   //NOI18N
             final SourceLevelQueryImplementation2.Result _delegate = getDelegate();
             if (_delegate == null) {
-                throw new UnsupportedOperationException("Listening is not supported");  //NOI18N
+                return;
             }
             cs.removeChangeListener(listener);
         }
