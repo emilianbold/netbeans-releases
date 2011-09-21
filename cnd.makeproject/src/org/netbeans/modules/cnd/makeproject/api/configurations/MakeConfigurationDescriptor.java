@@ -69,7 +69,9 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
@@ -78,7 +80,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
-import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -112,6 +113,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
@@ -619,8 +621,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void fireFilesAdded(List<NativeFileItem> fileItems) {
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().fireFilesAdded(fileItems);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            getNativeProjectChangeSupport().fireFilesAdded(fileItems);
         }
     }
 
@@ -631,31 +633,242 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void fireFilesRemoved(List<NativeFileItem> fileItems) {
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().fireFilesRemoved(fileItems);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            getNativeProjectChangeSupport().fireFilesRemoved(fileItems);
         }
     }
 
     public void fireFileRenamed(String oldPath, NativeFileItem newFileItem) {
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().fireFileRenamed(oldPath, newFileItem);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            getNativeProjectChangeSupport().fireFileRenamed(oldPath, newFileItem);
         }
     }
 
     public void checkForChangedItems(Project project, Folder folder, Item item) {
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().checkForChangedItems(folder, item);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            checkForChangedItems(folder, item);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
     }
+    
+    public void checkForChangedItems(final Folder folder, final Item item) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
+                public void run() {
+                    checkForChangedItemsWorker(folder, item);
+                }
+            });
+        } else {
+            checkForChangedItemsWorker(folder, item);
+        }
+    }
+    
+    private void checkForChangedItemsWorker(Folder folder, Item item) {
+        MakeConfiguration makeConfiguration = getActiveConfiguration();
+        boolean cFiles = false;
+        boolean ccFiles = false;
+        boolean libsChanged = false;
+        boolean projectChanged = false;
+        VectorConfiguration<String> cIncludeDirectories = null;
+        BooleanConfiguration cInheritIncludes = null;
+        VectorConfiguration<String> cPpreprocessorOption = null;
+        BooleanConfiguration cInheritMacros = null;
+        VectorConfiguration<String> ccIncludeDirectories = null;
+        BooleanConfiguration ccInheritIncludes = null;
+        VectorConfiguration<String> ccPreprocessorOption = null;
+        BooleanConfiguration ccInheritMacros = null;
+        Item[] items;
+        MakeConfigurationDescriptor descriptor = this;
+
+        // Check first whether the development host has changed
+        if (makeConfiguration.getDevelopmentHost().getDirty()) {
+            makeConfiguration.getDevelopmentHost().setDirty(false);
+            items = descriptor.getProjectItems();
+            firePropertiesChanged(items, true, true, true);
+            return;
+        } else if (makeConfiguration.getCompilerSet().getDirty()) {
+            // Next, check whether the compiler set has changed
+            makeConfiguration.getCompilerSet().setDirty(false);
+            items = descriptor.getProjectItems();
+            firePropertiesChanged(items, true, true, true);
+            return;
+        }
+
+        if (folder != null) {
+            FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
+            cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
+            cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
+            cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+            ccIncludeDirectories = folderConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
+            ccInheritIncludes = folderConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+            ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
+            ccInheritMacros = folderConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            items = folder.getAllItemsAsArray();
+        } else if (item != null) {
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
+                cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
+                cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+                cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    cFiles = true;
+                }
+            }
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
+                ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+                ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
+                ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+                if (itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    ccFiles = true;
+                }
+            }
+            if (itemConfiguration.getExcluded().getDirty()) {
+                itemConfiguration.getExcluded().setDirty(false);
+                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                list.add(item);
+                if (itemConfiguration.getExcluded().getValue()) {
+                    fireFilesRemoved(list);
+                } else {
+                    fireFilesAdded(list);
+                }
+            }
+            items = new Item[]{item};
+        } else {
+            libsChanged = makeConfiguration.getRequiredProjectsConfiguration().getDirty()
+                    || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
+            cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
+            cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
+            cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                cFiles = true;
+            }
+            cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+            ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
+            ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+            ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
+            ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            if (makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                ccFiles = true;
+            }
+            items = descriptor.getProjectItems();
+            projectChanged = true;
+        }
+
+        if (cIncludeDirectories != null
+                && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
+                || cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
+            cFiles = true;
+            cIncludeDirectories.setDirty(false);
+            cPpreprocessorOption.setDirty(false);
+            cInheritIncludes.setDirty(false);
+            cInheritMacros.setDirty(false);
+        }
+        if (ccIncludeDirectories != null
+                && (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty()
+                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
+            ccFiles = true;
+            ccIncludeDirectories.setDirty(false);
+            ccPreprocessorOption.setDirty(false);
+            ccInheritIncludes.setDirty(false);
+            ccInheritMacros.setDirty(false);
+        }
+        if (libsChanged) {
+            makeConfiguration.getRequiredProjectsConfiguration().setDirty(false);
+            makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().setDirty(false);
+            cFiles = true;
+            ccFiles = true;
+        }
+        if (cFiles || ccFiles) {
+            firePropertiesChanged(items, cFiles, ccFiles, projectChanged);
+        }
+    }    
+
+    private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
+        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
+        MakeConfiguration conf = getActiveConfiguration();
+        // Handle project and file level changes
+        for (int i = 0; i < items.length; i++) {
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
+            if (itemConfiguration != null) { // prevent NPE for corrupted projects IZ#174350
+                if (itemConfiguration.getExcluded().getValue()) {
+                    deleted.add(items[i]);
+                    continue;
+                }
+                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler)
+                        || (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler)
+                        || items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
+                    list.add(items[i]);
+                }
+            }
+        }
+        if (deleted.size() > 0) {
+            getNativeProjectChangeSupport().fireFilesRemoved(deleted);
+        }
+        firePropertiesChanged(list, projectChanged);
+    }
+    
+    private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
+        if (list.size() > 1 || (projectChanged && list.size() == 1)) {
+            getNativeProjectChangeSupport().fireFilesPropertiesChanged(list);
+        } else if (list.size() == 1) {
+            List<NativeFileItem> items = new ArrayList<NativeFileItem>();
+            items.add(list.get(0));
+            getNativeProjectChangeSupport().fireFilesPropertiesChanged(items);
+        } else {
+            // nothing
+        }
+    }
+    
     public void checkForChangedItems(Delta delta) {
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().checkForChangedItems(delta);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            checkForChangedItems2(delta);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
     }
 
+    public void checkForChangedItems2(final Delta delta) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    checkForChangedItemsWorker(delta);
+                }
+            });
+        } else {
+            checkForChangedItemsWorker(delta);
+        }
+    }
+
+    private void checkForChangedItemsWorker(Delta delta) {
+        if (delta.isEmpty()) {
+            return;
+        }
+        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
+            list.addAll(delta.exluded);
+            getNativeProjectChangeSupport().fireFilesRemoved(list);
+        }
+        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
+            list.addAll(delta.included);
+            getNativeProjectChangeSupport().fireFilesAdded(list);
+        }
+        if (!delta.changed.isEmpty()) {
+            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
+        }
+    }
+    
     @Override
     public void copyFromProjectDescriptor(ConfigurationDescriptor copyProjectDescriptor) {
         MakeConfigurationDescriptor copyExtProjectDescriptor = (MakeConfigurationDescriptor) copyProjectDescriptor;
@@ -1440,7 +1653,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return copy;
     }
 
-    private NativeProjectProvider getNativeProject() {
+    private NativeProjectChangeSupport getNativeProjectChangeSupport() {
         // the cons
         if (nativeProject == null) {
             FileObject fo = projectDirFO;
@@ -1453,7 +1666,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
 
         }
-        return (NativeProjectProvider) nativeProject;
+        if(nativeProject instanceof NativeProjectChangeSupport) {
+            return (NativeProjectChangeSupport) nativeProject;
+        } else {
+            return null;
+        }
     }
 
     public static class ProjectItemChangeEvent extends ChangeEvent {
@@ -1498,8 +1715,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             top.setRoot(rootPath);
         }
         addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter);
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().fireFilesAdded(filesAdded);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
             top.attachListeners();
@@ -1515,8 +1732,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         folder.addFolder(top, setModified);
         addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, setModified, fileFilter);
-        if (getNativeProject() != null) { // once not null, it never becomes null
-            getNativeProject().fireFilesAdded(filesAdded);
+        if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
+            getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
             top.attachListeners();

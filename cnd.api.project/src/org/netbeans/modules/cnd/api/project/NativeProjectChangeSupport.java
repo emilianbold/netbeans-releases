@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,45 +34,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.project;
 
-package org.netbeans.modules.cnd.api.remote;
-
-import java.io.File;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
- * Interface for a path mapping utility which will be implemented in another module.
- * 
- * @author gordonp
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public abstract class PathMap {
+public interface NativeProjectChangeSupport {
+    
+    public void fireFilesAdded(List<NativeFileItem> fileItems);
 
-    @Deprecated
-    public final boolean checkRemotePath(String path, boolean fixMissingPath) {
-        Logger.getLogger("cnd.remote.logger").warning("Use of deprecated PathMap.checkRemotePath");
-        return checkRemotePaths(new File[] { new File(path) }, fixMissingPath);
-    }
+    public void fireFilesRemoved(List<NativeFileItem> fileItems);
 
-    public abstract boolean checkRemotePaths(File[] localPaths, boolean fixMissingPath);
+    public void fireFileRenamed(String oldPath, NativeFileItem newFileItem);
 
-    public abstract String getTrueLocalPath(String rpath);
-
-    public String getLocalPath(String rpath) {
-        return getLocalPath(rpath, false);
-    }
-
-    //TODO: deprecate and remote
-    public abstract String getLocalPath(String rpath, boolean useDefault);
-
-    public String getRemotePath(String lpath) {
-        return getRemotePath(lpath, false);
-    }
-
-    //TODO: deprecate and remote
-    public abstract String getRemotePath(String lpath, boolean useDefault);
+    public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
 }
