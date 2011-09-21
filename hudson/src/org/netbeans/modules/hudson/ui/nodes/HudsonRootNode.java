@@ -60,11 +60,11 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 
-/**
- * Root node in Services tab.
- */
-@ServicesTabNodeRegistration(name=HudsonRootNode.HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", iconResource=HudsonRootNode.ICON_BASE, position=488)
-@Messages("LBL_HudsonNode=Hudson Builders")
+@ServicesTabNodeRegistration(name=HudsonRootNode.HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", shortDescription="#TIP_HudsonNode", iconResource=HudsonRootNode.ICON_BASE, position=488)
+@Messages({
+    "LBL_HudsonNode=Hudson Builders",
+    "TIP_HudsonNode=Hudson continuous integration servers, including Jenkins."
+})
 public class HudsonRootNode extends AbstractNode {
 
     public static final String HUDSON_NODE_NAME = "hudson"; // NOI18N
@@ -75,6 +75,7 @@ public class HudsonRootNode extends AbstractNode {
         super(Children.create(new RootNodeChildren(), true));
         setName(HUDSON_NODE_NAME);
         setDisplayName(LBL_HudsonNode());
+        setShortDescription(TIP_HudsonNode());
         setIconBaseWithExtension(ICON_BASE);
     }
     
