@@ -42,10 +42,16 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -59,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -80,6 +87,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -87,6 +96,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
@@ -901,6 +911,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     private static final int VISIBILITY_CHANGE_WINDOW = 500;
+    private static final String INDEX_DOWNLOAD_FOLDER = "index-download";   //NOI18N
 
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
     /* test */ volatile static Source unitTestActiveSource;
@@ -3537,24 +3548,105 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
         }
 
-        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
-            LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
+        @CheckForNull
+        private static URL getRemoteIndexURL(@NonNull final URL sourceRoot) {
+            for (IndexDownloader ld : Lookup.getDefault().lookupAll(IndexDownloader.class)) {
+                final URL indexURL = ld.getIndexURL(sourceRoot);
+                if (indexURL != null) {
+                    return indexURL;
+                }
+            }
+            return null;
+        }
 
-            if (isNoRootsScan() && !fullRescan && TimeStamps.existForRoot(root)) {
-                // We've already seen the root at least once and roots scanning is forcibly turned off
-                // so just call indexers with no files to let them know about the root, but perform
-                // no indexing.
-//                    final Map<String, Collection<Indexable>> resources = new HashMap<String, Collection<Indexable>>();
-//                    for(String mimeType : Util.getAllMimeTypes()) {
-//                        resources.put(mimeType, Collections.<Indexable>emptySet());
-//                    }
-//                    index(resources, root);
-                LinkedList<Context> transactionContexts = new LinkedList<Context>();
+        @NonNull
+        private static String getSimpleName(@NonNull final URL indexURL) throws IllegalArgumentException {
+            final String path = indexURL.getPath();
+            if (path.length() == 0 || path.charAt(path.length()-1) == '/') {    //NOI18N
+                throw new IllegalArgumentException(indexURL.toString());
+            }
+            final int index = path.lastIndexOf('/');  //NOI18N
+            return index < 0 ? path : path.substring(index+1);
+        }
+
+        private File download (
+                @NonNull final URL indexURL,
+                @NonNull final File into) throws IOException {
+            final File packedIndex = new File (into,getSimpleName(indexURL));       //NOI18N
+            final InputStream in = new BufferedInputStream(indexURL.openStream());
+            try {
+                final OutputStream out = new BufferedOutputStream(new FileOutputStream(packedIndex));
+                try {
+                    FileUtil.copy(in, out);
+                } finally {
+                    out.close();
+                }
+            } finally {
+                in.close();
+            }
+            return packedIndex;
+        }
+
+        private boolean unpack (@NonNull final File packedFile, @NonNull File targetFolder) throws IOException {
+            final ZipFile zf = new ZipFile(packedFile);
+            final Enumeration<? extends ZipEntry> entries = zf.entries();
+            try {
+                while (entries.hasMoreElements()) {
+                    final ZipEntry entry = entries.nextElement();
+                    final File target = new File (targetFolder,entry.getName().replace('/', File.separatorChar));   //NOI18N
+                    if (entry.isDirectory()) {
+                        target.mkdirs();
+                    } else {
+                        final InputStream in = zf.getInputStream(entry);
+                        try {
+                            final FileOutputStream out = new FileOutputStream(target);
+                            try {
+                                FileUtil.copy(in, out);
+                            } finally {
+                                out.close();
+                            }
+                        } finally {
+                            in.close();
+                        }
+                    }
+                }
+            } finally {
+                zf.close();
+            }
+            return true;
+        }
+
+        private static void delete (@NonNull final File toDelete) {
+            if (toDelete.isDirectory()) {
+                final File[] children = toDelete.listFiles();
+                if (children != null) {
+                    for (File child : children) {
+                        delete(child);
+                    }
+                }
+            }
+            toDelete.delete();
+        }
+
+        private boolean nopCustomIndexers(
+                @NonNull final URL root,
+                @NonNull final SourceIndexers indexers,
+                final boolean sourceForBinaryRoot) throws IOException {
+            LinkedList<Context> transactionContexts = new LinkedList<Context>();
                 try {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : indexers.cifInfos) {
                         CustomIndexerFactory factory = info.getIndexerFactory();
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), sourceForBinaryRoot, null);
+                        final Context ctx = SPIAccessor.getInstance().createContext(
+                                cacheRoot,
+                                root,
+                                factory.getIndexerName(),
+                                factory.getIndexVersion(),
+                                null,
+                                isFollowUpJob(),
+                                hasToCheckEditor(),
+                                sourceForBinaryRoot,
+                                null);
                         CustomIndexer indexer = factory.createIndexer();
 
                         if (LOGGER.isLoggable(Level.FINE)) {
@@ -3577,44 +3669,85 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 }
                 return true;
+        }
+
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
+            LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
+            final boolean rootSeen = TimeStamps.existForRoot(root);
+            if (isNoRootsScan() && !fullRescan && rootSeen) {
+                // We've already seen the root at least once and roots scanning is forcibly turned off
+                // so just call indexers with no files to let them know about the root, but perform
+                // no indexing.
+                return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
             } else {
-                //todo: optimize for java.io.Files
                 final FileObject rootFo = URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                    final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest());
-                    final Collection<IndexableImpl> resources = crawler.getResources();
-                    final Collection<IndexableImpl> allResources = crawler.getAllResources();
-                    final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
-                    if (crawler.isFinished()) {
-                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
-                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
-                        try {
-                            delete(deleted, root);
-                            invalidateSources(resources);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, recursiveListenersTime)) {
-                                crawler.storeTimestamps();
-                                outOfDateFiles[0] = resources.size();
-                                deletedFiles[0] = deleted.size();
-                                if (logStatistics) {
-                                    logStatistics = false;
-                                    if (SFEC_LOGGER.isLoggable(Level.INFO)) {
-                                        LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
-                                        r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
-                                        r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
-                                        r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
-                                        r.setLoggerName(SFEC_LOGGER.getName());
-                                        SFEC_LOGGER.log(r);
-                                    }
-                                }
-                                return true;
-                            }
-                        } finally {
-                            scanFinished(ctxToFinish.values());
+                    URL indexURL;
+                    if (!rootSeen && (indexURL=getRemoteIndexURL(root))!=null) {
+                        LOGGER.log(
+                                Level.FINE,
+                                "Downloading index for root: {0} from: {1}",
+                                new Object[]{root, indexURL});
+                        final FileObject cf = CacheFolder.getCacheFolder();
+                        assert cf != null;
+                        final File cacheFolder = FileUtil.toFile(cf);
+                        assert cacheFolder != null;
+                        final File downloadFolder = new File (cacheFolder,INDEX_DOWNLOAD_FOLDER);   //NOI18N
+                        downloadFolder.mkdir();
+                        final File packedIndex = download(indexURL, downloadFolder);
+                        unpack(packedIndex, downloadFolder);
+                        packedIndex.delete();
+                        final FileObject df = CacheFolder.getDataFolder(root);
+                        assert df != null;
+                        final File dataFolder = FileUtil.toFile(df);
+                        assert dataFolder != null;
+                        if (dataFolder.exists()) {
+                            //Some features already forced folder creation
+                            //delete it to be able to do renameTo
+                            delete(dataFolder);
                         }
+                        downloadFolder.renameTo(dataFolder);
+                        final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
+                        timeStamps.resetToNow();
+                        timeStamps.store();
+                        return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
+                    } else {
+                        //todo: optimize for java.io.Files
+                        final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                        final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest());
+                        final Collection<IndexableImpl> resources = crawler.getResources();
+                        final Collection<IndexableImpl> allResources = crawler.getAllResources();
+                        final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+                        if (crawler.isFinished()) {
+                            final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                            scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
+                            try {
+                                delete(deleted, root);
+                                invalidateSources(resources);
+                                if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, recursiveListenersTime)) {
+                                    crawler.storeTimestamps();
+                                    outOfDateFiles[0] = resources.size();
+                                    deletedFiles[0] = deleted.size();
+                                    if (logStatistics) {
+                                        logStatistics = false;
+                                        if (SFEC_LOGGER.isLoggable(Level.INFO)) {
+                                            LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
+                                            r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
+                                            r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                                            r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                                            r.setLoggerName(SFEC_LOGGER.getName());
+                                            SFEC_LOGGER.log(r);
+                                        }
+                                    }
+                                    return true;
+                                }
+                            } finally {
+                                scanFinished(ctxToFinish.values());
+                            }
+                        }
+                        return false;
                     }
-                    return false;
                 } else {
                     RepositoryUpdater.getDefault().rootsListeners.add(root,true);
                     return true;
