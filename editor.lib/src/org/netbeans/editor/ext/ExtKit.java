@@ -443,10 +443,10 @@ public class ExtKit extends BaseKit {
 
     }
 
-    @EditorActionRegistration(
-            name = buildToolTipAction,
-            shortDescription = editorBundleHash + buildToolTipAction
-    )
+//    @EditorActionRegistration(
+//            name = buildToolTipAction,
+//            shortDescription = editorBundleHash + buildToolTipAction
+//    )
     public static class BuildToolTipAction extends BaseAction {
 
         static final long serialVersionUID =-2701131863705941250L;
