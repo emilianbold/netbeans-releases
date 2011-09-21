@@ -285,6 +285,7 @@
                 <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
                     <include name="lib/*.jar"/>
+                    <exclude name="lib/${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
@@ -300,6 +301,7 @@
                     <include name="${jfx.deployment.jar}"/>
                     <include name="lib/*.jar"/>
                     <exclude name="lib/${javafx.preloader.jar.filename}"/>
+                    <exclude name="lib/${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
@@ -369,7 +371,7 @@
         <sequential>
             <fx:deploy width="${javafx.width}" height="${javafx.height}"
                       outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
-                      outfile="${application.title}">
+                      outfile="${application.title}" includeDT="true">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
                 <info title="${application.title}" vendor="${application.vendor}"/>
@@ -391,7 +393,7 @@
         <sequential>
             <fx:deploy width="${javafx.width}" height="${javafx.height}"
                       outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
-                      outfile="${application.title}">
+                      outfile="${application.title}" includeDT="true">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
                 <info title="${application.title}" vendor="${application.vendor}"/>

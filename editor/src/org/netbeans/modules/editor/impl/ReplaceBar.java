@@ -680,14 +680,22 @@ public class ReplaceBar extends JPanel {
         findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, backwardsCheckBox.isSelected());
         findProps.put(EditorFindSupport.FIND_PRESERVE_CASE, preserveCaseCheckBox.isSelected() && preserveCaseCheckBox.isEnabled());
         findSupport.putFindProperties(findProps);
-        try {
-            if (replaceAll) {
-                findSupport.replaceAll(findProps);
-            } else {
-                findSupport.replace(findProps, false);
+        if (replaceAll) {
+            findSupport.replaceAll(findProps);
+        } else {
+            if (searchBar.isSearched()) {
+                if (backwardsCheckBox.isSelected()) {
+                    searchBar.findNext();
+                } else {
+                    searchBar.findPrevious();
+                }
+                searchBar.setSearched(false);
             }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            try {
+                findSupport.replace(findProps, false);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 }

@@ -200,6 +200,13 @@ public final class TimeStamps {
         }
     }
 
+    void resetToNow() {
+        final long now = System.currentTimeMillis();
+        for (LongHashMap.Entry<String> entry : timestamps.entrySet()) {
+            entry.setValue(now);
+        }
+    }
+
     public Set<String> getUnseenFiles() {
         return unseen;
     }

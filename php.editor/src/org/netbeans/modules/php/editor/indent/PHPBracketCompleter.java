@@ -270,14 +270,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         int curlyBalance = 0;
         if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
                 || startTokenId == PHPTokenId.PHP_CLASS) {
+            boolean unfinishedComment = false;
             do {
                 token = ts.token();
                 if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                     curlyBalance --;
                 } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
                     curlyBalance ++;
+                } else if (token.id() == PHPTokenId.PHP_COMMENT_START || token.id() == PHPTokenId.PHPDOC_COMMENT_START) {
+                    unfinishedComment = true;
+                } else if (token.id() == PHPTokenId.PHP_COMMENT_END || token.id() == PHPTokenId.PHPDOC_COMMENT_END) {
+                    unfinishedComment = false;
                 }
             } while (ts.moveNext());
+            if (unfinishedComment) {
+                curlyBalance--;
+            }
         } else {
             // complete alternative syntax.
             PHPTokenId endTokenId = null;

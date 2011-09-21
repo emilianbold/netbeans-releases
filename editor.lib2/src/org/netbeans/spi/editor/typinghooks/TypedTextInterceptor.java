@@ -42,6 +42,7 @@ package org.netbeans.spi.editor.typinghooks;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.lib2.typinghooks.TypingHooksSpiAccessor;
 
@@ -223,7 +224,7 @@ public interface TypedTextInterceptor {
          * @return The offset in the edited document.
          */
         public int getOffset() {
-            return offset;
+            return offset.getOffset();
         }
 
         /**
@@ -252,10 +253,10 @@ public interface TypedTextInterceptor {
 
         private final JTextComponent component;
         private final Document document;
-        private final int offset;
+        private final Position offset;
         private final String originallyTypedText;
 
-        /* package */ Context(JTextComponent component, int offset, String typedText) {
+        /* package */ Context(JTextComponent component, Position offset, String typedText) {
             this.component = component;
             this.document = component.getDocument();
             this.offset = offset;
@@ -309,14 +310,14 @@ public interface TypedTextInterceptor {
         private String insertionText = null;
         private int caretPosition = -1;
         
-        private MutableContext(JTextComponent c, int offset, String typedText) {
+        private MutableContext(JTextComponent c, Position offset, String typedText) {
             super(c, offset, typedText);
         }
 
         private static final class Accessor extends TypingHooksSpiAccessor {
 
             @Override
-            public MutableContext createTtiContext(JTextComponent c, int offset, String typedText) {
+            public MutableContext createTtiContext(JTextComponent c, Position offset, String typedText) {
                 return new MutableContext(c, offset, typedText);
             }
 
