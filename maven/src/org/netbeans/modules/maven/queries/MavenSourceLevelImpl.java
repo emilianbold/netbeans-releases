@@ -42,40 +42,36 @@
 
 package org.netbeans.modules.maven.queries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
-import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
+import org.openide.util.WeakListeners;
 
 /**
  * maven implementation of SourceLevelQueryImplementation.
  * checks a property of maven-compiler-plugin
  * @author Milos Kleint
  */
-public class MavenSourceLevelImpl implements SourceLevelQueryImplementation {
+public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
+
     private final NbMavenProjectImpl project;
-    private static Logger LOG = Logger.getLogger(MavenSourceLevelImpl.class.getName());
-    /** Creates a new instance of MavenSourceLevelImpl */
+
     public MavenSourceLevelImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
     
-    public String getSourceLevel(FileObject javaFile) {
-//        LOG.info("SLQ for " + javaFile);
-        //TODO generated source are now assumed to be the same level as sources.
-        // that's the most common scenario, not sure if sources are generated for tests that often..
-        
-        //MEVENIDE-573
-        assert javaFile != null;
-        if (javaFile == null) {
-            return null;
-        }
+    private String getSourceLevelString(FileObject javaFile) {
         File file = FileUtil.toFile(javaFile);
         if (file == null) {
             //#128609 something in jar?
@@ -109,6 +105,41 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation {
         } else {
             return "1.3";
         }
+    }
+
+    @Override public Result getSourceLevel(final FileObject javaFile) {
+        return new ResultImpl(javaFile);
+    }
+    
+    private class ResultImpl implements SourceLevelQueryImplementation2.Result, PropertyChangeListener {
+        
+        private final FileObject javaFile;
+        private final ChangeSupport cs = new ChangeSupport(this);
+        private final PropertyChangeListener pcl = WeakListeners.propertyChange(this, project.getProjectWatcher());
+        
+        ResultImpl(FileObject javaFile) {
+            this.javaFile = javaFile;
+            project.getProjectWatcher().addPropertyChangeListener(pcl);
+        }
+
+        @Override public String getSourceLevel() {
+            return getSourceLevelString(javaFile);
+        }
+
+        @Override public void addChangeListener(ChangeListener listener) {
+            cs.addChangeListener(listener);
+        }
+
+        @Override public void removeChangeListener(ChangeListener listener) {
+            cs.removeChangeListener(listener);
+        }
+
+        @Override public void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                cs.fireChange();
+            }
+        }
+
     }
     
 }
