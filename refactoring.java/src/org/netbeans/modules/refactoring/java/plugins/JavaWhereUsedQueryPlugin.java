@@ -179,7 +179,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                             if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
                                 cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
                             } else {
-                                cp = RetoucheUtils.getClasspathInfoFor(basem);
+                                cp = RetoucheUtils.getClasspathInfoFor(basem!=null?basem:tph);
                             }
                         }
                     }
