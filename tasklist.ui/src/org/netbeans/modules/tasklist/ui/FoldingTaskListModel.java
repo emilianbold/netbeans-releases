@@ -46,7 +46,6 @@ package org.netbeans.modules.tasklist.ui;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -72,10 +71,7 @@ class FoldingTaskListModel extends TaskListModel {
     /** Creates a new instance of FoldingTaskListModel */
     public FoldingTaskListModel( TaskList taskList ) {
         super( taskList );
-        
-        sortTaskList();
-
-        tasksAdded( taskList.getTasks() );
+        tasksAdded( taskList.getTasks() );        
     }
     
     @Override
@@ -177,6 +173,7 @@ class FoldingTaskListModel extends TaskListModel {
             List<Task> tasksInGroup = grouppedTasksMap.get( fg );
             fg.add( tasksInGroup );
         }
+        sortTaskList();
     }
 
     @Override
