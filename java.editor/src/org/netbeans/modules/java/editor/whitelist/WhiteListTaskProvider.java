@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -84,7 +85,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     private static final RequestProcessor WORKER = new RequestProcessor(WhiteListTaskProvider.class);
     private static final Logger LOG = Logger.getLogger(WhiteListTaskProvider.class.getName());
     //@GuardedBy("TASKS")
-    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static final Map<RequestProcessor.Task,Work> TASKS = new HashMap<RequestProcessor.Task, Work>();
     //@GuardedBy("root2FilesWithAttachedErrors")
     private static final Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
     //@GuardedBy("TASKS")
@@ -157,7 +158,7 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     private static void enqueue(Work w) {
         synchronized (TASKS) {
             final RequestProcessor.Task task = WORKER.post(w);
-            TASKS.add(task);
+            TASKS.put(task,w);
             task.addTaskListener(new TaskListener() {
                 @Override
                 public void taskFinished(org.openide.util.Task task) {
@@ -175,10 +176,11 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
         synchronized (TASKS) {
             clearing = true;
             try {
-                for (final Iterator<RequestProcessor.Task> it =  TASKS.iterator();
+                for (final Iterator<Map.Entry<RequestProcessor.Task,Work>> it =  TASKS.entrySet().iterator();
                      it.hasNext();) {
-                    final RequestProcessor.Task t = it.next();
-                    t.cancel();
+                    final Map.Entry<RequestProcessor.Task,Work> t = it.next();
+                    t.getKey().cancel();
+                    t.getValue().cancel();
                     it.remove();
                 }
             } finally {
@@ -236,13 +238,17 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
 
     private static void updateErrorsInRoot(
             @NonNull final Callback callback,
-            @NonNull final FileObject root) {
+            @NonNull final FileObject root,
+            @NonNull final AtomicBoolean canceled) {
         Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
         Set<FileObject> fixedFiles = new HashSet<FileObject>(filesWithErrors);
         filesWithErrors.clear();
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
         final Map<FileObject,List<Task>> filesToTasks = new HashMap<FileObject,List<Task>>();
         for (WhiteListIndex.Problem problem : WhiteListIndex.getDefault().getWhiteListViolations(root, null)) {
+            if (canceled.get()) {
+                return;
+            }
             final Map.Entry<FileObject,List<? extends Task>> task = createTask(problem);
             if (task != null) {
                 List<Task> tasks = filesToTasks.get(task.getKey());
@@ -292,10 +298,12 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
     private static final class Work implements Runnable {
         private final FileObject fileOrRoot;
         private final Callback callback;
+        private final AtomicBoolean canceled;
 
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
             this.callback = callback;
+            this.canceled = new AtomicBoolean();
         }
 
         @Override
@@ -326,8 +334,12 @@ public class WhiteListTaskProvider extends  PushTaskScanner {
             if (fileOrRoot.isData()) {
                 updateErrorsInFile(callback, root, fileOrRoot);
             } else {
-                updateErrorsInRoot(callback, root);
+                updateErrorsInRoot(callback, root, canceled);
             }
+        }
+
+        private void cancel() {
+            canceled.set(true);
         }
     }
 

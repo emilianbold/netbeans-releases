@@ -378,7 +378,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         if ((state & MEMORY_LOW) != 0) {
             JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
         }
-        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+        return new ParsingOutput((state & MEMORY_LOW) == 0, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {

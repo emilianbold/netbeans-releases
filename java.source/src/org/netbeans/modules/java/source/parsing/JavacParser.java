@@ -128,7 +128,6 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -643,13 +642,6 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
             }
             sourceLevel = SourceLevelQuery.getSourceLevel(file);
-            if (root != null && sourceLevel != null) {
-                try {
-                    JavaCustomIndexer.verifySourceLevel(root, file, sourceLevel);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-            }
         }
         FQN2Files dcc = null;
         if (root != null) {

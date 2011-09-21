@@ -187,6 +187,25 @@ public class LayoutUtils implements LayoutConstants {
         return false;
     }
 
+    static int getRemainingCount(LayoutInterval group, List<LayoutInterval> componentsToRemove, boolean nonEmpty) {
+        int remainingCount = LayoutInterval.getCount(group, LayoutRegion.ALL_POINTS, nonEmpty);
+        // adjust the count in parent for removal of the selected components
+        for (Iterator<LayoutInterval> it=group.getSubIntervals(); it.hasNext(); ) {
+            LayoutInterval sub = it.next();
+            boolean allToRemove = false;
+            for (Iterator<LayoutInterval> it2 = LayoutUtils.getComponentIterator(sub); it2.hasNext(); ) {
+                allToRemove = componentsToRemove.contains(it2.next());
+                if (!allToRemove) {
+                    break;
+                }
+            }
+            if (allToRemove) { // 'sub' will go away
+                remainingCount--; 
+            }
+        }
+        return remainingCount;
+    }
+
     static int getPositionWithoutGap(Collection<LayoutInterval> intervals, int dimension, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
         int outermostPos = Integer.MIN_VALUE;
@@ -559,29 +578,32 @@ public class LayoutUtils implements LayoutConstants {
     }
 
     /**
-     * Checks the layout structure of the orthogonal dimension whether
-     * an overlap of a component interval with another interval (or its
-     * subintervals) is prevented - i.e. if in the orthogonal dimension the
-     * intervals of the given components are placed sequentially.
+     * Checks the layout structure of the orthogonal dimension whether an overlap
+     * of components of 'addingInterval' with components of 'existingInterval'
+     * is prevented, in other of words if in the orthogonal dimension the
+     * intervals of the given components are placed sequentially. (It's assumed
+     * that in the other dimension the intervals have been already added.)
      */
-    static boolean isOverlapPreventedInOtherDimension(LayoutInterval compInterval,
-                                                      LayoutInterval interval,
+    static boolean isOverlapPreventedInOtherDimension(LayoutInterval addingInterval,
+                                                      LayoutInterval existingInterval,
                                                       int dimension)
     {
         int otherDim = dimension^1;
-        compInterval = (LayoutInterval) getComponentIterator(compInterval).next();
-        LayoutComponent component = compInterval.getComponent();
-        LayoutInterval otherCompInterval = component.getLayoutInterval(otherDim);
-        Iterator it = getComponentIterator(interval);
-        assert it.hasNext();
+        Iterator<LayoutInterval> addIt = getComponentIterator(addingInterval);
         do {
-            LayoutComponent comp = ((LayoutInterval)it.next()).getComponent();
-            LayoutInterval otherInterval = comp.getLayoutInterval(otherDim);
-            LayoutInterval parent = LayoutInterval.getCommonParent(otherCompInterval, otherInterval);
-            if (parent == null || parent.isParallel())
-                return false;
-        }
-        while (it.hasNext());
+            LayoutInterval otherDimAdd = addIt.next().getComponent().getLayoutInterval(otherDim);
+            Iterator<LayoutInterval> exIt = getComponentIterator(existingInterval);
+            do {
+                LayoutInterval otherDimEx = exIt.next().getComponent().getLayoutInterval(otherDim);
+                LayoutInterval parent = LayoutInterval.getCommonParent(otherDimAdd, otherDimEx);
+                if (parent == null || parent.isParallel()) {
+                    return false;
+                }
+            } while (exIt.hasNext());
+        } while (addIt.hasNext());
+        // Here we know that all adding component intervals are in a sequence
+        // with the questioned interval in the orthogonal dimension (where 
+        // already added), so there can't be an orthogonal overlap.
         return true;
     }
 

@@ -3738,7 +3738,10 @@ public class Reformatter implements ReformatTask {
                     if (c == '\n') {
                         break;
                     } else if (!Character.isWhitespace(c)) {
-                        addDiff(new Diff(offset + i + 1, offset + text.length() - 2, cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE));
+                        String s = cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE;
+                        String sub = text.substring(i + 1, text.length() - 2);
+                        if (!s.equals(sub))
+                            addDiff(new Diff(offset + i + 1, offset + text.length() - 2, s));
                         break;
                     }
                 }

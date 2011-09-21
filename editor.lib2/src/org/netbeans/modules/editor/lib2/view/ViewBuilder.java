@@ -134,7 +134,8 @@ final class ViewBuilder {
     private ViewReplace<ParagraphView,EditorView> localReplace;
 
     /**
-     * List of all paragraph replaces done so far.
+     * List of all paragraph replaces done so far in docReplace (firstReplace is not part
+     * of allReplaces).
      */
     private List<ViewReplace<ParagraphView,EditorView>> allReplaces;
     
@@ -639,6 +640,13 @@ final class ViewBuilder {
         // should always provide a view.
         throw new IllegalStateException("No factory returned view for offset=" + creationOffset);
     }
+    
+    private void transcribe(ParagraphView origPView, ParagraphView newPView) {
+        float origWidth = origPView.getWidth();
+        newPView.setWidth(origWidth);
+        float origHeight = origPView.getHeight();
+        newPView.setHeight(origHeight);
+    }
 
     private void replaceRepaintViews() {
         // Compute repaint region as area of views being removed
@@ -660,62 +668,136 @@ final class ViewBuilder {
                 textLayoutCache.remove(pView, false);
             }
         }
+        
         // Possibly retain vertical spans from original views
+        // Algorithm first goes from first replaced pView checking whether new pView has the same offset span
+        // (and if it does then its width and height are copied from original pView)
+        // until first pView with different span is found.
+        // If there are any changed pView(s) the algorithm goes from last pView back doing the same thing.
+        // The remaining really "new" pView(s) are assigned default row height
+        // and their y-span is reported as a changed area into the view hierarchy listener.
+        // Since the pViews are based on swing positions it make sense to go from the end back
+        // since for document modifications the original position-based pViews will be shifted forward/back
+        // accordingly.
         List<ParagraphView> addedPViews = docReplace.added;
-        int addedSize = docReplace.addedSize();
-        if (addedSize == docReplace.removeCount) {
-            int index = docReplace.index;
-            int replaceViewCount = docReplace.removeCount;
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("RetainSpans: index=" + index + ", count=" + replaceViewCount + '\n'); // NOI18N
-            }
-            for (int i = 0; i < replaceViewCount; i++) {
-                ParagraphView pView = docView.getParagraphView(index + i);
-                ParagraphView addedPView = addedPViews.get(i);
-                float origWidth = pView.getWidth();
-                addedPView.setWidth(origWidth);
-                float origHeight = pView.getHeight();
-                addedPView.setHeight(origHeight);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("RetainSpans: [" + (index + i) + "]: WxH: " + origWidth + " x " + origHeight + '\n'); // NOI18N
+        int addedCount = docReplace.addedSize();
+        int removeCount = docReplace.removeCount; // Number of pViews to be removed from docView
+        int index = docReplace.index;
+        // Area between i0 and i1 will be set to default row height
+        int i0 = 0; // first changed pView
+        int i1 = addedCount; // next after last changed view among added views
+        int i1Orig = removeCount; // i1 in current pViews
+        int commonCount = Math.min(addedCount, removeCount);
+        if (commonCount > 0) {
+            ParagraphView origPView = docView.getParagraphView(index);
+            ParagraphView newPView = addedPViews.get(0);
+            if (origPView.getStartOffset() == newPView.getStartOffset()) {
+                while (true) {
+                    if (origPView.getLength() != newPView.getLength()) {
+                        break;
+                    }
+                    transcribe(origPView, newPView);
+                    i0++;
+                    if (i0 >= commonCount) {
+                        break;
+                    }
+                    origPView = docView.getParagraphView(index + i0);
+                    newPView = addedPViews.get(i0);
                 }
             }
-            LOG.fine("RetainSpans: -----------\n"); // NOI18N
-        } else {
-            // Update lines with default spans
-            if (docReplace.added != null) {
-                float defaultRowHeight = docView.op.getDefaultRowHeight();
-                float defaultCharWidth = docView.op.getDefaultCharWidth();
-                for (int i = 0; i < addedSize; i++) {
-                    ParagraphView addedPView = addedPViews.get(i);
-                    addedPView.setHeight(defaultRowHeight);
-                    addedPView.setWidth(defaultCharWidth * addedPView.getLength());
+            int endCount = commonCount - i0;
+            if (endCount > 0) {
+                int i = 1; // subtract index
+                origPView = docView.getParagraphView(index + removeCount - i);
+                newPView = addedPViews.get(addedCount - i);
+                if (origPView.getEndOffset() == newPView.getEndOffset()) { // could in fact compare start offsets too
+                    while (true) {
+                        if (origPView.getLength() != newPView.getLength()) {
+                            i--;
+                            break;
+                        }
+                        transcribe(origPView, newPView);
+                        if (i >= commonCount - i0) {
+                            break;
+                        }
+                        i++;
+                        origPView = docView.getParagraphView(index + removeCount - i);
+                        newPView = addedPViews.get(addedCount - i);
+                    }
+                    i1 = addedCount - i;
+                    i1Orig = removeCount - i;
                 }
             }
         }
+        // Fill the rest with default row height
+        if (i0 != i1) {
+            float defaultRowHeight = docView.op.getDefaultRowHeight();
+            float defaultCharWidth = docView.op.getDefaultCharWidth();
+            for (int i = i0; i < i1; i++) {
+                ParagraphView addedPView = addedPViews.get(i);
+                addedPView.setHeight(defaultRowHeight);
+                addedPView.setWidth(defaultCharWidth * addedPView.getLength());
+            }
+        }
+        if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+            ViewHierarchyImpl.BUILD_LOG.fine("Non-Retained Views: " + // NOI18N
+                    ((i0 != i1) ? "<" + i0 + "," + i1 + ">" : "NONE") + " of " + addedCount + " new pViews\n"); // NOI18N
+        }
+        
         
         // New paragraph views are currently not measured (they use spans
         // that were retained from old views or they use defaults).
+        ViewHierarchyChange change = docView.validChange();
+        // When change is local inside pView then report change till end of pView
+        // since the views that follow modification will shift very likely.
+        // It's important that the firstReplace replace was already processed
+        // so the firstReplace.view has correct end offset.
+        int changeEndOffset = (firstReplaceValid && !docReplace.isChanged())
+                ? firstReplace.view.getEndOffset()
+                : matchOffset; // replace ends at pView boundary
+        change.addChange(startCreationOffset, changeEndOffset);
+
+        // firstReplace generally does not affect y although it can but it's determined later
         double startY;
         double endY;
         double deltaY;
         if (docReplace.isChanged()) {
-            // Replace views in docView (includes possible call to notifyHeightChange())
-            // Fill-in startY, endY and deltaY
-            double[] yStartEndDelta = docView.replaceViews(
-                    docReplace.index, docReplace.removeCount, docReplace.addedViews());
-            endY = yStartEndDelta[1];
-            deltaY = yStartEndDelta[2];
-            if (firstReplaceValid) {
-                startY = docView.getY(docReplace.index - 1);
-            } else {
-                startY = yStartEndDelta[0];
+            boolean changeY = false;
+            double y0 = 0d;
+            double y1 = 0d;
+            if (removeCount != addedCount || i0 != i1) {
+                changeY = true;
+                // Do actual replace AFTER determining y coordinates in order to get original y values
+                // Children may be uninitialized (subsequent docView.replace() will init them.
+                y0 = (docView.children != null) ? docView.getY(index + i0) : 0d;
+                y1 = (i0 != i1Orig) ? docView.getY(index + i1Orig) : y0;
             }
+            // Replace views in docView (includes possible call to notifyHeightChange())
+            double[] startEndDeltaY = docView.replaceViews(
+                    docReplace.index, docReplace.removeCount, docReplace.addedViews());
+            startY = startEndDeltaY[0];
+            endY = startEndDeltaY[1];
+            deltaY = startEndDeltaY[2];
             // Replace contents of each added paragraph view (if the contents are built too).
             for (int i = 0; i < allReplaces.size(); i++) {
                 ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
                 if (replace.isChanged()) {
                     replace.view.replace(replace.index, replace.removeCount, replace.addedViews());
+                }
+            }
+            // Add y change if necessary
+            if (changeY) {
+                boolean realChange = true;
+                if (deltaY == 0d) { // Attempt extra check
+                    // There might be a modification in a single line and since
+                    // newPView.getLength() != origPView.getLength() the line was not transcribed.
+                    // However if (i1 - i0) == 1 and deltaY == 0d then there was not a physical change in fact.
+                    if (i1 - i0 == 1) {
+                        realChange = false;
+                    }
+                }
+                if (realChange) {
+                    change.addChangeY(y0, y1, deltaY);
                 }
             }
         } else { // docReplace empty
@@ -724,7 +806,6 @@ final class ViewBuilder {
             endY = docView.getY(docReplace.index);
             deltaY = 0d;
         }
-        docView.addChange(startY, endY, deltaY);
         
         // For accurate span force computation of text layouts
         Rectangle2D.Double docViewRect = docView.getAllocationMutable();

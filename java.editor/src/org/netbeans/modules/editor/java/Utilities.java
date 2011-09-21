@@ -349,7 +349,7 @@ public final class Utilities {
         return null;        
     }        
     
-    public static boolean isJavaContext(final JTextComponent component, final int offset) {
+    public static boolean isJavaContext(final JTextComponent component, final int offset, final boolean allowInStrings) {
         Document doc = component.getDocument();
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument)doc).readLock();
@@ -385,6 +385,8 @@ public final class Utilities {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
                 return false;
+            case STRING_LITERAL:
+                return allowInStrings;
         }
         return true;
         } finally {

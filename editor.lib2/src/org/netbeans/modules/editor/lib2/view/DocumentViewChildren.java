@@ -530,9 +530,8 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     }
 
     @Override
-    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
-        sb.append("y=").append(startVisualOffset(index)).append(": ");
-        return sb;
+    protected String getXYInfo(int index) {
+        return new StringBuilder(10).append(" y=").append(startVisualOffset(index)).toString();
     }
 
 }

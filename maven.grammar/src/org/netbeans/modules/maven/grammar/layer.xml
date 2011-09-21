@@ -166,14 +166,6 @@ made subject to such option by the copyright holder.
     
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
-                <folder name="HyperlinkProviders">
-                    <file name="MavenHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.maven.hyperlinks.HyperlinkProviderImpl"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder>
-            </folder>
             <folder name="x-maven-pom+xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.grammar.Bundle"/>
                 <folder name="CodeTemplates">
@@ -186,35 +178,8 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="13"/>
                     </file>
                 </folder>
-                <folder name="CodeGeneratorContextProviders">
-                    <file name="org-netbeans-modules-maven-codegen-ContextProvider.instance"/>
-                </folder>
-
-                <folder name="CodeGenerators">
-                    <file name="org-netbeans-modules-maven-codegen-DependencyGenerator$Factory.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-netbeans-modules-maven-codegen-ExclusionGenerator$Factory.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                    <file name="org-netbeans-modules-maven-codegen-PluginGenerator$Factory.instance">
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="org-netbeans-modules-maven-codegen-ProfileGenerator$Factory.instance">
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                </folder>
-
             </folder>
             <folder name="x-maven-settings+xml">
-                <folder name="CodeGeneratorContextProviders">
-                    <file name="org-netbeans-modules-maven-codegen-SettingsContextProvider.instance"/>
-                </folder>
-                <folder name="CodeGenerators">
-                    <file name="org-netbeans-modules-maven-codegen-MirrorGenerator$Factory.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                </folder>
                 <folder name="Popup">
                     <file name="generate-code">
                         <attr name="position" intvalue="13"/>

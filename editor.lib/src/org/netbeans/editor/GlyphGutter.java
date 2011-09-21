@@ -44,6 +44,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Shape;
 import javax.swing.JComponent;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -76,6 +77,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -88,6 +90,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -625,7 +629,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     }
     
     /** Data for the line has changed and the line must be redraw. */
-    public @Override void changedLine(int line) {
+    public @Override void changedLine(final int lineIndex) {
         EditorUI eui = editorUI;
         if (!init || eui == null)
             return;
@@ -634,39 +638,44 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         cachedCountOfAnnos = -1;
         
         // redraw also lines around - three lines will be redrawn
-        if (line > 0)
-            line--;
-        JTextComponent component = eui.getComponent();
+        final JTextComponent component = eui.getComponent();
         if (component!=null){
-            BaseTextUI textUI = (BaseTextUI)component.getUI();
-            if (textUI == null) {
-                // #199901
-                return;
-            }
-            try{
-                Element rootElem = component.getDocument().getDefaultRootElement();
-                if (line >= rootElem.getElementCount()) { // #42504
-                    return;
-                }
-                Element lineElem = rootElem.getElement(line);
-                if (lineElem == null) return;
-                int lineOffset = lineElem.getStartOffset();
-                int y = textUI.getYFromPos(lineOffset);
-                Rectangle r = new Rectangle(0, y, (int)getSize().getWidth(), 3*eui.getLineHeight());
-                
-                //ensuring that the actual repaint will happen in the AWT thread, to prevent deadlocks inside repaint(...)
-                //coalesce the events, so that the AWT thread is not hogged by these requests:
-                if (SwingUtilities.isEventDispatchThread()) {
-                    doRepaint(r);
-                } else {
-                    synchronized (toRepaintLock) {
-                        toRepaint = toRepaint != null ? toRepaint.union(r) : r;
-                        repaintTask.schedule(REPAINT_TASK_DELAY);
+            final Document doc = component.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    Element rootElem = doc.getDefaultRootElement();
+                    if (lineIndex >= rootElem.getElementCount()) { // #42504
+                        return;
+                    }
+                    Element lineElem = rootElem.getElement(lineIndex);
+                    ViewHierarchy vh = ViewHierarchy.get(component);
+                    LockedViewHierarchy lvh = vh.lock();
+                    try {
+                        Shape pViewShape = lvh.modelToParagraphView(lineElem.getStartOffset());
+                        if (pViewShape != null) {
+                            Rectangle repaintRect = pViewShape.getBounds();
+                            repaintRect.width = (int) getSize().getWidth();
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("GlyphGutter.changedLine() lineIndex=" + lineIndex + // NOI18N
+                                        ", repaintRect=" + repaintRect + "\n"); // NOI18N
+                            }
+                            //ensuring that the actual repaint will happen in the AWT thread, to prevent deadlocks inside repaint(...)
+                            //coalesce the events, so that the AWT thread is not hogged by these requests:
+                            if (SwingUtilities.isEventDispatchThread()) {
+                                doRepaint(repaintRect);
+                            } else {
+                                synchronized (toRepaintLock) {
+                                    toRepaint = toRepaint != null ? toRepaint.union(repaintRect) : repaintRect;
+                                    repaintTask.schedule(REPAINT_TASK_DELAY);
+                                }
+                            }
+                        }
+                    } finally {
+                        lvh.unlock();
                     }
                 }
-            }catch(BadLocationException ble){
-                ErrorManager.getDefault().notify(ble);
-            }
+            });
         }
     }
 

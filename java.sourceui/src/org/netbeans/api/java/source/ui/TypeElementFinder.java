@@ -46,6 +46,8 @@ package org.netbeans.api.java.source.ui;
 
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -67,14 +69,29 @@ public final class TypeElementFinder {
 
     /**
      * Searches for classes on given classpath using defined restrictions.
-     * 
+     *
      * @param cpInfo classpath used for search; optional, can be null,
      * everything available will be searched
-     * @param customizer possibility to add restrictions to search result; 
+     * @param customizer possibility to add restrictions to search result;
      * optional, can be null, no restriction will be applied
      * @return found type or null if dialog was canceled
      */
-    public static ElementHandle<TypeElement> find(ClasspathInfo cpInfo, final Customizer customizer) {
+    public static @CheckForNull ElementHandle<TypeElement> find(@NullAllowed ClasspathInfo cpInfo, @NullAllowed final Customizer customizer) {
+        return find(cpInfo, null, customizer);
+    }
+
+    /**
+     * Searches for classes on given classpath using defined restrictions.
+     * 
+     * @param cpInfo classpath used for search; optional, can be null,
+     * everything available will be searched
+     * @param initialText text that should be prefilled in the type name text field, or null to prefill text automatically from the context
+     * @param customizer possibility to add restrictions to search result; 
+     * optional, can be null, no restriction will be applied
+     * @return found type or null if dialog was canceled
+     * @since 1.24
+     */
+    public static @CheckForNull ElementHandle<TypeElement> find(@NullAllowed ClasspathInfo cpInfo, @NullAllowed String initialText, @NullAllowed final Customizer customizer) {
 
         // create filter only if client wants to customize the result
         TypeBrowser.Filter typeBrowserFilter = null;
@@ -91,7 +108,8 @@ public final class TypeElementFinder {
         }
         
         TypeDescriptor typeDescriptor = TypeBrowser.browse(
-                NbBundle.getMessage(TypeElementFinder.class, "DLG_FindType"), 
+                NbBundle.getMessage(TypeElementFinder.class, "DLG_FindType"),
+                initialText,
                 typeBrowserFilter,
                 new JavaTypeProvider(cpInfo, customizer == null ? null : customizer)
                 );

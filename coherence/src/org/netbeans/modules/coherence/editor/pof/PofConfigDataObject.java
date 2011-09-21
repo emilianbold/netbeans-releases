@@ -41,195 +41,39 @@
  */
 package org.netbeans.modules.coherence.editor.pof;
 
-import org.netbeans.modules.coherence.xml.pof.PofConfig;
-import org.netbeans.modules.coherence.util.xml.XMLObjectFactory;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.xml.transform.Source;
-import org.netbeans.spi.xml.cookies.CheckXMLSupport;
-import org.netbeans.spi.xml.cookies.DataObjectAdapters;
-import org.netbeans.spi.xml.cookies.TransformableSupport;
-import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.SaveCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node.Cookie;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.xml.sax.InputSource;
+import org.openide.windows.TopComponent;
 
-public class PofConfigDataObject extends XMLDataObject implements Lookup.Provider {
-
-    private static final Logger logger = Logger.getLogger(PofConfigDataObject.class.getCanonicalName());
-    final InstanceContent ic;
-    private AbstractLookup lookup = null;
-    private PofConfig pofConfig = null;
-    private XMLObjectFactory xmlObjectFactory = XMLObjectFactory.getInstance();
-    private Cookie saveCookie = new MySaveCookie();
+/**
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
+ */
+public class PofConfigDataObject extends MultiDataObject {
 
     public PofConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-
-        ic = new InstanceContent();
-        lookup = new AbstractLookup(ic);
-        InputSource is = DataObjectAdapters.inputSource(this);
-        Source source = DataObjectAdapters.source(this);
-        ic.add(new CheckXMLSupport(is));
-        ic.add(new ValidateXMLSupport(is));
-        ic.add(new TransformableSupport(source));
-        ic.add(PofConfigEditorSupport.create(this));
-    }
-
-    /*
-     * Inner Classes
-     */
-    public class PofConfigDataNode extends DataNode implements Node.Cookie {
-
-        public PofConfigDataNode(PofConfigDataObject obj) {
-            super(obj, Children.LEAF, lookup);
-            ic.add(this);
-            setIconBaseWithExtension(org.openide.util.NbBundle.getMessage(PofConfigDataObject.class, "PofConfig.file.icon"));
-        }
-
-    }
-
-    public class MySaveCookie implements SaveCookie {
-
-        @Override
-        public void save() throws IOException {
-            storeData(pofConfig);
-        }
-    };
-
-    /*
-     * Overrides
-     */
-    @Override
-    protected Node createNodeDelegate() {
-        return new PofConfigDataNode(this);
+        registerEditor("text/coh-pof+xml", true);
     }
 
     @Override
-    public Lookup getLookup() {
-        return lookup;
+    protected int associateLookup() {
+        return 1;
     }
 
-    @Override
-    public Node.Cookie getCookie(Class type) {
-        Object o = lookup.lookup(type);
-        return o instanceof Node.Cookie ? (Node.Cookie) o : null;
+    @MultiViewElement.Registration(displayName = "#LBL_PofConfig_EDITOR",
+    iconBase = "org/netbeans/modules/coherence/resources/icons/pof.png",
+    mimeType = "text/coh-pof+xml",
+    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+    preferredID = "PofConfig",
+    position = 2000)
+    public static MultiViewEditorElement createEditor(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
     }
-
-    @Override
-    public void setModified(final boolean isModified) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    setModified(isModified);
-                }
-            });
-        } else {
-            // I tied the SaveCookie implementation into this such that
-            // the Save action is enabled whenever the object is modified.
-            if (isModified) {
-                Object o = null;
-                if ((o = getCookie(SaveCookie.class)) == null) {
-                    ic.add(saveCookie);
-                } else {
-                    logger.log(Level.FINE, "*** APH-I2 : Save Cookie already exists " + o.getClass().getCanonicalName());
-                }
-            } else {
-                SaveCookie cookie = (SaveCookie) getCookie(SaveCookie.class);
-                if (cookie != null) {
-                    getCookieSet().remove(cookie);
-                }
-            }
-            super.setModified(isModified);
-        }
-    }
-
-    /*
-     * Load & Save Methods
-     */
-    public PofConfig getPofConfig() {
-        if (pofConfig == null) {
-            loadData();
-        }
-        return pofConfig;
-    }
-
-    public PofConfig loadData() {
-        PofConfigEditorSupport support = (PofConfigEditorSupport) lookup.lookup(PofConfigEditorSupport.class);
-        InputStream is = null;
-        try {
-            is = support.getInputStream();
-            pofConfig = xmlObjectFactory.unmarshalPofConfigFile(is);
-        } catch (Exception ex) {
-            logger.log(Level.WARNING, "*** APH-I3 : Failed to unmarshal ", ex);
-//                StatusDisplayer.getDefault().setStatusText("Failed to refresh Graphical View");
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return pofConfig;
-    }
-
-    public void storeData(PofConfig pofConfig) {
-        this.pofConfig = pofConfig;
-        if (pofConfig != null) {
-            if (getPrimaryFile().canWrite()) {
-                OutputStream fos = null;
-                try {
-                    File file = FileUtil.toFile(getPrimaryFile());
-                    fos = new FileOutputStream(file);
-                    xmlObjectFactory.marshalXMLToStream(pofConfig, fos, "\n<!DOCTYPE pof-config SYSTEM \"pof-config.dtd\">\n");
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "*** APH-I3 : Failed to save data", e);
-                    StatusDisplayer.getDefault().setStatusText("Failed to save data");
-                } finally {
-                    try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "*** APH-I3 : Failed to close fos", e);
-                    }
-                }
-            } else {
-                StatusDisplayer.getDefault().setStatusText("Can't Write");
-            }
-        }
-        setModified(false);
-//        printData(pofConfig);
-    }
-
-    public void printData(PofConfig pofConfig) {
-        if (pofConfig != null) {
-            logger.log(Level.INFO, xmlObjectFactory.marshalXMLToString(pofConfig));
-        }
-    }
-
-
 }

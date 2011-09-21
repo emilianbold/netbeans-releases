@@ -47,7 +47,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +57,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
@@ -65,19 +68,32 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
+import org.openide.cookies.InstanceCookie;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -107,6 +123,7 @@ public final class JFXProjectProperties {
     public static final String JAVADOC_ENCODING = "javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM = "javadoc.additionalparam"; // NOI18N
     public static final String BUILD_SCRIPT = "buildfile"; //NOI18N
+    public static final String DIST_JAR = "dist.jar"; // NOI18N
 
     // Packaging properties
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
@@ -133,6 +150,8 @@ public final class JFXProjectProperties {
     public static final String RUN_IN_HTMLTEMPLATE = "javafx.run.htmltemplate"; // NOI18N
     public static final String RUN_IN_HTMLTEMPLATE_PROCESSED = "javafx.run.htmltemplate.processed"; // NOI18N
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
+    public static final String RUN_IN_BROWSER_PATH = "javafx.run.inbrowser.path"; // NOI18N
+    public static final String RUN_IN_BROWSER_ARGUMENTS = "javafx.run.inbrowser.arguments"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
     public static final String DEFAULT_APP_WIDTH = "800"; // NOI18N
@@ -165,9 +184,15 @@ public final class JFXProjectProperties {
     // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
     
+    private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
+
     private StoreGroup fxPropGroup = new StoreGroup();
     
     // Packaging
+    public static final String BUILD_INCLUDE_PLATFORM_FILE = "nbproject/jfx-impl-platform.xmlinc"; // NOI18N
+    public static final String BUILD_INCLUDE_PARAMETERS_FILE = "nbproject/jfx-impl-parameters.xmlinc"; // NOI18N
+    public static final String BUILD_INCLUDE_CALLBACKS_FILE = "nbproject/jfx-impl-callbacks.xmlinc"; // NOI18N
+    
     JToggleButton.ToggleButtonModel binaryEncodeCSS;
     public JToggleButton.ToggleButtonModel getBinaryEncodeCSSModel() {
         return binaryEncodeCSS;
@@ -847,19 +872,47 @@ public final class JFXProjectProperties {
                 saveToFile(privatePath, privateCfgProps);
             }
         }
-        updatePreloaderDependencies();
     }
     
-    private void updatePreloaderDependencies() {
+    private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
         // depeding on the currently (de)selected preloader update project dependencies,
-        // i.e., remove deselected preloader project dependency and add selected preloader project dependency
-        
-        //TODO
-//            final Project[] p = new Project[] {ProjectManager.getDefault().findProject(preloaderDirFO)};
-//            FileObject ownerSourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
-//            ProjectClassPathModifier.addProjects(p, ownerSourcesRoot, ClassPath.COMPILE);            
+        // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
+        Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
+        String projDir = active.get(PRELOADER_PROJECT);
+        File projDirF = new File(projDir);
+        if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
+            FileObject srcRoot = null;
+            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                if (!isTest(sg.getRootFolder(),project)) {
+                    srcRoot = sg.getRootFolder();
+                    break;
+                }
+            }
+            if(srcRoot != null) {
+                projDirF = FileUtil.normalizeFile(projDirF);
+                FileObject prelFO = FileUtil.toFileObject(projDirF);
+                final Project[] p = new Project[] {ProjectManager.getDefault().findProject(prelFO)};
+                ProjectClassPathModifier.addProjects(p, srcRoot, ClassPath.COMPILE);
+            }
+        }
     }
 
+    private static boolean isTest(final FileObject root, final Project project) {
+        assert root != null;
+        assert project != null;
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        for (ClassPath.Entry entry : cp.entries()) {
+            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+            for (FileObject srcRoot : srcRoots) {
+                if (project.equals(FileOwnerQuery.getOwner(srcRoot))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    
     private void storeActiveConfig() throws IOException {
         String configPath = "nbproject/private/config.properties"; // NOI18N
         // should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
@@ -876,21 +929,6 @@ public final class JFXProjectProperties {
     }
     
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
-//        // store descriptor type
-//        DescType descType = getSelectedDescType();
-//        if (descType != null) {
-//            editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
-//        }
-//        //Store Mixed Code
-//        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
-//        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
-//        //Store jar indexing
-//        if (editableProps.getProperty(JAR_INDEX) == null) {
-//            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
-//        }
-//        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
-//            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
-//        }
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
@@ -898,16 +936,15 @@ public final class JFXProjectProperties {
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
         editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
-        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);
-        
+        setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
         // store resources
         storeResources(editableProps);
-
         // store JavaScript callbacks
         storeJSCallbacks(editableProps);
-        
         // store JFX SDK & RT path
         storePlatform(editableProps);
+        // store selected browser executable path
+        storeBrowserPath(privProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -1015,6 +1052,41 @@ public final class JFXProjectProperties {
         }
     }
 
+    public void saveToFile(String relativePath, final IncludeFileSaver saver) throws IOException {
+        FileObject f = project.getProjectDirectory().getFileObject(relativePath);
+        final FileObject propsFO;
+        if(f == null) {
+            propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
+            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
+        } else {
+            propsFO = f;
+        }
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = propsFO.lock();
+                        os = propsFO.getOutputStream(lock);
+                        saver.updateFile(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
+
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
@@ -1072,12 +1144,17 @@ public final class JFXProjectProperties {
                             os.close();
                         }
                     }
+                    updatePreloaderDependencies(Collections.unmodifiableMap(RUN_CONFIGS));
                     return null;
                 }
             });
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
-        }       
+        }
+        
+        saveToFile(BUILD_INCLUDE_PLATFORM_FILE, new PlatformIncludeFileSaver(RUN_CONFIGS.get(activeConfig)));
+        saveToFile(BUILD_INCLUDE_PARAMETERS_FILE, new ParamIncludeFileSaver(APP_PARAMS.get(activeConfig)));
+        saveToFile(BUILD_INCLUDE_CALLBACKS_FILE, new CallbacksIncludeFileSaver());
     }
 
     private void initSigning(PropertyEvaluator eval) {
@@ -1125,12 +1202,17 @@ public final class JFXProjectProperties {
             }
         }
         paths = PropertyUtils.tokenizePath(rcp);
+        String mainJar = eval.getProperty(DIST_JAR);
+        final File mainFile = PropertyUtils.resolveFile(prjDir, mainJar);
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (f.equals(mainFile)) {
+                continue;
+            }
             if (bc == null || !bcDir.equals(f)) {
                 resFileList.add(f);
                 if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
@@ -1197,6 +1279,21 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void storeBrowserPath(EditableProperties editableProps){
+        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
+        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
+            if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
+                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
+                String path = proc.getProcessName();
+                editableProps.setProperty(RUN_IN_BROWSER_PATH, path);
+                //String args = proc.getArguments();
+                //editableProps.setProperty(RUN_IN_BROWSER_ARGUMENTS, args);
+                break;
+            }
+        }
+    }
+    
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private boolean filling = false;
@@ -1297,4 +1394,104 @@ public final class JFXProjectProperties {
         }
         
     }
+    
+    public abstract class IncludeFileSaver {
+        
+        abstract void updateFile(OutputStream os);
+        
+        void copyReadme(PrintWriter out) {
+            FileObject readmeTemplate = FileUtil.getConfigFile("Templates/JFX/jfx-impl-readme.xmlinc"); // NOI18N
+            if(readmeTemplate != null) {
+                try {
+                    for(String line : readmeTemplate.asLines()) {
+                        out.println(line);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    public final class ParamIncludeFileSaver extends IncludeFileSaver {
+        
+        final List<Map<String,String/*|null*/>> params;
+        
+        ParamIncludeFileSaver(List<Map<String,String/*|null*/>> params) {
+            this.params = params;
+        }
+        
+        @Override
+        public void updateFile(OutputStream os) {
+            final PrintWriter out = new PrintWriter(os); //todo: encoding
+            copyReadme(out);
+            for(Map<String,String> m : params) {
+                String name = ""; //NOI18N
+                String value = ""; //NOI18N
+                for (Map.Entry<String,String> param : m.entrySet()) {
+                    if(param.getKey().equals("name")) { //NOI18N
+                        name = param.getValue();
+                    } else {
+                        if(param.getKey().equals("value")) { //NOI18N
+                            value = param.getValue();
+                        }
+                    }
+                }
+                out.println(line(name,value));
+            }
+            out.flush();
+        }
+
+        private String line(String name, String value) {
+            if(value == null) {
+                return "<param name=\"" + name + "\"/>"; //NOI18N
+            } else {
+                return "<param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
+            }
+        }        
+    }
+
+    public final class CallbacksIncludeFileSaver extends IncludeFileSaver {
+        
+        @Override
+        public void updateFile(OutputStream os) {
+            //if (jsCallbacksChanged) {
+                final PrintWriter out = new PrintWriter(os); //todo: encoding
+                copyReadme(out);
+                for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                    if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                        out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
+                        out.println(entry.getValue());
+                        out.println("</callback>"); //NOI18N
+                    }
+                }
+                out.flush();
+            //}
+        }
+    }
+
+    public final class PlatformIncludeFileSaver extends IncludeFileSaver {
+        
+        final Map<String,String/*|null*/> props;
+        
+        PlatformIncludeFileSaver(Map<String,String/*|null*/> activeProps) {
+            this.props = activeProps;
+        }
+        
+        @Override
+        public void updateFile(OutputStream os) {
+            final PrintWriter out = new PrintWriter(os); //todo: encoding
+            copyReadme(out);
+            String vmo = props.get(RUN_JVM_ARGS);            
+            if (vmo != null) {
+                StringTokenizer tok = new StringTokenizer(vmo, " ");
+                while(tok.hasMoreElements()) {
+                    String s = tok.nextToken();
+                    out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+                }
+            }
+            out.flush();
+        }
+    }
+
 }

@@ -373,6 +373,10 @@ public class ClipboardHandler {
                                         return super.visitVariable(node, p);
                                     }
                                 }
+                                @Override public Void scan(Tree tree, Void p) {
+                                    if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                                    return super.scan(tree, p);
+                                }
                             }.scan(parameter.getCompilationUnit(), null);
                         }
                     }, true);

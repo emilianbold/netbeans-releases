@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE project [
-   <!ENTITY platform-impl SYSTEM "jfx-impl-platform.inc">
-   <!ENTITY parameters-impl SYSTEM "jfx-impl-parameters.inc">
-   <!ENTITY callbacks-impl SYSTEM "jfx-impl-callbacks.inc">
+   <!ENTITY platform-impl SYSTEM "jfx-impl-platform.xmlinc">
+   <!ENTITY parameters-impl SYSTEM "jfx-impl-parameters.xmlinc">
+   <!ENTITY callbacks-impl SYSTEM "jfx-impl-callbacks.xmlinc">
 ]>
 
 <project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:fx="javafx:com.sun.javafx.tools.ant">
@@ -259,7 +259,6 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${javafx.main.class}"
-                preloaderClass=""
                 fallbackClass="${javafx.fallback.class}">
                 <!-- PARAMETERS -->
                 &parameters-impl;
@@ -377,9 +376,13 @@
                 <permissions elevated="${permissions.elevated}"/>
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
                 <!-- PLATFORM -->
-                &platform-impl;
+                <fx:platform javafx="2.0+">
+                    &platform-impl;
+                </fx:platform>
                 <!-- CALLBACKS -->
-                &callbacks-impl;
+                <callbacks>
+                    &callbacks-impl;
+                </callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>
@@ -396,9 +399,13 @@
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
                 <template file="${javafx.run.htmltemplate}" tofile="${javafx.run.htmltemplate.processed}"/>
                 <!-- PLATFORM -->
-                &platform-impl;
+                <fx:platform javafx="2.0+">
+                    &platform-impl;
+                </fx:platform>
                 <!-- CALLBACKS -->
-                &callbacks-impl;
+                <callbacks>
+                    &callbacks-impl;
+                </callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>
@@ -569,7 +576,7 @@
         <deploy-deploy-template/>
     </target>
 
-    <!-- Running/Debugging -->
+    <!-- Running/Debugging as WebStart -->
     
     <target name="-check-jnlp-file">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
@@ -630,5 +637,67 @@
         </exec>
     </target>
     
+
+    <!-- Running/Debugging in Browser -->
+    
+    <target name="-check-html-file">
+        <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
+        <property name="jfx.deployment.html" location="${jfx.deployment.dir}/${jfx.deployment.base}.html"/>
+        <condition property="html-file-exists">
+            <available file="${jfx.deployment.html}"/>
+        </condition>
+        <condition property="html-file-exists+netbeans.home">
+            <and>
+                <isset property="html-file-exists"/>
+                <isset property="netbeans.home"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="-resolve-html-file" depends="-check-html-file" unless="html-file-exists">
+        <antcall target="jfx-deployment"/>
+        <antcall target="-check-html-file"/>
+    </target>
+
+    <target name="jfxbe-run" depends="jar,-resolve-html-file" if="html-file-exists" description="Start fx execution in browser">
+        <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser.path}"/>
+        <exec executable="${javafx.run.inbrowser.path}">
+            <arg file="${jfx.deployment.html}"/>
+        </exec>
+    </target>
+    
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="jar,-resolve-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
+        description="Debug fx project in browser"/>
+        
+    <target name="-init-debug-args">
+        <property name="version-output" value="java version &quot;${ant.java.version}"/>
+        <condition property="have-jdk-older-than-1.4">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition else="-Xdebug" property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none">
+            <istrue value="${have-jdk-older-than-1.4}"/>
+        </condition>
+        <condition else="dt_socket" property="debug-transport-by-os" value="dt_shmem">
+            <os family="windows"/>
+        </condition>
+        <condition else="${debug-transport-by-os}" property="debug-transport" value="${debug.transport}">
+            <isset property="debug.transport"/>
+        </condition>
+    </target>
+
+    <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">
+        <echo message="Executing ${jfx.deployment.html} in debug mode using ${javafx.run.inbrowser.path}"/>
+        <exec executable="${javafx.run.inbrowser.path}">
+            <env key="_JPI_VM_OPTIONS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            <arg value="-wait"/>
+            <arg file="${jfx.deployment.html}"/>
+        </exec>
+    </target>
+
 
 </project>

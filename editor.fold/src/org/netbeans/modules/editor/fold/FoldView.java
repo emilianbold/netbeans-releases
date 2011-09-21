@@ -307,7 +307,7 @@ public class FoldView extends EditorView {
 
     @Override
     public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
 }

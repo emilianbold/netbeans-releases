@@ -75,7 +75,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
     private Tree.Kind ctx = null;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
-        if (Utilities.isJavaContext(component, offset)) {
+        if (Utilities.isJavaContext(component, offset, false)) {
             this.startOffset = offset;
             this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
             JavaSource js = JavaSource.forDocument(component.getDocument());
@@ -92,7 +92,10 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
     }
 
     public synchronized boolean accept(CodeTemplate template) {
-        return ctx != null && getTemplateContexts(template).contains(ctx);
+        if (ctx == null)
+            return false;
+        EnumSet<Tree.Kind> contexts = getTemplateContexts(template);        
+        return contexts.size() == 0 || contexts.contains(ctx);
     }
     
 

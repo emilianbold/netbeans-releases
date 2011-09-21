@@ -481,7 +481,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     current.getThrows(),
                     current.getBody(),
                     (ExpressionTree) current.getDefaultValue(),
-                    p[p.length-1].getType().endsWith("...")); //NOI18N
+                    p.length > 0 && p[p.length-1].getType().endsWith("...")); //NOI18N
 
             if (javaDoc != null) {
                 Comment comment = null;

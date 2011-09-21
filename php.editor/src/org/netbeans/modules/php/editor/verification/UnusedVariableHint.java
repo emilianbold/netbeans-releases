@@ -263,15 +263,16 @@ public class UnusedVariableHint extends AbstractRule {
         private void checkVariableScope(VariableScope variableScope) {
             Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
             for (VariableName variableName : declaredVariables) {
-                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpVarDoc(variableName.getOffset())) {
+                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpComment(variableName.getOffset())) {
                     checkVariableName(variableName, variableScope);
                 }
             }
         }
 
-        private boolean isInPhpVarDoc(int offset) {
+        private boolean isInPhpComment(int offset) {
             Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
-            return token.id() == PHPTokenId.PHP_COMMENT;
+            PHPTokenId id = token.id();
+            return id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHPDOC_COMMENT;
         }
 
         private void checkVariableName(VariableName variableName, VariableScope variableScope) {
