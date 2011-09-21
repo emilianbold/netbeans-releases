@@ -280,7 +280,7 @@ public final class ViewHierarchyImpl {
     public Shape modelToParagraphView(LockedViewHierarchy lock, int offset) {
         ensureLocker(lock);
         Shape ret = null;
-        if (docView != null) {
+        if (docView != null && docView.op.isActive()) {
             int index = docView.getViewIndex(offset);
             if (index >= 0) {
                 ret = docView.getChildAllocation(index, docView.getAllocation());
