@@ -12,6 +12,20 @@
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
             <attr name="displayName" bundlevalue="org.netbeans.modules.cloud.oracle.ui.Bundle#Oracle_Node_Name"/>
         </file>
+        
+    <!-- START: This registration is here temporarily - its proper home is server module -->
+        <folder name="Actions">
+            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.shadow">
+                <attr name="position" intvalue="123"/>
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance"/>
+            </file>
+            <file name="JSeparator1.instance">
+                <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="505"/>
+            </file>
+        </folder>
+    <!-- END:-->
+    
     </folder>
 
     <folder name="Servers">
@@ -28,6 +42,16 @@
     
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
+            
+    <!-- START: This registration is here temporarily - its proper home is weblogic module -->
+            <folder name="WebLogic9">
+                <file name="WhitelistVerifier.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.WebLogicVerifier"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+            </folder>
+    <!-- END: -->
+            
             <folder name="Oracle Public Cloud">
                 
                 <!-- 
@@ -109,20 +133,7 @@
     </folder> -->
 
 
-    <!-- This registration is here temporarily - its proper home is weblogic module -->
-    <folder name="J2EE">
-        <folder name="DeploymentPlugins">
-            <folder name="WebLogic9">
-                <file name="WhitelistVerifier.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.cloud.oracle.serverplugin.WebLogicVerifier"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    <!-- END OF weblogic registration -->
-
-    <!-- This registration is here temporarily - its proper home is server module -->
+    <!-- START: This registration is here temporarily - its proper home is server module -->
     <folder name="UI">
         <folder name="Runtime">
             <file name="Cloud.instance">
@@ -164,19 +175,6 @@
             </file>
         </folder>       
     </folder>
-    <folder name="Cloud">
-        <folder name="Actions">
-            <file name="org-netbeans-modules-server-ui-node-AddCloudInstanceAction.shadow">
-                <attr name="position" intvalue="123"/>
-                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-server-ui-node-AddCloudInstanceAction.instance"/>
-            </file>
-            <file name="JSeparator1.instance">
-                <attr name="instanceCreate" newvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="505"/>
-            </file>
-        </folder>
-    </folder>
     <!-- END OF server registration -->
-    
     
 </filesystem>
