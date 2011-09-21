@@ -152,7 +152,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         } else if (BUILD.equals(nm)) {
             return new CustomizerCompile(uiProps);
         } else if (WAR.equals(nm)) {
-            return new CustomizerWar(uiProps);
+            return new CustomizerWar(category, uiProps);
         } else if (JAVADOC.equals(nm)) {
             return new CustomizerJavadoc(uiProps);
         } else if (RUN.equals(nm)) {
