@@ -76,6 +76,7 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -192,6 +193,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Holds parent/previous revisions for each line revision
      */
     private Map<String, HgRevision> previousRevisions;
+
+    /*
+     * Holds original file names for each revision.
+     * File may be renamed in previous revision and cat and blame do not work when called on the new filename.
+     */
+    private Map<String, File> originalFiles;
     /**
      * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
      * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
@@ -324,6 +331,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 previousRevisions = Collections.synchronizedMap(new HashMap<String, HgRevision>());
+                originalFiles = Collections.synchronizedMap(new HashMap<String, File>());
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
                 while (it.hasNext()) {
                     AnnotateLine line = it.next();
@@ -511,7 +519,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 pri.runWithRevision(new Runnable() {
                     @Override
                     public void run() {
-                        DiffAction.diff(originalFile, pri.getPreviousRevision(), new HgRevision(changesetIdPerLine, revisionPerLine));
+                        DiffAction.diff(pri.getOriginalFile(), pri.getPreviousRevision(), originalFile, new HgRevision(changesetIdPerLine, revisionPerLine));
                     }
                 }, true);
             }
@@ -538,8 +546,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     @Override
                     public void run() {
                         try {
-                            HgRevision previousRevision = pri.getPreviousRevision();
-                            HgUtils.openInRevision(originalFile, previousRevision, !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
+                            HgUtils.openInRevision(pri.getOriginalFile(), pri.getPreviousRevision(), !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
                         } catch (IOException ex) {
                             //
                         }
@@ -583,7 +590,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
-            String key = getPreviousRevisionKey(file.getAbsolutePath(), revisionPerLine);
+            String key = getPreviousRevisionKey(originalFile.getAbsolutePath(), revisionPerLine);
             HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
             if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
                 if (!getPreviousRevisions().containsKey(key)) {
@@ -616,12 +623,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private class PreviousRevisionInvoker {
         private final String revisionPerLine;
-        private final File originalFile;
+        private final File file;
         private HgRevision previousRevision;
+        private File originalFile;
 
         private PreviousRevisionInvoker(String revisionPerLine, File originalFile) {
             this.revisionPerLine = revisionPerLine;
-            this.originalFile = originalFile;
+            this.file = originalFile;
         }
 
         /**
@@ -634,12 +642,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 new HgProgressSupport() {
                     @Override
                     protected void perform() {
-                        previousRevision = getParentRevision(originalFile, revisionPerLine);
+                        previousRevision = getParentRevision(file, revisionPerLine);
                         if (!isCanceled() && previousRevision != null) {
-                            if (inAWT) {
-                                EventQueue.invokeLater(runnable);
-                            } else {
-                                getRequestProcessor().post(runnable);
+                            originalFile = AnnotationBar.this.getOriginalFile(file, revisionPerLine);
+                            if (!isCanceled() && file != null) {
+                                if (inAWT) {
+                                    EventQueue.invokeLater(runnable);
+                                } else {
+                                    getRequestProcessor().post(runnable);
+                                }
                             }
                         }
                     }
@@ -650,6 +661,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         private HgRevision getPreviousRevision() {
             return previousRevision;
+        }
+
+        private File getOriginalFile () {
+            return originalFile;
         }
     }
 
@@ -711,6 +726,22 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             getPreviousRevisions().put(key, parent);
         }
         return parent;
+    }
+
+    private File getOriginalFile (File file, String revision) {
+        String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
+        File originalFile = getOriginalFiles().get(key);
+        if (originalFile == null) {
+            HgLogMessage[] msg = HgCommand.getLogMessages(repositoryRoot, Collections.singleton(file), revision, revision, true, true, 1, 
+                    Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
+            if (msg.length > 0) {
+                originalFile = msg[0].getOriginalFile(repositoryRoot, file);
+                if (originalFile != null) {
+                    getOriginalFiles().put(key, originalFile);
+                }
+            }
+        }
+        return originalFile == null ? file : originalFile;
     }
 
     /**
@@ -903,6 +934,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         elementAnnotations = null;
         previousRevisions = null;
+        originalFiles = null;
         // cancel running annotation task if active
         if(latestAnnotationTask != null) {
             latestAnnotationTask.cancel();
@@ -1252,6 +1284,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private Map<String, HgRevision> getPreviousRevisions () {
         Map<String, HgRevision> revisions = previousRevisions;
         return revisions == null ? new HashMap<String, HgRevision>(0) : revisions;
+    }
+
+    private Map<String, File> getOriginalFiles () {
+        Map<String, File> files = originalFiles;
+        return files == null ? new HashMap<String, File>(0) : files;
     }
 
     /**

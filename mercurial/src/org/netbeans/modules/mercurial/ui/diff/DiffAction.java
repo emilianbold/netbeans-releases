@@ -49,6 +49,8 @@ import org.netbeans.modules.versioning.util.Utils;
 import javax.swing.*;
 import java.io.File;
 import java.util.Set;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatus;
 
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -120,10 +122,12 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file, HgRevision rev1, HgRevision rev2) {
-        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns background DiffPrepareTask
+    public static void diff(File file1, HgRevision rev1, File file2, HgRevision rev2) {
+        MultiDiffPanel panel = new MultiDiffPanel(file2, rev1, rev2,
+                new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, new FileStatus(file2, file1), false),
+                false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file2.getName())); // NOI18N
         tc.open();
         tc.requestActive();
     }

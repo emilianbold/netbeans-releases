@@ -215,6 +215,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * It hides All, Local, Remote toggles and file chooser combo.
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
+        this(file, rev1, rev2, null, forceNonEditable);
+    }
+
+    /**
+     * Construct diff component showing just one file.
+     * It hides All, Local, Remote toggles and file chooser combo.
+     */
+    public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, FileInformation fi, boolean forceNonEditable) {
         context = null;
         roots = null;
         contextName = file.getName();
@@ -228,7 +236,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         initNextPrevActions();
 
         // mimics refreshSetups()
-        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, null, forceNonEditable)};
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, fi, forceNonEditable)};
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0, false);
         dpt = new DiffPrepareTask(setups);
