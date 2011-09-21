@@ -60,6 +60,8 @@ public abstract class PathMap {
 
     public abstract boolean checkRemotePaths(File[] localPaths, boolean fixMissingPath);
 
+    public abstract String getTrueLocalPath(String rpath);
+
     public String getLocalPath(String rpath) {
         return getLocalPath(rpath, false);
     }
