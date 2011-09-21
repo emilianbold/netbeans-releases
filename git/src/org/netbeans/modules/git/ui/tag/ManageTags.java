@@ -104,8 +104,8 @@ class ManageTags implements ListSelectionListener, ActionListener {
     }
 
     public void show () {
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateTag.class, "LBL_ManageTags.title"), true,  //NOI18N
-                new Object[] { DialogDescriptor.OK_OPTION }, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CreateTag.class), null);
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ManageTag.class, "LBL_ManageTags.title"), true,  //NOI18N
+                new Object[] { DialogDescriptor.OK_OPTION }, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(ManageTag.class), null);
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
     }
