@@ -43,6 +43,7 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.awt.Image;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
@@ -160,10 +161,26 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
                 @Override
                 public Void call() throws Exception {
                     List<Application> apps = aij.getOracleInstance().getApplications();
+                    Collections.sort(apps, new Comp());
                     OracleJ2EEInstanceChildren.this.setKeys(apps);
                     return null;
                 }
             });
+        }
+    }
+    
+    private static final class Comp implements Comparator<Application> {
+        @Override
+        public int compare(Application o1, Application o2) {
+            String ap1 = o1.getApplicationName();
+            String ap2 = o2.getApplicationName();
+            if (ap1 == null) {
+                ap1 = "ZZZ"; // NOI18N
+            }
+            if (ap2 == null) {
+                ap2 = "ZZZ"; // NOI18N
+            }
+            return ap1.compareToIgnoreCase(ap2);
         }
     }
 
@@ -193,12 +210,12 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             Image badge = null;        
             switch (app.getState()) {
                     
-                case STATE_PREPARED:
                 case STATE_UPDATE_PENDING:
                     badge = ImageUtilities.loadImage(WAITING_ICON);
                     break;
                 case STATE_NEW:
                 case STATE_RETIRED:
+                case STATE_PREPARED:
                     badge = ImageUtilities.loadImage(TERMINATED_ICON);
                     break;
                 case STATE_FAILED:
