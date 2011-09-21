@@ -173,7 +173,7 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
                 getWhiteListViolations(sgs[0].getRootFolder(), null, "oracle");
         if (problems.size() > 0) {
             if (DialogDisplayer.getDefault().notify(
-                    new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title())) != NotifyDescriptor.YES_OPTION) {
+                    new Confirmation(Bundle.MSG_WhitelistViolations(), Bundle.MSG_Dialog_Title(), NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION) {
                 return true;
             }
         }
