@@ -396,6 +396,8 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
 <!--Inspect and Transform window: -->
 <mapID target="org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI" url="refactor/csh/inspect-transform.html" />
+<!--Introduce Parameter window: -->
+<mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI" url="refactor/csh/intro-param.html" />
 
 
 <!--CSH for GUI Builder:-->
