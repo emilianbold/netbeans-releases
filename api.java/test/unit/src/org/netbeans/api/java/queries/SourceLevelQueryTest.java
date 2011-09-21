@@ -108,6 +108,8 @@ public class SourceLevelQueryTest extends NbTestCase {
         ChangeListener dummy = new ChangeListener() {@Override public void stateChanged(ChangeEvent e) {}};
         sourceLevel2.addChangeListener(dummy);
         sourceLevel2.removeChangeListener(dummy);
+        LEVEL = "1.5";
+        assertEquals("1.5",sourceLevel2.getSourceLevel().toString());   //NOI18N
     }
 
     public static final class SLQ implements SourceLevelQueryImplementation {
