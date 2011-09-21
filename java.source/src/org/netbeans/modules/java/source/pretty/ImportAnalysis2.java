@@ -78,6 +78,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 
@@ -107,12 +108,7 @@ public class ImportAnalysis2 {
 
     public ImportAnalysis2(CompilationInfo info) {
         this(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
-        try {
-            Document doc = info.getDocument();
-            if (doc == null || (cs = (CodeStyle)doc.getProperty(CodeStyle.class)) == null) {
-                cs = CodeStyle.getDefault(info.getFileObject());
-            }
-        } catch (IOException ioe) {}
+        cs = DiffContext.getCodeStyle(info);
     }
 
     public ImportAnalysis2(Context env) {

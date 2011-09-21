@@ -44,6 +44,15 @@ package org.netbeans.modules.parsing.lucene.support;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.lucene.analysis.Analyzer;
@@ -55,6 +64,8 @@ import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  * The {@link IndexManager} controls access to {@link Index} instances and acts
@@ -172,9 +183,32 @@ public final class IndexManager {
     public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {        
         Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
         Parameters.notNull("analyzer", analyzer);       //NOI18N
-        return factory.createIndex(cacheFolder, analyzer);
+        final Index index = factory.createIndex(cacheFolder, analyzer);
+        assert index != null;
+        indexes.put(cacheFolder, new Ref(cacheFolder,index));
+        return index;
     }
-    
+
+    /**
+     * Returns existing {@link Index}es.
+     * @return the mapping of cache folder to opened index.
+     * @since 2.4
+     */
+    @NonNull
+    public static Map<File,Index> getOpenIndexes() {
+        final Map<File,Index> result = new HashMap<File, Index>();
+        synchronized (indexes) {
+            for (Map.Entry<File,Reference<Index>> e : indexes.entrySet()) {
+                final File folder = e.getKey();
+                final Index index = e.getValue().get();
+                if (index != null) {
+                    result.put(folder, index);
+                }
+            }
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
     /**
      * Creates a document based index
      * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
@@ -211,6 +245,24 @@ public final class IndexManager {
     public static IndexDocument createDocument (final @NonNull String primaryKey) {
         Parameters.notNull("primaryKey", primaryKey);
         return new IndexDocumentImpl(primaryKey);
+    }
+
+    private static final Map<File,Reference<Index>> indexes =
+            Collections.synchronizedMap(new HashMap<File, Reference<Index>>());
+
+    private static class Ref extends WeakReference<Index> implements Runnable {
+
+        private final File folder;
+
+        Ref(@NonNull final File folder, @NonNull final Index index) {
+            super(index, Utilities.activeReferenceQueue());
+            this.folder = folder;
+        }
+
+        @Override
+        public void run() {
+            indexes.remove(folder);
+        }
     }
 
 }
