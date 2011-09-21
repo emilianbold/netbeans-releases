@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.BrowserSpecificDefinitionParser;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
@@ -101,7 +102,17 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
             @Override
             public String getHelp(Property property) {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
-                    //XXX will be removed
+                    //try to delegate to the corresponding standard property help
+                    String standardPropertyName = property.getName().substring(getBrowser().getVendorSpecificPropertyPrefix().length());
+                    Property standardProperty = CssModuleSupport.getProperty(standardPropertyName);
+                    if(standardProperty != null) {
+                        StandardPropertiesHelpResolver resolver = new StandardPropertiesHelpResolver();
+                        String help = resolver.getHelp(standardProperty);
+                        if(help != null) {
+                            return help;
+                        }
+                    }
+                    
                     return getBrowser().getRenderingEngineId() + " experimental property. No documentation found.";
                 } else {
                     return null;
