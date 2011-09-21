@@ -4,4 +4,4 @@ OpenIDE-Module: org.netbeans.modules.profiler.drilldown/1
 OpenIDE-Module-Install: org/netbeans/modules/profiler/drilldown/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/profiler/drilldown/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/profiler/drilldown/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0.1

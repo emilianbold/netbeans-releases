@@ -9,7 +9,6 @@ unspecified.
 ********************************************************************************
 
 THIRDPARTY COMPONENT FILE                                    LICENSE
-dlight/modules/ext/h2-1.0.79.jar                             EPL-v10
 enterprise/docs/struts-1.3.8-javadoc.zip                     Apache-2.0
 enterprise/modules/ext/commons-fileupload-1.0.jar            Apache-1.1
 enterprise/modules/ext/jsf-1_2                               CDDL-1.0 (see also enterprise/modules/ext/jsf-1_2/THIRDPARTYLICENSEREADME.txt)
@@ -23,7 +22,7 @@ enterprise/modules/ext/metro/webservices-rt.jar              CDDL-1.0, incl. Apa
 enterprise/modules/ext/metro/webservices-tools.jar           CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/primefaces/primefaces-2.2.1.jar       Apache-2.0
 enterprise/modules/ext/rest/asm-3.1.jar                      BSD-ASM
-enterprise/modules/ext/rest/jackson-core-asl-1.1.1.jar       Apache-2.0
+enterprise/modules/ext/rest/jackson-core-asl-1.7.1.jar       Apache-2.0
 enterprise/modules/ext/rest/jettison-1.1.jar                 Apache-2.0
 enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC01.jar  Apache-2.0
 enterprise/modules/ext/standard.jar                          Apache-2.0
@@ -50,19 +49,23 @@ enterprise/modules/ext/struts/struts-tiles-1.3.8.jar         Apache-2.0
 groovy/modules/ext/groovy-all.jar                            Apache-2.0, incl. groovy-ASM, groovy-ANTLR and groovy-COMMONS-CLI
 harness/antlib/bindex-2.2.jar                                Apache-2.0
 ide/docs/css21-spec.zip                                      W3C
+ide/docs/css3-spec.zip                                       W3C
 ide/docs/html-4.01.zip                                       W3C
 ide/docs/html5doc.zip                                        HTML5DOC
 ide/modules/dict/ispell-enwl-3.1.20.zip                      BSD-ispell-enwl
 ide/modules/ext/antlr-runtime-3.1.3.jar                      BSD-antlr-runtime
-ide/modules/ext/apache-commons-codec-1.3.jar                 Apache-2.0
+ide/modules/ext/antlr3.3-runtime.jar                         BSD-antlr-runtime
+ide/modules/org-apache-commons-codec.jar                     Apache-2.0
 ide/modules/ext/bytelist-0.1.jar                             LGPL-2.1
-ide/modules/ext/commons-httpclient-3.1.jar                   Apache-2.0
+ide/modules/org-apache-commons-httpclient.jar                Apache-2.0
 ide/modules/ext/commons-io-1.4.jar                           Apache-2.0
-ide/modules/ext/commons-lang-2.3.jar                         Apache-2.0
+ide/modules/org-apache-commons-lang.jar                      Apache-2.0
 ide/modules/ext/commons-logging-1.1.1.jar                    Apache-2.0
-ide/modules/ext/commons-logging-1.1.jar                      Apache-2.0
+ide/modules/org-apache-commons-logging.jar                   Apache-2.0
 ide/modules/ext/commons-logging-api-1.1.1.jar                Apache-2.0
-ide/modules/ext/commons-net-1.4.1.jar                        Apache-2.0
+ide/modules/ext/commons-net-3.0.1.jar                        Apache-2.0
+ide/modules/org-apache-ws-commons-util.jar                   Apache-2.0
+ide/modules/org-apache-xmlrpc.jar                            Apache-2.0
 ide/modules/ext/flute-1.3.jar                                W3C
 ide/modules/ext/freemarker-2.3.8.jar                         freemarker
 ide/modules/ext/html5-datatypes.jar                          MIT-html5-datatypes
@@ -72,21 +75,33 @@ ide/modules/ext/ini4j-0.5.1.jar                              Apache-2.0
 ide/modules/ext/io-xml-util.jar                              Apache-2.0
 ide/modules/ext/iri.jar                                      BSD-iri
 ide/modules/ext/isorelax20041111.jar                         MIT-isorelax
-ide/modules/ext/jakarta-oro-2.0.8.jar                        Apache-2.0
 ide/modules/ext/jaxb/jaxb1-impl.jar                          CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
 ide/modules/ext/jing.jar                                     BSD-jing
-ide/modules/ext/jsch-0.1.44.jar                              BSD-jsch
+ide/modules/com-jcraft-jsch.jar                              BSD-jsch
 ide/modules/ext/js.jar                                       MPL-1.1
 ide/modules/ext/jvyamlb-0.2.3.jar                            MIT-jvyamlb
-ide/modules/ext/jzlib-1.0.7.jar                              BSD-jzlib
+ide/modules/com-jcraft-jzlib.jar                             BSD-jzlib
 ide/modules/ext/libpam4j-1.1.jar                             MIT
 ide/modules/ext/log4j-1.2.15.jar                             Apache-2.0
 ide/modules/ext/lucene-core-3.0.3.jar                        Apache-2.0
 ide/modules/ext/non-schema.jar                               MIT-non-schema
-ide/modules/ext/org.eclipse.mylyn.bugzilla.core_3.3.1.jar    EPL-v10
-ide/modules/ext/org.eclipse.mylyn.commons.core_3.3.1.jar     EPL-v10
-ide/modules/ext/org.eclipse.mylyn.commons.net_3.3.0.jar      EPL-v10
-ide/modules/ext/org.eclipse.mylyn.tasks.core_3.3.1.jar       EPL-v10
+ide/modules/org-eclipse-osgi.jar                             OSGi-3.6.0-LICENSE
+ide/modules/org-eclipse-core-contenttype.jar                 EPL-v10
+ide/modules/org-eclipse-core-jobs.jar                        EPL-v10
+ide/modules/org-eclipse-core-net.jar                         EPL-v10
+ide/modules/org-eclipse-core-runtime.jar                     EPL-v10
+ide/modules/org-eclipse-core-runtime-compatibility-auth.jar  EPL-v10-compatibility-auth
+ide/modules/org-eclipse-equinox-app.jar                      EPL-v10-equinox-app
+ide/modules/org-eclipse-equinox-common.jar                   EPL-v10
+ide/modules/org-eclipse-equinox-preferences.jar              EPL-v10-equinox-preferences
+ide/modules/org-eclipse-equinox-registry.jar                 EPL-v10-equinox-registry
+ide/modules/org-eclipse-equinox-security.jar                 EPL-v10
+ide/modules/org-eclipse-mylyn-bugzilla-core.jar              EPL-v10
+ide/modules/org-eclipse-mylyn-commons-core.jar               EPL-v10
+ide/modules/org-eclipse-mylyn-commons-net.jar                EPL-v10
+ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar             EPL-v10
+ide/modules/org-eclipse-mylyn-tasks-core.jar                 EPL-v10
+ide/modules/org-eclipse-jgit.jar                             EDL-v10-jgit
 ide/modules/ext/postgresql-8.3-603.jdbc3.jar                 BSD-postgresql
 ide/modules/ext/processtreekiller-1.0.1.jar                  MIT
 ide/modules/ext/resolver-1.2.jar                             Apache-2.0
@@ -116,15 +131,17 @@ java/ant/bin                                                 Apache-2.0
 java/ant/etc                                                 Apache-2.0 (see also java/ant/etc/ant-bootstrap.jar:/META-INF/LICENSE.txt)
 java/ant/lib                                                 Apache-2.0 (see also java/ant/lib/ant.jar:/META-INF/LICENSE.txt)
 java/maven                                                   Apache-2.0 (see also java/maven/NOTICE.txt)
-java/docs/appframework-1.0.3-doc.zip                         LGPL-2.1
 java/docs/beansbinding-1.2.1-doc.zip                         LGPL-2.1
-java/modules/ext/appframework-1.0.3.jar                      LGPL-2.1
 java/modules/ext/beansbinding-1.2.1.jar                      LGPL-2.1
 java/modules/ext/cglib-2.2.jar                               Apache-2.0
+java/modules/ext/eclipselink/eclipselink-2.3.0.jar           EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/eclipselink-jpa-modelgen-2.3.0.jar EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/javax.persistence-2.0.jar       EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.0.jar EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                   LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox.jar                        Apache-2.0
-java/modules/ext/maven/indexer-artifact-4.1.0.jar            Apache-2.0
-java/modules/ext/maven/indexer-core-4.1.0.jar                Apache-2.0
+java/modules/ext/maven/indexer-artifact-4.1.1.jar            Apache-2.0
+java/modules/ext/maven/indexer-core-4.1.1.jar                Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                          Apache-JDOM
 java/modules/ext/maven/maven-dependency-tree-1.2.jar         Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.0.2.RELEASE.jar     Apache-2.0
@@ -148,7 +165,6 @@ java/modules/ext/spring-3.0/spring-web-3.0.2.RELEASE.jar     Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-3.0.2.RELEASE.jar  Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-portlet-3.0.2.RELEASE.jar Apache-2.0
 java/modules/ext/spring/spring-2.5.6.SEC01.jar               Apache-2.0
-java/modules/ext/swing-worker-1.1.jar                        LGPL-2.1
 java/modules/ext/toplink/toplink-essentials.jar              CDDL-1.0, incl. toplink-ASM and toplink-ANTLR
 mobility/modules/docs/jmunit-1.2.1-api.zip                   Apache-2.0
 mobility/modules/ext/ant-contrib-1.0b3.jar                   Apache-2.0
@@ -160,9 +176,7 @@ mobility/modules/ext/jakarta-slide-webdavlib-2.1.jar         Apache-2.0
 mobility/modules/ext/jdom-1.0.jar                            Apache-JDOM
 mobility/modules/ext/jmunit4cldc10-1.2.1.jar                 Apache-2.0
 mobility/modules/ext/jmunit4cldc11-1.2.1.jar                 Apache-2.0
-mobility/modules/ext/nbactivesync-5.0.jar                    Apache-2.0
 mobility/modules/ext/perseus-nb-1.0.jar                      Apache-2.0-Vera-Perseus
-mobility/modules/ext/RicohAntTasks-2.0.jar                   Apache-2.0
 php/docs/phpdocdesc.zip                                      LGPL-2.1
 php/modules/ext/java-cup-11a.jar                             Based on Standard ML of New Jersey
 platform/docs/swing-layout-1.0.4-doc.zip                     LGPL-2.1
@@ -170,6 +184,7 @@ platform/docs/swing-layout-1.0.4-src.zip                     LGPL-2.1
 platform/modules/ext/felix-3.2.2.jar                         Apache-2.0
 platform/modules/ext/jna-3.2.7.jar                           LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                    LGPL-2.1
+platform/modules/ext/org.eclipse.osgi_3.6.0.v20100517.jar    OSGi-3.6.0-LICENSE
 platform/modules/ext/osgi.cmpn-4.2.jar                       Apache-2.0
 platform/modules/ext/osgi.core-4.2.jar                       Apache-2.0
 platform/modules/ext/platform-3.2.7.jar                      LGPL-2.1
@@ -992,7 +1007,287 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
 ===
 ======
+========================= EPL-v10-compatibility-auth =========================
+
+
+The Eclipse Foundation makes available all content in this plug-in ("Content").
+Unless otherwise indicated below, the Content is provided to you under the
+terms and conditions of the Eclipse Public License Version 1.0 ("EPL"). A copy
+of the EPL is available at http://www.eclipse.org/legal/epl-v10.html. For
+purposes of the EPL, "Program" will mean the Content.
+
+If you did not receive this Content directly from the Eclipse Foundation, the
+Content is being redistributed by another party ("Redistributor") and different
+terms and conditions may apply to your use of any object code in the Content.
+Check the Redistributor's license that was provided with the Content. If no
+such license exists, contact the Redistributor. Unless otherwise indicated
+below, the terms and conditions of the EPL still apply to any source code in
+the Content and such source code may be obtained at http://www.eclipse.org.
+
+Cryptography
+
+Export Control
+
+The plug-in contains encryption software. The country in which you are
+currently may have restrictions on the import, possession, and use, and/or
+re-export to another country, of encryption software. BEFORE using any
+encryption software, please check the country's laws, regulations and policies
+concerning the import, possession, or use, and re-export of encryption
+software, to see if this is permitted.
+
+Encryption Items
+
+Details of the encryption software in this plug-in are provided to assist in
+obtaining relevant export control classification and approval. Cryptography in
+this plug-in has been deemed eligible by the U.S. Government Department of
+Commerce for export under License Exception Technology Software Unrestricted
+(TSU) for both object code and source code.
+
+The plug-in contains a proprietary routine that encrypts and decrypts
+information used to login to Version Control Management (VCM) repositories.
+This routine uses the SHA-1 message digest algorithm implemented in a Java (TM)
+Runtime Environment (JRE), to generate a cryptographically secure sequence of
+bytes based on a user-supplied password combined with bytes supplied by a
+random number generator. The secure random numbers generated by this sequence
+are then added to each byte in the data to be encrypted. When the data is to be
+decrypted, the same password will generate the same sequence of random numbers,
+which is then subtracted from each byte in the encrypted data. Note that a JRE
+and therefore the aforementioned SHA-1 message digest code is not included with
+the plug-in.
+
+The following Java classes contain encryption items (the plug-in may contain
+both binary and source code):
+
+  • org.eclipse.core.internal.runtime.auth.Cipher
+
+Java and all Java-based trademarks and logos are trademarks or registered
+trademarks of Sun Microsystems, Inc. in the United States and other countries.
+
+
+===
+======
+========================= EPL-v10-equinox-app =========================
+
+
+The Eclipse Foundation makes available all content in this plug-in ("Content").
+Unless otherwise indicated below, the Content is provided to you under the
+terms and conditions of the Eclipse Public License Version 1.0 ("EPL"). A copy
+of the EPL is available at http://www.eclipse.org/legal/epl-v10.html. For
+purposes of the EPL, "Program" will mean the Content.
+
+If you did not receive this Content directly from the Eclipse Foundation, the
+Content is being redistributed by another party ("Redistributor") and different
+terms and conditions may apply to your use of any object code in the Content.
+Check the Redistributor's license that was provided with the Content. If no
+such license exists, contact the Redistributor. Unless otherwise indicated
+below, the terms and conditions of the EPL still apply to any source code in
+the Content and such source code may be obtained at http://www.eclipse.org.
+
+Third Party Content
+
+The Content includes items that have been sourced from third parties as set out
+below. If you did not receive this Content directly from the Eclipse
+Foundation, the following is provided for informational purposes only, and you
+should look to the Redistributor’s license for terms and conditions of use.
+
+OSGi Materials
+
+All files in the following sub-directories (and their sub-directories):
+
+  • org/osgi
+
+shall be defined as the "OSGi Materials." The OSGi Materials are:
+
+    Copyright (c) 2000, 2006
+
+    OSGi Alliance Bishop Ranch 6
+    2400 Camino Ramon, Suite 375
+    San Ramon, CA 94583 USA
+
+    All Rights Reserved.
+
+The OSGi Materials are provided to you under the terms and conditions of the
+Apache License, Version 2.0. A copy of the license is contained in the file
+LICENSE-2.0.txt and is also available at http://www.apache.org/licenses/
+LICENSE-2.0.html.
+
+Implementation of certain elements of the OSGi Materials may be subject to
+third party intellectual property rights, including without limitation, patent
+rights (such a third party may or may not be a member of the OSGi Alliance).
+The OSGi Alliance and its members are not responsible and shall not be held
+responsible in any manner for identifying or failing to identify any or all
+such third party intellectual property rights.
+
+OSGi™ is a trademark, registered trademark, or service mark of The OSGi
+Alliance in the US and other countries. Java is a trademark, registered
+trademark, or service mark of Sun Microsystems, Inc. in the US and other
+countries. All other trademarks, registered trademarks, or service marks used
+in the Content are the property of their respective owners and are hereby
+recognized. Java and all Java-based trademarks and logos are trademarks or
+registered trademarks of Sun Microsystems, Inc. in the United States and other
+countries.
+
+
+===
+======
+========================= EPL-v10-equinox-preferences =========================
+
+
+The Eclipse Foundation makes available all content in this plug-in ("Content").
+Unless otherwise indicated below, the Content is provided to you under the
+terms and conditions of the Eclipse Public License Version 1.0 ("EPL"). A copy
+of the EPL is available at http://www.eclipse.org/legal/epl-v10.html. For
+purposes of the EPL, "Program" will mean the Content.
+
+If you did not receive this Content directly from the Eclipse Foundation, the
+Content is being redistributed by another party ("Redistributor") and different
+terms and conditions may apply to your use of any object code in the Content.
+Check the Redistributor's license that was provided with the Content. If no
+such license exists, contact the Redistributor. Unless otherwise indicated
+below, the terms and conditions of the EPL still apply to any source code in
+the Content and such source code may be obtained at http://www.eclipse.org.
+
+Third Party Content
+
+The Content includes items that have been sourced from third parties as set out
+below. If you did not receive this Content directly from the Eclipse
+Foundation, the following is provided for informational purposes only, and you
+should look to the Redistributor’s license for terms and conditions of use.
+
+OSGi Materials
+
+All files in the following sub-directories (and their sub-directories):
+
+  • org/osgi
+
+shall be defined as the "OSGi Materials." The OSGi Materials are:
+
+    Copyright (c) 2000, 2006
+
+    OSGi Alliance Bishop Ranch 6
+    2400 Camino Ramon, Suite 375
+    San Ramon, CA 94583 USA
+
+    All Rights Reserved.
+
+The OSGi Materials are provided to you under the terms and conditions of the
+Apache License, Version 2.0. A copy of the license is contained in the file
+LICENSE-2.0.txt and is also available at http://www.apache.org/licenses/
+LICENSE-2.0.html.
+
+Implementation of certain elements of the OSGi Materials may be subject to
+third party intellectual property rights, including without limitation, patent
+rights (such a third party may or may not be a member of the OSGi Alliance).
+The OSGi Alliance and its members are not responsible and shall not be held
+responsible in any manner for identifying or failing to identify any or all
+such third party intellectual property rights.
+
+OSGi™ is a trademark, registered trademark, or service mark of The OSGi
+Alliance in the US and other countries. Java is a trademark, registered
+trademark, or service mark of Sun Microsystems, Inc. in the US and other
+countries. All other trademarks, registered trademarks, or service marks used
+in the Content are the property of their respective owners and are hereby
+recognized. Java and all Java-based trademarks and logos are trademarks or
+registered trademarks of Sun Microsystems, Inc. in the United States and other
+countries.
+
+
+===
+======
+========================= EPL-v10-equinox-registry =========================
+
+
+The Eclipse Foundation makes available all content in this plug-in ("Content").
+Unless otherwise indicated below, the Content is provided to you under the
+terms and conditions of the Eclipse Public License Version 1.0 ("EPL"). A copy
+of the EPL is available at http://www.eclipse.org/legal/epl-v10.html. For
+purposes of the EPL, "Program" will mean the Content.
+
+If you did not receive this Content directly from the Eclipse Foundation, the
+Content is being redistributed by another party ("Redistributor") and different
+terms and conditions may apply to your use of any object code in the Content.
+Check the Redistributor's license that was provided with the Content. If no
+such license exists, contact the Redistributor. Unless otherwise indicated
+below, the terms and conditions of the EPL still apply to any source code in
+the Content and such source code may be obtained at http://www.eclipse.org.
+
+Third Party Content
+
+The Content includes items that have been sourced from third parties as set out
+below. If you did not receive this Content directly from the Eclipse
+Foundation, the following is provided for informational purposes only, and you
+should look to the Redistributor’s license for terms and conditions of use.
+
+Jakarta Commons Collections
+
+The plug-in includes software developed by The Apache Software Foundation as
+part of the Jakarta Commons Collections project.
+
+The Jakarta Commons Collections binary code can be found in the plug-in JAR in
+the following files:
+
+  • org\eclipse\core\internal\registry\ReferenceMap.class
+
+The Jakarta Commons Collections source code can be found in src.zip in the
+following files:
+
+  • org\eclipse\core\internal\registry\ReferenceMap.java
+
+Your use of the Jakarta Commons Collections code is subject to the terms and
+conditions of the Apache License, Version 2.0. A copy of the license is
+contained in the file LICENSE-2.0.txt and is also available at http://
+www.apache.org/licenses/LICENSE-2.0.html.
+
+The Apache attribution notice file NOTICE.TXT is included with the Content in
+accordance with 4d of the Apache License, Version 2.0
+
+The names "Jakarta" and "Apache Software Foundation" must not be used to
+endorse or promote products derived from this software without prior written
+permission. For written permission, please contact apache@apache.org.
+
+Java and all Java-based trademarks and logos are trademarks or registered
+trademarks of Sun Microsystems, Inc. in the United States and other countries.
+
+
+===
+======
+========================= EDL-v10-jgit =========================
+
+
+Eclipse Distribution License - v 1.0
+
+Copyright (c) 2007, Eclipse Foundation, Inc. and its licensors.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  • Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  • Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+  • Neither the name of the Eclipse Foundation, Inc. nor the names of its
+    contributors may be used to endorse or promote products derived from this
+    software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
 ========================= LGPL-2.1 =========================
+
 
 __COPYRIGHT_INTRO__
 
@@ -2899,31 +3194,39 @@ These word lists are under the same copyright as Ispell itself:
 ========================= BSD-antlr-runtime =========================
 
 
-Copyright (c) 2003-2008 Terence Parr
+Copyright (c) 2010 Terence Parr
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
 
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- 3. The name of the author may not be used to endorse or promote products
-    derived from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+* Neither the name of the author nor the names of its contributors
+may be used to endorse or promote products derived from this
+software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS
+AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
 
 ===
@@ -3496,4 +3799,72 @@ parrt@antlr.org
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+===
+=====
+========================= OSGi-3.6.0-LICENSE =========================
+
+
+The Eclipse Foundation makes available all content in this plug-in ("Content").
+Unless otherwise indicated below, the Content is provided to you under the
+terms and conditions of the Eclipse Public License Version 1.0 ("EPL"). A copy
+of the EPL is available at http://www.eclipse.org/legal/epl-v10.html. For
+purposes of the EPL, "Program" will mean the Content.
+
+If you did not receive this Content directly from the Eclipse Foundation, the
+Content is being redistributed by another party ("Redistributor") and different
+terms and conditions may apply to your use of any object code in the Content.
+Check the Redistributor's license that was provided with the Content. If no
+such license exists, contact the Redistributor. Unless otherwise indicated
+below, the terms and conditions of the EPL still apply to any source code in
+the Content and such source code may be obtained at http://www.eclipse.org.
+
+Third Party Content
+
+The Content includes items that have been sourced from third parties as set out
+below. If you did not receive this Content directly from the Eclipse
+Foundation, the following is provided for informational purposes only, and you
+should look to the Redistributor's license for terms and conditions of use.
+
+OSGi Materials
+
+All files in the following sub-directories (and their sub-directories):
+
+  • org/osgi
+
+and the following files (which may not be present in all cases):
+
+  • osgi/ee.foundation.jar
+  • osgi/ee.minimum.jar
+  • osgi/osgi.jar
+
+shall be defined as the "OSGi Materials." The OSGi Materials are:
+
+    Copyright (c) 2000, 2006
+
+    OSGi Alliance Bishop Ranch 6
+    2400 Camino Ramon, Suite 375
+    San Ramon, CA 94583 USA
+
+    All Rights Reserved.
+
+The OSGi Materials are provided to you under the terms and conditions of the
+Apache License, Version 2.0. A copy of the license is contained in the file
+LICENSE-2.0.txt and is also available at http://www.apache.org/licenses/
+LICENSE-2.0.html.
+
+Implementation of certain elements of the OSGi Materials may be subject to
+third party intellectual property rights, including without limitation, patent
+rights (such a third party may or may not be a member of the OSGi Alliance).
+The OSGi Alliance and its members are not responsible and shall not be held
+responsible in any manner for identifying or failing to identify any or all
+such third party intellectual property rights.
+
+OSGi™ is a trademark, registered trademark, or service mark of The OSGi
+Alliance in the US and other countries. Java is a trademark, registered
+trademark, or service mark of Sun Microsystems, Inc. in the US and other
+countries. All other trademarks, registered trademarks, or service marks used
+in the Content are the property of their respective owners and are hereby
+recognized.
 

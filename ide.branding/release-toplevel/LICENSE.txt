@@ -1,4 +1,4 @@
-NETBEANS IDE 7.0 ("Product")
+NETBEANS IDE 7.1 Beta ("Product")
 
 Oracle licenses NetBeans IDE under the CDDL v 1.0 (CDDL) or
 GNU General Public License version 2 (GPL), both of which
