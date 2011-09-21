@@ -86,7 +86,7 @@ public class ViewApplicationAction extends NodeAction {
         if (app == null) {
             return false;
         }
-        return ApplicationState.STATE_ACTIVE == app.getState();
+        return ApplicationState.STATE_ACTIVE == app.getState() && app.getApplicationUrls() != null && app.getApplicationUrls().size() > 0;
     }
 
     @Override
