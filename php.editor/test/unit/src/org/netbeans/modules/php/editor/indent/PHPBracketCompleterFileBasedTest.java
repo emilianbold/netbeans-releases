@@ -275,4 +275,20 @@ public class PHPBracketCompleterFileBasedTest extends PHPTestBase {
     public void testIssue196596_04()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue196596_04.php");
     }
+
+    public void testIssue202362_01()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue202362_01.php");
+    }
+
+    public void testIssue202362_02()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue202362_02.php");
+    }
+
+    public void testIssue202362_03()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue202362_03.php");
+    }
+
+    public void testIssue202362_04()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue202362_04.php");
+    }
 }
