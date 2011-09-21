@@ -229,6 +229,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             synchronized (this) {
                 if (lastDataObject != null) {
                     lastDataObject.removePropertyChangeListener(this);
+                    NativeFileItemSet set = lastDataObject.getCookie(NativeFileItemSet.class);
+                    if (set != null) {
+                        set.remove(this);
+                    }
                     lastDataObject = null;
                 }
             }
@@ -451,9 +455,17 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 // and properly attach/detach listeners.
                 if (lastDataObject != null) {
                     lastDataObject.removePropertyChangeListener(this);
+                    NativeFileItemSet set = lastDataObject.getCookie(NativeFileItemSet.class);
+                    if (set != null) {
+                        set.remove(this);
+                    }                    
                 }
                 if (dataObject != null) {
                     dataObject.addPropertyChangeListener(this);
+                    NativeFileItemSet set = dataObject.getCookie(NativeFileItemSet.class);
+                    if (set != null) {
+                        set.add(this);
+                    }                    
                 }
                 lastDataObject = dataObject;
             }

@@ -196,12 +196,17 @@ public final class FunctionCallNode extends AbstractNode {
         String infoSuffix = null;
 
         if (action != null && action.isEnabled()) {
-            result.append("<font color='#000000'>").append(dispName).append("</font>"); // NOI18N
-
             SourceFileInfo sourceInfo = action.getSourceInfo();
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 String fname = new File(sourceInfo.getFileName()).getName();
                 int line = sourceInfo.getLine();
+
+                if (line > 0) {
+                    result.append("<font color='#000000'>").append(dispName).append("</font>"); // NOI18N
+                } else {
+                    result.append("<font color='#808080'>").append(dispName).append("</font>"); // NOI18N
+                }
+
                 String infoPrefix = line > 0
                         ? NbBundle.getMessage(FunctionCallNode.class, "FunctionCallNode.prefix.withLine") // NOI18N
                         : NbBundle.getMessage(FunctionCallNode.class, "FunctionCallNode.prefix.withoutLine"); // NOI18N

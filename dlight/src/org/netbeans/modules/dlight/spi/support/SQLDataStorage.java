@@ -215,6 +215,12 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             if (columns.contains(filterColumn)) {
                 Range<?> range = filter.getNumericDataFilter().getInterval();
                 if (range.getStart() != null || range.getEnd() != null) {
+                    // TODO: this is a workaround ...
+                    if (filterColumn.getColumnName().equals("bucket")) { // NOI18N
+                        Number start = range.getStart();
+                        Number end = range.getEnd();
+                        range = new Range<Long>(start.longValue() / 1000000000, end.longValue() / 1000000000);
+                    }
                     whereClause = range.toString(" WHERE ", "%d <= " + filterColumn.getColumnName(), " AND ", filterColumn.getColumnName() + " <= %d", null); // NOI18N
                     break;
                 }
