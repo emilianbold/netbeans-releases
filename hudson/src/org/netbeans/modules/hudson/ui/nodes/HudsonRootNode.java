@@ -53,29 +53,29 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
+import static org.netbeans.modules.hudson.ui.nodes.Bundle.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
-/**
- * Root node in Services tab.
- */
+@ServicesTabNodeRegistration(name=HudsonRootNode.HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", shortDescription="#TIP_HudsonNode", iconResource=HudsonRootNode.ICON_BASE, position=488)
+@Messages({
+    "LBL_HudsonNode=Hudson Builders",
+    "TIP_HudsonNode=Hudson continuous integration servers, including Jenkins."
+})
 public class HudsonRootNode extends AbstractNode {
 
     public static final String HUDSON_NODE_NAME = "hudson"; // NOI18N
-    private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
+    static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
     
-    @ServicesTabNodeRegistration(name=HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", iconResource=ICON_BASE, position=488)
-    public static HudsonRootNode getDefault() {
-        return new HudsonRootNode();
-    }
 
     private HudsonRootNode() {
         super(Children.create(new RootNodeChildren(), true));
         setName(HUDSON_NODE_NAME);
-        setDisplayName(NbBundle.getMessage(HudsonRootNode.class, "LBL_HudsonNode"));
+        setDisplayName(LBL_HudsonNode());
+        setShortDescription(TIP_HudsonNode());
         setIconBaseWithExtension(ICON_BASE);
     }
     
