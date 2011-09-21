@@ -54,6 +54,7 @@ import javax.swing.Timer;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -106,7 +107,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
      * public jsu for backward compatibility purposes.
      */
     protected TextEditorSupport(XMLDataObjectLook xmlDO, Env env, String mime_type) {
-        super((DataObject)xmlDO, env);        
+        super((DataObject)xmlDO, null, env);        
         setMIMEType(mime_type);        
         initTimer();        
         initListeners();        
@@ -139,7 +140,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         timer.setInitialDelay(getAutoParsingDelay());
         timer.setRepeats(false);
     }
-    
+
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(getEnv().getMimeType(), 
+                getDataObject());
+    }
     
     /*
      * Add listeners at Document and document memory status (loading).

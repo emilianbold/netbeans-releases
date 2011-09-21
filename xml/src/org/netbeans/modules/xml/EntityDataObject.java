@@ -44,6 +44,8 @@
 package org.netbeans.modules.xml;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -60,6 +62,7 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
 /** 
@@ -107,7 +110,26 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
             }
         });
         
+        registerEditor(MIME_TYPE, true);
     }
+
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xml.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/entObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="entity.text",
+        mimeType=MIME_TYPE,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewDTDElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+    
 
     @Override
     public final Lookup getLookup() {

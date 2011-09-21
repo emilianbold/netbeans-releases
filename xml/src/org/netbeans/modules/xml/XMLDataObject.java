@@ -46,6 +46,8 @@ package org.netbeans.modules.xml;
 import java.beans.*;
 import java.io.IOException;
 import javax.xml.transform.Source;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.xml.sax.*;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
@@ -64,6 +66,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for xml document.
  * Instance holds all synchronization related state information.
@@ -130,6 +133,22 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         this.addPropertyChangeListener (this);  //??? - strange be aware of firing cycles
     }
     
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xml.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xml.text",
+        mimeType=org.openide.loaders.XMLDataObject.MIME,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+        
+    @Override protected int associateLookup() {
+        return 1;
+    }
+
     /**
      * Cached instance of cookie lookup + CES
      */
@@ -145,7 +164,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     public final Lookup getLookup() {
         if (doLookup == null) {
             doLookup = new ProxyLookup(
-                getCookieSet().getLookup(),
+                super.getLookup(),
                 Lookups.fixed(new Object[] { CloneableEditorSupport.class }, new InstanceContent.Convertor() {
 
                 @Override

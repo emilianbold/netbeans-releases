@@ -44,6 +44,8 @@
 package org.netbeans.modules.xml;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
@@ -58,6 +60,7 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
 /** 
@@ -67,6 +70,7 @@ import org.xml.sax.InputSource;
  * @author Petr Kuzel
  */
 public final class DTDDataObject extends MultiDataObject implements XMLDataObjectLook {
+    public static final String DTD_MIME_TYPE = "text/x-dtd";
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 2890472952957502631L;
@@ -97,14 +101,28 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 editorFactory.createEditor().saveAs( folder, fileName );
             }
-        });        
+        });
+        
+        registerEditor(DTD_MIME_TYPE, true);
+    }
+
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xml.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/dtdObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="dtd.text",
+        mimeType=DTD_MIME_TYPE,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewDTDElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
-    public final Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
-
+    
     /**
      */
     @Override
