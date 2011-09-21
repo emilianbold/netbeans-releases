@@ -96,12 +96,13 @@ public class DiffContext {
         this.file = file;
     }
 
-    private static CodeStyle getCodeStyle(CompilationInfo info) {
+    public static CodeStyle getCodeStyle(CompilationInfo info) {
         if (info != null) {
             try {
                 Document doc = info.getDocument();
                 if (doc != null) {
-                    return CodeStyle.getDefault(doc);
+                    CodeStyle cs = (CodeStyle)doc.getProperty(CodeStyle.class);
+                    return cs != null ? cs : CodeStyle.getDefault(doc);
                 }
             } catch (IOException ioe) {
                 // ignore
