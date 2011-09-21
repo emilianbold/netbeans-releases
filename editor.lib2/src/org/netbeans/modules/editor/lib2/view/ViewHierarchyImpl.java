@@ -155,6 +155,10 @@ public final class ViewHierarchyImpl {
     
     private LockedViewHierarchy lock;
     
+    private Thread lockThread;
+    
+    private int extraLockDepth;
+    
     private Exception lockStack;
     
 
@@ -187,10 +191,16 @@ public final class ViewHierarchyImpl {
     
     public synchronized LockedViewHierarchy lock() {
         try {
+            Thread curThread = Thread.currentThread();
             while (lock != null) {
+                if (lockThread == curThread) {
+                    extraLockDepth++; // Allow nested locking
+                    return lock;
+                }
                 wait();
             }
             lock = ViewApiPackageAccessor.get().createLockedViewHierarchy(this);
+            lockThread = curThread;
             if (LOG.isLoggable(Level.FINER)) {
                 lockStack = new Exception("ViewHierarchy.lock() caller stack"); // NOI18Ns
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -206,6 +216,10 @@ public final class ViewHierarchyImpl {
     public synchronized void unlock(LockedViewHierarchy lock) {
         if (lock != this.lock) {
             throw new IllegalStateException("Invalid LockedViewHierarchy.unlock(): Not a locker"); // NOI18N
+        }
+        if (extraLockDepth > 0) {
+            extraLockDepth--;
+            return;
         }
         this.lock = null;
         notifyAll();
@@ -249,7 +263,7 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public Shape modelToView(int offset, Position.Bias bias) {
+    public Shape modelToView(LockedViewHierarchy lock, int offset, Position.Bias bias) {
         ensureLocker(lock);
         if (docView != null) {
             return docView.modelToViewUnlocked(offset, docView.getAllocation(), bias);
@@ -263,7 +277,19 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
+    public Shape modelToParagraphView(LockedViewHierarchy lock, int offset) {
+        ensureLocker(lock);
+        Shape ret = null;
+        if (docView != null) {
+            int index = docView.getViewIndex(offset);
+            if (index >= 0) {
+                ret = docView.getChildAllocation(index, docView.getAllocation());
+            }
+        } // else: Do not know how to emulate
+        return ret;
+    }
+
+    public int viewToModel(LockedViewHierarchy lock, double x, double y, Position.Bias[] biasReturn) {
         ensureLocker(lock);
         if (docView != null) {
             return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);

@@ -118,7 +118,7 @@ public class ModuleListStartLevelTest extends SetupHid {
         man.put("Bundle-SymbolicName", "com.jcraft.jsch");
         createJar(mod, new HashMap<String, String>(), man);
         
-        InputStream is = ModuleListStartLevelTest.class.getResourceAsStream("ModuleList-com-jscraft-jsch.xml");
+        InputStream is = ModuleListStartLevelTest.class.getResourceAsStream("ModuleList-com-jcraft-jsch.xml");
         assertNotNull("Module definition found", is);
         final OutputStream os = fo.getOutputStream();
         FileUtil.copy(is, os);

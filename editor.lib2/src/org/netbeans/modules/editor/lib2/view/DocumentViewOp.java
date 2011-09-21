@@ -1206,12 +1206,17 @@ public final class DocumentViewOp
 
     StringBuilder appendInfo(StringBuilder sb) {
         sb.append("incomingMod=").append(isAnyStatusBit(INCOMING_MODIFICATION)); // NOI18N
-        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit); // NOI18N
+        sb.append("; lengthyAE=").append(lengthyAtomicEdit); // NOI18N
         sb.append("\nChged:");
+        int len = sb.length();
         if (isWidthChange()) sb.append(" W");
         if (isHeightChange()) sb.append(" H");
         if (isChildWidthChange()) sb.append(" ChW");
         if (isChildHeightChange()) sb.append(" ChH");
+        if (sb.length() == len) {
+            sb.append(" NONE");
+        }
+        sb.append("; visWidth").append(getVisibleRect().width); // visibleRect always non-null
         return sb;
     }
 

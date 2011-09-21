@@ -139,21 +139,26 @@ public final class HyperlinkSupport {
         });    
     }
 
-    private void registerLinkIntern(JTextPane pane, int[] pos, Link link) {
-        StyledDocument doc = pane.getStyledDocument();
+    private void registerLinkIntern(JTextPane pane, final int[] pos, Link link) {
+        final StyledDocument doc = pane.getStyledDocument();
                 
         if (pos.length > 0) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue-link", defStyle); // NOI18N
+            final Style hlStyle = doc.addStyle("regularBlue-link", defStyle); // NOI18N
             hlStyle.addAttribute(LINK_ATTRIBUTE, link);
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);
 
-            for (int i=0; i<pos.length; i+=2) {
-                int off = pos[i];
-                int length = pos[i+1]-pos[i];
-                doc.setCharacterAttributes(off, length, hlStyle, true);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i=0; i<pos.length; i+=2) {
+                        int off = pos[i];
+                        int length = pos[i+1]-pos[i];
+                        doc.setCharacterAttributes(off, length, hlStyle, true);
+                    }
+                }
+            });
             pane.addMouseListener(mouseListener);
         }
     }

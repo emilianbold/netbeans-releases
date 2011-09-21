@@ -60,7 +60,6 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 
 /** Basic tests on NbClipboard
@@ -81,7 +80,6 @@ public class NbClipboardTest extends NbTestCase {
         f.set(null, -1);
     }
 
-    @RandomlyFails // NB-Core-Build #7133: we do not use...
     public void testDefaultOnJDK15AndLater() throws Exception {
         if (Utilities.isMac()) {
             macCheck();

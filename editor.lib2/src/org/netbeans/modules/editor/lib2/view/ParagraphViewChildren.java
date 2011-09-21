@@ -806,9 +806,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     @Override
-    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
-        sb.append("x=").append(startVisualOffset(index)).append(": ");
-        return sb;
+    protected String getXYInfo(int index) {
+        return new StringBuilder(10).append(" x=").append(startVisualOffset(index)).toString();
     }
 
     private static final class IndexAndAlloc {

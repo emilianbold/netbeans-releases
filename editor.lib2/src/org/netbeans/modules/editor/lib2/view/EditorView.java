@@ -414,7 +414,7 @@ public abstract class EditorView extends View {
             StringBuilder sb = new StringBuilder(200);
             sb.append("View hierarchy INTEGRITY ERROR! - ").append(err);
             sb.append("\nErrorneous view hierarchy:\n");
-            appendViewInfo(sb, 0, -2); // -2 means detailed info
+            appendViewInfo(sb, 0, "", -2); // -2 means detailed info
             // For finest level stop throw real ISE otherwise just log the stack
             if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINEST)) {
                 throw new IllegalStateException(sb.toString());
@@ -490,13 +490,14 @@ public abstract class EditorView extends View {
         return err;
     }
 
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        sb.append(getDumpId()).append(':');
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        sb.append(getDumpId()).append(" ");
         int startOffset = getStartOffset();
         int endOffset = getEndOffset();
         sb.append('<').append(startOffset);
         sb.append(',');
         sb.append(endOffset).append('>');
+        sb.append(xyInfo); // Should include extra space at end
 //        sb.append(";REVO=").append(getRawEndVisualOffset());
         // Do not getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
         return sb;

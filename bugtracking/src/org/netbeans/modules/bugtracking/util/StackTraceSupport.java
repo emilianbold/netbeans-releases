@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -398,11 +397,7 @@ class StackTraceSupport {
                 int end = stp.getEndOffset();
 
                 if (last < start) {
-                    try {
-                        doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
-                    } catch (BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    insertString(doc, comment, last, start, defStyle);
                 }
                 last = start;
 
@@ -411,22 +406,14 @@ class StackTraceSupport {
                 for (int i = start; i < end; i++) {
                     char ch = comment.charAt(i);
                     if ((inStackTrace && ch == '\n') || (!inStackTrace && ch > ' ')) {
-                        try {
-                            doc.insertString(doc.getLength(), comment.substring(last, i), inStackTrace ? hlStyle : defStyle);
-                        } catch (BadLocationException ex) {
-                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                        }
+                        insertString(doc, comment, last, i, inStackTrace ? hlStyle : defStyle);
                         inStackTrace = !inStackTrace;
                         last = i;
                     }
                 }
 
                 if (last < end) {
-                    try {
-                        doc.insertString(doc.getLength(), comment.substring(last, end), inStackTrace ? hlStyle : defStyle);
-                    } catch (BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    insertString(doc, comment, last, end, inStackTrace ? hlStyle : defStyle);
                 }
                 last = end;
             }
@@ -440,6 +427,20 @@ class StackTraceSupport {
         }
     }
 
+      
+    private static void insertString(final StyledDocument doc, final String comment, final int last, final int start, final Style defStyle) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
+                } catch (BadLocationException ex) {
+                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+    
     private static MouseInputAdapter hyperlinkListener;
     private static MouseInputAdapter getHyperlinkListener() {
         if (hyperlinkListener == null) {

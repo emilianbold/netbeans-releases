@@ -107,7 +107,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
     /** web browser selection related constants */
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
-    private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
+    private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
     
     private Lookup.Result<org.openide.awt.HtmlBrowser.Factory> lookupResult = null;
 
@@ -1162,18 +1162,13 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.PRELOADER_CLASS),def.get(JFXProjectProperties.PRELOADER_CLASS)));
             
             browserSelectionChanged(activeConfig, m.get(JFXProjectProperties.RUN_IN_BROWSER));
-            //setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.RUN_IN_BROWSER), def.get(JFXProjectProperties.RUN_IN_BROWSER)));
-        } // else ??
+        }
         buttonDelete.setEnabled(activeConfig != null);
     }
     
     private void browserSelectionChanged(String config, String browser) {
         if(browser != null) {
             comboBoxWebBrowser.setSelectedItem(browser);
-//            String sel = (String)comboBoxWebBrowser.getSelectedItem();
-//            if(!JFXProjectProperties.isEqual(sel, configs.get(null).get(JFXProjectProperties.RUN_IN_BROWSER))) {
-//                configs.get(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
-//            }
             setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(configs.get(config).get(JFXProjectProperties.RUN_IN_BROWSER), configs.get(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
         }
     }
@@ -1290,11 +1285,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                //Object old = comboBoxWebBrowser.getSelectedItem();
                 fillWebBrowsersCombo(list, sel);
-                //String config = jfxProps.getActiveConfig();
-                //browserSelectionChanged(config, configs.get(config).get(JFXProjectProperties.RUN_IN_BROWSER));
-                //comboBoxWebBrowser.setSelectedItem(old);
             }
         });
     }
@@ -1433,17 +1424,14 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     private void setupWebBrowsersCombo() {
-        //TODO - incomplete, now produces plain text list only without any functionality
         lookupResult = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
         resultChanged(null);
         lookupResult.addLookupListener(this);
     }
 
     private void fillWebBrowsersCombo(List<String> list, String select) {
-        //TODO - incomplete, now produces plain text list only without any functionality
-
         // PENDING need to get rid of this filtering
-        FileObject fo = FileUtil.getConfigFile (BROWSER_FOLDER);
+        FileObject fo = FileUtil.getConfigFile (BROWSERS_FOLDER);
         if (fo != null) {
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
@@ -1462,11 +1450,9 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 }
             }
         }
-        String[] tags = new String[list.size ()];
-        list.toArray (tags);
         comboBoxWebBrowser.removeAllItems ();
-        if (tags.length > 0) {
-            for (String tag : tags) {
+        if (!list.isEmpty()) {
+            for (String tag : list) {
                 comboBoxWebBrowser.addItem(tag);
             }
             if(select != null) {

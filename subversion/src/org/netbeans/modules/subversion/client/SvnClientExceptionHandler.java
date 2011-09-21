@@ -863,9 +863,8 @@ public class SvnClientExceptionHandler {
 
     public static boolean isTooOldWorkingCopy (String message) {
         message = message.toLowerCase();
-        return message.contains("working copy format") //NOI18N
-                && message.contains("is too old") //NOI18N
-                && message.contains("please run \'svn upgrade\'"); //NOI18N
+        return message.contains("working copy") //NOI18N
+                && message.contains("is too old"); //NOI18N
     }
 
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {

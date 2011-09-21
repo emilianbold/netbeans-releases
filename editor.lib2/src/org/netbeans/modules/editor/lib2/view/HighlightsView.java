@@ -225,10 +225,6 @@ public class HighlightsView extends EditorView {
         checkTextLayoutValid();
         int startOffset = getStartOffset();
         ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("HV.createFragment(" + p0 + "," + p1+ "): <" + getStartOffset() + "," + // NOI18N
-                    getEndOffset() + ">\n"); // NOI18N
-        }
         return new HighlightsViewPart(this, p0 - startOffset, p1 - p0);
     }
 
@@ -244,8 +240,8 @@ public class HighlightsView extends EditorView {
     }
 
     @Override
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        super.appendViewInfo(sb, indent, importantChildIndex);
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
         sb.append(" TL=");
         if (textLayout == null) {
             sb.append("<NULL>");
@@ -255,5 +251,9 @@ public class HighlightsView extends EditorView {
         return sb;
     }
     
+    @Override
+    public String toString() {
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
+    }
 
 }
