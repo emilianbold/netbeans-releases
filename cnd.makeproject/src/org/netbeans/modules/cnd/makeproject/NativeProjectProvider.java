@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -108,7 +109,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-final public class NativeProjectProvider implements NativeProject, PropertyChangeListener, ChangeListener {
+final public class NativeProjectProvider implements NativeProject, PropertyChangeListener, ChangeListener, NativeProjectChangeSupport {
 
     private static final boolean TRACE = false;
     private final Project project;
@@ -283,6 +284,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public void fireFilesAdded(List<NativeFileItem> nativeFileIetms) {
         if (TRACE) {
             System.out.println("fireFileAdded "); // NOI18N
@@ -311,6 +313,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public void fireFilesRemoved(List<NativeFileItem> nativeFileItems) {
         if (TRACE) {
             System.out.println("fireFilesRemoved "); // NOI18N
@@ -323,19 +326,21 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public void fireFileRenamed(String oldPath, NativeFileItem newNativeFileIetm) {
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.fileRenamed(oldPath, newNativeFileIetm);
         }
     }
 
-    public void fireFilePropertiesChanged(NativeFileItem nativeFileIetm) {
+    private void fireFilePropertiesChanged(NativeFileItem nativeFileIetm) {
         //System.out.println("fireFilePropertiesChanged " + nativeFileIetm.getFile());
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filePropertiesChanged(nativeFileIetm);
         }
     }
 
+    @Override
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems) {
         //System.out.println("fireFilesPropertiesChanged " + fileItems);
         for (NativeProjectItemsListener listener : getListenersCopy()) {
@@ -517,193 +522,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         fireFilesRemoved(deleted);
         fireFilesAdded(added);
         firePropertiesChanged(list, true);
-    }
-
-    public void checkForChangedItems(final Folder folder, final Item item) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(folder, item);
-                }
-            });
-        } else {
-            checkForChangedItemsWorker(folder, item);
-        }
-    }
-
-    public void checkForChangedItems(final Delta delta) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(delta);
-                }
-            });
-        } else {
-            checkForChangedItemsWorker(delta);
-        }
-    }
-
-    private void checkForChangedItemsWorker(Delta delta) {
-        if (delta.isEmpty()) {
-            return;
-        }
-        clearCache();
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-        }
-        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
-            list.addAll(delta.exluded);
-            fireFilesRemoved(list);
-        }
-        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
-            list.addAll(delta.included);
-            fireFilesAdded(list);
-        }
-        if (!delta.changed.isEmpty()) {
-            fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
-        }
-    }
-
-    private void checkForChangedItemsWorker(Folder folder, Item item) {
-        clearCache();
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-        }
-
-        MakeConfiguration makeConfiguration = getMakeConfiguration();
-        boolean cFiles = false;
-        boolean ccFiles = false;
-        boolean libsChanged = false;
-        boolean projectChanged = false;
-        VectorConfiguration<String> cIncludeDirectories = null;
-        BooleanConfiguration cInheritIncludes = null;
-        VectorConfiguration<String> cPpreprocessorOption = null;
-        BooleanConfiguration cInheritMacros = null;
-        VectorConfiguration<String> ccIncludeDirectories = null;
-        BooleanConfiguration ccInheritIncludes = null;
-        VectorConfiguration<String> ccPreprocessorOption = null;
-        BooleanConfiguration ccInheritMacros = null;
-        Item[] items;
-        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-
-        // Check first whether the development host has changed
-        if (makeConfiguration.getDevelopmentHost().getDirty()) {
-            makeConfiguration.getDevelopmentHost().setDirty(false);
-            items = descriptor.getProjectItems();
-            firePropertiesChanged(items, true, true, true);
-            return;
-        } else if (makeConfiguration.getCompilerSet().getDirty()) {
-            // Next, check whether the compiler set has changed
-            makeConfiguration.getCompilerSet().setDirty(false);
-            items = descriptor.getProjectItems();
-            firePropertiesChanged(items, true, true, true);
-            return;
-        }
-
-        if (folder != null) {
-            FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
-            cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
-            cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
-            cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-            ccIncludeDirectories = folderConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
-            ccInheritIncludes = folderConfiguration.getCCCompilerConfiguration().getInheritIncludes();
-            ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
-            ccInheritMacros = folderConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
-            items = folder.getAllItemsAsArray();
-        } else if (item != null) {
-            ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
-                cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
-                cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-                cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
-                if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
-                    itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
-                    cFiles = true;
-                }
-            }
-            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
-                ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
-                ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
-                ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
-                if (itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
-                    itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
-                    ccFiles = true;
-                }
-            }
-            if (itemConfiguration.getExcluded().getDirty()) {
-                itemConfiguration.getExcluded().setDirty(false);
-                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-                list.add(item);
-                if (itemConfiguration.getExcluded().getValue()) {
-                    fireFilesRemoved(list);
-                } else {
-                    fireFilesAdded(list);
-                }
-            }
-            items = new Item[]{item};
-        } else {
-            libsChanged = makeConfiguration.getRequiredProjectsConfiguration().getDirty()
-                    || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
-            cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
-            cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
-            if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
-                makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
-                cFiles = true;
-            }
-            cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-            ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
-            ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
-            ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
-            ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
-            if (makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
-                makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
-                ccFiles = true;
-            }
-            items = descriptor.getProjectItems();
-            projectChanged = true;
-        }
-
-        if (cIncludeDirectories != null
-                && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
-                || cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
-            cFiles = true;
-            cIncludeDirectories.setDirty(false);
-            cPpreprocessorOption.setDirty(false);
-            cInheritIncludes.setDirty(false);
-            cInheritMacros.setDirty(false);
-        }
-        if (ccIncludeDirectories != null
-                && (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty()
-                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
-            ccFiles = true;
-            ccIncludeDirectories.setDirty(false);
-            ccPreprocessorOption.setDirty(false);
-            ccInheritIncludes.setDirty(false);
-            ccInheritMacros.setDirty(false);
-        }
-        if (libsChanged) {
-            makeConfiguration.getRequiredProjectsConfiguration().setDirty(false);
-            makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().setDirty(false);
-            cFiles = true;
-            ccFiles = true;
-        }
-        if (cFiles || ccFiles) {
-            firePropertiesChanged(items, cFiles, ccFiles, projectChanged);
-        }
     }
 
     private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
