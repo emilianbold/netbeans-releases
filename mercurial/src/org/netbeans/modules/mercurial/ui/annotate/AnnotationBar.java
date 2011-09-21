@@ -715,8 +715,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
         HgRevision parent = getPreviousRevisions().get(key);
         if (parent == null) {
+            File originalFile = getOriginalFile(file, revision);
             try {
-                parent = HgCommand.getParent(repositoryRoot, file, revision);
+                parent = HgCommand.getParent(repositoryRoot, originalFile, revision);
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
