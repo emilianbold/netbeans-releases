@@ -988,7 +988,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public void actionPerformed(ActionEvent e) {
             FileObject file = RetoucheUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), ((JEditorPane)singleLineEditor[1]).getText(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 ((JEditorPane)singleLineEditor[1]).setText(fqn);
@@ -1017,7 +1017,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public void actionPerformed(ActionEvent e) {
             FileObject file = RetoucheUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 acceptEditedValue();
