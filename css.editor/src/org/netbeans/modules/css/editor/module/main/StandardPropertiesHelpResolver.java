@@ -47,6 +47,8 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.css.editor.URLRetriever;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
@@ -67,19 +69,23 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final String W3C_SPEC_URL_PREFIX = "http://www.w3.org/TR/"; //NOI18N
     private static final String MODULE_ARCHIVE_PATH = "www.w3.org/TR/"; //NOI18N
     private static final String INDEX_HTML_FILE_NAME = "index.html"; //NOI18N
-    
 
     @Override
     public String getHelp(Property property) {
         CssModule cssModule = property.getCssModule();
-        if(cssModule == null) {
+        if (cssModule == null) {
             return null;
         }
         String moduleDocBase = cssModule.getSpecificationURL();
-        if(moduleDocBase == null) {
+        if (moduleDocBase == null) {
             return null;
         }
         
+        if("http://www.w3.org/TR/CSS2".equals(moduleDocBase)) { //NOI18N
+            //css2 help is treated by the legacy help resolver
+            return null;
+        }
+
         if (moduleDocBase.startsWith(W3C_SPEC_URL_PREFIX)) {
             String moduleFolderName = moduleDocBase.substring(W3C_SPEC_URL_PREFIX.length());
             StringBuilder propertyUrl = new StringBuilder();
@@ -93,17 +99,88 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
             try {
                 URL propertyHelpURL = new URL(propertyUrl.toString());
                 String urlContent = URLRetriever.getURLContentAndCache(propertyHelpURL);
-                return urlContent;
+
+                //<dfn id="property"> or <dfn id="propdef-property">
+                String patternImg = String.format("(?s)<dfn\\s+id=['\"]?\\w*-??%s['\"]?>", property.getName());
+
+                //1. find the anchor
+                Pattern pattern = Pattern.compile(patternImg); //DOTALL mode
+                Matcher matcher = pattern.matcher(urlContent);
+
+                //2. go backward and find h3 or h2 section start
+                if (matcher.find()) {
+                    int sectionStart = -1;
+                    int from = matcher.start();
+
+                    int state = 0;
+                    loop:
+                    for (int i = from; i > 0; i--) {
+                        char c = urlContent.charAt(i);
+                        switch (state) {
+                            case 0:
+                                if (c == '2' || c == '3') {
+                                    state = 1;
+                                }
+                                break;
+                            case 1:
+                                if (c == 'h') {
+                                    state = 2;
+                                } else {
+                                    state = 0;
+                                }
+                                break;
+                            case 2:
+                                if (c == '<') {
+                                    //found <h2 or <h3
+                                    sectionStart = i;
+                                    break loop;
+                                } else {
+                                    state = 0;
+                                }
+                                break;
+                        }
+                    }
+
+                    //3.go forward and find next section start (h2 or h3)
+                    //note: the section end can be limited by different heading
+                    //level than was the opening heading!
+                    if (sectionStart >= 0) {
+                        //find next section
+                        Pattern sectionEndFinder = Pattern.compile("(?s)<h[23]");
+                        Matcher findSectionEnd = sectionEndFinder.matcher(urlContent.subSequence(from, urlContent.length()));
+                        if (findSectionEnd.find()) {
+                            return urlContent.substring(sectionStart, from + findSectionEnd.start());
+                        }
+                    }
+
+                } else {
+                    //no pattern found, likely a bit different source
+                    LOGGER.warning(String.format("No property anchor section pattern found for property '%s'", property.getName()));
+                    
+                    //strip the <style>...</style> section from the source since it causes a garbage in the swingbrowser
+                    int styleSectionStart = urlContent.indexOf("<style type=\"text/css\">");
+                    if(styleSectionStart >= 0) {
+                        final String styleEndTag = "</style>";
+                        int styleSectionEnd = urlContent.indexOf(styleEndTag, styleSectionStart);
+                        if(styleSectionEnd >= 0) {
+                            StringBuilder buf = new StringBuilder();
+                            buf.append(urlContent.subSequence(0, styleSectionStart));
+                            buf.append(urlContent.subSequence(styleSectionEnd + styleEndTag.length(), urlContent.length()));
+                            
+                            return buf.toString();
+                        }
+                    }
+                    
+                    
+                    return urlContent;
+                }
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
                 return null;
             }
-
-        } else {
-            return null;
-
         }
 
+        return null;
     }
 
     @Override
