@@ -45,6 +45,8 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -73,7 +75,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ProjectFolder extends JPanel implements ActionListener, DocumentListener, ChangeListener {
+public class ProjectFolder extends JPanel implements ItemListener, DocumentListener, ChangeListener {
     private static final long serialVersionUID = 7976754658427748L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -87,11 +89,10 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         initComponents();
 
         init();
-        setWarning(false);
     }
 
     private void init() {
-        projectFolderCheckBox.addActionListener(this);
+        projectFolderCheckBox.addItemListener(this);
         projectFolderTextField.getDocument().addDocumentListener(this);
         sourcesFolderProvider.addChangeListener(this);
     }
@@ -251,8 +252,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        setState(projectFolderCheckBox.isSelected());
+    public void itemStateChanged(ItemEvent e) {
+        setState(e.getStateChange() == ItemEvent.SELECTED);
         changeSupport.fireChange();
     }
 
