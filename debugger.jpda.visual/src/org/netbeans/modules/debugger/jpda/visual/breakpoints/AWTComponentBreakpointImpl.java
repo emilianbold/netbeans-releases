@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.Value;
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -51,6 +55,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 
 /**
  *
@@ -91,7 +96,17 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             addMethodBreakpoint(mbHide, (ObjectVariable) variableComponent);
         }
         if (((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
-            MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "repaint");
+            String componentClassName = null;
+            if (variableComponent instanceof JDIVariable) {
+                Value value = ((JDIVariable) variableComponent).getJDIValue();
+                if (value instanceof ObjectReference) {
+                    componentClassName = findClassWithMethod(((ObjectReference) value).referenceType(), "repaint", "(JIIII)V");
+                }
+            }
+            if (componentClassName == null) {
+                componentClassName = "java.awt.Component";  // NOI18N
+            }
+            MethodBreakpoint mbShow = MethodBreakpoint.create(componentClassName, "repaint");
             // void repaint(long tm, int x, int y, int width, int height)
             mbShow.setMethodSignature("(JIIII)V");
             mbShow.setHidden(true);
@@ -105,5 +120,13 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
             serviceBreakpoints.add(mbShow);
         }
+    }
+
+    private String findClassWithMethod(ReferenceType referenceType, String name, String signature) {
+        List<Method> methods = referenceType.methodsByName(name, signature);
+        if (!methods.isEmpty()) {
+            return methods.get(0).declaringType().name();
+        }
+        return null;
     }
 }

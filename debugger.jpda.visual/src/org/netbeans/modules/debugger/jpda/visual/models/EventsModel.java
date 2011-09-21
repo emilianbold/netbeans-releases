@@ -409,8 +409,14 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     @Override
     public Action[] getActions(Object node) throws UnknownTypeException {
         if (selectedCI != null) {
-            if (node == customListeners || node == eventsLog) {
+            if (node == customListeners) {
                 return new Action[] { new SetLoggingEvents() };//new AddLoggingListenerAction(null) };
+            }
+            if (node == eventsLog) {
+                return new Action[] {
+                    new SetLoggingEvents(),
+                    null,
+                    new ClearEventsAction() };
             }
             if (node instanceof ListenerCategory) {
                 return new Action[] { new AddLoggingListenerAction((ListenerCategory) node) };
@@ -705,6 +711,26 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
             }
         }
 
+    }
+
+    private class ClearEventsAction extends AbstractAction {
+
+        @Override
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return NbBundle.getMessage(EventsModel.class, "CTL_ClearEvents");
+            }
+            return super.getValue(key);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            synchronized (events) {
+                events.clear();
+            }
+            fireNodeChanged(eventsLog);
+        }
+        
     }
     
     private class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
