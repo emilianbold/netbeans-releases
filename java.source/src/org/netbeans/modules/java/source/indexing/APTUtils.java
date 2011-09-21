@@ -179,7 +179,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
         pp.getRoots();//so that the ClassPath starts listening on the filesystem
         options.addChangeListener(WeakListeners.change(utils, options));
-        sourceLevel.addChangeListener(WeakListeners.change(utils, sourceLevel));
+        if (sourceLevel.supportsChanges())
+            sourceLevel.addChangeListener(WeakListeners.change(utils, sourceLevel));
 
         return utils;
     }
