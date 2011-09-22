@@ -48,13 +48,6 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.HierarchyBoundsListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -124,6 +117,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     private ChangeListener changeListener = null;
     private ServerStatusProvider2 serverStatusProvider;
+    private DBSchemaFileList dbschemaFileList;
+    private TableSource tableSource;
+    private FileObject targetFolder;
 
     private String[] filterComboTxts = {
         org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
@@ -133,10 +129,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private TableUISupport.FilterAvailable filterAvailable = TableUISupport.FilterAvailable.ANY;
 
     private Project project;
-    private DBSchemaFileList dbschemaFileList;
-    private TableSource tableSource;
-    private FileObject targetFolder;
-    private HierarchyListener initListener4;
 
     public DatabaseTablesPanel() {
         initComponents();
@@ -161,18 +153,83 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         this.dbschemaFileList = dbschemaFileList;
         this.tableSource = tableSource;
         this.targetFolder = targetFolder;
+        initSubComponents();
+    }
+    
+    private void initSubComponents(){
 
-        initListener4 = new HierarchyListener() {//some kind of solution for awt thread lock, issue 202022
-
+        changeListener = new ChangeListener() {
             @Override
-            public void hierarchyChanged(HierarchyEvent e) {
-                 if(e.getChangedParent() instanceof javax.swing.JFrame){
-                    initSubComponents();
-                    removeHierarchyListener(initListener4);
-                }
+            public void stateChanged(ChangeEvent e) {
+                    if (project != null && ProviderUtil.isValidServerInstanceOrNone(project)) {
+                        // stop listening once a server was set
+                        serverStatusProvider.removeChangeListener(changeListener);
+                        if (!Util.isContainerManaged(project)) {
+                            // if selected server does not support DataSource then
+                            // swap the combo to DB Connection selection
+                            datasourceComboBox.setModel(new DefaultComboBoxModel());
+                            initializeWithDbConnections();
+                            // notify user about result of server selection:
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DatabaseTablesPanel.class, "WRN_Server_Does_Not_Support_DS")));
+                        } else {
+                            // #190671 - because of hacks around server set in maven
+                            // listen and update data sources after server was set here again.
+                            // In theory this should not be necessary and
+                            // j2ee.common.DatasourceUIHelper.performServerSelection should have done
+                            // everything necessary but often at that time
+                            // PersistenceProviderSupplier.supportsDefaultProvider() is still false
+                            // (server change was not propagated there yet). In worst case combo model will be set twice:
+                            datasourceComboBox.setModel(new DefaultComboBoxModel());
+                            initializeWithDatasources();
+                        }
+                    }
             }
         };
-        addHierarchyListener(initListener4);
+
+        // if no server is set then listen on the server selection:
+        if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
+            serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
+            if (serverStatusProvider != null) {
+                serverStatusProvider.addChangeListener(changeListener);
+            }
+        }
+
+
+        boolean serverIsSelected = ProviderUtil.isValidServerInstanceOrNone(project);
+        boolean canServerBeSelected = ProviderUtil.canServerBeSelected(project);
+
+        {
+            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
+            if ((withDatasources && serverIsSelected) || (canServerBeSelected && !serverIsSelected)) {
+                initializeWithDatasources();
+            } else {
+                initializeWithDbConnections();
+            }
+
+            DBSchemaUISupport.connect(dbschemaComboBox, dbschemaFileList);
+            boolean hasDBSchemas = (dbschemaComboBox.getItemCount() > 0 && dbschemaComboBox.getItemAt(0) instanceof FileObject);
+
+            dbschemaRadioButton.setEnabled(hasDBSchemas);
+            dbschemaComboBox.setEnabled(hasDBSchemas);
+            dbschemaRadioButton.setVisible(hasDBSchemas);
+            dbschemaComboBox.setVisible(hasDBSchemas);
+            datasourceLabel.setVisible(!hasDBSchemas);
+            datasourceRadioButton.setVisible(hasDBSchemas);
+            
+            selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
+        } 
+
+        // hack to ensure the progress dialog displayed by updateSourceSchema()
+        // is displayed on top of the wizard dialog. Needed because when initialize()
+        // is called wizard dialog might be non-visible, so the progress dialog
+        // would be displayed before the wizard dialog.
+        sourceSchemaUpdateEnabled = true;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateSourceSchema();
+            }
+        });        
     }
 
     private void initializeWithDatasources() {
@@ -904,82 +961,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
     }//GEN-LAST:event_addAllTypeComboActionPerformed
 
-    
-    private void initSubComponents(){
-               changeListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                    if (project != null && ProviderUtil.isValidServerInstanceOrNone(project)) {
-                        // stop listening once a server was set
-                        serverStatusProvider.removeChangeListener(changeListener);
-                        if (!Util.isContainerManaged(project)) {
-                            // if selected server does not support DataSource then
-                            // swap the combo to DB Connection selection
-                            datasourceComboBox.setModel(new DefaultComboBoxModel());
-                            initializeWithDbConnections();
-                            // notify user about result of server selection:
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DatabaseTablesPanel.class, "WRN_Server_Does_Not_Support_DS")));
-                        } else {
-                            // #190671 - because of hacks around server set in maven
-                            // listen and update data sources after server was set here again.
-                            // In theory this should not be necessary and
-                            // j2ee.common.DatasourceUIHelper.performServerSelection should have done
-                            // everything necessary but often at that time
-                            // PersistenceProviderSupplier.supportsDefaultProvider() is still false
-                            // (server change was not propagated there yet). In worst case combo model will be set twice:
-                            datasourceComboBox.setModel(new DefaultComboBoxModel());
-                            initializeWithDatasources();
-                        }
-                    }
-            }
-        };
-
-        // if no server is set then listen on the server selection:
-        if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
-            serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
-            if (serverStatusProvider != null) {
-                serverStatusProvider.addChangeListener(changeListener);
-            }
-        }
-
-
-        boolean serverIsSelected = ProviderUtil.isValidServerInstanceOrNone(project);
-        boolean canServerBeSelected = ProviderUtil.canServerBeSelected(project);
-
-        {
-            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
-            if ((withDatasources && serverIsSelected) || (canServerBeSelected && !serverIsSelected)) {
-                initializeWithDatasources();
-            } else {
-                initializeWithDbConnections();
-            }
-
-            DBSchemaUISupport.connect(dbschemaComboBox, dbschemaFileList);
-            boolean hasDBSchemas = (dbschemaComboBox.getItemCount() > 0 && dbschemaComboBox.getItemAt(0) instanceof FileObject);
-
-            dbschemaRadioButton.setEnabled(hasDBSchemas);
-            dbschemaComboBox.setEnabled(hasDBSchemas);
-            dbschemaRadioButton.setVisible(hasDBSchemas);
-            dbschemaComboBox.setVisible(hasDBSchemas);
-            datasourceLabel.setVisible(!hasDBSchemas);
-            datasourceRadioButton.setVisible(hasDBSchemas);
-            
-            selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
-        } 
-
-        // hack to ensure the progress dialog displayed by updateSourceSchema()
-        // is displayed on top of the wizard dialog. Needed because when initialize()
-        // is called wizard dialog might be non-visible, so the progress dialog
-        // would be displayed before the wizard dialog.
-        // TBD may not be needed after fix 202052 (see code above)
-        sourceSchemaUpdateEnabled = true;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateSourceSchema();
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
