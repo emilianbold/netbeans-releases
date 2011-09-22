@@ -55,6 +55,7 @@ import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,6 +70,8 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final String W3C_SPEC_URL_PREFIX = "http://www.w3.org/TR/"; //NOI18N
     private static final String MODULE_ARCHIVE_PATH = "www.w3.org/TR/"; //NOI18N
     private static final String INDEX_HTML_FILE_NAME = "index.html"; //NOI18N
+    
+    private static final String NO_HELP_MSG = NbBundle.getMessage(StandardPropertiesHelpResolver.class, "MSG_No_Help");
 
     @Override
     public String getHelp(Property property) {
@@ -176,11 +179,10 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
                 }
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
-                return null;
             }
         }
 
-        return null;
+        return NO_HELP_MSG;
     }
 
     @Override
@@ -199,7 +201,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     }
 
     private String createSpecURL() {
-        File file = InstalledFileLocator.getDefault().locate(SPEC_ARCHIVE_NAME, null, false); //NoI18N
+        File file = InstalledFileLocator.getDefault().locate(SPEC_ARCHIVE_NAME, "org.netbeans.modules.css.editor", false); //NoI18N
         if (file != null) {
             try {
                 URL urll = file.toURI().toURL(); //toURI should escape the illegal characters like spaces

@@ -85,6 +85,6 @@ public class ListsAndCountersModule extends CssEditorModule implements CssModule
 
     @Override
     public String getSpecificationURL() {
-        return "http://www.w3.org/TR/css3-lists/"; //NOI18N
+        return "http://www.w3.org/TR/css3-lists"; //NOI18N
     }
 }
