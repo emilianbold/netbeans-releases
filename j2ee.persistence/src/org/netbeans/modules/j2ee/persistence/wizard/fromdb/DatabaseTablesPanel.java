@@ -117,6 +117,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     private ChangeListener changeListener = null;
     private ServerStatusProvider2 serverStatusProvider;
+    private DBSchemaFileList dbschemaFileList;
+    private TableSource tableSource;
+    private FileObject targetFolder;
 
     private String[] filterComboTxts = {
         org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
@@ -147,6 +150,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     public void initialize(final Project project, DBSchemaFileList dbschemaFileList, PersistenceGenerator persistenceGen, TableSource tableSource, FileObject targetFolder) {
         this.persistenceGen = persistenceGen;
         this.project = project;
+        this.dbschemaFileList = dbschemaFileList;
+        this.tableSource = tableSource;
+        this.targetFolder = targetFolder;
+    }
+    
+    private void initSubComponents(){
 
         changeListener = new ChangeListener() {
             @Override
@@ -219,7 +228,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             public void run() {
                 updateSourceSchema();
             }
-        });
+        });        
     }
 
     private void initializeWithDatasources() {
