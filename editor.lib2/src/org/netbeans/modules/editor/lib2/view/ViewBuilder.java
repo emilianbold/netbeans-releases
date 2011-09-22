@@ -732,11 +732,12 @@ final class ViewBuilder {
         // Fill the rest with default row height
         if (i0 != i1) {
             float defaultRowHeight = docView.op.getDefaultRowHeight();
-            float defaultCharWidth = docView.op.getDefaultCharWidth();
             for (int i = i0; i < i1; i++) {
                 ParagraphView addedPView = addedPViews.get(i);
                 addedPView.setHeight(defaultRowHeight);
-                addedPView.setWidth(defaultCharWidth * addedPView.getLength());
+                // Do not set initial width (let it be computed) since it also requires
+                // possible notifying of width change. And there also may be line wrapping
+                // involved so the estimated width would not comply.
             }
         }
         if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {

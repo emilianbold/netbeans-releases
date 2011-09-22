@@ -630,24 +630,27 @@ public class Utilities {
             boolean agressive) {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : original) {
-            UpdateElement req = handleDependency (el, dep, availableInfos, brokenDependencies, agressive);
-            if (req != null) {
-                ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
-                availableInfos.add (reqM.getModuleInfo ());
-                retval.add (req);
-                res.addAll (reqM.getModuleInfo ().getDependencies ());
+            Collection<UpdateElement> requestedElements = handleDependency (el, dep, availableInfos, brokenDependencies, agressive);
+            if (requestedElements != null) {
+                for (UpdateElement req : requestedElements) {
+                    ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
+                    availableInfos.add (reqM.getModuleInfo ());
+                    retval.add (req);
+                    res.addAll (reqM.getModuleInfo ().getDependencies ());
+                }
             }
         }
         res.removeAll (original);
         return res;
     }
     
-    public static UpdateElement handleDependency (UpdateElement el,
+    public static Collection<UpdateElement> handleDependency (UpdateElement el,
             Dependency dep,
             Collection<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies,
             boolean beAggressive) {
-        UpdateElement requested = null;
+        
+        Collection<UpdateElement> requested = new HashSet<UpdateElement> ();
         
         switch (dep.getType ()) {
             case Dependency.TYPE_JAVA :
@@ -661,8 +664,10 @@ public class Utilities {
                 }
                 break;
             case Dependency.TYPE_MODULE :
-                UpdateUnit u = DependencyAggregator.getRequested (dep);
+                Collection<UpdateUnit> reqUnits = DependencyAggregator.getRequested (dep);
+                assert reqUnits == null || reqUnits.isEmpty() || reqUnits.size() == 1 : dep + " returns null, empty or only once module, but returns " + reqUnits;
                 boolean matched = false;
+                UpdateUnit u = reqUnits == null || reqUnits.isEmpty() ? null : reqUnits.iterator().next();
                 if (u != null) {
                     boolean aggressive = beAggressive;
                     if (aggressive && (isFirstClassModule(el.getUpdateUnit()) || u.getType() ==  UpdateManager.TYPE.KIT_MODULE)) {
@@ -691,7 +696,7 @@ public class Utilities {
                             ModuleInfo info = reqModuleImpl.getModuleInfo();
                             if (DependencyChecker.checkDependencyModule(dep, info)) {
                                 if (!availableInfos.contains(info)) {
-                                    requested = reqEl;
+                                    requested.add(reqEl);
                                     matched = true;
                                 }
                             }
@@ -719,9 +724,9 @@ public class Utilities {
                     // these tokens you can ignore here
                     break;
                 }
-                UpdateUnit p = DependencyAggregator.getRequested (dep);
+                Collection<UpdateUnit> requestedUnits = DependencyAggregator.getRequested (dep);
                 boolean passed = false;
-                if (p == null) {
+                if (requestedUnits == null || requestedUnits.isEmpty()) {
                     // look on availableInfos as well
                     for (ModuleInfo m : availableInfos) {
                         if (Arrays.asList (m.getProvides ()).contains (dep.getName ())) {
@@ -731,8 +736,10 @@ public class Utilities {
                     }
                 } else {
                     passed = true;
-                    if (! p.getAvailableUpdates ().isEmpty ()) {
-                        requested = p.getAvailableUpdates ().get (0);
+                    for (UpdateUnit uu : requestedUnits) {
+                        if (! uu.getAvailableUpdates ().isEmpty ()) {
+                            requested.add(uu.getAvailableUpdates ().get (0));
+                        }
                     }
                 }
                 if (! passed && Dependency.TYPE_RECOMMENDS != dep.getType ()) {

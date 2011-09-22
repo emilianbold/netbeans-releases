@@ -49,6 +49,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchConnection;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -76,7 +77,13 @@ abstract class ListRemoteObjectsCommand extends TransportCommand {
         } catch (NotSupportedException ex) {
             throw new GitException(ex.getMessage(), ex);
         } catch (TransportException e) {
-            handleException(e);
+            URIish uriish = null;
+            try {
+                uriish = getUriWithUsername(false);
+            } catch (URISyntaxException ex) {
+                throw new GitException(ex.getMessage(), ex);
+            }
+            handleException(e, uriish);
         } finally {
             if (conn != null) {
                 conn.close();

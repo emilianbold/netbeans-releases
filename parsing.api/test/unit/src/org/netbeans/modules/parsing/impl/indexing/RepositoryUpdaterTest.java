@@ -73,11 +73,17 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -104,6 +110,7 @@ import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -214,7 +221,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 SFBQImpl.class,
                 OpenProject.class,
                 ClassPathProviderImpl.class,
-                Visibility.class);
+                Visibility.class,
+                IndexDownloaderImpl.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1928,6 +1936,54 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1,istat.get("foo")[0]);    //NOI18N
     }
 
+    public void testIndexDownloader() throws Exception {
+        final File workDir = getWorkDir();
+        final File root = new File (workDir,"testIndexDownloader"); //NOI18N
+        final File folder = new File (root,"folder");               //NOI18N
+        final File a = new File(folder,"a.foo");                    //NOI18N
+        final File b = new File(folder,"b.foo");                    //NOI18N
+        final File index = new File(workDir,"index.zip");           //NOI18N
+        folder.mkdirs();
+        a.createNewFile();
+        final ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(index));
+        try {
+            zout.putNextEntry(new ZipEntry("timestamps.properties"));   //NOI18N
+            zout.write("folder/a.foo=10\n".getBytes());                 //NOI18N
+            zout.write("folder/b.foo=10\n".getBytes());                 //NOI18N
+        } finally {
+            zout.close();
+        }
+
+        //Unsee root - index should be donwloaded and no indexer should be called
+        final URL rootURL = FileUtil.urlForArchiveOrDir(root);
+        final ClassPath cp1 = ClassPathSupport.createClassPath(rootURL);
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        touchFile(a);
+
+        //Seen root - index should NOT be donwloaded and indexer should be called on modified file
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{a.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertFalse(IndexDownloaderImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+    }
+
 
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
@@ -2941,6 +2997,54 @@ public class RepositoryUpdaterTest extends NbTestCase {
         @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
+        }
+    }
+
+    public static class IndexDownloaderImpl implements IndexDownloader {
+
+        private static final Lock lck = new ReentrantLock();
+        private static final Condition cnd = lck.newCondition();
+        /*@GuardedBy("lck")*/
+        private static URL expectedURL;
+        private static URL indexURL;
+
+        @Override
+        public URL getIndexURL(URL root) {
+            URL index = null;
+            lck.lock();
+            try {
+                if (root.equals(expectedURL)) {
+                    index = indexURL;
+                    expectedURL = null;
+                    cnd.signal();
+                }
+            } finally {
+                lck.unlock();
+            }
+            return index;
+        }
+
+        public static void expect(URL url, URL index) {
+            lck.lock();
+            try {
+                expectedURL = url;
+                indexURL = index;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        public static boolean await() throws InterruptedException {
+            lck.lock();
+            try {
+                if (expectedURL != null) {
+                    return cnd.await(TIME, TimeUnit.MILLISECONDS) && expectedURL == null;
+                } else {
+                    return true;
+                }
+            } finally {
+                lck.unlock();
+            }
         }
     }
 
