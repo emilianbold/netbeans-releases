@@ -35,6 +35,7 @@ public class CookieExample extends HttpServlet {
 
     ResourceBundle rb = ResourceBundle.getBundle("LocalStrings");
     
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
         throws IOException, ServletException
@@ -81,17 +82,15 @@ public class CookieExample extends HttpServlet {
             out.println(rb.getString("cookies.no-cookies"));
         }
 
-        String cookieName = request.getParameter("cookiename");
-        String cookieValue = request.getParameter("cookievalue");
+        String cookieName = HTMLFilter.filter(request.getParameter("cookiename"));
+        String cookieValue = HTMLFilter.filter(request.getParameter("cookievalue"));
         if (cookieName != null && cookieValue != null) {
             Cookie cookie = new Cookie(cookieName, cookieValue);
             response.addCookie(cookie);
             out.println("<P>");
             out.println(rb.getString("cookies.set") + "<br>");
-            out.print(rb.getString("cookies.name") + "  " 
-                      + HTMLFilter.filter(cookieName) + "<br>");
-            out.print(rb.getString("cookies.value") + "  " 
-                      + HTMLFilter.filter(cookieValue));
+            out.print(rb.getString("cookies.name") + "  " + cookieName + "<br>");
+            out.print(rb.getString("cookies.value") + "  " + cookieValue);
         }
         
         out.println("<P>");
@@ -109,13 +108,11 @@ public class CookieExample extends HttpServlet {
         out.println("</html>");
     }
 
+    @Override
     public void doPost(HttpServletRequest request,
                       HttpServletResponse response)
         throws IOException, ServletException
     {
         doGet(request, response);
     }
-
 }
-
-
