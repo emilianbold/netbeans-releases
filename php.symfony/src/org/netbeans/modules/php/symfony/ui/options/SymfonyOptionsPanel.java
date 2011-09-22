@@ -40,12 +40,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * SymfonyOptionsPanel.java
- *
- * Created on 11.6.2009, 13:02:10
- */
-
 package org.netbeans.modules.php.symfony.ui.options;
 
 import java.awt.Component;
@@ -61,6 +55,7 @@ import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -85,7 +80,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SymfonyOptionsPanel extends JPanel {
-    private static final long serialVersionUID = -1384644114740L;
+    private static final long serialVersionUID = -1384645646121L;
     private static final String SYMFONY_LAST_FOLDER_SUFFIX = ".symfony";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -122,6 +117,14 @@ public class SymfonyOptionsPanel extends JPanel {
 
     public void setSymfony(String symfony) {
         symfonyTextField.setText(symfony);
+    }
+
+    public boolean getIgnoreCache() {
+        return ignoreCacheCheckBox.isSelected();
+    }
+
+    public void setIgnoreCache(boolean ignoreCache) {
+        ignoreCacheCheckBox.setSelected(ignoreCache);
     }
 
     public String getDefaultParamsForProject() {
@@ -179,10 +182,11 @@ public class SymfonyOptionsPanel extends JPanel {
         searchButton = new JButton();
         symfonyScriptUsageLabel = new JLabel();
         runningInfoLabel = new JLabel();
+        ignoreCacheCheckBox = new JCheckBox();
         defaultParametersLabel = new JLabel();
         defaultParametersForProjectLabel = new JLabel();
         defaultParametersForProjectTextField = new JTextField();
-        jLabel1 = new JLabel();
+        infoDefaultParametersForProjectLabel = new JLabel();
         defaultParametersForAppsLabel = new JLabel();
         defaultParametersForAppsTextField = new JTextField();
         noteLabel = new JLabel();
@@ -212,7 +216,9 @@ public class SymfonyOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(symfonyScriptUsageLabel, "HINT"); // NOI18N
 
         runningInfoLabel.setLabelFor(this);
+
         Mnemonics.setLocalizedText(runningInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(ignoreCacheCheckBox, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.ignoreCacheCheckBox.text"));
 
         defaultParametersLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersLabel.text")); // NOI18N
@@ -220,8 +226,8 @@ public class SymfonyOptionsPanel extends JPanel {
         defaultParametersForProjectLabel.setLabelFor(defaultParametersForProjectTextField);
         Mnemonics.setLocalizedText(defaultParametersForProjectLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectLabel.text")); // NOI18N
 
-        jLabel1.setLabelFor(this);
-        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.text")); // NOI18N
+        infoDefaultParametersForProjectLabel.setLabelFor(this);
+        Mnemonics.setLocalizedText(infoDefaultParametersForProjectLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.infoDefaultParametersForProjectLabel.text")); // NOI18N
 
         defaultParametersForAppsLabel.setLabelFor(defaultParametersForAppsTextField);
         Mnemonics.setLocalizedText(defaultParametersForAppsLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForAppsLabel.text")); // NOI18N
@@ -302,13 +308,17 @@ public class SymfonyOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(infoDefaultParametersForProjectLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
                             .addComponent(defaultParametersForAppsTextField, GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE))
                         .addGap(0, 0, 0))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(410, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
@@ -326,13 +336,15 @@ public class SymfonyOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(runningInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(defaultParametersLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(defaultParametersForProjectLabel)
                     .addComponent(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addComponent(infoDefaultParametersForProjectLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(defaultParametersForAppsLabel)
@@ -362,14 +374,16 @@ public class SymfonyOptionsPanel extends JPanel {
         symfonyScriptUsageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyScriptUsageLabel.AccessibleContext.accessibleDescription")); // NOI18N
         runningInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.AccessibleContext.accessibleName")); // NOI18N
         runningInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        ignoreCacheCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.ignoreCacheCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        ignoreCacheCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.ignoreCacheCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         defaultParametersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleName")); // NOI18N
         defaultParametersLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleDescription")); // NOI18N
         defaultParametersForProjectLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectLabel.AccessibleContext.accessibleName")); // NOI18N
         defaultParametersForProjectLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectLabel.AccessibleContext.accessibleDescription")); // NOI18N
         defaultParametersForProjectTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleName")); // NOI18N
         defaultParametersForProjectTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        infoDefaultParametersForProjectLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        infoDefaultParametersForProjectLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
         defaultParametersForAppsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForAppsLabel.AccessibleContext.accessibleName")); // NOI18N
         defaultParametersForAppsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForAppsLabel.AccessibleContext.accessibleDescription")); // NOI18N
         defaultParametersForAppsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForAppsTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -453,9 +467,10 @@ public class SymfonyOptionsPanel extends JPanel {
     private JTextField defaultParametersForProjectTextField;
     private JLabel defaultParametersLabel;
     private JLabel errorLabel;
+    private JCheckBox ignoreCacheCheckBox;
     private JLabel includePathInfoLabel;
+    private JLabel infoDefaultParametersForProjectLabel;
     private JLabel installationInfoLabel;
-    private JLabel jLabel1;
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
     private JLabel runningInfoLabel;
