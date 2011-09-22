@@ -122,6 +122,7 @@ public class FormDesigner {
     private FormModel formModel;
     private FormModelListener formModelListener;
     private RADVisualComponent topDesignComponent;
+    private boolean designerSizeExplictlySet;
 
     private static FormDesigner selectedDesigner;
     private FormEditor formEditor;
@@ -324,6 +325,7 @@ public class FormDesigner {
 //                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
 //            }
             topDesignComponent = null;
+            designerSizeExplictlySet = false;
             formModel = null;
         }
         
@@ -549,6 +551,7 @@ public class FormDesigner {
         // TODO need to remove bindings of the current cloned view (or clone bound components as well)
         Object old = topDesignComponent;
         topDesignComponent = component;
+        designerSizeExplictlySet = false;
         highlightTopDesignComponentName(!isTopRADComponent());        
         if (update) {
             setSelectedComponent(topDesignComponent);
@@ -899,10 +902,15 @@ public class FormDesigner {
             || formCont.hasExplicitSize()
             || !RADVisualContainer.isFreeDesignContainer(topDesignComponent))
         {   // try to obtain stored designer size
-            if (formCont != null)
+            if (formCont != null) {
                 size = formCont.getDesignerSize();
-            if (size == null)
+            }
+            if (size == null) {
                 size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
+            }
+            if (size != null) {
+                designerSizeExplictlySet = true;
+            }
             if (size == null
                 && (!formModel.isFreeDesignDefaultLayout()
                      || topDesignComponent == formModel.getTopRADComponent()))
@@ -964,21 +972,37 @@ public class FormDesigner {
             }
 
             if (corrected) {
-                designerSize.width += wDiff;
-                designerSize.height += hDiff;
+                if (shouldHonorDesignerMinSize(topCont, designerSizeExplictlySet)) {
+                    designerSize.width += wDiff;
+                    designerSize.height += hDiff;
 
-                // hack: we need the size correction in the undo/redo
-                if (formModel.isCompoundEditInProgress()) {
-                    FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
-                    ev.setComponentAndContainer(topDesignComponent, null);
-                    ev.setProperty(PROP_DESIGNER_SIZE, getDesignerSize(), designerSize);
-                    formModel.addUndoableEdit(ev.getUndoableEdit());
+                    // hack: we need the size correction in the undo/redo
+                    if (formModel.isCompoundEditInProgress()) {
+                        FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
+                        ev.setComponentAndContainer(topDesignComponent, null);
+                        ev.setProperty(PROP_DESIGNER_SIZE, getDesignerSize(), designerSize);
+                        formModel.addUndoableEdit(ev.getUndoableEdit());
+                    }
+
+                    componentLayer.setDesignerSize(designerSize);
+                    storeDesignerSize(designerSize);
                 }
-
-                componentLayer.setDesignerSize(designerSize);
-                storeDesignerSize(designerSize);
+            } else {
+                designerSizeExplictlySet = false;
             }
         }
+    }
+
+    private static boolean shouldHonorDesignerMinSize(Component topComp, boolean sizeSetExplicitly) {
+        // Hack for FlowLayout - it provides minimum size for one row of
+        // components. But we should allow to manually shrink the designer below
+        // that size, making the components wrap on more lines.
+        return !sizeSetExplicitly
+               || !(topComp instanceof Container)
+               || !(((Container)topComp).getLayout() instanceof FlowLayout);
+        // We only care about the top component. For subcomponents it's
+        // difficult to determine which one would go below min size to check if
+        // it has FlowLayout.
     }
 
     // ---------
@@ -2338,7 +2362,6 @@ public class FormDesigner {
             int prevType = 0;
             ComponentContainer prevContainer = null;
             boolean updateDone = false;
-            boolean deriveDesignerSize = false;
 
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
@@ -2418,18 +2441,14 @@ public class FormDesigner {
                     updateDone = true;
                 }
                 else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED
-                         && PROP_DESIGNER_SIZE.equals(ev.getPropertyName()))
-                {
+                         && PROP_DESIGNER_SIZE.equals(ev.getPropertyName())) {
                     Dimension size = (Dimension) ev.getNewPropertyValue();
-                    if (size != null) {
-                        componentLayer.setDesignerSize(size);
-                        deriveDesignerSize = false;
-                        updateDone = true;
+                    if (size == null) {
+                        size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
                     }
-                    else { // null size to compute designer size based on content (from resetDesignerSize)
-                        deriveDesignerSize = true;
-                        updateDone = true;
-                    }
+                    componentLayer.setDesignerSize(size);
+                    designerSizeExplictlySet = true;
+                    updateDone = true;
                 }
 
                 prevType = type;
@@ -2437,12 +2456,7 @@ public class FormDesigner {
             }
 
             if (updateDone) {
-                if (deriveDesignerSize) { // compute from preferred size
-                    setupDesignerSize();
-                }
-                else { // check if not smaller than minimum size
-                    checkDesignerSize();
-                }
+                checkDesignerSize();
                 LayoutDesigner layoutDesigner = getLayoutDesigner();
                 if ((layoutDesigner != null) && formModel.isCompoundEditInProgress()) {
                     getLayoutDesigner().externalSizeChangeHappened();
