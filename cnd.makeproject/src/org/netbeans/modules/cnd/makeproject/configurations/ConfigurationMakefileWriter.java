@@ -1411,9 +1411,11 @@ public class ConfigurationMakefileWriter {
         String output = conf.getOutputValue();
         if (!conf.getDevelopmentHost().isLocalhost()) {
             PathMap mapper = RemoteSyncSupport.getPathMap(projectDescriptor.getProject());
-            output = mapper.getRemotePath(output, true);
-            if (output == null) {
-                output = conf.getOutputValue();
+            if (mapper != null) {
+                output = mapper.getRemotePath(output, true);
+                if (output == null) {
+                    output = conf.getOutputValue();
+                }
             }
         }
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
