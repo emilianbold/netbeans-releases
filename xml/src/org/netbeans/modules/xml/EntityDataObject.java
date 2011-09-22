@@ -109,8 +109,6 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
                 editorFactory.createEditor().saveAs( folder, fileName );
             }
         });
-        
-        registerEditor(MIME_TYPE, true);
     }
 
     @MultiViewElement.Registration(

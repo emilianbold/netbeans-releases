@@ -102,8 +102,6 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
                 editorFactory.createEditor().saveAs( folder, fileName );
             }
         });
-        
-        registerEditor(DTD_MIME_TYPE, true);
     }
 
     @MultiViewElement.Registration(
@@ -111,7 +109,7 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         iconBase="org/netbeans/modules/xml/resources/dtdObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="dtd.text",
-        mimeType=DTD_MIME_TYPE,
+        mimeType=DTDKit.MIME_TYPE,
         position=1
     )
     public static MultiViewEditorElement createMultiViewDTDElement(Lookup context) {
