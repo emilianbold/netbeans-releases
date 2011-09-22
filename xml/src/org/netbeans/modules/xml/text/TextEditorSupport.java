@@ -103,6 +103,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         
     private Representation rep;  //it is my representation
     
+    private String mimeType;
+    
     /**
      * public jsu for backward compatibility purposes.
      */
@@ -112,6 +114,14 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         initTimer();        
         initListeners();        
     }
+
+    @Override
+    public void setMIMEType(String s) {
+        super.setMIMEType(s);
+        this.mimeType = s;
+    }
+    
+    
     
     /**
      * public jsu for backward compatibility purposes.
@@ -143,7 +153,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
 
     @Override
     protected Pane createPane() {
-        return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(getEnv().getMimeType(), 
+        return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(mimeType, 
                 getDataObject());
     }
     
@@ -679,6 +689,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                     EditCookie.class,
                     CloseCookie.class,
                     PrintCookie.class,
+                    CloneableEditorSupport.class
             };
         }
         

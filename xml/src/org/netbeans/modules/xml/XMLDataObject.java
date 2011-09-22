@@ -62,10 +62,6 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for xml document.
@@ -77,6 +73,11 @@ import org.openide.windows.TopComponent;
  */
 public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         implements XMLDataObjectLook, PropertyChangeListener {
+    
+    /**
+     * Special MIME type so that other XML data objects do not inherit our editor
+     */
+    public static final String MIME_PLAIN_XML = "text/plain+xml";
 
     /** Serial Version UID */
     private static final long serialVersionUID = 9153823984913876866L;
@@ -110,6 +111,11 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         if (fo.getMIMEType().indexOf("xml") == -1) { // NOI18N
             mimetype = XMLKit.MIME_TYPE;
         }
+        // divert the standard MIME type to plain XML; others must register their
+        // multiviews for non-standard mime types.
+        if (XMLKit.MIME_TYPE.equals(mimetype)) {
+            mimetype = MIME_PLAIN_XML;
+        }
         editorSupportFactory =
             TextEditorSupport.findEditorSupportFactory (this, mimetype);
         editorSupportFactory.registerCookies (set);
@@ -138,7 +144,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text",
-        mimeType=org.openide.loaders.XMLDataObject.MIME,
+        mimeType=MIME_PLAIN_XML,
         position=1
     )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
@@ -149,50 +155,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         return 1;
     }
 
-    /**
-     * Cached instance of cookie lookup + CES
-     */
-    private Lookup doLookup;
-
-    /**
-     * Adds CloneableEditorSupport to the standard lookup contents, so that {@link CloneableEditorSupportRedirector}
-     * finds it right from the start. Supposedly fixes defect #192537
-     * 
-     * @return lookup instance with additional contents
-     */
-    @Override
-    public final Lookup getLookup() {
-        if (doLookup == null) {
-            doLookup = new ProxyLookup(
-                super.getLookup(),
-                Lookups.fixed(new Object[] { CloneableEditorSupport.class }, new InstanceContent.Convertor() {
-
-                @Override
-                public Object convert(Object obj) {
-                    assert obj == CloneableEditorSupport.class;
-                    return editorSupportFactory.createEditor();
-                }
-
-                @Override
-                public String displayName(Object obj) {
-                    return XMLDataObject.this.getName();
-                }
-
-                @Override
-                public String id(Object obj) {
-                    return obj.toString();
-                }
-
-                @Override
-                public Class type(Object obj) {
-                    return (Class)obj;
-                }
-
-                }
-            ));
-        }
-        return doLookup;
-    }
 
     /**
      */
