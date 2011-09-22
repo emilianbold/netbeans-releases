@@ -61,6 +61,7 @@ import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPushResult;
@@ -131,7 +132,13 @@ public class PushCommand extends TransportCommand {
         } catch (URISyntaxException e) {
             throw new GitException(e.getMessage(), e);
         } catch (TransportException e) {
-            handleException(e);
+            URIish uriish = null;
+            try {
+                uriish = getUriWithUsername(true);
+            } catch (URISyntaxException ex) {
+                throw new GitException(e.getMessage(), e);
+            }
+            handleException(e, uriish);
         } catch (IOException e) {
             throw new GitException(e.getMessage(), e);
         } finally {
