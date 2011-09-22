@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -274,23 +274,23 @@ public final class OperationContainerImpl<Support> {
                             boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
                             boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0;
                             StringBuilder sb = new StringBuilder();
-                            sb.append("\nIAE while adding eager element to the " + type + " container\n");
-                            sb.append("\nEager: " + eagerEl);
-                            sb.append("\nFirst condition : " + firstCondition);
-                            sb.append("\nSecond condition : " + secondCondition);
-                            sb.append("\nInstalled: " + impl.getUpdateUnit().getInstalled());
-                            sb.append("\nPending: " + impl.getUpdateUnit().isPending());
-                            sb.append("\nreqs: " + reqs + " (total : " + reqs.size() + ")");
-                            sb.append("\nall: " + all + " (total : " + all.size() + ")");                            
-                            sb.append("\noperation: " + operations + " (total: " + operations.size()+ ")\n");
-                            sb.append("\neager available updates: " +  eagerEl.getUpdateUnit().getAvailableUpdates() + "\n");
+                            sb.append("\nIAE while adding eager element to the ").append(type).append(" container\n");
+                            sb.append("\nEager: ").append(eagerEl);
+                            sb.append("\nFirst condition : ").append(firstCondition);
+                            sb.append("\nSecond condition : ").append(secondCondition);
+                            sb.append("\nInstalled: ").append(impl.getUpdateUnit().getInstalled());
+                            sb.append("\nPending: ").append(impl.getUpdateUnit().isPending());
+                            sb.append("\nreqs: ").append(reqs).append(" (total : ").append(reqs.size()).append(")");
+                            sb.append("\nall: ").append(all).append(" (total : ").append(all.size()).append(")");                            
+                            sb.append("\noperation: ").append(operations).append(" (total: ").append(operations.size());
+                            sb.append("\neager available updates: ").append(eagerEl.getUpdateUnit().getAvailableUpdates());
                             sb.append("\nUpdateElements in operations:");
                             for (OperationInfo<?> op : operations) {
-                                sb.append("\n  " + op.getUpdateElement());
+                                sb.append("\n  ").append(op.getUpdateElement());
                             }
                             sb.append("\nUpdateElements in all:");
                             for (UpdateElement elem : all) {
-                                sb.append("\n  " + elem );
+                                sb.append("\n  ").append(elem);
                             }
                             sb.append("\n");
                             LOGGER.log(Level.INFO, sb.toString(), e);
