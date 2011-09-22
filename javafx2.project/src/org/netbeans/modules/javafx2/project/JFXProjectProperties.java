@@ -943,8 +943,6 @@ public final class JFXProjectProperties {
         storeJSCallbacks(editableProps);
         // store JFX SDK & RT path
         storePlatform(editableProps);
-        // store selected browser executable path
-        storeBrowserPath(privProps);
     }
 
     private void setOrRemove(EditableProperties props, String name, char [] value) {
@@ -1093,6 +1091,7 @@ public final class JFXProjectProperties {
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final EditableProperties pep = new EditableProperties(true);
         final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        final String selectedBrowserPath = getSelectedBrowserPath();
         
         try {
             final InputStream is = projPropsFO.getInputStream();
@@ -1116,6 +1115,9 @@ public final class JFXProjectProperties {
                     }
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
+                    if(selectedBrowserPath != null) {
+                        pep.setProperty(RUN_IN_BROWSER_PATH, selectedBrowserPath);
+                    }
                     storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
                     storeActiveConfig();
                     OutputStream os = null;
@@ -1279,19 +1281,20 @@ public final class JFXProjectProperties {
         }
     }
 
-    private void storeBrowserPath(EditableProperties editableProps){
+    private String getSelectedBrowserPath() {
         String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        if (selectedName == null) {
+            return null;
+        }
         Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
         for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
             if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
                 NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
                 String path = proc.getProcessName();
-                editableProps.setProperty(RUN_IN_BROWSER_PATH, path);
-                //String args = proc.getArguments();
-                //editableProps.setProperty(RUN_IN_BROWSER_ARGUMENTS, args);
-                break;
+                return path;
             }
         }
+        return null;
     }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
