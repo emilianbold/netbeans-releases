@@ -153,6 +153,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         this.dbschemaFileList = dbschemaFileList;
         this.tableSource = tableSource;
         this.targetFolder = targetFolder;
+        initSubComponents();
     }
     
     private void initSubComponents(){
