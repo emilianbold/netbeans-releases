@@ -102,6 +102,17 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         serviceGroupTextField.getDocument().addDocumentListener(this);
         serviceInstanceTextField.getDocument().addDocumentListener(this);
     }
+
+    void disableModifications(boolean disable) {
+        adminURLTextField.setEditable(!disable);
+        cloudURLTextField.setEditable(!disable);
+        instanceURLTextField.setEditable(!disable);
+        passwordField.setEditable(!disable);
+        sdkComboBox.setEditable(!disable);
+        serviceGroupTextField.setEditable(!disable);
+        serviceInstanceTextField.setEditable(!disable);
+        userNameTextField.setEditable(!disable);
+    }
     
     public void attachSingleListener(ChangeListener l) {
         this.l = l;

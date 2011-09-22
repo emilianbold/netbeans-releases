@@ -173,6 +173,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public void prepareValidation() {
         getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
+        component.disableModifications(true);
     }
 
     @Override
@@ -197,7 +198,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(instance, true);
             servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
         } finally {
-            getComponent().setCursor(null);
+            component.setCursor(null);
+            component.disableModifications(false);
         }
     }
 
