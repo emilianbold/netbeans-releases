@@ -19,23 +19,243 @@
                         <attr name="prjType" stringvalue="javafx2"/>
                     </file>
 
-                    <file name="FXML-LoginDemo.zip" url="FXML-LoginDemo.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/FXML-LoginDemo.zip"/>
+                    <file name="ColorfulCircles.zip" url="ColorfulCircles.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ColorfulCircles.zip"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
                         <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ColorfulCircles.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="CreateAdvancedStage.zip" url="CreateAdvancedStage.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/CreateAdvancedStage.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/CreateAdvancedStage.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="DigitalClock.zip" url="DigitalClock.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/DigitalClock.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="400"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/DigitalClock.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="DisplayShelf.zip" url="DisplayShelf.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/DisplayShelf.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="500"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/DisplayShelf.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="FXML-LoginDemo.zip" url="FXML-LoginDemo.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/FXML-LoginDemo.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="600"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/FXML-LoginDemo.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="HTMLEditorApp.zip" url="HTMLEditorApp.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/HTMLEditorApp.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="700"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/HTMLEditorApp.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChangeListener.zip" url="ChangeListener.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChangeListener.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="800"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChangeListener.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedArea.zip" url="ChartAdvancedArea.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedArea.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="900"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedArea.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedBar.zip" url="ChartAdvancedBar.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedBar.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1000"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedBar.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedPie.zip" url="ChartAdvancedPie.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedPie.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1100"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedPie.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedScatter.zip" url="ChartAdvancedScatter.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedScatter.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1200"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedScatter.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedScatterLive.zip" url="ChartAdvancedScatterLive.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedScatterLive.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedScatterLive.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartAdvancedStockLine.zip" url="ChartAdvancedStockLine.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartAdvancedStockLine.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1400"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartAdvancedStockLine.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="ChartLine.zip" url="ChartLine.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/ChartLine.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1500"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/ChartLine.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="KeyStrokeMotion.zip" url="KeyStrokeMotion.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/KeyStrokeMotion.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1600"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/KeyStrokeMotion.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="MouseEvents.zip" url="MouseEvents.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/MouseEvents.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1700"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/MouseEvents.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="PuzzlePieces.zip" url="PuzzlePieces.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/PuzzlePieces.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1800"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/PuzzlePieces.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="StopWatch.zip" url="StopWatch.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/StopWatch.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="1900"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/StopWatch.html"/>
                         <attr name="prjType" stringvalue="javafx2"/>
                     </file>
 
                     <file name="SwingInterop.zip" url="SwingInterop.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/SwingInterop.zip"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="2000"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/SwingInterop.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="TimelineEvents.zip" url="TimelineEvents.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/TimelineEvents.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="2100"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/TimelineEvents.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="TimelineInterpolator.zip" url="TimelineInterpolator.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/TimelineInterpolator.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="2200"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/TimelineInterpolator.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="TransitionPath.zip" url="TransitionPath.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/TransitionPath.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="2300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/TransitionPath.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="TransitionRotate.zip" url="TransitionRotate.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/TransitionRotate.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="2400"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/TransitionRotate.html"/>
+                        <attr name="prjType" stringvalue="javafx2"/>
+                    </file>
+
+                    <file name="Xylophone.zip" url="Xylophone.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.samples.Bundle#Templates/Project/Samples/JavaFX/Xylophone.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                        <attr name="position" intvalue="2500"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.samples.JavaFXSampleProjectIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/samples/resources/Xylophone.html"/>
                         <attr name="prjType" stringvalue="javafx2"/>
                     </file>
 
