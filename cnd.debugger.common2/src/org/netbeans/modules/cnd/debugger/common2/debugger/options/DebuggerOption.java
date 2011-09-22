@@ -443,7 +443,7 @@ public class DebuggerOption extends Option {
 			    "run_autostart",  // NOI18N //name
 			    new String[] {"on", "off"},  // NOI18N //values
 			    "on",    // NOI18N //default value
-			    true, // is engine option
+			    false, // is engine option
 			    CHECK_BOX, true, true);  //type
 
     public static final DebuggerOption RUN_IO  =
