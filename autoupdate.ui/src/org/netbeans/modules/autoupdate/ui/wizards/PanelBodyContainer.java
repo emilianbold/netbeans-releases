@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,7 +64,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -94,6 +93,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     public void addNotify () {
         super.addNotify();
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 bodyPanel.scrollRectToVisible (new Rectangle (0, 0, 10, 10));
             }
@@ -109,6 +109,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             initBodyPanel ();
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     bodyPanel = newBodyPanel;
                     initBodyPanel ();
@@ -128,12 +129,14 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         this.isWaiting = isWaiting;
         if (isWaiting) {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     addProgressLine (estimatedTime);
                 }
             });
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     removeProgressLine ();
                 }
@@ -174,6 +177,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         progressPanel.add (title, gridBagConstraints);
         progressPanel.setVisible(false);        
         delay = new Timer(900, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 delay.stop();
                 adjustProgressWidth();
@@ -245,6 +249,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             writeToHeader (heading, content);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     writeToHeader (heading, content);
                 }
@@ -307,6 +312,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         private final String progressDisplayName;
         private final Task task;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public UpdateProgress(long friendlyEstimatedTime, String progressDisplayName) {
             this.friendlyEstimatedTime = friendlyEstimatedTime;
             this.progressDisplayName = progressDisplayName;
