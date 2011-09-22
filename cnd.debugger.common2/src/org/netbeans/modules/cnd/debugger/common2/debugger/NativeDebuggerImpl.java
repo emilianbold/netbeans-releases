@@ -160,7 +160,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected final ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
 
     // assembly level stuff
-    private boolean srcRequested = true;
+    private boolean disActive = false;
+    private boolean disRequested = false;
     private StateModelAdaptor disStateModel = new StateModelAdaptor();
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
 
@@ -809,11 +810,14 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         NONE;   // do not show at all
     }
 
+    private boolean inDisMode() {
+        return Disassembly.isInDisasm() && disRequested;
+    }
     
     protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode, boolean focus) {
 
         if (l != null) {
-	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !Disassembly.isInDisasm())) {
+	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !inDisMode())) {
 		EditorBridge.showInEditor(l, focus);
             }
 
@@ -827,7 +831,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		    currentPCMarker.setLine(l, isCurrent());
             }
             // Annotate dis
-            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && Disassembly.isInDisasm()));
+            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && inDisMode()));
         } else {
             visitMarker.setLine(null, isCurrent());
             visitDisMarker.setLine(null, isCurrent());
@@ -887,17 +891,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                         }
 			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
                     }
-	    } else {
-                    annotateDis(true);
-//		    setCurrentLine(null, false, false, ShowMode.NONE);
-
-                    //if (getVisitedLocation() != null) {
-                        //disStateModel().updateStateModel(getVisitedLocation(), true);
-                        // see IZ 198496: we do not want to show dis if it was not requested explicitly
-//			if (getVisitedLocation().pc() != 0) {
-//			    Disassembly.open();
-//                        }
-                    //}
+                } else {
+                    if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
+                        Disassembly.open();
+                    }
                 }
             }
         });
@@ -909,11 +906,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     public void requestDisassembly() {
-        Disassembly.open();
-//	setSrcRequested(false);
-//	updateLocation(true);
-//	// CR 6986846
-//	disassemblerWindow().requestActive();
+        disRequested = true;
+        showCurrentDis();
     }
 
     public void showCurrentSource() {
@@ -921,6 +915,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}
+        disRequested = false;
 	updateLocation(true, ShowMode.SOURCE, false);
     }
     
@@ -1005,10 +1000,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 //							  breakpointModel());
         
         // need to focus here, otherwise EditorContext does not see that the editor has updated
-	updateLocation(true, srcRequested ? ShowMode.SOURCE : ShowMode.DIS, true);
+	updateLocation(true, disActive ? ShowMode.DIS : ShowMode.SOURCE, true);
         
 	// CR 6986846
-	if (!srcRequested) {
+	if (disActive) {
 	   Disassembly.open();
 	}
 
@@ -1067,7 +1062,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    bpt.showAnnotationsFor(false, this);
         
         // remember src/dis state
-        srcRequested = !Disassembly.isInDisasm();
+        disActive = Disassembly.isInDisasm();
         
         getDisassembly().reset();
         

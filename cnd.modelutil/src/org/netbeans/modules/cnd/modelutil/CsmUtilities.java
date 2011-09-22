@@ -814,11 +814,14 @@ public class CsmUtilities {
                                 if (pane != null || detach) {
                                     ec.removePropertyChangeListener(this);
                                 }
-                                detach = true;
                                 if (pane != null) {
                                     // redirect to jump on position after showing document content
                                     SwingUtilities.invokeLater(this);
+                                } else if (detach) {
+                                    // last try hack due to bug with PROP_OPENED_PANES (IZ#202242)
+                                    SwingUtilities.invokeLater(this);
                                 }
+                                detach = true;
                             }
                         }
 
