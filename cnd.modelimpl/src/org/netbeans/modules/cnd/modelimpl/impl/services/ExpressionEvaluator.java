@@ -339,6 +339,11 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         public String getSourceName() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
+
+        @Override
+        public int range() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
     }
 
 }
