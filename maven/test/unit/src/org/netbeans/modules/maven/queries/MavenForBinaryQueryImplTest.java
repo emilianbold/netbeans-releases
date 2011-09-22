@@ -88,6 +88,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
     public void testJarify() throws Exception {
         assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar"));
         assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.hpi"));
+        assertEquals(null, MavenForBinaryQueryImpl.jarify(null)); // #202079
     }
 
     public void testForeignClassBundler() throws Exception { // #155091 and deps
