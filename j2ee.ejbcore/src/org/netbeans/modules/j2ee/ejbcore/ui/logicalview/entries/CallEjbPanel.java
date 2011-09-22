@@ -55,6 +55,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
@@ -90,6 +95,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -98,6 +104,8 @@ import org.openide.util.NbBundle;
  * @Petr Slechta
  */
 public class CallEjbPanel extends javax.swing.JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(CallEjbPanel.class.getName());
 
     public static final String IS_VALID = "CallEjbPanel_isValid"; //NOI18N
 
@@ -108,15 +116,26 @@ public class CallEjbPanel extends javax.swing.JPanel {
     private final Project project;
     private final String className;
     private final FileObject srcFile;
+    private final FutureTask<Boolean> taskIsTargetJavaSE;
+    private Boolean targetIsJavaSE = null;
     private NotificationLineSupport statusLine;
 
     /** Creates new form CallEjbPanel */
-    public CallEjbPanel(FileObject fileObject, Node rootNode, String lastLocator, String className) throws IOException {
+    public CallEjbPanel(FileObject fileObject, Node rootNode, String lastLocator, final String className) throws IOException {
         initComponents();
         this.srcFile= fileObject;
         this.project = FileOwnerQuery.getOwner(srcFile);
         this.className = className;
         this.nodeAcceptor = new NodeAcceptorImpl();
+
+        // initialization of targetIsJavaSE outside EDT
+        taskIsTargetJavaSE = new FutureTask<Boolean>(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return Utils.isTargetJavaSE(srcFile, className);
+            }
+        });
+        RequestProcessor.getDefault().post(taskIsTargetJavaSE);
 
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
         nodeDisplayPanel.setBorder(new EtchedBorder());
@@ -176,6 +195,19 @@ public class CallEjbPanel extends javax.swing.JPanel {
 
     public void disableServiceLocator() {
         serviceLocatorPanel.setVisible(false);
+    }
+
+    private boolean isTargetJavaSE() {
+        if (targetIsJavaSE == null) {
+            try {
+                targetIsJavaSE = taskIsTargetJavaSE.get();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return targetIsJavaSE;
     }
 
     // lazy initialization
@@ -466,10 +498,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 }
             });
             if (remote) {
-                boolean targetIsJavaSE = Utils.isTargetJavaSE(srcFile, className);
-                if (targetIsJavaSE && Util.isJavaEE5orHigher(project)){
+                if (isTargetJavaSE() && Util.isJavaEE5orHigher(project)){
                     name = elementHandle.getQualifiedName();
-                } else if (targetIsJavaSE){
+                } else if (isTargetJavaSE()){
                     name = names.get(EntityAndSession.HOME);
                 } else {
                     name = names.get(EntityAndSession.EJB_NAME);
@@ -577,13 +608,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 }
 
                 //Unit tests or classes in a JSE project cannot contain references to local beans
-                try {
-                    if (Utils.isTargetJavaSE(srcFile, className)) {
-                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
-                        return false;
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                if (isTargetJavaSE()) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
                     return false;
                 }
             }
