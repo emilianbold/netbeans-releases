@@ -75,7 +75,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Tor Norbye
  */
-@LanguageRegistration(mimeType="text/javascript") //NOI18N
+@LanguageRegistration(mimeType="text/javascript", useMultiview = true) //NOI18N
 @PathRecognizerRegistration(mimeTypes="text/javascript", libraryPathIds=JsClassPathProvider.BOOT_CP, binaryLibraryPathIds={})
 public class JsLanguage extends DefaultLanguageConfig {
 
