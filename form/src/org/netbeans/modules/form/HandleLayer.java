@@ -3128,8 +3128,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             formDesigner.getMenuEditLayer().clearRollover();
             
             if (p != null) {
-                targetContainer = getTargetContainer(p, modifiers);
-
                 if (movingComponents != null) { // there is a precreated visual component
                     boolean newLayout;
                     boolean oldLayout;

@@ -2107,6 +2107,7 @@ public class CasualDiff {
         int[][] matrix = estimator.getMatrix();
         int testPos = initialPos;
         int i = 0;
+        int newIndex = 0;
         boolean firstNewItem = true;
         for (int j = 0; j < result.length; j++) {
             JCTree oldT;
@@ -2131,6 +2132,7 @@ public class CasualDiff {
                         lastOldPos = Math.max(testPos, endPos(oldT));
                     }
                     firstNewItem = false;
+                    newIndex++;
                     break;
                 }
                 case INSERT: {
@@ -2145,6 +2147,7 @@ public class CasualDiff {
                     printer.print(tail);
                     //append(Diff.insert(testPos, prec, item.element, tail, LineInsertionType.NONE));
                     firstNewItem = false;
+                    newIndex++;
                     break;
                 }
                 case DELETE: {
@@ -2168,14 +2171,15 @@ public class CasualDiff {
                     tokenSequence.moveIndex(matrix[i][4]);
                     if (tokenSequence.moveNext()) {
                         testPos = tokenSequence.offset();
-                        if (JavaTokenId.COMMA == tokenSequence.token().id())
-                            testPos += JavaTokenId.COMMA.fixedText().length();
+                        if (JavaTokenId.COMMA == tokenSequence.token().id()) {
+                            moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.WHITESPACE));
+                            testPos = tokenSequence.offset();
+                        }
                     }
                     if (i == 0 && !newList.isEmpty()) {
                         lastOldPos = endOffset;
                     } else {
-                        lastOldPos = endPos(item.element);
-//                        lastOldPos = Math.max(testPos, endPos(item.element));
+                        lastOldPos = Math.max(testPos, endPos(item.element));
                     }
                     oldT = oldIter.next(); ++i;
                     break;
@@ -2184,11 +2188,20 @@ public class CasualDiff {
                     tokenSequence.moveIndex(matrix[i][4]);
                     if (tokenSequence.moveNext()) {
                         testPos = tokenSequence.offset();
-                        if (JavaTokenId.COMMA == tokenSequence.token().id())
-                            testPos += JavaTokenId.COMMA.fixedText().length();
+                        if (JavaTokenId.COMMA == tokenSequence.token().id()) {
+                            moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.WHITESPACE));
+                            testPos = tokenSequence.offset();
+                        }
                     }
                     oldT = oldIter.next(); ++i;
-                    copyTo(lastOldPos, lastOldPos = endPos(oldT));
+                    newIndex++;
+                    int copyTo;
+                    if (newIndex < newList.size()) {
+                        copyTo = Math.max(testPos, endPos(oldT));
+                    } else {
+                        copyTo = endPos(oldT);
+                    }
+                    copyTo(lastOldPos, lastOldPos = copyTo);
                     firstNewItem = false;
                     break;
                 }
