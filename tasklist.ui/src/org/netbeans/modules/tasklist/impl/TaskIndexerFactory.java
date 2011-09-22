@@ -124,4 +124,9 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
         }
     }
 
+    @Override
+    public void scanFinished(Context context) {
+        TaskManagerImpl manager = TaskManagerImpl.getInstance();
+        manager.rootScanned(context.getRoot());
+    }
 }

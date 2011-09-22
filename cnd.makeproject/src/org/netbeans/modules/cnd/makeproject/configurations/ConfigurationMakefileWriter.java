@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -656,7 +658,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeQTTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = getOutput(conf, compilerSet);
+        String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
         bw.write("\t\"${MAKE}\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
@@ -669,7 +671,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = getOutput(conf, compilerSet);
+        String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         bw.write("\t\"${MAKE}\" " // NOI18N
@@ -686,10 +688,20 @@ public class ConfigurationMakefileWriter {
 
     public static void writeLinkTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = getOutput(conf, compilerSet);
+        String output = getOutput(projectDescriptor, conf, compilerSet);
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = getLinkerTool(projectDescriptor, conf, conf.getLinkerConfiguration(), compilerSet);
-        command += linkerConfiguration.getOptions() + " "; // NOI18N
+        if (conf.getDevelopmentHost().isLocalhost()) {
+            command += linkerConfiguration.getOptions() + " "; // NOI18N
+        } else {
+            // This hack is used to workaround the following issue:
+            // the linker options contains linker output file
+            // but in case of remote it should be mapped to remote path.
+            // It's quite hard to implement mapping in the LinkerConfiguration class,
+            // as it's not quite clear when we should do this.
+            // See Bug 193797 - '... does not exists or is not an executable' when remote mode and not default linker output
+            command += linkerConfiguration.getOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
+        }
         command += "${OBJECTFILES}" + " "; // NOI18N
         command += "${LDLIBSOPTIONS}" + " "; // NOI18N
         String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
@@ -829,7 +841,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = getOutput(conf, compilerSet);
+        String output = getOutput(projectDescriptor, conf, compilerSet);
         ArchiverConfiguration archiverConfiguration = conf.getArchiverConfiguration();
         String command = "${AR}" + " "; // NOI18N
         command += archiverConfiguration.getOptions() + " "; // NOI18N
@@ -1330,7 +1342,7 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             bw.write("\t${RM} -r " + MakeConfiguration.CND_BUILDDIR_MACRO + '/'+MakeConfiguration.CND_CONF_MACRO+ "\n"); // UNIX path // NOI18N
-            bw.write("\t${RM} " + getOutput(conf, compilerSet) + "\n"); // NOI18N
+            bw.write("\t${RM} " + getOutput(projectDescriptor, conf, compilerSet) + "\n"); // NOI18N
             if (compilerSet != null
                     && compilerSet.getCompilerFlavor().isSunStudioCompiler()
                     && conf.hasCPPFiles(projectDescriptor)) {
@@ -1395,8 +1407,17 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    private static String getOutput(MakeConfiguration conf, CompilerSet compilerSet) {
+    private static String getOutput(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, CompilerSet compilerSet) {
         String output = conf.getOutputValue();
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            PathMap mapper = RemoteSyncSupport.getPathMap(projectDescriptor.getProject());
+            if (mapper != null) {
+                output = mapper.getRemotePath(output, true);
+                if (output == null) {
+                    output = conf.getOutputValue();
+                }
+            }
+        }
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
             case PlatformTypes.PLATFORM_WINDOWS:
                 switch (conf.getConfigurationType().getValue()) {

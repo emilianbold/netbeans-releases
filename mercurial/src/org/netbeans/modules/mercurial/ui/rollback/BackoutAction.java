@@ -46,7 +46,9 @@ package org.netbeans.modules.mercurial.ui.rollback;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -54,6 +56,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
@@ -184,18 +187,21 @@ public class BackoutAction extends ContextAction {
                         
                         // Handle Merge - both automatic and merge with conflicts
                         boolean bConfirmMerge = false;
+                        boolean warnMoreHeads = true;
                         if (bMergeNeededDueToBackout) {
                             bConfirmMerge = HgUtils.confirmDialog(
                                     BackoutAction.class, "MSG_BACKOUT_MERGE_CONFIRM_TITLE", "MSG_BACKOUT_MERGE_CONFIRM_QUERY"); // NOI18N
+                            warnMoreHeads = false;
                         }
                         if (bConfirmMerge) {
                             logger.output(""); // NOI18N
                             logger.outputInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
                             MergeAction.doMergeAction(root, null, logger);
                         } else {
-                            List<String> headRevList = HgCommand.getHeadRevisions(root);
-                            if (headRevList != null && headRevList.size() > 1) {
-                                MergeAction.printMergeWarning(headRevList, logger);
+                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                            if (!branchHeads.isEmpty()) {
+                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
                             }
                         }
                         if(ctx != null){

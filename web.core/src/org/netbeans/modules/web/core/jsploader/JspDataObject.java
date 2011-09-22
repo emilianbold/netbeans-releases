@@ -81,8 +81,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for internet data loader.
@@ -127,9 +125,35 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             position=1
         )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-        return new MultiViewEditorElement(context);
+        return new JspMultiViewEditorElement(context);
     }
 
+     public static class JspMultiViewEditorElement extends MultiViewEditorElement {
+
+        private BaseJspEditorSupport editorSupport;
+        private TagLibParseSupport taglibParseSupport;
+         
+        public JspMultiViewEditorElement(Lookup lookup) {
+            super(lookup);
+            editorSupport = lookup.lookup(BaseJspEditorSupport.class);
+            JspDataObject jspDo = lookup.lookup(JspDataObject.class);
+            taglibParseSupport = jspDo.getCookie(TagLibParseSupport.class);
+        }
+
+        @Override
+        public void componentActivated() {
+            super.componentActivated();
+            editorSupport.restartParserTask();
+            taglibParseSupport.setEditorOpened(true);
+        }
+
+        @Override
+        public void componentDeactivated() {
+            super.componentDeactivated();
+            taglibParseSupport.setEditorOpened(false);            
+        }
+        
+    }
     
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);

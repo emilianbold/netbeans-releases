@@ -75,7 +75,11 @@ public class GitClientExceptionHandler {
     
     private boolean handleException (GitException.AuthorizationException ex) {
         boolean confirmed = false;
-        if (RemoteRepository.updateFor(ex.getRepositoryUrl())) {
+        String repositoryUrl = ex.getRepositoryUrl();
+        if (repositoryUrl == null || repositoryUrl.trim().isEmpty()) {
+            Git.LOG.log(Level.INFO, "empty repository URL", ex); //NOI18N
+        }
+        if (RemoteRepository.updateFor(repositoryUrl)) {
             client.setCallback(new CredentialsCallback());
             confirmed = true;
         }
