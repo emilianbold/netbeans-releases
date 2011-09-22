@@ -35,6 +35,7 @@ import javax.ejb.EJB;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import util.HTMLFilter;
 
 // Though it is perfectly fine to declare the dependency on the bean
 // at the type level, it is not required for stateless session bean
@@ -75,11 +76,10 @@ public class Servlet2Stateless
             out.println("</TABLE>");
             out.println("</form>");
             String val = req.getParameter("name");
-
+            
             if ((val != null) && (val.trim().length() > 0)) {
-                out
-                        .println("<FONT size=+1 color=red> Greeting from StatelessSessionBean: </FONT> "
-                                + sless.sayHello(val) + "<br>");
+                out.println("<FONT size=+1 color=red> Greeting from StatelessSessionBean: </FONT>"
+                            + HTMLFilter.filter(sless.sayHello(val)) + "<br>");
             }
             out.println("</BODY> </HTML> ");
 
@@ -89,5 +89,4 @@ public class Servlet2Stateless
             throw new ServletException(ex);
         }
     }
-
 }
