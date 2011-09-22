@@ -286,6 +286,9 @@ class LayoutDragger implements LayoutConstants {
     }
 
     void setTargetContainer(LayoutComponent container, LayoutInterval[] roots) {
+        if (container != targetContainer) {
+            bestPositions[HORIZONTAL] = bestPositions[VERTICAL] = null;
+        }
         targetContainer = container;
         targetRoots = roots;
     }

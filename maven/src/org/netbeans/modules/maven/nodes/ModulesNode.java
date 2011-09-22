@@ -174,6 +174,7 @@ public class ModulesNode extends AbstractNode {
                             wr.isAggregator = NbMavenProject.TYPE_POM.equals(mp.getPackaging()) && !mp.getModules().isEmpty();
                             wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
                             modules.add(wr);
+                            return false;
                         }
                     } catch (IllegalArgumentException ex) {
                         ex.printStackTrace();//TODO log ?
@@ -183,11 +184,15 @@ public class ModulesNode extends AbstractNode {
                 } else {
                     //TODO broken module reference.. show as such..
                 }
+            modules.add(new Wrapper()); // broken submodule ref
             return false;
         }
 
         @Override
         protected Node createNodeForKey(Wrapper wr) {
+            if (wr.proj == null) {
+                return null;
+            }
              return new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isAggregator);
         }
         
