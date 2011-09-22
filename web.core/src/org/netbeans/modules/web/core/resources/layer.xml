@@ -304,6 +304,10 @@ made subject to such option by the copyright holder.
   <folder name="Editors">
         <folder name="text">
             <folder name="x-jsp">
+                <file name="PaletteFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.palette.JspPaletteFactory.getPalette"/>
+                </file>
                 <folder name="Popup">
                     <!--<file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
@@ -318,6 +322,12 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1250"/>
                     </file>
                 </folder>
+            </folder>
+            <folder name="x-tag">
+                <file name="PaletteFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.palette.JspPaletteFactory.getPalette"/>
+                </file>
             </folder>
         </folder>
   </folder>
