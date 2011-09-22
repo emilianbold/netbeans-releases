@@ -454,4 +454,18 @@ public class TaskManagerImpl extends TaskManager {
             }
         }
     }
+    
+    void rootScanned(final FileObject root) {        
+        if (scope.isInScope(root)) {
+            RP.post( new Runnable() {
+                @Override
+                public void run() {
+                    if (scope.isInScope(root)) {
+                        loader = new Loader( scope, filter, taskList );
+                        loader.refresh(root);
+                    }
+                }
+            });            
+        }
+    }
 }
