@@ -85,7 +85,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 public class Utils {
-    
+
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
             return "";
@@ -99,12 +99,12 @@ public class Utils {
         }
         return classpath.toString();
     }
-    
+
     public static void notifyError(Exception exception) {
         NotifyDescriptor ndd = new NotifyDescriptor.Message(exception.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(ndd);
     }
-    
+
     public static boolean areInSameJ2EEApp(Project project1, Project project2) {
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
@@ -158,9 +158,9 @@ public class Utils {
     }
 
     // =========================================================================
-    
+
     // utils for ejb code synchronization
-    
+
     public static boolean canExposeInLocal(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
@@ -184,7 +184,7 @@ public class Utils {
         }
         return false;
     }
-    
+
     public static void exposeInLocal(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
@@ -203,7 +203,7 @@ public class Utils {
             ejbMethodController.createAndAddInterface(methodModel[0], true);
         }
     }
-    
+
     public static boolean canExposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
@@ -227,7 +227,7 @@ public class Utils {
         }
         return false;
     }
-    
+
     public static void exposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
@@ -253,13 +253,13 @@ public class Utils {
      */
     public static Project [] getCallableEjbProjects(Project enterpriseProject) {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        
+
         // TODO: HACK - this must be solved by freeform's own implementation of EnterpriseReferenceContainer, see issue 57003
         // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
         boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
 
         boolean isCallerEE6WebProject = isEE6WebProject(enterpriseProject);
-        
+
         List<Project> filteredResults = new ArrayList<Project>(allProjects.length);
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
@@ -289,13 +289,16 @@ public class Utils {
     public static boolean isEE6WebProject(Project enterpriseProject) {
         return J2eeProjectCapabilities.forProject(enterpriseProject).isEjb31LiteSupported();
     }
-    
+
     public static boolean isAppClient(Project project) {
         J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
         return  (module != null) ? module.getJ2eeModule().getType().equals(J2eeModule.Type.CAR) : false;
     }
-    
+
     /**
+     * Checks if the target is Java SE class.
+     * <p>
+     * <i>Note: Should run outside EDT!</i>
      * @return true if given <code>target</code> is defined in a Java SE environment.
      */
     public static boolean isTargetJavaSE(FileObject fileObject, final String className) throws IOException{
@@ -320,7 +323,7 @@ public class Utils {
         }, true);
         return result[0];
     }
-    
+
 //    /**
 //     * @return true if given <code>javaClass</code> is a subtype (direct or
 //     * indirect) of <code>junit.framework.TestCase</code>.
@@ -335,30 +338,30 @@ public class Utils {
 //        DeclaredType superClassType = (DeclaredType) typeElement.getSuperclass();
 //        return extendsTestCase(controller, (TypeElement) superClassType.asElement());
 //    }
-    
+
     /**
      * Converts the given <code>jndiName</code> to camel case, i.e. removes
      * all <code>/</code> characters and converts characters to upper case appropriately.
-     * For example, returns <code>SomeJndiName</code> for <code>some/jndi/name</code> or 
+     * For example, returns <code>SomeJndiName</code> for <code>some/jndi/name</code> or
      * <code>someJndiName</code> if <code>lowerCaseFirstChar</code> is true.
      * @param jndiName the JNDI name to convert; must not be null.
      * @param lowerCaseFirstChar defines whether the first char of the resulting name
      * should be lower case (note that if all chars of the given <code>jndiName</code> are
-     * uppercase characters, its first char will not be converted to lower case even 
+     * uppercase characters, its first char will not be converted to lower case even
      * if this param is true).
-     * @param prefixToStrip the prefix that will be stripped from the resulting name. If null, 
+     * @param prefixToStrip the prefix that will be stripped from the resulting name. If null,
      * nothing will be stripped.
      * @return String representing the converted name.
      */
     public static String jndiNameToCamelCase(String jndiName, boolean lowerCaseFirstChar, String prefixToStrip){
-        
+
         String strippedJndiName = jndiName;
         if (prefixToStrip != null && jndiName.startsWith(prefixToStrip)){
             strippedJndiName = jndiName.substring(jndiName.indexOf(prefixToStrip) + prefixToStrip.length());
         }
-        
+
         StringBuilder result = new StringBuilder();
-        
+
         for (String token : strippedJndiName.split("/")){
             if (token.length() == 0){
                 continue;
@@ -401,9 +404,9 @@ public class Utils {
         assert className != null: "cannot find null className";
         return className.replace('.', '/') + ".java";
     }
-    
+
     /**
-     * @return true if the given <code>str</code> has more than one char 
+     * @return true if the given <code>str</code> has more than one char
      *  and all its chars are uppercase, false otherwise.
      */
     private static boolean isAllUpperCase(String str){
@@ -473,5 +476,5 @@ public class Utils {
 //        ExecutableElement[] methodsArray = methods.toArray(new ExecutableElement[methods.size()]);
 //        return methodsArray;
 //    }
-    
+
 }
