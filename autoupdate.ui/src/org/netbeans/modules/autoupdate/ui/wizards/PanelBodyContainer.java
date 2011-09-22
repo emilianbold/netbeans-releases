@@ -221,6 +221,13 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         customPanel.getVerticalScrollBar ().setUnitIncrement (10);
         customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
         revalidate ();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                pBodyPanel.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+            }
+        });
     }
     
     private void removeProgressLine () {
