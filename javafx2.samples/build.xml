@@ -14,13 +14,145 @@
             <exclude name="nbproject/private/"/>
         </zip>
         
+        <zip basedir="ColorfulCircles" destfile="${examples}/ColorfulCircles.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="CreateAdvancedStage" destfile="${examples}/CreateAdvancedStage.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="DigitalClock" destfile="${examples}/DigitalClock.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="DisplayShelf" destfile="${examples}/DisplayShelf.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
         <zip basedir="FXML-LoginDemo" destfile="${examples}/FXML-LoginDemo.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
         
+        <zip basedir="HTMLEditorApp" destfile="${examples}/HTMLEditorApp.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChangeListener" destfile="${examples}/ChangeListener.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedArea" destfile="${examples}/ChartAdvancedArea.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedBar" destfile="${examples}/ChartAdvancedBar.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedPie" destfile="${examples}/ChartAdvancedPie.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedScatter" destfile="${examples}/ChartAdvancedScatter.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedScatterLive" destfile="${examples}/ChartAdvancedScatterLive.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAdvancedStockLine" destfile="${examples}/ChartAdvancedStockLine.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartLine" destfile="${examples}/ChartLine.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="KeyStrokeMotion" destfile="${examples}/KeyStrokeMotion.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="MouseEvents" destfile="${examples}/MouseEvents.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="PuzzlePieces" destfile="${examples}/PuzzlePieces.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="StopWatch" destfile="${examples}/StopWatch.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+
         <zip basedir="SwingInterop" destfile="${examples}/SwingInterop.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+
+        <zip basedir="TimelineEvents" destfile="${examples}/TimelineEvents.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="TimelineInterpolator" destfile="${examples}/TimelineInterpolator.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="TransitionPath" destfile="${examples}/TransitionPath.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="TransitionRotate" destfile="${examples}/TransitionRotate.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="Xylophone" destfile="${examples}/Xylophone.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
