@@ -255,10 +255,12 @@ public final class OperationContainerImpl<Support> {
                 for(ModuleInfo mi: infos) {
                     Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
                     for (Dependency dep : mi.getDependencies ()) {
-                        UpdateElement req = Utilities.handleDependency (eagerEl, dep, Collections.singleton (mi), new HashSet<Dependency> (), 
+                        Collection<UpdateElement> requestedElements = Utilities.handleDependency (eagerEl, dep, Collections.singleton (mi), new HashSet<Dependency> (), 
                                 type == OperationType.UPDATE || type == OperationType.INTERNAL_UPDATE);
-                        if (req != null) {
-                            reqs.add (req);
+                        if (requestedElements != null) {
+                            for (UpdateElement req : requestedElements) {
+                                reqs.add (req);
+                            }
                         }
                     }
                     if ((! reqs.isEmpty() && all.containsAll(reqs) && ! all.contains (eagerEl)) ||
