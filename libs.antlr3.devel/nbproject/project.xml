@@ -75,12 +75,8 @@ made subject to such option by the copyright holder.
                 <package>org.antlr.tool</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/antlr-3.1.3.jar</runtime-relative-path>
-                <binary-origin>external/antlr-3.1.3.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/stringtemplate-3.2.jar</runtime-relative-path>
-                <binary-origin>external/stringtemplate-3.2.jar</binary-origin>
+                <runtime-relative-path>ext/antlr-3.3.jar</runtime-relative-path>
+                <binary-origin>external/antlr-3.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
