@@ -201,17 +201,22 @@ public class UnusedVariableHint extends AbstractRule {
 
         private int getOffsetAfterBlockCurlyOpen(BaseDocument doc, int offset) {
             int retval = offset;
-            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
-            if (ts != null) {
-                ts.move(retval);
-                while (ts.moveNext()) {
-                    Token t = ts.token();
-                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        ts.moveNext();
-                        retval = ts.offset();
-                        break;
+            doc.readLock();
+            try {
+                TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
+                if (ts != null) {
+                    ts.move(retval);
+                    while (ts.moveNext()) {
+                        Token t = ts.token();
+                        if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                            ts.moveNext();
+                            retval = ts.offset();
+                            break;
+                        }
                     }
                 }
+            } finally {
+                doc.readUnlock();
             }
             return retval;
         }
