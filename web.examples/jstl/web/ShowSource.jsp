@@ -23,14 +23,15 @@
 <head>
   <title>JSTL: Source code for <c:out value="${filename}"/></title>
 </head>
+
 <body bgcolor="#FFFFFF">
-<h3>Source code for:&nbsp; ${filename}</h3>
+<h3>Source code for:&nbsp; <c:out value="${filename}"/></h3>
 
-<hr>
-
+<hr/>
 <c:import varReader="reader" url="${filepath}">
-  <ex:escapeHtml reader="${reader}"/>
+    <ex:escapeHtml reader="${reader}" />
 </c:import>
-<hr>
+<hr/>
+
 </body>
 </html>

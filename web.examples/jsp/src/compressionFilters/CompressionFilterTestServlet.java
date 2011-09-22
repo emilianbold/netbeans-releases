@@ -17,10 +17,10 @@
 package compressionFilters;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Enumeration;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import util.HTMLFilter;
 
 /**
  * Very Simple test servlet to test compression filter
@@ -30,6 +30,7 @@ import javax.servlet.http.*;
 
 public class CompressionFilterTestServlet extends HttpServlet {
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -39,7 +40,7 @@ public class CompressionFilterTestServlet extends HttpServlet {
         Enumeration e = ((HttpServletRequest)request).getHeaders("Accept-Encoding");
         while (e.hasMoreElements()) {
             String name = (String)e.nextElement();
-            out.println(name);
+            out.println(HTMLFilter.filter(name));
             if (name.indexOf("gzip") != -1) {
                 out.println("gzip supported -- able to compress");
             }
@@ -52,6 +53,4 @@ public class CompressionFilterTestServlet extends HttpServlet {
         out.println("Compression Filter Test Servlet");
         out.close();
     }
-
 }
-
