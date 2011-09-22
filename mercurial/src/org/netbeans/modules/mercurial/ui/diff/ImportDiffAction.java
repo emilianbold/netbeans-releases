@@ -64,12 +64,15 @@ import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
+import java.util.Collection;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.nodes.Node;
@@ -166,9 +169,11 @@ public class ImportDiffAction extends ContextAction {
                                         // Handle Merge - both automatic and merge with conflicts
                                         boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                                         boolean bConfirmMerge = false;
+                                        boolean warnMoreHeads = true;
                                         if (bMergeNeededDueToPull) {
                                             bConfirmMerge = HgUtils.confirmDialog(
                                                     ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_CONFIRM_TITLE", "MSG_UNBUNDLE_MERGE_CONFIRM_QUERY"); // NOI18N
+                                            warnMoreHeads = false;
                                         } else {
                                             boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                                             if (bOutStandingUncommittedMerges) {
@@ -181,9 +186,10 @@ public class ImportDiffAction extends ContextAction {
                                             logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_DO")); // NOI18N
                                             updatedFilesList = MergeAction.doMergeAction(root, null, logger);
                                         } else {
-                                            List<String> headRevList = HgCommand.getHeadRevisions(root);
-                                            if (headRevList != null && headRevList.size() > 1) {
-                                                MergeAction.printMergeWarning(headRevList, logger);
+                                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                                            if (!branchHeads.isEmpty()) {
+                                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
                                             }
                                         }
                                         boolean fileUpdated = isUpdated(updatedFilesList);
