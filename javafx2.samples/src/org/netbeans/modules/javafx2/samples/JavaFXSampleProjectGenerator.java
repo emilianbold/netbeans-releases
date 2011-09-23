@@ -53,11 +53,11 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-
 import org.openide.filesystems.FileLock;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
@@ -69,64 +69,63 @@ import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
 /**
- * Create a sample web project by unzipping a template into some directory
+ * Create a sample java project by unzipping a template into some directory.
+ * Modify active platform and JavaFX related properties.
  *
- * @author Martin Grebac, Tomas Zezula
+ * @author Martin Grebac, Tomas Zezula, Anton Chechel
  */
 public class JavaFXSampleProjectGenerator {
 
-    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3";   //NOI18N
+    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
     private static final String SOURCE_ENCODING = "source.encoding";   //NOI18N
 
     private JavaFXSampleProjectGenerator() {}
 
-
-    public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+    public static FileObject createProjectFromTemplate(final FileObject template,
+            File projectLocation, final String name, final String platformName) throws IOException {
         assert template != null && projectLocation != null && name != null;
-        FileObject prjLoc = createProjectFolder (projectLocation);
-        if (template.getExt().endsWith("zip")) {  //NOI18N
-            unzip(template.getInputStream(), prjLoc);            
+        FileObject prjLoc = createProjectFolder(projectLocation);
+        if (template.getExt().endsWith("zip")) { // NOI18N
+            unzip(template.getInputStream(), prjLoc);
             try {
                 // update project.xml                
+                // TODO non-default platform fix
                 File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
                 Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-                NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name");       //NOI18N
+                NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 if (nlist != null) {
-                    for (int i=0; i < nlist.getLength(); i++) {
+                    for (int i = 0; i < nlist.getLength(); i++) {
                         Node n = nlist.item(i);
                         if (n.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
                         }
-                        Element e = (Element)n;
-                        
+                        Element e = (Element) n;
                         replaceText(e, name);
                     }
-                    saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);                    
-                    //update private properties
-                    File privateProperties = createPrivateProperties (prjLoc);
-                    //No need to load the properties the file is empty
-                    Properties p = new Properties ();                    
-                    p.put ("javadoc.preview","true");   //NOI18N
-                    p.put ("compile.on.save","true");   //NOI18N
-                    OutputStream out = new FileOutputStream (privateProperties);
-                    try {
-                        p.store(out,null);                    
-                    } finally {
-                        out.close ();
-                    }
+
+                    // we don't use default platform
+//                    final Element explicitPlatformEl = doc.createElementNS(JavaFXProjectUtils.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+//                    explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+//                    doc.appendChild(explicitPlatformEl);
+                    
+                    saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
+
                     FileObject projectProps = prjLoc.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     if (projectProps != null) {
                         FileLock lock = projectProps.lock();
                         try {
-                            EditableProperties props = new EditableProperties ();
+                            EditableProperties props = new EditableProperties();
                             InputStream in = projectProps.getInputStream();
                             try {
                                 props.load(in);
                             } finally {
-                                in.close ();
+                                in.close();
                             }
-                            props.put(SOURCE_ENCODING, "UTF-8");                                            //NOI18N
-                            out = projectProps.getOutputStream(lock);
+                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
+                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
+                            props.setProperty("platform.active", platformName); // NOI18N
+                            
+                            OutputStream out = projectProps.getOutputStream(lock);
                             try {
                                 props.store(out);
                             } finally {
@@ -134,10 +133,10 @@ public class JavaFXSampleProjectGenerator {
                             }
                         } finally {
                             lock.releaseLock();
-                        }                        
-                    }                                        
-                }                
-                
+                        }
+                    }
+                }
+
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
@@ -145,31 +144,31 @@ public class JavaFXSampleProjectGenerator {
         }
         return prjLoc;
     }
-    
-    private static FileObject createProjectFolder (File projectFolder) throws IOException {
+
+    private static FileObject createProjectFolder(File projectFolder) throws IOException {
         FileObject projLoc;
-        Stack nameStack = new Stack ();
-        while ((projLoc = FileUtil.toFileObject(projectFolder)) == null) {            
+        Stack nameStack = new Stack();
+        while ((projLoc = FileUtil.toFileObject(projectFolder)) == null) {
             nameStack.push(projectFolder.getName());
-            projectFolder = projectFolder.getParentFile();            
+            projectFolder = projectFolder.getParentFile();
         }
         while (!nameStack.empty()) {
-            projLoc = projLoc.createFolder ((String)nameStack.pop());
+            projLoc = projLoc.createFolder((String) nameStack.pop());
             assert projLoc != null;
         }
         return projLoc;
     }
-    
+
     private static void unzip(InputStream source, FileObject targetFolder) throws IOException {
         //installation
-        ZipInputStream zip=new ZipInputStream(source);
+        ZipInputStream zip = new ZipInputStream(source);
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
                 if (ent.isDirectory()) {
                     FileUtil.createFolder(targetFolder, ent.getName());
                 } else {
-                    FileObject destFile = FileUtil.createData(targetFolder,ent.getName());
+                    FileObject destFile = FileUtil.createData(targetFolder, ent.getName());
                     FileLock lock = destFile.lock();
                     try {
                         OutputStream out = destFile.getOutputStream(lock);
@@ -187,17 +186,17 @@ public class JavaFXSampleProjectGenerator {
             zip.close();
         }
     }
-    
-    private static File createPrivateProperties (FileObject fo) throws IOException {
-        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/");
-        for (int i=0; i<nameElements.length-1; i++) {
-            FileObject tmp = fo.getFileObject (nameElements[i]);
+
+    private static File createPrivateProperties(FileObject fo) throws IOException {
+        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/"); // NOI18N
+        for (int i = 0; i < nameElements.length - 1; i++) {
+            FileObject tmp = fo.getFileObject(nameElements[i]);
             if (tmp == null) {
                 tmp = fo.createFolder(nameElements[i]);
             }
             fo = tmp;
         }
-        fo = fo.createData(nameElements[nameElements.length-1]);
+        fo = fo.createData(nameElements[nameElements.length - 1]);
         return FileUtil.toFile(fo);
     }
 
@@ -210,13 +209,13 @@ public class JavaFXSampleProjectGenerator {
         NodeList l = parent.getChildNodes();
         for (int i = 0; i < l.getLength(); i++) {
             if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
+                Text text = (Text) l.item(i);
                 text.setNodeValue(name);
                 return;
             }
         }
     }
-    
+
     /**
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.

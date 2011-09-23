@@ -60,6 +60,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -562,7 +563,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
         
         String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        d.putProperty(JavaFXProjectWizardIterator.PROP_JAVA_PLATFORM_NAME, platformName);
+        d.putProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME, platformName);
 
         if (preloaderCheckBox.isSelected()) {
             d.putProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME, txtPreloaderProject.getText());
