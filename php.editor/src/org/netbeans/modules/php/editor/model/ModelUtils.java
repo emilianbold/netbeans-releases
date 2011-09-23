@@ -477,7 +477,7 @@ public class ModelUtils {
     public static String getCamelCaseName(ModelElement element) {
         return toCamelCase(element.getName());
     }
-    
+
     public static String toCamelCase(String plainName) {
         char[] retval = new char[plainName.length()];
         int retvalSize = 0;
