@@ -60,8 +60,11 @@ import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStat
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.TargetImpl;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,9 +99,15 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     }
 
     @Override
+    @NbBundle.Messages({"MSG_NoEjbDeployment=Deployment of standalone EJB module is not support. Deploy it in EAR instead."})
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(NbBundle.getMessage(OracleDeploymentManager.class, "OracleDeploymentManager.distributing"), false);
+        if (deployment.getModule().getType() == J2eeModule.Type.EJB) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_NoEjbDeployment()));
+            po.updateDepoymentResult(DeploymentStatus.FAILED, null);
+            return po;
+        }
         Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, serviceGroup, serviceInstance, po, cloudInstanceName, onPremiseServiceInstanceId);
         return po;
     }
