@@ -73,9 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 
 public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
     private final OptionSet defaultRtcOptionSet = new RtcOptionSet();
@@ -597,6 +595,14 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	    currentDbgProfile().pathmap().setPathmap(shadowPathmap);
 	}
 	ignoreSettingsChange = false;
+    }
+
+    @Override
+    public void noteRedir(String infile, String outfile, boolean append) {
+        // CR 7088693: save redirection only if it is done by the user, not Standard Output
+        if (dbxDebugger().getIOPack().getIOFiles() == null) {
+            super.noteRedir(infile, outfile, append);
+        }
     }
 
     /**
