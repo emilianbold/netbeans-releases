@@ -75,4 +75,11 @@ public class NbRepositoryTest extends NbTestCase {
         assertEquals("4 bytes", 4, af.length());
     }
 
+    /**
+     * Test for issue #129583: XML layers from classpath modules should always be loaded.
+     */
+    public void testNbRepositoryInitializedFromClasspath() throws Exception {
+        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
+    }
+
 }
