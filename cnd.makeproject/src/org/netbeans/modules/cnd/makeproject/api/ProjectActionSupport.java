@@ -84,6 +84,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -92,6 +94,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -706,6 +709,15 @@ public class ProjectActionSupport {
             if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
+                if (runDir.startsWith("~/") || runDir.trim().equals("~")) { // NOI18N
+                    try {
+                        runDir = runDir.replace("~", HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir()); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 if (runDir == null || runDir.length() == 0) {
                     executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {

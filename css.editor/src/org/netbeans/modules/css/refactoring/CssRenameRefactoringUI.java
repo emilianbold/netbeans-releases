@@ -57,7 +57,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 

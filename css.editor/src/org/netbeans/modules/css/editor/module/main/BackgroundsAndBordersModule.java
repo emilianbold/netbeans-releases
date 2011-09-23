@@ -46,6 +46,7 @@ import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -72,11 +73,11 @@ public class BackgroundsAndBordersModule extends CssEditorModule implements CssM
 
     @Override
     public String getDisplayName() {
-        return "Backgrounds and Borders";
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
     }
 
     @Override
     public String getSpecificationURL() {
-        return "http://www.w3.org/TR/css3-background";
+        return "http://www.w3.org/TR/css3-background"; //NOI18N
     }
 }

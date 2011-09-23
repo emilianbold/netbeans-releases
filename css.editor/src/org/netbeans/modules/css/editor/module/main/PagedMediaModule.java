@@ -66,6 +66,7 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -95,7 +96,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
                 "left-bottom",
                 "right-top",
                 "right-middle",
-                "right-bottom"
+                "right-bottom" //NOI18N
             });
 
     @Override
@@ -116,10 +117,10 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
         }
         String prefix = context.getPrefix(); //default
         Token<CssTokenId> token = context.getTokenSequence().token();
-        if(token == null) {
+        if (token == null) {
             return Collections.emptyList(); //empty file - no tokens
         }
-        
+
         CssTokenId tokenId = token.id();
         switch (activeNode.type()) {
             case page:
@@ -145,7 +146,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
                         break;
                     case ERROR:
                         //@page { @|  }
-                        if(token.text().charAt(0) == '@') {
+                        if (token.text().charAt(0) == '@') {
                             proposals.addAll(getPageMarginSymbolsCompletionProposals(context, true));
                         }
                         break;
@@ -160,7 +161,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
                 }
                 break;
             case margin:
-                switch(tokenId) {
+                switch (tokenId) {
                     case WS:
                         //no prefix in margin
                         proposals.addAll(getPropertiesCompletionProposals(context));
@@ -181,12 +182,10 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
         String prefix = addColonPrefix ? ":" : null;
         return Utilities.createRAWCompletionProposals(PAGE_PSEUDO_CLASSES, ElementKind.FIELD, context.getAnchorOffset(), prefix);
     }
-    
+
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
         return Utilities.wrapProperties(CssModuleSupport.getProperties(), context.getAnchorOffset());
     }
-    
-    
 
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
@@ -211,12 +210,11 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
 
     @Override
     public String getDisplayName() {
-        return "Paged Media";
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
     }
 
     @Override
     public String getSpecificationURL() {
         return "http://www.w3.org/TR/css3-page";
     }
-    
 }

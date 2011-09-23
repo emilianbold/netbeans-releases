@@ -46,7 +46,7 @@ import java.util.Map;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public enum CssColor {
 

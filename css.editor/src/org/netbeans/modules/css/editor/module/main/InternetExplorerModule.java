@@ -54,7 +54,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class InternetExplorerModule extends BrowserSupportModule {
 
     public InternetExplorerModule() {
-        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", "ms", "ie20"), "internet_explorer");
+        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", 
+                "ms", "ie20"), "internet_explorer"); //NOI18N
     }
 
     @Override

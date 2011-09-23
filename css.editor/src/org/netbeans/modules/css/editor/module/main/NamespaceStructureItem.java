@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class NamespaceStructureItem implements StructureItem {
 
@@ -87,9 +87,9 @@ public class NamespaceStructureItem implements StructureItem {
     @Override
     public String getHtml(HtmlFormatter formatter) {
         return new StringBuilder()
-                .append("<b>")
+                .append("<b>") //NOI18N
                 .append(prefix)
-                .append("</b>")
+                .append("</b>") //NOI18N
                 .append(' ')
                 .append(resource).toString();
     }

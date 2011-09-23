@@ -1141,7 +1141,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     try {
-                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()));
+                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()), Position.Bias.Backward);
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
                             target, insertionOffset, cmd);
                     
