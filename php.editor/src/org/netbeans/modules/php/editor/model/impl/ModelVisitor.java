@@ -220,9 +220,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(PHPDocMethodTag node) {
         PHPDocTag.Type kind = node.getKind();
-        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        Scope currentScope = modelBuilder.getCurrentScope();
+        boolean scopeHasBeenModified = false;
+        // Someone uses @method tag in method scope :/ So we have to simulate that it's defined in class scope...
+        if (currentScope instanceof MethodScope) {
+            MethodScope methodScope = (MethodScope) currentScope;
+            currentScope = methodScope.getInScope();
+            modelBuilder.setCurrentScope((ScopeImpl) currentScope);
+            scopeHasBeenModified = true;
+        }
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
+        }
+        // ...and then reset it to avoid possible problems.
+        if (scopeHasBeenModified) {
+            modelBuilder.reset();
         }
         MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
         modelBuilder.setCurrentScope(methodScope);

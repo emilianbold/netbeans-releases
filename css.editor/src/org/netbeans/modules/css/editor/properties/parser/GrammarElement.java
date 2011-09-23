@@ -46,7 +46,7 @@ package org.netbeans.modules.css.editor.properties.parser;
  */
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public abstract class GrammarElement {
     private GroupGrammarElement parent;

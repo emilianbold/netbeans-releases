@@ -39,29 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service = CssEditorModule.class)
-public class InternetExplorerModule extends BrowserSupportModule {
+public class PHPCodeCompletion202530Test extends PHPTestBase {
 
-    public InternetExplorerModule() {
-        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", 
-                "ms", "ie20"), "internet_explorer"); //NOI18N
+    public PHPCodeCompletion202530Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test202530/test202530.php", "$test->^", false);
     }
 
     @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test202530/"))
+            })
+        );
     }
 
-      
 }

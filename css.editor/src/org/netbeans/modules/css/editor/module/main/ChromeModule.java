@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ChromeModule extends BrowserSupportModule {
 
     public ChromeModule() {
-        super(new DefaultBrowser("Chrome", "Goodle", "webkit", "", "chrome20"), "webkit");
+        super(new DefaultBrowser("Chrome", "Google", "webkit", "", "chrome20"), "webkit"); //NOI18N
     }
 
     @Override

@@ -52,7 +52,7 @@ import org.netbeans.modules.css.editor.module.spi.Utilities;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class StandardPropertiesHelpResolverTest extends NbTestCase {
 

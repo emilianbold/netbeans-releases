@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class GroupGrammarElement extends GrammarElement {
 

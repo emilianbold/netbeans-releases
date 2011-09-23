@@ -54,6 +54,7 @@ import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,7 +114,7 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
                         }
                     }
                     
-                    return getBrowser().getRenderingEngineId() + " experimental property. No documentation found.";
+                    return NbBundle.getMessage(this.getClass(), "completion-help-no-documentation-found"); 
                 } else {
                     return null;
                 }

@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class OperaModule extends BrowserSupportModule {
 
     public OperaModule() {
-        super(new DefaultBrowser("Opera", "Opera", "presto", "o", "opera20"), "opera");
+        super(new DefaultBrowser("Opera", "Opera", "presto", "o", "opera20"), "opera"); //NOI18N
     }
 
     @Override

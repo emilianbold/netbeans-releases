@@ -47,7 +47,7 @@ import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class DefaultCssModuleTest extends CssModuleTestBase {
 
