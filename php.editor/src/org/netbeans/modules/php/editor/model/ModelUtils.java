@@ -256,6 +256,7 @@ public class ModelUtils {
         final String name = qualifiedName.toName().toString();
         final String namespaceName = qualifiedName.toNamespaceName().toString();
         return filter(allElements, new ElementFilter<T>() {
+            @Override
             public boolean isAccepted(T element) {
                 if (nameKindMatch(element.getName(), nameKind, name)) {
                     switch(kind) {
@@ -288,6 +289,7 @@ public class ModelUtils {
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
             final QuerySupport.Kind nameKind, final String... elementName) {
         return filter(allElements, new ElementFilter<T>() {
+            @Override
             public boolean isAccepted(T element) {
                 final PhpElementKind kind = element.getPhpElementKind();
                 boolean caseSensitive = EnumSet.of(PhpElementKind.VARIABLE, PhpElementKind.FIELD).contains(kind);
@@ -317,6 +319,7 @@ public class ModelUtils {
     public static <T extends ModelElement> T getFirst(Collection<T> allElements,
             final QuerySupport.Kind nameKind, final String... elementName) {
         return getFirst(filter(allElements, new ElementFilter<T>() {
+            @Override
             public boolean isAccepted(T element) {
                 return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
             }
