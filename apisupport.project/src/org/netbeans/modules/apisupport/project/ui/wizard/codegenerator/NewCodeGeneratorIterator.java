@@ -121,6 +121,7 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         //add module dependency
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.editor.lib2")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util.lookup")); // NOI18N
         
         //create the java class implementing CodeGenerator
         final String fileName = model.getFileName();
