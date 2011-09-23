@@ -759,6 +759,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (customPanel.isEnabled()) 
             customPanel.requestFocus();
         setOKorRefactor();
+        dialog.pack();
         validate();
         repaint();  
     }
