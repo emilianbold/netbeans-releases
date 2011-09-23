@@ -47,6 +47,7 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -129,9 +130,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }
 
      public static class JspMultiViewEditorElement extends MultiViewEditorElement {
-
-        private BaseJspEditorSupport editorSupport;
-        private TagLibParseSupport taglibParseSupport;
+        
+        private static final long serialVersionUID = 5287628924558107957L;
+         
+        private transient BaseJspEditorSupport editorSupport;
+        private transient TagLibParseSupport taglibParseSupport;
          
         public JspMultiViewEditorElement(Lookup lookup) {
             super(lookup);
