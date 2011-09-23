@@ -178,7 +178,7 @@ public final class ProjectActionEvent {
                 ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();                                
                 if (!CndPathUtilitities.isPathAbsolute(result)) {
                     CndUtils.assertTrueInConsole(false, "getExecutableFromRunCommand() returned non-absolute path", result); //NOI18N
-                    String baseDir = configuration.getBaseDir();
+                    String baseDir = configuration.getProfile().getRunDirectory();
                     if (execEnv.isRemote()) {
                         PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
                         baseDir = mapper.getRemotePath(baseDir, true); // NOI18N
