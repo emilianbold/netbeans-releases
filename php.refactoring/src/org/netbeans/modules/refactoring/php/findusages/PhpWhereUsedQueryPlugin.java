@@ -103,6 +103,11 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
         for (WhereUsedElement whereUsedElement : resultElements) {
             elementsBag.add(refactoring, whereUsedElement);
         }
+        
+        Collection<WarningFileElement> warningElements = results.getWarningElements();
+        for (WarningFileElement warningElement : warningElements) {
+            elementsBag.add(refactoring, warningElement);
+        }
     }
 
     private boolean isFindSubclasses() {
