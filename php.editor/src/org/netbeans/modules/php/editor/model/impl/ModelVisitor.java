@@ -412,8 +412,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(UseStatementPart statementPart) {
-        ASTNodeInfo<UseStatementPart> info = ASTNodeInfo.create(statementPart);
-        modelBuilder.getCurrentNameSpace().createUseStatementPart(info);
+        ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
+        modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
         super.visit(statementPart);
     }
 
