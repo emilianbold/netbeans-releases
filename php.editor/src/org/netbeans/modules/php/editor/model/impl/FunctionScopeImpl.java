@@ -117,7 +117,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     //old contructors
-    
+
 
     public final Collection<? extends TypeScope> getReturnTypes() {
         return getReturnTypes(false);
@@ -179,11 +179,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     if (types.equals(returnType)) {
                         returnType = sb.toString();
                     }
-                }                
+                }
             }
         }
         // this is a solution for issue #188107
-        // The method is defined that returns type 'object'. 
+        // The method is defined that returns type 'object'.
         if(returnType!= null && retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) {
             retval.add((TypeScope)getInScope());
         }
@@ -242,7 +242,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         addElement(retval);
         return retval;
     }
-        
+
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
@@ -256,7 +256,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 sb.append(',');//NOI18N
             }
             sb.append(parameter.getSignature());
-            
+
         }
         sb.append(";");//NOI18N
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
