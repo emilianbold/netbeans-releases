@@ -55,6 +55,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import oracle.cloud.paas.api.ApplicationManager;
 import oracle.cloud.paas.api.ApplicationManagerConnectionFactory;
@@ -330,6 +331,11 @@ public class OracleInstance {
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
             }
             String appId = f.getName().substring(0, f.getName().lastIndexOf('.'));
+            
+            // workaround; Cloud has issue with some characters but nobody defined what is OK and what is not
+            // so for now let use only a-zA-Z0-9:
+            appId = getUsableName(appId);
+            
             InputStream is = new FileInputStream(f);
             ApplicationType at = ApplicationType.WAR;
             if ("EAR".equalsIgnoreCase(fo.getExt())) { // NOI18N
@@ -339,7 +345,7 @@ public class OracleInstance {
             boolean redeploy = false;
             List<Application> apps = am.listApplications(serviceGroup, serviceName);
             for (Application app : apps) {
-                if (app.getApplicationName() != null && app.getApplicationName().equals(appId)) {
+                if (app.getApplicationName() != null && getUsableName(app.getApplicationName()).equals(appId)) {
                     redeploy = true;
                     break;
                 }
@@ -480,6 +486,22 @@ public class OracleInstance {
             // ignore
         }
         return null;
+    }
+
+    private static final Pattern VALID_PROPERTY_NAME = Pattern.compile("[a-zA-Z0-9]+"); // NOI18N
+
+    private static boolean isUsableName(String name) {
+        return VALID_PROPERTY_NAME.matcher(name).matches();
+    }
+    
+    private static String getUsableName(String name) {
+        StringBuilder sb = new StringBuilder(name);
+        for (int i=0; i<sb.length(); i++) {
+            if (!isUsableName(sb.substring(i,i+1))) {
+                sb.replace(i,i+1,"X");
+            }
+        }
+        return sb.toString();
     }
     
 }
