@@ -149,7 +149,7 @@ implements LookupListener {
         if (addClasspathLayers) { // #129583
             List<URL> layerUrls = new ArrayList<URL>();
             // Basic impl copied from ExternalUtil.MainFS:
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = ClassLoader.getSystemClassLoader();
             try {
                 for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
                     InputStream is = manifest.openStream();
@@ -260,7 +260,7 @@ implements LookupListener {
             }
             cacheLayer = manager.store(cacheLayer, urls);
             err.log(Level.FINEST, "changing delegates");
-            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
+            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
             err.log(Level.FINEST, "delegates changed");
         }
         
@@ -300,7 +300,7 @@ implements LookupListener {
     
     /** Refresh layers */
     @Override public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
+        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
     }
 
 }
