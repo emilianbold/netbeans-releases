@@ -44,15 +44,14 @@
 
 package org.netbeans.core.spi.multiview.text;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
+import javax.swing.*;
 import javax.swing.text.Document;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -63,6 +62,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.text.NbDocument.CustomToolbar;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -75,7 +75,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     private static final long serialVersionUID =-3126744316644172415L;
 
     private transient MultiViewElementCallback multiViewObserver;
-    private transient JToolBar bar;
+    private transient JPanel bar;
     
     public MultiViewCloneableEditor() {
         super();
@@ -88,14 +88,10 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     
     @Override
     public JComponent getToolbarRepresentation() {
-        Document doc = getEditorPane().getDocument();
-        if (doc instanceof NbDocument.CustomToolbar) {
-            if (bar == null) {
-                bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
-            }
-        }
         if (bar == null) {
-            bar = new JToolBar();
+            bar = new JPanel();
+            bar.setLayout(new BorderLayout());
+            fillInBar();
         }
         return bar;
     }
@@ -263,5 +259,26 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
 
     Lookup getLookupSuper() {
         return super.getLookup();
+    }
+
+    @Override
+    public void revalidate() {
+        super.revalidate();
+        // we reuse the fact that revalidate is called by CloneableEditor
+        // after the pane is initialized
+        fillInBar();
+    }
+
+    private void fillInBar() {
+        if (bar.getComponentCount() == 0 && pane != null) {
+            Document doc = pane.getDocument();
+            if (doc instanceof NbDocument.CustomToolbar) {
+                CustomToolbar custom = (NbDocument.CustomToolbar)doc;
+                final JToolBar content = custom.createToolbar(pane);
+                if (content != null) {
+                    bar.add(content, BorderLayout.CENTER);
+                }
+            }
+        }
     }
 }
