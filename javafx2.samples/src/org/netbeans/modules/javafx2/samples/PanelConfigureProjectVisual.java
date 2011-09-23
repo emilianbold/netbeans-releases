@@ -140,6 +140,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PanelConfigureProjectVisual.class);
     }    
