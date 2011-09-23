@@ -185,7 +185,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
             final WhiteListLookup lkp;
             if (lkpRef != null && (lkp=lkpRef.get())!=null) {
-                lkp.updateLookup(p);
+                lkp.updateLookup();
             }
         }
     }
@@ -198,8 +198,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
         WhiteListLookup lkp;
         if (lkpRef == null || (lkp=lkpRef.get())==null) {
-            lkp = new WhiteListLookup();
-            lkp.updateLookup(p);
+            lkp = new WhiteListLookup(p);
             lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
         }
         return lkp;
@@ -217,13 +216,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(WhiteListCategoryPanel.class, "WhiteListCategoryPanel.jLabel1.text")); // NOI18N
 
         jScrollPane1.setViewportView(jTable1);
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WhiteListCategoryPanel.class, "WhiteListCategoryPanel.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -232,7 +228,6 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addContainerGap(283, Short.MAX_VALUE))
-            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -240,14 +235,11 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
@@ -328,7 +320,23 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
 
     private static class WhiteListLookup extends ProxyLookup {
 
-        public void updateLookup(final Project p) {
+        private Project p;
+        private boolean initialized = false;
+
+        public WhiteListLookup(Project p) {
+            this.p = p;
+        }
+        
+        @Override
+        protected synchronized void beforeLookup(Template<?> template) {
+            if (!initialized && WhiteListQueryImplementation.class.equals(template.getType())) {
+                initialized = true;
+                updateLookup();
+            }
+            super.beforeLookup(template);
+        }
+        
+        private void updateLookup() {
             final List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
             for (WhiteListQueryImplementation.UserSelectable w :
                     Lookups.forPath(WHITELISTS_PATH).lookupAll(WhiteListQueryImplementation.UserSelectable.class)) {
