@@ -237,7 +237,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javafx2.samples</friend>
+                <package>org.netbeans.modules.javafx2.project.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
