@@ -100,6 +100,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -582,7 +583,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             }
             
             
-            LabelPanel panel = new LabelPanel(
+            /*LabelPanel panel = new LabelPanel(
                     NbBundle.getMessage( ClientInfo.class, "TXT_SaasWait"),
                     NbBundle.getMessage( ClientInfo.class, "ACSN_SaasWait"),
                     NbBundle.getMessage( ClientInfo.class, "ACSD_SaasWait"));
@@ -607,9 +608,23 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                 }
             };
             SaasServicesModel.getInstance().addPropertyChangeListener( listener);
-            
             saas.toStateReady( false );
             dialog.setVisible( true);
+            */
+            
+            Runnable runnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    saas.toStateReady( true );
+                    checkSaasState(saas);
+                    descriptorPanel.fireChangeEvent();
+                }
+                    
+            };
+            ProgressUtils.showProgressDialogAndRun( runnable, 
+                    NbBundle.getMessage(ClientInfo.class, "TXT_SaasWait")); // NOI18N
+            
         }
 }//GEN-LAST:event_saasBrowse
 

@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author den
+ * @author ads
  */
 public class SaasExplorerPanel extends javax.swing.JPanel implements 
             ExplorerManager.Provider, PropertyChangeListener 
