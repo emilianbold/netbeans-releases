@@ -516,7 +516,7 @@ public class VariousUtils {
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
-        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();;
+        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
 
         TypeScope type = null;
         if (semiTypeName != null && semiTypeName.contains("@")) {
