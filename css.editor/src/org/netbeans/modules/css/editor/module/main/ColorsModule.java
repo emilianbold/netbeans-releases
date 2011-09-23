@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.csl.CssColor;
@@ -50,7 +48,7 @@ import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,7 +62,7 @@ public class ColorsModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTY_DEFINITIONS_PATH = "org/netbeans/modules/css/editor/module/main/properties/colors"; //NOI18N    
     private final Property colorsListPropertyDescriptor = new Property(
-            "@colors-list",
+            "@colors-list", //NOI18N
             generateColorsList(), this);
     private final Collection<Property> propertyDescriptors;
 
@@ -81,7 +79,7 @@ public class ColorsModule extends CssEditorModule implements CssModule {
             sb.append(' ');
             sb.append(vals[i]);
             if (i < vals.length - 1) {
-                sb.append(" |");
+                sb.append(" |"); //NOI18N
             }
         }
         return sb.toString();
@@ -94,16 +92,16 @@ public class ColorsModule extends CssEditorModule implements CssModule {
 
     @Override
     public String getName() {
-        return "color";
+        return "color"; //NOI18N
     }
 
     @Override
     public String getDisplayName() {
-        return "Color";
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
     }
 
     @Override
     public String getSpecificationURL() {
-        return "http://www.w3.org/TR/css3-color";
+        return "http://www.w3.org/TR/css3-color"; //NOI18N
     }
 }

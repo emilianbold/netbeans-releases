@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public abstract class TopLevelStructureItem implements StructureItem {
     
@@ -141,7 +141,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
         
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Rules");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Rules"); //NOI18N
         }
     }
     
@@ -153,7 +153,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
         
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Elements");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Elements"); //NOI18N
         }
     }
     
@@ -165,7 +165,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
         
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Classes");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Classes"); //NOI18N
         }
     }
     
@@ -177,7 +177,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
         
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Ids");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Ids"); //NOI18N
         }
     }
     
@@ -189,7 +189,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
         
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Namespaces");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Namespaces"); //NOI18N
         }
     }
 }

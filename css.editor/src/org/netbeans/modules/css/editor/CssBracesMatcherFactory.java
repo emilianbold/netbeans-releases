@@ -49,7 +49,7 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssBracesMatcherFactory implements BracesMatcherFactory {
 

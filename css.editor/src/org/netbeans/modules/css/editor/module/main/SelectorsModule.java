@@ -87,11 +87,11 @@ public class SelectorsModule extends CssEditorModule {
         "root", "nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type",
         "first-child", "last-child", "first-of-type", "last-of-type", "only-child",
         "only-of-type", "empty" //structural
-    });
+    }); //NOI18N
     
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
         "first-line", "first-letter", "before", "after"
-    });
+    }); //NOI18N
     
     //<<< NOI18N
     //XXX fix CSL

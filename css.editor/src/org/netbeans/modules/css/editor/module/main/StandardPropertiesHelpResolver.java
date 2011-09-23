@@ -71,7 +71,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final String MODULE_ARCHIVE_PATH = "www.w3.org/TR/"; //NOI18N
     private static final String INDEX_HTML_FILE_NAME = "index.html"; //NOI18N
     
-    private static final String NO_HELP_MSG = NbBundle.getMessage(StandardPropertiesHelpResolver.class, "MSG_No_Help");
+    private static final String NO_HELP_MSG = NbBundle.getMessage(StandardPropertiesHelpResolver.class, "completion-help-no-documentation-found");
 
     @Override
     public String getHelp(Property property) {
@@ -149,7 +149,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
                     //level than was the opening heading!
                     if (sectionStart >= 0) {
                         //find next section
-                        Pattern sectionEndFinder = Pattern.compile("(?s)<h[23]");
+                        Pattern sectionEndFinder = Pattern.compile("(?s)<h[23]"); //NOI18N
                         Matcher findSectionEnd = sectionEndFinder.matcher(urlContent.subSequence(from, urlContent.length()));
                         if (findSectionEnd.find()) {
                             return urlContent.substring(sectionStart, from + findSectionEnd.start());
@@ -158,12 +158,12 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
 
                 } else {
                     //no pattern found, likely a bit different source
-                    LOGGER.warning(String.format("No property anchor section pattern found for property '%s'", property.getName()));
+                    LOGGER.warning(String.format("No property anchor section pattern found for property '%s'", property.getName())); //NOI18N
                     
                     //strip the <style>...</style> section from the source since it causes a garbage in the swingbrowser
-                    int styleSectionStart = urlContent.indexOf("<style type=\"text/css\">");
+                    int styleSectionStart = urlContent.indexOf("<style type=\"text/css\">"); //NOI18N
                     if(styleSectionStart >= 0) {
-                        final String styleEndTag = "</style>";
+                        final String styleEndTag = "</style>"; //NOI18N
                         int styleSectionEnd = urlContent.indexOf(styleEndTag, styleSectionStart);
                         if(styleSectionEnd >= 0) {
                             StringBuilder buf = new StringBuilder();

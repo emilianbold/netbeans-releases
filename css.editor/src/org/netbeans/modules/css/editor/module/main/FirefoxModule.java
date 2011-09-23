@@ -52,7 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class FirefoxModule extends BrowserSupportModule {
     
     public FirefoxModule() {
-        super(new DefaultBrowser("Firefox", "Mozilla", "gecko", "moz", "firefox20"), "firefox");
+        super(new DefaultBrowser("Firefox", "Mozilla", "gecko", "moz", "firefox20"), "firefox"); //NOI18N
     }
 
 }

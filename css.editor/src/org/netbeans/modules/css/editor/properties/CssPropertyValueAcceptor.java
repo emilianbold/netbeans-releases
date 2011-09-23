@@ -45,7 +45,7 @@ package org.netbeans.modules.css.editor.properties;
 /**
  *
  * @todo conside adding a way how the 'acceptor' would propose some completion values
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public interface CssPropertyValueAcceptor {
     

@@ -47,6 +47,7 @@ import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -68,14 +69,14 @@ public class BasicUserInterfaceModule extends CssEditorModule implements CssModu
                 "required",
                 "optional",
                 "read-only",
-                "read-write"
+                "read-write" //NOI18N
             });
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
                 "selection",
                 "value",
                 "choices",
                 "repeat-item",
-                "repeat-index"});
+                "repeat-index"}); //NOI18N
     private static final String PROPERTIES_DEFINITION_PATH =
             "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
     private static Collection<Property> propertyDescriptors;
@@ -100,12 +101,12 @@ public class BasicUserInterfaceModule extends CssEditorModule implements CssModu
 
     @Override
     public String getName() {
-        return "basic_user_interface";
+        return "basic_user_interface"; //NOI18N
     }
 
     @Override
     public String getDisplayName() {
-        return "Basic User Interface";
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
     }
 
     @Override

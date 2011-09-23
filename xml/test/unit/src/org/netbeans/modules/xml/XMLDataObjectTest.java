@@ -86,7 +86,7 @@ public class XMLDataObjectTest extends NbTestCase {
         XMLDataObject dataObject = (XMLDataObject) object;
         assertNotNull(dataObject.getLookup().lookup(FileObject.class));
 
-        EditCookie ec = dataObject.getCookie(EditCookie.class);
+        EditCookie ec = (EditCookie)dataObject.getCookie(EditCookie.class);
         assertNotNull("Editor cookie found", ec);
 
         EditCookie lkp = dataObject.getLookup().lookup(EditCookie.class);

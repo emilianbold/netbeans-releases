@@ -340,7 +340,7 @@ public class UnusedVariableHint extends AbstractRule {
             return variableName.getName().substring(1);
         }
 
-        @Messages("UnusedVariableHintCustom=Variable ${0} does not seem to be used in its scope")
+        @Messages("UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope")
         private Hint createHint(VariableName variableName) {
             String varName = getPureName(variableName);
             int start = variableName.getNameRange().getStart();
@@ -358,13 +358,13 @@ public class UnusedVariableHint extends AbstractRule {
     }
 
     @Override
-    @Messages("UnusedVariableHintDesc=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDesc=Variable seems to be unused in its scope")
     public String getDescription() {
         return Bundle.UnusedVariableHintDesc();
     }
 
     @Override
-    @Messages("UnusedVariableHintDispName=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDispName=Variable seems to be unused in its scope")
     public String getDisplayName() {
         return Bundle.UnusedVariableHintDispName();
     }

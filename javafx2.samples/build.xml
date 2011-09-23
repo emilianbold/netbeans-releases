@@ -8,6 +8,18 @@
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/javafx2/samples/resources/"/>
         <mkdir dir="${examples}"/>
         
+        <zip basedir="AdvancedMedia" destfile="${examples}/AdvancedMedia.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="AudioVisualizer3D" destfile="${examples}/AudioVisualizer3D.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
         <zip basedir="BrickBreaker" destfile="${examples}/BrickBreaker.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
@@ -21,6 +33,18 @@
         </zip>
         
         <zip basedir="CreateAdvancedStage" destfile="${examples}/CreateAdvancedStage.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="Cube3D" destfile="${examples}/Cube3D.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="CubeSystem3D" destfile="${examples}/CubeSystem3D.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
@@ -92,6 +116,18 @@
             <exclude name="nbproject/private/"/>
         </zip>
         
+        <zip basedir="ChartAudioArea" destfile="${examples}/ChartAudioArea.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="ChartAudioBar" destfile="${examples}/ChartAudioBar.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
         <zip basedir="ChartLine" destfile="${examples}/ChartLine.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
@@ -147,6 +183,12 @@
         </zip>
         
         <zip basedir="TransitionRotate" destfile="${examples}/TransitionRotate.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="WebViewBrowser" destfile="${examples}/WebViewBrowser.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>

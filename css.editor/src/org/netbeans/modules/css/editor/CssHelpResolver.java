@@ -70,16 +70,16 @@ public class CssHelpResolver {
     private static CssHelpResolver INSTANCE = new CssHelpResolver(
             "org/netbeans/modules/css/resources/css_property_help"); //NOI18N
     
-    private static Pattern NAV_BAR = Pattern.compile("<div\\s+class\\s*=\\s*\"navbar\"", 
+    private static Pattern NAV_BAR = Pattern.compile("<div\\s+class\\s*=\\s*\"navbar\"",  //NOI18N
             Pattern.MULTILINE);
     
-    private Pattern END_SEARCH = Pattern.compile("<[hH][1-5]>|<a\\s+name=\"propdef-", 
+    private Pattern END_SEARCH = Pattern.compile("<[hH][1-5]>|<a\\s+name=\"propdef-",  //NOI18N
             Pattern.MULTILINE);  //NOI18N
     
     private Pattern PROP_DEF_PATTERN = Pattern.compile( 
             "<div\\s+class\\s*=\\s*\"propdef\"" );              // NOI18N
     
-    private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOTICES
+    private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOI18N
     private static URL HELP_ZIP_URL;
     private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
 
@@ -177,7 +177,7 @@ public class CssHelpResolver {
         int firstLineEnd = anchor_part.indexOf("\n");  //NOI18N
         if (firstLineEnd > 0) {
             String firstLine = anchor_part.substring(0, firstLineEnd);
-            firstLine = firstLine.replaceAll("<strong>'", "<strong style=\"font-size: large\">");  //N
+            firstLine = firstLine.replaceAll("<strong>'", "<strong style=\"font-size: large\">");   //NOI18N
             firstLine = firstLine.replaceAll("'</strong>", "</strong>"); //NOI18N
             anchor_part = firstLine + anchor_part.substring(firstLineEnd + 1);
         }
@@ -198,7 +198,8 @@ public class CssHelpResolver {
             try {
                 return new URL(hzurl + pd.helpLink);
             } catch (MalformedURLException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Error creating URL for property " + propertyName, ex); //NOI18N
+                Logger.getAnonymousLogger().log(Level.WARNING, 
+                        "Error creating URL for property " + propertyName, ex); //NOI18N
                 return null;
             }
         }
@@ -309,7 +310,8 @@ public class CssHelpResolver {
                     ErrorManager.getDefault().notify(e);
                 }
             } else {
-		Logger.getLogger(CssHelpResolver.class.getSimpleName()).info("Cannot locate the css documentation file " + HELP_LOCATION ); //NOI18N
+		Logger.getLogger(CssHelpResolver.class.getSimpleName())
+                        .info("Cannot locate the css documentation file " + HELP_LOCATION ); //NOI18N
 	    }
         }
 
