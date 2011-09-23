@@ -50,8 +50,6 @@ import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.test.MockLookup;
 
 /**
  * @author Jaroslav Tulach
@@ -60,16 +58,6 @@ public class NbRepositoryTest extends NbTestCase {
     
     public NbRepositoryTest(String testName) {
         super(testName);
-    }
-
-    /**
-     * Test for issue #129583: XML layers from classpath modules should always be loaded.
-     */
-    public void testNbRepositoryInitializedFromClasspath() throws Exception {
-        MockLookup.setInstances();
-        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
-        MockLookup.setInstances(new XMLFileSystem()); // #200848
-        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
     }
 
     public void testUserDirIsWriteableEvenInstallDirDoesNotExists() throws IOException {
@@ -85,6 +73,13 @@ public class NbRepositoryTest extends NbTestCase {
         File af = new File(new File(getWorkDir(), "config"), "ahoj.jardo");
         assertTrue("File created", af.exists());
         assertEquals("4 bytes", 4, af.length());
+    }
+
+    /**
+     * Test for issue #129583: XML layers from classpath modules should always be loaded.
+     */
+    public void testNbRepositoryInitializedFromClasspath() throws Exception {
+        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
     }
 
 }
