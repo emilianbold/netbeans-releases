@@ -117,12 +117,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     //old contructors
-    
 
+
+    @Override
     public final Collection<? extends TypeScope> getReturnTypes() {
         return getReturnTypes(false);
     }
 
+    @Override
     public Collection<? extends String> getReturnTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
         if (returnType != null && returnType.length() > 0) {
@@ -138,6 +140,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
 
+    @Override
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         String types = null;
@@ -179,11 +182,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     if (types.equals(returnType)) {
                         returnType = sb.toString();
                     }
-                }                
+                }
             }
         }
         // this is a solution for issue #188107
-        // The method is defined that returns type 'object'. 
+        // The method is defined that returns type 'object'.
         if(returnType!= null && retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) {
             retval.add((TypeScope)getInScope());
         }
@@ -191,6 +194,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @NonNull
+    @Override
     public List<? extends String> getParameterNames() {
         assert paremeters != null;
         List<String> parameterNames = new ArrayList<String>();
@@ -201,6 +205,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @NonNull
+    @Override
     public List<? extends ParameterElement> getParameters() {
         return paremeters;
     }
@@ -229,20 +234,23 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return sb.toString();
     }
 
+    @Override
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
 
+    @Override
     public VariableNameImpl createElement(Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
     }
-        
+
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
@@ -256,7 +264,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 sb.append(',');//NOI18N
             }
             sb.append(parameter.getSignature());
-            
+
         }
         sb.append(";");//NOI18N
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
@@ -278,6 +286,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return super.getNamespaceName();
     }
 
+    @Override
     public boolean isAnonymous() {
         return false;
     }
