@@ -3712,7 +3712,7 @@ public class FormatingTest extends NbTestCase {
                 + "     * This is test JavaDoc for the get method.\n"
                 + "     *\n"
                 + "     * @param <S> generic param\n"
-                + "     * @param in     input\n"
+                + "     * @param in     input parameter long description\n"
                 + "     * @param o          param\n"
                 + "     * @param vararg variable length argument\n"
                 + "     */\n"
@@ -3730,7 +3730,8 @@ public class FormatingTest extends NbTestCase {
                 + "     * method.\n"
                 + "     *\n"
                 + "     * @param <S>    generic param\n"
-                + "     * @param in     input\n"
+                + "     * @param in     input parameter long\n"
+                + "     *               description\n"
                 + "     * @param o      param\n"
                 + "     * @param vararg variable length argument\n"
                 + "     */\n"
@@ -3739,6 +3740,66 @@ public class FormatingTest extends NbTestCase {
                 + "    }\n"
                 + "}\n";        
         preferences.putBoolean("alignJavadocParameterDescriptions", true);
+        reformat(doc, content, golden);
+        preferences.remove("alignJavadocParameterDescriptions");        
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o \n"
+                + "     */\n"
+                + "    public void get(Object o) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o\n"
+                + "     */\n"
+                + "    public void get(Object o) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("alignJavadocParameterDescriptions", true);
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o\n"
+                + "     * @return\n"
+                + "     */\n"
+                + "    public Object get(Object o) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o\n"
+                + "     * @return\n"
+                + "     */\n"
+                + "    public Object get(Object o) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
         reformat(doc, content, golden);
         preferences.remove("alignJavadocParameterDescriptions");        
 
