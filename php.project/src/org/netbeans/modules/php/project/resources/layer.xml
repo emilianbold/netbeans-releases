@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="AS-R.shadow">
+        <file name="AS-X.shadow">
             <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-actions-RunFrameworkCommandAction.instance"/>
         </file>
     <!-- uncomment/change default values for actions Download, Upload
