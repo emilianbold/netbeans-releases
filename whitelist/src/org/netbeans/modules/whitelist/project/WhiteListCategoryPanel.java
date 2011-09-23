@@ -54,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -84,8 +85,9 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
 
     private static final String WHITELISTS_PATH = "org-netbeans-api-java/whitelists/";  //NOI18N
 
-    private static Map<Project,Reference<WhiteListLookup>> lookupCache =
-            new WeakHashMap<Project, Reference<WhiteListLookup>>();
+    //@GuardedBy("lookupCache")
+    private final static Map<Project,Reference<WhiteListLookup>> lookupCache =
+            Collections.synchronizedMap(new WeakHashMap<Project, Reference<WhiteListLookup>>());
 
     private Project p;
 
@@ -181,12 +183,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
                 }
             }
         });
-        synchronized (WhiteListCategoryPanel.class) {
-            final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-            final WhiteListLookup lkp;
-            if (lkpRef != null && (lkp=lkpRef.get())!=null) {
-                lkp.updateLookup();
-            }
+        final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+        final WhiteListLookup lkp;
+        if (lkpRef != null && (lkp=lkpRef.get())!=null) {
+            lkp.updateLookup();
         }
     }
 
@@ -195,13 +195,15 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     }
 
     public static Lookup getEnabledUserSelectableWhiteLists(@NonNull Project p) {
-        Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-        WhiteListLookup lkp;
-        if (lkpRef == null || (lkp=lkpRef.get())==null) {
-            lkp = new WhiteListLookup(p);
-            lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
+        synchronized (lookupCache) {
+            Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+            WhiteListLookup lkp;
+            if (lkpRef == null || (lkp=lkpRef.get())==null) {
+                lkp = new WhiteListLookup(p);
+                lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
+            }
+            return lkp;
         }
-        return lkp;
     }
 
     /** This method is called from within the constructor to
@@ -321,6 +323,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     private static class WhiteListLookup extends ProxyLookup {
 
         private Project p;
+        //@GuardedBy("this")
         private boolean initialized = false;
 
         public WhiteListLookup(Project p) {
@@ -329,7 +332,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         
         @Override
         protected synchronized void beforeLookup(Template<?> template) {
-            if (!initialized && WhiteListQueryImplementation.class.equals(template.getType())) {
+            if (!initialized && WhiteListQueryImplementation.class.isAssignableFrom(template.getType())) {
                 initialized = true;
                 updateLookup();
             }
