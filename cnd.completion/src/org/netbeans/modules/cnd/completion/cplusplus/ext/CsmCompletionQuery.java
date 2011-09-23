@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -150,6 +151,14 @@ abstract public class CsmCompletionQuery {
     abstract protected FileReferencesContext getFileReferencesContext();
 
     abstract public CsmFile getCsmFile();
+    
+    private CsmProject getCsmProject() {
+        CsmFile csmFile = getCsmFile();
+        if (csmFile != null) {
+            return csmFile.getProject();
+        }
+        return null;
+    }
     
     public static enum QueryScope {
 
@@ -1386,8 +1395,9 @@ abstract public class CsmCompletionQuery {
                                                         CsmObject ns = res.iterator().next();
                                                         if (CsmKindUtilities.isNamespaceAlias(ns)) {
                                                             lastNamespace = ((CsmNamespaceAlias) ns).getReferencedNamespace();
+                                                            lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), lastNamespace);
                                                         } else if (CsmKindUtilities.isNamespace(ns)) {
-                                                            lastNamespace = (CsmNamespace) ns;
+                                                            lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), (CsmNamespace) ns);
                                                         }
                                                     }
                                                 }
@@ -1508,7 +1518,7 @@ abstract public class CsmCompletionQuery {
                                         List<?> res = finder.findNestedNamespaces(lastNamespace, var, true, false); // find matching nested namespaces
                                         CsmNamespace curNs = res.isEmpty() ? null : (CsmNamespace) res.get(0);
                                         if (curNs != null) {
-                                            lastNamespace = curNs;
+                                            lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), curNs);
                                             lastType = null;
                                         } else { // package doesn't exist
                                             res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
@@ -2098,7 +2108,7 @@ abstract public class CsmCompletionQuery {
                                     lastNamespace = null;
                                     List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, openingSource, false); // find matching nested namespaces
                                     for (CsmNamespace csmNamespace : res) {
-                                        lastNamespace = csmNamespace;
+                                        lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
                                     }
                                     List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, false, false); // matching classes

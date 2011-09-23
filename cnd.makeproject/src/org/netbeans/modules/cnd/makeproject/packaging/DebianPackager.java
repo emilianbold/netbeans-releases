@@ -89,6 +89,8 @@ public class DebianPackager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
+        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+            defArch = "i386"; // NOI18N
         } else {
             defArch = "i386"; // NOI18N
             HostInfo hostInfo = null;

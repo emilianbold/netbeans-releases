@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public abstract class CssElementContext {
 
