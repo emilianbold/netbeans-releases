@@ -119,10 +119,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     //old contructors
 
 
+    @Override
     public final Collection<? extends TypeScope> getReturnTypes() {
         return getReturnTypes(false);
     }
 
+    @Override
     public Collection<? extends String> getReturnTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
         if (returnType != null && returnType.length() > 0) {
@@ -138,6 +140,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
 
+    @Override
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         String types = null;
@@ -191,6 +194,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @NonNull
+    @Override
     public List<? extends String> getParameterNames() {
         assert paremeters != null;
         List<String> parameterNames = new ArrayList<String>();
@@ -201,6 +205,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @NonNull
+    @Override
     public List<? extends ParameterElement> getParameters() {
         return paremeters;
     }
@@ -229,14 +234,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return sb.toString();
     }
 
+    @Override
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
 
+    @Override
     public VariableNameImpl createElement(Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
@@ -278,6 +286,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return super.getNamespaceName();
     }
 
+    @Override
     public boolean isAnonymous() {
         return false;
     }
