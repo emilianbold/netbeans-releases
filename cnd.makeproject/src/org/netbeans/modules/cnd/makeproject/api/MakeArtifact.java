@@ -274,7 +274,7 @@ public class MakeArtifact {
     }
 
     public String getOutput() {
-        initCinfiguration();
+        initConfiguration();
         if (makeConfiguration != null) {
             return makeConfiguration.expandMacros(output);
         } else {
@@ -283,7 +283,7 @@ public class MakeArtifact {
         }
     }
     
-    private void initCinfiguration() {
+    private void initConfiguration() {
         if (makeConfiguration == null) {
             try {
                 String projectPath = projectLocation;
