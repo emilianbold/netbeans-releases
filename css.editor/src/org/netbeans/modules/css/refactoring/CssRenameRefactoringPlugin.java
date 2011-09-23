@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 

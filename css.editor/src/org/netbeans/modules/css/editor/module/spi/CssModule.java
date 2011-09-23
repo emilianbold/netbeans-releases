@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import java.net.URL;
-
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public interface CssModule {
 

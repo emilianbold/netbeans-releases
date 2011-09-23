@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
 public class CssRefactoringPluginFactory implements RefactoringPluginFactory {

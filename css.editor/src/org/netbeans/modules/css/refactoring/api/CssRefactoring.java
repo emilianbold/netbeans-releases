@@ -58,7 +58,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
 /**
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssRefactoring {
 

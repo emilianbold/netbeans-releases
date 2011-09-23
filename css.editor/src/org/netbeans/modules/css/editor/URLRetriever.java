@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class URLRetriever {
     

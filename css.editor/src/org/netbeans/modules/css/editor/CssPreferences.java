@@ -55,7 +55,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssPreferences {
 

@@ -70,7 +70,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
 
