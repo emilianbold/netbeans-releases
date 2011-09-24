@@ -470,7 +470,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 //all projects
                 return Scopes.allOpenedProjectsScope();
             case 1:
-                if (fileObject!=null) 
+                if (project != null)
                     return getThisProjectScope();
                 else 
                     return getCustomScope();
@@ -499,7 +499,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     
 
     private Scope getThisProjectScope() {
-        return Scopes.specifiedFoldersScope(Folder.convert(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()));
+        List<FileObject> roots = new ArrayList<FileObject>();
+
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            roots.add(sg.getRootFolder());
+        }
+
+        return Scopes.specifiedFoldersScope(Folder.convert(roots));
     }
 
     private Scope getThisPackageScope() {
