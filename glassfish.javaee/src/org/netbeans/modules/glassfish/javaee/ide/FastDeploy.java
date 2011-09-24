@@ -143,13 +143,24 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             // drop a glassfish-web.xml file in here.. if necessary
             FileObject rootOfWebApp = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
             if (null != rootOfWebApp) {
-                if (rootOfWebApp.getFileObject("WEB-INF/sun-web.xml") == null
-                        && rootOfWebApp.getFileObject("WEB-INF/glassfish-web.xml") == null) {
-                    // being lazy... putting both files into the build directory
-                    File sunDDFile = new File(dir, "WEB-INF/sun-web.xml");
-                    addDescriptorToDeployedDirectory(module, sunDDFile);
-                    sunDDFile = new File(dir, "WEB-INF/glassfish-web.xml");
-                    addDescriptorToDeployedDirectory(module, sunDDFile);
+                String fileName = null;
+                String SUNWEB = "WEB-INF/sun-web.xml";  // NOI18N
+                if (url.contains("gfv3ee6wc")) { // NOI18N
+                    String GFWEB = "WEB-INF/glassfish-web.xml"; // NOI18N
+                    if (null == rootOfWebApp.getFileObject(GFWEB) && 
+                            null == rootOfWebApp.getFileObject(SUNWEB)) {
+                        // add gf-sun to deployed app
+                        fileName = GFWEB;
+                    }
+                } else {
+                    if (null == rootOfWebApp.getFileObject(SUNWEB)) {
+                        // add sun-web to deployed app
+                        fileName = SUNWEB;
+                    }
+                }
+                if (null != fileName) {
+                    File sunDDFile = new File(dir, fileName);
+                    addDescriptorToDeployedDirectory(module, sunDDFile);                    
                 }
             }
         }
