@@ -19,6 +19,7 @@ public class ${CLASS_NAME} implements CodeGenerator {
         textComp = context.lookup(JTextComponent.class);
     }
 
+    @MimeRegistration(mimeType="${MIME_TYPE}", service=CodeGenerator.Factory.class)
     public static class Factory implements CodeGenerator.Factory {
 
         public List<? extends CodeGenerator> create(Lookup context) {

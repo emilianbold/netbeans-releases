@@ -41,12 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javafx2.samples;
 
 import java.io.File;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,53 +68,62 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
     static Object create() {
         return new JavaFXSampleProjectIterator();
     }
-    
-    public JavaFXSampleProjectIterator () {
+
+    public JavaFXSampleProjectIterator() {
     }
-    
-    public void addChangeListener (javax.swing.event.ChangeListener changeListener) {
+
+    @Override
+    public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
     }
-    
-    public void removeChangeListener (javax.swing.event.ChangeListener changeListener) {
+
+    @Override
+    public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
     }
-    
-    public org.openide.WizardDescriptor.Panel current () {
+
+    @Override
+    public org.openide.WizardDescriptor.Panel current() {
         return basicPanel;
     }
-    
-    public boolean hasNext () {
+
+    @Override
+    public boolean hasNext() {
         return false;
     }
-    
-    public boolean hasPrevious () {
+
+    @Override
+    public boolean hasPrevious() {
         return false;
     }
-    
-    public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
+
+    @Override
+    public void initialize(org.openide.loaders.TemplateWizard templateWizard) {
         this.wiz = templateWizard;
         String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
         if (name != null) {
             name = name.replaceAll(" ", ""); //NOI18N
         }
-        templateWizard.putProperty (WizardProperties.NAME, name);        
+        templateWizard.putProperty(WizardProperties.NAME, name);
         basicPanel = new PanelConfigureProject(templateWizard.getTemplate().getNodeDelegate().getDisplayName());
         currentIndex = 0;
-        updateStepsList ();
+        updateStepsList();
     }
-    
-    public void uninitialize (org.openide.loaders.TemplateWizard templateWizard) {
+
+    @Override
+    public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
         basicPanel = null;
         currentIndex = -1;
-        this.wiz.putProperty("projdir",null);           //NOI18N
-        this.wiz.putProperty("name",null);          //NOI18N
+        this.wiz.putProperty("projdir", null);           //NOI18N
+        this.wiz.putProperty("name", null);          //NOI18N
     }
-    
-    public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+
+    @Override
+    public java.util.Set instantiate(org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
+        String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
         FileObject prjLoc = JavaFXSampleProjectGenerator.createProjectFromTemplate(
-                              templateFO, projectLocation, name);
+                templateFO, projectLocation, name, platformName);
 
         java.util.Set set = new java.util.HashSet();
         set.add(DataObject.find(prjLoc));
@@ -122,13 +131,13 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         // open file from the project specified in the "defaultFileToOpen" attribute
         Object openFile = templateFO.getAttribute("defaultFileToOpen"); // NOI18N
         if (openFile instanceof String) {
-            FileObject openFO = prjLoc.getFileObject((String)openFile);
+            FileObject openFO = prjLoc.getFileObject((String) openFile);
             set.add(DataObject.find(openFO));
         }
         // also open a documentation file registered for this project
         // and copy the .url file for it to the project (#71985)
         FileObject docToOpen = FileUtil.getConfigFile(
-            "org-netbeans-modules-java-examples/OpenAfterCreated/" + templateFO.getName() + ".url"); // NOI18N
+                "org-netbeans-modules-java-examples/OpenAfterCreated/" + templateFO.getName() + ".url"); // NOI18N
         if (docToOpen != null) {
             docToOpen = FileUtil.copyFile(docToOpen, prjLoc, "readme"); // NOI18N
             set.add(DataObject.find(docToOpen));
@@ -136,30 +145,33 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
 
         return set;
     }
-    
+
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
-    
+
+    @Override
     public void nextPanel() {
-        throw new NoSuchElementException ();
+        throw new NoSuchElementException();
     }
-    
+
+    @Override
     public void previousPanel() {
-        throw new NoSuchElementException ();
+        throw new NoSuchElementException();
     }
-    
+
     void updateStepsList() {
-        JComponent component = (JComponent) current ().getComponent ();
+        JComponent component = (JComponent) current().getComponent();
         if (component == null) {
             return;
         }
         String[] list;
-        list = new String[] {
+        list = new String[]{
             NbBundle.getMessage(PanelConfigureProject.class, "LBL_NWP1_ProjectTitleName"), // NOI18N
         };
-        component.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
-        component.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (currentIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
 }

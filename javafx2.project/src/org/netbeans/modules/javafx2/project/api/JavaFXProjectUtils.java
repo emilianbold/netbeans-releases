@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,20 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.project.api;
 
-package org.netbeans.modules.javafx2.samples;
+import javax.swing.ComboBoxModel;
+import javax.swing.ListCellRenderer;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.javafx2.project.J2SEProjectType;
 
-public interface WizardProperties {
-    public static final String PROJECT_DIR = "projdir"; //NOI18N
-    public static final String NAME = "name"; //NOI18N
-    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
+/**
+ * 
+ * @author Anton Chechel
+ */
+public final class JavaFXProjectUtils {
 
-    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
-    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
-    public static final String CONTEXT_PATH = "contextPath"; //NOI18N
+    public static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE;
 
-    public static final String DOC_BASE = "docBase"; //NOI18N
-    public static final String JAVA_ROOT = "javaRoot"; //NOI18N
-    public static final String LIB_FOLDER = "libFolder"; //NOI18N
+    private JavaFXProjectUtils() {
+    }
+
+    public static ComboBoxModel createPlatformComboBoxModel(String activePlatform) {
+        return PlatformUiSupport.createPlatformComboBoxModel(activePlatform);
+    }
+
+    public static ListCellRenderer createPlatformListCellRenderer() {
+        return PlatformUiSupport.createPlatformListCellRenderer();
+    }
+
+    public static JavaPlatform getPlatform(Object platformKey) {
+        return PlatformUiSupport.getPlatform(platformKey);
+    }
+
 }
