@@ -95,9 +95,12 @@ class OWSMPoliciesEditor implements WSEditor {
     
     private static final String ORACLE = "oracle/";     // NOI18N
     
-    OWSMPoliciesEditor( JaxWsPoliciesSupport support , Lookup lookup){
+    OWSMPoliciesEditor( JaxWsPoliciesSupport support , Lookup lookup, 
+            List<String> policyIds )
+    {
         mySupport = support;
         myFileObject = lookup.lookup( FileObject.class );
+        myPolicyIds = policyIds;
     }
 
     /* (non-Javadoc)
@@ -114,8 +117,7 @@ class OWSMPoliciesEditor implements WSEditor {
                     "ERR_NoPoliciesSupport")));             // NOI18N
             return component;
         }
-        List<String> securityPolicies = filterSecurityPolicies( );
-        myPanel = new PoliciesVisualPanel( securityPolicies , myFileObject );
+        myPanel = new PoliciesVisualPanel( myPolicyIds , myFileObject );
         return myPanel;
     }
 
@@ -293,64 +295,8 @@ class OWSMPoliciesEditor implements WSEditor {
                 Collections.singletonList( idTree ) );
     }
     
-    private List<String> filterSecurityPolicies() {
-        List<String> list = mySupport.getServicePolicyIds();
-        Set<String> set = new LinkedHashSet<String>( SECURITY_POLICIES );
-        set.retainAll( list );
-        
-        List<String> result = new ArrayList<String>( list.size() );
-        for (String id : set) {
-            result.add( ORACLE + id);
-        }
-        return result;
-    }
-    
-    private static Set<String> SECURITY_POLICIES = new LinkedHashSet<String>();
     private JaxWsPoliciesSupport mySupport;
     private FileObject myFileObject;
     private PoliciesVisualPanel myPanel;
-
-    static {
-        SECURITY_POLICIES.add("binding_authorization_denyall_policy");      // NOI18N
-        SECURITY_POLICIES.add("binding_authorization_permitall_policy");  // NOI18N
-        SECURITY_POLICIES.add("binding_permission_authorization_policy");  // NOI18N
-        SECURITY_POLICIES.add("no_authentication_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("no_authorization_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("no_messageprotection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("sts_trust_config_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("whitelist_authorization_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_http_token_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_http_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml_or_username_token_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml_or_username_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml_token_bearer_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml_token_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml20_token_bearer_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_saml20_token_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_sts_issued_saml_bearer_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_username_token_over_ssl_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss_username_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml_hok_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml_token_with_message_integrity_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml_token_with_message_protection_ski_basic256_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml20_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_saml20_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_username_id_propagation_with_msg_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_username_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_username_token_with_message_protection_ski_basic256_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss10_x509_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_kerberos_token_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_kerberos_token_with_message_protection_basic128_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_kerberos_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_saml_or_username_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_saml_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_saml20_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_sts_issued_saml_hok_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_username_token_with_message_protection_service_policy");  // NOI18N
-        SECURITY_POLICIES.add("wss11_x509_token_with_message_protection_service_policy");  // NOI18N
-    }
+    private List<String> myPolicyIds;
 }

@@ -42,6 +42,10 @@
  */
 package org.netbeans.modules.websvc.owsm;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,7 +88,13 @@ public class OWSMEditorProvider implements WSEditorProvider {
             }
         }
                 
-        return getPoliciesSupport(node.getLookup())!=null;
+        JaxWsPoliciesSupport support = getPoliciesSupport(node.getLookup());
+        if ( support != null ){
+            return getSecurityPolicies(support).size()!=0;
+        }
+        else {
+            return false;
+        }
     }
 
     /* (non-Javadoc)
@@ -93,7 +103,19 @@ public class OWSMEditorProvider implements WSEditorProvider {
     @Override
     public WSEditor createWSEditor( Lookup lookup ) {
         JaxWsPoliciesSupport support = getPoliciesSupport(lookup);
-        return new OWSMPoliciesEditor( support , lookup);
+        return new OWSMPoliciesEditor( support , lookup, getSecurityPolicies(support));
+    }
+    
+    private List<String> getSecurityPolicies( JaxWsPoliciesSupport support ) {
+        List<String> list = support.getServicePolicyIds();
+        Set<String> set = new LinkedHashSet<String>( SECURITY_POLICIES );
+        set.retainAll( list );
+        
+        List<String> result = new ArrayList<String>( list.size() );
+        for (String id : set) {
+            result.add( ORACLE + id);
+        }
+        return result;
     }
     
     private JaxWsPoliciesSupport getPoliciesSupport(Lookup lookup ){
@@ -120,6 +142,52 @@ public class OWSMEditorProvider implements WSEditorProvider {
             }
         }
         return null;
+    }
+    
+    private static Set<String> SECURITY_POLICIES = new LinkedHashSet<String>();
+    
+    static {
+        SECURITY_POLICIES.add("binding_authorization_denyall_policy");      // NOI18N
+        SECURITY_POLICIES.add("binding_authorization_permitall_policy");  // NOI18N
+        SECURITY_POLICIES.add("binding_permission_authorization_policy");  // NOI18N
+        SECURITY_POLICIES.add("no_authentication_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("no_authorization_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("no_messageprotection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("sts_trust_config_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("whitelist_authorization_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_http_token_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_http_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml_or_username_token_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml_or_username_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml_token_bearer_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml_token_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml20_token_bearer_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_saml20_token_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_sts_issued_saml_bearer_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_username_token_over_ssl_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss_username_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml_hok_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml_token_with_message_integrity_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml_token_with_message_protection_ski_basic256_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml20_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_saml20_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_username_id_propagation_with_msg_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_username_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_username_token_with_message_protection_ski_basic256_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss10_x509_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_kerberos_token_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_kerberos_token_with_message_protection_basic128_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_kerberos_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_saml_or_username_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_saml_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_saml20_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_sts_issued_saml_hok_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_username_token_with_message_protection_service_policy");  // NOI18N
+        SECURITY_POLICIES.add("wss11_x509_token_with_message_protection_service_policy");  // NOI18N
     }
 
 }
