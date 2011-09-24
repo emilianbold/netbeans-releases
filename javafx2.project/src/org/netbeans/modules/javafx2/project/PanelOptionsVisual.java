@@ -147,6 +147,12 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 preloaderCheckBox.setVisible(false);
                 txtPreloaderProject.setVisible(false);
                 break;
+            case FXML:
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
+                break;
             case EXTISTING:
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);

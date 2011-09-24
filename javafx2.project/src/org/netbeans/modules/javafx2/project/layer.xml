@@ -53,6 +53,15 @@
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXPreloaderApp.html"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.preloader"/>
                 </file>
+
+                <file name="fxml.xml">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX/fxml.xml"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfxjava.png"/>
+                    <attr name="position" intvalue="305"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXMLApp.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.fxml"/>
+                </file>
             </folder>
         </folder>
 
