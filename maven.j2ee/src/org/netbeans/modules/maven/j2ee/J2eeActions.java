@@ -64,6 +64,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -133,7 +134,7 @@ public class J2eeActions {
 
                 @Override
                 public void taskFinished(Task task) {
-                    FileObject fo;
+                    final FileObject fo;
                     try {
                         fo = jmp.getJ2eeModule().getArchive();
                     } catch (IOException ex) {
@@ -142,11 +143,16 @@ public class J2eeActions {
                     if (fo == null) {
                         return;
                     }
-                    try {
-                        jmp.verify(fo, null);
-                    } catch (ValidationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                jmp.verify(fo, null);
+                            } catch (ValidationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
             });
         }
