@@ -30,12 +30,12 @@
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                       <Component id="lblPreloaderProject" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtPreloaderProject" pref="265" max="32767" attributes="0"/>
+                      <Component id="txtPreloaderProject" pref="295" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblPlatform" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="platformComboBox" pref="272" max="32767" attributes="0"/>
+                      <Component id="platformComboBox" pref="302" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -56,8 +56,8 @@
                       <Component id="lblLibFolder" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtLibFolder" pref="298" max="32767" attributes="0"/>
-                          <Component id="lblHint" alignment="0" pref="298" max="32767" attributes="0"/>
+                          <Component id="txtLibFolder" pref="328" max="32767" attributes="0"/>
+                          <Component id="lblHint" alignment="0" pref="328" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnLibFolder" min="-2" pref="87" max="-2" attributes="1"/>
@@ -68,7 +68,7 @@
                       <Component id="mainClassTextField" pref="382" max="32767" attributes="0"/>
                   </Group>
                   <Component id="setAsMainCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator1" alignment="1" pref="495" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="525" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>

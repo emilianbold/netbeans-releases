@@ -65,43 +65,51 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     private final String title;
     private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
+    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
     
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String title) {
         this.title = title;
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, title);
         }
         return component;
     }
-    
+
+    @Override
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
-    
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -109,21 +117,24 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read (wizardDescriptor);
-        
+        component.read(wizardDescriptor);
+
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
         Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-        if (substitute != null)
+        if (substitute != null) {
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);

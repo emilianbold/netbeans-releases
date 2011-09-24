@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -79,7 +80,6 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     enum WizardType {APPLICATION, PRELOADER, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
-    static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
     static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
     
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
@@ -164,7 +164,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         
-        String platformName = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_JAVA_PLATFORM_NAME);
+        String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
         String preloader = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME);
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N

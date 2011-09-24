@@ -72,6 +72,7 @@ import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.lib.*;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
+import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 /**
  * Text editor support that handles I/O encoding and sync with tree.
@@ -667,7 +668,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /** */
         private final XMLDataObjectLook dataObject; // used while creating the editor
         /** */
-        private final String mime;                  // used while creating the editor
+        private String mime;                  // used while creating the editor
         
         //
         // init
@@ -675,6 +676,9 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         
         /** Create new TextEditorSupportFactory. */
         public TextEditorSupportFactory(XMLDataObjectLook dobj, String mime) {
+            if (mime == null && !(dobj instanceof DataObject)) {
+                throw new IllegalArgumentException("DataObject is needed to lazy-resolve MIME type");
+            }
             this.dataObject = dobj;
             this.mime       = mime;
         }
@@ -748,7 +752,32 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         protected final String getMIMEType() {
+            if (mime == null) {
+                // lazy-initialize the MIME type:
+                mime = findMIMEtype();
+            }
             return mime;
+        }
+        
+        private String findMIMEtype() {
+            FileObject fo = ((DataObject)dataObject).getPrimaryFile();
+            String mimetype = null;
+                    
+             if (fo.isValid()) {
+                 mimetype = fo.getMIMEType();
+             }
+            //when undelying fileobject has a mimetype defined,
+            //don't enforce text/xml on the editor document.
+            //be conservative and apply the new behaviour only when the mimetype is xml like..
+            if (mimetype == null || mimetype.indexOf("xml") == -1) { // NOI18N
+                mimetype = XMLKit.MIME_TYPE;
+            }
+            // divert the standard MIME type to plain XML; others must register their
+            // multiviews for non-standard mime types.
+            if (XMLKit.MIME_TYPE.equals(mimetype)) {
+                mimetype = org.netbeans.modules.xml.XMLDataObject.MIME_PLAIN_XML;
+            }
+            return mimetype;
         }
         
     } // end of class TextEditorSupportFactory
