@@ -144,7 +144,7 @@ public class JFXProjectGenerator {
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
                 dirFO.createFolder("test"); // NOI18N
                 if (mainClass != null) {
-                    createMainClass(mainClass, srcFolder, type);
+                    createFiles(mainClass, srcFolder, type);
                 }
             }
         });
@@ -646,7 +646,7 @@ public class JFXProjectGenerator {
         }
     }
 
-    private static void createMainClass(String mainClassName, FileObject srcFolder, WizardType type) throws IOException {
+    private static void createFiles(String mainClassName, FileObject srcFolder, WizardType type) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf('.'); // NOI18N
         String mName, pName;
         if (lastDotIdx == -1) {
@@ -661,9 +661,21 @@ public class JFXProjectGenerator {
             return;
         }
 
-        FileObject template = type == WizardType.PRELOADER ?
-                FileUtil.getConfigFile("Templates/javafx/FXPreloader.java") : // NOI18N
-                FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+        Map<String, String> params = null;
+        FileObject template = null;
+        switch (type) {
+            case APPLICATION:
+                template = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+                break;
+            case PRELOADER:
+                template = FileUtil.getConfigFile("Templates/javafx/FXPreloader.java"); // NOI18N
+                break;
+            case FXML:
+                template = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
+                params = new HashMap<String, String>(1);
+                params.put("fxmlname", JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME); // NOI18N
+        }
+        
         if (template == null) {
             return; // Don't know the template
         }
@@ -675,7 +687,21 @@ public class JFXProjectGenerator {
             pkgFolder = FileUtil.createFolder(srcFolder, fName);
         }
         DataFolder pDf = DataFolder.findFolder(pkgFolder);
-        mt.createFromTemplate(pDf, mName);
+        if (params != null) {
+            mt.createFromTemplate(pDf, mName, params);
+        } else {
+            mt.createFromTemplate(pDf, mName);
+        }
+        
+        if (type == WizardType.FXML) {
+            FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
+            DataObject dXMLTemplate = DataObject.find(xmlTemplate);
+            dXMLTemplate.createFromTemplate(pDf, JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME);
+
+            FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
+            DataObject dJavaTemplate = DataObject.find(javaTemplate);
+            dJavaTemplate.createFromTemplate(pDf, JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME);
+        }
     }
     
     private static void createPreloaderClass(String preloaderClassName, FileObject srcFolder) throws IOException {
