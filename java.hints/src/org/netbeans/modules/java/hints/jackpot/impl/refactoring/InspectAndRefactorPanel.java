@@ -475,7 +475,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 else 
                     return getCustomScope();
             case 2:
-                return getThisPackageScope();
+                if (fileObject != null) {
+                    return getThisPackageScope();
+                } else {
+                    return getCustomScope();
+                }
             case 3:
                 return getThisFileScope();
             case 4:
