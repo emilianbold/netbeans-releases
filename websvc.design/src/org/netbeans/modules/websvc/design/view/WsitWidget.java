@@ -50,6 +50,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
@@ -88,6 +89,7 @@ public class WsitWidget extends AbstractTitledWidget {
     private Service service;
     private PropertyChangeListener configListener;
     private Object key = new Object();
+    private Collection<WSConfiguration> configurations;
     
     /**
      * Creates a new instance of OperationWidget
@@ -95,10 +97,14 @@ public class WsitWidget extends AbstractTitledWidget {
      * @param service
      * @param serviceModel
      */
-    public WsitWidget(ObjectScene scene, final Service service, FileObject implementationClass) {
+    public WsitWidget(ObjectScene scene, final Service service, 
+            FileObject implementationClass, 
+            Collection<WSConfiguration> wsConfigurations ) 
+    {
         super(scene,RADIUS,BORDER_COLOR);
         this.implementationClass = implementationClass;
         this.service=service;
+        configurations = wsConfigurations;
         setOpaque(true);
         setBackground(TITLE_COLOR_PARAMETER);
         configListener = new WSConfigurationListener(this);
@@ -140,8 +146,7 @@ public class WsitWidget extends AbstractTitledWidget {
     }
     
     private void populateConfigWidget() {
-        for(WSConfigurationProvider provider : getConfigProviders()){
-            final WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
+        for( final WSConfiguration config : getWSConfigurations() ){
             if(config != null){
                 CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName()) {
                     @Override
@@ -171,6 +176,10 @@ public class WsitWidget extends AbstractTitledWidget {
         }
     }
     
+    private Collection<WSConfiguration> getWSConfigurations(){
+        return configurations;
+    }
+    
     private void determineVisibility() {
         for(Widget button:configButtons.getChildren()) {
             if(button.isVisible()) {
@@ -188,10 +197,6 @@ public class WsitWidget extends AbstractTitledWidget {
     @Override
     public Object hashKey() {
         return key;
-    }
-    
-    private Set<WSConfigurationProvider> getConfigProviders(){
-        return WSConfigurationProviderRegistry.getDefault().getWSConfigurationProviders();
     }
     
     class ConfigWidgetAction extends AbstractAction{
