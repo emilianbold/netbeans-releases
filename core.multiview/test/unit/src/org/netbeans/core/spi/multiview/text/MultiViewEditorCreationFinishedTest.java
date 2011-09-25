@@ -42,44 +42,48 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans.core.spi.multiview.text;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.io.Serializable;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.text.CloneableEditorCreationFinishedTest;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
 
-/**
- * @author Jaroslav Tulach
+/** Ensuring compatible behavior between 
  */
-public class NbRepositoryTest extends NbTestCase {
+public class MultiViewEditorCreationFinishedTest extends CloneableEditorCreationFinishedTest {
+
+    public MultiViewEditorCreationFinishedTest(String s) {
+        super(s);
+    }
+
+    @Override
+    protected Pane createPane(CloneableEditorSupport sup) {
+        final Lookup lkp = Lookups.fixed(sup);
+        class P implements Serializable, Lookup.Provider {
+            @Override
+            public Lookup getLookup() {
+                return lkp;
+            }
+        }
+        CloneableTopComponent pane = MultiViews.createCloneableMultiView("text/x-compat-test", new P());
+        return (Pane) pane;
+    }
     
-    public NbRepositoryTest(String testName) {
-        super(testName);
+    @MultiViewElement.Registration(
+            displayName="editor",
+            iconBase="none",
+            mimeType="text/x-compat-test",
+            persistenceType=TopComponent.PERSISTENCE_NEVER,
+            preferredID="editor"
+    )
+    public static MultiViewEditorElement create(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
     }
-
-    public void testUserDirIsWriteableEvenInstallDirDoesNotExists() throws IOException {
-        System.getProperties().remove("netbeans.home");
-        System.setProperty("netbeans.user", getWorkDirPath());
-        
-        FileObject ahoj = FileUtil.createData(FileUtil.getConfigRoot(), "ahoj.jardo");
-        
-        OutputStream os = ahoj.getOutputStream();
-        os.write("Ahoj".getBytes());
-        os.close();
-        
-        File af = new File(new File(getWorkDir(), "config"), "ahoj.jardo");
-        assertTrue("File created", af.exists());
-        assertEquals("4 bytes", 4, af.length());
-    }
-
-    /**
-     * Test for issue #129583: XML layers from classpath modules should always be loaded.
-     */
-    public void testNbRepositoryInitializedFromClasspath() throws Exception {
-        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
-    }
-
 }
