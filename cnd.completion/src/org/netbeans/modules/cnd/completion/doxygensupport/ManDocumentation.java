@@ -221,7 +221,7 @@ public class ManDocumentation {
         if (np.getPlatformName() == null) {
             exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
         } else if (np.getPlatformName().contains("Solaris")) { // NOI18N
-            NativeExitStatus es = np.execute("man", null, "-l", name); // NOI18N
+            NativeExitStatus es = np.execute("man", new String[]{}, "-l", name); // NOI18N
             String section = null;
             String output = es.output;
             int index1 = output.indexOf("(3"); // NOI18N
