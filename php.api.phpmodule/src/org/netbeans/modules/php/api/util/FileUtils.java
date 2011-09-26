@@ -291,7 +291,9 @@ public final class FileUtils {
         try {
             File tmpFile = File.createTempFile("netbeans", null, directory);
             LOGGER.log(Level.FINE, "Temp file {0} created", tmpFile);
-            tmpFile.delete();
+            if (!tmpFile.delete()) {
+                tmpFile.deleteOnExit();
+            }
             LOGGER.log(Level.FINE, "Temp file {0} deleted", tmpFile);
         } catch (IOException exc) {
             LOGGER.log(Level.FINE, exc.getMessage(), exc);
