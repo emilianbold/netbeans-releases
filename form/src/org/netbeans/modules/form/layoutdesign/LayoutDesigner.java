@@ -2673,9 +2673,9 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         if (logTestCode()) {
             testCode.add("// > ADJUST COMPONENT ALIGNMENT"); //NOI18N
             testCode.add("{"); //NOI18N
-            testCode.add("LayoutComponent comp = model.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
-            testCode.add("int dimension = " + dimension);	    //NOI18N
-            testCode.add("int alignment = " + alignment);          //NOI18N 
+            testCode.add("LayoutComponent comp = lm.getLayoutComponent(\"" + comp.getId() + "\");"); //NOI18N
+            testCode.add("int dimension = " + dimension + ";");	    //NOI18N
+            testCode.add("int alignment = " + alignment + ";");          //NOI18N 
             testCode.add("ld.adjustComponentAlignment(comp, dimension, alignment);"); //NOI18N
             testCode.add("}"); //NOI18N
         }
@@ -2729,8 +2729,14 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     } else if (LayoutInterval.wantResize(li)) {
                         if ((before && (alignment == LEADING)) || (!before && (alignment == TRAILING))) {
                             assert li.isEmptySpace();
+                            int expCurrentSize = NOT_EXPLICITLY_DEFINED;
+                            if (li.getDiffToDefaultSize() != 0 && li.getPreferredSize() <= 0) {
+                                expCurrentSize = LayoutInterval.getCurrentSize(li, dimension);
+                            }
                             operations.setIntervalResizing(li, false);
-                            if (li.getPreferredSize() == 0) {
+                            if (expCurrentSize > 0) {
+                                operations.resizeInterval(li, expCurrentSize);
+                            } else if (li.getPreferredSize() == 0) {
                                 layoutModel.removeInterval(li);
                                 i--;
                             }
@@ -2772,6 +2778,11 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         operations.setIntervalResizing(gap, true);
                         layoutModel.setIntervalSize(gap, 0, 0, gap.getMaximumSize());
                         layoutModel.addInterval(gap, parent, index);
+                        if (parent.getAlignment() != alignment) {
+                            layoutModel.setIntervalAlignment(parent, alignment);
+                        }
+                        operations.optimizeGaps2(parent.getParent(), dimension);
+                        parent = interval.getParent();
                     }
                     changed = true;
                 }
