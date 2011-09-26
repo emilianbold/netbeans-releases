@@ -45,10 +45,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -58,7 +58,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -208,7 +207,7 @@ public class DoubleCheck extends AbstractHint {
         Element secondVariable = info.getTrees().getElement(varSecond);
         
         if (firstVariable != null && firstVariable.equals(secondVariable)) {
-            return    getSourceLevel(info).compareTo(SOURCE_LEVEL_1_5) < 0
+            return    info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0
                    || !firstVariable.getModifiers().contains(Modifier.VOLATILE);
         }
         
@@ -236,18 +235,6 @@ public class DoubleCheck extends AbstractHint {
         return null;
     }
 
-    private static SpecificationVersion getSourceLevel(CompilationInfo info) {
-        String sl = SourceLevelQuery.getSourceLevel(info.getFileObject());
-
-        if (sl == null) {
-            return SOURCE_LEVEL_1_5;
-        }
-        
-        return new SpecificationVersion(sl);
-    }
-
-    private static final SpecificationVersion SOURCE_LEVEL_1_5 = new SpecificationVersion("1.5");
-    
     private static final class FixImpl extends JavaFix {
         private TreePathHandle synchHandle;
         private FileObject file;
