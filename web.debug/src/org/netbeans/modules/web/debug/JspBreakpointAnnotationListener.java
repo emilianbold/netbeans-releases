@@ -79,7 +79,8 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
         if ( (!propertyName.equals (JspLineBreakpoint.PROP_CONDITION)) &&
              (!propertyName.equals (JspLineBreakpoint.PROP_URL)) &&
              (!propertyName.equals (JspLineBreakpoint.PROP_LINE_NUMBER)) &&
-             (!propertyName.equals (JspLineBreakpoint.PROP_ENABLED))
+             (!propertyName.equals (JspLineBreakpoint.PROP_ENABLED)) &&
+             (!propertyName.equals (JspLineBreakpoint.PROP_VALIDITY))
         ) return;
         JspLineBreakpoint b = (JspLineBreakpoint) e.getSource ();
         annotate (b);

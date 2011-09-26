@@ -48,6 +48,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.*;
@@ -220,7 +221,9 @@ public class Context {
                              EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
             (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
-
+        if (b.getValidity() == Breakpoint.VALIDITY.INVALID && b.isEnabled ()) {
+            annotationType += "_broken";    // NOI18N
+        }
         return annotate (
             url,
             lineNumber,
