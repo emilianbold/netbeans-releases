@@ -81,36 +81,30 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
     }
     
     
-    protected void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
+    protected static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         if (file != null) {
             result.add(file);
         }
     }
-    
-    protected List<FileObject> getFiles(String ... fileNames) {
+
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
-        
-        for (String fileName : fileNames) {
-            addFile(projectDirectory, fileName, files);
-        }
+        addFile(projectDirectory, "pom.xml", files); // NOI18N
+        addFile(projectDirectory, "nbactions.xml", files); //NOI18N
+        addFile(projectDirectory, "nb-configuration.xml", files); //NOI18N
         
         return files;
     }
-
-    @Override
-    public List<FileObject> getMetadataFiles() {
-        return getFiles("nbactions.xml", "nb-configuration.xml"); //NOI18N
-    }
     
-    @Override
     public List<FileObject> getDataFiles() {
-        // POM isn't a part of NB metadata files
-        return getFiles("pom.xml", "src"); // NOI18N
+        List<FileObject> files = new ArrayList<FileObject>();
+        addFile(project.getProjectDirectory(), "src", files); //NOI18N
+        //TODO is there more?
+        return files;
     }
     
-    @Override
     public void notifyDeleting() throws IOException {
         // cannot run ActionProvider.CLEAN because that one doesn't stop thi thread.
         //TODO shall I get hold of the actual mapping for the clean action?
@@ -129,17 +123,16 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         config.setProject(null);
     }
     
-    @Override
+    
+    
     public void notifyDeleted() throws IOException {
         state.notifyDeleted();
     }
     
-    @Override
     public void notifyMoving() throws IOException {
         notifyDeleting();
     }
     
-    @Override
     public void notifyMoved(Project original, File originalLoc, final String newName) throws IOException {
         if (original == null) {
             //old project call..
@@ -161,11 +154,10 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         }
     }
     
-    @Override
     public void notifyCopying() throws IOException {
+        
     }
     
-    @Override
     public void notifyCopied(Project original, File originalLoc, String newName) throws IOException {
         if (original == null) {
             //old project call..
@@ -183,8 +175,6 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
             if (par != null) {
                 FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-
-                    @Override
                     public void performOperation(POMModel model) {
                         MavenProject prj = par.getOriginalMavenProject();
                         if ((prj.getModules() != null && prj.getModules().contains(prjLoc)) == delete) {
