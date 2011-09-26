@@ -137,14 +137,18 @@ PropertyChangeListener {
         if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
             getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
         }
+        String printText = breakpoint.getPrintText ();
+        substituteAndPrintText(printText, event);
+    }
+    
+    public void substituteAndPrintText(String printText, JPDABreakpointEvent event) {
+        if (printText == null || printText.length  () == 0) return;
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager ();
                 if (ioManager == null) return;
             }
         }
-        String printText = breakpoint.getPrintText ();
-        if (printText == null || printText.length  () == 0) return;
         printText = substitute(printText, event);
         synchronized (lock) {
             if (ioManager != null) {
@@ -183,55 +187,14 @@ PropertyChangeListener {
                 // Ignore hidden breakpoints
                 return ;
             }
-            if (JPDABreakpoint.VALIDITY.INVALID.equals(evt.getNewValue())) {
-                String msg = bp.getValidityMessage();
-                synchronized (lock) {
-                    if (ioManager == null) {
-                        lookupIOManager ();
-                        if (ioManager == null) return;
-                    }
-                    String printText = (msg != null) ?
-                                       NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpointWithReason", bp.toString(), msg) :
-                                       NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpoint", bp.toString());
-                    IOManager.Line line = null;
-                    if (bp instanceof LineBreakpoint) {
-                        line = new IOManager.Line (
-                            ((LineBreakpoint) bp).getURL(),
-                            ((LineBreakpoint) bp).getLineNumber(),
-                            debugger
-                        );
-                    }
-                    ioManager.println (printText, null, true);
-                    if (line != null) {
-                        ioManager.println(
-                                NbBundle.getMessage(BreakpointOutput.class, "Link_InvalidBreakpoint", bp.toString()),
-                                line, true);
-                    }
-                }
-            } else if (JPDABreakpoint.VALIDITY.VALID.equals(evt.getNewValue())) {
-                synchronized (lock) {
-                    if (ioManager == null) {
-                        lookupIOManager ();
-                        if (ioManager == null) return;
-                    }
-                    String msg = bp.getValidityMessage();
-                    String printText;
-                    if (msg != null && msg.trim().length() > 0) {
-                        printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpointWithReason", bp.toString(), msg);
-                    } else {
-                        printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
-                    }
-                    IOManager.Line line = null;
-                    if (bp instanceof LineBreakpoint) {
-                        line = new IOManager.Line (
-                            ((LineBreakpoint) bp).getURL(),
-                            ((LineBreakpoint) bp).getLineNumber(),
-                            debugger
-                        );
-                    }
-                    ioManager.println (printText, line, false);
-                }
+            String url = null;
+            int lineNumber = -1;
+            if (bp instanceof LineBreakpoint) {
+                url = ((LineBreakpoint) bp).getURL();
+                lineNumber = ((LineBreakpoint) bp).getLineNumber();
             }
+            printValidityMessage(bp, (Breakpoint.VALIDITY) evt.getNewValue(),
+                                 url, lineNumber);
             return ;
         }
         synchronized (lock) {
@@ -244,6 +207,59 @@ PropertyChangeListener {
         }
         getBreakpointsNodeModel ().setCurrentBreakpoint (null);
             
+    }
+    
+    public void printValidityMessage(Breakpoint bp, Breakpoint.VALIDITY newValidity,
+                                     String url, int lineNumber) {
+        if (Breakpoint.VALIDITY.INVALID.equals(newValidity)) {
+            String msg = bp.getValidityMessage();
+            synchronized (lock) {
+                if (ioManager == null) {
+                    lookupIOManager ();
+                    if (ioManager == null) return;
+                }
+                String printText = (msg != null) ?
+                                   NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpointWithReason", bp.toString(), msg) :
+                                   NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpoint", bp.toString());
+                IOManager.Line line = null;
+                if (url != null && lineNumber >= 0) {
+                    line = new IOManager.Line (
+                        url,
+                        lineNumber,
+                        debugger
+                    );
+                }
+                ioManager.println (printText, null, true);
+                if (line != null) {
+                    ioManager.println(
+                            NbBundle.getMessage(BreakpointOutput.class, "Link_InvalidBreakpoint", bp.toString()),
+                            line, true);
+                }
+            }
+        } else if (Breakpoint.VALIDITY.VALID.equals(newValidity)) {
+            synchronized (lock) {
+                if (ioManager == null) {
+                    lookupIOManager ();
+                    if (ioManager == null) return;
+                }
+                String msg = bp.getValidityMessage();
+                String printText;
+                if (msg != null && msg.trim().length() > 0) {
+                    printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpointWithReason", bp.toString(), msg);
+                } else {
+                    printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
+                }
+                IOManager.Line line = null;
+                if (bp instanceof LineBreakpoint) {
+                    line = new IOManager.Line (
+                        ((LineBreakpoint) bp).getURL(),
+                        ((LineBreakpoint) bp).getLineNumber(),
+                        debugger
+                    );
+                }
+                ioManager.println (printText, line, false);
+            }
+        }
     }
 
     
