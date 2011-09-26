@@ -78,20 +78,30 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.settings.Mirror;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.sonatype.aether.util.repository.DefaultAuthenticationSelector;
+import org.sonatype.aether.util.repository.DefaultMirrorSelector;
+import org.sonatype.aether.util.repository.DefaultProxySelector;
 
 /**
  * Handle for the embedded Maven system, used to parse POMs and more.
@@ -106,6 +116,7 @@ public final class MavenEmbedder {
     private final MavenExecutionRequestPopulator populator;
     private final SettingsBuilder settingsBuilder;
     private final EmbedderConfiguration embedderConfiguration;
+    private final SettingsDecrypter settingsDecrypter;
     private long settingsTimestamp;
     private Settings settings;
 
@@ -117,7 +128,7 @@ public final class MavenEmbedder {
         this.repositorySystem = plexus.lookup(RepositorySystem.class);
         this.settingsBuilder = plexus.lookup(SettingsBuilder.class);
         this.populator = plexus.lookup(MavenExecutionRequestPopulator.class);
-        
+        settingsDecrypter = plexus.lookup(SettingsDecrypter.class);
     }
     
     public PlexusContainer getPlexus() {
@@ -316,6 +327,24 @@ public final class MavenEmbedder {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
         session.setOffline(isOffline());
         session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(getLocalRepository().getBasedir()));
+        // Adapted from DefaultMaven.newRepositorySession, but does not look like that can be called directly:
+        DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
+        Settings _settings = getSettings();
+        for (Mirror m : _settings.getMirrors()) {
+            mirrorSelector.add(m.getId(), m.getUrl(), m.getLayout(), false, m.getMirrorOf(), m.getMirrorOfLayouts());
+        }
+        session.setMirrorSelector(mirrorSelector);
+        SettingsDecryptionResult decryptionResult = settingsDecrypter.decrypt(new DefaultSettingsDecryptionRequest(_settings));
+        DefaultProxySelector proxySelector = new DefaultProxySelector();
+        for (Proxy p : decryptionResult.getProxies()) {
+            proxySelector.add(new org.sonatype.aether.repository.Proxy(null, p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+        }
+        session.setProxySelector(proxySelector);
+        DefaultAuthenticationSelector authenticationSelector = new DefaultAuthenticationSelector();
+        for (Server s : decryptionResult.getServers()) {
+            authenticationSelector.add(s.getId(), new Authentication(s.getUsername(), s.getPassword(), s.getPrivateKey(), s.getPassphrase()));
+        }
+        session.setAuthenticationSelector(authenticationSelector);
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
         mavenExecutionRequest.setOffline(isOffline());
         lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, mavenExecutionRequest, new DefaultMavenExecutionResult()));
