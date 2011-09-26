@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -30,7 +30,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -109,6 +109,19 @@ is the proper place.
 
     <changes>
 
+        <change id="TypeElementFinder-find">
+            <api name="general"/>
+            <summary>Added overload method for TypeElementFinder.find which allows to specify the prefilled initial text</summary>
+            <version major="1" minor="24"/>
+            <date day="20" month="9" year="2011"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added overload method for <code>TypeElementFinder.find</code> which allows to specify the prefilled initial text.
+            </description>
+            <class package="org.netbeans.api.java.source.ui" name="TypeElementFinder"/>
+            <issue number="125811"/>
+        </change>
         <change id="ElementJavadoc-getTextAsync">
             <api name="general"/>
             <summary>Added asynchronous version of getText method into ElementJavadoc </summary>

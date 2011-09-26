@@ -43,7 +43,7 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -51,11 +51,11 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
+@ServiceProvider(service = CssEditorModule.class)
 public class ChromeModule extends BrowserSupportModule {
 
     public ChromeModule() {
-        super(new DefaultBrowser("Chrome", "Goodle", "webkit", "", "chrome20"), "webkit");
+        super(new DefaultBrowser("Chrome", "Google", "webkit", "", "chrome20"), "webkit"); //NOI18N
     }
 
     @Override

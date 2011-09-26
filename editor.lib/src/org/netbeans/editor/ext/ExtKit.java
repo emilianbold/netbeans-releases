@@ -275,7 +275,7 @@ public class ExtKit extends BaseKit {
         static final long serialVersionUID =4257043398248915291L;
 
         public BuildPopupMenuAction() {
-            super(NO_RECORDING);
+            super(buildPopupMenuAction, NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -443,10 +443,10 @@ public class ExtKit extends BaseKit {
 
     }
 
-    @EditorActionRegistration(
-            name = buildToolTipAction,
-            shortDescription = editorBundleHash + buildToolTipAction
-    )
+//    @EditorActionRegistration(
+//            name = buildToolTipAction,
+//            shortDescription = editorBundleHash + buildToolTipAction
+//    )
     public static class BuildToolTipAction extends BaseAction {
 
         static final long serialVersionUID =-2701131863705941250L;

@@ -835,7 +835,7 @@ public class StartTask extends BasicTask<OperationState> {
 
         if (domainVersion < 0) return false;  // no upgrade attempted, so it DID NOT fail.
 
-        if (domainVersion < installVersion) {
+        if (domainVersion/10 < installVersion/10) {
             return executeUpgradeProcess() != 0;
         }
         return false;

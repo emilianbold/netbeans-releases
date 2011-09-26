@@ -1,5 +1,7 @@
 <html><body><pre>
-&lt;HTML>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+&lt;html>
 &lt;!--
   Copyright 2004 The Apache Software Foundation
 
@@ -16,31 +18,26 @@
   limitations under the License.
 -->
 
-&lt;HEAD>&lt;TITLE> 
-	Calendar: A JSP APPLICATION
-&lt;/TITLE>&lt;/HEAD>
+&lt;head>
+    &lt;title> Calendar: A JSP APPLICATION &lt;/title>
+&lt;/head>
 
-
-&lt;BODY BGCOLOR="white">
+&lt;body BGCOLOR="white">
 &lt;jsp:useBean id="table" scope="session" class="cal.TableBean" />
+&lt;c:set var="time" value="${pageContext.request.getParameter('time')}" />
 
-&lt;% 
-	String time = request.getParameter ("time");
-%>
+&lt;font size=5> Please add the following event:
+&lt;br/> &lt;h3> &lt;c:out value="Date ${table.date}" />
+&lt;br/> Time &lt;c:out value="${time}" />&lt;/h3>
+&lt;/font>
+&lt;form method="post" action="cal1.jsp">
+    &lt;br/> &lt;input name="date" type=hidden value="current" />
+    &lt;br/> &lt;input name="time" type=hidden value="&lt;c:out value="${time}" />" />
+    &lt;br/> &lt;h2> Description of the event &lt;input name="description" type=text size=20 /> &lt;/h2>
+    &lt;br/> &lt;input type=submit value="submit" />
+&lt;/form>
 
-&lt;FONT SIZE=5> Please add the following event:
-&lt;BR> &lt;h3> Date &lt;%= table.getDate() %>
-&lt;BR> Time &lt;%= time %> &lt;/h3>
-&lt;/FONT>
-&lt;FORM METHOD=POST ACTION=cal1.jsp>
-&lt;BR> 
-&lt;BR> &lt;INPUT NAME="date" TYPE=HIDDEN VALUE="current">
-&lt;BR> &lt;INPUT NAME="time" TYPE=HIDDEN VALUE=&lt;%= time %>
-&lt;BR> &lt;h2> Description of the event &lt;INPUT NAME="description" TYPE=TEXT SIZE=20> &lt;/h2>
-&lt;BR> &lt;INPUT TYPE=SUBMIT VALUE="submit">
-&lt;/FORM>
-
-&lt;/BODY>
-&lt;/HTML>
+&lt;/body>
+&lt;/html>
 
 </pre></body></html>

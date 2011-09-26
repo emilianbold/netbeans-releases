@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -60,6 +59,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -107,7 +107,11 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
             }
             fileName = fileName.replace('/', '\\'); // NOI18N
         }
-        fileName = pathMap.getLocalPath(fileName, true);
+        String localFileName = pathMap.getTrueLocalPath(fileName);
+        if (localFileName != null) {
+            return FileSystemProvider.getFileObject(ExecutionEnvironmentFactory.getLocal(), 
+                    FileSystemProvider.normalizeAbsolutePath(localFileName, ExecutionEnvironmentFactory.getLocal()));
+        }
         return FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
     }
 

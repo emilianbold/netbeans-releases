@@ -79,6 +79,7 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,6 +102,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
@@ -1677,5 +1679,26 @@ itor tabs #66700).
             }
         }
         return anyFileNotified;
+    }
+    
+    /**
+     * Sorts heads by branch they belong to.
+     * @param heads
+     * @return 
+     */
+    public static Map<String, Collection<HgLogMessage>> sortByBranch (HgLogMessage[] heads) {
+        Map<String, Collection<HgLogMessage>> branchHeadsMap = new HashMap<String, Collection<HgLogMessage>>(heads.length);
+        for (HgLogMessage head : heads) {
+            String[] branches = head.getBranches().length > 0 ? head.getBranches() : new String[] { HgBranch.DEFAULT_NAME };
+            for (String branch : branches) {
+                Collection<HgLogMessage> branchHeads = branchHeadsMap.get(branch);
+                if (branchHeads == null) {
+                    branchHeads = new LinkedList<HgLogMessage>();
+                    branchHeadsMap.put(branch, branchHeads);
+                }
+                branchHeads.add(head);
+            }
+        }
+        return branchHeadsMap;
     }
 }

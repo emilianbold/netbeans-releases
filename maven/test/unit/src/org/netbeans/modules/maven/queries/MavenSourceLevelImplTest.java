@@ -43,10 +43,13 @@
 package org.netbeans.modules.maven.queries;
 
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.test.MockChangeListener;
 
 public class MavenSourceLevelImplTest extends NbTestCase {
 
@@ -110,6 +113,18 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
     }
 
+    public void testSystemPropertySourceLevel() throws Exception { // #201938
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<packaging>jar</packaging><version>1.0</version>"
+                + "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><version>2.1</version>"
+                + "<configuration><source>${level}</source></configuration></plugin></plugins></build>"
+                + "</project>");
+        FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
+        System.setProperty("level", "1.4");
+        assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
+    }
+
     public void testTestSourceLevel() throws Exception { // e.g. org.apache.felix.configadmin
         TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId><version>1.0</version>"
@@ -145,6 +160,30 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(gsrc));
         assertEquals("1.6", SourceLevelQuery.getSourceLevel(tsrc));
         assertEquals("1.6", SourceLevelQuery.getSourceLevel(gtsrc));
+    }
+
+    public void testChanges() throws Exception {
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<packaging>jar</packaging><version>1.0</version>"
+                + "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><version>2.1</version>"
+                + "<configuration><source>1.4</source></configuration></plugin></plugins></build>"
+                + "</project>");
+        FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
+        SourceLevelQuery.Result r = SourceLevelQuery.getSourceLevel2(source);
+        assertEquals("1.4", r.getSourceLevel());
+        assertTrue(r.supportsChanges());
+        MockChangeListener l = new MockChangeListener();
+        r.addChangeListener(l);
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<packaging>jar</packaging><version>1.0</version>"
+                + "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><version>2.1</version>"
+                + "<configuration><source>1.6</source></configuration></plugin></plugins></build>"
+                + "</project>");
+        NbMavenProject.fireMavenProjectReload(ProjectManager.getDefault().findProject(wd));
+        l.expectEvent(9999);
+        assertEquals("1.6", r.getSourceLevel());
     }
 
 }

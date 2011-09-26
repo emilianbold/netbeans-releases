@@ -44,6 +44,8 @@
 package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -57,16 +59,28 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  * Configuration for CSS
  */
-@LanguageRegistration(mimeType="text/x-css") //NOI18N
+@LanguageRegistration(mimeType = "text/x-css", useMultiview = true) //NOI18N
 //index all source roots only
-@PathRecognizerRegistration(mimeTypes="text/x-css", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
+@PathRecognizerRegistration(mimeTypes = "text/x-css", libraryPathIds = {}, binaryLibraryPathIds = {}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
 
     public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+
+    @MultiViewElement.Registration(displayName = "#LBL_CSSEditorTab",
+        iconBase = "org/netbeans/modules/css/resources/style_sheet_16.png",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = "css.source",
+        mimeType = "text/x-css",
+        position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
 
     public CssLanguage() {
     }
@@ -78,9 +92,9 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-         /** Includes things you'd want selected as a unit when double clicking in the editor */
-        return Character.isJavaIdentifierPart(c) 
-                || (c == '-') || (c == '@') 
+        /** Includes things you'd want selected as a unit when double clicking in the editor */
+        return Character.isJavaIdentifierPart(c)
+                || (c == '-') || (c == '@')
                 || (c == '&') || (c == '_')
                 || (c == '#') || (c == '.');
     }
@@ -99,14 +113,13 @@ public class CssLanguage extends DefaultLanguageConfig {
     public String getDisplayName() {
         return "CSS"; //NOI18N ???
     }
-    
+
     @Override
     public String getPreferredExtension() {
         return "css"; // NOI18N
     }
 
     // Service Registrations
-    
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new CssSemanticAnalyzer();
@@ -156,5 +169,4 @@ public class CssLanguage extends DefaultLanguageConfig {
     public boolean hasOccurrencesFinder() {
         return true;
     }
-
 }

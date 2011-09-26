@@ -8,6 +8,9 @@
 	<mapID target="org.netbeans.modules.git.remote" url="git-remote.html" />
 	<mapID target="org.netbeans.modules.git.commit" url="git-com.html" />
 	<mapID target="org.netbeans.modules.git.branch" url="git-branch.html" />
+	<mapID target="org.netbeans.modules.git.options" url="git-options.html" />
+	<mapID target="org.netbeans.modules.git.compare" url="git-diffviewer.html" />
+	<mapID target="org.netbeans.modules.git.initialize" url="git-initialize.html" />
 	
 
 
@@ -26,4 +29,7 @@
 	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="csh/git-chkout-rev.html"/>
 	<mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="csh/git-create-branch.html"/>
 	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.RevisionPickerDialog" url="csh/git-select-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutPaths" url="csh/git-chkout-paths.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.SwitchBranchAction" url="csh/git-switch-branch.html"/>
 </map>

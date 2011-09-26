@@ -107,6 +107,7 @@ import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -326,7 +327,7 @@ public class SourceUtils {
         if (fqn == null)
             throw new NullPointerException();
         
-        CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
+        CodeStyle cs = DiffContext.getCodeStyle(info);
         if (cs.useFQNs())
             return fqn;
         CompilationUnitTree cut = info.getCompilationUnit();

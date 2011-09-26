@@ -230,6 +230,11 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     @Override
+    public String getTrueLocalPath(String rpath) {
+        return getLocalPath(rpath, false); 
+    }
+
+    @Override
     public boolean checkRemotePaths(File[] localFiles, boolean fixMissingPaths) {
         List<String> localPaths = new ArrayList<String>();
         for (File file : localFiles) {
@@ -548,6 +553,23 @@ public abstract class RemotePathMap extends PathMap {
             } else {
                 initLocalBase();
                 res = localBase  + '/' + rpath;
+            }
+            return res;
+        }
+
+        @Override
+        public String getTrueLocalPath(String rpath) {
+            initRemoteBase(true);
+            // for IZ#175198
+            if (rpath.startsWith(NO_MAPPING_PREFIX)) {
+                return rpath;
+            }
+            String res = null;
+            if (isSubPath(remoteBase, rpath)) {
+                res = super.getLocalPath(rpath, false);
+                if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
+                    res = WindowsSupport.getInstance().convertFromMSysPath(res);
+                }
             }
             return res;
         }

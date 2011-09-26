@@ -53,4 +53,18 @@ made subject to such option by the copyright holder.
       <file name="jaxrpc16.xml" url="jaxrpc16.xml"/>
     </folder>
   </folder>
+    <folder name="Services">
+        <folder name="Hidden">
+            <file name="websvc-jaxrpc16-activation-antlibrary.instance">
+                <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
+                <attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/>
+                <attr name="url" urlvalue="nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/activation.jar"/>
+            </file>
+            <file name="websvc-jaxrpc16-mail-antlibrary.instance">
+                <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
+                <attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/>
+                <attr name="url" urlvalue="nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/mail.jar"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -94,6 +94,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.EditorUiAccessor;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -674,7 +675,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      * @deprecated Use Editor Settings API instead.
      */
     public Coloring getDefaultColoring() {
-        Coloring c = getCMInternal().get(FontColorNames.DEFAULT_COLORING);
+        final MimePath mimePath;
+        if (component != null)
+            mimePath = MimePath.get(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component));
+        else
+            mimePath = MimePath.EMPTY;
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        Coloring c = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
         assert c != null : "No default coloring!"; //NOI18N
         return c;
     }

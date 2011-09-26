@@ -127,6 +127,11 @@ public final class ViewHierarchy {
         impl.removeViewHierarchyListener(l);
     }
 
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
+
     private static final class PackageAccessor extends ViewApiPackageAccessor {
 
         @Override

@@ -46,19 +46,18 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
@@ -86,17 +85,17 @@ import org.openide.util.Exceptions;
 /**
  * This class provides controller capabilities for ejb logical views. The nodes
  * should delegate non ui tasks to this class.
- * 
+ *
  * @author Chris Webster
  * @author Martin Adamek
  */
 public final class EjbViewController {
-    
+
     private final String ejbClass;
     private final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     private String displayName;
     private ClasspathInfo cpInfo;
-    
+
     public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) {
         this.ejbClass = ejbClass;
         this.ejbModule = ejbModule;
@@ -110,7 +109,7 @@ public final class EjbViewController {
                     );
         }
     }
-    
+
     public String getDisplayName() {
         try {
             displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -131,14 +130,14 @@ public final class EjbViewController {
         }
         return displayName;
     }
-    
+
     public void delete(boolean deleteClasses) throws IOException {
 
         Profile profile = ejbModule.getJ2eeProfile();
         boolean isEE5orEE6 = Profile.JAVA_EE_5.equals(profile) ||
-                             Profile.JAVA_EE_6_FULL.equals(profile) || 
+                             Profile.JAVA_EE_6_FULL.equals(profile) ||
                              Profile.JAVA_EE_6_WEB.equals(profile);
-        
+
         if (!isEE5orEE6) {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) throws Exception {
@@ -177,7 +176,7 @@ public final class EjbViewController {
             deleteClasses();
         }
     }
-    
+
     public EjbReference createEjbReference() throws IOException {
         Map<String, String> ejbInfo = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
             public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
@@ -224,7 +223,7 @@ public final class EjbViewController {
     public FileObject getBeanFo() {
         return findFileObject(ejbClass);
     }
-    
+
     public DataObject getDataObject(String className) {
         FileObject src = findFileObject(className);
         try {
@@ -238,27 +237,22 @@ public final class EjbViewController {
     }
 
     public ElementHandle<TypeElement> getBeanClass() {
-        FileObject fileObject = findFileObject(ejbClass);
-        if (fileObject == null) {
-            return null;
-        }
-        try {
-            JavaSource javaSource = JavaSource.forFileObject(fileObject);
-            final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>(1);
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController compilationController) throws IOException {
-                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = compilationController.getElements().getTypeElement(ejbClass);
-                    result.add(typeElement != null ? ElementHandle.create(typeElement) : null);
-                }
-            }, true);
-            return result.get(0);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        return getBeanClass(ejbClass);
     }
-    
+
+    public ElementHandle<TypeElement> getBeanClass(String qualifiedClassName) {
+        Set<ElementHandle<TypeElement>> elementHandles = cpInfo.getClassIndex().getDeclaredTypes(
+                getSimpleName(qualifiedClassName),
+                NameKind.SIMPLE_NAME,
+                Collections.singleton(SearchScope.SOURCE));
+        for (ElementHandle<TypeElement> elementHandle : elementHandles) {
+            if (qualifiedClassName.equals(elementHandle.getQualifiedName())) {
+                return elementHandle;
+            }
+        }
+        return null;
+    }
+
     /**
      * gets an ejb reference representation
      * @return the xml code corresponding to this ejb
@@ -287,7 +281,7 @@ public final class EjbViewController {
         }
         return result;
     }
-    
+
     public String getLocalStringRepresentation(final String ejbType) {
         String result = null;
         try {
@@ -312,19 +306,23 @@ public final class EjbViewController {
         }
         return result;
     }
-    
-    
+
+    private String getSimpleName(String qualifiedClassName) {
+        int beginIndex = qualifiedClassName.lastIndexOf('.') + 1; //NOI18N
+        return qualifiedClassName.substring(beginIndex);
+    }
+
     private void writeDD() throws IOException {
         FileObject ddFile = ejbModule.getDeploymentDescriptor();
         DDProvider.getDefault().getDDRoot(ddFile).write(ddFile); // EJB 2.1
     }
-    
+
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName) {
         return role != null &&
                 role.getRelationshipRoleSource() != null &&
                 ejbName.equals(role.getRelationshipRoleSource().getEjbName());
     }
-    
+
     private void deleteRelationships(String ejbName, EjbJar ejbJar) {
         Relationships relationships = ejbJar.getSingleRelationships();
         if (relationships != null) {
@@ -341,7 +339,7 @@ public final class EjbViewController {
             }
         }
     }
-    
+
     private void deleteTraces(Ejb ejb, EjbJar ejbJar) {
         String ejbName = ejb.getEjbName();
         String ejbNameCompare = ejbName + "";
@@ -376,30 +374,14 @@ public final class EjbViewController {
             }
         }
     }
-    
+
     private FileObject findFileObject(final String className) {
-        final FileObject[] result = new FileObject[1];
-        if (cpInfo != null){
-            try {
-                JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TypeElement typeElement = controller.getElements().getTypeElement(className);
-                        if (typeElement != null) {
-                            result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
-                        }
-                    }
-                }, true);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        return result[0];
+        return SourceUtils.getFile(getBeanClass(className), cpInfo);
     }
-    
+
     private void deleteClasses() {
         final ArrayList<FileObject> classFileObjects = new ArrayList<FileObject>();
-        
+
         try {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) throws Exception {
@@ -431,10 +413,10 @@ public final class EjbViewController {
                     }
                 }
             }
-            
+
         } catch (IOException ioe) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(ioe));
         }
     }
-    
+
 }

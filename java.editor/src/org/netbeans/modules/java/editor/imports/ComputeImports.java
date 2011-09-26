@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.editor.imports;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -349,7 +350,17 @@ public class ComputeImports {
                 
                 if (type != null) {
                     if (type.getKind() == TypeKind.ERROR) {
-                        simpleName = el.getSimpleName().toString();
+                        boolean isAssignmentVariable = false;
+
+                        if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
+                            AssignmentTree at = (AssignmentTree) getCurrentPath().getParentPath().getLeaf();
+
+                            isAssignmentVariable = at.getVariable() == tree;
+                        }
+
+                        if (!isAssignmentVariable) {
+                            simpleName = el.getSimpleName().toString();
+                        }
                     }
 
                     if (type != null && type.getKind() == TypeKind.PACKAGE) {

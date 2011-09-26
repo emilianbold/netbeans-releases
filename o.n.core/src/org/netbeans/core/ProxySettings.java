@@ -45,17 +45,27 @@
 package org.netbeans.core;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.NetworkSettings;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -94,6 +104,8 @@ public class ProxySettings {
     
     /** Proxy PAC file manually set. */
     public static final int MANUAL_SET_PAC = 4;
+    
+    private static final Logger LOGGER = Logger.getLogger(ProxySettings.class.getName());
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule (ProxySettings.class);
@@ -437,4 +449,71 @@ public class ProxySettings {
         }
     }
     
+    private static InetSocketAddress analyzeProxy(URI uri) {
+        Parameters.notNull("uri", uri);
+        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+        assert proxies != null : "ProxySelector cannot return null for " + uri;
+        assert !proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;
+        Proxy p = proxies.get(0);
+        if (Proxy.Type.DIRECT == p.type()) {
+            // return null for DIRECT proxy
+            return null;
+        } else {
+            if (p.address() instanceof InetSocketAddress) {
+                // check is
+                //assert ! ((InetSocketAddress) p.address()).isUnresolved() : p.address() + " must be resolved address.";
+                return (InetSocketAddress) p.address();
+            } else {
+                LOGGER.log(Level.INFO, p.address() + " is not instanceof InetSocketAddress but " + p.address().getClass());
+                return null;
+            }
+        }
+    }
+
+    @ServiceProvider(service = NetworkSettings.ProxyCredentialsProvider.class, position = 1000)
+    public static class NbProxyCredentialsProvider extends NetworkSettings.ProxyCredentialsProvider {
+
+        @Override
+        public String getProxyHost(URI u) {
+            if (getPreferences() == null) {
+                return null;
+            }
+            InetSocketAddress sa = analyzeProxy(u);
+            return sa == null ? null : sa.getHostName();
+        }
+
+        @Override
+        public String getProxyPort(URI u) {
+            if (getPreferences() == null) {
+                return null;
+            }
+            InetSocketAddress sa = analyzeProxy(u);
+            return sa == null ? null : Integer.toString(sa.getPort());
+        }
+
+        @Override
+        protected String getProxyUserName(URI u) {
+            if (getPreferences() == null) {
+                return null;
+            }
+            return ProxySettings.getAuthenticationUsername();
+        }
+
+        @Override
+        protected char[] getProxyPassword(URI u) {
+            if (getPreferences() == null) {
+                return null;
+            }
+            return ProxySettings.getAuthenticationPassword();
+        }
+
+        @Override
+        protected boolean isProxyAuthentication(URI u) {
+            if (getPreferences() == null) {
+                return false;
+            }
+            return getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false);
+        }
+
+    }
 }

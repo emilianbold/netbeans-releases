@@ -106,23 +106,38 @@ public class CdiGlyphAction extends AbstractAction {
         }
     }
 
-    private boolean performCdiAction( JTextComponent comp ) {
-        Document document = comp.getDocument();
+    private boolean performCdiAction( final JTextComponent comp ) {
+        final Document document = comp.getDocument();
         if ( document instanceof BaseDocument ){
-            int dot = comp.getCaret().getDot();
-            Annotations annotations = ((BaseDocument) document).getAnnotations();
-            Line line = NbEditorUtilities.getLine(document, dot, true);
-            if (line == null) {
+            final Object values[] = new Object[2];
+            document.render( new Runnable() {
+                
+                @Override
+                public void run() {
+                    int dot = comp.getCaret().getDot();
+                    Annotations annotations = ((BaseDocument) document).getAnnotations();
+                    Line line = NbEditorUtilities.getLine(document, dot, true);
+                    if (line == null) {
+                        return ;
+                    }
+                    int lineNumber = line.getLineNumber();
+                    AnnotationDesc  desc = annotations.getActiveAnnotation(lineNumber);
+                    values[0] = lineNumber;
+                    values[1] = desc;
+                }
+            });
+            
+            if ( values[0] == null || values[1] ==  null ){
                 return false;
             }
-            int lineNumber = line.getLineNumber();
-            AnnotationDesc  desc = annotations.getActiveAnnotation(lineNumber);
-            if ( desc ==  null ){
-                return false;
-            }
+            int lineNumber = (Integer) values[0];
+            AnnotationDesc desc = (AnnotationDesc)values[1];
             String annotationType = desc.getAnnotationType();
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.
                 getInstance( getFile(comp));
+            if ( helper == null ){
+                return false;
+            }
             List<CDIAnnotation> cdiAnnotations = helper.getAnnotations();
             for (CDIAnnotation cdiAnnotation : cdiAnnotations) {
                 String cdiAnnotationType = cdiAnnotation.getAnnotationType();

@@ -44,7 +44,7 @@ package org.netbeans.modules.css.refactoring;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 class CssRefactoringExtraInfo {
 

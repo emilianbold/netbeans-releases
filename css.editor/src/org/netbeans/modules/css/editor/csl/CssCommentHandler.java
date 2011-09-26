@@ -45,7 +45,7 @@ import org.netbeans.modules.csl.spi.CommentHandler;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssCommentHandler extends CommentHandler.DefaultCommentHandler {
 

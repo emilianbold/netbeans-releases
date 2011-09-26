@@ -63,7 +63,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
@@ -79,7 +79,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssModuleSupport {
 
@@ -88,15 +88,15 @@ public class CssModuleSupport {
     private static final AtomicReference<Map<String, Property>> PROPERTIES = new AtomicReference<Map<String, Property>>();
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
 
-    public static Collection<? extends CssModule> getModules() {
-        return Lookup.getDefault().lookupAll(CssModule.class);
+    public static Collection<? extends CssEditorModule> getModules() {
+        return Lookup.getDefault().lookupAll(CssEditorModule.class);
     }
 
     public static Map<OffsetRange, Set<ColoringAttributes>> getSemanticHighlights(FeatureContext context, FeatureCancel cancel) {
         Map<OffsetRange, Set<ColoringAttributes>> all = new HashMap<OffsetRange, Set<ColoringAttributes>>();
         final Collection<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>> visitors = new ArrayList<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>>();
 
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>> visitor = module.getSemanticHighlightingNodeVisitor(context, all);
             //modules may return null visitor instead of a dummy empty visitor 
             //to speed up the parse tree visiting when there're no result
@@ -128,7 +128,7 @@ public class CssModuleSupport {
         Set<OffsetRange> all = new HashSet<OffsetRange>();
         final Collection<NodeVisitor<Set<OffsetRange>>> visitors = new ArrayList<NodeVisitor<Set<OffsetRange>>>();
 
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             NodeVisitor<Set<OffsetRange>> visitor = module.getMarkOccurrencesNodeVisitor(context, all);
             //modules may return null visitor instead of a dummy empty visitor 
             //to speed up the parse tree visiting when there're no result
@@ -161,7 +161,7 @@ public class CssModuleSupport {
         Map<String, List<OffsetRange>> all = new HashMap<String, List<OffsetRange>>();
         final Collection<NodeVisitor<Map<String, List<OffsetRange>>>> visitors = new ArrayList<NodeVisitor<Map<String, List<OffsetRange>>>>();
 
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             NodeVisitor<Map<String, List<OffsetRange>>> visitor = module.getFoldsNodeVisitor(context, all);
             //modules may return null visitor instead of a dummy empty visitor 
             //to speed up the parse tree visiting when there're no result
@@ -191,7 +191,7 @@ public class CssModuleSupport {
     }
 
     public static Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclarationLocation(Document document, int caretOffset, FeatureCancel cancel) {
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             if (cancel.isCancelled()) {
                 return null;
             }
@@ -207,7 +207,7 @@ public class CssModuleSupport {
         List<StructureItem> all = new ArrayList<StructureItem>();
         final Collection<NodeVisitor<List<StructureItem>>> visitors = new ArrayList<NodeVisitor<List<StructureItem>>>();
 
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             NodeVisitor<List<StructureItem>> visitor = module.getStructureItemsNodeVisitor(context, all);
             //modules may return null visitor instead of a dummy empty visitor 
             //to speed up the parse tree visiting when there're no result
@@ -243,7 +243,7 @@ public class CssModuleSupport {
 
     private static Map<String, Property> loadProperties() {
         Map<String, Property> all = new HashMap<String, Property>();
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             for (Property pd : module.getProperties()) {
                 Property original = all.put(pd.getName(), pd);
                 if (original != null) {
@@ -286,7 +286,7 @@ public class CssModuleSupport {
 
     public static List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> all = new ArrayList<CompletionProposal>();
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             all.addAll(module.getCompletionProposals(context));
         }
         return all;
@@ -296,7 +296,7 @@ public class CssModuleSupport {
     //TODO: the pseudo elements and classes should be context aware, not simple strings ... later
     public static Collection<String> getPseudoClasses() {
         Collection<String> all = new HashSet<String>();
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             Collection<String> vals = module.getPseudoClasses();
             if (vals != null) {
                 all.addAll(vals);
@@ -307,7 +307,7 @@ public class CssModuleSupport {
 
     public static Collection<String> getPseudoElements() {
         Collection<String> all = new HashSet<String>();
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             Collection<String> vals = module.getPseudoElements();
             if (vals != null) {
                 all.addAll(vals);
@@ -325,7 +325,7 @@ public class CssModuleSupport {
                 return t.getName().compareTo(t1.getName());
             }
         });
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             Collection<Browser> extraBrowsers = module.getExtraBrowsers();
             if (extraBrowsers != null) {
                 all.addAll(extraBrowsers);
@@ -335,7 +335,7 @@ public class CssModuleSupport {
     }
 
     public static boolean isPropertySupported(String propertyName, Browser browser) {
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             PropertySupportResolver.Factory factory = module.getPropertySupportResolverFactory();
             if (factory != null) {
                 PropertySupportResolver resolver = factory.createPropertySupportResolver(browser);
@@ -366,18 +366,6 @@ public class CssModuleSupport {
             }
 
             @Override
-            public String getHelp(URL url) {
-                StringBuilder sb = new StringBuilder();
-                for (HelpResolver resolver : getSortedHelpResolvers()) {
-                    String help = resolver.getHelp(url);
-                    if (help != null) {
-                        sb.append(sb);
-                    }
-                }
-                return sb.toString();
-            }
-
-            @Override
             public URL resolveLink(Property property, String link) {
                 for (HelpResolver resolver : getSortedHelpResolvers()) {
                     URL url = resolver.resolveLink(property, link);
@@ -398,7 +386,7 @@ public class CssModuleSupport {
 
     private static Collection<HelpResolver> getSortedHelpResolvers() {
         List<HelpResolver> list = new ArrayList<HelpResolver>();
-        for (CssModule module : getModules()) {
+        for (CssEditorModule module : getModules()) {
             Collection<HelpResolver> resolvers = module.getHelpResolvers();
             if (resolvers != null) {
                 list.addAll(resolvers);

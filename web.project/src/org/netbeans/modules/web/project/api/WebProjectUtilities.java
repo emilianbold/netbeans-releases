@@ -763,7 +763,7 @@ public class WebProjectUtilities {
         
         ep.setProperty(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".war"); // NOI18N
         //XXX the name of the dist.ear.jar file should be different, but now it cannot be since the name is used as a key in module provider mapping
-        ep.setProperty(WebProjectProperties.WAR_EAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".war"); // NOI18N
+        ep.setProperty(WebProjectProperties.WAR_EAR_NAME, "${"+WebProjectProperties.WAR_NAME+"}"); // NOI18N
         
         ep.setProperty(WebProjectProperties.WAR_COMPRESS, "false"); // NOI18N
         ep.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, ""); // NOI18N

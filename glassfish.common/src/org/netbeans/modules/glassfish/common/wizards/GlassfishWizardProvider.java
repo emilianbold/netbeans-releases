@@ -79,8 +79,11 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
     @Override
     public InstantiatingIterator getInstantiatingIterator() {
         return new ServerWizardIterator(new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1,
+            ServerDetails.GLASSFISH_SERVER_3_1_1, 
+            ServerDetails.GLASSFISH_SERVER_3_1_2,
+            ServerDetails.GLASSFISH_SERVER_3_0_1, 
             ServerDetails.GLASSFISH_SERVER_3, 
+            ServerDetails.GLASSFISH_SERVER_3_1,
         });
     }
 

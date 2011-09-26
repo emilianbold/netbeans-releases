@@ -44,19 +44,18 @@
 
 package org.netbeans.modules.pdf;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import org.openide.DialogDescriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import static org.openide.util.Utilities.OS_MAC;
 
 /**
  * Permits a PDF file to be opened in an external viewer.
@@ -66,12 +65,8 @@ import static org.openide.util.Utilities.OS_MAC;
  */
 class PDFOpenSupport implements OpenCookie {
 
-    private static final String DEFAULT_MACOS_VIEWER = "open";          //NOI18N
-    private static final String[] APP_DIRS = new String[] {
-            "/usr/bin", "/usr/local/bin" };                             //NOI18N
-    private static final String[] VIEWER_NAMES = new String[] {
-            "evince", "xpdf", "kghostview", "ggv", "acroread" };        //NOI18N
-    static final String FALLBACK_VIEWER_NAME = "acroread";              //NOI18N
+    private static final Logger LOG = Logger.getLogger(
+            PDFOpenSupport.class.getName());
 
     private File f;
     private DataObject dObj;
@@ -93,161 +88,20 @@ class PDFOpenSupport implements OpenCookie {
         this.f = FileUtil.toFile(dObj.getPrimaryFile());
     }
 
+    @Override
     public void open() {
         if(dObj != null){
             f = FileUtil.toFile(dObj.getPrimaryFile());
         }
-        final String filePath = f.getAbsolutePath();
- 
-        if (Utilities.isWindows()) {
-            /*
-             * To run the PDF viewer, we need to execute:
-             * 
-             *      cmd.exe /C start <file name>
-             * 
-             * This works well except for cases that there is a space
-             * in the file's path. In this case, the file's path must be
-             * enclosed to quotes to make the command-line interpreter (cmd.exe)
-             * consider it a single argument. BUT: If the first argument
-             * to the "start" command is enclosed in quotes, it is considered
-             * to be a window title. So, to make sure the file path argument
-             * is not considered a window title, we must pass some dummy
-             * argument enclosed in quotes as the first argument and the
-             * actual file path as the second argument (of the 'start' command):
-             * 
-             *      cmd.exe /C start "PDF Viewer" <file name>
-             * 
-             * (see also bug #122221)
-             */
-            tryCommand(new String[] {"cmd.exe", "/C", "start",          //NOI18N
-                                     "\"PDF Viewer\"",  //win.title     //NOI18N
-                                     filePath});
-            return;
-        }
-
-        Settings sett = Settings.getDefault();
-        
-        File viewer = sett.getPDFViewer();
-        boolean viewerUnset = (viewer == null);
-
-        if (viewerUnset && (Utilities.getOperatingSystem() == OS_MAC)) {
-            String cmd = DEFAULT_MACOS_VIEWER;
-            if (tryCommand(new String[] {cmd, filePath})) {
-                sett.setPDFViewer(new File(cmd));
-                return;
-            }
-        }
-        
-        if (viewerUnset) {
-            viewer = tryPredefinedViewers(filePath);
-            if (viewer != null) {
-                sett.setPDFViewer(viewer);
-                return;
-            }
-        }
-        
-        if (viewerUnset) {
-            viewer = new File(FALLBACK_VIEWER_NAME);
-        }
-        
-        boolean viewerFailed = false;
-        do {
-            try {
-                tryCommandExc(new String[] {viewer.getPath(), filePath});
-                if (viewerUnset || viewerFailed) {
-                    sett.setPDFViewer(viewer);
-                }
-                break;
-            } catch (IOException ioe) {
-                viewerFailed = true;
-                
-                // Try to reconfigure.
-                String excmessage = ioe.getLocalizedMessage();
-                /* [PENDING] does not work (no properties show in sheet, though node has them):
-                Node n;
-                try {
-                    n = new BeanNode (sett);
-                } catch (IntrospectionException ie) {
-                    TopManager.getDefault ().notifyException (ie);
-                    return;
-                }
-                PropertySheet sheet = new PropertySheet ();
-                sheet.setNodes (new Node[] { n });
-                //TopManager.getDefault ().getNodeOperation ().explore (n);
-                 */
-                ReconfigureReaderPanel configPanel
-                        = new ReconfigureReaderPanel(viewer, excmessage);
-                String title = NbBundle.getMessage(
-                                       PDFOpenSupport.class,
-                                       "TITLE_pick_a_viewer");          //NOI18N
-                DialogDescriptor d = new DialogDescriptor(configPanel, title);
-                if (DialogDisplayer.getDefault().notify(d)
-                        == DialogDescriptor.OK_OPTION) {
-                    sett.setPDFViewer(viewer = configPanel.getSelectedFile());
-                } else {
-                    break;
-                }
-            }
-        } while (true);
-    }
-
-    /**
-     */
-    private static File tryPredefinedViewers(String filePath) {
-        for (int i = 0; i < APP_DIRS.length; i++) {
-
-            File dir = new File(APP_DIRS[i]);
-            if (!dir.exists() || !dir.isDirectory()) {
-                continue;
-            }
-            
-            for (int j = 0; j < VIEWER_NAMES.length; j++) {
-                String viewerPath = APP_DIRS[i] + File.separatorChar
-                                    + VIEWER_NAMES[j];
-                File viewer = new File(viewerPath);
-                if (!viewer.exists()) {
-                    continue;
-                }
-                
-                if (tryCommand(new String[] {viewerPath, filePath})) {
-                    return viewer;
-                }
-                //else: never mind, try the next predefined viewer
-            }
-        }
-        
-        return null;
-    }
-
-    /**
-     * Tries to execute the specified command and arguments.
-     *
-     * @param  cmdArray  array containing the command to call and its arguments
-     * @return  {@code true} if the execution was successful,
-     *          {@code false} otherwise
-     */
-    private static boolean tryCommand(final String[] cmdArray) {
         try {
-            tryCommandExc(cmdArray);
-            return true;
-        } catch (IOException ioe) {
-            return false;
+            Desktop.getDesktop().open(f);
+        } catch (IOException ex) {
+            String msg = NbBundle.getMessage(PDFOpenSupport.class,
+                    "EXC_could_not_open");                              //NOI18N
+            LOG.log(Level.SEVERE, msg, ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(msg,
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
         }
     }
-
-    /**
-     * Tries to execute the specified command and arguments.
-     *
-     * @param  cmdArray  array containing the command to call and its arguments
-     * @return  {@code true} if the execution was successful,
-     *          {@code false} otherwise
-     * @exception  java.io.IOException
-     *             
-     */
-    private static void tryCommandExc(final String[] cmdArray)
-                                                        throws IOException {
-        Runtime.getRuntime().exec(cmdArray);
-        // [PENDING] redirect the process' output
-    }
-
 }

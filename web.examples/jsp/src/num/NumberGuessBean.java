@@ -20,7 +20,8 @@
 
 package num;
 
-import java.util.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 public class NumberGuessBean {
 
@@ -70,8 +71,12 @@ public class NumberGuessBean {
     return numGuesses;
   }
 
-  public void reset() {
-    answer = Math.abs(new Random().nextInt() % 100) + 1;
+  private void reset() {
+    try {
+        answer = Math.abs(SecureRandom.getInstance("SHA1PRNG").nextInt() % 100) + 1;
+    } catch (NoSuchAlgorithmException ex) {
+        answer = 0;
+    }
     success = false;
     numGuesses = 0;
   }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,10 +66,15 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.Quote;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -153,6 +159,26 @@ public class UnusedVariableHint extends AbstractRule {
                     }
                 }
             }
+            processExpressions(node.getParameters());
+        }
+
+        @Override
+        public void visit(EchoStatement node) {
+            super.visit(node);
+            processExpressions(node.getExpressions());
+        }
+
+        @Override
+        public void visit(Include node) {
+            super.visit(node);
+            processExpressions(Arrays.asList(node.getExpression()));
+        }
+
+        private void processExpressions(List<Expression> expressions) {
+            List<Variable> variables = getVariables(expressions);
+            for (Variable variable : variables) {
+                processNode(variable);
+            }
         }
 
     }
@@ -201,17 +227,22 @@ public class UnusedVariableHint extends AbstractRule {
 
         private int getOffsetAfterBlockCurlyOpen(BaseDocument doc, int offset) {
             int retval = offset;
-            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
-            if (ts != null) {
-                ts.move(retval);
-                while (ts.moveNext()) {
-                    Token t = ts.token();
-                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        ts.moveNext();
-                        retval = ts.offset();
-                        break;
+            doc.readLock();
+            try {
+                TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
+                if (ts != null) {
+                    ts.move(retval);
+                    while (ts.moveNext()) {
+                        Token t = ts.token();
+                        if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                            ts.moveNext();
+                            retval = ts.offset();
+                            break;
+                        }
                     }
                 }
+            } finally {
+                doc.readUnlock();
             }
             return retval;
         }
@@ -263,15 +294,16 @@ public class UnusedVariableHint extends AbstractRule {
         private void checkVariableScope(VariableScope variableScope) {
             Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
             for (VariableName variableName : declaredVariables) {
-                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpVarDoc(variableName.getOffset())) {
+                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpComment(variableName.getOffset())) {
                     checkVariableName(variableName, variableScope);
                 }
             }
         }
 
-        private boolean isInPhpVarDoc(int offset) {
+        private boolean isInPhpComment(int offset) {
             Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
-            return token.id() == PHPTokenId.PHP_COMMENT;
+            PHPTokenId id = token.id();
+            return id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHPDOC_COMMENT;
         }
 
         private void checkVariableName(VariableName variableName, VariableScope variableScope) {
@@ -308,7 +340,7 @@ public class UnusedVariableHint extends AbstractRule {
             return variableName.getName().substring(1);
         }
 
-        @Messages("UnusedVariableHintCustom=Variable ${0} does not seem to be used in its scope")
+        @Messages("UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope")
         private Hint createHint(VariableName variableName) {
             String varName = getPureName(variableName);
             int start = variableName.getNameRange().getStart();
@@ -326,13 +358,13 @@ public class UnusedVariableHint extends AbstractRule {
     }
 
     @Override
-    @Messages("UnusedVariableHintDesc=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDesc=Variable seems to be unused in its scope")
     public String getDescription() {
         return Bundle.UnusedVariableHintDesc();
     }
 
     @Override
-    @Messages("UnusedVariableHintDispName=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDispName=Variable seems to be unused in its scope")
     public String getDisplayName() {
         return Bundle.UnusedVariableHintDispName();
     }
@@ -365,6 +397,26 @@ public class UnusedVariableHint extends AbstractRule {
             }
         }
         return retval;
+    }
+
+    static List<Variable> getVariables(List<Expression> expressions) {
+        List<Variable> variables = new LinkedList<Variable>();
+        for (Expression expression : expressions) {
+            if (expression instanceof Variable) {
+                variables.add((Variable) expression);
+            } else if (expression instanceof InfixExpression) {
+                InfixExpression infixExpression = (InfixExpression) expression;
+                variables.addAll(getVariables(Arrays.asList(infixExpression.getLeft())));
+                variables.addAll(getVariables(Arrays.asList(infixExpression.getRight())));
+            } else if (expression instanceof FunctionInvocation) {
+                FunctionInvocation functionInvocation = (FunctionInvocation) expression;
+                variables.addAll(getVariables(functionInvocation.getParameters()));
+            } else if (expression instanceof Quote) {
+                Quote quote = (Quote) expression;
+                variables.addAll(getVariables(quote.getExpressions()));
+            }
+        }
+        return variables;
     }
 
 }

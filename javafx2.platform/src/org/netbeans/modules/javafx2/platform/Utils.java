@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -56,7 +54,6 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  * Utility class for platform properties manipulation
@@ -68,6 +65,11 @@ public final class Utils {
      * Default name for automatically registered JavaFX platform
      */
     public static final String DEFAULT_FX_PLATFORM_NAME = "Default JFX Platform"; // NOI18N
+    
+    /**
+     * Property for not checking matching JavaFX and running JVM architechture
+     */
+    public static final String NO_PLATFORM_CHECK_PROPERTY = "org.netbeans.modules.javafx2.platform.NoPlatformCheck"; // NOI18N
 
     private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
@@ -211,17 +213,21 @@ public final class Utils {
      */
     public static boolean isArchitechtureCorrect(@NonNull String runtimePath) {
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
-        try {
-            if (Utilities.isUnix() || Utilities.isMac()) {
-                // TODO check is it "mat.so" on Mac OS
-//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
-                return true;
-            } else if (Utilities.isWindows()) {
-                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
-            }
-        } catch (Throwable t) {
-            return false;
+        
+        if (Boolean.getBoolean(NO_PLATFORM_CHECK_PROPERTY)) { 
+            return true;
         }
+        
+//        try {
+//            if (Utilities.isUnix() || Utilities.isMac()) {
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "libmat.jnilib"); // NOI18N
+//                return true;
+//            } else if (Utilities.isWindows()) {
+//                System.load(runtimePath + File.separatorChar + "bin" + File.separatorChar + "mat.dll"); // NOI18N
+//            }
+//        } catch (Throwable t) {
+//            return false;
+//        }
         return true;
     }
 

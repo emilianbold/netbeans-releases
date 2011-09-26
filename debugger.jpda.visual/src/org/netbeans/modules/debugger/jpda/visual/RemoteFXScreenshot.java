@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleValue;
 import com.sun.jdi.Field;
@@ -60,6 +61,7 @@ import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.tools.jdi.ClassObjectReferenceImpl;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -71,6 +73,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.ObjectInstance;
 import javax.swing.Action;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -184,6 +187,7 @@ public class RemoteFXScreenshot {
     }
     
     public static RemoteScreenshot[] take(final JPDAThread t, final DebuggerEngine engine, final JPDADebuggerImpl d) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
+//        return new RemoteScreenshot[0];
         //RemoteScreenshot[] screenshots = NO_SCREENSHOTS;
         final ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
         final VirtualMachine vm = tawt.virtualMachine();
@@ -301,6 +305,9 @@ public class RemoteFXScreenshot {
         } catch (IncompatibleThreadStateException e) {
             throw new RetrievalException(e.getMessage(), e);
         } catch (InvocationException e) {
+            throw new RetrievalException(e.getMessage(), e);
+        } catch (ClassNotPreparedException e) {
+            e.printStackTrace();
             throw new RetrievalException(e.getMessage(), e);
         }
     }

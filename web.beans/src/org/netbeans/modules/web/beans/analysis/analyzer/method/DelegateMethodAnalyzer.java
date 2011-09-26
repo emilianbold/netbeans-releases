@@ -102,7 +102,9 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
                         param, element, result.getInfo());
                 EditorAnnotationsHelper helper = EditorAnnotationsHelper.
                     getInstance(result);
-                helper.addInjectionPoint(result, var);  
+                if ( helper != null ){
+                    helper.addInjectionPoint(result, var);
+                }
             }
             i++;
         }

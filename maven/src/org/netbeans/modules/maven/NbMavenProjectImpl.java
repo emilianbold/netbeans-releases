@@ -55,8 +55,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +125,7 @@ import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
+import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
@@ -527,25 +526,6 @@ public final class NbMavenProjectImpl implements Project {
    void detachUpdater() {
         projectFolderUpdater.detachAll();
         userFolderUpdater.detachAll();
-    }
-
-    private static Map<String, String> pkg2Icon = Collections.unmodifiableMap(new HashMap<String, String>() {
-
-        {
-            put(NbMavenProject.TYPE_JAR, "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
-            put(NbMavenProject.TYPE_WAR, "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
-            put(NbMavenProject.TYPE_EJB, "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
-            put(NbMavenProject.TYPE_APPCLIENT, "org/netbeans/modules/maven/resources/appclient.png"); //NOI18N
-            put(NbMavenProject.TYPE_EAR, "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
-            put(NbMavenProject.TYPE_POM, "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
-            put(NbMavenProject.TYPE_NBM, "org/netbeans/modules/maven/apisupport/nbmicon.png"); //NOI18N
-            put(NbMavenProject.TYPE_OSGI, "org/netbeans/modules/maven/resources/maven_osgi_16.png"); //NOI18N
-            put(NbMavenProject.TYPE_NBM_APPLICATION, "org/netbeans/modules/maven/apisupport/suiteicon.png"); //NOI18N
-        }
-    });
-
-    public static String getIconPath(String packaging) {
-        return pkg2Icon.get(packaging);
     }
 
     public String getName() {
@@ -971,11 +951,8 @@ public final class NbMavenProjectImpl implements Project {
 
         @Override
         public Icon getIcon() {
-            String iconPath = getIconPath(watcher.getPackagingType());
-            if (iconPath == null) {
-                iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
-            }
-            return ImageUtilities.loadImageIcon(iconPath, true);
+            SpecialIcon special = getLookup().lookup(SpecialIcon.class);
+            return special != null ? special.getIcon() : ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
         }
 
         @Override

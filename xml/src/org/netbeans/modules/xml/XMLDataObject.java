@@ -46,6 +46,8 @@ package org.netbeans.modules.xml;
 import java.beans.*;
 import java.io.IOException;
 import javax.xml.transform.Source;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.xml.sax.*;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
@@ -60,6 +62,7 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for xml document.
  * Instance holds all synchronization related state information.
@@ -70,6 +73,11 @@ import org.netbeans.spi.xml.cookies.*;
  */
 public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         implements XMLDataObjectLook, PropertyChangeListener {
+    
+    /**
+     * Special MIME type so that other XML data objects do not inherit our editor
+     */
+    public static final String MIME_PLAIN_XML = "text/plain+xml";
 
     /** Serial Version UID */
     private static final long serialVersionUID = 9153823984913876866L;
@@ -80,6 +88,10 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
     
+    /**
+     * Factory for editor
+     */
+    private TextEditorSupport.TextEditorSupportFactory editorSupportFactory;
 
     /** Create new XMLDataObject
      *
@@ -92,25 +104,20 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));
         sync = new XMLSyncSupport(this);
-        String mimetype = fo.getMIMEType();
-        //when undelying fileobject has a mimetype defined,
-        //don't enforce text/xml on the editor document.
-        //be conservative and apply the new behaviour only when the mimetype is xml like..
-        if (fo.getMIMEType().indexOf("xml") == -1) { // NOI18N
-            mimetype = XMLKit.MIME_TYPE;
-        }
-        final TextEditorSupport.TextEditorSupportFactory editorFactory =
-            TextEditorSupport.findEditorSupportFactory (this, mimetype);
-        editorFactory.registerCookies (set);
+        editorSupportFactory =
+            TextEditorSupport.findEditorSupportFactory (this, null);
+        
+        editorSupportFactory.registerCookies (set);
         CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
         set.add (ViewCookie.class, viewCookieFactory);
         InputSource is = DataObjectAdapters.inputSource (this);
         //enable "Save As"
         set.assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs(FileObject folder, String fileName) throws IOException {
-                editorFactory.createEditor().saveAs( folder, fileName );
+                editorSupportFactory.createEditor().saveAs( folder, fileName );
             }
         });
+        
         // add check and validate cookies
         set.add (new CheckXMLSupport (is));
         set.add (new ValidateXMLSupport (is));        
@@ -121,10 +128,22 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         this.addPropertyChangeListener (this);  //??? - strange be aware of firing cycles
     }
     
-    @Override
-    public final Lookup getLookup() {
-        return getCookieSet().getLookup();
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xml.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xml.text",
+        mimeType=MIME_PLAIN_XML,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
+        
+    @Override protected int associateLookup() {
+        return 1;
+    }
+
 
     /**
      */

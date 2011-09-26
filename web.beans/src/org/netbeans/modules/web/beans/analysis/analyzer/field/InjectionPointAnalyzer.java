@@ -109,8 +109,10 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                     ElementHandle<VariableElement> modelHandle = ElementHandle.create(element);
                     EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
                             result);
-                    helper.addEventInjectionPoint( result, 
-                            modelHandle.resolve(result.getInfo()));
+                    if ( helper != null ){
+                        helper.addEventInjectionPoint( result, 
+                                modelHandle.resolve(result.getInfo()));
+                    }
                 }
                 else if ( isDelegate || AnnotationUtil.hasAnnotation(element, 
                         AnnotationUtil.DELEGATE_FQN, model.getCompilationController()))
@@ -121,8 +123,10 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                     ElementHandle<VariableElement> modelHandle = ElementHandle.create(element);
                     EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(
                             result);
-                    helper.addInjectionPoint( result, 
-                            modelHandle.resolve(result.getInfo()));
+                    if  (helper != null ){
+                        helper.addInjectionPoint( result, 
+                                modelHandle.resolve(result.getInfo()));
+                    }
                 }
             }
         }

@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.CoderResult;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -477,13 +478,15 @@ final class MatchingObject
                         fileBuf.limit(fileBuf.position() + read);
                         fileBuf.position(0);
 
-                        // can safely ignore OVERFLOW, as there will be always character space
-                        // in the buffer. Can also ignore UNDERFLOW, as new input will be given on the next
+                        // Can ignore UNDERFLOW, as new input will be given on the next
                         // loop iteration 
-                        decoder.decode(fileBuf, charBuf, false);
-
-                        charBuf.flip();
-                        text.append(charBuf, charBuf.position(), charBuf.remaining());
+                        CoderResult result;
+                        
+                        do {
+                            result = decoder.decode(fileBuf, charBuf, false);
+                            charBuf.flip();
+                            text.append(charBuf, charBuf.position(), charBuf.remaining());
+                        } while (result.isOverflow());
                         charBuf.clear();
                         fileBuf.compact();
                     }

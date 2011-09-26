@@ -44,11 +44,12 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -59,12 +60,12 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendEmailCodeGenerator;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * Action that can always be invoked and work procedurally.
- * 
+ *
  * @author Chris Webster
  * @author Martin Adamek
  */
@@ -151,18 +152,24 @@ public class AddMethodActions implements CodeGenerator {
     public String getDisplayName(){
         return strategy.getTitle();
     }
-    
+
     public static boolean isEnable(AbstractAddMethodStrategy strategy, FileObject fileObject, TypeElement elementHandle) {
         return strategy.supportsEjb(fileObject, elementHandle.getQualifiedName().toString());
     }
-    
+
     public void invoke() {
         if (strategy.supportsEjb(fileObject, beanClass.getQualifiedName().toString())) {
-            try {
-                strategy.addMethod(fileObject, beanClass.getQualifiedName().toString());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        strategy.addMethod(fileObject, beanClass.getQualifiedName().toString());
+                    } catch (IOException ex) {
+                        Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
+                    }
+                }
+            });
         }
     }
 

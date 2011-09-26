@@ -787,8 +787,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             List<Object[]> newModel = new LinkedList<Object[]>();
             for (int i = 0; i < preConfiguration.length; i++) {
                 ParameterInfo parameterInfo = preConfiguration[i];
-                newModel.add(new Object[] {parameterInfo.getName(),
-                    parameterInfo.getType(),
+                newModel.add(new Object[] {parameterInfo.getType(),
+                    parameterInfo.getName(),
                     parameterInfo.getDefaultValue() == null? "" : parameterInfo.getDefaultValue(),
                     parameterInfo.getOriginalIndex(),
                     model.isRemovable(parameterInfo.getOriginalIndex())});
@@ -988,7 +988,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public void actionPerformed(ActionEvent e) {
             FileObject file = RetoucheUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), ((JEditorPane)singleLineEditor[1]).getText(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 ((JEditorPane)singleLineEditor[1]).setText(fqn);
@@ -1017,7 +1017,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public void actionPerformed(ActionEvent e) {
             FileObject file = RetoucheUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 acceptEditedValue();

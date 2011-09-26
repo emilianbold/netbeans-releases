@@ -117,6 +117,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     private ChangeListener changeListener = null;
     private ServerStatusProvider2 serverStatusProvider;
+    private DBSchemaFileList dbschemaFileList;
+    private TableSource tableSource;
+    private FileObject targetFolder;
 
     private String[] filterComboTxts = {
         org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
@@ -147,6 +150,13 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     public void initialize(final Project project, DBSchemaFileList dbschemaFileList, PersistenceGenerator persistenceGen, TableSource tableSource, FileObject targetFolder) {
         this.persistenceGen = persistenceGen;
         this.project = project;
+        this.dbschemaFileList = dbschemaFileList;
+        this.tableSource = tableSource;
+        this.targetFolder = targetFolder;
+        initSubComponents();
+    }
+    
+    private void initSubComponents(){
 
         changeListener = new ChangeListener() {
             @Override
@@ -219,7 +229,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             public void run() {
                 updateSourceSchema();
             }
-        });
+        });        
     }
 
     private void initializeWithDatasources() {
@@ -606,6 +616,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         schemaSource = new javax.swing.ButtonGroup();
+        comboPanel = new javax.swing.JPanel();
         datasourceLabel = new javax.swing.JLabel();
         datasourceRadioButton = new javax.swing.JRadioButton();
         datasourceComboBox = new javax.swing.JComboBox();
@@ -633,6 +644,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(496, 350));
         setLayout(new java.awt.GridBagLayout());
 
+        comboPanel.setLayout(new java.awt.GridBagLayout());
+
         datasourceLabel.setLabelFor(datasourceComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(datasourceLabel, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_Datasource")); // NOI18N
         datasourceLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 4, 4));
@@ -640,7 +653,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add(datasourceLabel, gridBagConstraints);
+        comboPanel.add(datasourceLabel, gridBagConstraints);
 
         schemaSource.add(datasourceRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(datasourceRadioButton, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_Datasource")); // NOI18N
@@ -653,7 +666,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(datasourceRadioButton, gridBagConstraints);
+        comboPanel.add(datasourceRadioButton, gridBagConstraints);
 
         datasourceComboBox.setEnabled(false);
         datasourceComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -668,7 +681,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 2, 0, 0);
-        add(datasourceComboBox, gridBagConstraints);
+        comboPanel.add(datasourceComboBox, gridBagConstraints);
 
         schemaSource.add(dbschemaRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(dbschemaRadioButton, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_DbSchema")); // NOI18N
@@ -679,10 +692,10 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(dbschemaRadioButton, gridBagConstraints);
+        comboPanel.add(dbschemaRadioButton, gridBagConstraints);
 
         dbschemaComboBox.setEnabled(false);
         dbschemaComboBox.setNextFocusableComponent(availableTablesList);
@@ -693,12 +706,20 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 2, 0, 0);
-        add(dbschemaComboBox, gridBagConstraints);
+        comboPanel.add(dbschemaComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        add(comboPanel, gridBagConstraints);
 
         tablesPanel.setPreferredSize(new java.awt.Dimension(440, 174));
         tablesPanel.setLayout(new java.awt.GridBagLayout());
@@ -847,7 +868,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipady = 80;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -865,7 +885,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -951,6 +970,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JList availableTablesList;
     private javax.swing.JScrollPane availableTablesScrollPane;
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel comboPanel;
     private javax.swing.JComboBox datasourceComboBox;
     private javax.swing.JLabel datasourceLabel;
     private javax.swing.JRadioButton datasourceRadioButton;

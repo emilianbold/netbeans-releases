@@ -45,7 +45,7 @@ package org.netbeans.modules.css.editor.properties;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class Integer implements CssPropertyValueAcceptor {
 

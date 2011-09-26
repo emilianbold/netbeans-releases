@@ -79,8 +79,6 @@ public class SourceLevelQuery {
     private static final Lookup.Result<? extends SourceLevelQueryImplementation2> implementations2 =
         Lookup.getDefault().lookupResult (SourceLevelQueryImplementation2.class);
 
-    private static final Result EMPTY_RESULT = new Result();
-
     private SourceLevelQuery() {
     }
 
@@ -143,18 +141,7 @@ public class SourceLevelQuery {
             }
         }
         LOGGER.log(Level.FINE, "No source level found for {0}", javaFile);
-        for (org.netbeans.spi.java.queries.SourceLevelQueryImplementation sqi : implementations.allInstances()) {
-            String s = sqi.getSourceLevel(javaFile);
-            if (s != null) {
-                if (!SOURCE_LEVEL.matcher(s).matches()) {
-                    LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
-                    continue;
-                }
-                LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
-                return new Result(s);
-            }
-        }
-        return EMPTY_RESULT;
+        return new Result(javaFile);
     }
 
     /**
@@ -164,43 +151,40 @@ public class SourceLevelQuery {
      */
     public static final class Result {
 
-        private final Union2<SourceLevelQueryImplementation2.Result,String> delegate;
+        private final @NonNull Union2<SourceLevelQueryImplementation2.Result,FileObject> delegate;
         private final ChangeSupport cs = new ChangeSupport(this);
         private /**@GuardedBy("this")*/ ChangeListener spiListener;
 
         private Result(@NonNull final SourceLevelQueryImplementation2.Result delegate) {
             Parameters.notNull("delegate", delegate);   //NOI18N
-            this.delegate = Union2.<SourceLevelQueryImplementation2.Result,String>createFirst(delegate);
+            this.delegate = Union2.<SourceLevelQueryImplementation2.Result,FileObject>createFirst(delegate);
         }
         
-        private Result(@NonNull final String sourceLevel) {
-            Parameters.notNull("sourceLevel", sourceLevel);
-            this.delegate = Union2.<SourceLevelQueryImplementation2.Result,String>createSecond(sourceLevel);
+        private Result(@NonNull final FileObject javaFile) {
+            Parameters.notNull("sourceLevel", javaFile);
+            this.delegate = Union2.<SourceLevelQueryImplementation2.Result,FileObject>createSecond(javaFile);
         }
         
-        private Result() {
-            this.delegate = null;
-        }
-
         /**
          * Get the source level.
          * @return a source level of the Java file, e.g. "1.3", "1.4", "1.5"
          * or null if the source level is unknown.
          */
         public @CheckForNull String getSourceLevel() {
-            return delegate == null ? null :
-                delegate.hasFirst() ? delegate.first().getSourceLevel() : delegate.second();
+            return delegate.hasFirst() ? delegate.first().getSourceLevel() : SourceLevelQuery.getSourceLevel(delegate.second());
         }
 
         /**
          * Add a listener to changes of source level.
+         * If {@link #supportsChanges} is false, the listener will never be notified
+         * although {@link #getSourceLevel} may change from call to call.
          * @param listener a listener to add
          */
         public void addChangeListener(@NonNull ChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
             final SourceLevelQueryImplementation2.Result _delegate = getDelegate();
             if (_delegate == null) {
-                throw new UnsupportedOperationException("Listening is not supported");  //NOI18N
+                return;
             }
             cs.addChangeListener(listener);
             synchronized (this) {
@@ -225,7 +209,7 @@ public class SourceLevelQuery {
             Parameters.notNull("listener", listener);   //NOI18N
             final SourceLevelQueryImplementation2.Result _delegate = getDelegate();
             if (_delegate == null) {
-                throw new UnsupportedOperationException("Listening is not supported");  //NOI18N
+                return;
             }
             cs.removeChangeListener(listener);
         }
@@ -243,7 +227,7 @@ public class SourceLevelQuery {
         }
 
         private SourceLevelQueryImplementation2.Result getDelegate() {
-            return delegate != null && delegate.hasFirst() ? delegate.first() : null;
+            return delegate.hasFirst() ? delegate.first() : null;
         }
     }    
 

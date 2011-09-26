@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
@@ -73,8 +73,8 @@ import org.openide.util.lookup.ServiceProvider;
  * 
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class SelectorsModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class SelectorsModule extends CssEditorModule {
 
     //NOI18N>>>
     private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
@@ -87,11 +87,11 @@ public class SelectorsModule extends CssModule {
         "root", "nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type",
         "first-child", "last-child", "first-of-type", "last-of-type", "only-child",
         "only-of-type", "empty" //structural
-    });
+    }); //NOI18N
     
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
         "first-line", "first-letter", "before", "after"
-    });
+    }); //NOI18N
     
     //<<< NOI18N
     //XXX fix CSL

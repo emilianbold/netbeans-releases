@@ -509,9 +509,15 @@ public final class DocumentViewOp
                 // that calls getPreferredSpan() would attempt to reinit the views again
                 // (failing in HighlightsViewFactory on usageCount).
                 setStatusBits(CHILDREN_VALID);
-                viewUpdates.reinitAllViews();
-                
-                
+                try {
+                    viewUpdates.reinitAllViews();
+                } finally {
+                    // In case of an error in VH code the children would stay null
+                    if (docView.children == null) {
+                        // Prevent VH to look like active when children == null
+                        clearStatusBits(CHILDREN_VALID);
+                    }
+                }
             }
         }
     }
@@ -1200,12 +1206,17 @@ public final class DocumentViewOp
 
     StringBuilder appendInfo(StringBuilder sb) {
         sb.append("incomingMod=").append(isAnyStatusBit(INCOMING_MODIFICATION)); // NOI18N
-        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit); // NOI18N
+        sb.append("; lengthyAE=").append(lengthyAtomicEdit); // NOI18N
         sb.append("\nChged:");
+        int len = sb.length();
         if (isWidthChange()) sb.append(" W");
         if (isHeightChange()) sb.append(" H");
         if (isChildWidthChange()) sb.append(" ChW");
         if (isChildHeightChange()) sb.append(" ChH");
+        if (sb.length() == len) {
+            sb.append(" NONE");
+        }
+        sb.append("; visWidth").append(getVisibleRect().width); // visibleRect always non-null
         return sb;
     }
 

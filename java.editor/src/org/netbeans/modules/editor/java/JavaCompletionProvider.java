@@ -101,7 +101,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         if (typedText != null && typedText.length() == 1
                 && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
                 || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
-            if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
+            if (Utilities.isJavaContext(component, component.getSelectionStart() - 1, true))
                 return COMPLETION_QUERY_TYPE;
         }
         return 0;
@@ -271,7 +271,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 this.caretOffset = caretOffset;
-                if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset)) {
+                if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset, true)) {
                     results = null;
                     documentation = null;
                     if (toolTip != null)

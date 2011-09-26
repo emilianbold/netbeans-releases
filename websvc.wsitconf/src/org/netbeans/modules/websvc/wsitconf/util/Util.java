@@ -82,6 +82,7 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -422,9 +423,14 @@ public class Util {
 
     public static PortType getPortType(Binding binding) {
         Definitions d = (Definitions) binding.getParent();
-
-        QName portTypeQName = binding.getType().getQName();
+        
+        NamedComponentReference<PortType> type = binding.getType();
         PortType portType = null;
+        if ( type == null || d == null ){
+            return portType;
+        }
+
+        QName portTypeQName = type.getQName();
         
         Collection<PortType> portTypes = d.getPortTypes();
         Iterator<PortType> i = portTypes.iterator();

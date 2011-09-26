@@ -3283,7 +3283,9 @@ public class HgCommand {
                     try {
                         String line;
                         while ((line = errorReader.readLine()) != null) {
-                            errorOutput.add(line);
+                            if (!line.startsWith("warning:")) { //NOI18N
+                                errorOutput.add(line);
+                            }
                         }
                     } catch (IOException ex) {
                         // not interested

@@ -54,8 +54,8 @@
                   <Component id="projectFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectFolderBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="projectFolderScrollPane" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="projectFolderScrollPane" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

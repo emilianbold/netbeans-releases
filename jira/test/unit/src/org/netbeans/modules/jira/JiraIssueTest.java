@@ -66,13 +66,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.junit.NbModuleSuite;
@@ -531,24 +531,22 @@ public class JiraIssueTest extends NbTestCase {
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
 
-        WorkLogConverter wc = new WorkLogConverter();
-        Long timeSpent = new Long(60 * 5);
-        TaskAttribute child = wc.addAttribute(ta, WorkLogConverter.TIME_SPENT);
-        ta.getTaskData().getAttributeMapper().setLongValue(child, timeSpent);
-        Date dateStarted = new Date();
-        child = wc.addAttribute(ta, WorkLogConverter.START_DATE);
-        ta.getTaskData().getAttributeMapper().setDateValue(child, dateStarted);
+        TaskAttributeMapper mapper = data.getAttributeMapper();
+        final Long timeSpent = new Long(60 * 5);
+        mapper.setLongValue(ta.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), timeSpent);
+        final Date dateStarted = new Date();
+        mapper.setDateValue(ta.createMappedAttribute(WorkLogConverter.START_DATE.key()), dateStarted);
         String comment = "Work log done";
-        child = wc.addAttribute(ta, WorkLogConverter.COMMENT);
-        ta.getTaskData().getAttributeMapper().setValue(child, comment);
-
+        mapper.setValue(ta.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
+        mapper.setValue(ta.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG), "true"); // NOI18N        
+        
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
         attrs.add(ta);
         RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(JiraTestUtil.getTaskRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
 
-        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()).getRoot();
-        List<TaskAttribute> workLogs = rta.getTaskData().getAttributeMapper().getAttributesByType(rta.getTaskData(), WorkLogConverter.TYPE_WORKLOG);
+        data = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId());
+        List<TaskAttribute> workLogs = data.getAttributeMapper().getAttributesByType(data, WorkLogConverter.TYPE_WORKLOG);
         TaskAttribute workLog = workLogs.get(workLogs.size() - 1);
         assertEquals(timeSpent, workLog.getTaskData().getAttributeMapper().getLongValue(workLog.getAttribute(WorkLogConverter.TIME_SPENT.key())));
         assertEquals(dateStarted, workLog.getTaskData().getAttributeMapper().getDateValue(workLog.getAttribute(WorkLogConverter.START_DATE.key())));

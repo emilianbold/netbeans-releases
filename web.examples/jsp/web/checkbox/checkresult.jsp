@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
 <!--
   Copyright 2004 The Apache Software Foundation
@@ -17,47 +18,49 @@
 
 <body bgcolor="white">
 <font size=5 color="red">
-<%! String[] fruits; %>
 <jsp:useBean id="foo" scope="page" class="checkbox.CheckTest" />
-
 <jsp:setProperty name="foo" property="fruit" param="fruit" />
-<hr>
-The checked fruits (got using request) are: <br>
-<% 
-	fruits = request.getParameterValues("fruit");
-%>
-<ul>
-<%
-    if (fruits != null) {
-	  for (int i = 0; i < fruits.length; i++) {
-%>
-<li>
-<%
-	      out.println (util.HTMLFilter.filter(fruits[i]));
-	  }
-	} else out.println ("none selected");
-%>
-</ul>
-<br>
-<hr>
 
-The checked fruits (got using beans) are <br>
+<hr/>
+The checked fruits (got using request) are:
+<br/>
 
-<% 
-		fruits = foo.getFruit();
-%>
 <ul>
-<%
-    if (!fruits[0].equals("1")) {
-	  for (int i = 0; i < fruits.length; i++) {
-%>
-<li>
-<%
-		  out.println (util.HTMLFilter.filter(fruits[i]));
-	  }
-	} else out.println ("none selected");
-%>
+<c:set var="requestFruits" value="${pageContext.request.getParameterValues('fruit')}" />
+<c:choose>
+    <c:when test="${requestFruits != null}">
+        <c:forEach var="fruit" items="${requestFruits}">
+            <li>
+                <c:out value="${fruit}" />
+            </li>
+        </c:forEach>
+    </c:when>
+    <c:otherwise>
+        <c:out value="None selected" />
+    </c:otherwise>
+</c:choose>
 </ul>
+            
+<hr/>
+The checked fruits (got using beans) are:
+<br/>
+
+<ul>
+<c:set var="beanFruits" value="${foo.fruit}" />
+<c:choose>
+    <c:when test="${beanFruits[0].equals('1') == false}">
+        <c:forEach var="fruit" items="${beanFruits}">
+            <li>
+                <c:out value="${fruit}" />
+            </li>
+        </c:forEach>
+    </c:when>
+    <c:otherwise>
+        <c:out value="None selected" />
+    </c:otherwise>
+</c:choose>
+</ul>
+
 </font>
 </body>
 </html>

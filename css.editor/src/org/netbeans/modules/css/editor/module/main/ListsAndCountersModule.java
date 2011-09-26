@@ -43,17 +43,19 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class ListsAndCountersModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class ListsAndCountersModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/lists_and_counters"; //NOI18N
     private static Collection<Property> propertyDescriptors;
@@ -62,7 +64,7 @@ public class ListsAndCountersModule extends CssModule {
     @Override
     public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
     }
@@ -71,7 +73,19 @@ public class ListsAndCountersModule extends CssModule {
     public Collection<String> getPseudoElements() {
         return PSEUDO_ELEMENTS;
     }
-    
-    
 
+    @Override
+    public String getName() {
+        return "lists_and_counters"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-lists"; //NOI18N
+    }
 }

@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -169,6 +170,10 @@ final class CreateFilesWorker {
             if (enougth.get()) {
                 return false;
             }
+            final CsmModelState modelState = ModelImpl.instance().getState();
+            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                return false;
+            }            
             if (project.isDisposing()) {
                 if (TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("filling parser queue interrupted for %s\n", project.getName());

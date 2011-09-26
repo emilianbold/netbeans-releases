@@ -334,6 +334,7 @@ class ResultViewPanel extends JPanel{
         setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
 
         initAccessibility();
+        initMessageFormats();
         resultModelChanged();
 
         if( isMacLaf ) {
@@ -344,11 +345,21 @@ class ResultViewPanel extends JPanel{
         }
     }
 
+    /** Init MessageFormat instances */
+    private void initMessageFormats() {
+        nodeCountFormat = new MessageFormat(
+                NbBundle.getMessage(getClass(),
+                                    "TXT_RootSearchedNodes"));          //NOI18N
+        nodeCountFormatFullText = new MessageFormat(
+                NbBundle.getMessage(getClass(),
+                                    "TXT_RootSearchedNodesFulltext"));  //NOI18N
+    }
+
     ResultModel getResultModel(){
         return resultModel;
     }
 
-    void setResultModel(ResultModel resultModel){
+    synchronized void setResultModel(ResultModel resultModel) {
 
         boolean hadCheckBoxes = (this.resultModel != null)
                                 && this.resultModel.searchAndReplace;
@@ -669,13 +680,6 @@ class ResultViewPanel extends JPanel{
     void searchStarted() {
         setRootDisplayName(NbBundle.getMessage(ResultView.class,
                                                 "TEXT_SEARCHING___"));  //NOI18N
-        nodeCountFormat = new MessageFormat(
-                NbBundle.getMessage(getClass(),
-                                    "TXT_RootSearchedNodes"));          //NOI18N
-        nodeCountFormatFullText = new MessageFormat(
-                NbBundle.getMessage(getClass(),
-                                    "TXT_RootSearchedNodesFulltext"));  //NOI18N
-
         searchInProgress = true;
         updateShowAllDetailsBtn();
         setBtnModifyEnabled(true);

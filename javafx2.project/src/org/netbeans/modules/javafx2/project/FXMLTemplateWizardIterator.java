@@ -41,9 +41,7 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -53,7 +51,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -93,13 +90,13 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         String targetName = Templates.getTargetName(wiz);
         DataFolder df = DataFolder.findFolder(dir);
 
-        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
-        DataObject dMainTemplate = DataObject.find(mainTemplate);
-        String mainName = targetName + NbBundle.getMessage(FXMLTemplateWizardIterator.class, "Templates/javafx/FXML_Main_Suffix"); //NOI18N
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("fxmlname", targetName); // NOI18N
-        DataObject dobj1 = dMainTemplate.createFromTemplate(df, mainName, params); // NOI18N
-        set.add(dobj1.getPrimaryFile());
+//        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
+//        DataObject dMainTemplate = DataObject.find(mainTemplate);
+//        String mainName = targetName + NbBundle.getMessage(FXMLTemplateWizardIterator.class, "Templates/javafx/FXML_Main_Suffix"); //NOI18N
+//        Map<String, String> params = new HashMap<String, String>();
+//        params.put("fxmlname", targetName); // NOI18N
+//        DataObject dobj1 = dMainTemplate.createFromTemplate(df, mainName, params); // NOI18N
+//        set.add(dobj1.getPrimaryFile());
 
         FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
         DataObject dXMLTemplate = DataObject.find(xmlTemplate);

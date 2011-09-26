@@ -58,7 +58,7 @@ import javax.ws.rs.ext.Provider;
 public class MessageListWriter implements MessageBodyWriter<List<Message>> {
 
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
-        return verifyGenericType(type);
+        return mediaType.toString().equals( MediaType.TEXT_HTML) && verifyGenericType(type);
     }
 
     private boolean verifyGenericType(Type genericType) {

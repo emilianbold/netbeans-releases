@@ -94,7 +94,8 @@ public class ComputeImportsTest extends NbTestCase {
         "javax.lang.model.element.Element",
         "com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList",
         "com.sun.xml.internal.ws.api.server.Adapter.Toolkit",
-        "sunw.io.Serializable"
+        "sunw.io.Serializable",
+        "sun.rmi.transport.Target",
     }));
     
     private static final Set<String> NO_MASKS = new HashSet<String>();
@@ -200,6 +201,10 @@ public class ComputeImportsTest extends NbTestCase {
     
     public void testFilterByKind() throws Exception {
         doTest("TestFilterByKind", JDK16_MASKS, JDK16_MASKS);
+    }
+
+    public void test202604() throws Exception {
+        doTest("Test202604", JDK16_MASKS, JDK16_MASKS);
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
