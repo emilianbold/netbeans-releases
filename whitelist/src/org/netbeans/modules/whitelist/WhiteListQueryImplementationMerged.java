@@ -153,6 +153,9 @@ public class WhiteListQueryImplementationMerged implements WhiteListQueryImpleme
 
         @Override
         public void resultChanged(LookupEvent ev) {
+            synchronized(this) {
+                cache = null;
+            }
             this.changeSupport.fireChange();
         }
 
