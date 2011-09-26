@@ -172,9 +172,11 @@ implements LookupListener {
                 for (URL generatedLayer : NbCollections.iterable(loader.getResources("META-INF/generated-layer.xml"))) { // NOI18N
                     layerUrls.add(generatedLayer);
                 }
-                XMLFileSystem xmlfs = new XMLFileSystem();
-                xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
-                l.add(xmlfs);
+                if (!layerUrls.isEmpty()) {
+                    XMLFileSystem xmlfs = new XMLFileSystem();
+                    xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+                    l.add(xmlfs);
+                }
                 err.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {
                 err.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
