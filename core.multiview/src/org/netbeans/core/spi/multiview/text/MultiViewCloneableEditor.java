@@ -270,7 +270,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     }
 
     private void fillInBar() {
-        if (bar.getComponentCount() == 0 && pane != null) {
+        if (bar != null && bar.getComponentCount() == 0 && pane != null) {
             Document doc = pane.getDocument();
             if (doc instanceof NbDocument.CustomToolbar) {
                 CustomToolbar custom = (NbDocument.CustomToolbar)doc;
