@@ -382,6 +382,7 @@ class XMLResultItem implements CompletionItem {
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         Component renderComponent = getPaintComponent(false);
+        renderComponent.setFont(defaultFont);
         return renderComponent.getPreferredSize().width;
     }
     

@@ -456,7 +456,7 @@ public class Commit extends GeneralPHP {
         // Check result
         CheckFlex(
                 eoPHP,
-                "public function getB(){return $this->b;}public function setB($PARAM_NAME){$this->b=${PARAM_NAME};}public function getC(){return $this->c;}public function setC($PARAM_NAME){$this->c=${PARAM_NAME};}public function getF(){return $this->f;}public function setF($PARAM_NAME){$this->f=${PARAM_NAME};}",
+                "public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getC(){return $this->c;}public function setC($c){$this->c=$c;}public function getF(){return $this->f;}public function setF($f){$this->f=$f;}",
                 true);
 
         Sleep(2000);
