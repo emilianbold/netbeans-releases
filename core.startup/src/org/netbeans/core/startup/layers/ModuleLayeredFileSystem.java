@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -149,7 +150,7 @@ implements LookupListener {
         if (addClasspathLayers) { // #129583
             List<URL> layerUrls = new ArrayList<URL>();
             // Basic impl copied from ExternalUtil.MainFS:
-            ClassLoader loader = ClassLoader.getSystemClassLoader();
+            ClassLoader loader = ModuleInfo.class.getClassLoader();
             try {
                 for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
                     InputStream is = manifest.openStream();
