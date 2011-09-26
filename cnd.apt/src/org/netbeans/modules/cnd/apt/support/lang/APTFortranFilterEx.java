@@ -55,11 +55,11 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  *
  * @author nk220367
  */
-final class APTFortranEOSFilter implements APTLanguageFilter {
+final class APTFortranFilterEx implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    public APTFortranEOSFilter() {
+    public APTFortranFilterEx() {
     }
 
     public TokenStream getFilteredStream(TokenStream origStream) {
@@ -68,7 +68,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
 
     private final class FilterStream implements TokenStream {
         private TokenStream orig;
-        private Token currentToken;
+        private Token nextToken = null;
         boolean newLine = false;
 
         public FilterStream(TokenStream orig) {
@@ -76,126 +76,22 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
         }
 
         public Token nextToken() throws TokenStreamException {
-            if(newLine) {
-                newLine = false;
-                return currentToken;
+            if (nextToken != null) {
+                Token ret = nextToken;
+                nextToken = null;
+                return ret;
             }
+            
             Token newToken = orig.nextToken();
-            if (currentToken != null && (newToken.getLine() != currentToken.getLine() || newToken.getType() == APTTokenTypes.EOF)) {
-                Token eos = new EOSToken((APTToken) currentToken);
-                currentToken = newToken;
-                newLine = true;
-                return eos;
+            if (newToken.getType() == APTTokenTypes.T_ASTERISK) {
+                nextToken = orig.nextToken();
+                if (nextToken.getType() == APTTokenTypes.T_ASTERISK) {
+                    nextToken = null;
+                    return new FilterToken((APTToken)newToken, APTTokenTypes.T_POWER);
+                }
             }
-            if (newToken.getType() == APTTokenTypes.SEMICOLON) {
-                currentToken = newToken;
-                return new FilterToken((APTToken)currentToken, APTTokenTypes.T_EOS);
-            }
-            currentToken = newToken;
-            return currentToken;
+            return newToken;
         }
-    }
-
-    public static final class EOSToken implements APTToken {
-
-        int offset;
-        int endOffset;
-        int column;
-        int endColumn;
-        int line;
-        int endLine;
-        String fileName;
-
-        EOSToken(APTToken token) {
-            offset = token.getEndOffset();
-            endOffset = token.getEndOffset();
-            column = token.getEndColumn();
-            endColumn = token.getEndColumn();
-            line = token.getEndLine();
-            endLine = token.getEndLine();
-            fileName = token.getFilename();
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public void setOffset(int o) {
-            offset = o;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public void setEndOffset(int o) {
-            endOffset = o;
-        }
-
-        public int getEndColumn() {
-            return endColumn;
-        }
-
-        public void setEndColumn(int c) {
-            endColumn = c;
-        }
-
-        public int getEndLine() {
-            return endLine;
-        }
-
-        public void setEndLine(int l) {
-            endLine = l;
-        }
-
-        public String getText() {
-            return "<EOS>"; // NOI18N
-        }
-
-        public CharSequence getTextID() {
-            return "<EOS>"; // NOI18N
-        }
-
-        public void setTextID(CharSequence id) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public int getColumn() {
-            return column;
-        }
-
-        public void setColumn(int c) {
-            column = c;
-        }
-
-        public int getLine() {
-            return line;
-        }
-
-        public void setLine(int l) {
-            line = l;
-        }
-
-        public String getFilename() {
-            return fileName;
-        }
-
-        public void setFilename(String name) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public void setText(String t) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public int getType() {
-            return APTTokenTypes.T_EOS;
-        }
-
-        public void setType(int t) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
     }
 
     /**

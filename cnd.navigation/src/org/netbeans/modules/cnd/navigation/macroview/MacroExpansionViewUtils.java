@@ -198,7 +198,7 @@ public final class MacroExpansionViewUtils {
      * @return document
      */
     public static Document createExpandedContextDocument(Document mainDoc, CsmFile csmFile) {
-        FileObject fobj = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
+        FileObject fobj = createMemoryFile(MacroExpansionViewUtils.getDocumentName(mainDoc));
         if (fobj == null) {
             return null;
         }
@@ -367,6 +367,18 @@ public final class MacroExpansionViewUtils {
         }
     }
 
+    public static String getDocumentName(Document bDoc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
+        if (dobj != null && dobj.isValid()) {
+            FileObject fo = dobj.getPrimaryFile();
+            return fo.getNameExt();
+        }
+        Object title = bDoc.getProperty(Document.TitleProperty);
+        if (title instanceof String) {
+            return (String)title;
+        }
+        return "MacroView"; // NOI18N
+    }
     /**
      * Locks file.
      *
