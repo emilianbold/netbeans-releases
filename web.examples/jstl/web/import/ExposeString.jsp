@@ -7,7 +7,7 @@
 <body bgcolor="#FFFFFF">
 <h3>String exposure</h3>
 
-<c:import var="cnn" url="http://www.cnn.com/cnn.rss"/>
+<c:import var="cnn" url="http://rss.cnn.com/rss/edition_europe.rss"/>
 
 <h4>CNN's RSS XML feed:</h4>
 <blockquote>

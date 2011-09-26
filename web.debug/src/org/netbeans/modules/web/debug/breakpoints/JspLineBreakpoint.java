@@ -44,13 +44,21 @@
 
 package org.netbeans.modules.web.debug.breakpoints;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.debugger.jpda.ui.BreakpointOutput;
+import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
+import org.netbeans.modules.debugger.jpda.ui.IOManager;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import org.openide.filesystems.FileObject;
@@ -126,6 +134,29 @@ public class JspLineBreakpoint extends Breakpoint {
         String condition = "request.getContextPath().equals(\"" + context + "\")"; // NOI18N
         javalb.setCondition(condition);
         Utils.log("condition: " + condition);
+        
+        javalb.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PROP_VALIDITY.equals(evt.getPropertyName())) {
+                    setValidity(javalb.getValidity(), javalb.getValidityMessage());
+                    breakpointOutput((Breakpoint.VALIDITY) evt.getNewValue());
+                }
+            }
+        });
+        javalb.addJPDABreakpointListener(new JPDABreakpointListener() {
+            @Override
+            public void breakpointReached(JPDABreakpointEvent event) {
+                List<? extends LazyActionsManagerListener> lamls =
+                        DebuggerManager.getDebuggerManager().getCurrentEngine().
+                        lookup(null, LazyActionsManagerListener.class);
+                for (LazyActionsManagerListener lam : lamls) {
+                    if (lam instanceof BreakpointOutput) {
+                        ((BreakpointOutput) lam).substituteAndPrintText(getPrintText(), event);
+                    }
+                }
+            }
+        });
         
         d.addBreakpoint(javalb);
 
@@ -369,6 +400,18 @@ public class JspLineBreakpoint extends Breakpoint {
         return new JspLineGroupProperties();
     }
 
+    private void breakpointOutput(Breakpoint.VALIDITY newValidity) {
+        List<? extends LazyActionsManagerListener> lamls =
+                DebuggerManager.getDebuggerManager().getCurrentEngine().
+                lookup(null, LazyActionsManagerListener.class);
+        for (LazyActionsManagerListener lam : lamls) {
+            if (lam instanceof BreakpointOutput) {
+                ((BreakpointOutput) lam).printValidityMessage(this, newValidity,
+                                                              getURL(), getLineNumber());
+            }
+        }
+    }
+            
     private final class JspLineGroupProperties extends GroupProperties {
 
         @Override

@@ -83,6 +83,11 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     
     public String getShortDescription () {
         if (type.endsWith("_broken")) {
+            if (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) {
+                String msg = breakpoint.getValidityMessage();
+                return NbBundle.getMessage(DebuggerBreakpointAnnotation.class,
+                                           "TOOLTIP_BREAKPOINT_BROKEN_INVALID", msg);
+            }
             return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
                 ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
         }
