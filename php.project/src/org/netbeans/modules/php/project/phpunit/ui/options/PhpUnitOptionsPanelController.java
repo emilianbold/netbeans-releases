@@ -113,7 +113,12 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isChanged() {
-        return changed;
+        if (!changed) {
+            return false;
+        }
+        // #202620 - this method is called several times in a row, process change just once
+        changed = false;
+        return true;
     }
 
     @Override
