@@ -1198,6 +1198,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         if (((CloneableEditor) ed).isEditorPaneReady()) {
                             p = ed.getEditorPane();
                         }
+                    } if (last instanceof CloneableEditor) {
+                        if (((CloneableEditor) last).isEditorPaneReady()) {
+                            p = ed.getEditorPane();
+                        }
                     } else {
                         p = ed.getEditorPane();
                     }
