@@ -523,8 +523,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         for (Tree t : argTypes)
                             types[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
                         path = new TreePath(path, nc.getIdentifier());
-                        Trees trees = controller.getTrees();
-                        final TypeMirror type = trees.getTypeMirror(path);
+                        Trees trees = controller.getTrees();                        
+                        TypeMirror type = trees.getTypeMirror(path);
+                        if (type != null && type.getKind() == TypeKind.ERROR && path.getLeaf().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                            path = new TreePath(path, ((ParameterizedTypeTree)path.getLeaf()).getType());
+                            type = trees.getTypeMirror(path);
+                        }
                         final Element el = trees.getElement(path);
                         final Scope scope = env.getScope();
                         final TreeUtilities tu = controller.getTreeUtilities();
@@ -4284,16 +4288,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset, true);
                         if (argTypes != null) {
+                            trees = controller.getTrees();
                             TypeMirror[] args = new TypeMirror[argTypes.size()];
                             int j = 0;
                             for (Tree t : argTypes)
-                                args[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                args[j++] = trees.getTypeMirror(new TreePath(path, t));
                             TypeMirror[] targs = null;
                             if (!nc.getTypeArguments().isEmpty()) {
                                 targs = new TypeMirror[nc.getTypeArguments().size()];
                                 j = 0;
                                 for (Tree t : nc.getTypeArguments()) {
-                                    TypeMirror ta = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                    TypeMirror ta = trees.getTypeMirror(new TreePath(path, t));
                                     if (ta == null)
                                         return null;
                                     targs[j++] = ta;
@@ -4301,7 +4306,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             Tree mid = nc.getIdentifier();
                             path = new TreePath(path, mid);
-                            final TypeMirror tm = controller.getTrees().getTypeMirror(path);
+                            TypeMirror tm = trees.getTypeMirror(path);
+                            if (tm != null && tm.getKind() == TypeKind.ERROR && path.getLeaf().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                                path = new TreePath(path, ((ParameterizedTypeTree)path.getLeaf()).getType());
+                                tm = trees.getTypeMirror(path);
+                            }
                             final Element el = controller.getTrees().getElement(path);
                             final TreeUtilities tu = controller.getTreeUtilities();
                             if (el != null && tm.getKind() == TypeKind.DECLARED) {
@@ -4833,12 +4842,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             TreePath path = controller.getTreeUtilities().pathFor(offset);
-            if (complQuery) {
+            if (queryType != DOCUMENTATION_QUERY_TYPE) {
                 TreePath treePath = path;
                 while (treePath != null) {
                     TreePath pPath = treePath.getParentPath();
                     TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
-                    Env env = getEnvImpl(controller, path, treePath, pPath, gpPath, offset, prefix, complQuery);
+                    Env env = getEnvImpl(controller, path, treePath, pPath, gpPath, offset, prefix, true);
                     if (env != null)
                         return env;
                     treePath = treePath.getParentPath();
@@ -4854,7 +4863,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     for (TreePath tp : reversePath) {
                         TreePath pPath = tp.getParentPath();
                         TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
-                        Env env = getEnvImpl(controller, path, tp, pPath, gpPath, offset, prefix, complQuery);
+                        Env env = getEnvImpl(controller, path, tp, pPath, gpPath, offset, prefix, false);
                         if (env != null)
                             return env;
                     }
