@@ -43,12 +43,14 @@ package org.netbeans.api.whitelist;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.ElementKind;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -193,6 +195,51 @@ public class WhiteListQueryTest extends NbTestCase {
         assertEquals("RMI-Disabled", res.getViolatedRules().iterator().next().getRuleName());   //NOI18N
     }
 
+    public void testWhiteListListening_changeInWhiteListImpl() throws Exception {
+        MockServices.setServices(CustomizableWLQuery.class);
+
+        final File wd = getWorkDir();
+        final FileObject root1 = FileUtil.createFolder(new File (wd,"src1"));   //NOI18N
+        CustomizableWLQuery.customize(
+                    Collections.singleton(root1),
+                    "CORBA",                //NOI18N
+                    "CORBA-Disabled",       //NOI18N
+                    "No CORBA allowed",     //NOI18N
+                    "org.omg.CORBA"         //NOI18N
+                );
+        final WhiteList wl = WhiteListQuery.getWhiteList(root1);
+        assertNotNull(wl);
+        WhiteListQuery.Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertFalse(res.isAllowed());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertTrue(res.isAllowed());
+
+
+        final AtomicInteger called = new AtomicInteger();
+        wl.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                called.incrementAndGet();
+            }
+        });
+        CustomizableWLQuery.customize(
+                Collections.singleton(root1),
+                    "CORBA",                //NOI18N
+                    "CORBA-Disabled",       //NOI18N
+                    "No CORBA allowed",     //NOI18N
+                    "org.omg.CORBA",        //NOI18N
+                    "org.omg.CORBA_2_3"     //NOI18N
+                );
+        assertEquals(1, called.get());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        assertFalse(res.isAllowed());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertFalse(res.isAllowed());
+    }
+
 
     private static void assertViolations(final String[] expected, final List<? extends RuleDescription> result) {
         final Set<String> ws = new HashSet<String>();
@@ -209,12 +256,20 @@ public class WhiteListQueryTest extends NbTestCase {
     private static class WhiteListImpl implements WhiteListQueryImplementation.WhiteListImplementation {
 
         private final ChangeSupport cs = new ChangeSupport(this);
-        private final Set<String> forbiddenPkgs;
-        private final String wlName;
-        private final String rName;
-        private final String rDesc;
+        private Set<String> forbiddenPkgs;
+        private String wlName;
+        private String rName;
+        private String rDesc;
 
         private WhiteListImpl (
+                final String wlName,
+                final String rName,
+                final String rDesc,
+                final String... forbiddenPkgs) {
+            customize(wlName, rName, rDesc, forbiddenPkgs);
+        }
+
+        private synchronized void customize (
                 final String wlName,
                 final String rName,
                 final String rDesc,
@@ -227,10 +282,11 @@ public class WhiteListQueryTest extends NbTestCase {
                 fp.add(forPkg+'.');
             }
             this.forbiddenPkgs = Collections.unmodifiableSet(fp);
+            cs.fireChange();
         }
 
         @Override
-        public Result check(ElementHandle<?> element, Operation operation) {
+        public synchronized Result check(ElementHandle<?> element, Operation operation) {
             final String[] vmSig = SourceUtils.getJVMSignature(element);
             for (String fp : forbiddenPkgs) {
                 if (vmSig[0].startsWith(fp)) {
@@ -254,10 +310,7 @@ public class WhiteListQueryTest extends NbTestCase {
     public static class CustomizableWLQuery implements WhiteListQueryImplementation {
 
         private static Set<FileObject> supportedFor;
-        private static Set<String> blackListedPkgs;
-        private static String wlName;
-        private static String rName;
-        private static String rDesc;
+        private static final AtomicReference<WhiteListImpl> impl = new AtomicReference<WhiteListImpl>();
 
         static synchronized void customize (
                 final Set<FileObject> files,
@@ -266,10 +319,8 @@ public class WhiteListQueryTest extends NbTestCase {
                 final String rd,
                 final String... pkgs) {
             supportedFor = files;
-            wlName = wln;
-            rName = rn;
-            rDesc = rd;
-            blackListedPkgs = new HashSet<String>(Arrays.asList(pkgs));
+            final WhiteListImpl wl = getWhiteListImpl();
+            wl.customize(wln, rn, rd, pkgs);
         }
 
         @Override
@@ -278,12 +329,22 @@ public class WhiteListQueryTest extends NbTestCase {
                 if (supportedFor == null || !supportedFor.contains(file)) {
                     return null;
                 }
-                return new WhiteListImpl(
-                    wlName,
-                    rName,
-                    rDesc,
-                    blackListedPkgs.toArray(new String[blackListedPkgs.size()]));
+                return getWhiteListImpl();
             }
+        }
+
+        private static WhiteListImpl getWhiteListImpl() {
+            WhiteListImpl res = impl.get();
+            if (res == null) {
+                res =  new WhiteListImpl(
+                    null,
+                    null,
+                    null);
+                if (!impl.compareAndSet(null, res)) {
+                    res = impl.get();
+                }
+            }
+            return res;
         }
     }
 
