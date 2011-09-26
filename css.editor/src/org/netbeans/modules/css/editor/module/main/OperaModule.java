@@ -56,10 +56,4 @@ public class OperaModule extends BrowserSupportModule {
         super(new DefaultBrowser("Opera", "Opera", "presto", "o", "opera20"), "opera"); //NOI18N
     }
 
-    @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
-    }
-
-      
 }
