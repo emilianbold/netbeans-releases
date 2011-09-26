@@ -61,10 +61,14 @@ import org.netbeans.api.whitelist.WhiteListQuery.WhiteList;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.whitelist.WhiteListQueryImplementationMerged;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -240,6 +244,51 @@ public class WhiteListQueryTest extends NbTestCase {
         assertFalse(res.isAllowed());
     }
 
+    public void testWhiteListListening_changeInLookup() throws Exception {
+        final File wd = getWorkDir();
+        final FileObject root1 = FileUtil.createFolder(new File (wd,"src1"));   //NOI18N
+        class L extends ProxyLookup {
+            public void setServices(Object... services) {
+                setLookups(Lookups.fixed(services));
+            }
+        }
+        final L lkp = new L();
+        final WhiteListQueryImplementationMerged mergedWLQ = new WhiteListQueryImplementationMerged(lkp);
+        assertNull(mergedWLQ.getWhiteList(root1));
+        final RMIBLQuery q1 = new RMIBLQuery();
+        final CustomizableWLQuery q2 = new CustomizableWLQuery();
+        CustomizableWLQuery.customize(
+            Collections.singleton(root1),
+                "CORBA",                //NOI18N
+                "CORBA-Disabled",       //NOI18N
+                "No CORBA allowed",     //NOI18N
+                "org.omg.CORBA"
+            );
+        lkp.setServices(q1);
+        final WhiteListQueryImplementation.WhiteListImplementation wl = mergedWLQ.getWhiteList(root1);
+        assertNotNull(wl);
+        WhiteListQuery.Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertTrue(res.isAllowed());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertFalse(res.isAllowed());
+        final AtomicInteger cc = new AtomicInteger();
+        wl.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                cc.incrementAndGet();
+            }
+        });
+        lkp.setServices(q1, q2);
+        assertEquals(1, cc.get());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertFalse(res.isAllowed());
+        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        assertNotNull(res);
+        assertFalse(res.isAllowed());
+    }
 
     private static void assertViolations(final String[] expected, final List<? extends RuleDescription> result) {
         final Set<String> ws = new HashSet<String>();
