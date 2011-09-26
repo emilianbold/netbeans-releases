@@ -700,9 +700,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
            
             try {
                 ProcessBuilder pb = new ProcessBuilder(arguments);
-                for(String envEntry: env) {
-                    String[] varValuePair = envEntry.split("=");  // NOI18N
-                    pb.environment().put(varValuePair[0], varValuePair[1]);
+                if (env != null) {
+                    for(String envEntry: env) {
+                        String[] varValuePair = envEntry.split("=");  // NOI18N
+                        pb.environment().put(varValuePair[0], varValuePair[1]);
+                    }
                 }
                 Process p = pb.start();
                 InputStream is = p.getInputStream();
