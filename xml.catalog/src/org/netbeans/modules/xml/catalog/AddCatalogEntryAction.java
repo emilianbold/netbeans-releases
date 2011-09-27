@@ -91,10 +91,10 @@ public class AddCatalogEntryAction extends NodeAction {
         }
     }
     
-    private static final String PROTOCOL_HTTP = "http://";
-    private static final String PROTOCOL_HTTPS = "https://";
-    private static final String PROTOCOL_FILE = "file:/";
-    private static final String MIME_SCHEMA = "application/x-schema+xml";
+    private static final String PROTOCOL_HTTP = "http://"; // NOI18N
+    private static final String PROTOCOL_HTTPS = "https://"; // NOI18N
+    private static final String PROTOCOL_FILE = "file:/"; // NOI18N
+    private static final String MIME_SCHEMA = "application/x-schema+xml"; // NOI18N
 
     private static boolean isXmlSchema(String uri, String localURI) {
         // check the remote protocol, only http(s) is supported at the moment

@@ -88,8 +88,8 @@ import org.xml.sax.SAXException;
  */
 public class Util extends AbstractUtil {
     private static final Logger LOG = Logger.getLogger(Util.class.getName()); // NOI18N
-    private static final String PREFIX_SCHEMA = "SCHEMA:";
-    private static final String PROTOCOL_FILE = "file:";
+    private static final String PREFIX_SCHEMA = "SCHEMA:"; // NOI18N
+    private static final String PROTOCOL_FILE = "file:"; // NOI18N
 
     // last catalog directory
     private static File lastDirectory;
@@ -241,9 +241,9 @@ public class Util extends AbstractUtil {
                         result.put(src, uri);
                     }
                 } catch (SAXException ex) {
-                    LOG.log(Level.FINE, "Resolution failed", ex);
+                    LOG.log(Level.FINE, "Resolution failed", ex); // NOI18N
                 } catch (IOException ex) {
-                    LOG.log(Level.FINE, "Resolution failed", ex);
+                    LOG.log(Level.FINE, "Resolution failed", ex); // NOI18N
                 }
              }
          }
@@ -363,8 +363,8 @@ public class Util extends AbstractUtil {
     
     private static NamespaceContext getNamespaceContext() {
         //schema related
-        namespaces.put("xsd","http://www.w3.org/2001/XMLSchema");
-        prefixes.put("http://www.w3.org/2001/XMLSchema", "xsd");
+        namespaces.put("xsd","http://www.w3.org/2001/XMLSchema");  // NOI18N
+        prefixes.put("http://www.w3.org/2001/XMLSchema", "xsd"); // NOI18N
         
        return new HashNamespaceResolver(namespaces, prefixes);
     }

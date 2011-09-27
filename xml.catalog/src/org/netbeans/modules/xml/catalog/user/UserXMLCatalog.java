@@ -90,8 +90,8 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     private static final int TYPE_URI=2;
     private static final int TYPE_SCHEMA = 3;
     
-    private static final String NB_SCHEMA_MARKER = "NetBeans XML schema marker, do not remove";
-    private static final String NB_SCHEMA_MARKER_COMMENT = "<!-- " + NB_SCHEMA_MARKER + " -->";
+    private static final String NB_SCHEMA_MARKER = "NetBeans XML schema marker, do not remove"; // NOI18N
+    private static final String NB_SCHEMA_MARKER_COMMENT = "<!-- " + NB_SCHEMA_MARKER + " -->"; // NOI18N
     
     /** Default constructor for use from layer. */
     public UserXMLCatalog() {
@@ -271,42 +271,42 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
         FileLock lock = userCatalog.lock();
+        String prefix;
+        String searchText;
+        
+        switch (entryType) {
+            case TYPE_PUBLIC: 
+                prefix = PUBLIC_PREFIX; 
+                searchText = "<public publicId"; // NOI18N
+                break;
+            case TYPE_SYSTEM: 
+                prefix = SYSTEM_PREFIX; 
+                searchText = "<system systemId"; // NOI18N
+                break;
+            case TYPE_URI: 
+                prefix = URI_PREFIX; 
+                searchText = "<uri name"; // NOI18N
+                break;
+            case TYPE_SCHEMA: 
+                prefix = SCHEMA_PREFIX; 
+                searchText = "<uri name"; // NOI18N
+                break;
+            default:
+                prefix = "";
+                searchText = "<public publicId"; // NOI18N
+        }
+        searchText += "=\""+key+"\"";
         try {
             PrintWriter writer = new PrintWriter(userCatalog.getOutputStream(lock));
             try {
                 String line;
                 while ((line=reader.readLine())!=null) {
-                    switch (entryType) {
-                        case TYPE_PUBLIC : {
-                            if (line.indexOf("<public publicId=\""+key+"\"")>0) { //NOI18N
-                                getPublicIdMap().remove(PUBLIC_PREFIX+key);
-                                fireEntryRemoved(PUBLIC_PREFIX+key);
-                            } else {
-                                writer.println(line);
-                            }
-                            break;
-                        }
-                        case TYPE_SYSTEM : {
-                            if (line.indexOf("<system systemId=\""+key+"\"")>0) { //NOI18N
-                                getPublicIdMap().remove(SYSTEM_PREFIX+key);
-                                fireEntryRemoved(SYSTEM_PREFIX+key);
-                            } else {
-                                writer.println(line);
-                            }
-                            break;
-                        }
-                        case TYPE_SCHEMA:
-                        case TYPE_URI : {
-                            if (line.indexOf("<uri name=\""+key+"\"")>0) { //NOI18N
-                                getPublicIdMap().remove(URI_PREFIX+key);
-                                fireEntryRemoved(URI_PREFIX+key);
-                            } else {
-                                writer.println(line);
-                            }
-                            break;
-                        } default : writer.println(line);
+                    if (line.indexOf(searchText)>0) { //NOI18N
+                        getPublicIdMap().remove(prefix+key);
+                        fireEntryRemoved(prefix+key);
+                    } else {
+                        writer.println(line);
                     }
-                    
                 }
             } finally {
                 writer.close();
