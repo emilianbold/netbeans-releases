@@ -46,10 +46,11 @@ package org.netbeans.modules.spring.beans.refactoring;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
  *
@@ -57,13 +58,13 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
  */
 public class AttributeValueFinder {
 
-    private final XMLSyntaxSupport syntaxSupport;
+    private final SyntaxSupport syntaxSupport;
     private final int start;
 
     private int foundOffset = -1;
     private String foundValue;
 
-    public AttributeValueFinder(XMLSyntaxSupport syntaxSupport, int start) {
+    public AttributeValueFinder(SyntaxSupport syntaxSupport, int start) {
         this.syntaxSupport = syntaxSupport;
         this.start = start;
     }
@@ -72,7 +73,11 @@ public class AttributeValueFinder {
         foundOffset = -1;
         foundValue = null;
         BaseDocument doc = syntaxSupport.getDocument();
-        TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, doc.getLength()));
+        if (!(syntaxSupport instanceof ExtSyntaxSupport)) {
+            return false;
+        }
+
+        TokenItem item = ((ExtSyntaxSupport) syntaxSupport).getTokenChain(start, Math.min(start + 1, doc.getLength()));
         if (item == null || item.getTokenID() != XMLDefaultTokenContext.TAG) {
             return false;
         }

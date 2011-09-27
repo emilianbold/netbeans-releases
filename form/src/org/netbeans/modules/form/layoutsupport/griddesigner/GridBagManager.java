@@ -668,8 +668,8 @@ public class GridBagManager implements GridManager {
 
     void setGapArrays(int gapWidth, int gapHeight, int columnCount, int rowCount) 
     {
-        int gappedColumnCount = 2 * columnCount - 1;
-        int gappedRowCount = 2 * rowCount - 1;
+        int gappedColumnCount = Math.max( 2 * columnCount - 1, 1 );
+        int gappedRowCount = Math.max( 2 * rowCount - 1, 1 );
         
         int columnWidths[] = new int[gappedColumnCount];
         for(int i = 1; i < columnCount; i++) {
