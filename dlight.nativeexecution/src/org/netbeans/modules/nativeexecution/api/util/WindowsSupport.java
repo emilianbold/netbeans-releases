@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -377,8 +376,12 @@ public final class WindowsSupport {
 
         // 1. is LANG defined?
         try {
-            ExitStatus result = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), activeShell.shell, "--login", "-c", "echo $LANG"); // NOI18N
-
+            // Will not use NativeProcessBuilder here. This may lead to deadlock
+            // if no HostInfo is available. (See bugs #202550, #202568)
+            // Actually, there is no any need in using NBP here.
+            
+            ExitStatus result = ProcessUtils.execute(new ProcessBuilder(activeShell.shell, "--login", "-c", "echo $LANG")); // NOI18N
+            
             if (result.isOK()) {
                 String shellOutput = result.output;
                 int dotIndex = shellOutput.indexOf('.');
