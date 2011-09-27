@@ -151,7 +151,15 @@ public final class ViewHierarchyImpl {
     
     private final ListenerList<ViewHierarchyListener> listenerList;
     
+    /**
+     * Lockable document view.
+     */
     private DocumentView docView;
+    
+    /**
+     * Document view to be assigned to docView in case it's lockable.
+     */
+    private DocumentView docViewToAssign;
     
     private LockedViewHierarchy lock;
     
@@ -186,7 +194,7 @@ public final class ViewHierarchyImpl {
     }
 
     public void setDocumentView(DocumentView docView) {
-        this.docView = docView;
+        this.docViewToAssign = docView;
     }
     
     public synchronized LockedViewHierarchy lock() {
@@ -201,6 +209,11 @@ public final class ViewHierarchyImpl {
             }
             lock = ViewApiPackageAccessor.get().createLockedViewHierarchy(this);
             lockThread = curThread;
+            DocumentView dv = docViewToAssign;
+            assert (this.docView == null);
+            if (dv != null && dv.lock()) {
+                this.docView = dv;
+            }
             if (LOG.isLoggable(Level.FINER)) {
                 lockStack = new Exception("ViewHierarchy.lock() caller stack"); // NOI18Ns
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -223,6 +236,10 @@ public final class ViewHierarchyImpl {
         }
         this.lock = null;
         this.lockThread = null;
+        if (docView != null) {
+            docView.unlock();
+            docView = null;
+        }
         notifyAll();
     }
 
