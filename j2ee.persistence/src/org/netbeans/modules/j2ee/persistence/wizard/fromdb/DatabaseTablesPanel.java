@@ -60,6 +60,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -99,7 +101,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Andrei Badea
  */
-public class DatabaseTablesPanel extends javax.swing.JPanel {
+public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorListener{
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
@@ -153,7 +155,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         this.dbschemaFileList = dbschemaFileList;
         this.tableSource = tableSource;
         this.targetFolder = targetFolder;
-        initSubComponents();
+        addAncestorListener(this);
     }
     
     private void initSubComponents(){
@@ -987,6 +989,22 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane tableErrorScroll;
     private javax.swing.JPanel tablesPanel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void ancestorAdded(AncestorEvent event) {
+        initSubComponents();
+        removeAncestorListener(this);     
+    }
+
+    @Override
+    public void ancestorRemoved(AncestorEvent event) {
+        
+    }
+
+    @Override
+    public void ancestorMoved(AncestorEvent event) {
+        
+    }
 
     private final class TablesPanel extends JPanel {
 
