@@ -65,8 +65,7 @@ class ScopeStatusBar extends JLabel implements PropertyChangeListener {
     
     /** Creates a new instance of StatusBar */
     public ScopeStatusBar( TaskManagerImpl taskManager ) {
-        this.taskManager = taskManager;
-        setEnabled(false);
+        this.taskManager = taskManager;        
         updateText();
         listener = new TaskList.Listener() {
             public void tasksAdded(List<? extends Task> tasks) {
@@ -90,7 +89,7 @@ class ScopeStatusBar extends JLabel implements PropertyChangeListener {
         if( null != descriptions ) {
             String label = descriptions.get("StatusBarLabel"); //NOI18N
             if( null != label ) {
-                buffer.append( label );
+                buffer.append( "  (" + label + ")" );
             }
         }
         setText( buffer.toString() );
