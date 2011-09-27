@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.5</specification-version>
+                        <specification-version>2.18</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -196,12 +196,12 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/indexer-core-4.1.1.jar</runtime-relative-path>
-                <binary-origin>external/indexer-core-4.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/maven/indexer-core-4.1.2.jar</runtime-relative-path>
+                <binary-origin>external/indexer-core-4.1.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/indexer-artifact-4.1.1.jar</runtime-relative-path>
-                <binary-origin>external/indexer-artifact-4.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/maven/indexer-artifact-4.1.2.jar</runtime-relative-path>
+                <binary-origin>external/indexer-artifact-4.1.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

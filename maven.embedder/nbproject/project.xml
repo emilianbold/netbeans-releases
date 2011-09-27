@@ -221,6 +221,7 @@ made subject to such option by the copyright holder.
                 <package>org.codehaus.plexus.logging</package>
                 <package>org.codehaus.plexus.util</package>
                 <package>org.codehaus.plexus.util.cli</package>
+                <package>org.codehaus.plexus.util.dag</package>
                 <package>org.codehaus.plexus.util.introspection</package>
                 <package>org.codehaus.plexus.util.xml</package>
                 <package>org.codehaus.plexus.util.xml.pull</package>
