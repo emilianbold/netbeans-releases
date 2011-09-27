@@ -222,6 +222,7 @@ public final class ViewHierarchyImpl {
             return;
         }
         this.lock = null;
+        this.lockThread = null;
         notifyAll();
     }
 

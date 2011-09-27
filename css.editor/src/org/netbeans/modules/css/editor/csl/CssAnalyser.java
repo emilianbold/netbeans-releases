@@ -80,6 +80,17 @@ public class CssAnalyser {
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.declaration) {
+                    
+                    //do not check declarations in fontFace and counterStyle
+                    Node parent = node.parent();
+                    if(parent.type() == NodeType.declarations) {
+                        switch(parent.parent().type()) {
+                            case fontFace:
+                            case counterStyle:
+                                return false; 
+                        }
+                    }
+                    
                     Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
                     Node valueNode = NodeUtil.getChildByType(node, NodeType.expr);
 
