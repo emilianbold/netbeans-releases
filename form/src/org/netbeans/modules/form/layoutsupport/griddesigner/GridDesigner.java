@@ -130,6 +130,8 @@ public class GridDesigner extends JPanel {
     private static final int DEFAULT_GAP_WIDTH = 5;
     /** Default gap row height */
     private static final int DEFAULT_GAP_HEIGHT = 5;
+    /** Gap support switch. */
+    private JToggleButton gapButton;
     /** Spinner allowing to set gap width if gap support is enabled. */
     private JSpinner gapWidthSpinner;
     /** Spinner allowing to set gap Height if gap support is enabled. */
@@ -168,11 +170,13 @@ public class GridDesigner extends JPanel {
         toolBar.setFloatable(false);
         UndoRedoSupport support = UndoRedoSupport.getSupport(formModel);
         support.reset(glassPane);
-        toolBar.add(initUndoRedoButton(toolBar.add(support.getRedoAction())));
-        toolBar.add(initUndoRedoButton(toolBar.add(support.getUndoAction())));
+        JButton redoButton = initUndoRedoButton(toolBar.add(support.getRedoAction()));
+        toolBar.add(redoButton);
+        JButton undoButton = initUndoRedoButton(toolBar.add(support.getUndoAction()));
+        toolBar.add(undoButton);
         toolBar.add(Box.createRigidArea(new Dimension(15,10)));
 
-        JToggleButton gapButton = initGapButton();
+        gapButton = initGapButton();
         toolBar.add(gapButton);
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         gapWidthSpinnerLabel = new JLabel();
@@ -189,6 +193,13 @@ public class GridDesigner extends JPanel {
         toolBar.add(gapHeightSpinner);
         gapHeightSpinnerBox = Box.createRigidArea(new Dimension(15,10));
         toolBar.add(gapHeightSpinnerBox);
+        support.addUndoRedoListener(new UndoRedoSupport.UndoRedoPerformedListener() {
+            @Override
+            public void UndoRedoPerformed(boolean undo) {
+                boolean gapSupport = gridManager.getGridInfo().hasGaps();
+                updateGapControls(gapSupport);
+            }
+        });
         
         JToggleButton padButton = initPaddingButton();
         toolBar.add(padButton);
@@ -249,6 +260,13 @@ public class GridDesigner extends JPanel {
         
         boolean gapSupport = gridManager.getGridInfo().hasGaps();
         updateGapProperties(gapSupport);
+        updateGapControls(gapSupport);
+    }
+    
+    /**
+     * Updates the gap toggle button and gap width/height spinners state.
+     */
+    private void updateGapControls(boolean gapSupport) {
         gapButton.setSelected(gapSupport);
         gapWidthSpinner.setEnabled(gapSupport);
         gapHeightSpinner.setEnabled(gapSupport);
@@ -261,7 +279,7 @@ public class GridDesigner extends JPanel {
         } else {
             gapButton.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapSupportEnable")); // NOI18N
         }
-}
+    }
  
     /**
      * Configures the appropriate {@code GridManager}.

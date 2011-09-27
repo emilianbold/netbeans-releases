@@ -92,7 +92,9 @@ public class NewFileActionTest extends JellyTestCase {
         // test constructor with parameter
         String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
         new NewFileAction(javaClassLabel).performPopup(node);
-        new WizardOperator(javaClassLabel).close();
+        // workaround for bug 202676 - remove when fixed
+        new NewFileWizardOperator().close();
+        //new WizardOperator(javaClassLabel).close();
     }
 
     /** Test performMenu */
