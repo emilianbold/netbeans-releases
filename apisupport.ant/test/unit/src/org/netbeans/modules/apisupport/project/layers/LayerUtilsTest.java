@@ -276,6 +276,7 @@ public class LayerUtilsTest extends LayerTestBase {
         System.out.println("CLFS initial scan performance test finished");
     }
 
+    /* Cannot run in random test order mode, and anyway not clear what it is testing.
     public void testCLFSPerformance() throws Exception {
         LayerCacheManager m = LayerCacheManager.manager(true);
         long start = System.currentTimeMillis();
@@ -298,6 +299,7 @@ public class LayerUtilsTest extends LayerTestBase {
         System.out.println("CLFS " + NUM_ACCESSES + " accesses takes " + measureAccesses(cfs) + " ms");
         System.out.println("CLFS performance test finished");
     }
+    */
 
     private long measureAccesses(FileSystem fs) {
         Random rnd = new Random();
