@@ -52,10 +52,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -98,6 +100,75 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    @org.junit.Test
+    public void testGetHostInfo() throws Exception {
+        // A situation from bugs #202550, #202568
+
+        // One thread is trying to get hostinfo ... 
+        final Runnable r1 = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    HostInfoUtils.dumpInfo(hostInfo, System.out);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+
+        // While another one tries to create new NativeProcessBuilder at the time
+        // when HostInfo is not available yet... 
+
+        final Runnable r2 = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
+                    npb.setExecutable("echo").setArguments("123"); // NOI18N
+                    NativeProcess process = npb.call();
+                    try {
+                        process.waitFor();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    System.out.println(ProcessUtils.readProcessOutputLine(process));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+
+        HostInfoUtils.resetHostsData();
+        assert !HostInfoUtils.isHostInfoAvailable(ExecutionEnvironmentFactory.getLocal());
+
+        ConcurrentTasksSupport support = new ConcurrentTasksSupport(2);
+        support.addFactory(new ConcurrentTasksSupport.TaskFactory() {
+
+            @Override
+            public Runnable newTask() {
+                return r1;
+            }
+        });
+
+        support.addFactory(new ConcurrentTasksSupport.TaskFactory() {
+
+            @Override
+            public Runnable newTask() {
+                return r2;
+            }
+        });
+
+        support.init();
+        support.start();
+        support.waitCompletion();
     }
 
 //    @ForAllEnvironments(section = "dlight.nativeexecution.hostinfo")
