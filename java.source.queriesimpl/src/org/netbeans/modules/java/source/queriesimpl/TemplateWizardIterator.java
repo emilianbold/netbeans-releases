@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.nbform.wizard;
+package org.netbeans.modules.java.source.queriesimpl;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
