@@ -711,7 +711,7 @@ public class ProjectActionSupport {
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir.startsWith("~/") || runDir.trim().equals("~")) { // NOI18N
                     try {
-                        runDir = runDir.replace("~", HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir()); // NOI18N
+                        runDir = runDir.replaceFirst("~", HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir()); // NOI18N
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (CancellationException ex) {

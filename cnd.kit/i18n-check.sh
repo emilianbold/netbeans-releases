@@ -24,7 +24,7 @@ fi
 
 cd ${WORKSPACE}
 
-perl nbbuild/misc/i18ncheck.pl cnd* asm* dlight* lib.terminalemulator/src terminal | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/"  | tee ${LOG}
+perl nbbuild/misc/i18ncheck.pl cnd* asm* dlight* lib.terminalemulator/src terminal | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/" | grep -v "parser/FortranLexicalPrepass.java" | grep -v "parser/FortranTokenStream.java" | tee ${LOG}
 cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
 	echo "I18n check FAILED"
