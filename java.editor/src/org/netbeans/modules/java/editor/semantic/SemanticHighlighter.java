@@ -336,7 +336,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         }
         
         Map<Token, Coloring> oldColors = LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
-        Set<Token> removedTokens = new HashSet<Token>(oldColors.keySet());
+        Map<Token, Coloring> removedTokens = new IdentityHashMap<Token, Coloring>(oldColors);
         Set<Token> addedTokens = new HashSet<Token>();
         
         for (Element decl : v.type2Uses.keySet()) {
@@ -375,8 +375,10 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 
                 if (t != null) {
                     newColoring.put(t, c);
-                    
-                    if (!removedTokens.remove(t)) {
+
+                    Coloring oldColoring = removedTokens.remove(t);
+
+                    if (oldColoring == null || !oldColoring.equals(c)) {
                         addedTokens.add(t);
                     }
                 }
@@ -390,8 +392,8 @@ public class SemanticHighlighter extends JavaParserResultTask {
             setter.setErrors(doc, errors, allUnusedImports);
             setter.setHighlights(doc, imports);
         }
-        
-        setter.setColorings(doc, newColoring, addedTokens, removedTokens);
+
+        setter.setColorings(doc, newColoring, addedTokens, removedTokens.keySet());
 
         Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
             new Object[] {NbEditorUtilities.getFileObject(doc), System.currentTimeMillis() - start});
