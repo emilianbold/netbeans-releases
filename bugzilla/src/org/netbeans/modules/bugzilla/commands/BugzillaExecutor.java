@@ -213,7 +213,7 @@ public class BugzillaExecutor {
             }
         }
         if(isHtml) {
-            notifyHtmlMessage(errMsg, repository);
+            notifyHtmlMessage(errMsg, repository, true);
         } else {
             notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_ERROR_WARNING", errMsg)); // NOI18N
         }
@@ -232,9 +232,12 @@ public class BugzillaExecutor {
         DialogDisplayer.getDefault().notify(nd);
     }
 
-    private static boolean notifyHtmlMessage(String html, BugzillaRepository repository) throws MissingResourceException {
+    private static boolean notifyHtmlMessage(String html, BugzillaRepository repository, boolean htmlTextIsAllYouGot) throws MissingResourceException {
         if (html != null && !html.trim().equals("")) {                          // NOI18N
-            html = parseHtmlMessage(html);
+            html = parseHtmlMessage(html, htmlTextIsAllYouGot);
+            if(html == null) {
+                return false;
+            }
             final HtmlPanel p = new HtmlPanel();
             String label = NbBundle.getMessage(
                                 BugzillaExecutor.class,
@@ -260,13 +263,19 @@ public class BugzillaExecutor {
     }
 
     @SuppressWarnings("empty-statement")
-    private static String parseHtmlMessage(String html) {
+    private static String parseHtmlMessage(String html, boolean htmlTextIsAllYouGot) {
         int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
         if(idxS < 0) {
             return html;
         }
         int idx = idxS;
         int idxE = html.indexOf("</div>", idx);                             // NOI18N
+        if(!htmlTextIsAllYouGot && idxE < 0) {
+            // there is no closing </div> tag and we don't have to relly on the html text 
+            // as on the only msg we got, so skip parsing
+            return null;
+        }
+        
         int levels = 1;
         while(true) {
             idx = html.indexOf("<div", idx + 1);                            // NOI18N
@@ -275,7 +284,6 @@ public class BugzillaExecutor {
             }
             levels++;
         }
-
         idxE = idxS;
         for (int i = 0; i < levels; i++) {
             idxE = html.indexOf("</div>", idxE + 1);                        // NOI18N
@@ -416,13 +424,13 @@ public class BugzillaExecutor {
         }
 
         private static void notifyError(CoreException ce, BugzillaRepository repository) {
+            String msg = getMessage(ce);
             IStatus status = ce.getStatus();
             if (status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
-                if(notifyHtmlMessage(html, repository)) return;
+                if(notifyHtmlMessage(html, repository, msg == null)) return;
             }
-            String msg = getMessage(ce);
             notifyErrorMessage(msg);
         }
 
