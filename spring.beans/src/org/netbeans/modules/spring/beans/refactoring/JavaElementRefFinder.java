@@ -49,11 +49,11 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -66,12 +66,12 @@ import org.openide.xml.XMLUtil;
 public class JavaElementRefFinder {
 
     private final DocumentAccess docAccess;
-    private final XMLSyntaxSupport syntaxSupport;
+    private final SyntaxSupport syntaxSupport;
 
     public JavaElementRefFinder(DocumentAccess docAccess) {
         this.docAccess = docAccess;
         BaseDocument document = (BaseDocument)docAccess.getDocument();
-        syntaxSupport = (XMLSyntaxSupport)document.getSyntaxSupport();
+        syntaxSupport = document.getSyntaxSupport();
     }
 
     public void addOccurrences(Matcher matcher, List<Occurrence> result) throws BadLocationException {
