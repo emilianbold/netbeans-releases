@@ -153,56 +153,92 @@ public class GridBagInfoProvider implements GridInfoProvider {
     }
 
     public int getGapXArrayLength() {
-        int gapXArray[] = (int[]) getLayoutProperty("columnWidths");
-        if(gapXArray == null) {
+        Object objXArray = getLayoutProperty("columnWidths");
+        if(objXArray == null) {
             return 0;
-        } else {
+        }
+        if(objXArray instanceof int[]) {
+            int gapXArray[] = (int[]) objXArray;
             return gapXArray.length;
         }
+        return 0;
     }
     
     public int getGapYArrayLength() {
-        int gapYArray[] = (int[]) getLayoutProperty("rowHeights");
-        if(gapYArray == null) {
+        Object objYArray = getLayoutProperty("rowHeights");
+        if(objYArray == null) {
             return 0;
-        } else {
+        }
+        if(objYArray instanceof int[]) {
+            int gapYArray[] = (int[]) objYArray;
             return gapYArray.length;
         }
+        return 0;
+    }
+    
+    /**
+     * Checks whether GridBagLayout property columnWidths or rowHeights
+     * is set to a valid value (i.e., value that can be decoded as representation
+     * of gaps)
+     *
+     * @param obj current value of columnWidths or rowHeights GridBagLayout property
+     * @returns true if obj is of type int[] and contains at least one value
+     */
+    public boolean isGapArray(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(obj instanceof int[]) {
+            int arr[] = (int[]) obj;
+            if(arr.length == 0) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean hasGaps() {
-        if(getLayoutProperty("columnWidths") == null) return false;
-        if(getLayoutProperty("rowHeights") == null) return false;
+        Object objXArray = getLayoutProperty("columnWidths");
+        if(objXArray == null) return false;
+        Object objYArray = getLayoutProperty("rowHeights");
+        if(objYArray == null) return false;
+        if(!isGapArray(objXArray)) return false;
+        if(!isGapArray(objYArray)) return false;
         return true;
     }
 
     @Override
     public int getGapWidth() {
-        int gapXArray[] = (int[]) getLayoutProperty("columnWidths");
-        if(gapXArray == null) {
+        Object objXArray = getLayoutProperty("columnWidths");
+        if(objXArray == null) {
             return -1;
-        } else {
+        }
+        if(objXArray instanceof int[]) {
+            int gapXArray[] = (int[]) objXArray;
             if(gapXArray.length < 2) {
                 return -1;
-            } else {
-                return gapXArray[1];
             }
+            return gapXArray[1];
         }
+        return -1;
     }
 
     @Override
     public int getGapHeight() {
-        int gapYArray[] = (int[]) getLayoutProperty("rowHeights");
-        if(gapYArray == null) {
+        Object objYArray = getLayoutProperty("rowHeights");
+        if(objYArray == null) {
             return -1;
-        } else {
+        }
+        if(objYArray instanceof int[]) {
+            int gapYArray[] = (int[]) objYArray;
             if(gapYArray.length < 2) {
                 return -1;
-            } else {
-                return gapYArray[1];
             }
+            return gapYArray[1];
         }
+        return -1;
     }
 
     @Override
