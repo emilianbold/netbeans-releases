@@ -122,9 +122,9 @@ final class ModeResizer implements AWTEventListener, PropertyChangeListener {
         }
     }
     
-    static void abort() {
+    static void stop() {
         if( null != currentResizer )
-            currentResizer.stop( false );
+            currentResizer.stop( true );
     }
 
     @Override
@@ -169,7 +169,7 @@ final class ModeResizer implements AWTEventListener, PropertyChangeListener {
                         stop( true );
                         break;
                     case KeyEvent.VK_ESCAPE:
-                        abort();
+                        stop( true );
                         break;
                 }
             }
@@ -199,7 +199,7 @@ final class ModeResizer implements AWTEventListener, PropertyChangeListener {
     public void propertyChange( PropertyChangeEvent evt ) {
         if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )
             || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() ) ) {
-            abort();
+            stop(true);
         }
     }
     
