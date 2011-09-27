@@ -375,6 +375,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
     /**
      * Test of createProject method, of class Kenai.
      */
+    @RandomlyFails
     @Test
     public void testDeleteProject() throws KenaiException {
         System.out.println("deleteProject");
