@@ -534,7 +534,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_32.png"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.createForSuperclass"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.createForSuperClass"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
             </file>
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
