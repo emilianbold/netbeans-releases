@@ -1952,7 +1952,7 @@ class LayoutOperations implements LayoutConstants {
 
         // Add the groups in parallel with the outer gaps.
         LayoutInterval parentSeq = group.getParent();
-        if (independentEdges) {
+        if (independentEdges && !allGaps[LEADING] && !allGaps[TRAILING]) {
             assert group.getSubIntervalCount() == 0;
             LayoutInterval superGroup = new LayoutInterval(PARALLEL);
             superGroup.getCurrentSpace().set(dimension, outPos[LEADING], outPos[TRAILING]);

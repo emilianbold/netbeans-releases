@@ -55,6 +55,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1449,8 +1450,24 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 DesignerContext context = currentContext();
                 customizer.setContext(context);                
             }
-            animChange = change;
-            animLayer.animate();
+            // Animate, if there is something to animate
+            if(!noChange(change)) {
+                animChange = change;
+                animLayer.animate();
+            }
+        }
+
+        /**
+         * Checks whether column/row bounds have changed and need to be animated
+         *
+         * @param change between old and new column/row bounds.
+         */
+        public boolean noChange(GridBoundsChange change) {
+            if(!Arrays.equals(change.getNewColumnBounds(), change.getOldColumnBounds()) ||
+                    !Arrays.equals(change.getNewRowBounds(), change.getOldRowBounds())) {
+                return false;
+            }
+            return true;
         }
 
         /**
