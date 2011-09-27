@@ -439,6 +439,9 @@ attrib
                       OPEQ
                     | INCLUDES
                     | DASHMATCH
+                    | BEGINS
+                    | ENDS
+                    | CONTAINS
                 )
                 WS*
                 attrib_value
@@ -891,6 +894,9 @@ CDC             : '-->'
                 
 INCLUDES        : '~='      ;
 DASHMATCH       : '|='      ;
+BEGINS          : '^='      ;
+ENDS            : '$='      ;
+CONTAINS        : '*='      ;
 
 GREATER         : '>'       ;
 LBRACE          : '{'       ;

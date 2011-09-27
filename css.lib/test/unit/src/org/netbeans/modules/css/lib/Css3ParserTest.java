@@ -750,6 +750,12 @@ public class Css3ParserTest extends CslTestBase {
 
     }
     
+    public void testSubstringMatchingAttributeSelectors() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("p[class$=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class*=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class^=\"st\"]{ } "));
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);
