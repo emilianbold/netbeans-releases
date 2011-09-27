@@ -55,6 +55,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1414,6 +1415,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (change == null) {
                 animNewColumnBounds = gridInfo.getColumnBounds();
                 animNewRowBounds = gridInfo.getRowBounds();
+                if(gridInfo.hasGaps()) {
+                    if( animNewColumnBounds.length > gridInfo.getLastGapColumn() + 3 ) {
+                        animNewColumnBounds = resizeArray(animNewColumnBounds, gridInfo.getLastGapColumn() + 3);
+                    }
+                    if( animNewRowBounds.length > gridInfo.getLastGapRow() + 3 ) {
+                        animNewRowBounds = resizeArray(animNewRowBounds, gridInfo.getLastGapRow() + 3);
+                    }
+                }
             } else {
                 animOldColumnBounds = change.getOldColumnBounds();
                 animOldRowBounds = change.getOldRowBounds();
@@ -1422,16 +1431,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             }
             if (animNewColumnBounds.length != animOldColumnBounds.length) {
                 if (animNewColumnBounds.length > animOldColumnBounds.length) {
-                    animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
+                    animOldColumnBounds = resizeArray(animOldColumnBounds, animNewColumnBounds.length);
                 } else {
-                    animNewColumnBounds = extendArray(animNewColumnBounds, animOldColumnBounds.length);
+                    animNewColumnBounds = resizeArray(animNewColumnBounds, animOldColumnBounds.length);
                 }
             }
             if (animNewRowBounds.length != animOldRowBounds.length) {
                 if (animNewRowBounds.length > animOldRowBounds.length) {
-                    animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
+                    animOldRowBounds = resizeArray(animOldRowBounds, animNewRowBounds.length);
                 } else {
-                    animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
+                    animNewRowBounds = resizeArray(animNewRowBounds, animOldRowBounds.length);
                 }
             }
             change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
@@ -1441,24 +1450,49 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 DesignerContext context = currentContext();
                 customizer.setContext(context);                
             }
-            animChange = change;
-            animLayer.animate();
+            // Animate, if there is something to animate
+            if(!noChange(change)) {
+                animChange = change;
+                animLayer.animate();
+            }
         }
 
         /**
-         * Returns larger copy of the passed array. The additional slots
-         * of this array are filled by the last value of the original array.
+         * Checks whether column/row bounds have changed and need to be animated
+         *
+         * @param change between old and new column/row bounds.
+         */
+        public boolean noChange(GridBoundsChange change) {
+            if(!Arrays.equals(change.getNewColumnBounds(), change.getOldColumnBounds()) ||
+                    !Arrays.equals(change.getNewRowBounds(), change.getOldRowBounds())) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Returns larger/equal/shorter copy of the passed array. The additional slots
+         * of this array are filled by the last value of the original array,
+         * or the superfluous slots are trimmed.
          * 
          * @param original original array.
          * @param newLength length of the new array.
-         * @return extended array.
+         * @return resized array.
          */
-        private int[] extendArray(int[] original, int newLength) {
-            int[] result = new int[newLength];
-            System.arraycopy(original, 0, result, 0, original.length);
-            int last = original[original.length-1];
-            for (int i=original.length; i<newLength; i++) {
-                result[i] = last;
+        private int[] resizeArray(int[] original, int newLength) {
+            int[] result = original;
+            if(newLength > original.length) {
+                result = new int[newLength];
+                System.arraycopy(original, 0, result, 0, original.length);
+                int last = original[original.length-1];
+                for (int i=original.length; i<newLength; i++) {
+                    result[i] = last;
+                }
+            }
+            if(newLength < original.length) {
+                assert newLength > 0;
+                result = new int[newLength];
+                System.arraycopy(original, 0, result, 0, newLength);
             }
             return result;
         }
@@ -1531,7 +1565,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 }
                 originalRowBounds = oldBounds;
             }
-
+            
             return new GridBoundsChange(originalColumnBounds, originalRowBounds, newColumnBounds, newRowBounds);
         }
 

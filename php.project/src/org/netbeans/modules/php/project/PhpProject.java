@@ -717,7 +717,7 @@ public final class PhpProject implements Project {
         return helper;
     }
 
-    CopySupport getCopySupport() {
+    public CopySupport getCopySupport() {
         return getLookup().lookup(CopySupport.class);
     }
 
