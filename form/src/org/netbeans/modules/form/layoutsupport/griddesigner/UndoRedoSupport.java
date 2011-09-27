@@ -44,6 +44,7 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,7 @@ public class UndoRedoSupport {
     boolean redoInProgress;
     int undoableEdits;
     int redoableEdits;
+    private ArrayList<UndoRedoPerformedListener> listeners;
     
     private UndoRedoSupport(FormModel model) {
         model.getUndoRedoManager().addChangeListener(new ChangeListener() {
@@ -153,6 +155,10 @@ public class UndoRedoSupport {
             try {
                 undoInProgress = true;
                 performer.performAction(new DelegateGridAction(delegate));
+                for (int i=0; i < listeners.size(); i++) {
+                    UndoRedoPerformedListener l = listeners.get(i);
+                    l.UndoRedoPerformed(true);
+                }
             } finally {
                 undoInProgress = false;
             }
@@ -176,6 +182,10 @@ public class UndoRedoSupport {
             try {
                 redoInProgress = true;
                 performer.performAction(new DelegateGridAction(delegate));
+                for (int i=0; i < listeners.size(); i++) {
+                    UndoRedoPerformedListener l = listeners.get(i);
+                    l.UndoRedoPerformed(false);
+                }
             } finally {
                 redoInProgress = false;
             }
@@ -225,6 +235,24 @@ public class UndoRedoSupport {
             return null;
         }
         
+    }
+    
+    public synchronized void addUndoRedoListener(UndoRedoPerformedListener l) {
+        if (listeners == null)
+            listeners = new ArrayList<UndoRedoPerformedListener>();
+        listeners.add(l);
+    }
+
+    public synchronized void removeUndoRedoListener(UndoRedoPerformedListener l) {
+        if (listeners != null)
+            listeners.remove(l);
+    }
+
+    public interface UndoRedoPerformedListener extends java.util.EventListener {
+        /** Notification about performed Undo/Redo.
+         * @param undo - true for Undo, false for Redo
+         */
+        public void UndoRedoPerformed(boolean undo);
     }
 
 }
