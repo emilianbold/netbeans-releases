@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="adding-TemplateWizardFactory">
+             <api name="general"/>
+             <summary>Adding TemplateWizardFactory and TemplateWizardProvider</summary>
+             <version major="1" minor="3"/>
+             <date day="25" month="9" year="2011"/>
+             <author login="jhorvath"/>
+             <compatibility binary="compatible" modification="yes" semantic="compatible" source="compatible"/>
+             <description>
+                 Adding TemplateWizardFactory and TemplateWizardProvider to allow template wizards 
+                 to have a single entry point in JDev and NetBeans.
+             </description>
+             <class package="org.netbeans.modules.java.source.queries.api" name="TemplateWizardFactory"/>
+             <class package="org.netbeans.modules.java.source.queries.spi" name="TemplateWizardProvider"/>
+             <issue number="202516"/>
+        </change>
         <change id="getMethodSpan-includeComments">
              <api name="general"/>
              <summary>Removed includeComments parameter from Queries.getMethodSpan</summary>
