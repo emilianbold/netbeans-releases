@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -69,20 +70,23 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
-import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import static org.netbeans.modules.apisupport.project.universe.Bundle.*;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Dependency;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
@@ -840,7 +844,7 @@ public final class ModuleList {
             return merge(new ModuleList[] {sources, binaries}, basedir);
         }
     }
-    
+
     static ModuleList findOrCreateModuleListFromBinaries(File root) throws IOException {
         File[] clusters;
         synchronized (clusterLists) {    // no need to lock ProjectManager.mutex()
@@ -861,7 +865,36 @@ public final class ModuleList {
         for (int i = 0; i < clusters.length; i++) {
             lists[i] = findOrCreateModuleListFromCluster(clusters[i], root, null);
         }
-        return merge(lists, root);
+        ModuleList ml = merge(lists, root);
+        if (ml.getEntry(JUnitPlaceholderEntry.CNB) == null) { // #198739
+            ml.entries.put(JUnitPlaceholderEntry.CNB, new JUnitPlaceholderEntry(root));
+        }
+        return ml;
+    }
+    private static class JUnitPlaceholderEntry extends AbstractBinaryEntry {
+        static final String CNB = "org.netbeans.libs.junit4";
+        JUnitPlaceholderEntry(File root) {
+            super(CNB, new File(root, "platform/modules/" + CNB.replace('.', '-') + ".jar"),
+                    new File[] {new File(System.getProperty("user.home"), ".m2/repository/junit/junit/4.8.2/junit-4.8.2.jar")},
+                    new File(root, "platform"), null, null, new String[0],
+                    new ManifestManager.PackageExport[] {new ManifestManager.PackageExport("junit", true), new ManifestManager.PackageExport("org.junit", true)},
+                    null, false, Collections.<Dependency>emptySet());
+        }
+        @Override public File getSourceLocation() {
+            return null;
+        }
+        @Messages("junit_placeholder=JUnit from Maven")
+        @Override protected LocalizedBundleInfo getBundleInfo() {
+            try {
+                return LocalizedBundleInfo.load(new InputStream[] {new ByteArrayInputStream((LocalizedBundleInfo.NAME + '=' + junit_placeholder()).getBytes("ISO-8859-1"))});
+            } catch (IOException x) {
+                assert false : x;
+                return LocalizedBundleInfo.EMPTY;
+            }
+        }
+        @Override protected Set<String> computePublicClassNamesInMainModule() {
+            return new HashSet<String>();
+        }
     }
     
     private static final String[] MODULE_DIRS = {

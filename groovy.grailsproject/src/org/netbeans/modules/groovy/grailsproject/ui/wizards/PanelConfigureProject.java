@@ -64,7 +64,7 @@ public class PanelConfigureProject implements  WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx( PanelConfigureProject.class  );
+        return null;
     }
 
     public void readSettings(Object settings) {
