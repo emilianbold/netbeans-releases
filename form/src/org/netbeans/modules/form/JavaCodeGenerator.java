@@ -3073,8 +3073,11 @@ class JavaCodeGenerator extends CodeGenerator {
             generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
             codeWriter.flush();
             i1 = buffer.getBuffer().length();
-            if (bodyText == null)
+            if (bodyText == null) {
                 bodyText = getDefaultEventBody();
+            } else if (!bodyText.endsWith("\n")) { // NOI18N
+                bodyText += '\n'; // Issue 202459
+            }
             codeWriter.write(bodyText);
             codeWriter.flush();
             i2 = buffer.getBuffer().length();
