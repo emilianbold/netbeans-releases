@@ -806,7 +806,7 @@ public class FormDesigner {
     // designer mode
 
     void setDesignerMode(int mode) {
-        formToolBar.updateDesignerMode(mode);
+        getFormToolBar().updateDesignerMode(mode);
 
         if (mode == designerMode || !initialized) {
             return;
