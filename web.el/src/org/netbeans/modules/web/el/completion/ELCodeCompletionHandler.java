@@ -486,6 +486,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        assert typedText.length() > 0;
+        char last = typedText.charAt(typedText.length() - 1);
+        switch(last) {
+            case '.':
+                return QueryType.COMPLETION;
+        }
         return QueryType.NONE;
     }
 
