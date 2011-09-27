@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.Node;
 import java.util.List;
 import java.util.Arrays;
@@ -63,7 +62,10 @@ import org.openide.util.RequestProcessor;
  * @author  nn136682
  */
 public class InstanceTargetXNode extends FilterXNode implements ServerInstance.StateListener {
-    
+
+    private static final RequestProcessor UI_REFRESH_PROCESSOR =
+            new RequestProcessor("Java EE server UI node refresh", 3);
+
     private ServerTarget instanceTarget;
     private ServerInstance instance;
     private InstanceTargetChildren instanceTargetChildren;
@@ -165,27 +167,23 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
         }
         
         public void updateNodes(final InstanceTargetXNode parent) {
-            //if (isFurtherExpandable()) {
-                if (original == Node.EMPTY) {
-                    changeOriginal(createWaitNode());
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            Node newOriginal = null;
-                            if (parent != null) {
-                                newOriginal = parent.getDelegateTargetNode();
-                                lastDelegateTargetNode = newOriginal;
-                            }
-                            if (newOriginal != null) {
-                                changeOriginal(newOriginal);
-                            } else {
-                                changeOriginal(Node.EMPTY);
-                            }
+            if (original == Node.EMPTY) {
+                changeOriginal(createWaitNode());
+                UI_REFRESH_PROCESSOR.post(new Runnable() {
+                    public void run() {
+                        Node newOriginal = null;
+                        if (parent != null) {
+                            newOriginal = parent.getDelegateTargetNode();
+                            lastDelegateTargetNode = newOriginal;
                         }
-                    });
-                }
-//            } else {
-//                changeOriginal(Node.EMPTY);
-//            }
+                        if (newOriginal != null) {
+                            changeOriginal(newOriginal);
+                        } else {
+                            changeOriginal(Node.EMPTY);
+                        }
+                    }
+                });
+            }
         }
         
         public void hideNodes() {
@@ -208,13 +206,5 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
             children.add(new Node[]{node});
             return new AbstractNode(children);
         }
-        
-//        private boolean isFurtherExpandable() {
-//            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
-//            if (root != null) {
-//                return root.isExpandablePassTargetNode();
-//            }
-//            return true;
-//        }
     }
 }
