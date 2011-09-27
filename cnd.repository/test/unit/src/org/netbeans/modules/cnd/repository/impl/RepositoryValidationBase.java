@@ -163,14 +163,14 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        File file = new File(dataPath, "pkg-config-0.23");
+        File file = new File(dataPath, "pkg-config-0.25");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz");
-            execute("gzip", dataPath, "-d", "pkg-config-0.23.tar.gz");
-            execute("tar", dataPath, "xf", "pkg-config-0.23.tar");
+            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz");
+            execute("gzip", dataPath, "-d", "pkg-config-0.25.tar.gz");
+            execute("tar", dataPath, "xf", "pkg-config-0.25.tar");
         }
 
         file = new File(dataPath, "litesql-0.3.3");
@@ -182,7 +182,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
             execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }
-        list.add(dataPath + "/pkg-config-0.23"); //NOI18N
+        list.add(dataPath + "/pkg-config-0.25"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
         for(String f : list){
             file = new File(f);
@@ -190,7 +190,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkg-config-0.23");
+        list.add("-I"+dataPath + "/pkg-config-0.25");
         list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }
