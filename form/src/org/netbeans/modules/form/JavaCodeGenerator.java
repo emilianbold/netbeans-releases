@@ -3073,8 +3073,11 @@ class JavaCodeGenerator extends CodeGenerator {
             generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
             codeWriter.flush();
             i1 = buffer.getBuffer().length();
-            if (bodyText == null)
+            if (bodyText == null) {
                 bodyText = getDefaultEventBody();
+            } else if (!bodyText.endsWith("\n")) { // NOI18N
+                bodyText += '\n'; // Issue 202459
+            }
             codeWriter.write(bodyText);
             codeWriter.flush();
             i2 = buffer.getBuffer().length();
@@ -3848,11 +3851,11 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
                     String handlerName = ev.getEventHandler();
-                    String bodyText = ev.getNewEventHandlerContent();
-                    String annotationText = ev.getNewEventHandlerAnnotation();
+                    String bodyText = ev.getEventHandlerContent();
+                    String annotationText = ev.getEventHandlerAnnotation();
                     if ((ev.getCreatedDeleted() || bodyText != null) && ev.getComponent().isInModel()) {
                         if (!ev.getCreatedDeleted()) {
-                            ev.setOldEventHandlerContent(getEventHandlerText(handlerName));
+                            ev.setEventHandlerContent(getEventHandlerText(handlerName));
                         }
 
                         generateEventHandler(handlerName,
@@ -3867,11 +3870,11 @@ class JavaCodeGenerator extends CodeGenerator {
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_REMOVED) {
                     if (ev.getCreatedDeleted()) {
                         String handlerName = ev.getEventHandler();
-                        ev.setOldEventHandlerContent(getEventHandlerText(handlerName));
+                        ev.setEventHandlerContent(getEventHandlerText(handlerName));
                         int[] span = formEditor.getFormJavaSource().getEventHandlerMethodSpan(
                                 handlerName, ev.getComponentEvent().getEventParameterType());
                         String preMethodCode = deleteEventHandler(handlerName, span != null ? span[0] : -1);
-                        ev.setOldEventHandlerAnnotation(preMethodCode);
+                        ev.setEventHandlerAnnotation(preMethodCode);
                     }
                 }
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_RENAMED) {
