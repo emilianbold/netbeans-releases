@@ -258,6 +258,7 @@ bodyset
         | media
         | page
         | counterStyle
+        | fontFace
       )
       WS*
     ;
@@ -279,6 +280,14 @@ counterStyle
 		declarations
         RBRACE
     ;
+    
+fontFace
+    : FONT_FACE_SYM WS*
+        LBRACE WS* syncTo_IDENT_RBRACE
+		declarations
+        RBRACE
+    ;
+    
 
 margin	
 	: margin_sym WS* LBRACE WS* syncTo_IDENT_RBRACE declarations RBRACE
@@ -956,6 +965,8 @@ MEDIA_SYM           : '@' M E D I A         ;
 NAMESPACE_SYM       : '@' N A M E S P A C E ;
 CHARSET_SYM         : '@charset'           ;
 COUNTER_STYLE_SYM   : '@counter-style';
+FONT_FACE_SYM       : '@font-face';
+
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 

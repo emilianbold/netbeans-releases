@@ -94,6 +94,12 @@ public enum NodeType {
         elementName, 
         esPred, 
         expr, 
+        
+        /**
+         * @font-face { ... }
+         */
+        fontFace,
+        
         function, 
         function_name, 
         charSet, 
