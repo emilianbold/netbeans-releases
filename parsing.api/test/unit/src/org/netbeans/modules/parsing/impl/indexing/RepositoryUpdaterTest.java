@@ -82,7 +82,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -1945,6 +1944,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final File index = new File(workDir,"index.zip");           //NOI18N
         folder.mkdirs();
         a.createNewFile();
+        b.createNewFile();
         final ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(index));
         try {
             zout.putNextEntry(new ZipEntry("timestamps.properties"));   //NOI18N
@@ -1975,13 +1975,34 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Seen root - index should NOT be donwloaded and indexer should be called on modified file
         IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
         indexerFactory.indexer.setExpectedFile(
-                new URL[]{a.toURI().toURL()},
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL(),  //Should be removed if timestamps maps
+                },
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertFalse(IndexDownloaderImpl.await());
         assertTrue(indexerFactory.indexer.awaitIndex());
-        assertEquals(1, indexerFactory.indexer.getIndexCount());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
+
+        //Simulate the index download error - indexer should be started
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        final FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, new File(workDir,"non_existent_index.zip").toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
+
+
     }
 
 

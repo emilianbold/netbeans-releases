@@ -3571,22 +3571,27 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return index < 0 ? path : path.substring(index+1);
         }
 
+        @CheckForNull
         private File download (
                 @NonNull final URL indexURL,
                 @NonNull final File into) throws IOException {
-            final File packedIndex = new File (into,getSimpleName(indexURL));       //NOI18N
-            final InputStream in = new BufferedInputStream(indexURL.openStream());
             try {
-                final OutputStream out = new BufferedOutputStream(new FileOutputStream(packedIndex));
+                final File packedIndex = new File (into,getSimpleName(indexURL));       //NOI18N
+                final InputStream in = new BufferedInputStream(indexURL.openStream());
                 try {
-                    FileUtil.copy(in, out);
+                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(packedIndex));
+                    try {
+                        FileUtil.copy(in, out);
+                    } finally {
+                        out.close();
+                    }
                 } finally {
-                    out.close();
+                    in.close();
                 }
-            } finally {
-                in.close();
+                return packedIndex;
+            } catch (IOException ioe) {
+                return null;
             }
-            return packedIndex;
         }
 
         private boolean unpack (@NonNull final File packedFile, @NonNull File targetFolder) throws IOException {
@@ -3618,16 +3623,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return true;
         }
 
-        private static void delete (@NonNull final File toDelete) {
-            if (toDelete.isDirectory()) {
-                final File[] children = toDelete.listFiles();
-                if (children != null) {
-                    for (File child : children) {
-                        delete(child);
+        private static void delete (@NonNull final File... toDelete) {
+            if (toDelete != null) {
+                for (File td : toDelete) {
+                    if (td.isDirectory()) {
+                        delete(td.listFiles());
                     }
+                    td.delete();
                 }
             }
-            toDelete.delete();
         }
 
         private boolean nopCustomIndexers(
@@ -3695,67 +3699,72 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final File cacheFolder = FileUtil.toFile(cf);
                         assert cacheFolder != null;
                         final File downloadFolder = new File (cacheFolder,INDEX_DOWNLOAD_FOLDER);   //NOI18N
-                        downloadFolder.mkdir();
+                        if (downloadFolder.exists()) {
+                            delete (downloadFolder.listFiles());
+                        } else {
+                            downloadFolder.mkdir();
+                        }
                         final File packedIndex = download(indexURL, downloadFolder);
-                        unpack(packedIndex, downloadFolder);
-                        packedIndex.delete();
-                        final FileObject df = CacheFolder.getDataFolder(root);
-                        assert df != null;
-                        final File dataFolder = FileUtil.toFile(df);
-                        assert dataFolder != null;
-                        if (dataFolder.exists()) {
-                            //Some features already forced folder creation
-                            //delete it to be able to do renameTo
-                            delete(dataFolder);
-                        }
-                        downloadFolder.renameTo(dataFolder);
-                        final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
-                        timeStamps.resetToNow();
-                        timeStamps.store();
-                        nopCustomIndexers(root, indexers, sourceForBinaryRoot);
-                        for (Map.Entry<File,Index> e : IndexManager.getOpenIndexes().entrySet()) {
-                            if (Util.isParentOf(dataFolder, e.getKey())) {
-                                e.getValue().getStatus(true);
+                        if (packedIndex != null ) {
+                            unpack(packedIndex, downloadFolder);
+                            packedIndex.delete();
+                            final FileObject df = CacheFolder.getDataFolder(root);
+                            assert df != null;
+                            final File dataFolder = FileUtil.toFile(df);
+                            assert dataFolder != null;
+                            if (dataFolder.exists()) {
+                                //Some features already forced folder creation
+                                //delete it to be able to do renameTo
+                                delete(dataFolder);
                             }
-                        }
-                        return true;
-                    } else {
-                        //todo: optimize for java.io.Files
-                        final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                        final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest());
-                        final Collection<IndexableImpl> resources = crawler.getResources();
-                        final Collection<IndexableImpl> allResources = crawler.getAllResources();
-                        final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
-                        if (crawler.isFinished()) {
-                            final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
-                            scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
-                            try {
-                                delete(deleted, root);
-                                invalidateSources(resources);
-                                if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, recursiveListenersTime)) {
-                                    crawler.storeTimestamps();
-                                    outOfDateFiles[0] = resources.size();
-                                    deletedFiles[0] = deleted.size();
-                                    if (logStatistics) {
-                                        logStatistics = false;
-                                        if (SFEC_LOGGER.isLoggable(Level.INFO)) {
-                                            LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
-                                            r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
-                                            r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
-                                            r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
-                                            r.setLoggerName(SFEC_LOGGER.getName());
-                                            SFEC_LOGGER.log(r);
-                                        }
-                                    }
-                                    return true;
+                            downloadFolder.renameTo(dataFolder);
+                            final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
+                            timeStamps.resetToNow();
+                            timeStamps.store();
+                            nopCustomIndexers(root, indexers, sourceForBinaryRoot);
+                            for (Map.Entry<File,Index> e : IndexManager.getOpenIndexes().entrySet()) {
+                                if (Util.isParentOf(dataFolder, e.getKey())) {
+                                    e.getValue().getStatus(true);
                                 }
-                            } finally {
-                                scanFinished(ctxToFinish.values());
                             }
+                            return true;
                         }
-                        return false;
                     }
+                    //todo: optimize for java.io.Files
+                    final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                    final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest());
+                    final Collection<IndexableImpl> resources = crawler.getResources();
+                    final Collection<IndexableImpl> allResources = crawler.getAllResources();
+                    final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+                    if (crawler.isFinished()) {
+                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
+                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
+                        try {
+                            delete(deleted, root);
+                            invalidateSources(resources);
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, recursiveListenersTime)) {
+                                crawler.storeTimestamps();
+                                outOfDateFiles[0] = resources.size();
+                                deletedFiles[0] = deleted.size();
+                                if (logStatistics) {
+                                    logStatistics = false;
+                                    if (SFEC_LOGGER.isLoggable(Level.INFO)) {
+                                        LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
+                                        r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
+                                        r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                                        r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                                        r.setLoggerName(SFEC_LOGGER.getName());
+                                        SFEC_LOGGER.log(r);
+                                    }
+                                }
+                                return true;
+                            }
+                        } finally {
+                            scanFinished(ctxToFinish.values());
+                        }
+                    }
+                    return false;
                 } else {
                     RepositoryUpdater.getDefault().rootsListeners.add(root,true);
                     return true;
