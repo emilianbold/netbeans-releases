@@ -264,7 +264,7 @@ public class PluginIndexManager {
     public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
         assert prefix != null;
         Set<String> result = new TreeSet<String>();
-        // XXX MINDEXER-34 means that this will not work reliably for remote indices:
+        // Note that this will not work reliably for remote indices created prior to a fix for MINDEXER-34:
         QueryField qf = new QueryField();
         qf.setField(ArtifactInfo.PLUGIN_PREFIX);
         qf.setValue(prefix);

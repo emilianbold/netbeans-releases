@@ -1,9 +1,9 @@
 Name: Maven Indexer
-Version: 4.1.1
+Version: 4.1.2
 Description: Maven remote repository indexing engine.
 License: Apache-2.0
 Origin: http://repo1.maven.org/maven2/org/apache/maven/indexer/
-Files: indexer-core-4.1.1.jar indexer-artifact-4.1.1.jar
+Files: indexer-core-4.1.2.jar indexer-artifact-4.1.2.jar
 OSR: 9451
 
                                  Apache License
