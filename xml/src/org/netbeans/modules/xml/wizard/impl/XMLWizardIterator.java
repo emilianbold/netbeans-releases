@@ -614,9 +614,9 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             List nodes = model.getSchemaNodes();
 
             if (prefix == null || "".equals(prefix)) {
-                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
             } else {
-                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'");
             }
 
 
@@ -627,32 +627,34 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                     nsToPre.put(erdn.getNamespace(), erdn.getPrefix());
 
                     if (erdn.getPrefix() == null || "".equals(erdn.getPrefix())) {
-                        writer.append("   xmlns='" + erdn.getNamespace() + "'\n");
+                        writer.append("\n   xmlns='" + erdn.getNamespace() + "'");
                     } else {
-                        writer.append("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n");
+                        writer.append("\n   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'");
                     }
                 }
+                int written = 0;
                 for (int i = 0; i < nodes.size(); i++) {
                     SchemaObject erdn = (SchemaObject) nodes.get(i);
+                    if (erdn.isFromCatalog()) {
+                        continue;
+                    }
                     String relativePath = null;
                     if (erdn.toString().startsWith("http")) {
                         relativePath = erdn.toString();
                     } else {
                         relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
                     }
-                    if (i == 0) {
-                        if (nodes.size() == 1) {
-                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
-                        } else {
-                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
-                        }
-                    } else if (i == nodes.size() - 1) {
-                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
+                    if (written == 0) {
+                        writer.append("\n   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath);
                     } else {
-                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "\n");
+                        writer.append("\n   " + erdn.getNamespace() + " " + relativePath);
                     }
+                    written++;
                 }
-
+                if (written > 0) {
+                    writer.append("'");
+                }
+                writer.append(">\n");
             }
             model.getXMLContentAttributes().setNamespaceToPrefixMap(nsToPre);
             generateXMLBody(model, root, writer);

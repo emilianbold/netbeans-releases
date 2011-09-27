@@ -58,21 +58,40 @@ import java.util.*;
 import java.io.*;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * Supplies a catalog which lets user register DTD and XML schema in a very simple way.
+ * 
+ * Schema NS URIs should be represented as <code>&lt;uri></code> elements  in the catalog,
+ * as suggested in <a href="http://xerces.apache.org/xerces2-j/faq-xcatalogs.html">Xerces FAQ</a>.
+ * Therefore a SCHEMA: prefix (already used by NB catalogs in their PublicID maps), will be written
+ * as <code>uri</code> element, with a special comment to distinguish it from custom URIs, which
+ * use URI: prefix in their registration. 
+ * 
+ * <p/>
+ * Not sure though whether URI: is used at all. The whole registration API is ugly as it interprets
+ * contents of URI instead of using parameters...
+ * 
  * @author Milan Kuchtiak
  */
 public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDescriptor, EntityResolver {
+    private static final String PROPERTY_LEX_HANDLER = "http://xml.org/sax/properties/lexical-handler";
     private Map publicIds;
     private List catalogListeners;
     private static final String catalogResource = "xml/catalogs/UserXMLCatalog.xml"; // NOI18N
     private static final String URI_PREFIX = "URI:"; // NOI18N
     private static final String PUBLIC_PREFIX = "PUBLIC:"; // NOI18N
     private static final String SYSTEM_PREFIX = "SYSTEM:"; // NOI18N
+    private static final String SCHEMA_PREFIX = "SCHEMA:"; // NOI18N
+    
     private static final int TYPE_PUBLIC=0;
     private static final int TYPE_SYSTEM=1;
     private static final int TYPE_URI=2;
+    private static final int TYPE_SCHEMA = 3;
+    
+    private static final String NB_SCHEMA_MARKER = "NetBeans XML schema marker, do not remove";
+    private static final String NB_SCHEMA_MARKER_COMMENT = "<!-- " + NB_SCHEMA_MARKER + " -->";
     
     /** Default constructor for use from layer. */
     public UserXMLCatalog() {
@@ -80,7 +99,17 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
 
     public String resolveURI(String name) {
-        return (String)getPublicIdMap().get(URI_PREFIX+name);
+        // first try to resolve the URI as a schema namespace:
+        String res;
+        res = (String)getPublicIdMap().get(SCHEMA_PREFIX + name);
+        if (res != null) {
+            return res;
+        }
+        res = (String)getPublicIdMap().get(URI_PREFIX+name);
+        if (res != null) {
+            return res;
+        }
+        return null;
     }
 
     public String resolvePublic(String publicId) {
@@ -94,7 +123,11 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             url = (String)getPublicIdMap().get(PUBLIC_PREFIX+publicId);
             if (url == null) url = (String)getPublicIdMap().get(URI_PREFIX+publicId);
         } else if (systemId!=null) {
-            url = (String)getPublicIdMap().get(SYSTEM_PREFIX+systemId);
+            // favor schemas a little:
+            url = (String)getPublicIdMap().get(SCHEMA_PREFIX + systemId);
+            if (url == null) {
+                url = (String)getPublicIdMap().get(SYSTEM_PREFIX+systemId);
+            }
         }
         if (url!=null) return new InputSource(url);
         else return null;
@@ -215,6 +248,12 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                                 fireEntryAdded(URI_PREFIX+key);
                                 break;
                             }
+                            case TYPE_SCHEMA: {
+                                writer.println("   " + NB_SCHEMA_MARKER_COMMENT + " <uri name=\""+key+"\" uri=\""+value+"\"/> "); //NOI18N
+                                getPublicIdMap().put(SCHEMA_PREFIX+key, value);
+                                fireEntryAdded(SCHEMA_PREFIX+key);
+                                break;
+                            }
                         }
                     }
                     writer.println(line);
@@ -256,6 +295,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                             }
                             break;
                         }
+                        case TYPE_SCHEMA:
                         case TYPE_URI : {
                             if (line.indexOf("<uri name=\""+key+"\"")>0) { //NOI18N
                                 getPublicIdMap().remove(URI_PREFIX+key);
@@ -316,7 +356,18 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                                 writer.println(line);
                             }
                             break;
-                        } default : writer.println(line);
+                        } 
+                        case TYPE_SCHEMA: {
+                            if (line.indexOf("<uri name=\""+key+"\"")>0) { //NOI18N
+                                writer.println("   " + NB_SCHEMA_MARKER_COMMENT + " <uri name=\""+key+"\" uri=\""+value+"\"/>"); //NOI18N
+                                getPublicIdMap().put(SCHEMA_PREFIX+key, value);
+                                fireEntryUpdated(SCHEMA_PREFIX+key);
+                            } else {
+                                writer.println(line);
+                            }
+                            break;
+                        }
+                        default : writer.println(line);
                     }
                     
                 }
@@ -351,6 +402,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             reader.setEntityResolver(new OasisCatalogResolver());
             CatalogHandler handler = new CatalogHandler();
             reader.setContentHandler(handler);
+            reader.setProperty(PROPERTY_LEX_HANDLER, handler);
             reader.parse(new InputSource(userCatalog.getInputStream()));
             return handler.getValues();
         } catch(javax.xml.parsers.ParserConfigurationException ex) {
@@ -390,6 +442,14 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
                         addEntry(TYPE_URI, key.substring(URI_PREFIX.length()), value);
                 } else
                       removeEntry(TYPE_URI, key.substring(URI_PREFIX.length()));
+            } else if (key.startsWith(SCHEMA_PREFIX)) {
+                if (value!=null) {
+                    if (getPublicIdMap().get(key)!=null) {
+                        if (requestUpdate(key.substring(SCHEMA_PREFIX.length()))) updateEntry(TYPE_SCHEMA, key.substring(SCHEMA_PREFIX.length()), value);
+                    } else
+                        addEntry(TYPE_SCHEMA, key.substring(SCHEMA_PREFIX.length()), value);
+                } else
+                      removeEntry(TYPE_SCHEMA, key.substring(SCHEMA_PREFIX.length()));
             }
         } catch (IOException ex) {
             org.openide.ErrorManager.getDefault().notify(ex);
@@ -403,9 +463,10 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         return (NotifyDescriptor.YES_OPTION==desc.getValue());
     }
     
-    private static class CatalogHandler extends org.xml.sax.helpers.DefaultHandler {
+    private static class CatalogHandler extends org.xml.sax.helpers.DefaultHandler implements LexicalHandler {
         private Map values;
         //private boolean insideEl, insideTag;
+        private boolean schemaFound;
 
         CatalogHandler() {
             values = new HashMap();
@@ -414,14 +475,51 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
             if ("public".equals(rawName)) { //NOI18N
                 String val = atts.getValue("publicId"); //NOI18N
                 if (val!=null) values.put(PUBLIC_PREFIX+val, atts.getValue("uri")); //NOI18N
+                schemaFound = false;
             } else if ("system".equals(rawName)) { //NOI18N
                 String val = atts.getValue("systemId"); //NOI18N
                 if (val!=null) values.put(SYSTEM_PREFIX+val, atts.getValue("uri")); //NOI18N
+                schemaFound = false;
             } else if ("uri".equals(rawName)) { //NOI18N
                 String val = atts.getValue("name"); //NOI18N
-                if (val!=null) values.put(URI_PREFIX+val, atts.getValue("uri")); //NOI18N
+                if (val!=null) {
+                    addUri(val, atts.getValue("uri")); // NOI18N
+                }
+                schemaFound = false;
             }
         }
+        
+        private void addUri(String lastUri, String lastValue) {
+            if (schemaFound) {
+                values.put(SCHEMA_PREFIX + lastUri, lastValue);
+            } else {
+                values.put(URI_PREFIX + lastUri, lastValue);
+            }
+            lastUri = null;
+        }
+
+        @Override
+        public void comment(char[] ch, int start, int length) throws SAXException {
+            schemaFound = String.copyValueOf(ch, start, length).contains(NB_SCHEMA_MARKER);
+        }
+
+        @Override
+        public void endCDATA() throws SAXException {}
+
+        @Override
+        public void endDTD() throws SAXException {}
+
+        @Override
+        public void endEntity(String name) throws SAXException {}
+
+        @Override
+        public void startCDATA() throws SAXException {}
+
+        @Override
+        public void startDTD(String name, String publicId, String systemId) throws SAXException {}
+
+        @Override
+        public void startEntity(String name) throws SAXException {}
         
         public Map getValues() {
             return values;

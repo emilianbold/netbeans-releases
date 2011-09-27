@@ -43,10 +43,11 @@
  */
 package org.netbeans.modules.xml.util;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,29 +59,26 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.actions.ActionManager;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.api.xml.services.UserCatalog;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.namespace.NamespaceContext;
-import org.netbeans.modules.xml.wizard.SchemaParser;
-import org.openide.nodes.Node;
 import org.xml.sax.InputSource;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -89,6 +87,9 @@ import org.w3c.dom.NodeList;
  * @author Petr Kuzel
  */
 public class Util extends AbstractUtil {
+    private static final Logger LOG = Logger.getLogger(Util.class.getName()); // NOI18N
+    private static final String PREFIX_SCHEMA = "SCHEMA:";
+    private static final String PROTOCOL_FILE = "file:";
 
     // last catalog directory
     private static File lastDirectory;
@@ -206,6 +207,48 @@ public class Util extends AbstractUtil {
         }
         return result;
     }
+     
+     public static FileObject toFileObject(InputSource src) {
+        try {
+            String sysId = src.getSystemId();
+            return FileUtil.toFileObject(new File(new URI(sysId)));
+        } catch (URISyntaxException ex) {
+            LOG.log(Level.WARNING, "File URI malformed", ex);
+            return null;
+        }
+     }
+     
+     public static Map<InputSource, String>  getCatalogSchemaNSMappings() {
+         UserCatalog cat = UserCatalog.getDefault();
+         Iterator it = cat.getPublicIDs();
+         Map<InputSource, String> result = new HashMap<InputSource, String>();
+         while (it.hasNext()) {
+             String uri = (String)it.next();
+             if (uri.startsWith(PREFIX_SCHEMA)) {
+                uri = uri.substring(PREFIX_SCHEMA.length());
+                try {
+                    InputSource src = cat.getEntityResolver().resolveEntity(null, uri);
+                    if (src == null) {
+                        continue;
+                    }
+                    String sysId = src.getSystemId();
+                    // TODO: should work for other protocols, too
+                    if (!sysId.startsWith(PROTOCOL_FILE)) {
+                        continue;
+                    }
+                    FileObject fo = toFileObject(src);
+                    if (fo != null) {
+                        result.put(src, uri);
+                    }
+                } catch (SAXException ex) {
+                    LOG.log(Level.FINE, "Resolution failed", ex);
+                } catch (IOException ex) {
+                    LOG.log(Level.FINE, "Resolution failed", ex);
+                }
+             }
+         }
+         return result;
+     }
      
      public static List getFilesWithExtension(File startFile, String fileExtension, List curList) {
         if(Thread.currentThread().isInterrupted())
