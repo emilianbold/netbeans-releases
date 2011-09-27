@@ -77,9 +77,15 @@ public class ExternalReferenceDecorator {
      * @return  new ExternalReferenceNode.
      */
     ExternalReferenceDataNode createExternalReferenceNode(Node original){
-        return panel.createExternalReferenceNode(original);
+        return createExternalReferenceNode(original, false);
     }
-    
+
+    ExternalReferenceDataNode createExternalReferenceNode(Node original, boolean throughCatalog) {
+        ExternalReferenceDataNode dn = panel.createExternalReferenceNode(original);
+        dn.setResolveThroughCatalog(throughCatalog);
+        return dn;
+    }
+
 
     /**
      * Generate a unique prefix value for the document containing the
