@@ -32,4 +32,5 @@
 	<mapID target="org.netbeans.modules.git.ui.repository.RevisionPickerDialog" url="csh/git-select-rev.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutPaths" url="csh/git-chkout-paths.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.SwitchBranchAction" url="csh/git-switch-branch.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.RevertChanges" url="csh/git-revert-mod.html"/>
 </map>
