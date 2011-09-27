@@ -1049,9 +1049,11 @@ class LayoutFeeder implements LayoutConstants {
                     // In contrary, here the sequential parent of 'neighbor'
                     // unexpectedly survived removal of the moving interval (some
                     // gaps stayed around it), so we should use the sequence directly.
-                    assert iDesc.parent == iDesc.neighbor.getParent().getParent();
                     iDesc.parent = iDesc.neighbor.getParent();
                     iDesc.neighbor = null;
+                    if (iDesc.index > iDesc.parent.getSubIntervalCount()) {
+                        iDesc.index = iDesc.parent.getSubIntervalCount();
+                    }
                 }
             }
         }

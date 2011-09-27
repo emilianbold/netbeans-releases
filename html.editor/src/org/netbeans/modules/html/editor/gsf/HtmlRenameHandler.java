@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -102,8 +103,13 @@ class HtmlRenameHandler implements InstantRenamer {
                         return Collections.emptySet();
                 }
 
-                set.add(new OffsetRange(open.startOffset() + 1, open.startOffset() + 1 + open.name().length())); //1 == "<".len
-                set.add(new OffsetRange(close.startOffset() + 2, close.startOffset() + 2 + close.name().length())); //2 == "</".len
+                Snapshot s = info.getSnapshot();
+                
+                set.add(new OffsetRange(s.getOriginalOffset(open.startOffset() + 1), 
+                        s.getOriginalOffset(open.startOffset() + 1 + open.name().length()))); //1 == "<".len
+                
+                set.add(new OffsetRange(s.getOriginalOffset(close.startOffset() + 2), 
+                        s.getOriginalOffset(close.startOffset() + 2 + close.name().length()))); //2 == "</".len
 
                 return set;
             }
