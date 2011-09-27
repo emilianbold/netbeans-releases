@@ -44,6 +44,7 @@
 
 
 package org.netbeans.modules.palette.ui;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -643,16 +644,20 @@ public class PalettePanel extends JPanel implements Scrollable {
         protected void paintComponent(Graphics g) {
             if( isAquaLaF && g instanceof Graphics2D ) {
                 Graphics2D g2d = (Graphics2D) g;
-                g2d.setPaint( new GradientPaint(0, 0, UIManager.getColor("NbExplorerView.quicksearch.background.top"),
-                        0, getHeight(), UIManager.getColor("NbExplorerView.quicksearch.background.bottom")));//NOI18N
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                g2d.setColor( UIManager.getColor("NbExplorerView.quicksearch.border") ); //NOI18N
-                g2d.drawLine(0, 0, getWidth(), 0);
-            } else {
-                super.paintComponent(g);
-                g.setColor( UIManager.getColor( "PropSheet.setBackground" ) ); //NOI18N
-                g.drawLine(0, 0, getWidth(), 0);
+                Color col1 = UIManager.getColor("NbExplorerView.quicksearch.background.top"); //NOI18N
+                Color col2 = UIManager.getColor("NbExplorerView.quicksearch.background.bottom"); //NOI18N
+                Color col3 = UIManager.getColor("NbExplorerView.quicksearch.border"); //NOI18N
+                if( col1 != null && col2 != null && col3 != null ) {
+                    g2d.setPaint( new GradientPaint(0, 0, col1, 0, getHeight(), col2));
+                    g2d.fillRect(0, 0, getWidth(), getHeight());
+                    g2d.setColor( col3 );
+                    g2d.drawLine(0, 0, getWidth(), 0);
+                    return;
+                }
             }
+            super.paintComponent(g);
+            g.setColor( UIManager.getColor( "PropSheet.setBackground" ) ); //NOI18N
+            g.drawLine(0, 0, getWidth(), 0);
         }
     }
 
