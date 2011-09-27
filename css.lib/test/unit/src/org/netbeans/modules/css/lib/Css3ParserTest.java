@@ -756,6 +756,26 @@ public class Css3ParserTest extends CslTestBase {
         assertResultOK(TestUtil.parse("p[class^=\"st\"]{ } "));
     }
     
+        public void testFontFace() throws ParseException, BadLocationException {
+        String content = "@font-face { font-family: Gentium; src: url(http://example.com/fonts/Gentium.ttf); }";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node counterStyle = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "fontFace");
+        assertNotNull(counterStyle);
+        
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0");
+        assertNotNull(declaration);
+        assertEquals("font-family: Gentium", declaration.image().toString());
+
+        assertResultOK(result);
+
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);
