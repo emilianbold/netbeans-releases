@@ -44,11 +44,15 @@
 
 package org.netbeans.modules.xml.catalog;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
  * AddCatalogEntryAction.java
@@ -77,11 +81,41 @@ public class AddCatalogEntryAction extends NodeAction {
         dd.setValid(false);
         dialog.setVisible(true);
         if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            if (panel.isPublic())
+            if (panel.isPublic()) {
                 catalog.registerCatalogEntry("PUBLIC:"+panel.getPublicId(), panel.getUri()); //NOI18N
-            else
+            } else if (isXmlSchema(panel.getSystemId(), panel.getUri())) {
+                catalog.registerCatalogEntry("SCHEMA:"+panel.getSystemId(), panel.getUri()); //NOI18N
+            } else {
                 catalog.registerCatalogEntry("SYSTEM:"+panel.getSystemId(), panel.getUri()); //NOI18N
+            }
         }
+    }
+    
+    private static final String PROTOCOL_HTTP = "http://"; // NOI18N
+    private static final String PROTOCOL_HTTPS = "https://"; // NOI18N
+    private static final String PROTOCOL_FILE = "file:/"; // NOI18N
+    private static final String MIME_SCHEMA = "application/x-schema+xml"; // NOI18N
+
+    private static boolean isXmlSchema(String uri, String localURI) {
+        // check the remote protocol, only http(s) is supported at the moment
+        if (!(uri.startsWith(PROTOCOL_HTTP) || uri.startsWith(PROTOCOL_HTTPS))) {
+            return false;
+        }
+        // check MIME type of the target:
+        if (!localURI.startsWith(PROTOCOL_FILE)) {
+            return false;
+        }
+        
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(localURI));
+            if (fo == null) {
+                return false;
+            }
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+        return MIME_SCHEMA.equals(fo.getMIMEType());
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
