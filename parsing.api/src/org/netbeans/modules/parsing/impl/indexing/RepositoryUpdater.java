@@ -3604,6 +3604,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (entry.isDirectory()) {
                         target.mkdirs();
                     } else {
+                        //Some zip files don't have zip entries for folders
+                        target.getParentFile().mkdirs();
                         final InputStream in = zf.getInputStream(entry);
                         try {
                             final FileOutputStream out = new FileOutputStream(target);
