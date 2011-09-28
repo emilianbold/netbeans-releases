@@ -120,7 +120,18 @@ public class SelectorsModule extends CssEditorModule {
         switch (activeNode.type()) {
             case simpleSelectorSequence:
                 //test if the previous node is typeSelector:  html:|
-                Node siblingBefore = NodeUtil.getSibling(context.getActiveNode(), true);
+                Node siblingBefore = context.getActiveNode();
+                //possibly skip all elementSubsequent nodes 
+                for(;;) {
+                    siblingBefore = NodeUtil.getSibling(siblingBefore, true);
+                    if(siblingBefore == null) {
+                        break;
+                    }
+                    if(siblingBefore.type() != NodeType.elementSubsequent) {
+                        break;
+                    }
+                }
+                
                 if (siblingBefore != null && siblingBefore.type() == NodeType.typeSelector) {
                     switch (context.getTokenSequence().token().id()) {
                         case COLON:
