@@ -124,7 +124,8 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
 
     @Override
     public boolean rerunAvailable() {
-        return getActionSupport().isActionAvailable();
+        int state = getProfilingState();
+        return (state == Profiler.PROFILING_INACTIVE || state == Profiler.PROFILING_STOPPED) ? getActionSupport().isActionAvailable() : false;
     }
 
     @Override
