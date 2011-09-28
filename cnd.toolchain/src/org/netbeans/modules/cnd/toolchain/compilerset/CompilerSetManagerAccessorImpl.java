@@ -147,7 +147,7 @@ public class CompilerSetManagerAccessorImpl {
             }
         }
 
-        if (no_compilers) {
+        if (no_compilers && !CompilerSetManagerImpl.DISABLED) {
             // workaround to fix IZ#164028: Full IDE freeze when opening GizmoDemo project on Linux
             // we postpone dialog displayer until EDT is free to process
             SwingUtilities.invokeLater(new Runnable() {
