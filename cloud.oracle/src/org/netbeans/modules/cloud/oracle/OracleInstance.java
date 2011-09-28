@@ -381,7 +381,7 @@ public class OracleInstance {
                 JobStatus jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
-                    url[0] = instanceURL+(instanceURL.endsWith("/") ? ctx.substring(1) : ctx);
+                    url[0] = instanceURL+(instanceURL.endsWith("/") ? (ctx.length() > 1 ? ctx.substring(1) : "") : ctx);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
