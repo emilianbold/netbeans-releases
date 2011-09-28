@@ -58,6 +58,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.EditorKit;
 import org.netbeans.junit.NbTestCase;
@@ -141,6 +145,8 @@ implements CloneableEditorSupport.Env, PropertyChangeListener {
      * @throws Exception
      */
     public void testEditorPaneFinished () throws Exception {
+        FocusHandler h = new FocusHandler();
+        
         support.addPropertyChangeListener(this);
         support.open ();
         JEditorPane pane = support.getRecentPane();
@@ -154,6 +160,8 @@ implements CloneableEditorSupport.Env, PropertyChangeListener {
         assertNotNull("Must return not null", pane);
         
         assertTrue(isUsedByCloneableEditor(pane));
+        
+        h.assertFocused("Our pane has been focused", pane);
 
         support.removePropertyChangeListener(this);
         support.close();
@@ -333,5 +341,36 @@ implements CloneableEditorSupport.Env, PropertyChangeListener {
         }
         return null;
     }
-    
+
+    private static final class FocusHandler extends Handler {
+        private final Logger LOG;
+
+        public FocusHandler() {
+            LOG = Logger.getLogger("org.openide.text.CloneableEditor");
+            LOG.setLevel(Level.FINE);
+            LOG.addHandler(this);
+            setLevel(Level.FINE);
+        }
+        List<JEditorPane> focused = new ArrayList<JEditorPane>();
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().startsWith("requestFocusInWindow")) {
+                focused.add((JEditorPane)record.getParameters()[0]);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public void assertFocused(String msg, JEditorPane pane) {
+            assertEquals("One focused object. " + msg + ": " + focused, 1, focused.size());
+            assertEquals(msg, pane, focused.get(0));
+            focused.clear();
+        }
+    }
 }
