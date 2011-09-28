@@ -66,10 +66,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     
         adminUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
         adminUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
-        instanceUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
-        instanceUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
-        cloudUrlLabel.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
-        cloudUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
+        instanceUrlLabel.setVisible(false);
+        instanceUrlField.setVisible(false);
+        cloudUrlLabel.setVisible(false);
+        cloudUrlField.setVisible(false);
         
         this.instance = instance;
         serviceInstanceField.setText(instance.getServiceInstance());
