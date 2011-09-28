@@ -142,6 +142,18 @@ public class OracleInstanceManager {
         }
     }
     
+    public boolean exist(String adminURL, String serviceGroup, String serviceInstance, String tenantUserName) {
+        for (OracleInstance oi : getInstances()) {
+            if (adminURL.equals(oi.getAdminURL()) &&
+                    serviceGroup.equals(oi.getServiceGroup()) &&
+                    serviceInstance.equals(oi.getServiceInstance()) &&
+                    tenantUserName.equals(oi.getUser())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static void saveUsernameAndPassword(OracleInstance ai) {
         Keyring.save(PREFIX+USERNAME+"."+ai.getName(), ai.getUser().toCharArray(), "Oracle Cloud Username"); // NOI18N
         Keyring.save(PREFIX+PASSWORD+"."+ai.getName(), ai.getPassword().toCharArray(), "Oracle Cloud Password"); // NOI18N

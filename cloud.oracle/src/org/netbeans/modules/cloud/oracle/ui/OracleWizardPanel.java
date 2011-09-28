@@ -54,6 +54,7 @@ import oracle.cloud.paas.exception.ManagerException;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -80,6 +81,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     private ChangeSupport listeners;
     private WizardDescriptor wd = null;
     private List<ServerResourceDescriptor> servers;
+    private String asynchError;
     
     private static final Logger LOG = Logger.getLogger(OracleWizardComponent.class.getName());
     
@@ -106,6 +108,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public void readSettings(WizardDescriptor settings) {
         wd = settings;
+        asynchError = null;
     }
 
     @Override
@@ -128,32 +131,37 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     
     @Override
     public boolean isValid() {
-        if (component == null || wd == null) {
-            // ignore this case
-        } else if (component.getServiceInstance().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceInstance"));
-            return false;
-        } else if (component.getServiceGroup().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceGroup"));
-            return false;
-        } else if (component.getUserName().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingUserName"));
-            return false;
-        } else if (component.getPassword().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingPassword"));
-            return false;
-        } else if (component.getAdminUrl().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl"));
-            return false;
-        } else if (component.getInstanceUrl().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingInstanceUrl"));
-            return false;
-        } else if (component.getCloudUrl().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingCloudUrl"));
+        if (asynchError != null) {
             return false;
         }
-        setErrorMessage("");
-        return true;
+        String error = performValidation();
+        setErrorMessage(error);
+        return error.length() == 0;
+    }
+    
+    private String performValidation() {
+        if (component == null || wd == null) {
+            // ignore this case
+            return "";
+        } else if (component.getServiceInstance().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceInstance");
+        } else if (component.getServiceGroup().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceGroup");
+        } else if (component.getUserName().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingUserName");
+        } else if (component.getPassword().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingPassword");
+        } else if (component.getAdminUrl().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
+        } else if (component.getInstanceUrl().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingInstanceUrl");
+        } else if (component.getCloudUrl().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingCloudUrl");
+        } else if (OracleInstanceManager.getDefault().exist(component.getAdminUrl(), component.getServiceGroup(), 
+                component.getServiceInstance(), component.getUserName())) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.alreadyRegistered");
+        }
+        return "";
     }
 
     @Override
@@ -179,6 +187,13 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public void validate() throws WizardValidationException {
         try {
+            // #202796 workaround:
+            String error = performValidation();
+            if (error.length() > 0) {
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        "validation failed", error);
+            }
+            
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud", component.getUserName(), 
                     component.getPassword(), component.getAdminUrl(), component.getInstanceUrl(),
@@ -186,13 +201,15 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             try {
                 ai.testConnection();
             } catch (ManagerException ex) {
-                LOG.log(Level.INFO, "cannot connect to oracle cloud", ex);
+                LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
+                asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials");
                 throw new WizardValidationException((JComponent)getComponent(), 
-                        "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
+                        "connection failed", asynchError);
             } catch (Throwable t) {
-                LOG.log(Level.INFO, "cannot connect", t);
+                LOG.log(Level.FINE, "cannot connect", t);
+                asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong");
                 throw new WizardValidationException((JComponent)getComponent(), 
-                        "connection exception", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong"));
+                        "connection exception", asynchError);
             }
             OracleJ2EEInstance instance = ai.readJ2EEServerInstance();
             OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(instance, true);
@@ -206,6 +223,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
+        
+        // #202796 workaround:
+        asynchError = null;
+        
     }
     
 }
