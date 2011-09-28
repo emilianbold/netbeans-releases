@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -94,7 +96,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -709,13 +710,16 @@ public class ProjectActionSupport {
             if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
-                if (runDir.startsWith("~/") || runDir.trim().equals("~")) { // NOI18N
-                    try {
-                        runDir = runDir.replaceFirst("~", HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir()); // NOI18N
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
+                if (runDir != null) {
+                    runDir = runDir.trim();
+                    if (runDir.startsWith("~/") || runDir.startsWith("~\\") || runDir.equals("~")) { // NOI18N
+                        try {
+                            runDir = HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir.substring(1);
+                        } catch (IOException ex) {
+                            Logger.getLogger(ProjectActionSupport.class.getName()).log(Level.INFO, "", ex);  // NOI18N
+                        } catch (CancellationException ex) {
+                            Logger.getLogger(ProjectActionSupport.class.getName()).log(Level.INFO, "", ex);  // NOI18N
+                        }
                     }
                 }
                 if (runDir == null || runDir.length() == 0) {

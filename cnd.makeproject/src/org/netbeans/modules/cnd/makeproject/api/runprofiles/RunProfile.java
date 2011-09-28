@@ -87,7 +87,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -537,13 +536,14 @@ public final class RunProfile implements ConfigurationAuxObject {
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
         }
-        if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.trim().equals("~"))) { // NOI18N
+        runDir2 = runDir2.trim();
+        if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.startsWith("~\\") || runDir2.equals("~"))) { // NOI18N
             try {
-                runDir2 = runDir2.replaceFirst("~", HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir());  // NOI18N
+                runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir2.substring(1);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
             }
         }
         if (CndPathUtilitities.isPathAbsolute(runDir2)) {
