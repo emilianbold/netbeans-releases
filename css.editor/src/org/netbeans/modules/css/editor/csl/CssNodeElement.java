@@ -84,7 +84,7 @@ public class CssNodeElement extends CssElement {
         int origFrom = from > s.getText().length() ? 0 : s.getOriginalOffset(from);
         int origTo = to > s.getText().length() ? 0 : s.getOriginalOffset(to);
 
-        if(origFrom == origTo || origTo == 0) {
+        if(origFrom == -1 || origTo == -1 || origFrom == origTo || origTo == 0) {
             return null;
         }
         

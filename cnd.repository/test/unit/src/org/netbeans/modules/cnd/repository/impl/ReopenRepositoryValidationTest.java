@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
 * @author Sergey Grinev
  */
-public class RepositoryValidationTest extends CndBaseTestSuite {
+public class ReopenRepositoryValidationTest extends CndBaseTestSuite {
 
     static {
         System.setProperty("cnd.modelimpl.parser.threads", "8");
@@ -60,16 +60,16 @@ public class RepositoryValidationTest extends CndBaseTestSuite {
 //        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
     }
 
-    public RepositoryValidationTest() {
+    public ReopenRepositoryValidationTest() {
         super("Repository"); // NOI18N
         
         addTestSuite(RepositoryValidationGoldens.class);
-        addTestSuite(RepositoryValidation.class);
-        addTestSuite(RepositoryValidation2.class);
+        addTestSuite(RepositoryValidationFirstParse.class);
+        addTestSuite(RepositoryValidationFinal.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new RepositoryValidationTest();
+        TestSuite suite = new ReopenRepositoryValidationTest();
         return suite;
     }
     

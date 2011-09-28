@@ -32,17 +32,14 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.List;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author sg155630
  */
-public class RepositoryValidation1 extends RepositoryValidationBase {
-    private static final RequestProcessor RP = new RequestProcessor("Sleep");
+public class RepositoryValidationFirstParse extends RepositoryValidationBase {
 
-    public RepositoryValidation1(String testName) {
+    public RepositoryValidationFirstParse(String testName) {
         super(testName);
     }
 
@@ -58,17 +55,8 @@ public class RepositoryValidation1 extends RepositoryValidationBase {
         List<String> args = find();
         assert args.size() > 0;
         //args.add("-fq"); //NOI18N
-        RP.post(new Runnable() {
 
-            @Override
-            public void run() {
-                TraceModel traceModel = getTraceModel();
-                traceModel.getModel().shutdown();
-            }
-        }, 2000);
-        final long currentTimeMillis = System.currentTimeMillis();
         performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
-        System.err.println("End "+(System.currentTimeMillis()-currentTimeMillis));
         assertNoExceptions();
     }
 

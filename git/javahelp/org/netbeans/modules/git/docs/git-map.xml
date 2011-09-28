@@ -33,4 +33,5 @@
 	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutPaths" url="csh/git-chkout-paths.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.SwitchBranchAction" url="csh/git-switch-branch.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.RevertChanges" url="csh/git-revert-mod.html"/>
+	<mapID target="org.netbeans.modules.git.ui.revert.RevertCommit" url="csh/git-revert-com.html"/>
 </map>
