@@ -73,6 +73,9 @@ public final class ToolchainValidator {
     }
 
     public void validate(final ExecutionEnvironment env, final CompilerSetManagerImpl csm) {
+        if (CompilerSetManagerImpl.DISABLED) {
+            return;
+        }
         final Runnable runnable = new Runnable() {
             @Override
             public void run() {
