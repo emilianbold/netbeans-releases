@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -533,6 +535,16 @@ public final class RunProfile implements ConfigurationAuxObject {
         
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
+        }
+        runDir2 = runDir2.trim();
+        if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.startsWith("~\\") || runDir2.equals("~"))) { // NOI18N
+            try {
+                runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir2.substring(1);
+            } catch (IOException ex) {
+                Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
+            } catch (CancellationException ex) {
+                Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
+            }
         }
         if (CndPathUtilitities.isPathAbsolute(runDir2)) {
             runDirectory = runDir2;
