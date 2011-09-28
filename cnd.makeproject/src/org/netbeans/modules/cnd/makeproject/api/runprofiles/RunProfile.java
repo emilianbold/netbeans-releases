@@ -537,7 +537,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDir2 = "."; // NOI18N
         }
         runDir2 = runDir2.trim();
-        if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.equals("~"))) { // NOI18N
+        if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.startsWith("~\\") || runDir2.equals("~"))) { // NOI18N
             try {
                 runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir2.substring(1);
             } catch (IOException ex) {
