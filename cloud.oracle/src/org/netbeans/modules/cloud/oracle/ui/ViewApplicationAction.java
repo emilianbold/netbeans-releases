@@ -59,14 +59,8 @@ public class ViewApplicationAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
         Application app = activatedNodes[0].getLookup().lookup(Application.class);
-        String appContext = app.getApplicationUrls() != null && app.getApplicationUrls().size() > 0 ? app.getApplicationUrls().get(0) : app.getApplicationName();
-        String url = inst.getOracleInstance().getInstanceURL();
-        if (appContext.startsWith("/")) {
-            appContext = appContext.substring(1);
-        }
-        url += url.endsWith("/") ? appContext : "/"+appContext;
+        String url = app.getApplicationUrls().get(0);
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
         } catch (MalformedURLException ex) {
