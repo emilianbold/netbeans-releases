@@ -85,7 +85,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     private AddServerInstanceWizard wizard;
 
     private boolean updatingDisplayName = false;
-
+    
     private ServerRegistry registry;
 
     public ServerWizardVisual(ServerRegistry registry) {
@@ -143,7 +143,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
             displayNameEditField.setText((String) prop);
         }
     }
-
+    
     public void store(AddServerInstanceWizard wizard) {
         wizard.putProperty(AddServerInstanceWizard.PROP_DISPLAY_NAME, displayNameEditField.getText());
         Object selectedItem = serverListBox.getSelectedValue();
@@ -166,7 +166,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         boolean result = serverListBox.getSelectedValue() != null;
         if (!result) {
             if (registry.isCloud()) {
-            wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_SCV_ChooseServer"));
+                wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_SCV_ChooseServer"));
             } else {
                 wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_CCV_ChooseServer"));
             }
@@ -355,7 +355,7 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
     private static class WizardListModel implements ListModel {
 
         private final List<WizardAdapter> serverWizards = new ArrayList<WizardAdapter>();
-
+        
         private ServerRegistry registry;
 
         public WizardListModel(ServerRegistry registry) {

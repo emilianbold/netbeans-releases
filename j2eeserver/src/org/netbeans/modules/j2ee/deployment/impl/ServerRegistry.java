@@ -419,18 +419,18 @@ public final class ServerRegistry implements java.io.Serializable {
     private synchronized void clearInstanceStorage(final String url) {
         FileObject instanceFO = getInstanceFileObject(url);
         if (instanceFO != null) {
-        try {
-            instanceFO.delete();
+            try {
+                instanceFO.delete();
             } catch (IOException ioe) {
                 LOGGER.log(Level.INFO, null, ioe);
             }
         }
-            KEYRING_ACCESS.post(new Runnable() {
-                @Override
-                public void run() {
-                    Keyring.delete(getPasswordKey(url));
-                }
-            });
+        KEYRING_ACCESS.post(new Runnable() {
+            @Override
+            public void run() {
+                Keyring.delete(getPasswordKey(url));
+            }
+        });
     }
 
     /**
@@ -478,7 +478,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url, tmp);
 
                         if (!nonPersistent) {
-                        writeInstanceToFile(url, username, password, server.getDisplayName());
+                            writeInstanceToFile(url, username, password, server.getDisplayName());
                         } else {
                             tmp.getInstanceProperties().setProperty(
                                     InstanceProperties.URL_ATTR, url);
@@ -689,8 +689,8 @@ public final class ServerRegistry implements java.io.Serializable {
             }
         };
         return readPassword(call);
-    }
-    
+    }    
+
     static void savePassword(@NonNull final String url, @NullAllowed final String password,
             @NullAllowed final String displayName) {
         

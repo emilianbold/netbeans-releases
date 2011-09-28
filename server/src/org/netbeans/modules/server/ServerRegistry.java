@@ -74,7 +74,7 @@ public final class ServerRegistry {
     private final Lookup.Result<ServerInstanceProvider> result;
 
     private final Lookup lookup;
-
+    
     private String path;
     
     private boolean cloud;
