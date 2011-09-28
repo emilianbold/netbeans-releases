@@ -75,8 +75,8 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -862,11 +862,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
     private void updateProjectsCombo() {
         Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
-        Vector items = new Vector(projects.length + 1);
-
-        for (int i = 0; i < projects.length; i++) {
-            items.add(projects[i]);
-        }
+        List items = new ArrayList(projects.length + 1);
+        items.addAll(Arrays.asList(projects));
 
         items.add(0, ALL_PROJECTS_STRING);
 
