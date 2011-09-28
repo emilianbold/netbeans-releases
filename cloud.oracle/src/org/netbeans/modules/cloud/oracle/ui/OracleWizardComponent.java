@@ -71,12 +71,17 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         sdkLabel.setVisible(false);
         sdkComboBox.setVisible(false);
         
+        // not needed anymore as Application.getApplicationUrls returns full URL
+        instanceLabel.setVisible(false);
+        instanceURLTextField.setVisible(false);
+
+        // just hardcode this; URL is life internally now
+        cloudLabel.setVisible(false);
+        cloudURLTextField.setVisible(false);
+        cloudURLTextField.setText("http://cloud.oracle.com");
+        
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
-        instanceLabel.setVisible(SHOW_CLOUD_URLS);
-        instanceURLTextField.setVisible(SHOW_CLOUD_URLS);
-        cloudLabel.setVisible(SHOW_CLOUD_URLS);
-        cloudURLTextField.setVisible(SHOW_CLOUD_URLS);
         
         if (SHOW_CLOUD_URLS) {
             serviceGroupTextField.setText("oracle"); // NOI18N
@@ -85,7 +90,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             passwordField.setText("welcome1");
             adminURLTextField.setText("http://10.242.22.43:7003/");
             instanceURLTextField.setText("http://10.242.22.43:7013/");
-            cloudURLTextField.setText("http://cloud.oracle.com");
         }
         
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
