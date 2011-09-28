@@ -539,7 +539,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
         if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.trim().equals("~"))) { // NOI18N
             try {
-                runDir2 = runDir2.replaceFirst("~", HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir());  // NOI18N
+                runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir2.substring(1);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
