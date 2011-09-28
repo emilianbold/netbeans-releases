@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,71 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.source.queries.api;
 
-package org.netbeans.modules.xml.wizard.impl;
+import org.netbeans.modules.java.source.queries.spi.TemplateWizardProvider;
+import org.openide.WizardDescriptor;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author Sonali
+ * Returns template wizard iterator. This factory class allows to have different wizard
+ * iterators in NetBeans and JDev
+ * @author jhorvath
  */
-public class SchemaObject {
-    String str;
-    String[] rootElements;
-    private String namespace;
-    private String prefix;
-    private String fileName;
-    private boolean fromCatalog;
+public class TemplateWizardFactory {
     
-    public SchemaObject(String schemaFileName){
-        str=schemaFileName;
+    private TemplateWizardFactory () {
     }
     
-    public String toString(){
-        return str;
-    }
-
-    public boolean isFromCatalog() {
-        return fromCatalog;
-    }
-
-    public void setFromCatalog(boolean fromCatalog) {
-        this.fromCatalog = fromCatalog;
-    }
-
-    String[] getRootElements() {
-        return rootElements;
-    }
-
-    void setRootElements(String[] root) {
-        this.rootElements = root;
+    /**
+     * Returns an iterator for template wizard
+     * @return an {@link WizardDescriptor.InstantiatingIterator} 
+     */
+    public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
+        return getProvider().createWizard();
     }
     
-    public void setNamespace(String n){
-        namespace = n;
+    /**
+     * Returns an iterator for template wizard, with editable superclass
+     * @return an {@link WizardDescriptor.InstantiatingIterator} 
+     */
+    public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createForSuperClass() {
+        return getProvider().createWizardForSuperClass();
     }
     
-    public String getNamespace(){
-        return namespace;        
-    }
-    
-    public void setPrefix(String pre) {
-        prefix = pre;
-    }
-    
-    public String getPrefix(){
-        return prefix;
-    }
-    
-    public void setSchemaFileName(String name){
-        fileName = name;
-    }
-
-    public String getSchemaFileName(){
-        return fileName;
+    private static TemplateWizardProvider getProvider() {
+        TemplateWizardProvider provider = Lookup.getDefault().lookup(TemplateWizardProvider.class);
+        if (provider == null) {
+            throw new IllegalStateException("No TemplateWizardProvider found in the Lookup");    //NOI18N
+        }
+        return provider;
     }
 }

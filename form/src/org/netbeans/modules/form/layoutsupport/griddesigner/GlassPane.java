@@ -70,6 +70,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
@@ -124,6 +125,13 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private int headerHeight;
     /** The width of the row header. */
     private int headerWidth;
+
+    // HEADER emphaisizing
+
+    /** Index of header under the cursor. */
+    private int emphColumnHeader = -1;
+    /** Index of header under the cursor. */
+    private int emphRowHeader = -1;
 
     // RESIZING and MOVING
 
@@ -274,6 +282,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             animLayer.paint(g);
             g.translate(-shift.x, -shift.y);
             animPhase = animLayer.getPhase();
+            emphColumnHeader = -1;
+            emphRowHeader = -1;
         }
         paintGrid(g);
         if (resizing) {
@@ -338,9 +348,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         } else {
             rowBounds = gridInfo.getRowBounds();
         }
+        int rows = rowBounds.length-1;
 
         // Check if there are any newly created columns/rows
-        int rows = rowBounds.length-1;
         if (moving || resizing) {
             int deltaX = newGridX - gridInfo.getGridX(focusedComponent);
             int deltaWidth = newGridWidth - gridInfo.getGridWidth(focusedComponent);
@@ -376,7 +386,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         for (int i=0; i<columns; i++) {
             if (!gridInfo.isGapColumn(i)) {
                 header.setText(Integer.toString(i));
-                header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
+                if(i == emphColumnHeader) {
+                    header.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+                } else {
+                    header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
+                }
                 headerHeight = header.getPreferredSize().height;
                 int start = extendedColumnBound(columnBounds, i);
                 int end = extendedColumnBound(columnBounds, i+1);
@@ -392,7 +406,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         for (int i=0; i<rows; i++) {
             if (!gridInfo.isGapRow(i)) {
                 header.setText(Integer.toString(i));
-                Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
+                Border border;
+                if(i == emphRowHeader) {
+                    border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+                } else {
+                    border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
+                }
                 header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
                 int start = extendedRowBound(rowBounds, i);
                 int end = extendedRowBound(rowBounds, i+1);
@@ -405,6 +424,29 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
     }
 
+    /**
+     * Identifies whether a header is under mouse pointer.
+     * Such header is then emphasized to point out
+     * that it can be actively used (right-click opens menu).
+     * See #200671 for reasoning.
+     *
+     * @param cursorLocation current mouse cursor location.
+     */
+    void updateActiveHeaders(Point cursorLocation) {
+        if (cursorLocation == null) {
+            emphColumnHeader = -1;
+            emphRowHeader = -1;
+        } else {
+            int oldColumnHeader = emphColumnHeader;
+            int oldRowHeader = emphRowHeader;
+            emphColumnHeader = findColumnHeader(cursorLocation);
+            emphRowHeader = findRowHeader(cursorLocation);
+            if(oldColumnHeader != emphColumnHeader || oldRowHeader != emphRowHeader) {
+                repaint();
+            }
+        }
+    }
+    
     /**
      * Paints additional information about component constraints.
      * 
@@ -1323,6 +1365,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (!selection.isEmpty()) {
                 updateCursor(e.getPoint());
             }
+            updateActiveHeaders(e.getPoint());
         }
 
         @Override
