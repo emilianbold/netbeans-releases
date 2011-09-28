@@ -415,13 +415,13 @@ private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 
 private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         if(retriever == null) {
-            ServerDetails selectedValue = wizardIterator.possibleValues[0];
-            if (wizardIterator.possibleValues.length > 1) {
+            ServerDetails selectedValue = wizardIterator.downloadableValues[0];
+            if (wizardIterator.downloadableValues.length > 1) {
                 selectedValue = (ServerDetails) JOptionPane.showInputDialog(null,
                     NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooseOne"), // NOI18N
                     NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_SELECT_BITS"), // NOI18N
                     JOptionPane.INFORMATION_MESSAGE, null,
-                    wizardIterator.possibleValues, wizardIterator.possibleValues[0]);
+                    wizardIterator.downloadableValues, wizardIterator.downloadableValues[0]);
             }
             if (null != selectedValue) {
             updateStatusText("");  // NOI18N
