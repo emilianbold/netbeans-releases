@@ -97,7 +97,8 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     private String domainName;
     private ServerDetails sd;
     private GlassfishInstanceProvider gip;
-    ServerDetails[] possibleValues;
+    ServerDetails[] acceptedValues;
+    ServerDetails[] downloadableValues;
     private String targetValue;
 
     public String getTargetValue() {
@@ -108,8 +109,9 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         this.targetValue = targetValue;
     }
 
-    public ServerWizardIterator(ServerDetails[] possibleValues) {
-        this.possibleValues = possibleValues;
+    public ServerWizardIterator(ServerDetails[] possibleValues, ServerDetails[] downloadableValues) {
+        this.acceptedValues = possibleValues;
+        this.downloadableValues = downloadableValues;
         this.gip = GlassfishInstanceProvider.getEe6();
         this.hostName = "localhost"; // NOI18N
     }
@@ -311,7 +313,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         if (!containerRef.exists()) {
             return null;
         }
-        for (ServerDetails candidate : possibleValues) {
+        for (ServerDetails candidate : acceptedValues) {
             if (candidate.isInstalledInDirectory(glassfishDir)) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
                 this.sd = candidate;
