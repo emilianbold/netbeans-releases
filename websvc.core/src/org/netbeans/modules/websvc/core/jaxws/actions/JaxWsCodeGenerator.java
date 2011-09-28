@@ -77,6 +77,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 
@@ -542,8 +543,24 @@ public class JaxWsCodeGenerator  {
         int index = javaNameWithPackage.lastIndexOf(".");
         return index >= 0 ? javaNameWithPackage.substring(index + 1) : javaNameWithPackage;
     }
-
+    
     public static void insertMethod(final Document document, final int pos, 
+            final OperationNode operationNode) 
+    {
+        WsdlOperation operation = operationNode.getLookup().lookup(WsdlOperation.class);
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                doInsertMethod(document, pos, operationNode);
+            }
+        };
+        ProgressUtils.showProgressDialogAndRun(runnable, 
+                NbBundle.getMessage(JaxWsCodeGenerator.class, 
+                "MSG_GenerateMethod", operation.getName()));              // NOI18N
+    }
+
+    public static void doInsertMethod(final Document document, final int pos, 
             OperationNode operationNode) 
     {
         Node portNode = operationNode.getParentNode();
