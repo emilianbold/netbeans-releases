@@ -31,21 +31,15 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
-import java.io.PrintStream;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author sg155630
  */
-public class RepositoryValidation1 extends RepositoryValidationBase {
-    private static final RequestProcessor RP = new RequestProcessor("Sleep");
+public class RepositoryValidationFirstParse extends RepositoryValidationBase {
 
-    public RepositoryValidation1(String testName) {
+    public RepositoryValidationFirstParse(String testName) {
         super(testName);
     }
 
@@ -61,54 +55,14 @@ public class RepositoryValidation1 extends RepositoryValidationBase {
         List<String> args = find();
         assert args.size() > 0;
         //args.add("-fq"); //NOI18N
-        RP.post(new Runnable() {
 
-            @Override
-            public void run() {
-                getTestModelHelper().shutdown(false);
-            }
-        }, 500);
-        final long currentTimeMillis = System.currentTimeMillis();
         performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
-        System.err.println("End "+(System.currentTimeMillis()-currentTimeMillis));
         assertNoExceptions();
-    }
-
-    @Override
-    protected boolean returnOnShutdown() {
-        if (CsmModelState.OFF == getTraceModel().getModel().getState()) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    protected boolean dumpModel() {
-        return false;
     }
 
     @Override
     protected void tearDown() throws Exception {
         getTestModelHelper().shutdown(false);
-    }
-    
-    @Override
-    protected void performTest(String[] args, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
-        File workDir = getWorkDir();
-
-        File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output);
-        File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error);
-        try {
-            doTest(args, streamOut, streamErr, params);
-        } finally {
-            // restore err and out
-            streamOut.close();
-            if (streamErr != null) {
-                streamErr.close();
-            }
-        }
     }
 
 }
