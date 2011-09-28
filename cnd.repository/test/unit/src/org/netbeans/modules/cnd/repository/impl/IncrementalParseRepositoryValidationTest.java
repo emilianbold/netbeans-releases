@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,41 +40,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Alexander Simon
+* @author Sergey Grinev
  */
-public class RepositoryValidation2 extends RepositoryValidationBase {
+public class IncrementalParseRepositoryValidationTest extends CndBaseTestSuite {
 
-    public RepositoryValidation2(String testName) {
-        super(testName);
+    static {
+        System.setProperty("cnd.modelimpl.parser.threads", "8");
+//        System.setProperty("cnd.pp.condition.comparision.trace", "true");
+//        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
     }
 
-    protected @Override void setUp() throws Exception {
-        System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
-        System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
-        assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
-        System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
-        cleanCache = false;
-        super.setUp();
+    public IncrementalParseRepositoryValidationTest() {
+        super("Repository"); // NOI18N
+        
+        addTestSuite(RepositoryValidationGoldens.class);
+        addTestSuite(RepositoryValidationInterruptedParse.class);
+        addTestSuite(RepositoryValidationFinal.class);
     }
 
-    public void testRepository() throws Exception {
-        List<String> args = find();
-        assert args.size() > 0;
-        //args.add("-fq"); //NOI18N
-
-        performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
-        assertNoExceptions();
+    public static Test suite() {
+        TestSuite suite = new IncrementalParseRepositoryValidationTest();
+        return suite;
     }
+    
 }

@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -83,11 +84,25 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super.doTest(args, streamOut, streamErr, params);
     }
 
+    protected boolean returnOnShutdown() {
+        return false;
+    }
+
+    protected boolean dumpModel() {
+        return true;
+    }
+    
     @Override
     protected void postTest(String[] args, Object... params) throws Exception {
         if (!getTraceModel().getProject().isStable(null)) {
+            if (returnOnShutdown()) {
+                return;
+            }
             CndUtils.threadsDump();
             while (!getTraceModel().getProject().isStable(null)) {
+                if (returnOnShutdown()) {
+                    return;
+                }
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
@@ -99,18 +114,23 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         for (CsmFile f : getTraceModel().getProject().getAllFiles()){
             map.put(f.getAbsolutePath(), (FileImpl)f);
             if (!f.isParsed()){
+                if (returnOnShutdown()) {
+                    return;
+                }
                 CndUtils.threadsDump();
             }
         }
-        for (FileImpl file : map.values()){
-            CsmTracer tracer = new CsmTracer(false);
-            tracer.setDeep(true);
-            tracer.setDumpTemplateParameters(false);
-            tracer.setTestUniqueName(false);
-            tracer.dumpModel(file);
+        if (dumpModel()) {
+            for (FileImpl file : map.values()){
+                CsmTracer tracer = new CsmTracer(false);
+                tracer.setDeep(true);
+                tracer.setDumpTemplateParameters(false);
+                tracer.setTestUniqueName(false);
+                tracer.dumpModel(file);
+            }
+            dumpProjectContainers(getTraceModel().getProject());
+            super.postTest(args, params);
         }
-        dumpProjectContainers(getTraceModel().getProject());
-        super.postTest(args, params);
     }
 
     private void dumpProjectContainers(CsmProject project){
