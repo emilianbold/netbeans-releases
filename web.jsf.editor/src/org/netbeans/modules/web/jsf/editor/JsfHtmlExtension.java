@@ -344,7 +344,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String nsPrefix = queriedNode.getNamespacePrefix();
         if(nsPrefix == null) {
             //jsf tag always have a prefix
-            return null;
+            return Collections.emptyList();
         }
         String tagName = queriedNode.getNameWithoutPrefix();
 
