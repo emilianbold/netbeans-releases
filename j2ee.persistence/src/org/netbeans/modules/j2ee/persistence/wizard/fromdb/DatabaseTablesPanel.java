@@ -1187,7 +1187,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
             } else {
                 helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
             }
-            helper.setTableClosure(getComponent().getTableClosure());
+            if(getComponent().getTableClosure() != null) {
+                helper.setTableClosure(getComponent().getTableClosure());
+            }
         }
 
         @Override
