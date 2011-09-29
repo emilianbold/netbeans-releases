@@ -125,6 +125,17 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
         assertEquals(Collections.emptyList(), Collections.list(sfs.getRoot().getAttributes()));
     }
 
+    public void testCanSetAttributeOnSFS() throws Exception { // #202316
+        FileSystem layers = FileUtil.createMemoryFileSystem();
+        FileObject physFolder = FileUtil.createFolder(layers.getRoot(), "sub/dir");
+        FileSystem writable = FileUtil.createMemoryFileSystem();
+        writable.getRoot().createFolder("sub");
+        FileSystem sfs = new MultiFileSystem(new FileSystem[] {new MultiFileSystem(writable), layers});
+        FileObject virtFolder = sfs.findResource("sub/dir");
+        virtFolder.setAttribute("a", true);
+        assertEquals(true, virtFolder.getAttribute("a"));
+    }
+
     public static class MyLFS extends LocalFileSystem implements AbstractFileSystem.Attr {
         ArrayList<String> rootQueries = new ArrayList<String>();
 

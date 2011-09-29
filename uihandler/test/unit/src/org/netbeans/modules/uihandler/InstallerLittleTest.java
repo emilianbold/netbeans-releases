@@ -46,39 +46,33 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class InstallerInitTest extends NbTestCase {
+public class InstallerLittleTest extends NbTestCase {
     private Installer installer;
     
     static {
         MemoryURL.initialize();
     }
     
-    public InstallerInitTest(String testName) {
+    public InstallerLittleTest(String testName) {
         super(testName);
     }
     
@@ -121,7 +115,7 @@ public class InstallerInitTest extends NbTestCase {
         installer.doClose();
     }
 
-    public void testGenerateEnoughLogsExit() throws Exception {
+    public void testGenerateTooLittleLogs() throws Exception {
         LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING");
         r.setLoggerName("org.netbeans.ui.anything");
 
@@ -137,10 +131,10 @@ public class InstallerInitTest extends NbTestCase {
         
         MemoryURL.registerURL("memory://start.html", is);
         
-        for (int i = 0; i < 1500; i++) {
+        for (int i = 0; i < 500; i++) {
             Logger.getLogger("org.netbeans.ui.anything").log(r);
         }
-        assertEquals("full buffer", 1000, InstallerTest.getLogsSize());
+        assertEquals("not full buffer", 500, InstallerTest.getLogsSize());
         
         assertNull("No dialogs so far", DD.d);
         
@@ -148,75 +142,25 @@ public class InstallerInitTest extends NbTestCase {
         waitForGestures();
         
         assertNull("No dialogs at close", DD.d);
-
-        Preferences prefs = NbPreferences.forModule(Installer.class);
-        prefs.putInt("count", UIHandler.MAX_LOGS );
         
         installer.restored();
         
         waitForGestures();
 
-//        assertNotNull("A dialog shown at begining", DD.d);
-    }
-
-    public void testDontSubmitTwiceIssue128306(){
-        final AtomicBoolean submittingTwiceStopped = new AtomicBoolean(false);
-        final Installer.SubmitInteractive interactive = new Installer.SubmitInteractive("hallo", true);
-        final ActionEvent evt = new ActionEvent("submit", 1, "submit");
-        Installer.LOG.setLevel(Level.FINEST);
-        Installer.LOG.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                if ("posting upload UIGESTURES".equals(record.getMessage())){
-                    interactive.actionPerformed(evt);
-                }
-                if ("ALREADY SUBMITTING".equals(record.getMessage())){
-                    submittingTwiceStopped.set(true);
-                }
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
-        interactive.createDialog();
-        interactive.actionPerformed(evt);
-        Installer.RP_SUBMIT.post(new Runnable() {
-
-            public void run() {
-                // block RP executor
-                synchronized(this){
-                    try {
-                        wait();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        });
-        Installer.RP_SUBMIT.post(new Runnable() {
-
-            public void run() {
-                // just wait for processing
-            }
-        }).waitFinished();
-        assertTrue(submittingTwiceStopped.get());
+        assertNull("No dialog shown at begining", DD.d);
     }
 
     public static final class DD extends DialogDisplayer {
         static NotifyDescriptor d;
         
+        @Override
         public Object notify(NotifyDescriptor descriptor) {
             assertNull(d);
             d = descriptor;
             return NotifyDescriptor.CLOSED_OPTION;
         }
 
+        @Override
         public Dialog createDialog(DialogDescriptor descriptor) {
             assertNull(d);
             d = descriptor;
@@ -238,6 +182,7 @@ public class InstallerInitTest extends NbTestCase {
                 assertFalse(isModal());
             }
 
+            @Override
             public synchronized void propertyChange(PropertyChangeEvent evt) {
                 if (d != null && d.getOptions().length == 2) {
                     d.setValue(NotifyDescriptor.CLOSED_OPTION);
@@ -255,6 +200,7 @@ public class InstallerInitTest extends NbTestCase {
             private RunnableImpl() {
             }
             
+            @Override
             public void run() {
             }
         }
