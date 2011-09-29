@@ -109,6 +109,7 @@ import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -221,7 +222,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 OpenProject.class,
                 ClassPathProviderImpl.class,
                 Visibility.class,
-                IndexDownloaderImpl.class);
+                IndexDownloaderImpl.class,
+                IndexPatcherImpl.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1988,7 +1990,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Simulate the index download error - indexer should be started
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
-        final FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
         fo.delete();
         IndexDownloaderImpl.expect(rootURL, new File(workDir,"non_existent_index.zip").toURI().toURL());
         indexerFactory.indexer.setExpectedFile(
@@ -2002,7 +2004,41 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(indexerFactory.indexer.awaitIndex());
         assertEquals(2, indexerFactory.indexer.getIndexCount());
 
+        //Test DownloadedIndexPatcher - votes false -> IndexDownloader should be called and then Indexers should be called
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexPatcherImpl.expect(rootURL, false);
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexPatcherImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
 
+        //Test DownloadedIndexPatcher - votes true -> IndexDownloader should be called and NO Indexers should be called
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexPatcherImpl.expect(rootURL, true);
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexPatcherImpl.await());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
     }
 
 
@@ -3027,6 +3063,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private static final Condition cnd = lck.newCondition();
         /*@GuardedBy("lck")*/
         private static URL expectedURL;
+        /*@GuardedBy("lck")*/
         private static URL indexURL;
 
         @Override
@@ -3066,6 +3103,55 @@ public class RepositoryUpdaterTest extends NbTestCase {
             } finally {
                 lck.unlock();
             }
+        }
+    }
+
+    public static class IndexPatcherImpl implements DownloadedIndexPatcher {
+
+        private static final Lock lck = new ReentrantLock();
+        private static final Condition cnd = lck.newCondition();
+        //@GuardedBy("lck")
+        private static URL expectedSourceRoot;
+        //@GuardedBy("lck")
+        private static boolean expectedVote;
+
+        public static void expect (final URL sourceRoot, final boolean vote) {
+            lck.lock();
+            try {
+                expectedSourceRoot = sourceRoot;
+                expectedVote = vote;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        public static boolean await() throws InterruptedException {
+            lck.lock();
+            try {
+                if (expectedSourceRoot != null) {
+                    return cnd.await(TIME, TimeUnit.MILLISECONDS) && expectedSourceRoot == null;
+                } else {
+                    return true;
+                }
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        @Override
+        public boolean updateIndex(URL sourceRoot, URL indexFolder) {
+            boolean vote = true;
+            lck.lock();
+            try {
+                if (sourceRoot.equals(expectedSourceRoot)) {
+                    expectedSourceRoot = null;
+                    vote = expectedVote;
+                    cnd.signal();
+                }
+            } finally {
+                lck.unlock();
+            }
+            return vote;
         }
     }
 

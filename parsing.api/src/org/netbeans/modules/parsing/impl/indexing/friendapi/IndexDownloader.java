@@ -44,12 +44,25 @@ package org.netbeans.modules.parsing.impl.indexing.friendapi;
 import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Lookup;
 
 /**
- *
+ * Allows an implementer to provide a pre created index
+ * for given source root.
+ * The instances of {@link IndexDownloader} should be
+ * registered in the global {@link Lookup}.
  * @author Tomas Zezula
+ * @since 1.45
  */
 public interface IndexDownloader {
+    /**
+     * Provides an {@link URL} for given source root.
+     * @param root the source root for which the index should be provided.
+     * @return an {@link URL} of a pre index bundle or null if the {@link IndexDownloader}
+     * does not provide pre index data for given root.
+     * The pre created index has to be stored in zip file, the zip file is unpacked into
+     * the index folder for given root.
+     */
     @CheckForNull
     URL getIndexURL (@NonNull final URL root);
 }

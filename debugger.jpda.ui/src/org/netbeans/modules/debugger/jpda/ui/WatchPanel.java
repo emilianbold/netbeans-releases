@@ -100,6 +100,8 @@ import javax.lang.model.util.Elements;
 import javax.swing.border.Border;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+
+import com.sun.source.tree.*;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.java.source.CancellableTask;
@@ -716,6 +718,10 @@ public class WatchPanel {
             return trees.getDocComment(path);
         }
 
+        @Override
+        public TypeMirror getLub(CatchTree tree) {
+            return trees.getLub(tree);
+        }
     }
 
     public static final class DelegatingBorder implements Border {
