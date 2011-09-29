@@ -132,20 +132,22 @@ public final class FindUsageSupport {
                 return o1.getOccurenceRange().compareTo(o2.getOccurenceRange());
             }
         });
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    Result parameter = resultIterator.getParserResult();
-                    if (parameter instanceof PHPParseResult) {
-                        Model model = ModelFactory.getModel((PHPParseResult)parameter);
-                        ModelVisitor modelVisitor = model.getModelVisitor();
-                        retval.addAll(modelVisitor.getOccurence(element));
+        if (fileObject != null && fileObject.isValid()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result parameter = resultIterator.getParserResult();
+                        if (parameter instanceof PHPParseResult) {
+                            Model model = ModelFactory.getModel((PHPParseResult)parameter);
+                            ModelVisitor modelVisitor = model.getModelVisitor();
+                            retval.addAll(modelVisitor.getOccurence(element));
+                        }
                     }
-                }
-            });
-        } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }
