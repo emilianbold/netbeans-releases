@@ -71,7 +71,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -91,6 +90,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
+    private static final RequestProcessor RP = new RequestProcessor("Jira Comments Panel", 5, false); // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
@@ -110,7 +110,7 @@ public class CommentsPanel extends JPanel {
             @Override
             public void onClick(String linkText) {
                 final String issueKey = issueFinder.getIssueId(linkText);
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         Issue is = issue.getRepository().getIssue(issueKey);
@@ -393,7 +393,7 @@ public class CommentsPanel extends JPanel {
     }
     
     private void initCollapsedComments() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
