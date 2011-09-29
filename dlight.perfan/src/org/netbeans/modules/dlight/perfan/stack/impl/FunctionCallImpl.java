@@ -226,7 +226,11 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             }
         }
 
-        FunctionImpl func = new FunctionImpl(m.group(1), m.group(2) != null ? m.group(2).hashCode() : (m.group(1) + lineNumber).hashCode());
+        final long funcRef = m.group(2) != null 
+                ? (m.group(1) + m.group(2)).hashCode() 
+                : (m.group(1) + lineNumber).hashCode();
+        
+        FunctionImpl func = new FunctionImpl(m.group(1), funcRef);
 
         FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
 
