@@ -94,7 +94,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             return "file://";
         }
         if (isFullRemote){
-            return "rfs:" + env.toString();
+            return "rfs:" + env.toString(); // NOI18N
         }
         return "file://";
     }    

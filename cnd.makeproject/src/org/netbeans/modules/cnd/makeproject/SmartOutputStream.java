@@ -92,7 +92,7 @@ public class SmartOutputStream extends OutputStream {
     private SmartOutputStream(FileObject fileObject, FileLock lock) throws IOException { // NOI18N
         this.fileObject = fileObject;
         this.lock = lock;
-        this.tempFile = File.createTempFile(fileObject.getName(), "."+fileObject.getExt());
+        this.tempFile = File.createTempFile(fileObject.getName(), "."+fileObject.getExt()); // NOI18N
         this.delegate = new FileOutputStream(tempFile);
         this.checksum = new Adler32();
     }

@@ -190,7 +190,7 @@ public abstract class RemotePathMap extends PathMap {
                     max = key.length();
                     String mpoint = entry.getValue();
                     String rest = key.length() > lpath.length() ? "" : lpath.substring(key.length()).replace('\\', '/'); //NOI18N
-                    if (!mpoint.endsWith("/")) {
+                    if (!mpoint.endsWith("/")) { // NOI18N
                         mpoint += '/';
                     }
                     rpath = mpoint + rest;
@@ -458,7 +458,7 @@ public abstract class RemotePathMap extends PathMap {
 
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
-        private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000);
+        private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000); // NOI18N
         
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
             super(exc);

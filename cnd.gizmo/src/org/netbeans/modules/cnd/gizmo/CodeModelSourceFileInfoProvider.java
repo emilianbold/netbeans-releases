@@ -88,7 +88,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             return "file://";
         }
         if (isFullRemote) {
-            return "rfs:" + env.toString();
+            return "rfs:" + env.toString(); // NOI18N
         }
         return "file://";
     }
