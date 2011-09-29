@@ -48,6 +48,38 @@ FUNCTION DEFINITION modifyemployee199899  [14:1/427-14:47/473] FunctionDDImpl SC
         id [14:36/462-14:42/468]  TYPE: int TEXT=int  [14:36/462-14:39/465]  INIT: null  SCOPE: modifyemployee199899 
     RETURNS void TEXT=void  [14:10/436-14:14/440]
     STATEMENT COMPOUND  [14:44/470-14:47/473] SCOPE: modifyemployee199899 
+STRUCT A199899__global (A199899__global ) [16:1/475-19:2/583] lcurly=507 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION A199899__global [17:5/513-17:23/531] ConstructorImpl SCOPE: A199899__global 
+            DEFINITION: null
+            SIGNATURE A199899__global()
+            UNIQUE NAME F:A199899__global::A199899__global()
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+        FUNCTION A199899__global [18:5/536-18:50/581] ConstructorImpl SCOPE: A199899__global 
+            DEFINITION: null
+            SIGNATURE A199899__global(const A199899__global&)
+            UNIQUE NAME F:A199899__global::A199899__global(const A199899__global&)
+            PARAMETERS:
+                orig [18:21/552-18:48/579]  TYPE: const &A199899__global TEXT=const A199899__global&  [18:21/552-18:43/574]  INIT: null  SCOPE: A199899__global 
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+STRUCT A199899__hidden (A199899__hidden ) [21:1/586-24:2/694] lcurly=618 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION A199899__hidden [22:5/624-22:23/642] ConstructorImpl SCOPE: A199899__hidden 
+            DEFINITION: null
+            SIGNATURE A199899__hidden()
+            UNIQUE NAME F:A199899__hidden::A199899__hidden()
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+        FUNCTION A199899__hidden [23:5/647-23:50/692] ConstructorImpl SCOPE: A199899__hidden 
+            DEFINITION: null
+            SIGNATURE A199899__hidden(const A199899__hidden&)
+            UNIQUE NAME F:A199899__hidden::A199899__hidden(const A199899__hidden&)
+            PARAMETERS:
+                orig [23:21/663-23:48/690]  TYPE: const &A199899__hidden TEXT=const A199899__hidden&  [23:21/663-23:43/685]  INIT: null  SCOPE: A199899__hidden 
+            RETURNS <*no_classifier*> TEXT=  [null-null]
 
 ========== Dumping model of PROJECT DummyProject
 VARIABLE x199899 [1:1/0-1:26/25]  TYPE: int TEXT=int  [1:1/0-1:13/12]  INIT: text='4'  SCOPE: $Global$ 
@@ -88,4 +120,36 @@ FUNCTION DEFINITION modifyemployee199899  [14:1/427-14:47/473] FunctionDDImpl SC
         id [14:36/462-14:42/468]  TYPE: int TEXT=int  [14:36/462-14:39/465]  INIT: null  SCOPE: modifyemployee199899 
     RETURNS void TEXT=void  [14:10/436-14:14/440]
     STATEMENT COMPOUND  [14:44/470-14:47/473] SCOPE: modifyemployee199899 
+STRUCT A199899__global (A199899__global ) [16:1/475-19:2/583] lcurly=507 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION A199899__global [17:5/513-17:23/531] ConstructorImpl SCOPE: A199899__global 
+            DEFINITION: null
+            SIGNATURE A199899__global()
+            UNIQUE NAME F:A199899__global::A199899__global()
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+        FUNCTION A199899__global [18:5/536-18:50/581] ConstructorImpl SCOPE: A199899__global 
+            DEFINITION: null
+            SIGNATURE A199899__global(const A199899__global&)
+            UNIQUE NAME F:A199899__global::A199899__global(const A199899__global&)
+            PARAMETERS:
+                orig [18:21/552-18:48/579]  TYPE: const &A199899__global TEXT=const A199899__global&  [18:21/552-18:43/574]  INIT: null  SCOPE: A199899__global 
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+STRUCT A199899__hidden (A199899__hidden ) [21:1/586-24:2/694] lcurly=618 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION A199899__hidden [22:5/624-22:23/642] ConstructorImpl SCOPE: A199899__hidden 
+            DEFINITION: null
+            SIGNATURE A199899__hidden()
+            UNIQUE NAME F:A199899__hidden::A199899__hidden()
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+        FUNCTION A199899__hidden [23:5/647-23:50/692] ConstructorImpl SCOPE: A199899__hidden 
+            DEFINITION: null
+            SIGNATURE A199899__hidden(const A199899__hidden&)
+            UNIQUE NAME F:A199899__hidden::A199899__hidden(const A199899__hidden&)
+            PARAMETERS:
+                orig [23:21/663-23:48/690]  TYPE: const &A199899__hidden TEXT=const A199899__hidden&  [23:21/663-23:43/685]  INIT: null  SCOPE: A199899__hidden 
+            RETURNS <*no_classifier*> TEXT=  [null-null]
 
