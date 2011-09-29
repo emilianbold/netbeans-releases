@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -92,7 +93,6 @@ implements LookupListener {
     private final FileSystem[] otherLayers;
     /** addLookup */
     private final boolean addLookupBefore;
-    private boolean needToAddClasspathLayers;
 
     /** Create layered filesystem based on a supplied writable layer.
      * @param userDir is this layer for modules from userdir or not?
@@ -121,7 +121,6 @@ implements LookupListener {
         this.otherLayers = otherLayers;
         this.cacheLayer = cacheLayer;
         this.addLookupBefore = addLookup;
-        needToAddClasspathLayers = addLookup;
         
         // Wish to permit e.g. a user-installed module to mask files from a
         // root-installed module, so propagate masks up this high.
@@ -151,7 +150,7 @@ implements LookupListener {
         if (addClasspathLayers) { // #129583
             List<URL> layerUrls = new ArrayList<URL>();
             // Basic impl copied from ExternalUtil.MainFS:
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = ModuleInfo.class.getClassLoader();
             try {
                 for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
                     InputStream is = manifest.openStream();
@@ -173,9 +172,11 @@ implements LookupListener {
                 for (URL generatedLayer : NbCollections.iterable(loader.getResources("META-INF/generated-layer.xml"))) { // NOI18N
                     layerUrls.add(generatedLayer);
                 }
-                XMLFileSystem xmlfs = new XMLFileSystem();
-                xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
-                l.add(xmlfs);
+                if (!layerUrls.isEmpty()) {
+                    XMLFileSystem xmlfs = new XMLFileSystem();
+                    xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+                    l.add(xmlfs);
+                }
                 err.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {
                 err.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
@@ -262,8 +263,7 @@ implements LookupListener {
             }
             cacheLayer = manager.store(cacheLayer, urls);
             err.log(Level.FINEST, "changing delegates");
-            needToAddClasspathLayers = false; // NbInstaller should now be loading all layers, incl. in CP
-            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
+            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
             err.log(Level.FINEST, "delegates changed");
         }
         
@@ -303,7 +303,7 @@ implements LookupListener {
     
     /** Refresh layers */
     @Override public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, needToAddClasspathLayers));
+        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
     }
 
 }

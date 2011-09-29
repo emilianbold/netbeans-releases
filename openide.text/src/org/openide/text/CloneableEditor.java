@@ -806,11 +806,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             //#134910: If editor TopComponent is already activated request focus
             //to it again to get focus to correct subcomponent eg. QuietEditorPane which
             //is added above.
-            if (CloneableEditor.this.equals(getRegistry().getActivated())) {
+            if (shouldRequestFocus(tmp)) {
+                LOG.log(Level.FINE, "requestFocusInWindow {0}", tmp);
                 requestFocusInWindow();
             }
             //#162961, #167289: Force repaint of editor. Sometimes editor stays empty.
             SwingUtilities.invokeLater(new Runnable () {
+                @Override
                 public void run () {
                     revalidate();
                 }
@@ -823,6 +825,17 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (ces != null) {
                 ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
             }
+        }
+
+        private boolean shouldRequestFocus(Component c) {
+            final TopComponent active = getRegistry().getActivated();
+            while (c != null) {
+                if (c == active) {
+                    return true;
+                }
+                c = c.getParent();
+            }
+            return false;
         }
         
         private void initRest() {
