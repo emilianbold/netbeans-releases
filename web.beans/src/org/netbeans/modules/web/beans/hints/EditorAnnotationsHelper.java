@@ -262,7 +262,7 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
             return;
         }
         int start = position.get(0);
-        Line line = NbEditorUtilities.getLine( document , start, true);
+        Line line = NbEditorUtilities.getLine( document , start, false);
         Part part = line.createPart( NbDocument.findLineColumn((StyledDocument) document,
                 start),  position.get( 1 ) -start);
         result.addAnnotation( new CDIAnnotation( type, part));
