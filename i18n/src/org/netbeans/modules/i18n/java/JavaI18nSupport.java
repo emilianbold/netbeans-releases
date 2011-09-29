@@ -54,6 +54,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -172,14 +173,52 @@ public class JavaI18nSupport extends I18nSupport {
         
         String text = decodeUnicodeSeq(hcString.getText());
         String key = text.toUpperCase(); // don't replace ' ' with '_' ! #168798
+        
+        String hcStr = hcString.getText();
+        String strAndVar = ((JavaI18nFinder)getFinder()).strAndVarFound;
+        int strAndVarLength = strAndVar.length();
+        if(hcStr.contains(strAndVar)) { // handle Bug 33759 (http://netbeans.org/bugzilla/show_bug.cgi?id=33759)
+            ArrayList<String> variables = new ArrayList<String>();
+            int startVar = hcStr.indexOf(strAndVar);
+            int endVar = -1;
+            int counterVar = 0;
+            text = hcStr.substring(0, startVar);
+            while(startVar != -1) {
+                if(counterVar > 0) {
+                    text = text.concat(hcStr.substring(endVar + strAndVarLength, startVar));
+                }
+                endVar = hcStr.indexOf(strAndVar, startVar + strAndVarLength);
+                if(startVar + strAndVarLength == endVar) {
+                    counterVar--;
+                } else {
+                    text = text.concat("{").concat(Integer.toString(counterVar)).concat("}"); // NOI18N
+                    variables.add(hcStr.substring(startVar + strAndVarLength, endVar).trim());
+                }
+                startVar = hcStr.indexOf(strAndVar, endVar + strAndVarLength);
+                counterVar++;
+                if(startVar == -1) {
+                    text = text.concat(hcStr.substring(endVar + strAndVarLength));
+                }
+            }
+            key = text.toUpperCase(); // don't replace ' ' with '_' ! #168798
+            i18nString.setKey(key);
+            i18nString.setValue(text);
+            i18nString.setComment(""); // NOI18N
+            i18nString.setReplaceFormat(I18nUtil.getReplaceFormatItems().get(4));
+            String[] arguments = new String[variables.size()];
+            for (int i = 0; i < variables.size(); i++) {
+                arguments[i] = variables.get(i);                
+            }
+            ((JavaI18nString)i18nString).setArguments(arguments);
+        } else {
+            i18nString.setKey(key);
+            i18nString.setValue(text);
+            i18nString.setComment(""); // NOI18N
 
-        i18nString.setKey(key);
-        i18nString.setValue(text);
-        i18nString.setComment(""); // NOI18N
-
-        // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.
-        if (isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) { // NOI18N
-            i18nString.setReplaceFormat(I18nUtil.getReplaceFormatItems().get(0));
+            // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.
+            if (isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) { // NOI18N
+                i18nString.setReplaceFormat(I18nUtil.getReplaceFormatItems().get(0));
+            }
         }
         return i18nString;
     }
