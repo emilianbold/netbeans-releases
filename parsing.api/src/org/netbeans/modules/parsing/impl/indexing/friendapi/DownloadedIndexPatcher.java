@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.indexing.friendapi;
 
-package org.netbeans.modules.cnd.discovery.project.tests;
-
-import org.netbeans.modules.cnd.discovery.project.cases.PkgConfigTestCase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.discovery.project.cases.SimpleScriptTestCase;
-import org.netbeans.modules.cnd.discovery.project.cases.SimpleTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Zezula
  */
-public class Configure1DiscoverySuiteTest extends CndBaseTestSuite {
-
-    public Configure1DiscoverySuiteTest() {
-        super("C/C++ Configure Discovery Test"); // NOI18N
-
-        addTestSuite(SimpleTestCase.class);
-        addTestSuite(SimpleScriptTestCase.class);
-        addTestSuite(PkgConfigTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new Configure1DiscoverySuiteTest();
-        return suite;
-    }
+public interface DownloadedIndexPatcher {
+    boolean updateIndex (@NonNull final URL sourceRoot, @NonNull final URL indexFolder);
 }

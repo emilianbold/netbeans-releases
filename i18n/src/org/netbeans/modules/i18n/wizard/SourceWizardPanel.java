@@ -330,7 +330,12 @@ final class SourceWizardPanel extends JPanel {
             if (dataObject != null) {
                 ClassPath cp = ClassPath.getClassPath(dataObject.getPrimaryFile(), ClassPath.SOURCE );
                                 
-                label.setText(cp.getResourceName(dataObject.getPrimaryFile(), '.', false )); // NOI18N
+                // Handle Bug 200268 (http://netbeans.org/bugzilla/show_bug.cgi?id=200268)
+                if(cp == null) {
+                    label.setText(""); // NOI18N
+                } else {
+                    label.setText(cp.getResourceName(dataObject.getPrimaryFile(), '.', false )); // NOI18N
+                }
                 label.setIcon(new ImageIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
             } else {
                 label.setText(""); // NOI18N
@@ -340,8 +345,8 @@ final class SourceWizardPanel extends JPanel {
             return label;
         }
     }
-
     
+        
     
     /** <code>WizardDescriptor.Panel</code> used for <code>SourceChooserPanel</code>.
      * @see I18nWizardDescriptorPanel
