@@ -102,9 +102,6 @@
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.php.prado</friend>
-                <friend>org.netbeans.modules.php.smarty</friend>
                 <package>org.netbeans.modules.css.lib.api</package>
                 <package>org.netbeans.modules.css.lib.api.model</package>
             </friend-packages>

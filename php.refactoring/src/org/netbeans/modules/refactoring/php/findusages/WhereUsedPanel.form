@@ -173,7 +173,7 @@
               <ResourceString bundle="org/netbeans/modules/refactoring/php/findusages/Bundle.properties" key="LBL_FindUsages" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[4, 2, 2, 2]"/>
+              <Insets value="[4, 0, 2, 2]"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
