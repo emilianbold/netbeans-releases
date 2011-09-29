@@ -328,7 +328,7 @@
             <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
             <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
             <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
-            <fx:signjar keystore="${javafx.signjar.keystore}"
+            <signjar keystore="${javafx.signjar.keystore}"
                 storepass="${javafx.signjar.storepass}"
                 alias="${javafx.signjar.alias}"
                 keypass="${javafx.signjar.keypass}">
@@ -336,7 +336,7 @@
                     <include name="${jfx.deployment.jar}"/>
                     <include name="lib/*.jar"/>
                 </fileset>
-            </fx:signjar>
+            </signjar>
         </sequential>
     </macrodef>
 
