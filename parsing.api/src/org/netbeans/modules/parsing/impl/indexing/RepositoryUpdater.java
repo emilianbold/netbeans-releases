@@ -124,6 +124,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
@@ -3561,6 +3562,16 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return null;
         }
 
+        private static boolean patchDownloadedIndex(
+                @NonNull final URL sourceRoot,
+                @NonNull final URL cacheFolder) {
+            boolean vote = true;
+            for (DownloadedIndexPatcher patcher : Lookup.getDefault().lookupAll(DownloadedIndexPatcher.class)) {
+                vote &= patcher.updateIndex(sourceRoot, cacheFolder);
+            }
+            return vote;
+        }
+
         @NonNull
         private static String getSimpleName(@NonNull final URL indexURL) throws IllegalArgumentException {
             final String path = indexURL.getPath();
@@ -3710,26 +3721,28 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         if (packedIndex != null ) {
                             unpack(packedIndex, downloadFolder);
                             packedIndex.delete();
-                            final FileObject df = CacheFolder.getDataFolder(root);
-                            assert df != null;
-                            final File dataFolder = FileUtil.toFile(df);
-                            assert dataFolder != null;
-                            if (dataFolder.exists()) {
-                                //Some features already forced folder creation
-                                //delete it to be able to do renameTo
-                                delete(dataFolder);
-                            }
-                            downloadFolder.renameTo(dataFolder);
-                            final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
-                            timeStamps.resetToNow();
-                            timeStamps.store();
-                            nopCustomIndexers(root, indexers, sourceForBinaryRoot);
-                            for (Map.Entry<File,Index> e : IndexManager.getOpenIndexes().entrySet()) {
-                                if (Util.isParentOf(dataFolder, e.getKey())) {
-                                    e.getValue().getStatus(true);
+                            if (patchDownloadedIndex(root,downloadFolder.toURI().toURL())) {
+                                final FileObject df = CacheFolder.getDataFolder(root);
+                                assert df != null;
+                                final File dataFolder = FileUtil.toFile(df);
+                                assert dataFolder != null;
+                                if (dataFolder.exists()) {
+                                    //Some features already forced folder creation
+                                    //delete it to be able to do renameTo
+                                    delete(dataFolder);
                                 }
+                                downloadFolder.renameTo(dataFolder);
+                                final TimeStamps timeStamps = TimeStamps.forRoot(root, false);
+                                timeStamps.resetToNow();
+                                timeStamps.store();
+                                nopCustomIndexers(root, indexers, sourceForBinaryRoot);
+                                for (Map.Entry<File,Index> e : IndexManager.getOpenIndexes().entrySet()) {
+                                    if (Util.isParentOf(dataFolder, e.getKey())) {
+                                        e.getValue().getStatus(true);
+                                    }
+                                }
+                                return true;
                             }
-                            return true;
                         }
                     }
                     //todo: optimize for java.io.Files
