@@ -253,7 +253,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
             boolean badging;
             Set<? extends FileObject> badgedFiles;
             TestFS() throws Exception {
-                super(new FileSystem[] {FileUtil.createMemoryFileSystem()});
+                super(FileUtil.createMemoryFileSystem());
             }
             public @Override Status getStatus() {
                 return new HtmlStatus() {
