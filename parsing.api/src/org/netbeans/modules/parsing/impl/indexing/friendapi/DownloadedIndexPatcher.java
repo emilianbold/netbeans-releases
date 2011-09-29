@@ -43,11 +43,24 @@ package org.netbeans.modules.parsing.impl.indexing.friendapi;
 
 import java.net.URL;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Lookup;
 
 /**
- *
+ * Provides an ability to update data in downloaded index.
+ * The instances of {@link DownloadedIndexPatcher} should be
+ * registered in the global {@link Lookup}.
+ * @see IndexDownloader
  * @author Tomas Zezula
+ * @since 1.45
  */
 public interface DownloadedIndexPatcher {
+    /**
+     * Called by the infrastructure when the index is downloaded and unpacked
+     * to allow the implementer to update the downloaded index if needed.
+     * @param sourceRoot for which the index was downloaded.
+     * @param indexFolder the cache folder in which the index was unpacked.
+     * @return true if an update was successful, false if the update failed and
+     * downloaded index should not be used.
+     */
     boolean updateIndex (@NonNull final URL sourceRoot, @NonNull final URL indexFolder);
 }

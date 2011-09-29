@@ -671,7 +671,7 @@ public class JavacParser extends Parser {
         }
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
-            options.add("-XDdisableStringFolding"); //NOI18N
+            options.add("-XDallowStringFolding=false"); //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
