@@ -192,7 +192,7 @@ public class LayerUtilsTest extends LayerTestBase {
 
         FileSystem xfs0 = new XMLFileSystem(files.get(0).toURI().toURL());
         FileSystem xfs1 = new XMLFileSystem(files.get(1).toURI().toURL());
-        FileSystem mfs = new MultiFileSystem(new FileSystem[] { xfs0, xfs1 });
+        FileSystem mfs = new MultiFileSystem(xfs0, xfs1);
         assertNotNull(xfs1.findResource("Menu/A Folder"));
         assertNotNull(mfs.findResource("Menu/File"));
         assertNotNull(mfs.findResource("Menu/A Folder"));
@@ -234,7 +234,7 @@ public class LayerUtilsTest extends LayerTestBase {
 
         FileSystem cfs = createCachedFS(m, lb);
         FileSystem xfs = new XMLFileSystem(la.toURI().toURL());
-        FileSystem mfs = new MultiFileSystem(new FileSystem[] { cfs, xfs });
+        FileSystem mfs = new MultiFileSystem(cfs, xfs);
         assertNotNull(mfs.findResource("Menu/File"));
         assertNotNull(mfs.findResource("Menu/A Folder"));
         assertNull(mfs.findResource("Menu/A Folder/org-example-a-AAction.shadow"));  // hidden by b-layer
