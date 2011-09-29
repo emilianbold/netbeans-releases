@@ -64,7 +64,7 @@ public final class Utils {
     /**
      * Default name for automatically registered JavaFX platform
      */
-    public static final String DEFAULT_FX_PLATFORM_NAME = "Default JFX Platform"; // NOI18N
+    public static final String DEFAULT_FX_PLATFORM_NAME = "Default JavaFX Platform"; // NOI18N
     
     /**
      * Property for not checking matching JavaFX and running JVM architechture

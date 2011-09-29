@@ -155,7 +155,7 @@ public class MultiFileSystem extends FileSystem {
     /** Creates new MultiFileSystem.
     * @param fileSystems array of filesystems (can contain nulls)
     */
-    public MultiFileSystem(FileSystem[] fileSystems) {
+    public MultiFileSystem(FileSystem... fileSystems) {
         this.systems = fileSystems.clone();
     }
 
