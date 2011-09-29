@@ -49,7 +49,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
