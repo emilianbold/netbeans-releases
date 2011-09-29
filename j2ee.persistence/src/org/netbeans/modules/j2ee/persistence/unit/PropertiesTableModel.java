@@ -129,7 +129,6 @@ public class PropertiesTableModel extends AbstractTableModel {
         PropertyData data = propsData.get(row);
         Property tmp = propParam.getPU().getProperties().getProperty2(data.getModelIndex());
         tmp.setValue(propValue);
-        propParam.getPU().getProperties().setProperty2(data.getModelIndex(), tmp);
 
         // Update local cache
         data.setPropValue( propValue );
