@@ -3161,7 +3161,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert.error(arg0, "localVariableAlreadyDefined", name);
         }
         Tree typeTree = arg0.getType();
-        Type type = (Type)typeTree.accept(this, evaluationContext);
+        Mirror evaluatedType = typeTree.accept(this, evaluationContext);
+        if (!(evaluatedType instanceof Type)) {
+            Assert.error(typeTree, "unknownType", typeTree.toString());
+        }
+        Type type = (Type) evaluatedType;
         ScriptVariable var = evaluationContext.createScriptLocalVariable(name, type);
         ExpressionTree initializer = arg0.getInitializer();
         if (initializer != null) {
