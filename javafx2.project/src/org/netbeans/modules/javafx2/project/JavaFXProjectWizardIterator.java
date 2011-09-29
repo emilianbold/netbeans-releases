@@ -48,7 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -151,7 +151,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start(4);
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
-        Set<FileObject> resultSet = new HashSet<FileObject>();
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        FileObject mainClassFo = null;
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         if (dirF == null) {
             throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
@@ -220,10 +221,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 if (mainClass != null && mainClass.length() > 0) {
                     try {
                         //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR); // NOI18N
-                        FileObject mainClassFo = getClassFO(sourcesRoot, mainClass);
+                        mainClassFo = getClassFO(sourcesRoot, mainClass);
                         assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass; // NOI18N
                         // Returning FileObject of main class, will be called its preferred action
-                        resultSet.add(mainClassFo);
+                        //resultSet.add(mainClassFo); postponed because of creation order
                     } catch (Exception x) {
                         ErrorManager.getDefault().notify(x);
                     }
@@ -262,6 +263,9 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         handle.progress(3);
 
+        // add main project dir before preloader one to keep it selected as main
+        resultSet.add(dir);
+        
         // create preloader project
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
         if (preloader != null && preloader.length() > 0) {
@@ -301,7 +305,6 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 WizardSettings.setNewProjectCount(ind);
                 break;
         }
-        resultSet.add(dir);
 //        Project project = ProjectManager.getDefault().findProject(dir);
 //        OpenProjects.getDefault().setMainProject(project);
         
@@ -312,6 +315,9 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
+        if(mainClassFo != null) {
+            resultSet.add(mainClassFo);
+        }
         return resultSet;
     }
     private transient int index;
