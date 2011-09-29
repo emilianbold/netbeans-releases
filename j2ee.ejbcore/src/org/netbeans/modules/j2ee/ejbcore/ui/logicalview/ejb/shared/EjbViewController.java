@@ -376,7 +376,11 @@ public final class EjbViewController {
     }
 
     private FileObject findFileObject(final String className) {
-        return SourceUtils.getFile(getBeanClass(className), cpInfo);
+        ElementHandle<TypeElement> beanEH = getBeanClass(className);
+        if (beanEH != null) {
+            return SourceUtils.getFile(beanEH, cpInfo);
+        }
+        return null;
     }
 
     private void deleteClasses() {

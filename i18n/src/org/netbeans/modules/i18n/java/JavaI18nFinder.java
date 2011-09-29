@@ -130,6 +130,9 @@ public class JavaI18nFinder implements I18nFinder {
     
     /** Helper variable. Used to recognize "a" + "b" as "ab" (bug 185645). */
     private boolean concatenatedStringsFound;
+    
+    /** Helper variable. Used to recognize "a" + variable [+ "b"]* (bug 33759). */
+    public final String strAndVarFound = "$strAndVarFound$"; //NOI18N
 
     /** Constructs finder. */
     public JavaI18nFinder(StyledDocument document) {
@@ -429,6 +432,9 @@ public class JavaI18nFinder implements I18nFinder {
                         position += 4;
                         lastJavaString = lastJavaString.delete(lastJavaString.lastIndexOf("\"") - 1, lastJavaString.length()); //NOI18N
                         return null;
+                    } if(restOfLine.trim().startsWith("+ ")) { // NOI18N
+                        //Handle Bug 33759 (http://netbeans.org/bugzilla/show_bug.cgi?id=33759)
+                        return handleStringWithVariable(hardString, restOfLine);
                     }
                     
                     // Replace rest of occurences of \" to cheat out regular expression for very minor case when the same string is after our at the same line.
@@ -461,6 +467,86 @@ public class JavaI18nFinder implements I18nFinder {
             }
         }
 
+        return null;
+    }
+    
+    /** Handles the situation where a string is followed by a variable which again is followed by a String or variable (bug 33759).
+     * @param hardString String found so far 
+     * @param restOfLine String found till the end of the current line
+     * @return <code>HardCodedString</code> or null if not found yet */
+    protected HardCodedString handleStringWithVariable(String hardString, String restOfLine) {
+        try {
+            Position hardStringStart = document.createPosition(currentStringStart);
+            Position hardStringEnd = document.createPosition(currentStringEnd);
+            if (restOfLine.contains(";")) { // NOI18N
+                restOfLine = restOfLine.substring(0, restOfLine.indexOf(";")); // NOI18N
+            }
+            hardString = hardString.substring(0, hardString.length() - 1);
+            String[] splits = restOfLine.substring(1).split("\\+"); // NOI18N
+            String split = ""; // NOI18N
+            for (int i = 0; i < splits.length; i++) {
+                split = splits[i];
+                if (split.trim().startsWith("\"")) { // NOI18N
+                    if(!hardString.endsWith(strAndVarFound)) {
+                        hardString = hardString.concat(strAndVarFound + strAndVarFound);
+                    }
+                    hardString = hardString.concat(split.trim().substring(1, split.trim().lastIndexOf("\""))); // NOI18N
+                } else {
+                    hardString = hardString.concat(strAndVarFound + split + strAndVarFound);
+                }
+            }
+            hardString = hardString.concat("\""); // NOI18N
+            if (split.lastIndexOf("\"") == -1) { // NOI18N
+                currentStringEnd += restOfLine.indexOf(split) + split.length() + (split.endsWith(" ") ? 0 : 1); // NOI18N
+            } else {
+                currentStringEnd += restOfLine.indexOf(split) + split.lastIndexOf("\"") + 2; // NOI18N
+            }
+            hardStringEnd = document.createPosition(currentStringEnd);
+
+            lastPosition = hardStringEnd;
+
+            // Search was successful -> return.
+            return new HardCodedString(extractString(hardString),
+                    hardStringStart,
+                    hardStringEnd);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    /** Modifies the text of a <code>HardCodedString</code> so that it represents the actual text found in the editor and also shown in the <code>ResourceWizardPanel</code>.
+     * @param hcString <code>HardCodedString</code> to modify
+     * @return modified <code>HardCodedString</code> or null if <code>hcString</code> does not fall in the category specified by Bug 33759 (http://netbeans.org/bugzilla/show_bug.cgi?id=33759) */
+    public HardCodedString modifyHCStringText(HardCodedString hcString) {
+        String hcStr = hcString.getText();
+        int strAndVarLength = strAndVarFound.length();
+        if (hcStr.contains(strAndVarFound)) {
+            String newHcstrText = ""; // NOI18N
+            int startVar = hcStr.indexOf(strAndVarFound);
+            int endVar = -1;
+            int counterVar = 0;
+            newHcstrText = hcStr.substring(0, startVar);
+            while (startVar != -1) {
+                if (counterVar > 0) {
+                    newHcstrText = newHcstrText.concat(" + \"").concat(hcStr.substring(endVar + strAndVarLength, startVar)); // NOI18N
+                }
+                endVar = hcStr.indexOf(strAndVarFound, startVar + strAndVarLength);
+                if(startVar + strAndVarLength == endVar) {
+                    newHcstrText = newHcstrText.concat("\""); // NOI18N
+                    counterVar--;
+                } else {
+                    newHcstrText = newHcstrText.concat("\" + ").concat(hcStr.substring(startVar + strAndVarLength, endVar).trim()); // NOI18N
+                }
+                startVar = hcStr.indexOf(strAndVarFound, endVar + strAndVarLength);
+                counterVar++;
+                if (startVar == -1) {
+                    newHcstrText = hcStr.substring(endVar + strAndVarLength).trim().length() == 0 ? newHcstrText : newHcstrText.concat(" + \""); // NOI18N
+                    newHcstrText = newHcstrText.concat(hcStr.substring(endVar + strAndVarLength));
+                }
+            }
+            return new HardCodedString(newHcstrText, hcString.getStartPosition(), hcString.getEndPosition());
+        }
         return null;
     }
 
