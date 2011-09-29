@@ -65,6 +65,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public final class ToolchainValidator {
+    private static final boolean DISABLED = Boolean.getBoolean("cnd.toolchain.validator.disabled") || CompilerSetManagerImpl.DISABLED; // NOI18N
 
     public static final ToolchainValidator INSTANCE = new ToolchainValidator();
     private static final RequestProcessor RP = new RequestProcessor("Tool collection validator", 1); // NOI18N
@@ -73,7 +74,7 @@ public final class ToolchainValidator {
     }
 
     public void validate(final ExecutionEnvironment env, final CompilerSetManagerImpl csm) {
-        if (CompilerSetManagerImpl.DISABLED) {
+        if (DISABLED) {
             return;
         }
         final Runnable runnable = new Runnable() {
