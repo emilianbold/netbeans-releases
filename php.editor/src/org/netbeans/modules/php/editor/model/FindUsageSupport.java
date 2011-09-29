@@ -127,6 +127,7 @@ public final class FindUsageSupport {
     @CheckForNull
     public Collection<Occurence> occurences(FileObject fileObject) {
         final Set<Occurence> retval = new TreeSet<Occurence>(new Comparator<Occurence>(){
+            @Override
             public int compare(Occurence o1, Occurence o2) {
                 return o1.getOccurenceRange().compareTo(o2.getOccurenceRange());
             }
