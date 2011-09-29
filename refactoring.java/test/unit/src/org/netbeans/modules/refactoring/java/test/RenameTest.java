@@ -293,6 +293,34 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test202675() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("a/A.java", "package a;\n"
+                + "import b.B;\n"
+                + "public class A {\n"
+                + "    B b;\n"
+                + "}"),
+                new File("b/B.java", "package b;\n"
+                + "public class B {\n"
+                + "}"));
+        
+        RefactoringSession rs = RefactoringSession.create("Rename");
+        RenameRefactoring rr = new RenameRefactoring(Lookups.singleton(src.getFileObject("b/B.java")));
+        rr.setNewName("C");
+        rr.setSearchInComments(true);
+        rr.prepare(rs);
+        rs.doRefactoring(true);
+
+        verifyContent(src,
+                new File("a/A.java", "package a;\n"
+                + "import b.C;\n"
+                + "public class A {\n"
+                + "    C b;\n"
+                + "}"),
+                new File("b/C.java", "package b;\n"
+                + "public class C {\n"
+                + "}"));
+    }
     
     public void test104819_2() throws Exception {
         writeFilesAndWaitForScan(src,
