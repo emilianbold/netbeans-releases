@@ -59,7 +59,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
@@ -111,7 +113,7 @@ public class TaskChooser extends JPanel {
     private Color parentColor;
     private ComponentMorpher expandedMorpher = null;
     private Item expandedItem = null;
-    private Vector listeners = new Vector();
+    private Collection<Listener> listeners = new CopyOnWriteArraySet<Listener>();
     private boolean isSwitching = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -154,9 +156,7 @@ public class TaskChooser extends JPanel {
     }
 
     public void addItemListener(Listener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     public void expand(Item item) {
@@ -371,26 +371,26 @@ public class TaskChooser extends JPanel {
     }
 
     private void fireItemCollapsed(Item item) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ((Listener) listeners.get(i)).itemCollapsed(item);
+        for (Listener l : listeners) {
+            l.itemCollapsed(item);
         }
     }
 
     private void fireItemExpanded(Item item) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ((Listener) listeners.get(i)).itemExpanded(item);
+        for (Listener l : listeners) {
+            l.itemExpanded(item);
         }
     }
 
     private void fireItemWillCollapse(Item item) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ((Listener) listeners.get(i)).itemWillCollapse(item);
+        for (Listener l : listeners) {
+            l.itemWillCollapse(item);
         }
     }
 
     private void fireItemWillExpand(Item item) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ((Listener) listeners.get(i)).itemWillExpand(item);
+        for (Listener l : listeners) {
+            l.itemWillExpand(item);
         }
     }
 
