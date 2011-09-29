@@ -107,7 +107,14 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         if (toProcess.isEmpty()) {
-            return previous;
+            return new ParsingOutput(
+                    true,
+                    previous.file2FQNs,
+                    previous.addedTypes,
+                    previous.createdFiles,
+                    previous.finishedFiles,
+                    previous.modifiedTypes,
+                    previous.aptGenerated);
         }
         
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
