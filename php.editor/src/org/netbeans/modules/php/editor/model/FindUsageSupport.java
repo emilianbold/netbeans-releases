@@ -49,7 +49,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -128,24 +127,27 @@ public final class FindUsageSupport {
     @CheckForNull
     public Collection<Occurence> occurences(FileObject fileObject) {
         final Set<Occurence> retval = new TreeSet<Occurence>(new Comparator<Occurence>(){
+            @Override
             public int compare(Occurence o1, Occurence o2) {
                 return o1.getOccurenceRange().compareTo(o2.getOccurenceRange());
             }
         });
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    Result parameter = resultIterator.getParserResult();
-                    if (parameter instanceof PHPParseResult) {
-                        Model model = ModelFactory.getModel((PHPParseResult)parameter);
-                        ModelVisitor modelVisitor = model.getModelVisitor();
-                        retval.addAll(modelVisitor.getOccurence(element));
+        if (fileObject != null && fileObject.isValid()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result parameter = resultIterator.getParserResult();
+                        if (parameter instanceof PHPParseResult) {
+                            Model model = ModelFactory.getModel((PHPParseResult)parameter);
+                            ModelVisitor modelVisitor = model.getModelVisitor();
+                            retval.addAll(modelVisitor.getOccurence(element));
+                        }
                     }
-                }
-            });
-        } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }

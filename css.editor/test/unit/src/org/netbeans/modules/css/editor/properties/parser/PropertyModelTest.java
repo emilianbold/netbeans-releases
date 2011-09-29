@@ -497,7 +497,7 @@ public class PropertyModelTest extends TestBase {
 //        }
         
         //removed inherit from the alts
-        assertEquals(6, csspv.alternatives().size()); //only comma should be alternative
+        assertEquals(7, csspv.alternatives().size()); //only comma should be alternative
     }
     //some text acceptors consumed "inherit" as their token
     
