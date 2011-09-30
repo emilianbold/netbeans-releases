@@ -231,11 +231,11 @@ public final class ProjectSupport {
 		if (conf2 != null)
 		    directory = conf2.getProfile().getRunDirectory();
 	    }
-	    if (directory == null && isAbsolute(executable)) {
-		directory = dirname(executable);
+	    if (directory == null && CndPathUtilitities.isPathAbsolute(executable)) {
+		directory = CndPathUtilitities.getDirName(executable);
 	    }
-	    if (directory == null && isAbsolute(corefile)) {
-		directory = dirname(corefile);
+	    if (directory == null && CndPathUtilitities.isPathAbsolute(corefile)) {
+		directory = CndPathUtilitities.getDirName(corefile);
 	    }
 	}
 
@@ -253,14 +253,6 @@ public final class ProjectSupport {
 	public String getHostName() {
 	    return hostName;
 	}
-
-	/**
-	 * Given "/a/b/c/d" return "/a/b/c".
-	 */
-	private String dirname(String path) {
-	    return path.substring(0, path.lastIndexOf(File.separatorChar));
-	}
-
 
 	public Project project() {
 	    return project;
@@ -307,19 +299,6 @@ public final class ProjectSupport {
     }
 
     /**
-     * Is 'path' an absolute pathname?
-     */
-    private static boolean isAbsolute(String path) {
-	if (IpeUtils.isEmpty(path))
-	    return false;
-	else if (path.charAt(0) == File.separatorChar)
-	    return true;
-	else
-	    return false;
-    }
-
-
-    /**
      * Return true if 'executable' is one of the sentinels which implies
      * figure executable name automatically.
      */
@@ -342,7 +321,7 @@ public final class ProjectSupport {
     private static void populateConfiguration(ProjectSeed seed) {
         
 	// we may not always have an executable, especially under core|attach!
-	if (!isAuto(seed.executable) && isAbsolute(seed.executable)) {
+	if (!isAuto(seed.executable) && CndPathUtilitities.isPathAbsolute(seed.executable)) {
 	    seed.conf.getMakefileConfiguration().getOutput().
 		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalizeSlashes(seed.executable));
 	}
@@ -468,7 +447,7 @@ public final class ProjectSupport {
 		if (seed.directory != null) {
 		    baseDir = seed.directory;
 		    assert ! IpeUtils.isEmpty(baseDir);
-		    assert baseDir.charAt(0) == File.separatorChar;
+		    assert CndPathUtilitities.isPathAbsolute(baseDir);
 
 		} else {
 		    // TMP baseDir = projectFolder + File.separator + projectName;
@@ -509,7 +488,7 @@ public final class ProjectSupport {
 		    baseDir = projectParentFolder + File.separator + projectName;
 		}
 		assert ! IpeUtils.isEmpty(baseDir);
-		assert baseDir.charAt(0) == File.separatorChar;
+		assert CndPathUtilitities.isPathAbsolute(baseDir);
 
 		if (seed.conf != null) {
 		    seed.conf.setBaseDir(baseDir);

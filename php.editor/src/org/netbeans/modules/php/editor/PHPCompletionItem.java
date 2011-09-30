@@ -89,6 +89,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -981,8 +982,27 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(" ${cursor}"); //NOI18N
                     break;
                 case CURSOR_INSIDE_BRACKETS:
-                    builder.append(getName());
-                    builder.append(" (${cursor})"); //NOI18N
+                    CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
+                    boolean appendSpace = true;
+                    String name = getName();
+                    builder.append(name);
+                    if (name.equals("foreach") || name.equals("for")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeForParen();
+                    } else if (name.equals("if")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfParen();
+                    } else if (name.equals("switch")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeSwitchParen();
+                    } else if (name.equals("array")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeArrayDeclParen();
+                    } else if (name.equals("while")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeWhileParen();
+                    } else if (name.equals("catch")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeCatchParen();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("(${cursor})"); //NOI18N
                     break;
                 case ENDS_WITH_CURLY_BRACKETS:
                     builder.append(getName());

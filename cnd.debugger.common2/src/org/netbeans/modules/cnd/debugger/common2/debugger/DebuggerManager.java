@@ -1031,7 +1031,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine) {
         Configuration conf = debugtarget.getConfig();
         String execPath = debugtarget.getExecutable();
-        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(conf));
+        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debugtarget.getEngine());
         ndi.setDebugTarget(debugtarget);
 
         if (execPath == null || execPath.equals("") || execPath.equals(" ")) { // NOI18N
@@ -1201,7 +1201,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public void attach(DebugTarget dt) {
         Configuration conf = dt.getConfig();
 
-        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(conf));
+        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
         ndi.setPid(dt.getPid());
 
@@ -1239,7 +1239,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         Configuration conf = dt.getConfig();
 
 
-        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(conf));
+        NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
 
         ndi.setTarget(dt.getExecutable());

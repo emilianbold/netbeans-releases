@@ -45,16 +45,18 @@ package org.netbeans.modules.xml.text;
 
 import org.netbeans.modules.xml.util.Util;
 import java.io.*;
-import java.text.*;
 import java.util.Enumeration;
 import java.lang.ref.WeakReference;
 import java.beans.PropertyChangeEvent;
 
+import java.util.Collection;
 import javax.swing.Timer;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -69,7 +71,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 
 import org.netbeans.modules.xml.*;
-import org.netbeans.modules.xml.lib.*;
+import org.netbeans.modules.xml.XMLDataObject;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
@@ -154,8 +156,32 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
 
     @Override
     protected Pane createPane() {
+        // defect #202766: whatever+xml gets multiview, although there is nobody
+        // who would register the editor. M
+        if (getDataObject().getClass() == XMLDataObject.class &&
+            !mimeType.equals(XMLDataObject.MIME_PLAIN_XML) &&
+            !hasMultiTextEditor()) {
+            return super.createCloneableEditor();
+        }
         return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(mimeType, 
                 getDataObject());
+    }
+    
+    /**
+     * Detects whether XML source editor is registered: must start with 'xml.text'. If
+     * a module registers such multiview, it's responsible for displaying source in this
+     * pane.
+     * 
+     * @return true, if multiview source editor is available and multiview pane should be created
+     */
+    boolean hasMultiTextEditor() {
+        Collection<? extends MultiViewDescription> all = MimeLookup.getLookup(mimeType).lookupAll(MultiViewDescription.class);
+        for (MultiViewDescription d : all) {
+            if (d.preferredID().startsWith("xml.text")) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /*
