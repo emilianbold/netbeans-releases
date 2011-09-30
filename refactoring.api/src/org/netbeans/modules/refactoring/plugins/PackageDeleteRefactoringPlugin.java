@@ -223,7 +223,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
         private final NonRecursiveFolder folder;
         
         private File dir;
-        private final SourceGroup srcGroup;
+        private SourceGroup srcGroup;
         
         private PackageDeleteElem(NonRecursiveFolder folder) {
             this.folder = folder;
@@ -233,7 +233,10 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             } catch (FileStateInvalidException fileStateInvalidException) {
                 throw new IllegalStateException(fileStateInvalidException);
             }
-            srcGroup = getJavaSourceGroup(folder.getFolder());
+            srcGroup = getSourceGroup(folder.getFolder(), JAVA_EXTENSION);
+            if (srcGroup == null) {
+                srcGroup = getSourceGroup(folder.getFolder(), Sources.TYPE_GENERIC);
+            }
         }
         
         public void performChange() {
@@ -281,19 +284,22 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             return null;
         }
 
-        private SourceGroup getJavaSourceGroup(FileObject file) {
+        private SourceGroup getSourceGroup(FileObject file, String type) {
             Project prj = FileOwnerQuery.getOwner(file);
-            if (prj == null)
+            if (prj == null) {
                 return null;
+            }
             Sources src = ProjectUtils.getSources(prj);
-            SourceGroup[] javagroups = src.getSourceGroups(JAVA_EXTENSION);
+            SourceGroup[] javagroups = src.getSourceGroups(type);
 
-            for(SourceGroup javaSourceGroup : javagroups) {
-                if (javaSourceGroup.getRootFolder().equals(file) || FileUtil.isParentOf(javaSourceGroup.getRootFolder(), file))
+            for (SourceGroup javaSourceGroup : javagroups) {
+                if (javaSourceGroup.getRootFolder().equals(file) || FileUtil.isParentOf(javaSourceGroup.getRootFolder(), file)) {
                     return javaSourceGroup;
+                }
             }
             return null;
         }
+
         
     }
 
