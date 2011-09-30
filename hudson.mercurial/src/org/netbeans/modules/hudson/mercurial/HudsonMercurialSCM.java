@@ -60,11 +60,12 @@ import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.Utilities;
+import static org.netbeans.modules.hudson.mercurial.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
@@ -80,6 +81,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
 
     static final Logger LOG = Logger.getLogger(HudsonMercurialSCM.class.getName());
 
+    @Messages({"# {0} - repository location", "warning.local_repo={0} will only be accessible from a Hudson server on the same machine."})
     public Configuration forFolder(File folder) {
         // XXX could also permit projects as subdirs of Hg repos (lacking SPI currently)
         final URI source = getDefaultPull(folder.toURI());
@@ -104,7 +106,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
             }
             public ConfigurationStatus problems() {
                 if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
-                    return ConfigurationStatus.withWarning(NbBundle.getMessage(HudsonMercurialSCM.class, "warning.local_repo", repo));
+                    return ConfigurationStatus.withWarning(warning_local_repo(repo));
                 } else {
                     return null;
                 }

@@ -61,11 +61,7 @@ made subject to such option by the copyright holder.
         </path>
         <property name="clusters.toString" refid="clusters"/>
         <ant dir="../nbbuild" target="tryme-debug" inheritall="false" inheritrefs="false">
-            <property name="tryme.args" value="
-                -J-Dnetbeans.exception.report.min.level=999999
-                -J-Dorg.netbeans.modules.projectimport.eclipse.level=0
-                --clusters ${clusters.toString}
-                "/>
+            <property name="tryme.arg.eclipseimport" value="-J-Dorg.netbeans.modules.projectimport.eclipse.level=0 --clusters ${clusters.toString}"/>
         </ant>
     </target>
 </project>
