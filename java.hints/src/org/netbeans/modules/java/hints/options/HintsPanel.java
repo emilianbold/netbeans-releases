@@ -680,13 +680,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     }//GEN-LAST:event_openInEditorActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        DataObject dob = getDataObject(getSelectedHint());
+        final HintMetadata selectedHint = getSelectedHint();
+        final String selectedHintId = selectedHint.id;
+        DataObject dob = getDataObject(selectedHint);
         EditorCookie ec = dob.getCookie(EditorCookie.class);
         try {
             ec.saveDocument();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        RulesManager.getInstance().allHints.clear();
+        RulesManager.getInstance().reload();
+        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+        errorTree.setModel(errorTreeModel);
+        select(getHintByName(selectedHintId));
         cancelEditActionPerformed(evt);
     }//GEN-LAST:event_saveButtonActionPerformed
     
