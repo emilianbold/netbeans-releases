@@ -97,7 +97,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jaroslav Bachorik
  */
-@MimeRegistration(mimeType = "text/x-java", service = AbstractJavaProfilerSource.class)
+// registered in layer.xml as the annotation registration does not allow
+// for specifying the service type explicitly, thus causing unnecessary
+// class load when looking up services from Mime lookup
+// @MimeRegistration(mimeType = "text/x-java", service = AbstractJavaProfilerSource.class)
 public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     
     private static final String JUNIT_SUITE = "junit.framework.TestSuite"; // NOI18N

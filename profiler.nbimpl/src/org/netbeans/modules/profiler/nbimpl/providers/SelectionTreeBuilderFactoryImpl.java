@@ -44,7 +44,6 @@ package org.netbeans.modules.profiler.nbimpl.providers;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.selector.api.builders.PackageSelectionTreeViewBuilder;
 import org.netbeans.modules.profiler.selector.api.builders.SingleFileSelectionTreeBuilder;
@@ -80,7 +79,10 @@ public class SelectionTreeBuilderFactoryImpl extends SelectionTreeBuilderFactory
         }
     }
     
-    @MimeRegistration(mimeType="text/x-java", service=SelectionTreeBuilder.class)
+    // registered in layer.xml as the annotation registration does not allow
+    // for specifying the service type explicitly, thus causing unnecessary
+    // class load when looking up services from Mime lookup    
+//    @MimeRegistration(mimeType="text/x-java", service=SelectionTreeBuilder.class)
     public static class FileTreeBuilder extends SingleFileSelectionTreeBuilder {
     }
     
