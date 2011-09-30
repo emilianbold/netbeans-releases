@@ -124,6 +124,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -395,7 +396,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             });
 
         } else {
-            start2(executor, additionalArgv, this, connectExisting);
+            CndRemote.validate(gdi.getHostName(), new Runnable() {
+                public void run() {
+                    start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
+                }
+            });
         }
     }
 

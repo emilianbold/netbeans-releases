@@ -2289,10 +2289,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         public final void waitUntilDone() {
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, null, e);
+            while (latch.getCount() != 0) {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.FINE, null, e);
+                }
             }
         }
 
