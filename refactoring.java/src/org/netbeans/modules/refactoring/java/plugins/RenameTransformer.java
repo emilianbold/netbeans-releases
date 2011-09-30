@@ -284,8 +284,9 @@ public class RenameTransformer extends RefactoringVisitor {
                     if(duplicate) {
                         nju = make.removeCompUnitImport(workingCopy.getCompilationUnit(), importTree);
                         tree = workingCopy.getCompilationUnit();
-                    }
-                } else {
+                    } else {
+                        nju = make.setLabel(tree, newName);
+                    }                } else {
                     if(duplicate) {
                         nju = make.QualIdent(make.setLabel(make.QualIdent(elementToFind), newName).toString());
                     } else {
