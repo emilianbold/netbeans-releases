@@ -576,6 +576,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         parentIssue = issue.getRepository().getIssue(parentKey);
                     }
                     final Issue parent = parentIssue;
+                    if(parent == null) {
+                        // how could this be possible? parent removed?
+                        Jira.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getKey(), parentKey}); // NOI18N
+                        return;
+                    }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
