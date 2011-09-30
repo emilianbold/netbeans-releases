@@ -83,8 +83,10 @@ public final class JavaFXPlatformUtils {
 
     // TODO any Mac OS predefined locations?
     public static final String[] KNOWN_JFX_LOCATIONS = new String[]{
-        "C:\\Program Files\\Oracle",        // NOI18N
-        "C:\\Program Files (x86)\\Oracle"   // NOI18N
+        (System.getenv("ProgramFiles") != null ? // NOI18N
+            System.getenv("ProgramFiles") : "C:\\Program Files") + "\\Oracle", // NOI18N
+        (System.getenv("ProgramFiles(x86)") != null ? // NOI18N
+            System.getenv("ProgramFiles(x86)") : "C:\\Program Files (x86)") + "\\Oracle" // NOI18N
     };
 
     private JavaFXPlatformUtils() {

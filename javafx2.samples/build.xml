@@ -7,13 +7,13 @@
     <target name="zip-examples" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/javafx2/samples/resources/"/>
         <mkdir dir="${examples}"/>
-<!--
+
         <zip basedir="AdvancedMedia" destfile="${examples}/AdvancedMedia.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
--->        
+
         <zip basedir="AudioVisualizer3D" destfile="${examples}/AudioVisualizer3D.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
