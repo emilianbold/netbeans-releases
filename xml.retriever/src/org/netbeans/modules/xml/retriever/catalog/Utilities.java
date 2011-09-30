@@ -733,7 +733,7 @@ public class Utilities {
     
     
     public static boolean retrieveAndCache(URI locationURI, FileObject sourceFileObject) {
-        return Util.retrieveAndCache(locationURI, sourceFileObject, true);
+        return Util.retrieveAndCache(locationURI, sourceFileObject, true, true);
     }
     
     public enum DocumentTypesEnum {

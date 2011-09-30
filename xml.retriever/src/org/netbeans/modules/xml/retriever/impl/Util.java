@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.retriever.Retriever;
@@ -59,51 +61,114 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 
 /**
  *
  * @author Samaresh
  */
 public class Util {
+    private static final String SYSTEM_PRIVATE_CATALOG_FILE = "xml.retriever/catalog.xml";
+    private static final String SYSTEM_PRIVATE_CATALOG_DIR = "xml.retriever";
 
     private Util() {
     }
     
-    public static boolean retrieveAndCache(URI locationURI, FileObject sourceFileObject, boolean newThread) {
-        URI privateCatalogURI = null;
-        URI privateCacheURI = null;
-        
+    /**
+     * Returns a FileObject corresponding to the cache catalog; either project-local (system = false)
+     * or platform (system = true)
+     * 
+     * @param sourceFileObject
+     * @param system
+     * @return 
+     */
+    public static FileObject findCacheCatalog(FileObject sourceFileObject) {
+        URI privateCatalogURI;
         Project prj = FileOwnerQuery.getOwner(sourceFileObject);
         if(prj == null)
-            return false;
+            return null;
         
         FileObject prjrtfo = prj.getProjectDirectory();
         File prjrt = FileUtil.toFile(prjrtfo);
         if(prjrt == null)
-            return false;
+            return null;
         
-        //determine the cache dir
         CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
                 lookup(CacheDirectoryProvider.class);
         String catalogstr = Utilities.DEFAULT_PRIVATE_CATALOG_URI_STR;
-        String cachestr = Utilities.DEFAULT_PRIVATE_CAHCE_URI_STR;
         try{
             if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
                 URI prjrturi = prjrt.toURI();
                 URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
                 String cachedirstr = Utilities.relativize(prjrturi, cpduri);
                 catalogstr = cachedirstr+"/"+Utilities.PRIVATE_CATALOG_URI_STR;
-                cachestr = cachedirstr+"/"+Utilities.PRIVATE_CAHCE_URI_STR;
             }
             privateCatalogURI = new URI(catalogstr);
-            privateCacheURI = new URI(cachestr);
         }catch(Exception e){
-            return false;
+            return null;
         }
-        
-        //retrieve
-        URI cacheURI = prjrt.toURI().resolve(privateCacheURI);
+        URI cacheURI = prjrt.toURI().resolve(privateCatalogURI);
         File cacheFile = new File(cacheURI);
+        return FileUtil.toFileObject(cacheFile);
+    }
+    
+    public static FileObject findSystemCatalog() {
+        File f = Places.getCacheSubfile(SYSTEM_PRIVATE_CATALOG_FILE);
+        if (f.exists()) {
+            return FileUtil.toFileObject(f);
+        } else {
+            return null;
+        }
+    }
+    
+    public static boolean retrieveAndCache(URI locationURI, FileObject sourceFileObject, boolean newThread, boolean chainCatalog) {
+        return retrieveAndCache(locationURI, sourceFileObject, newThread, chainCatalog, locationURI);
+    }
+    
+    public static boolean retrieveAndCache(URI locationURI, FileObject sourceFileObject, boolean newThread, boolean chainCatalog, URI original) {
+        URI privateCatalogURI = null;
+        URI privateCacheURI = null;
+        File cacheFile;
+        File prjrt = null;
+        FileObject prjrtfo = null;
+        
+        Project prj = FileOwnerQuery.getOwner(sourceFileObject);
+        if(prj == null) {
+            File f = Places.getCacheSubfile(SYSTEM_PRIVATE_CATALOG_FILE);
+            File dir = Places.getCacheSubdirectory(SYSTEM_PRIVATE_CATALOG_DIR);
+            privateCatalogURI = f.toURI();
+            privateCacheURI = dir.toURI();
+            cacheFile = dir;
+            
+        } else {
+            prjrtfo = prj.getProjectDirectory();
+            prjrt = FileUtil.toFile(prjrtfo);
+            if(prjrt == null)
+                return false;
+
+            //determine the cache dir
+            CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
+                    lookup(CacheDirectoryProvider.class);
+            String catalogstr = Utilities.DEFAULT_PRIVATE_CATALOG_URI_STR;
+            String cachestr = Utilities.DEFAULT_PRIVATE_CAHCE_URI_STR;
+            try{
+                if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
+                    URI prjrturi = prjrt.toURI();
+                    URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
+                    String cachedirstr = Utilities.relativize(prjrturi, cpduri);
+                    catalogstr = cachedirstr+"/"+Utilities.PRIVATE_CATALOG_URI_STR;
+                    cachestr = cachedirstr+"/"+Utilities.PRIVATE_CAHCE_URI_STR;
+                }
+                privateCatalogURI = new URI(catalogstr);
+                privateCacheURI = new URI(cachestr);
+            }catch(Exception e){
+                return false;
+            }
+
+            //retrieve
+            URI cacheURI = prjrt.toURI().resolve(privateCacheURI);
+            cacheFile = new File(cacheURI);
+        }
         if(!cacheFile.isDirectory())
             cacheFile.mkdirs();
         FileObject cacheFO = FileUtil.toFileObject(FileUtil.normalizeFile(cacheFile));
@@ -124,6 +189,10 @@ public class Util {
         
         /*if(result == null)
             return false;*/
+        
+        if (!chainCatalog)  {
+            return true;
+        }
         
         //add private catalog as next catalog file to the public and peer catalog
         XMLCatalogProvider catProv = (XMLCatalogProvider) prj.getLookup().
