@@ -47,11 +47,13 @@ package org.netbeans.modules.parsing.impl.indexing.errors;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -152,7 +154,7 @@ public final class TaskProvider extends PushTaskScanner {
         }
     }
     
-    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static final Map<RequestProcessor.Task,Work> TASKS = new HashMap<RequestProcessor.Task,Work>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("Java Task Provider");
     private static Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
@@ -160,8 +162,7 @@ public final class TaskProvider extends PushTaskScanner {
     private static void enqueue(Work w) {
         synchronized (TASKS) {
             final RequestProcessor.Task task = WORKER.post(w);
-            
-            TASKS.add(task);
+            TASKS.put(task,w);
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     synchronized (TASKS) {
@@ -181,8 +182,9 @@ public final class TaskProvider extends PushTaskScanner {
         synchronized (TASKS) {
             clearing = true;
             try {
-                for (RequestProcessor.Task t : TASKS) {
-                    t.cancel();
+                for (Map.Entry<RequestProcessor.Task,Work> t : TASKS.entrySet()) {
+                    t.getKey().cancel();
+                    t.getValue().cancel();
                 }
                 TASKS.clear();
             } finally {
@@ -203,7 +205,7 @@ public final class TaskProvider extends PushTaskScanner {
             synchronized (TASKS) {
                 if (TASKS.isEmpty())
                     return;
-                t = TASKS.iterator().next();
+                t = TASKS.keySet().iterator().next();
             }
             
             t.waitFinished();
@@ -220,13 +222,19 @@ public final class TaskProvider extends PushTaskScanner {
         return result;
     }
     
-    private static synchronized void updateErrorsInRoot(Callback callback, FileObject root) {
+    private static synchronized void updateErrorsInRoot(
+            final Callback callback,
+            final FileObject root,
+            final AtomicBoolean cancelled) {
         Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
         Set<FileObject> fixedFiles = new HashSet<FileObject>(filesWithErrors);
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
-        
+
         try {
             for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root.getURL())) {
+                if (cancelled.get()) {
+                    return;
+                }
                 FileObject file = URLMapper.findFileObject(u);
 
                 if (file != null) {
@@ -256,6 +264,7 @@ public final class TaskProvider extends PushTaskScanner {
     private static final class Work implements Runnable {
         private final FileObject fileOrRoot;
         private final Callback callback;
+        private final AtomicBoolean canceled = new AtomicBoolean();
 
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
@@ -269,7 +278,11 @@ public final class TaskProvider extends PushTaskScanner {
         public Callback getCallback() {
             return callback;
         }
-        
+
+        public void cancel() {
+            canceled.set(true);
+        }
+
         @Override
         public void run() {
             FileObject file = getFileOrRoot();
@@ -312,7 +325,7 @@ public final class TaskProvider extends PushTaskScanner {
                 LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
                 getCallback().setTasks(file, tasks);
             } else {
-                updateErrorsInRoot(getCallback(), root);
+                updateErrorsInRoot(getCallback(), root, canceled);
             }
         }
     }

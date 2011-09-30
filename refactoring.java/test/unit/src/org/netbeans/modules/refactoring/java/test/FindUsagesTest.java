@@ -261,6 +261,29 @@ public class FindUsagesTest extends NbTestCase {
 
         doRefactoring("test200843", wuq, 1);
     }
+
+    public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject
+        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        SourceUtils.waitScanFinished();
+        FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/I.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree klass = (ClassTree) controller.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree runTree = (MethodTree) klass.getMembers().get(0);
+                TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
+                TreePathHandle element = TreePathHandle.create(path, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+            }
+        }, false).get();
+        setScope(wuq, true, false, false, false, false, true);
+
+        doRefactoring("test200843", wuq, 1);
+    }
     
     private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) {
         RefactoringSession rs = RefactoringSession.create("Session");

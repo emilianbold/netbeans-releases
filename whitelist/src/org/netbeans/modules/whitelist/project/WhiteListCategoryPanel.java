@@ -54,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -84,8 +85,9 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
 
     private static final String WHITELISTS_PATH = "org-netbeans-api-java/whitelists/";  //NOI18N
 
-    private static Map<Project,Reference<WhiteListLookup>> lookupCache =
-            new WeakHashMap<Project, Reference<WhiteListLookup>>();
+    //@GuardedBy("lookupCache")
+    private final static Map<Project,Reference<WhiteListLookup>> lookupCache =
+            Collections.synchronizedMap(new WeakHashMap<Project, Reference<WhiteListLookup>>());
 
     private Project p;
 
@@ -111,7 +113,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     }
     
     public static ProjectCustomizer.CompositeCategoryProvider createWhiteListCategoryProvider(Map attrs) {
-        return new Factory(); //NOI18N
+        return new Factory(Boolean.TRUE.equals((Boolean)attrs.get("show"))); //NOI18N
     }
 
     @Override
@@ -125,7 +127,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
  
         private static final String CATEGORY_WHITELIST = "WhiteList"; // NOI18N
 
-        public Factory() {
+        private final boolean alwaysShowWhiteListPanel;
+        
+        public Factory(boolean showWhiteListPanel) {
+            alwaysShowWhiteListPanel = showWhiteListPanel;
         }
 
         public ProjectCustomizer.Category createCategory(Lookup context) {
@@ -133,7 +138,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             if (p == null) {
                 return null;
             }
-            if (!isWhiteListPanelEnabled(p) || getUserSelectableWhiteLists().size() == 0) {
+            if (getUserSelectableWhiteLists().isEmpty()) {
+                return null;
+            }
+            if (!isWhiteListPanelEnabled(p) && !alwaysShowWhiteListPanel) {
                 return null;
             }
             return ProjectCustomizer.Category.create(
@@ -175,12 +183,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
                 }
             }
         });
-        synchronized (WhiteListCategoryPanel.class) {
-            final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-            final WhiteListLookup lkp;
-            if (lkpRef != null && (lkp=lkpRef.get())!=null) {
-                lkp.updateLookup(p);
-            }
+        final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+        final WhiteListLookup lkp;
+        if (lkpRef != null && (lkp=lkpRef.get())!=null) {
+            lkp.updateLookup();
         }
     }
 
@@ -189,14 +195,15 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     }
 
     public static Lookup getEnabledUserSelectableWhiteLists(@NonNull Project p) {
-        Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-        WhiteListLookup lkp;
-        if (lkpRef == null || (lkp=lkpRef.get())==null) {
-            lkp = new WhiteListLookup();
-            lkp.updateLookup(p);
-            lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
+        synchronized (lookupCache) {
+            Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+            WhiteListLookup lkp;
+            if (lkpRef == null || (lkp=lkpRef.get())==null) {
+                lkp = new WhiteListLookup(p);
+                lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
+            }
+            return lkp;
         }
-        return lkp;
     }
 
     /** This method is called from within the constructor to
@@ -211,13 +218,10 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(WhiteListCategoryPanel.class, "WhiteListCategoryPanel.jLabel1.text")); // NOI18N
 
         jScrollPane1.setViewportView(jTable1);
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WhiteListCategoryPanel.class, "WhiteListCategoryPanel.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -226,7 +230,6 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addContainerGap(283, Short.MAX_VALUE))
-            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -234,14 +237,11 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
@@ -322,7 +322,24 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
 
     private static class WhiteListLookup extends ProxyLookup {
 
-        public void updateLookup(final Project p) {
+        private Project p;
+        //@GuardedBy("this")
+        private boolean initialized = false;
+
+        public WhiteListLookup(Project p) {
+            this.p = p;
+        }
+        
+        @Override
+        protected synchronized void beforeLookup(Template<?> template) {
+            if (!initialized && WhiteListQueryImplementation.class.isAssignableFrom(template.getType())) {
+                initialized = true;
+                updateLookup();
+            }
+            super.beforeLookup(template);
+        }
+        
+        private void updateLookup() {
             final List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
             for (WhiteListQueryImplementation.UserSelectable w :
                     Lookups.forPath(WHITELISTS_PATH).lookupAll(WhiteListQueryImplementation.UserSelectable.class)) {

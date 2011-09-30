@@ -50,6 +50,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.symfony.ui.customizer.SymfonyCustomizerPanel;
+import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -68,7 +69,7 @@ public class SymfonyPhpModuleCustomizerExtender extends PhpModuleCustomizerExten
     }
 
     public static boolean isCacheDirectoryIgnored(PhpModule phpModule) {
-        return getPreferences(phpModule).getBoolean(IGNORE_CACHE_DIRECTORY, true);
+        return getPreferences(phpModule).getBoolean(IGNORE_CACHE_DIRECTORY, SymfonyOptions.getInstance().getIgnoreCache());
     }
 
     @Override

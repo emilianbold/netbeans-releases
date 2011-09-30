@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Introduce Parameter Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Introduce Parameter Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use this dialog box to specify options for the Introduce Parameter refactoring command.
+        You can use the Introduce Parameter command to introduce a new parameter to a method. </p>
+       
+        <p>You can open the Introduce Parameter dialog box by placing the cursor within the expression to be replaced by a parameter and choosing Refactor &gt; Introduce Parameter from either the main IDE's or popup menu.</p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+            <li><b>Name.</b> Enter the parameter name.</li>
+			<li><b>Declare Final.</b> Select to declare the parameter <tt>final</tt>.</li>
+			<li><b>Replace All Occurrences.</b> Select to replace all the found occurrences with the references to the new parameter.</li>
+			<li><b>Generate Javadoc for this method.</b> Select to create Javadoc for the method. </li>
+            <li><b>Code Generation.</b> 
+            Select either of the following options to use:
+              <ul>
+			<li><b>Update Existing Method.</b> Select to add a new parameter to an existing method if it is possible to change all the existing method calls.</li>
+			<li><b>Create new Method and Delegate from Existing Method.</b> Select to define new parameter in a new, overloading method if the existing method calls cannot be changed.</li>
+			</ul>
+			</li>
+        </ul>
+
+      
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../aboutRefactoring.html">About Refactoring</a></dd>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a></dd>
+            <dd><a href="../undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+       
+    </body>
+</html>

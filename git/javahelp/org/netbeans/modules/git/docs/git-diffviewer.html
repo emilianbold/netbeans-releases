@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Git: Comparing File Revisions</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+    <h2>Git: Comparing File Revisions</h2>
+        
+	<p>The IDE's graphical Diff Viewer enables you to compare 
+            revisions of a file side by side using color coding to emphasize the differences 
+            between the files being compared.</p>
+            
+	<p>To access the Diff Viewer, select a version-controlled file or folder (e.g. from the Projects, Files or Favorites window) and choose either Git &gt; Diff from the right-click menu or Team &gt; Git &gt; Diff from the main menu.</p>
+        
+        <h4>The following table lists the Git commands available in the toolbar of the Diff Viewer:</h4>
+		<table border="1" cellpadding="5">
+                    <tr>
+                        <th>Icon</th>
+                        <th>Name</th>
+                        <th>Function</th>
+                    </tr>
+					 <tr>
+                        <td class="align-center"><img src="images/changes-head-wt.png"
+                                                             alt="Changes between HEAD and Working Tree icon"></td>
+                        <td class="align-center"><strong>Changes between HEAD and Working Tree</strong></td>
+                        <td>Displays a list of files that are either already staged or only modified/created and not staged yet.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="align-center"><img src="images/changes-head-index.png"
+                                                             alt="Changes between HEAD and Index icon"></td>
+                        <td class="align-center"><strong>Changes between HEAD and Index</strong></td>
+                        <td>Displays a list of files that are staged.</td>
+                    </tr>
+					
+					 <tr>
+                        <td class="align-center"><img src="images/changes-index-wt.png"
+                                                             alt="Changes between Index and Working Tree icon"></td>
+                        <td class="align-center"><strong>Changes between Index and Working Tree</strong></td>
+                        <td>Displays files that have differences between their staged and working tree states. </td>
+                    </tr>
+					
+					 <tr>
+                        <td class="align-center"><img src="images/nextdiff.png"
+                                                             alt="Go to Next Difference icon"></td>
+                        <td class="align-center"><strong>Go to Next Difference</strong></td>
+                        <td>Displays next difference in the  file.</td>
+                    </tr>
+					
+					<tr>
+                        <td class="align-center"><img src="images/prevdiff.png"
+                                                             alt="Go to Previous Difference icon"></td>
+                        <td class="align-center"><strong>Go to Previous Difference</strong></td>
+                        <td>Displays previous difference in the  file.</td>
+                    </tr>
+					
+					
+					
+                    <tr>
+                        <td class="align-center"><img src="images/refresh.png"
+                                                             alt="Refresh Statuses icon"></td>
+                        <td class="align-center"><strong>Refresh Statuses</strong></td>
+                        <td>Refreshes the status of the selected files and
+                            folders. Files displayed in the Versioning window can be
+                            refreshed to reflect any changes that may have been made
+                            externally.</td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="align-center"><img src="images/revert.png"
+                                                             alt="Revert Modifications icon"></td>
+                        <td class="align-center"><strong>Revert Modifications</strong></td>
+                        <td>Displays the <a href="../git-revertmod.html">Revert Modifications</a> dialog box.</td>
+                    </tr>
+                    <tr>
+                        <td class="align-center"><img src="images/commit.png"
+                                                             alt="Commit Changes icon"></td>
+                        <td class="align-center"><strong>Commit Changes</strong></td>
+                        <td>Displays the <a href="../git-commit.html">Commit</a> dialog box.</td>
+                    </tr>
+                </table>
+
+
+        
+        <h4>The Diff Viewer provides the following UI components:</h4>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <td align="right"><strong>Blue</strong> 
+                    ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been changed since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Green</strong> 
+                    ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been added since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Red</strong> 
+                    ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been removed since the earlier revision.</td>                
+            </tr>
+        </table>
+        
+                
+        <h4>The following icons allow you to make changes directly to your local working copy:</h4>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <td><strong>Replace</strong> 
+                    ( <img src="images/insert.png" alt="replace icon"> )</td>
+                <td>Inserts the highlighted text into your Working Tree copy.</td>
+            </tr>
+            <tr>
+                <td><strong>Move All</strong> 
+                    ( <img src="images/arrow.png" alt="move all icon"> )</td>
+                <td>Reverts the whole local Working Tree copy.</td>
+            </tr>
+            <tr>
+                <td><strong>Remove</strong>&nbsp;
+                    ( <img src="images/remove.png" alt="remove icon"> )</td>
+                <td>Removes the highlighted text from the local Working Tree copy.</td>                
+            </tr>
+        </table>
+         
+	<hr>
+	<small><a href="credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

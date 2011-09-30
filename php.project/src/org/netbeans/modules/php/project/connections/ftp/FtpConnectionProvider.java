@@ -57,7 +57,7 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class FtpConnectionProvider implements RemoteConnectionProvider {
-    private static final String FTP_CONNECTION_TYPE = "FTP"; // NOI18N
+    public static final String FTP_CONNECTION_TYPE = "FTP"; // NOI18N
 
     static final String TYPE = "type"; // NOI18N
     static final String HOST = "host"; // NOI18N

@@ -45,7 +45,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class SelectorsModuleTest extends CssModuleTestBase {
     
@@ -69,4 +69,12 @@ public class SelectorsModuleTest extends CssModuleTestBase {
         checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
     }
     
+    public void testPseudoClassAfterClassSelector() throws ParseException {
+        checkCC(".aclass:| ", arr("active"), Match.CONTAINS);
+        checkCC(".aclass:ac| ", arr("active"), Match.CONTAINS);
+        
+        checkCC("div.aclass:| ", arr("active"), Match.CONTAINS);
+        checkCC("div.aclass:ac| ", arr("active"), Match.CONTAINS);
+        
+    }
 }

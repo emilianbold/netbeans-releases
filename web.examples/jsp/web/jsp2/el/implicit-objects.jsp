@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!--
   Copyright 2004 The Apache Software Foundation
 
@@ -49,7 +50,7 @@
     <blockquote>
       <u><b>Change Parameter</b></u>
       <form action="implicit-objects.jsp" method="GET">
-	  foo = <input type="text" name="foo" value="${param["foo"]}">
+          foo = <input type="text" name="foo" value="<c:out value="${param['foo']}" />">
           <input type="submit">
       </form>
       <br>
@@ -61,23 +62,23 @@
 	  </thead>
 	  <tr>
 	    <td>\${param.foo}</td>
-	    <td>${param.foo}&nbsp;</td>
+	    <td><c:out value="${param.foo}" />&nbsp;</td>
 	  </tr>
 	  <tr>
-	    <td>\${param["foo"]}</td>
-	    <td>${param["foo"]}&nbsp;</td>
+	    <td>\${param['foo']}</td>
+            <td><c:out value="${param['foo']}" />&nbsp;</td>
 	  </tr>
 	  <tr>
-	    <td>\${header["host"]}</td>
-	    <td>${header["host"]}</td>
+	    <td>\${header['host']}</td>
+	    <td><c:out value="${header['host']}" /></td>
 	  </tr>
 	  <tr>
-	    <td>\${header["accept"]}</td>
-	    <td>${header["accept"]}</td>
+	    <td>\${header['accept']}</td>
+            <td><c:out value="${header['accept']}" /></td>
 	  </tr>
 	  <tr>
-	    <td>\${header["user-agent"]}</td>
-	    <td>${header["user-agent"]}</td>
+	    <td>\${header['user-agent']}</td>
+	    <td><c:out value="${header['user-agent']}" /></td>
 	  </tr>
 	</table>
       </code>

@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Map.Entry;
@@ -68,6 +69,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -1025,10 +1027,20 @@ public class FileStatusCache {
      * @param file file/folder to examine
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createMissingEntryFileInformation(File file, RepositoryStatus repositoryStatus) {
+    private FileInformation createMissingEntryFileInformation(final File file, RepositoryStatus repositoryStatus) {
         
         // ignored status applies to whole subtrees
         boolean exists = file.exists();
+        if(exists && Utilities.isMac()) {
+            // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
+            File[] files = file.getParentFile().listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept (File dir, String name) {
+                    return name.equals(file.getName());
+                }
+            });
+            exists = file != null && files.length > 0;
+        } 
         boolean isDirectory = exists && file.isDirectory();
         int parentStatus = getStatus(file.getParentFile()).getStatus();
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {

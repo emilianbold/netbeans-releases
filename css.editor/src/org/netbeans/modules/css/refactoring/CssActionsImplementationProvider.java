@@ -84,7 +84,7 @@ import org.openide.windows.TopComponent;
  * The css refactoring just provides the rename plugin which handles css links possibly
  * affected by the folder rename.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = ActionsImplementationProvider.class, position=1033)
 public class CssActionsImplementationProvider extends ActionsImplementationProvider {

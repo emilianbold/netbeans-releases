@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.hyperlinks;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -62,16 +64,13 @@ import org.openide.loaders.DataObjectNotFoundException;
  * adds hyperlinking support to pom.xml files..
  * @author mkleint
  */
+@MimeRegistrations({
+    @MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=HyperlinkProvider.class),
+    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProvider.class)
+})
 public class HyperlinkProviderImpl implements HyperlinkProvider {
     
-    /** Creates a new instance of HyperlinkProvider */
-    public HyperlinkProviderImpl() {
-    }
-
     public boolean isHyperlinkPoint(Document doc, int offset) {
-        if (!isPomFile(doc)) {
-            return false;
-        }
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
@@ -99,9 +98,6 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset) {
-        if (!isPomFile(doc)) {
-            return null;
-        }
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
@@ -129,9 +125,6 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
     }
 
     public void performClickAction(Document doc, int offset) {
-        if (!isPomFile(doc)) {
-            return;
-        }
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
@@ -200,28 +193,4 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
         return parent.getFileObject(path);
     }
 
-    private boolean isPomFile(Document doc) {
-        String type = (String) doc.getProperty("mimeType"); //NOI18N
-        if (type != null) {
-            if (POMDataObject.MIME_TYPE.equals(type)) { //NOI18N
-                return true;
-            }
-            if (!"text/xml".equals(type)) { //NOI18N
-                return false;
-            }
-        }
-
-        //TODO this should be eventually abandoned in favour of specific supported mimetypes.
-        
-        DataObject dObject = NbEditorUtilities.getDataObject(doc);
-        if (dObject != null && "pom.xml".equalsIgnoreCase(dObject.getPrimaryFile().getNameExt())) { //NOI18N
-            // is that enough?
-            return true;
-        }
-        if (dObject != null && "settings.xml".equals(dObject.getPrimaryFile().getNameExt()) && ".m2".equals(dObject.getPrimaryFile().getParent().getNameExt())) { //NOI18N
-            return true;
-        }
-        return false;
-    }
-    
 }

@@ -55,6 +55,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -174,8 +176,8 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         }
         return -1;
     }
-    static String jarify(String path) { // #200088
-        return path.replaceFirst("[.][^./]+$", ".jar");
+    static @CheckForNull String jarify(@NullAllowed String path) { // #200088
+        return path != null ? path.replaceFirst("[.][^./]+$", ".jar") : null;
     }
     
     private FileObject[] getSrcRoot() {

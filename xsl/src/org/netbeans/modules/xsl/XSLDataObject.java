@@ -45,6 +45,8 @@ package org.netbeans.modules.xsl;
 
 import org.xml.sax.InputSource;
 import javax.xml.transform.Source;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -52,16 +54,15 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.xml.cookies.*;
 import org.netbeans.modules.xml.XMLDataObjectLook;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * XSL owner.
@@ -97,16 +98,29 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
 
         // editor support defines MIME type understood by EditorKits registry         
         TextEditorSupport.TextEditorSupportFactory editorFactory =
-            new TextEditorSupport.TextEditorSupportFactory (this, XMLKit.MIME_TYPE);
+            new TextEditorSupport.TextEditorSupportFactory (this, MIME_TYPE);
         editorFactory.registerCookies (set);
 
         set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
     }
 
-    public final Lookup getLookup() {
-        return getCookieSet().getLookup();
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xsl.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xsl/resources/xslObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xsl.text",
+        mimeType=MIME_TYPE,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewDTDElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+    
     /**
      */
     protected Node createNodeDelegate () {

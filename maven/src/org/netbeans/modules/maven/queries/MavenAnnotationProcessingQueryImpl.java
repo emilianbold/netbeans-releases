@@ -44,15 +44,17 @@ package org.netbeans.modules.maven.queries;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,11 +70,17 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
     public @Override Result getAnnotationProcessingOptions(FileObject file) {
         return new Result() {
             public @Override Set<? extends Trigger> annotationProcessingEnabled() {
-                // XXX should perhaps only be on for maven-compiler-plugin 2.2+
+                String version = PluginPropertyUtils.getPluginVersion(prj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("2.2")) < 0) {
+                    return EnumSet.noneOf(Trigger.class);
+                }
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", null);
+                if ("-proc:none".equals(compilerArgument)) {
+                    return EnumSet.noneOf(Trigger.class);
+                }
                 return EnumSet.allOf(Trigger.class);
             }
             public @Override Iterable<? extends String> annotationProcessorsToRun() {
-                // XXX read from maven-compiler-plugin config
                 return null;
             }
             public @Override URL sourceOutputDirectory() {
@@ -80,11 +88,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
             }
             public @Override Map<? extends String, ? extends String> processorOptions() {
                  Map<String, String> options = new LinkedHashMap<String, String>();
-                 //here should be some parsing for ap parameters, but for now it's just a solution for issue 192101
-                 //after ap paremeters support in maven and nb maven project will be implemented this workaround should be moved to PersistenceScopesProviderImpl
-                String key = "eclipselink.canonicalmodel.use_static_factory";//NOI18N
-                String value = "false";//NOI18N
-                options.put(key, value);
+                options.put("eclipselink.canonicalmodel.use_static_factory", "false"); // #192101
                 return options;
             }
             public @Override void addChangeListener(ChangeListener l) {}

@@ -1,3 +1,10 @@
+<%@page import="org.apache.taglibs.standard.examples.util.DataSourceProvider"%>
+<%@page import="java.sql.SQLException"%>
+<%@page import="java.util.Properties"%>
+<%@page import="java.sql.Driver"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.Connection"%>
+<%@page import="java.sql.DriverManager"%>
 <%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -10,17 +17,11 @@
 <h1>SQL Query Execution using an iterator</h1>
 
 
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
+<%
+    DataSourceProvider dataSource = new DataSourceProvider(session);
+%>
 
-<sql:setDataSource
-  var="example"
-  driver="${sessionScope.myDbDriver}"
-  url="${sessionScope.myDbUrl}"
-  user="${sessionScope.myDbUserName}"
-  password="${sessionScope.myDbPassword}"
-/>
-
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource%>">
 
   <sql:update var="newTable">
     create table mytable (
@@ -95,7 +96,7 @@
 </table>
 
 
-<sql:update var="newTable" dataSource="${example}">
+<sql:update var="newTable" dataSource="<%=dataSource%>">
   drop table mytable
 </sql:update>
 

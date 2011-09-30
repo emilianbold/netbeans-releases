@@ -1139,8 +1139,9 @@ public class BaseKit extends DefaultEditorKit {
                         });
                         return;
                     }
-                    
-                    final int insertionOffset = computeInsertionOffset(target.getCaret());
+
+                    try {
+                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()), Position.Bias.Backward);
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
                             target, insertionOffset, cmd);
                     
@@ -1154,7 +1155,7 @@ public class BaseKit extends DefaultEditorKit {
                                     int caretPosition = r == null ? -1 : (Integer) r[1];
                                     
                                     try {
-                                        performTextInsertion(target, insertionOffset, insertionText, caretPosition);
+                                        performTextInsertion(target, insertionOffset.getOffset(), insertionText, caretPosition);
                                         result[0] = Boolean.TRUE;
                                         result[1] = insertionText;
                                     } catch (BadLocationException ble) {
@@ -1175,6 +1176,10 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     } finally {
                         transaction.close();
+                    }
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.FINE, null, ble);
+                        target.getToolkit().beep();
                     }
                 } else {
                     if (LOG.isLoggable(Level.FINE)) {

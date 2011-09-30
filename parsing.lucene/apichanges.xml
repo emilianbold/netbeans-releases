@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexManager-getOpenIndexes">
+      <api name="LuceneSupport"/>
+      <summary>Added method to get opened indexes</summary>
+      <version major="2" minor="4"/>
+      <date day="21" month="9" year="2011"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" addition="yes"/>
+      <description>
+          <p>
+              The <code>IndexManager.getOpenIndexes</code> method was added to allow clients
+              to obtain mapping of cache folder to opened <code>Index</code>.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+  </change>
   <change id="Index-getStatus">
       <api name="LuceneSupport"/>
       <summary>Index.getStatus replaced Index.isValid and Index.exists</summary>

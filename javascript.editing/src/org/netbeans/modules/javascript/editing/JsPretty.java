@@ -98,6 +98,8 @@ public class JsPretty {
     private final int indentSize;
     private final int continuationIndentSize;
     private final int tabSize;
+    private static String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
+    private boolean templateEdit;
 
     public JsPretty(JsParseResult info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
         this.info = info;
@@ -115,6 +117,7 @@ public class JsPretty {
 
     public void format() {
         JsParseResult result = AstUtilities.getParseResult(info);
+        templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null;
         Node root = result.getRootNode();
         if (root != null) {
                 walk(root);
@@ -180,6 +183,10 @@ public class JsPretty {
                     break;
                 default:
                     visitDefault(root);
+            }
+        } else {
+            if (root.getType() == Token.BLOCK) {
+                visitOtherBlock(root);
             }
         }
     }
@@ -383,6 +390,20 @@ public class JsPretty {
                 child = next(child);
             }
             decreaseIndent("visitOtherBlock");
+        } else if (templateEdit) {
+            increaseIndent("visitOtherBlock");  //NOI18N
+            org.netbeans.api.lexer.Token<? extends JsTokenId> token = ts.token();
+            if (token.id() == JsTokenId.LBRACE) {
+                handleToken(token, "1 acceptToken(" + token.id() + ")");  // NOI18N
+                ts.moveNext();
+                token = ts.token();
+                ts.moveNext();
+                if (token.id() == JsTokenId.EOL && ts.token().id() == JsTokenId.EOL) {
+                    ts.movePrevious();
+                    handleToken(token, "1 acceptToken(" + token.id() + ")");  // NOI18N
+                }
+            }
+            decreaseIndent("visitOtherBlock");  //NOI18N
         }
         acceptOffset(root.getSourceEnd());
     }
@@ -659,6 +680,9 @@ public class JsPretty {
                 if (offset < end) {
                     try {
                         int firstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
+                        if (firstNonWhite == -1 && templateEdit) {
+                            firstNonWhite = Utilities.getRowEnd(doc, offset);
+                        }
                         if (firstNonWhite != -1) {
                             int nextLineIndent = firstNonWhite - offset;
                             TokenSequence<? extends JsTokenId> positionedTs = LexUtilities.getPositionedSequence(doc, tokenOffset, false);

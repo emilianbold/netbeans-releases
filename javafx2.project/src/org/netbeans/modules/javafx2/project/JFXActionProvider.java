@@ -108,6 +108,9 @@ public class JFXActionProvider implements ActionProvider {
                         final Properties p = new Properties();
                         ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                     } else { //JFXProjectProperties.RunAsType.INBROWSER
+                        target = "jfxbe-".concat(command); //NOI18N
+                        final Properties p = new Properties();
+                        ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                     }
                 }
             } catch (IOException ex) {

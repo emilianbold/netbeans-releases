@@ -47,7 +47,7 @@ import java.util.List;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class Length extends NumberPostfixAcceptor {
 

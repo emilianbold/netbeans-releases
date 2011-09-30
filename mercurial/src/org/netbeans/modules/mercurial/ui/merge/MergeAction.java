@@ -43,8 +43,11 @@
  */
 package org.netbeans.modules.mercurial.ui.merge;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -61,6 +64,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 
@@ -240,4 +244,33 @@ public class MergeAction extends ContextAction {
         }
     }
 
+    public static void displayMergeWarning (Map<String, Collection<HgLogMessage>> branchHeads, OutputLogger logger, boolean warnInDialog) {
+        boolean mulitpleHeads = false;
+        for (Map.Entry<String, Collection<HgLogMessage>> e : branchHeads.entrySet()) {
+            if (e.getValue().size() > 1) {
+                mulitpleHeads = true;
+                break;
+            }
+        }
+        if (!mulitpleHeads) {
+            return;
+        }
+        Action a = logger.getOpenOutputAction();
+        if (warnInDialog && a != null && JOptionPane.showConfirmDialog(null, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NEEDED_BRANCHES"), //NOI18N
+                NbBundle.getMessage(MergeAction.class, "TITLE_MERGE_NEEDED_BRANCHES"), //NOI18N
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+            a.actionPerformed(new ActionEvent(MergeAction.class, ActionEvent.ACTION_PERFORMED, null));
+        }
+        logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_WARN_NEEDED_BRANCHES")); //NOI18N
+        logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DO_NEEDED_BRANCHES")); //NOI18N
+        for (Map.Entry<String, Collection<HgLogMessage>> e : branchHeads.entrySet()) {
+            Collection<HgLogMessage> heads = e.getValue();
+            if (heads.size() > 1) {
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_WARN_NEEDED_IN_BRANCH", e.getKey())); //NOI18N
+                for (HgLogMessage head : heads) {
+                    HgUtils.logHgLog(head, logger);
+                }
+            }
+        }
+    }
 }

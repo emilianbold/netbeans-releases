@@ -74,8 +74,6 @@ public class SymfonyCustomizerPanel extends JPanel {
     private void initComponents() {
 
         ignoreCacheDirectoryCheckBox = new JCheckBox();
-
-        ignoreCacheDirectoryCheckBox.setSelected(true);
         Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.ignoreCacheDirectoryCheckBox.text"));
 
         GroupLayout layout = new GroupLayout(this);

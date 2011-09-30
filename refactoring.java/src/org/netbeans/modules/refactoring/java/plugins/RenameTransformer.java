@@ -66,6 +66,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -232,19 +233,40 @@ public class RenameTransformer extends RefactoringVisitor {
                 
                 if(!types.isSameType(types.getNoType(TypeKind.NONE), superclass) &&
                     types.isSubtype(elementToFind.getEnclosingElement().asType(), superclass)) {
-                    for (Element ele : enclosingTypeElement.getEnclosedElements()) {
-                        if ((ele.getKind() == ElementKind.METHOD || ele.getKind().isField()) && ele.getSimpleName().toString().equals(newName)) {
+                    if(elementToFind.getKind().isField()) {
+                        for (Element ele : enclosingTypeElement.getEnclosedElements()) {
+                            if (ele.getKind().isField() && ele.getSimpleName().toString().equals(newName)) {
+                                if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                    String isSuper = ((MemberSelectTree) tree).getExpression().toString();
+                                    if (isSuper.equals("super") || isSuper.endsWith(".super")) { // NOI18N
+                                        break;
+                                    }
+                                }
+                                if (types.isSubtype(enclosingTypeElement.asType(), elementToFind.getEnclosingElement().asType())) {
+                                    useSuper = "super."; // NOI18N
+                                } else {
+                                    useSuper = elementToFind.getEnclosingElement().getSimpleName() + ".super."; // NOI18N
+                                }
+                                break;
+                            }
+                        }
+                    } else if(elementToFind.getKind() == ElementKind.METHOD) {
+                        ElementUtilities utils = workingCopy.getElementUtilities();
+                        if(utils.alreadyDefinedIn((CharSequence) newName, (ExecutableType) elementToFind.asType(), (TypeElement) enclosingTypeElement)) {
+                            boolean isSuper = false;;
                             if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-                                String isSuper = ((MemberSelectTree) tree).getExpression().toString();
-                                if (isSuper.equals("super") || isSuper.endsWith(".super")) { // NOI18N
-                                    break;
+                                String superString = ((MemberSelectTree) tree).getExpression().toString();
+                                if (superString.equals("super") || superString.endsWith(".super")) { // NOI18N
+                                    isSuper = true;
                                 }
                             }
-                            if (types.isSubtype(enclosingTypeElement.asType(), elementToFind.getEnclosingElement().asType()))
-                                useSuper = "super."; // NOI18N
-                            else 
-                                useSuper = elementToFind.getEnclosingElement().getSimpleName() + ".super."; // NOI18N
-                            break;
+                            if(!isSuper) {
+                                if (types.isSubtype(enclosingTypeElement.asType(), elementToFind.getEnclosingElement().asType())) {
+                                    useSuper = "super."; // NOI18N
+                                } else {
+                                    useSuper = elementToFind.getEnclosingElement().getSimpleName() + ".super."; // NOI18N
+                                }
+                            }
                         }
                     }
                 }

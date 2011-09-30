@@ -63,6 +63,10 @@ import org.openide.loaders.DataObject;
  * <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup()"><code>Lookup</code>
  * of the projects</a>.
  * </p>
+ * <p>
+ *  <b>Recommendation</b>: Use {@link Files} instead of this interface.
+ *  See {@link #objectsToSearch()} and {@link Files#filesToSearch()}.
+ * </p>
  *
  * @see  SearchInfoFactory
  * @see  <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html"><code>DataObject</code></a>
@@ -97,6 +101,13 @@ public interface SearchInfo {
      * <code>UnsupportedOperationException</code> instead of actual
      * implementation).
      *
+     * <p>
+     *  <b>Recommendation:</b> Use interface {@link Files} and its method
+     *  {@link Files#filesToSearch}. It avoids unnecessary creation of
+     *  {@link org.openide.loaders.DataObject}s, so searching works faster
+     *  and consumes less memory.
+     * </p>
+     *
      * @return  iterator which iterates over <code>DataObject</code>s
      *          to be searched
      */
@@ -116,6 +127,12 @@ public interface SearchInfo {
      * {@link java.util.Iterator#remove remove()} (i.e. it may throw
      * <code>UnsupportedOperationException</code> instead of actual
      * implementation).
+     *
+     * <div class="nonnormative"><p>
+     *  If you implement this method, you usually do not need to implement
+     *  {@link #objectsToSearch()}, i.e. {@link #objectsToSearch()} can throw
+     *  {@link UnsupportedOperationException}.
+     * </p></div>
      *
      * @return  iterator which iterates over <code>FileObject</code>s
      *          to be searched

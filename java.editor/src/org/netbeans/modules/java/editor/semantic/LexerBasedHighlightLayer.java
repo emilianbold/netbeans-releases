@@ -83,11 +83,16 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
                     if (addedTokens.isEmpty()) {
                         //need to fire anything here?
                     } else {
-                        if (addedTokens.size() == 1) {
-                            Token t = addedTokens.iterator().next();
-                            
-                            fireHighlightsChange(t.offset(null), t.offset(null) + t.length()); //XXX: locking
-                        } else {
+                        if (addedTokens.size() < 30) {
+                            int startOffset = Integer.MAX_VALUE;
+                            int endOffset = -1;
+                            for (Token t : addedTokens) {
+                                int tOffset = t.offset(null);
+                                startOffset = Math.min(tOffset, startOffset);
+                                endOffset = Math.max(endOffset, tOffset + t.length());
+                            }
+                            fireHighlightsChange(startOffset, endOffset);
+                        } else { // Too many tokens => repaint all
                             fireHighlightsChange(0, doc.getLength()); //XXX: locking
                         }
                     }

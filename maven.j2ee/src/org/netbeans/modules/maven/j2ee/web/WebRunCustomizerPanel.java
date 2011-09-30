@@ -65,6 +65,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.Constants;
@@ -533,12 +534,17 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        if (txtContextPath.isEnabled()) {
-            String contextPath = txtContextPath.getText().trim();
-            WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
-            impl.setContextPath(contextPath);
-        }
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            @Override
+            public void run() {
+                moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+                if (txtContextPath.isEnabled()) {
+                    final String contextPath = txtContextPath.getText().trim();
+                    WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+                    impl.setContextPath(contextPath);
+                }
+            }
+        });
     }
     
     

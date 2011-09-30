@@ -61,15 +61,13 @@ public class MutilFileSystemLayeredDeliveryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         down = new MultiFileSystem();
-        FileSystem mfs = new MultiFileSystem(new FileSystem[] { down });
+        FileSystem mfs = new MultiFileSystem(down);
         for (int i = 0; i < 5; i++) {
-            mfs = new MultiFileSystem(new FileSystem[] {
-                mfs
-            });
+            mfs = new MultiFileSystem(mfs);
         }
         lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
-        top = new MultiFileSystem (new FileSystem[] {lfs,mfs});
+        top = new MultiFileSystem(lfs, mfs);
     }
 
     public void testHowManyChanges() throws Exception {

@@ -18,7 +18,6 @@
 <body bgcolor="red">
 
 	<%@ page isErrorPage="true" %>
-	<h1> The exception <%= exception.getMessage() %> tells me you
-    made a wrong choice.  </h1>
+	<h1> You made a wrong choice.  </h1>
 </body>
 </html>

@@ -94,6 +94,9 @@ public class CdiAnalysisTask extends AbstractAnalysisTask {
             analyzeType(typeElement, null );
         }
         EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(getResult());
+        if ( helper == null ){
+            return;
+        }
         helper.publish( getResult() );
     }
     

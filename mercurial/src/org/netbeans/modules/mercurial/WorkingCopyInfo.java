@@ -126,6 +126,8 @@ public class WorkingCopyInfo {
                 List<HgLogMessage> parentInfo = HgCommand.getParents(root, null, null);
                 setParents(parentInfo);
             }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // nothing
         } catch (HgException ex) {
             Level level = root.exists() ? Level.INFO : Level.FINE; // do not polute the message log with messages concerning temporary or deleted repositories
             LOG.log(level, null, ex);

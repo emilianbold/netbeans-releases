@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -54,6 +55,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -61,7 +63,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
-import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -195,11 +196,13 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             //FIXUP: please send PropertyChangeEvent to MakeConfiguration listeners
             //when you do this changes
             //see cnd.tha.THAMainProjectAction which should use huck to get these changes
-            NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
-            npp.propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+            NativeProject npp = project.getLookup().lookup(NativeProject.class);
+            if(npp instanceof PropertyChangeListener) {
+                ((PropertyChangeListener)npp).propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+            }
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
-            configurationDescriptor.setModified();
+            configurationDescriptor.setModified();            
         }
         return; // false;
     }

@@ -1,3 +1,4 @@
+<%@page import="org.apache.taglibs.standard.examples.util.DataSourceProvider"%>
 <%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -10,19 +11,13 @@
 <h1>SQL Update Execution</h1>
 
 
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
-
-<sql:setDataSource
-  var="example"
-  driver="${sessionScope.myDbDriver}"
-  url="${sessionScope.myDbUrl}"
-  user="${sessionScope.myDbUserName}"
-  password="${sessionScope.myDbPassword}"
-/>
+<%
+    DataSourceProvider dataSource = new DataSourceProvider(session);
+%>
 
 <hr>
 
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource %>">
 
   <sql:update var="newTable">
     create table mytable (
@@ -71,13 +66,13 @@
 
 <h2>Deleting second row from table</h2>
 
-  <sql:update var="updateCount" dataSource="${example}">
+  <sql:update var="updateCount" dataSource="<%=dataSource %>">
     DELETE FROM mytable WHERE nameid=2
   </sql:update>
 
 <p>DONE: Deleting second row from table</p>
 
-<sql:query var="deejays" dataSource="${example}">
+<sql:query var="deejays" dataSource="<%=dataSource %>">
   SELECT * FROM mytable
 </sql:query>
 
@@ -106,7 +101,7 @@
 </table>
 
 
-<sql:update var="newTable" dataSource="${example}">
+<sql:update var="newTable" dataSource="<%=dataSource %>">
   drop table mytable
 </sql:update>
 

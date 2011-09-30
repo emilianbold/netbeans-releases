@@ -841,17 +841,19 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     private static void configureWarModuleId(WLTargetModuleID moduleId, FileObject file, String serverUrl) {
+        String ctx = readWebContext(file);
+        assert ctx.startsWith("/") : "context must start with forward slash - "+ctx; // NOI18N
+        moduleId.setContextURL(serverUrl + ctx);
+    }
+    
+    public static String readWebContext(FileObject file) {
         if (file.isFolder()) {
             FileObject weblogicXml = file.getFileObject("WEB-INF/weblogic.xml"); // NOI18N
             if (weblogicXml != null && weblogicXml.isData()) {
                 try {
                     InputStream is = new BufferedInputStream(weblogicXml.getInputStream());
                     try {
-                        String ctx = WebApplicationModel.forInputStream(is).getContextRoot();
-                        if (ctx != null) {
-                            moduleId.setContextURL(serverUrl + ctx);
-                            return;
-                        }
+                        return WebApplicationModel.forInputStream(is).getContextRoot();
                     } finally {
                         is.close();
                     }
@@ -859,21 +861,15 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
-            moduleId.setContextURL(serverUrl + "/" + file.getNameExt()); // NOI18N
+            return "/" + file.getNameExt(); // NOI18N
         } else {
             try {
-                String contextRoot = "/" + file.getName(); // NOI18N
                 ZipInputStream zis = new ZipInputStream(file.getInputStream());
                 try {
                     ZipEntry entry = null;
                     while ((entry = zis.getNextEntry()) != null) {
                         if ("WEB-INF/weblogic.xml".equals(entry.getName())) { // NOI18N
-                            String ddContextRoot =
-                                    WebApplicationModel.forInputStream(new ZipEntryInputStream(zis)).getContextRoot();
-                            if (ddContextRoot != null) {
-                                contextRoot = ddContextRoot;
-                            }
-                            break;
+                            return WebApplicationModel.forInputStream(new ZipEntryInputStream(zis)).getContextRoot();
                         }
                     }
                 } catch (IOException ex) {
@@ -881,11 +877,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 } finally {
                     zis.close();
                 }
-
-                moduleId.setContextURL(serverUrl + contextRoot);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }            
+            return "/" + file.getName(); // NOI18N
         }
     }
 

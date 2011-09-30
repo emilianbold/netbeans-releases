@@ -88,7 +88,7 @@ public class MultiFileSystem2Test extends FileSystemFactoryHid {
     protected FileSystem[] createFileSystem (String testName, String[] resources) throws IOException {        
             FileSystem lfs = TestUtilHid.createLocalFileSystem("mfs2"+testName, new String[] {});
             FileSystem xfs = TestUtilHid.createXMLFileSystem(testName, resources);
-            FileSystem mfs = new MultiFileSystem (new FileSystem[] {lfs,xfs});
+            FileSystem mfs = new MultiFileSystem(lfs, xfs);
             try {
                 mfs.setSystemName("mfs2test");
             } catch (PropertyVetoException e) {

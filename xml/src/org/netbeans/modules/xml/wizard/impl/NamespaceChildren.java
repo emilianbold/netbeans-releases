@@ -47,9 +47,9 @@ package org.netbeans.modules.xml.wizard.impl;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 import org.netbeans.modules.xml.util.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +58,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -67,7 +68,7 @@ import org.openide.util.RequestProcessor;
  */
 public class NamespaceChildren extends Children.Keys {
     /** Map of namespace to a list of files in that namespace. */
-    private HashMap nsFilesMap;
+    private java.util.Map nsFilesMap;
     /** Set of folders containing referencable files. */
     private FileObject[] rootFolders;
     private ExternalReferenceDecorator decorator;
@@ -82,7 +83,7 @@ public class NamespaceChildren extends Children.Keys {
         super();
         rootFolders = roots;
         this.decorator=decorator;
-        nsFilesMap = new HashMap();
+        nsFilesMap = new TreeMap();
     }
 
     protected Node[] createNodes(Object key) {
@@ -91,23 +92,40 @@ public class NamespaceChildren extends Children.Keys {
         } else if (key instanceof String) {
             List fobjs = (List)nsFilesMap.get(key);
             if (fobjs != null && !fobjs.isEmpty()) {
-                Node[] filterNodes = new Node[fobjs.size()];
+                List<Node>filterNodes = new ArrayList<Node>(fobjs.size());
                 int i = 0;
                 for (int j=0; j < fobjs.size();j++) {
                     try {
-                        FileObject fobj = (FileObject)fobjs.get(j);
-                        Node node = DataObject.find(fobj).getNodeDelegate();
-                        filterNodes[i++] = decorator.createExternalReferenceNode(node);
+                        filterNodes.add(createSchemaNode(fobjs.get(j)));
                     } catch (DataObjectNotFoundException donfe) {
+                        // ignore
                     }
                 }
                 Children.Array children = new Children.Array();
-                children.add(filterNodes);
+                children.add(filterNodes.toArray(new Node[filterNodes.size()]));
                 Node node = new NamespaceNode(children, (String) key);
                 return new Node[] { node };
             }
         }
         return new Node[] { };
+    }
+    
+    private Node createSchemaNode(Object o) throws DataObjectNotFoundException {
+        boolean catalog = false;
+        FileObject fobj;
+        
+        if (o instanceof FileObject) {
+            fobj = (FileObject)o;
+        } else if (o instanceof InputSource) {
+            InputSource src = (InputSource)o;
+            fobj =  Util.toFileObject(src);
+            catalog = true;
+        } else {
+            return null;
+        }
+        
+        Node node = DataObject.find(fobj).getNodeDelegate();
+        return decorator.createExternalReferenceNode(node, catalog);
     }
 
     protected void addNotify() {
@@ -118,6 +136,9 @@ public class NamespaceChildren extends Children.Keys {
                 for (int i =0; i < rootFolders.length;i++) {
                     FileObject root = rootFolders[i];
                     java.util.Map map =Util.getFiles2NSMappingInProj(FileUtil.toFile(root), Util.getDocumentType());
+                    java.util.Map nsMap = Util.getCatalogSchemaNSMappings();
+                    
+                    map.putAll(nsMap);
                     java.util.Set set= map.entrySet();  
                     Iterator it = set.iterator();
                     while(it.hasNext()){
@@ -127,7 +148,7 @@ public class NamespaceChildren extends Children.Keys {
                         if (fobjs == null) {
                             fobjs = new ArrayList();
                         }
-                        fobjs.add((FileObject)entry.getKey());
+                        fobjs.add(entry.getKey());
                         nsFilesMap.put(ns, fobjs);
                     }
                 }

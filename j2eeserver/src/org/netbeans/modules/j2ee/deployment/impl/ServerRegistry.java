@@ -79,6 +79,7 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AlreadyRegisteredException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -460,7 +461,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
         synchronized (this) {
             if (instancesMap().containsKey(url)) {
-                throw new InstanceCreationException("already exists");
+                throw new AlreadyRegisteredException("already exists");
             }
 
             LOGGER.log(Level.FINE, "Registering instance {0}", url);
@@ -563,8 +564,10 @@ public final class ServerRegistry implements java.io.Serializable {
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
         try {
             addInstanceImpl(url, username, password, displayName, withoutUIFlag, null, false, false);
+        } catch (AlreadyRegisteredException ex) {
+            LOGGER.log(Level.FINE, "Instance already registered {0}", url);
         } catch (InstanceCreationException ice) {
-            // yes... we are ignoring this.. because that
+            LOGGER.log(Level.INFO, "Could not create instance {0}", url);
         }
     }
 

@@ -424,8 +424,8 @@ public class WebServicePersistenceManager implements ExceptionListener {
         encoder.setPersistenceDelegate(WSService.class, delegate);
         encoder.writeObject(descriptor);
 
-        encoder.close();
         encoder.flush();
+        encoder.close();
     }
 
     public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {

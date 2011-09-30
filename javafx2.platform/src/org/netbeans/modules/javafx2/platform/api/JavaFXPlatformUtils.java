@@ -83,8 +83,10 @@ public final class JavaFXPlatformUtils {
 
     // TODO any Mac OS predefined locations?
     public static final String[] KNOWN_JFX_LOCATIONS = new String[]{
-        "C:\\Program Files\\Oracle",        // NOI18N
-        "C:\\Program Files (x86)\\Oracle"   // NOI18N
+        (System.getenv("ProgramFiles") != null ? // NOI18N
+            System.getenv("ProgramFiles") : "C:\\Program Files") + "\\Oracle", // NOI18N
+        (System.getenv("ProgramFiles(x86)") != null ? // NOI18N
+            System.getenv("ProgramFiles(x86)") : "C:\\Program Files (x86)") + "\\Oracle" // NOI18N
     };
 
     private JavaFXPlatformUtils() {
@@ -227,8 +229,13 @@ public final class JavaFXPlatformUtils {
     public static String predictRuntimeLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
-            List<File> files = new ArrayList<File>(Arrays.asList(location.listFiles())); // check in neighbour folders: Win installation
-            files.add(location); // check inside SDK: Mac installation
+            List<File> files = new ArrayList<File>();
+            files.add(location); // check root location
+            File[] children = location.listFiles();
+            for (File child : children) {
+                files.add(child); // check in neighbour folders: Win installation
+                files.addAll(Arrays.asList(child.listFiles()));
+            }
             for (File file : files) {
                 File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
                 if (rtJar.exists()) {

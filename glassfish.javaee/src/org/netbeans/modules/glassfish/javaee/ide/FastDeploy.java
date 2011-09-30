@@ -60,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
+import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.javaee.ModuleConfigurationImpl;
 import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
@@ -138,6 +140,29 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                     Logger.getLogger("glassfish").log(Level.WARNING, "could not getContextRoot() for {0}",dir);
                 }
             }
+            // drop a glassfish-web.xml file in here.. if necessary
+            FileObject rootOfWebApp = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+            if (null != rootOfWebApp) {
+                String fileName = null;
+                String SUNWEB = "WEB-INF/sun-web.xml";  // NOI18N
+                if (url.contains("gfv3ee6wc")) { // NOI18N
+                    String GFWEB = "WEB-INF/glassfish-web.xml"; // NOI18N
+                    if (null == rootOfWebApp.getFileObject(GFWEB) && 
+                            null == rootOfWebApp.getFileObject(SUNWEB)) {
+                        // add gf-sun to deployed app
+                        fileName = GFWEB;
+                    }
+                } else {
+                    if (null == rootOfWebApp.getFileObject(SUNWEB)) {
+                        // add sun-web to deployed app
+                        fileName = SUNWEB;
+                    }
+                }
+                if (null != fileName) {
+                    File sunDDFile = new File(dir, fileName);
+                    addDescriptorToDeployedDirectory(module, sunDDFile);                    
+                }
+            }
         }
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
@@ -193,6 +218,20 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                 commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
             }
             return updateCRProgress;
+        }
+    }
+
+    private void addDescriptorToDeployedDirectory(J2eeModule module, File sunDDFile) {
+        FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
+        if (sunDDTemplate != null) {
+            try {
+                FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
+                FileSystem fs = configFolder.getFileSystem();
+                XmlFileCreator creator = new XmlFileCreator(sunDDTemplate, configFolder, sunDDTemplate.getName(), sunDDTemplate.getExt());
+                fs.runAtomicAction(creator);
+            } catch (IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.WARNING, "could not create {0}", sunDDTemplate.getPath());
+            }
         }
     }
 

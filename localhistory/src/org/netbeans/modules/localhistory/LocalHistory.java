@@ -96,8 +96,11 @@ public class LocalHistory {
     private Pattern includeFiles = null;
     private Pattern excludeFiles = null;
 
+    public static final String LH_TMP_FILE_SUFFIX = ".nblh~";                   // NOI18N
+    
     // XXX hotfix - issue 119042
     private final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "((\\.|_)svn|.hg|CVS)(\\" + File.separatorChar + ".*|$)");
+    private final Pattern lhTmpFilePattern = Pattern.compile(".*\\.\\d+?\\" + LH_TMP_FILE_SUFFIX);
         
     public final static Object EVENT_FILE_CREATED = new Object();
     final static Object EVENT_PROJECTS_CHANGED = new Object();
@@ -288,6 +291,10 @@ public class LocalHistory {
         }
         String path = file.getAbsolutePath();        
         if(metadataPattern.matcher(path).matches()) {
+            return false;
+        }
+        
+        if(lhTmpFilePattern.matcher(path).matches()) {
             return false;
         }
         

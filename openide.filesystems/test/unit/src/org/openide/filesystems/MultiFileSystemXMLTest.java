@@ -106,7 +106,7 @@ implements XMLFileSystemTestHid.Factory {
         }
 
         private MFS(XMLFileSystem fs) {
-            super(new FileSystem[] { fs });
+            super(fs);
             this.xfs = fs;
         }
     }

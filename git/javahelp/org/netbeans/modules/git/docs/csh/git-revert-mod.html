@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css"/>
+        <meta content="Helen" name="generator"/>
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+<title>Git: Revert Modifications Dialog Box</title>
+</head>
+<body>
+<h2>Git: Revert Modifications Dialog Box </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Revert Modifications dialog box enables you to   throw away local changes made to selected files in your Working Tree   and replace those files with the ones in the Index or HEAD.</p>
+<p>You can access the Revert Modifications dialog box by selecting a versioned project, file or folder and choosing either:</p>
+            
+                <ul>                    
+                    <li>Team &gt; Git &gt; Revert &gt; Revert Modifications from the
+                        IDE's main menu.</li>
+					<li>Git &gt; Revert &gt; Revert Modifications from the selected item's 
+                        right-click menu.</li>
+                </ul>
+
+
+            <p>In the Revert Modifications dialog box, select any of the following options:</p>    
+            <ul>
+			<li><b>Revert All Uncommitted Changes in Working Tree and Index.</b>
+			Choose to delete all uncommitted changes and return to the  
+			  state of 
+			  files 
+			  in Working Tree and Index during the preceding commit.
+			  <ul>
+			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folder that have been created after the preceding commit.</li>
+			  </ul></li>
+			<li><b>Revert Uncommitted Changes in Working Tree to the State in Index.</b> Choose to delete uncommitted changes in Working Tree and return to the state of files
+			in Index during the preceding commit.
+			  <ul>
+			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folder that have been created in Working Tree but have not been committed yet.</li>
+			</ul> </li>
+			<li><b>Revert only Uncommitted Changes in Index to Head.</b> Choose to delete uncommitted changes in Index and return to the state of files in Head. </li>
+			</ul>   
+<p>After you click Revert, the IDE replaces the selected files with those you specified in the selected option.</p>
+
+<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+		<dd><a href="../git-about.html">About Git Support</a></dd>
+	   
+		<dd><a href="../git-diffviewer.html">Git: Comparing File Revisions</a></dd>
+	    
+</dl>  
+<hr/>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+</body>
+</html>

@@ -405,7 +405,6 @@ tokens {
 	protected static final DeclSpecifier dsEXPLICIT = new DeclSpecifier("dsEXPLICIT");
 	protected static final DeclSpecifier dsFRIEND = new DeclSpecifier("dsFRIEND");
 
-        protected static final String LITERAL___global_ext = "__global";
         protected static final String LITERAL_EXEC = "EXEC";
         protected static final String LITERAL_SQL = "SQL";
 
@@ -1663,8 +1662,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
-        |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
-        |   (options {greedy=true;} : attribute_specification!)
+                |       (options {greedy=true;} : attribute_specification!)
 		)*
 		(
                         (options {greedy=true;} :type_attribute_specification)?
@@ -1787,13 +1785,13 @@ qualified_type
 	;
 
 class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
-    {String saveClass = ""; String id = "";}
+    {String saveClass = ""; String id = ""; StorageClass sc = scInvalid;}
     :   (   LITERAL_class  {ts = tsCLASS;}
         |   LITERAL_struct {ts = tsSTRUCT;}
         |   LITERAL_union  {ts = tsUNION;}
         )
         (options {greedy=true;} : type_attribute_specification)?
-        (LITERAL___symbolic!)?
+        (sc = storage_class_specifier!)?
         (   id = qualified_id
             (options{generateAmbigWarnings = false;}:
                 {
@@ -1974,7 +1972,7 @@ cast_array_initializer_head
 
 // so far this one is used in predicates only
 class_head     
-        { String s; }
+        { String s; StorageClass sc = scInvalid; }
 	:	// Used only by predicates	
 	(
 		LITERAL_struct  
@@ -1982,8 +1980,8 @@ class_head
 	|	LITERAL_class 
 	)
         (options {greedy=true;} : type_attribute_specification)?
+        (sc = storage_class_specifier)?
 	(
-     
             s = scope_override  
 
             ID	

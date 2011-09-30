@@ -122,8 +122,10 @@ public class PHPNewLineIndenter {
                     }
                    if (ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                        int neOffset = Utilities.getFirstNonWhiteBwd(doc, offset - 1);
-                       newIndent = Utilities.getRowIndent(doc, neOffset) + indentSize;
-                       context.modifyIndent(Utilities.getRowStart(doc, offset), newIndent);
+                       if (neOffset != -1) {
+                           newIndent = Utilities.getRowIndent(doc, neOffset) + indentSize;
+                           context.modifyIndent(Utilities.getRowStart(doc, offset), newIndent);
+                       }
                        return;
                    }
                    if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {

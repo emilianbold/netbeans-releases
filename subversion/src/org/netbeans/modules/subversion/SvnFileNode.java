@@ -46,13 +46,13 @@ package org.netbeans.modules.subversion;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -62,7 +62,13 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 public class SvnFileNode {
 
+    /**
+     * Careful, may not be normalized
+     * @return 
+     */
     private final File file;
+    private final File normalizedFile;
+    private FileObject fileObject;
     private String relativePath;
     private String copy;
     private boolean copyScanned;
@@ -70,18 +76,30 @@ public class SvnFileNode {
     private String mimeType;
 
     public SvnFileNode(File file) {
-        this.file = FileUtil.normalizeFile(file);
+        this.file = file;
+        File norm = FileUtil.normalizeFile(file);
+        if (Utilities.isMac() || Utilities.isUnix()) {
+            FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
+            FileInformation fiNorm = Subversion.getInstance().getStatusCache().getStatus(norm);
+            if (fi.getStatus() != fiNorm.getStatus()) {
+                norm = null;
+            }
+        }
+        normalizedFile = norm;
     }
 
     public String getName() {
         return file.getName();
     }
 
-
     public FileInformation getInformation() {
         return Subversion.getInstance().getStatusCache().getStatus(file); 
     }
 
+    /**
+     * Careful, returned file may not be normalized
+     * @return 
+     */
     public File getFile() {
         return file;
     }
@@ -98,7 +116,10 @@ public class SvnFileNode {
     }
 
     public FileObject getFileObject() {
-        return FileUtil.toFileObject(file);
+        if (fileObject == null && normalizedFile != null) {
+            fileObject = FileUtil.toFileObject(normalizedFile);
+        }
+        return fileObject;
     }
 
     public Object[] getLookupObjects() {
@@ -148,7 +169,7 @@ public class SvnFileNode {
 
     public String getMimeType () {
         if (isFile() && mimeType == null) {
-            mimeType = SvnUtils.getMimeType(file);
+            mimeType = SvnUtils.getMimeType(normalizedFile == null ? FileUtil.normalizeFile(file) : normalizedFile);
         }
         return mimeType;
     }

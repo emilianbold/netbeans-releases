@@ -144,19 +144,19 @@ abstract class TransportCommand extends GitCommand {
         return transport;
     }
     
-    protected void handleException (TransportException e) throws GitException.AuthorizationException, GitException {
+    protected final void handleException (TransportException e, URIish uri) throws GitException.AuthorizationException, GitException {
         String message = e.getMessage();
         int pos;
         if ((pos = message.indexOf(": " + JGitText.get().notAuthorized)) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (message.contains(JGitText.get().notAuthorized)) { //NOI18N
-            throw new GitException.AuthorizationException(message, e);
+            throw new GitException.AuthorizationException(uri.toString(), message, e);
         } else if ((pos = message.toLowerCase().indexOf(": auth cancel")) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (e.getCause() instanceof JSchException) {
-            throw new GitException.AuthorizationException(message, e);
+            throw new GitException.AuthorizationException(uri.toString(), message, e);
         } else {
             throw new GitException(e.getMessage(), e);
         }

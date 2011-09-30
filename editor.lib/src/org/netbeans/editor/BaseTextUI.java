@@ -92,7 +92,7 @@ public class BaseTextUI extends BasicTextUI implements
     /**
      * How many modifications inside atomic section is considered a lengthy operation (e.g. reformat).
      */
-    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 30;
+    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 80;
     
     /** Extended UI */
     private EditorUI editorUI;
