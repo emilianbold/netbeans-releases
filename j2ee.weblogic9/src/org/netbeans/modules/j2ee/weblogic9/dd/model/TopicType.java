@@ -50,6 +50,8 @@ public interface TopicType {
     String getName();
 
     String getJndiName();
+
+    String getLocalJndiName();
     
     void setName(String name);
     
