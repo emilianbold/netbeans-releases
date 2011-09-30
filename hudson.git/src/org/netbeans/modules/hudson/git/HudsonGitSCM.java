@@ -55,6 +55,7 @@ import java.util.regex.Pattern;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -166,7 +167,7 @@ public class HudsonGitSCM implements HudsonSCM {
         return items;
     }
 
-    static @CheckForNull URI getRemoteOrigin(URI repository, HudsonJob job) {
+    static @CheckForNull URI getRemoteOrigin(URI repository, @NullAllowed HudsonJob job) {
         assert repository.toString().endsWith("/");
         URI cfg = repository.resolve(".git/config");
         String origin = null;
