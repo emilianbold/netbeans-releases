@@ -84,7 +84,7 @@ public class MultiFileSystemRefreshTest extends NbTestCase implements FileChange
     private int count;
 
     public void testAttributes106242() throws Exception {
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {fs1, fs2});
+        MultiFileSystem mfs = new MultiFileSystem(fs1, fs2);
         FileObject eFs1 = fs1.findResource("e");
         assertNotNull(eFs1);
         FileObject eFs2 = fs2.findResource("e");        
@@ -100,7 +100,7 @@ public class MultiFileSystemRefreshTest extends NbTestCase implements FileChange
     }
     
     public void testSetDelegatesFiring() throws Exception {
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {fs1, fs2});
+        MultiFileSystem mfs = new MultiFileSystem(fs1, fs2);
         //mfs.addFileChangeListener(this);
         FileObject a = mfs.findResource("a");
         assertNotNull(a);

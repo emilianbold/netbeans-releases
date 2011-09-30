@@ -71,7 +71,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setReadOnly(true);
         final int[] cnt = new int[1];
-        FileSystem mfs = new MultiFileSystem (new FileSystem[] {lfs, this.testedFS}) {
+        FileSystem mfs = new MultiFileSystem(lfs, this.testedFS) {
             @Override
             public String getDisplayName() {
                 cnt[0]++;
@@ -87,7 +87,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
 
     /** #18820*/
     public void testDeleteMask() throws IOException {
-        FileSystem mfs = new MultiFileSystem (new FileSystem[] {this.testedFS});
+        FileSystem mfs = new MultiFileSystem(this.testedFS);
         FileSystem wfs;        
         FileSystem [] allFs = this.allTestedFS;
         if (allFs.length > 1 && !allFs[1].isReadOnly())
@@ -172,7 +172,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
     /** null delegates are acceptable*/
     public void testSetDelegates() throws IOException {            
         FileSystem mfs = this.testedFS;
-        MultiFileSystem mfs2 = new MultiFileSystem (new FileSystem[] {mfs});
+        MultiFileSystem mfs2 = new MultiFileSystem(mfs);
 
         try {
             mfs2.setDelegates(new FileSystem[] {mfs,null});
