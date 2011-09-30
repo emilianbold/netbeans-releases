@@ -114,7 +114,22 @@ public class DefaultModelProvider extends CompletionModelProvider {
                 catalogModel = catalogModelProvider.getCatalogModel();
             }
             //add special query params in the URI to be consumed by the CatalogModel.
-            URI uri = new URI(schemaURI.toString()+"?fetch="+fetch+"&&sync="+true);
+            String uriString = schemaURI.toString();
+            String addParams =  "fetch="+fetch+"&sync=true";
+            int index = uriString.indexOf('?');
+            if (index > -1) {
+                uriString = uriString.substring(0, index + 1) + addParams + '&' + uriString.substring(index + 1);
+            } else {
+                index = uriString.indexOf('#');
+                if (index  > -1) {
+                    uriString = uriString.substring(0, index) + '?' + 
+                            addParams + uriString.substring(index);
+                } else {
+                    uriString += '?' + addParams;
+                }
+            }
+            
+            URI uri = new URI(uriString);
             ModelSource schemaModelSource = catalogModel.getModelSource(uri, modelSource);
             SchemaModel sm = null;
             if(schemaModelSource.getLookup().lookup(FileObject.class) == null) {
