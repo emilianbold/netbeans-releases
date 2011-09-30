@@ -176,7 +176,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
     
     public synchronized List<JPDAThread> getHits() {
         List<JPDAThread> result = new ArrayList<JPDAThread>();
-        for (JPDAThread thread : hits.stoppedThreads) {
+        for (JPDAThread thread : hits.getStoppedThreads()) {
             result.add(thread);
         }
         return result;
@@ -395,15 +395,18 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         private LinkedList<JPDAThread> stoppedThreads = new LinkedList<JPDAThread>();
         
         public void goToHit() {
-            JPDAThread thread = stoppedThreads.getLast();
+            JPDAThread thread;
+            synchronized (this) {
+                thread = stoppedThreads.getLast();
+            }
             thread.makeCurrent();
         }
         
-        public boolean contains(JPDAThread thread) {
+        public synchronized boolean contains(JPDAThread thread) {
             return stoppedThreadsSet.contains(thread);
         }
         
-        public boolean add(JPDAThread thread) {
+        public synchronized boolean add(JPDAThread thread) {
             if (stoppedThreadsSet.add(thread)) {
                 stoppedThreads.addFirst(thread);
                 return true;
@@ -411,7 +414,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             return false;
         }
         
-        public boolean remove(JPDAThread thread) {
+        public synchronized boolean remove(JPDAThread thread) {
             if (stoppedThreadsSet.remove(thread)) {
                 stoppedThreads.remove(thread);
                 return true;
@@ -419,13 +422,17 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             return false;
         }
         
-        public void clear() {
+        public synchronized void clear() {
             stoppedThreadsSet.clear();
             stoppedThreads.clear();
         }
         
-        public int size() {
+        public synchronized int size() {
             return stoppedThreads.size();
+        }
+
+        private synchronized Iterable<JPDAThread> getStoppedThreads() {
+            return new ArrayList<JPDAThread>(stoppedThreads);
         }
         
     }
