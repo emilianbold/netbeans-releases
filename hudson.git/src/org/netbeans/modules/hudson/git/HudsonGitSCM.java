@@ -77,13 +77,13 @@ public class HudsonGitSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonGitSCM.class.getName());
 
-    @Messages({"# {0} - original URL", "# {1} - replacement URL", "ro_replacement=Replacing {0} with {1} in Hudson configuration."})
+    @Messages({
+        "# {0} - original URL", "# {1} - replacement URL", "ro_replacement=Replacing {0} with {1} in Hudson configuration.",
+        "# {0} - repository location", "warning.local_repo={0} will only be accessible from a Hudson server on the same machine."
+    })
     @Override public Configuration forFolder(File folder) {
         final URI origin = getRemoteOrigin(folder.toURI(), null);
-        if (origin == null) {
-            return null;
-        }
-        final String replacement = roReplacement(origin.toString());
+        final String replacement = origin != null ? roReplacement(origin.toString()) : folder.getAbsolutePath();
         return new Configuration() {
             @Override public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
@@ -92,10 +92,13 @@ public class HudsonGitSCM implements HudsonSCM {
                 // GitSCM config is horribly complex. Let readResolve do the hard work for now.
                 // Note that all this will be wrong if the local repo is using a nondefault remote, or a branch, etc. etc.
                 configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(replacement != null ? replacement : origin.toString()));
+                // XXX consider <clean>true</clean> (though it does not seem to work)
                 Helper.addTrigger(doc);
             }
             @Override public ConfigurationStatus problems() {
-                if (replacement != null) {
+                if (origin == null) {
+                    return ConfigurationStatus.withWarning(warning_local_repo(replacement));
+                } else if (replacement != null) {
                     return ConfigurationStatus.withWarning(ro_replacement(origin, replacement));
                 } else {
                     return null;
