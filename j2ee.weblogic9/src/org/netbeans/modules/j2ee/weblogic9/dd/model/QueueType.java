@@ -50,6 +50,8 @@ public interface QueueType {
     String getName();
 
     String getJndiName();
+
+    String getLocalJndiName();
     
     void setName(String name);
     
