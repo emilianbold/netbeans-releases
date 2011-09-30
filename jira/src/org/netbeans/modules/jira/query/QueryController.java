@@ -1268,22 +1268,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         private void startQuery() {
-            handle = ProgressHandleFactory.createHandle(
-                    NbBundle.getMessage(
-                        QueryController.class,
-                        "MSG_SearchingQuery",                                       // NOI18N
-                        new Object[] {
-                            query.getDisplayName() != null ?
-                                query.getDisplayName() :
-                                repository.getDisplayName()}),
-                    this);
-
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    String displayName = query.getDisplayName() != null ? query.getDisplayName() : repository.getDisplayName();
+                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] { displayName }), QueryTask.this); // NOI18N
+                    handle.start();
+
                     enableFields(false);
                     panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
-                    handle.start();
+                    
                     QueryController.this.renderer.resetDefaultRowHeight();
                 }
             });
