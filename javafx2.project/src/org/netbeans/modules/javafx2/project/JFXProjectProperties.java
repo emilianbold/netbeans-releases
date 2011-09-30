@@ -879,6 +879,10 @@ public final class JFXProjectProperties {
         // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
         Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
         String projDir = active.get(PRELOADER_PROJECT);
+        if (projDir == null) {
+            return;
+        }
+        
         File projDirF = new File(projDir);
         if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
             FileObject srcRoot = null;

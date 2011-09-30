@@ -30,7 +30,7 @@ public class ChartAudioArea extends Application {
     private XYChart.Data<Number,Number>[] series1Data;
     private AudioSpectrumListener audioSpectrumListener;
 
-    private static final String AUDIO_URI = System.getProperty("demo.audio.url","http://download.oracle.com/otndocs/products/javafx/oow2010-small.wav");
+    private static final String AUDIO_URI = System.getProperty("demo.audio.url","http://download.oracle.com/otndocs/products/javafx/oow2010-2.flv");
     private static MediaPlayer audioMediaPlayer;
     private static final boolean PLAY_AUDIO = Boolean.parseBoolean(System.getProperty("demo.play.audio","true"));
 
