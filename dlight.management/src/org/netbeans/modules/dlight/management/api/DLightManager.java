@@ -319,8 +319,10 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         //
         // TODO: should priorities be setuped in case when several providerFactories/storages pairs found?
         //
-
-        final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getDataStorage(storageUniqueKey, Arrays.asList(dataMetadata));
+        final List<DataTableMetadata> metadatas = dataMetadata == null
+                ? Collections.<DataTableMetadata>emptyList()
+                : Arrays.asList(dataMetadata);
+        final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getDataStorage(storageUniqueKey, metadatas);
         for (DataProviderFactory providerFactory : providerFactories) {
             for (DataStorage storage : availableStorages) {
                 // Check that in case this dataProvider requires some Tables to be
