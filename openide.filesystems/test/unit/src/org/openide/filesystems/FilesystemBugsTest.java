@@ -241,7 +241,7 @@ public class FilesystemBugsTest extends NbTestCase {
         lfs2.setRootDirectory(f2);
         ///
 
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[]{lfs1, lfs2});
+        MultiFileSystem mfs = new MultiFileSystem(lfs1, lfs2);
         FileObject rootMfs = mfs.getRoot();
         //    FileObject fomc = rootMfs.createData("c");
         FileObject folder = getSubFolder(rootMfs, "a");

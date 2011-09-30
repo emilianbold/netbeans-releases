@@ -781,17 +781,19 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     * @param attrName name of the attribute
     * @return appropriate (serializable) value or <CODE>null</CODE> if the attribute is unset (or could not be properly restored for some reason)
     */
+    @Override
     public Object getAttribute(String attrName) {
         // Performance optimization (avoid calling getPath() too many times):
-        return getAttribute(attrName, getPath());
+        final String path = getPath();
+        if (path.isEmpty() && attrName.indexOf('\\') >= 0) {
+            return null;
+        }
+        return getAttribute(attrName, path);
     }
 
     /** Special attributes which should not be checked for weight. See RemoveWritablesTest. */
     private static final Set<String> SPECIAL_ATTR_NAMES = new HashSet<String>(Arrays.asList("removeWritables", WEIGHT_ATTRIBUTE, "java.io.File")); // NOI18N
     private final Object getAttribute(String attrName, String path) {
-        if (path.length() == 0 && attrName.indexOf('\\') >= 0) {
-            return null;
-        }
         // Look for attribute in any file system starting at the front.
         // Additionally, look for attribute in root folder, where
         // the relative path from the folder to the target file is

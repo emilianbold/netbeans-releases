@@ -807,7 +807,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (final String path : multiPath) {
                 FileObject folder = FileUtil.getConfigFile(path);
                 if (folder != null) {
-                    layers.add(new MultiFileSystem(new FileSystem[] {folder.getFileSystem()}) {
+                    layers.add(new MultiFileSystem(folder.getFileSystem()) {
                         protected @Override FileObject findResourceOn(FileSystem fs, String res) {
                             FileObject f = fs.findResource(path + '/' + res);
                             return Boolean.TRUE.equals(f.getAttribute("hidden")) ? null : f;

@@ -129,11 +129,12 @@ public class InsertModuleAllTargetsTest extends NbTestCase {
         Target t = (Target)obj;
         
         Set<String> s = depsToNames(t.getDependencies());
-        assertEquals("Three dependencies: " + s, 4, s.size());
+        assertEquals("Three dependencies: " + s, 5, s.size());
         assertTrue("on init", s.contains("init"));
         assertTrue("on all-openide.util", s.contains("all-openide.util"));
         assertTrue("on all-openide.util.lookup", s.contains("all-openide.util.lookup"));
         assertTrue("on all-api.annotations.common", s.contains("all-api.annotations.common"));
+        assertTrue("on all-openide.dialogs", s.contains("all-openide.dialogs"));
         
         int callTargets = 0;
         for (Task task : t.getTasks()) {

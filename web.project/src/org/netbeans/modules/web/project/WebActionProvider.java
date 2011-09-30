@@ -93,6 +93,7 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
@@ -346,6 +347,9 @@ class WebActionProvider extends BaseActionProvider {
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer()) {
+                return null;
+            }
+            if (WhiteListUpdater.isWhitelistViolated(getProject())) {
                 return null;
             }
             return commands.get(command);

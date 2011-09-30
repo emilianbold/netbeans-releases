@@ -98,4 +98,9 @@ public class FortranFileModelTest extends TraceModelTestBase {
         performTest("bug183073.f"); // NOI18N
     }
 
+    public void testBug185624() throws Exception {
+        // Bug 185624 - *Fortran* navigator: "Go To Source" points a cursor to the end of module rather than at begin 
+        performTest("bug185624.f"); // NOI18N
+    }
+    
 }

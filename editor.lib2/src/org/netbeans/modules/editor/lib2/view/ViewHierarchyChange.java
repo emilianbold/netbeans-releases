@@ -37,6 +37,9 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
+import java.util.logging.Level;
+import javax.swing.event.DocumentEvent;
+
 /**
  * Info about change in view hierarchy as basis for ViewHierarchyEvent.
  *
@@ -44,20 +47,87 @@ package org.netbeans.modules.editor.lib2.view;
  */
 public final class ViewHierarchyChange {
     
-    /**
-     * Starting Y where the offset-to-view assignment might have changed.
-     */
+    DocumentEvent documentEvent;
+    
+    int changeStartOffset;
+    
+    int changeEndOffset;
+    
+    boolean changeY;
+    
     double startY;
     
-    /**
-     * Ending Y where the offset-to-view assignment might have changed.
-     */
     double endY;
     
-    /**
-     * How much the the area below changeEndY moved down/up.
-     */
     double deltaY;
+    
+    ViewHierarchyChange() {
+        this.changeStartOffset = -1;
+    }
+    
+    void addChange(int changeStartOffset, int changeEndOffset) {
+        if (this.changeStartOffset == -1) {
+            this.changeStartOffset = changeStartOffset;
+            this.changeEndOffset = changeEndOffset;
+            if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+                ViewUtils.log(ViewHierarchyImpl.EVENT_LOG,
+                        "addChange-New: Offset-range <" + changeStartOffset + "," + changeEndOffset + ">\n"); // NOI18N
+            }
+
+        } else {
+            this.changeStartOffset = Math.min(changeStartOffset, this.changeStartOffset);
+            this.changeEndOffset = Math.max(changeEndOffset, this.changeEndOffset);
+            if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+                ViewUtils.log(ViewHierarchyImpl.EVENT_LOG,
+                        "addChange-Merge: Offset-range <" + changeStartOffset + "," + changeEndOffset + // NOI18N
+                        "> => <" + this.changeStartOffset + "," + this.changeEndOffset + ">\n"); // NOI18N
+            }
+        }
+    }
+
+    void addChangeY(double startY, double endY, double deltaY) {
+        // Change should already be non-null (change offsets should always be present)
+        if (!changeY) {
+            changeY = true;
+            this.startY = startY;
+            this.endY = endY;
+            this.deltaY = deltaY;
+            if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+                ViewUtils.log(ViewHierarchyImpl.EVENT_LOG,
+                        "addChangeY-New: Y:<" + startY + "," + endY + "> dY=" + deltaY + '\n'); // NOI18N
+            }
+
+        } else { // Merge new change with original one
+            this.startY = Math.min(startY, this.startY);
+            if (endY > this.endY) { // Lies before the shifted area
+                endY -= this.deltaY; // make original coordinate
+                this.endY = Math.max(endY, this.endY);
+            }
+            this.deltaY += deltaY;
+            if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+                ViewUtils.log(ViewHierarchyImpl.EVENT_LOG,
+                        "addChangeY-Merge: Y:<" + startY + "," + endY + "> dY=" + deltaY + " => Y:<" + // NOI18N
+                        this.startY + "," + this.endY + "> dY=" + this.deltaY + '\n'); // NOI18N
+            }
+        }
+    }
+
+    
+    public DocumentEvent documentEvent() {
+        return documentEvent;
+    }
+    
+    public int changeStartOffset() {
+        return changeStartOffset;
+    }
+    
+    public int changeEndOffset() {
+        return changeEndOffset;
+    }
+    
+    public boolean isChangeY() {
+        return changeY;
+    }
     
     public double startY() {
         return startY;
@@ -69,6 +139,12 @@ public final class ViewHierarchyChange {
 
     public double deltaY() {
         return deltaY;
+    }
+    
+    @Override
+    public String toString() {
+        return "<" + changeStartOffset + "," + changeEndOffset + "> " + // NOI18N
+                (changeY ? ("Y:<" + startY() + "," + endY() + "> dY=" + deltaY()) : "No-changeY"); // NOI18N
     }
 
 }

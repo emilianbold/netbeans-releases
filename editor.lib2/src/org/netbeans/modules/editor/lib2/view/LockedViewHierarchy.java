@@ -111,7 +111,17 @@ public final class LockedViewHierarchy {
      * @return shape corresponding to given offset.
      */
     public Shape modelToView(int offset, Position.Bias bias) {
-        return impl.modelToView(offset, bias);
+        return impl.modelToView(this, offset, bias);
+    }
+
+    /**
+     * Return mapping of an offset to visual boundaries of a paragraph view in view hierarchy.
+     *
+     * @param offset
+     * @return shape corresponding to paragraph view containing the given offset.
+     */
+    public Shape modelToParagraphView(int offset) {
+        return impl.modelToParagraphView(this, offset);
     }
 
     /**
@@ -123,7 +133,7 @@ public final class LockedViewHierarchy {
      * @return offset corresponding to given visual point.
      */
     public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
-        return impl.viewToModel(x, y, biasReturn);
+        return impl.viewToModel(this, x, y, biasReturn);
     }
     
     /**

@@ -46,18 +46,21 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.BrowserSpecificDefinitionParser;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class BrowserSupportModule extends CssModule {
+public class BrowserSupportModule extends CssEditorModule implements CssModule {
 
     private Browser browser;
     private BrowserSpecificDefinitionParser parser;
@@ -66,7 +69,7 @@ public class BrowserSupportModule extends CssModule {
 
     public BrowserSupportModule(Browser browser, String propertiesDefinitionFileName) {
         this.browser = browser;
-        parser = new BrowserSpecificDefinitionParser(DEFINITION_FILES_BASE + propertiesDefinitionFileName, browser);
+        parser = new BrowserSpecificDefinitionParser(DEFINITION_FILES_BASE + propertiesDefinitionFileName, browser, this);
     }
 
     protected Browser getBrowser() {
@@ -100,16 +103,21 @@ public class BrowserSupportModule extends CssModule {
             @Override
             public String getHelp(Property property) {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
-                    //XXX will be removed
-                    return getBrowser().getRenderingEngineId() + " experimental property. No documentation found.";
+                    //try to delegate to the corresponding standard property help
+                    String standardPropertyName = property.getName().substring(getBrowser().getVendorSpecificPropertyPrefix().length());
+                    Property standardProperty = CssModuleSupport.getProperty(standardPropertyName);
+                    if(standardProperty != null) {
+                        StandardPropertiesHelpResolver resolver = new StandardPropertiesHelpResolver();
+                        String help = resolver.getHelp(standardProperty);
+                        if(help != null) {
+                            return help;
+                        }
+                    }
+                    
+                    return NbBundle.getMessage(this.getClass(), "completion-help-no-documentation-found"); 
                 } else {
                     return null;
                 }
-            }
-
-            @Override
-            public String getHelp(URL url) {
-                return null;
             }
 
             @Override
@@ -123,6 +131,21 @@ public class BrowserSupportModule extends CssModule {
             }
             
         });
+    }
+
+    @Override
+    public String getName() {
+        return browser.getName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return String.format("%s CSS Extensions", browser.getName());
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return null;
     }
     
     protected class SupportAllFactory implements PropertySupportResolver.Factory {

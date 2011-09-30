@@ -46,9 +46,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Icon;
@@ -56,7 +58,6 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -97,6 +98,7 @@ public final class WhereUsedSupport {
     private final Set<ModelElement> declarations;
     private ModelElement modelElement;
     private Results results;
+    private Set<FileObject> unopenedFiles;
     private Set<Modifier> modifier;
     private FindUsageSupport usageSupport;
     private ElementQuery.Index idx;
@@ -305,12 +307,15 @@ public final class WhereUsedSupport {
                 return retval;
             }
         });
+        
+        Map<FileObject, WarningFileElement> warningElements = new HashMap<FileObject, WarningFileElement>();
 
         private Results() {
         }
 
         private void clear() {
             elements.clear();
+            warningElements.clear();
         }
 
         private void addEntry(PhpElement decl) {
@@ -323,12 +328,21 @@ public final class WhereUsedSupport {
             if (allDeclarations.size() > 0) {
                 PhpElement decl = allDeclarations.iterator().next();
                 Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
-                elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
+                WhereUsedElement wue = WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon);
+                if (wue != null) {
+                    elements.add(wue);
+                } else if(!warningElements.containsKey(fo)) {
+                    warningElements.put(fo, new WarningFileElement(fo));
+                }
             }
         }
 
         public Collection<WhereUsedElement> getResultElements() {
             return elements;
+        }
+        
+        public Collection<WarningFileElement> getWarningElements() {
+            return warningElements.values();
         }
     }
 }

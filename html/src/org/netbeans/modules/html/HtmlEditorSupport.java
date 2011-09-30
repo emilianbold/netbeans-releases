@@ -46,7 +46,6 @@ package org.netbeans.modules.html;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -62,8 +61,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.html.palette.HtmlPaletteFactory;
-import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
@@ -73,19 +71,12 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
-import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -94,7 +85,7 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Radim Kubacki
  * @author Marek Fukala
  * 
- * @see org.openide.text.DataEditorSupportH
+ * @see org.openide.text.DataEditorSupport
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
@@ -122,17 +113,21 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     };
 
-    /** Constructor. */
     HtmlEditorSupport(HtmlDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
 
         //set the FileObject's mimetype - text/html or text/xhtml
         setMIMEType(obj.getPrimaryFile().getMIMEType());
     }
-
+    
     @Override
     protected boolean asynchronousOpen() {
 	return true;
+    }
+
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(HtmlLoader.HTML_MIMETYPE, getDataObject());
     }
 
     @Override
@@ -358,61 +353,4 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     } // End of nested Environment class.
 
-    /** A method to create a new component. Overridden in subclasses.
-     * @return the {@link HtmlEditor} for this support
-     */
-    @Override
-    protected CloneableEditor createCloneableEditor() {
-        return new HtmlEditor(this);
-    }
-
-    public static class HtmlEditor extends CloneableEditor {
-
-        public HtmlEditor() {
-        }
-
-        void associatePalette(HtmlEditorSupport s) {
-            final DataObject dataObject = s.getDataObject();
-            if (!dataObject.isValid()) {
-                return;
-            }
-
-            Node nodes[] = {dataObject.getNodeDelegate()};
-            final InstanceContent instanceContent = new InstanceContent();
-            associateLookup(new ProxyLookup(new Lookup[]{new AbstractLookup(instanceContent), nodes[0].getLookup()}));
-            instanceContent.add(getActionMap());
-
-            setActivatedNodes(nodes);
-            if (dataObject instanceof HtmlDataObject) {
-                //serialize the palette controller initialization requests into one thread
-                 SINGLE_THREAD_RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            PaletteController pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());
-                            instanceContent.add(pc);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            }
-        }
-
-        /** Creates new editor */
-        public HtmlEditor(HtmlEditorSupport s) {
-            super(s);
-            initialize();
-        }
-
-        private void initialize() {
-            associatePalette((HtmlEditorSupport) cloneableEditorSupport());
-        }
-
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
-        }
-    }
 }

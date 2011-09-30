@@ -436,11 +436,18 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                     NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName))); // NOI18N
             return this; //we failed to start the server.
         }
-        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); // NOI18N
+
         GlassfishModule commonSupport = getCommonServerSupport();
         if (commonSupport != null) {
+            if (isClusterOrInstance(commonSupport)) {
+                fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                    CommandType.START, StateType.FAILED, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_CLUSTER_NOT_SUPPORTED", serverName))); // NOI18N
+                return this; //we failed to start the server.
+            }
+            fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
+                NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); // NOI18N
 //            String domainLocation = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
 //            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
             commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.PROFILE_MODE, true);

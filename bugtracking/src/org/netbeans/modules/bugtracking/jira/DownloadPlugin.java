@@ -177,16 +177,7 @@ class DownloadPlugin implements ActionListener {
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        for(JiraModules module : JiraModules.values()) {
-                            if(!module.installed) {
-                                try {
-                                    BugtrackingManager.LOG.log(Level.FINE, " + installing: {0}", module.cnb);
-                                    install(module.updateElement, uninstalledElementsCount() == 1);
-                                } finally {
-                                    module.installed = true;
-                                }
-                            }
-                        }
+                        install();
                     }
                 });
             }
@@ -214,94 +205,104 @@ class DownloadPlugin implements ActionListener {
                 }
                 return true;
             }
-            private int uninstalledElementsCount() {
-                int unistalled = 0;
-                for(JiraModules module : JiraModules.values()) {
-                    if(!module.installed) ++unistalled;
-                }
-                return unistalled;
-            }
-            
         });
     }
 
-    private void install(final UpdateElement updateElement, final boolean done) {
-        try {
-            InstallCancellable ic = new InstallCancellable();
-            OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-            if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                oc.add(updateElement);
-            } else if (updateElement.getUpdateUnit().isPending()) {
-                notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
-                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_RestartNeeded"),            //NOI18N
-                    NotifyDescriptor.INFORMATION_MESSAGE, false);
-                return;
-            } else {
-                oc = OperationContainer.createForUpdate();
-                if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                    oc.add(updateElement);
+    private void install() {
+        Restarter rest = null;
+        OperationContainer<InstallSupport> oc = null;
+        
+        // instal modules
+        for(JiraModules module : JiraModules.values()) {
+            if(module.installed) {
+                continue;
+            }
+            rest = null;
+            try {
+                InstallCancellable ic = new InstallCancellable();
+                oc = OperationContainer.createForInstall();
+                if (oc.canBeAdded(module.updateElement.getUpdateUnit(), module.updateElement)) {
+                    oc.add(module.updateElement);
+                } else if (module.updateElement.getUpdateUnit().isPending()) {
+                    notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
+                        NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_RestartNeeded"),            //NOI18N
+                        NotifyDescriptor.INFORMATION_MESSAGE, false);
+                    return;
                 } else {
-                    BugtrackingManager.LOG.warning("MissingClient: cannot install " + updateElement.toString());            // NOI18N
-                    if (updateElement.getUpdateUnit().getInstalled() != null) {
-                        BugtrackingManager.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString()); // NOI18N
+                    oc = OperationContainer.createForUpdate();
+                    if (oc.canBeAdded(module.updateElement.getUpdateUnit(), module.updateElement)) {
+                        oc.add(module.updateElement);
+                    } else {
+                        BugtrackingManager.LOG.warning("MissingClient: cannot install " + module.updateElement.toString());            // NOI18N
+                        if (module.updateElement.getUpdateUnit().getInstalled() != null) {
+                            BugtrackingManager.LOG.warning("MissingClient: already installed " + module.updateElement.getUpdateUnit().getInstalled().toString()); // NOI18N
+                        }
+                        notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
+                                NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_InvalidOperation"),        //NOI18N
+                                NotifyDescriptor.ERROR_MESSAGE, false);
+                        return;
                     }
-                    notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
-                            NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_InvalidOperation"),        //NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE, false);
+                }
+                Validator v = oc.getSupport().doDownload(
+                        ProgressHandleFactory.createHandle(
+                            NbBundle.getMessage(
+                            MissingJiraSupportPanel.class, "LBL_Downloading", module.updateElement.getDisplayName()), // NOI18N
+                            ic),
+                        false);
+                if(ic.cancelled) {
                     return;
                 }
+                Installer i = oc.getSupport().doValidate(
+                        v,
+                        ProgressHandleFactory.createHandle(
+                            NbBundle.getMessage(
+                                MissingJiraSupportPanel.class,
+                                "LBL_Validating",                                   // NOI18N
+                                module.updateElement.getDisplayName()),
+                            ic));
+                if(ic.cancelled) {
+                    return;
+                }
+                rest = oc.getSupport().doInstall(
+                            i,
+                            ProgressHandleFactory.createHandle(
+                                NbBundle.getMessage(
+                                    MissingJiraSupportPanel.class,
+                                    "LBL_Installing",                   // NOI18N
+                                    module.updateElement.getDisplayName()),
+                            ic));
+            } catch (OperationException e) {
+                BugtrackingManager.LOG.log(Level.INFO, null, e);
+                notifyError(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
+                        NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
             }
-            Validator v = oc.getSupport().doDownload(
-                    ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(
-                        MissingJiraSupportPanel.class, "LBL_Downloading", updateElement.getDisplayName()), // NOI18N
-                        ic),
-                    false);
-            if(ic.cancelled) {
-                return;
-            }
-            Installer i = oc.getSupport().doValidate(
-                    v,
-                    ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(
-                            MissingJiraSupportPanel.class,
-                            "LBL_Validating",                                   // NOI18N
-                            updateElement.getDisplayName()),
-                        ic));
-            if(ic.cancelled) {
-                return;
-            }
-            Restarter rest = oc.getSupport().doInstall(
-                                    i,
-                                    ProgressHandleFactory.createHandle(
-                                        NbBundle.getMessage(
-                                            MissingJiraSupportPanel.class,
-                                            "LBL_Installing",                   // NOI18N
-                                            updateElement.getDisplayName()),
-                                    ic));
-            if(done && rest != null) {
-                JButton restart = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Restart")); // NOI18N
-                JButton cancel = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Cancel"));   // NOI18N
-                NotifyDescriptor descriptor = new NotifyDescriptor(
-                        NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_NeedsRestart"),                          // NOI18N
-                        NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_DownloadJira"),                          // NOI18N
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            new Object [] { restart, cancel },
-                            restart);
-                if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
+        }    
+        
+        // restart
+        if(rest != null) {
+            JButton restart = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Restart")); // NOI18N
+            JButton cancel = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Cancel"));   // NOI18N
+            NotifyDescriptor descriptor = new NotifyDescriptor(
+                    NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_NeedsRestart"),                          // NOI18N
+                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_DownloadJira"),                          // NOI18N
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object [] { restart, cancel },
+                        restart);
+            if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
+                try {
                     oc.getSupport().doRestart(
                         rest,
                         ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_Restarting"))); // NOI18N
+                } catch (OperationException e) {
+                    BugtrackingManager.LOG.log(Level.INFO, null, e);
+                    notifyError(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
+                            NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
                 }
             }
-        } catch (OperationException e) {
-            BugtrackingManager.LOG.log(Level.INFO, null, e);
-            notifyError(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
-                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
-        }
+        }   
     }
-
+    
     private static void notifyError (final String message, final String title) {
         notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
     }

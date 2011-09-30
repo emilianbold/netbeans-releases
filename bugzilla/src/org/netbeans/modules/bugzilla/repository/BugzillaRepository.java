@@ -507,10 +507,12 @@ public class BugzillaRepository extends Repository {
      */
     public synchronized BugzillaConfiguration getConfiguration() {
         if(bc == null) {
-            BugzillaConfiguration conf = createConfiguration(false);
-            if(conf.isValid()) {
-                bc = conf;
-            } 
+            bc = createConfiguration(false);
+        } else if(!bc.isValid()) {
+            // there was already an attempt to get the configuration
+            // yet it happend to be invalid, so try one more time as it 
+            // might have been just a networking glitch  
+            bc = createConfiguration(false);
         }
         return bc;
     }

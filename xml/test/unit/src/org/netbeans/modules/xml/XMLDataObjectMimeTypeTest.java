@@ -143,7 +143,7 @@ public final class XMLDataObjectMimeTypeTest extends NbTestCase {
         setUp("text/plain");
         EditorCookie cook = obj.getCookie(EditorCookie.class);
         StyledDocument doc = cook.openDocument();
-        assertEquals("text/xml", doc.getProperty("mimeType"));
+        assertEquals("text/plain+xml", doc.getProperty("mimeType"));
     }
     
     public void testForUnknownContent() throws Exception {
@@ -153,7 +153,7 @@ public final class XMLDataObjectMimeTypeTest extends NbTestCase {
         setUp("content/unknown");
         EditorCookie cook = obj.getCookie(EditorCookie.class);
         StyledDocument doc = cook.openDocument();
-        assertEquals("text/xml", doc.getProperty("mimeType"));
+        assertEquals("text/plain+xml", doc.getProperty("mimeType"));
     }
     
     public static final class Pool extends DataLoaderPool {

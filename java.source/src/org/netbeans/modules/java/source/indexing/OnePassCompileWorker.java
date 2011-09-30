@@ -109,7 +109,9 @@ final class OnePassCompileWorker extends CompileWorker {
         LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
         JavacTaskImpl jt = null;
 
+        boolean nop = true;
         for (CompileTuple tuple : files) {
+            nop = false;
             if (context.isCancelled()) {
                 return null;
             }
@@ -164,6 +166,10 @@ final class OnePassCompileWorker extends CompileWorker {
                     System.gc();
                 }
             }
+        }
+
+        if (nop) {
+            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         if (units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {

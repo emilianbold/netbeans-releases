@@ -198,7 +198,7 @@ public class RefactoringTestBase extends NbTestCase {
             },
             new ProjectFactory() {
             public boolean isProject(FileObject projectDirectory) {
-                return src.getParent() == projectDirectory;
+                return src != null && src.getParent() == projectDirectory;
             }
             public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;

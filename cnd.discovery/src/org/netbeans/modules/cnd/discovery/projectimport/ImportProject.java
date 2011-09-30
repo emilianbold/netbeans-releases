@@ -141,6 +141,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
+    private static final String BUILD_COMMAND = "${MAKE} -f Makefile";  // NOI18N
+    private static final String CLEAN_COMMAND = "${MAKE} -f Makefile clean";  // NOI18N
     private static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     public static final Logger logger;
     static {
@@ -171,8 +173,8 @@ public class ImportProject implements PropertyChangeListener {
     private CompilerSet toolchain;
     private boolean defaultToolchain;
     private String workingDir;
-    private String buildCommand = "${MAKE} -f Makefile";  // NOI18N
-    private String cleanCommand = "${MAKE} -f Makefile clean";  // NOI18N
+    private String buildCommand = BUILD_COMMAND;
+    private String cleanCommand = CLEAN_COMMAND;
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
@@ -262,7 +264,6 @@ public class ImportProject implements PropertyChangeListener {
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);
         configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
         configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS);
-        runConfigure = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)); // NOI18N
         consolidationStrategy = (String) wizard.getProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL); 
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS); 
@@ -426,7 +427,7 @@ public class ImportProject implements PropertyChangeListener {
                         postConfigure();
                     } else {
                         if (runMake) {
-                            makeProject(true, null);
+                            makeProject(null);
                         } else {
                             discovery(0, null, null);
                         }
@@ -581,7 +582,7 @@ public class ImportProject implements PropertyChangeListener {
                         //parseConfigureLog(configureLog);
                         // when run scripts we do full "clean && build" to
                         // remove old build artifacts as well
-                        makeProject(true, configureLog);
+                        makeProject(configureLog);
                     } else {
                         switchModel(true);
                         postModelDiscovery(true);
@@ -715,7 +716,7 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private void makeProject(boolean doClean, File logFile) {
+    private void makeProject(File logFile) {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
@@ -729,41 +730,31 @@ public class ImportProject implements PropertyChangeListener {
                 makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)));
             }
         }
-        if (!fullRemote) {
+        if (!fullRemote && makeFileObject != null) {
             downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
             makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)));
         }
         scanConfigureLog(logFile);
-        if (makeFileObject != null && makeFileObject.isValid()) {
-            DataObject dObj;
-            try {
-                dObj = DataObject.find(makeFileObject);
-                Node node = dObj.getNodeDelegate();
-                MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
-                if (mes != null) {
-                    mes.setBuildDirectory(makeFileObject.getParent().getPath());
-                }
-                if (doClean) {
+        if (CLEAN_COMMAND.equals(cleanCommand) && BUILD_COMMAND.equals(buildCommand)) {
+            if (makeFileObject != null && makeFileObject.isValid()) {
+                DataObject dObj;
+                try {
+                    dObj = DataObject.find(makeFileObject);
+                    Node node = dObj.getNodeDelegate();
+                    MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+                    if (mes != null) {
+                        mes.setBuildDirectory(makeFileObject.getParent().getPath());
+                    }
                     postClean(node);
-                } else {
-                    postMake(node);
+                } catch (DataObjectNotFoundException ex) {
+                    isFinished = true;
                 }
-            } catch (DataObjectNotFoundException ex) {
-                isFinished = true;
+            } else {
+                switchModel(true);
+                postModelDiscovery(true);
             }
         } else {
-            String path = nativeProjectPath;
-            File file = new File(path + "/Makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                makefilePath = file.getAbsolutePath();
-            } else {
-                file = new File(path + "/makefile"); // NOI18N
-                if (file.exists() && file.isFile() && file.canRead()) {
-                    makefilePath = file.getAbsolutePath();
-                }
-            }
-            switchModel(true);
-            postModelDiscovery(true);
+            postClean();
         }
     }
 
@@ -810,11 +801,44 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private void postMake(Node node) {
+    private void postClean() {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
         }
+        ExecutionListener listener = new ExecutionListener() {
+
+            @Override
+            public void executionStarted(int pid) {
+            }
+
+            @Override
+            public void executionFinished(int rc) {
+                if (rc == 0) {
+                    importResult.put(Step.MakeClean, State.Successful);
+                } else {
+                    importResult.put(Step.MakeClean, State.Fail);
+                }
+                postMake();
+            }
+        };
+        if (TRACE) {
+            logger.log(Level.INFO, "#{0}", cleanCommand); // NOI18N
+        }
+        try {
+            ExecuteCommand ec = new ExecuteCommand(makeProject, workingDir, cleanCommand);
+            Future<Integer> task = ec.performAction(listener, null, null);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute clean command"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private ExecutionListener createMakeExecutionListener() {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
@@ -835,7 +859,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
 
-        ExecutionListener listener = new ExecutionListener() {
+        return new ExecutionListener() {
             private RfsListenerImpl listener;
 
             @Override
@@ -874,6 +898,14 @@ public class ImportProject implements PropertyChangeListener {
                 discovery(rc, makeLog, execLog);
             }
         };
+    }
+    
+    private void postMake(Node node) {
+        if (!isProjectOpened()) {
+            isFinished = true;
+            return;
+        }
+        ExecutionListener listener = createMakeExecutionListener();
         Writer outputListener = null;
         if (makeLog != null) {
             try {
@@ -910,6 +942,45 @@ public class ImportProject implements PropertyChangeListener {
             Future<Integer> task = MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null);
             if (task == null) {
                 logger.log(Level.INFO, "Cannot execute make"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void postMake() {
+        if (!isProjectOpened()) {
+            isFinished = true;
+            return;
+        }
+        ExecutionListener listener = createMakeExecutionListener();
+        Writer outputListener = null;
+        if (makeLog != null) {
+            try {
+                outputListener = new BufferedWriter(new FileWriter(makeLog));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+        if (execLog != null) {
+            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+            if (executionEnvironment.isLocal()) {
+                vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
+            } else {
+                vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+remoteExecLog); // NOI18N
+            }
+        }
+        if (TRACE) {
+            logger.log(Level.INFO, "#{0}", buildCommand); // NOI18N
+        }
+        try {
+            ExecuteCommand ec = new ExecuteCommand(makeProject, workingDir, buildCommand);
+            Future<Integer> task = ec.performAction(listener, outputListener, vars);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute build command"); // NOI18N
                 isFinished = true;
             }
         } catch (Throwable ex) {

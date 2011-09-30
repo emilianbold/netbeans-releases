@@ -217,9 +217,16 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION,
                 PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
                 PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
-                PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE,
+                PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_TOKEN,
                 PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG);
             Token <?extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
+            while (keyToken.id() == PHPTokenId.PHP_TOKEN) {
+                if ("?".equals(keyToken.text().toString())) { //NOI18N
+                    return null;
+                }
+                ts.movePrevious();
+                keyToken = LexUtilities.findPreviousToken(ts, lookFor);
+            }
             if (keyToken.id() == PHPTokenId.PHP_CASE) {
                 return null;
             }
@@ -263,14 +270,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         int curlyBalance = 0;
         if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
                 || startTokenId == PHPTokenId.PHP_CLASS) {
+            boolean unfinishedComment = false;
             do {
                 token = ts.token();
                 if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                     curlyBalance --;
                 } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
                     curlyBalance ++;
+                } else if (token.id() == PHPTokenId.PHP_COMMENT_START || token.id() == PHPTokenId.PHPDOC_COMMENT_START) {
+                    unfinishedComment = true;
+                } else if (token.id() == PHPTokenId.PHP_COMMENT_END || token.id() == PHPTokenId.PHPDOC_COMMENT_END) {
+                    unfinishedComment = false;
                 }
             } while (ts.moveNext());
+            if (unfinishedComment) {
+                curlyBalance--;
+            }
         } else {
             // complete alternative syntax.
             PHPTokenId endTokenId = null;

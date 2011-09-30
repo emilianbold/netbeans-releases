@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.filesystems.FileObject;
@@ -63,6 +64,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.text.CloneableEditorSupport;
 /**
  * Text editor support that handles I/O encoding
  * @author  mkuchtiak
@@ -193,8 +195,13 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     
     /** Creates a new instance of TLDEditorSupport */
     public TLDEditorSupport(TLDDataObject dobj) {
-        super(dobj,new XmlEnv(dobj));
+        super(dobj, null, new XmlEnv(dobj));
         setMIMEType("text/xml");
+    }
+    
+     @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(TLDLoader.TLD_MIMETYPE, getDataObject());
     }
     
     /** 

@@ -44,9 +44,11 @@ import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.php.smarty.SmartyFramework.Version;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 
 /**
- * Test TPL top-level lexer analyzis
+ * Test TPL top-level lexer analyzis.
  *
  * @author Martin Fousek
  */
@@ -56,19 +58,20 @@ public class TplTopLexerBatchTest extends TestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
     protected void tearDown() throws java.lang.Exception {
     }
 
     public void testTopSmartyAndHtmlTags() {
         String text = "{include file='head.tpl'}{if $logged neq 0}<span color=\"{#fontColor#}\">{$name|upper}!{/if}</span>";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "include file='head.tpl'");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
@@ -93,8 +96,7 @@ public class TplTopLexerBatchTest extends TestCase {
     public void testSmartyLiteralTags() {
         String text = "{literal}{{/literal}{";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
@@ -108,8 +110,7 @@ public class TplTopLexerBatchTest extends TestCase {
     public void testSmartyCommentsTags() {
         String text = "{*{c*}{if}{*c*}{/if}";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "{");
@@ -132,8 +133,7 @@ public class TplTopLexerBatchTest extends TestCase {
     public void testSmartyPhpTags() {
         String text = "{php}function { this. {/php}{";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "php");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
@@ -148,5 +148,62 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/php");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmarty3CurlyBracesFeature() {
+        String text = "{ var tmp = 1; }";
+
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{ var tmp = 1; }");
+    }
+
+    public void testSmarty2CurlyBracesFeature() {
+        String text = "{ var tmp = 1; }";
+
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY2);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmarty2AndAnotherOpenDelims() {
+        String text = "{ var tmp = 1; }";
+
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("LDELIM");
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY2);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{ var tmp = 1; }");
+    }
+
+    public void testSmarty3AndAnotherOpenDelims() {
+        String text = "{ var tmp = 1; }";
+
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("LDELIM");
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{ var tmp = 1; }");
+    }
+
+    public void testSmarty2NonCurlyBracesFeatureAndAnotherOpenDelims() {
+        String text = "LDELIM var tmp = 1; }";
+
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("LDELIM");
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY2);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "LDELIM");
+    }
+
+    public void testSmarty3NonCurlyBracesFeatureAndAnotherOpenDelims() {
+        String text = "LDELIM var tmp = 1; }";
+
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("LDELIM");
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "LDELIM");
+    }
+
+    private TokenSequence createTokenSequence(String text) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
+        return hi.tokenSequence();
     }
 }

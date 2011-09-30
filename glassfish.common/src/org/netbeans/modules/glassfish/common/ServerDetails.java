@@ -61,22 +61,78 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3(NbBundle.getMessage(ServerDetails.class,"STR_3_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6", // NOI18N
-        new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
-        new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-3.0-b74b"}, // NOI18N
+        new String[0], // NOI18N
         300,
-        "http://download.java.net/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://download.java.net/glassfish/v3/release/glassfish-v3.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3.txt" // NOI18N
+    ),
+    /**
+     * details for an instance of GlassFish Server 3.0/3.0.x
+     */
+    GLASSFISH_SERVER_3_0_1(NbBundle.getMessage(ServerDetails.class,"STR_301_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6", // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-3.0.1"}, // NOI18N
+        new String[0], // NOI18N
+        301,
+        "http://download.java.net/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post701v3-0-1.txt" // NOI18N
     ),
     /**
      * details for an instance of GlassFish Server 3.1
      */
     GLASSFISH_SERVER_3_1(NbBundle.getMessage(ServerDetails.class, "STR_31_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-3.1"}, // NOI18N
         new String[0],
         310,
-        "http://download.java.net/glassfish/3.1.1/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+        "http://download.java.net/glassfish/3.1/release/glassfish-3.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1.txt" // NOI18N
+    ),
+    /**
+     * details for an instance of GlassFish Server 3.1.1
+     */
+    GLASSFISH_SERVER_3_1_1(NbBundle.getMessage(ServerDetails.class, "STR_311_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-3.1.1",}, // NOI18N
+        new String[0],
+        311,
+        "http://download.java.net/glassfish/3.1.1/release/glassfish-3.1.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-1.txt" // NOI18N
+            ),
+    /**
+     * details for an instance of GlassFish Server 3.1.1
+     */
+    GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-3.1.2"}, // NOI18N
+        new String[0],
+        312,
+        "http://download.java.net/glassfish/3.1.2/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-2.txt" // NOI18N
+    ),
+    /**
+     * details for an instance of GlassFish Server 3.1.1
+     */
+    GLASSFISH_SERVER_4_0(NbBundle.getMessage(ServerDetails.class, "STR_40_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
+            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
+            File.separator + "console-core-4.0"}, // NOI18N
+        new String[0],
+        400,
+        "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post701v4-0.txt" // NOI18N
     );
 
     /**
@@ -86,7 +142,13 @@ public enum ServerDetails {
      */
     public static int getVersionFromInstallDirectory(File glassfishDir)  {
         ServerDetails sd = null;
-        if (GLASSFISH_SERVER_3_1.isInstalledInDirectory(glassfishDir)) {
+        if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
+            sd = GLASSFISH_SERVER_4_0;
+        } else if (GLASSFISH_SERVER_3_1_2.isInstalledInDirectory(glassfishDir)) {
+            sd = GLASSFISH_SERVER_3_1_2;
+        } else if (GLASSFISH_SERVER_3_1_1.isInstalledInDirectory(glassfishDir)){
+            sd = GLASSFISH_SERVER_3_1_1;
+        } else if (GLASSFISH_SERVER_3_1.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_3_1;
         } else if (GLASSFISH_SERVER_3.isInstalledInDirectory(glassfishDir)){
             sd = GLASSFISH_SERVER_3;
@@ -162,14 +224,14 @@ public enum ServerDetails {
         boolean badFile = false;
         if (glassfishDir != null && glassfishDir.canRead() && glassfishDir.isDirectory()) {
             for (String s : requiredFiles) {
-                descriminatorFile = new File(glassfishDir, s);
-                if (!descriminatorFile.exists()) {
+                descriminatorFile = Utils.getFileFromPattern(s+ServerUtilities.GFV3_VERSION_MATCHER, glassfishDir);
+                if (null == descriminatorFile) {
                     badFile = true;
                 }
             }
             for (String s : excludedFiles) {
-                descriminatorFile = new File(glassfishDir, s);
-                if (descriminatorFile.exists()) {
+                descriminatorFile = Utils.getFileFromPattern(s+ServerUtilities.GFV3_JAR_MATCHER, glassfishDir);
+                if (null != descriminatorFile) {
                     badFile = true;
                 }
             }

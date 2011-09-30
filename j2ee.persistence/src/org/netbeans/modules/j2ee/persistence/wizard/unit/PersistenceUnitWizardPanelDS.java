@@ -51,6 +51,8 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -75,7 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Martin Adamek
  */
-public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
+public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel implements AncestorListener {
     
     public PersistenceUnitWizardPanelDS(Project project, ChangeListener changeListener, boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
@@ -88,18 +90,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         initComponents();
         setTableGeneration(tg);
        
-        if (ProviderUtil.isValidServerInstanceOrNone(project)){
-            if(SwingUtilities.isEventDispatchThread()){
-                connectDatasources();
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        connectDatasources();
-                    }
-                });
-            }
-        }
+
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(providerCombo);
@@ -113,8 +104,38 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         unitNameTextField.getDocument().addDocumentListener(new ValidationListener());
         errorMessage.setForeground(Color.RED);
         updateWarning();
+        addAncestorListener(this);//need to postpone initialization, see issue 202022
     }
     
+    private void initLater(){
+        if (ProviderUtil.isValidServerInstanceOrNone(project)){
+            if(SwingUtilities.isEventDispatchThread()){
+                connectDatasources();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectDatasources();
+                    }
+                });
+            }
+        }        
+    }
+     @Override
+    public void ancestorAdded(AncestorEvent event) {
+        initLater();
+        removeAncestorListener(this);     
+    }
+
+    @Override
+    public void ancestorRemoved(AncestorEvent event) {
+        
+    }
+
+    @Override
+    public void ancestorMoved(AncestorEvent event) {
+        
+    }   
     /**
      * Pre-selects appropriate table generation strategy radio button.
      */

@@ -20,8 +20,8 @@
                 <package>org.w3c.dom.svg</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/perseus-nb-1.0.jar</runtime-relative-path>
-                <binary-origin>external/perseus-nb-1.0.jar</binary-origin>
+                <runtime-relative-path>ext/perseus-nb-1.0.1.jar</runtime-relative-path>
+                <binary-origin>external/perseus-nb-1.0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

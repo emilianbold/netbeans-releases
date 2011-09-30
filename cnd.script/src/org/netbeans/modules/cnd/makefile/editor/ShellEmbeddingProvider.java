@@ -185,7 +185,7 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
                             doc.createPosition(endOffset),
                             token.id().primaryCategory()));
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    // Can't add
                 }
             }
         }

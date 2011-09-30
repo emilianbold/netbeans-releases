@@ -124,7 +124,9 @@ public class InjectionPointParameterAnalyzer
                             resolveParameter(var, element, result.getInfo());
                         EditorAnnotationsHelper helper = EditorAnnotationsHelper.
                             getInstance(result);
-                        helper.addInjectionPoint(result, param);                    
+                        if ( helper != null ){
+                            helper.addInjectionPoint(result, param);
+                        }
                     }
             }
             }

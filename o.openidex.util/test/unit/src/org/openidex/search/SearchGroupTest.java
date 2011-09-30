@@ -68,12 +68,10 @@ public class SearchGroupTest extends NbTestCase {
         try {
             Thread searchThread = new Thread(new SearchRunner(fsg));
             searchThread.start();
-            Thread.sleep(10);
-            assertTrue("acquire - start", s.tryAcquire(30, TimeUnit.SECONDS));
+            s.acquire();
             assertFalse("Search should be running now", fsg.isFinished());
             fsg.stopSearch();
-            Thread.sleep(10);
-            assertTrue("acquire - end", s.tryAcquire(30, TimeUnit.SECONDS));
+            s.acquire();
             assertTrue("Search has not been stopped", fsg.isFinished());
         } finally {
             fsg.innerTask.terminate();
@@ -90,16 +88,13 @@ public class SearchGroupTest extends NbTestCase {
         try {
             Thread searchThread = new Thread(new SearchRunner(fsg));
             searchThread.start();
-            Thread.sleep(10);
-            assertTrue("acquire - start", s.tryAcquire(30, TimeUnit.SECONDS));
+            s.acquire();
             assertFalse("Search should be running now", fsg.isFinished());
             fsg.stopSearch();
-            Thread.sleep(10);
             assertFalse("acquire - nothing", s.tryAcquire(1, TimeUnit.SECONDS));
             assertFalse("Search should be still running", fsg.isFinished());
             fsg.getInnerTaks().terminate(); // terminate inner task explicitly
-            Thread.sleep(10);
-            assertTrue("acquire - end", s.tryAcquire(30, TimeUnit.SECONDS));
+            s.acquire();
             assertTrue("Inner task wasn't stopped", fsg.isFinished());
         } finally {
             fsg.getInnerTaks().terminate();

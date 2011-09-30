@@ -43,7 +43,9 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -96,25 +98,36 @@ public class DependencyAggregator extends Object {
         return "DependencyDecorator[" + key.toString () + "]";
     }
     
-    public static UpdateUnit getRequested (Dependency dep) {
+    public static Collection<UpdateUnit> getRequested (Dependency dep) {
         switch (dep.getType ()) {
             case Dependency.TYPE_MODULE :
-                return UpdateManagerImpl.getInstance ().getUpdateUnit (dep.getName ());
+                return Collections.singleton(UpdateManagerImpl.getInstance ().getUpdateUnit (dep.getName ()));
             case Dependency.TYPE_NEEDS :
             case Dependency.TYPE_REQUIRES :
             case Dependency.TYPE_RECOMMENDS :
+                Collection<UpdateUnit> requestedUnits = new HashSet<UpdateUnit> ();
                 Collection<ModuleInfo> installedProviders = UpdateManagerImpl.getInstance ().getInstalledProviders (dep.getName ());
                 if (installedProviders.isEmpty ()) {
                     Collection<ModuleInfo> availableProviders = UpdateManagerImpl.getInstance ().getAvailableProviders (dep.getName ());
                     if (availableProviders.isEmpty ()) {
                         return null;
                     } else {
-                        ModuleInfo mi = availableProviders.iterator ().next ();
-                        return UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
+                        for (ModuleInfo mi : availableProviders) {
+                            UpdateUnit availableUnit = UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
+                            if (availableUnit != null) {
+                                requestedUnits.add(availableUnit);
+                            }
+                        }
+                        return requestedUnits;
                     }
                 } else {
-                    ModuleInfo mi = installedProviders.iterator ().next ();
-                    return UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
+                    for (ModuleInfo mi : installedProviders) {
+                        UpdateUnit installedUnit = UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
+                        if (installedUnit != null) {
+                            requestedUnits.add(installedUnit);
+                        }
+                    }
+                    return requestedUnits;
                 }
             case Dependency.TYPE_JAVA :
             case Dependency.TYPE_PACKAGE :

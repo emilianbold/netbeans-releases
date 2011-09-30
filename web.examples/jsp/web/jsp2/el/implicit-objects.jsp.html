@@ -1,4 +1,6 @@
 <html><body><pre>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 &lt;!--
   Copyright 2004 The Apache Software Foundation
 
@@ -50,7 +52,7 @@
     &lt;blockquote>
       &lt;u>&lt;b>Change Parameter&lt;/b>&lt;/u>
       &lt;form action="implicit-objects.jsp" method="GET">
-	  foo = &lt;input type="text" name="foo" value="${param["foo"]}">
+          foo = &lt;input type="text" name="foo" value="&lt;c:out value="${param['foo']}" />">
           &lt;input type="submit">
       &lt;/form>
       &lt;br>
@@ -62,27 +64,28 @@
 	  &lt;/thead>
 	  &lt;tr>
 	    &lt;td>\${param.foo}&lt;/td>
-	    &lt;td>${param.foo}&amp;nbsp;&lt;/td>
+	    &lt;td>&lt;c:out value="${param.foo}" />&nbsp;&lt;/td>
 	  &lt;/tr>
 	  &lt;tr>
-	    &lt;td>\${param["foo"]}&lt;/td>
-	    &lt;td>${param["foo"]}&amp;nbsp;&lt;/td>
+	    &lt;td>\${param['foo']}&lt;/td>
+            &lt;td>&lt;c:out value="${param['foo']}" />&nbsp;&lt;/td>
 	  &lt;/tr>
 	  &lt;tr>
-	    &lt;td>\${header["host"]}&lt;/td>
-	    &lt;td>${header["host"]}&lt;/td>
+	    &lt;td>\${header['host']}&lt;/td>
+	    &lt;td>&lt;c:out value="${header['host']}" />&lt;/td>
 	  &lt;/tr>
 	  &lt;tr>
-	    &lt;td>\${header["accept"]}&lt;/td>
-	    &lt;td>${header["accept"]}&lt;/td>
+	    &lt;td>\${header['accept']}&lt;/td>
+            &lt;td>&lt;c:out value="${header['accept']}" />&lt;/td>
 	  &lt;/tr>
 	  &lt;tr>
-	    &lt;td>\${header["user-agent"]}&lt;/td>
-	    &lt;td>${header["user-agent"]}&lt;/td>
+	    &lt;td>\${header['user-agent']}&lt;/td>
+	    &lt;td>&lt;c:out value="${header['user-agent']}" />&lt;/td>
 	  &lt;/tr>
 	&lt;/table>
       &lt;/code>
     &lt;/blockquote>
   &lt;/body>
 &lt;/html>
+
 </pre></body></html>

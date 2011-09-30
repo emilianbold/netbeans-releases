@@ -69,6 +69,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
+        getOptions().setSmartyVersion(smartyOptionsPanel.getSmartyVersion());
         getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
         getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
         getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());
@@ -77,6 +78,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void applyChanges() {
+        getOptions().setSmartyVersion(smartyOptionsPanel.getSmartyVersion());
         getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
         getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
         getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());

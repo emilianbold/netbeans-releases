@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -83,11 +84,25 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super.doTest(args, streamOut, streamErr, params);
     }
 
+    protected boolean returnOnShutdown() {
+        return false;
+    }
+
+    protected boolean dumpModel() {
+        return true;
+    }
+    
     @Override
     protected void postTest(String[] args, Object... params) throws Exception {
         if (!getTraceModel().getProject().isStable(null)) {
+            if (returnOnShutdown()) {
+                return;
+            }
             CndUtils.threadsDump();
             while (!getTraceModel().getProject().isStable(null)) {
+                if (returnOnShutdown()) {
+                    return;
+                }
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
@@ -99,18 +114,23 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         for (CsmFile f : getTraceModel().getProject().getAllFiles()){
             map.put(f.getAbsolutePath(), (FileImpl)f);
             if (!f.isParsed()){
+                if (returnOnShutdown()) {
+                    return;
+                }
                 CndUtils.threadsDump();
             }
         }
-        for (FileImpl file : map.values()){
-            CsmTracer tracer = new CsmTracer(false);
-            tracer.setDeep(true);
-            tracer.setDumpTemplateParameters(false);
-            tracer.setTestUniqueName(false);
-            tracer.dumpModel(file);
+        if (dumpModel()) {
+            for (FileImpl file : map.values()){
+                CsmTracer tracer = new CsmTracer(false);
+                tracer.setDeep(true);
+                tracer.setDumpTemplateParameters(false);
+                tracer.setTestUniqueName(false);
+                tracer.dumpModel(file);
+            }
+            dumpProjectContainers(getTraceModel().getProject());
+            super.postTest(args, params);
         }
-        dumpProjectContainers(getTraceModel().getProject());
-        super.postTest(args, params);
     }
 
     private void dumpProjectContainers(CsmProject project){
@@ -163,14 +183,14 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        File file = new File(dataPath, "pkg-config-0.23");
+        File file = new File(dataPath, "pkg-config-0.25");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz");
-            execute("gzip", dataPath, "-d", "pkg-config-0.23.tar.gz");
-            execute("tar", dataPath, "xf", "pkg-config-0.23.tar");
+            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz");
+            execute("gzip", dataPath, "-d", "pkg-config-0.25.tar.gz");
+            execute("tar", dataPath, "xf", "pkg-config-0.25.tar");
         }
 
         file = new File(dataPath, "litesql-0.3.3");
@@ -182,7 +202,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
             execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }
-        list.add(dataPath + "/pkg-config-0.23"); //NOI18N
+        list.add(dataPath + "/pkg-config-0.25"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
         for(String f : list){
             file = new File(f);
@@ -190,7 +210,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkg-config-0.23");
+        list.add("-I"+dataPath + "/pkg-config-0.25");
         list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }

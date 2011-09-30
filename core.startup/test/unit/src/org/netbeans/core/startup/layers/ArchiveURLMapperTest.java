@@ -135,10 +135,12 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
     }
     
-    public void testDocxFiles() throws Exception {
+    public void testFunnyZipEntryNames() throws Exception { // #181671
         File docx = new File(getWorkDir(), "ms-docx.jar");
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(docx));
-        ZipEntry entry = new ZipEntry("[Content.xml]");
+        String file = "[My Content;hi*();.xml]";
+        // still fails with "%20" or "?" present in name (skipping check for ':' since writeZipFile treats it specially)
+        ZipEntry entry = new ZipEntry(file);
         jos.putNextEntry(entry);
         jos.write("content".getBytes());
         jos.close();
@@ -149,7 +151,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         
         FileObject docxRoot = FileUtil.getArchiveRoot(docxFO);
         assertNotNull("Root found", docxRoot);
-        FileObject content = docxRoot.getFileObject("[Content.xml]");
+        FileObject content = docxRoot.getFileObject(file);
         assertNotNull("content.xml found", content);
         
         assertEquals("Has right bytes", "content", content.asText());
@@ -163,6 +165,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertEquals("OK", "content", new String(arr, 0, len));
         
         assertEquals("No warnings:\n" + log, 0, log.length());
+        assertEquals(u.toString(), content, URLMapper.findFileObject(u));
     }
 
     @RandomlyFails

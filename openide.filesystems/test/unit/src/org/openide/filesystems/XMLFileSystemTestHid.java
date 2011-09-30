@@ -352,7 +352,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
         final LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { lfs, xfs });
+        MultiFileSystem mfs = new MultiFileSystem(lfs, xfs);
         FileObject folder = mfs.findResource("org-sepix/Panes/");
 
         for (FileObject fileObject : folder.getChildren()) {
@@ -477,7 +477,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         }
 
         AFS afs = new AFS();
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { afs, xfs });
+        MultiFileSystem mfs = new MultiFileSystem(afs, xfs);
 
         FileObject fo = mfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);

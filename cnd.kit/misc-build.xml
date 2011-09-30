@@ -183,4 +183,10 @@ made subject to such option by the copyright holder.
         </exec>
     </target>
 
+    <target name="i18n-check-local" description="I18n check for CND modules">
+        <exec executable="sh">
+            <arg value="i18n-check-local.sh"/>
+        </exec>
+    </target>
+
 </project>

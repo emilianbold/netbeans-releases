@@ -72,6 +72,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
     @Override
     public void update() {
         symfonyOptionsPanel.setSymfony(getOptions().getSymfony());
+        symfonyOptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
         symfonyOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
         symfonyOptionsPanel.setDefaultParamsForApps(getOptions().getDefaultParamsForApps());
 
@@ -81,6 +82,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
     @Override
     public void applyChanges() {
         getOptions().setSymfony(symfonyOptionsPanel.getSymfony());
+        getOptions().setIgnoreCache(symfonyOptionsPanel.getIgnoreCache());
         getOptions().setDefaultParamsForProject(symfonyOptionsPanel.getDefaultParamsForProject());
         getOptions().setDefaultParamsForApps(symfonyOptionsPanel.getDefaultParamsForApps());
 

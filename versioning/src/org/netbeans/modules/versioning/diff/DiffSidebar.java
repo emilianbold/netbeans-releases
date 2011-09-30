@@ -563,7 +563,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private void shutdown() {
         assert SwingUtilities.isEventDispatchThread();
-
+        refreshDiffTask.cancel();
         if (fileObject != null) {
             fileObject.removeFileChangeListener(this);
         }
@@ -842,7 +842,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void computeDiff() {
-            if (!sidebarVisible || sidebarTemporarilyDisabled) {
+            if (!sidebarVisible || sidebarTemporarilyDisabled || !sidebarInComponentHierarchy) {
                 currentDiff = null;
                 return;
             }

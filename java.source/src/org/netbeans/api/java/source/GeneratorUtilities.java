@@ -121,6 +121,7 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -549,16 +550,8 @@ public final class GeneratorUtilities {
         Trees trees = copy.getTrees();
         Elements elements = copy.getElements();
         ElementUtilities elementUtilities = copy.getElementUtilities();
-        
-        CodeStyle cs = null;
-        try {
-            Document doc = copy.getDocument();
-            if (doc != null)
-                cs = (CodeStyle)doc.getProperty(CodeStyle.class);
-        } catch (IOException ioe) {}
-        if (cs == null) {
-            cs = CodeStyle.getDefault(copy.getFileObject());
-        }
+                
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         
         // check weather any conversions to star imports are needed
         int treshold = cs.countForUsingStarImport();
@@ -1093,6 +1086,7 @@ public final class GeneratorUtilities {
             if (e2.getKind().isField() || e2.getKind() == ElementKind.METHOD) {
                 sb2.append('.').append(e2.getSimpleName());
                 e2 = e2.getEnclosingElement();
+                isStatic2 = true;
             }
             if (e2.getKind().isClass() || e2.getKind().isInterface()) {
                 sb2.insert(0, ((TypeElement)e2).getQualifiedName());

@@ -89,6 +89,9 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.CodeFoldingSideBar.PaintInfo;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -167,6 +170,20 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
     };
     
+    private void checkRepaint(ViewHierarchyEvent vhe) {
+        if (!vhe.isChangeY()) {
+            // does not obscur sidebar graphics
+            return;
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updatePreferredSize();
+                CodeFoldingSideBar.this.repaint();
+            }
+        });
+    }
+    
     /**
      * @deprecated Don't use this constructor, it does nothing!
      */
@@ -192,6 +209,15 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
         prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
         prefsListener.preferenceChange(null);
+        
+        ViewHierarchy.get(component).addViewHierarchyListener(new ViewHierarchyListener() {
+
+            @Override
+            public void viewHierarchyChanged(ViewHierarchyEvent evt) {
+                checkRepaint(evt);
+            }
+            
+        });
     }
     
     private void updatePreferredSize() {

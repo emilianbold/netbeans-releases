@@ -55,7 +55,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 /**
  * Mosty a fake panel, no options needed so far
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 

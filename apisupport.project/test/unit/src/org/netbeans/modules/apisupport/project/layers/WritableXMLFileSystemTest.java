@@ -712,7 +712,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileObject f = r.createData("f");
         f.setAttribute("a", "v");
         assertEquals("    <file name=\"f\">\n        <attr name=\"a\" stringvalue=\"v\"/>\n    </file>\n", l.write());
-        FileSystem mfs = new MultiFileSystem(new FileSystem[] {fs});
+        FileSystem mfs = new MultiFileSystem(fs);
         f = mfs.findResource("f");
         f.setAttribute("a", null);
         assertEquals("    <file name=\"f\"/>\n", l.write());

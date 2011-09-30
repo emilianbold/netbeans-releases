@@ -96,6 +96,7 @@ import org.openide.util.RequestProcessor.Task;
  * are found in the user's $PATH variable.
  */
 public final class CompilerSetManagerImpl extends CompilerSetManager {
+    static final boolean DISABLED = Boolean.getBoolean("cnd.toolchain.disabled"); // NOI18N
 
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(CompilerSetManagerImpl.class.getName(), 1);
@@ -122,7 +123,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //    log.log(Level.FINEST, "CompilerSetManager CTOR A @" + System.identityHashCode(this) + ' ' + env + ' ' + initialize, new Exception()); //NOI18N
         //}
         executionEnvironment = env;
-        if (initialize) {
+        if (initialize && !DISABLED) {
             state = State.STATE_PENDING;
         } else {
             state = State.STATE_UNINITIALIZED;
@@ -170,7 +171,10 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         this.sets = sets;
         this.platform = platform;
         completeCompilerSets();
-        if(env.isRemote() && isEmpty()) {
+        if (DISABLED) {
+            this.state = State.STATE_UNINITIALIZED;
+            log.log(Level.FINE, "CSM DISABLED", toString());
+        } else if(env.isRemote() && isEmpty()) {
             this.state = State.STATE_UNINITIALIZED;
             log.log(Level.FINE, "CSM restoring from pref: Adding empty CS to host {0}", toString());
         } else {
@@ -207,7 +211,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         ProgressHandle pHandle = null;
         try {
             CndUtils.assertNonUiThread();
-            if (isUninitialized()) {
+            if (isUninitialized() && !DISABLED) {
                 log.log(Level.FINE, "CSM.getDefault: Doing remote setup from EDT?{0}", SwingUtilities.isEventDispatchThread());
                 pHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(getClass(), "PROGRESS_TEXT", getExecutionEnvironment().getDisplayName())); // NOI18N
                 pHandle.start();
@@ -218,7 +222,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     initializationTask = null;
                 }
             }
-            if (save) {
+            if (save && !DISABLED) {
                 CompilerSetManagerAccessorImpl.save(this);
             }
         } finally {

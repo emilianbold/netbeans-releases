@@ -46,7 +46,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssIndexTest extends NbTestCase {
 

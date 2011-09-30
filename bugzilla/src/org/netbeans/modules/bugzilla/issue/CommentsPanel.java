@@ -93,7 +93,6 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -129,7 +128,7 @@ public class CommentsPanel extends JPanel {
             @Override
             public void onClick(String linkText) {
                 final String issueKey = issueFinder.getIssueId(linkText);
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         Issue is = issue.getRepository().getIssue(issueKey);

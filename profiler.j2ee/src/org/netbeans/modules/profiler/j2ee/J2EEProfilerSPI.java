@@ -67,8 +67,11 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -172,7 +175,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     private InstanceProperties lastServerInstanceProperties = null;
 
     // --- ProgressObject implementation -----------------------------------------
-    private Vector listeners;
+    private Collection<ProgressListener> listeners = new CopyOnWriteArraySet<ProgressListener>();
     private boolean profilerAgentShutdownProgress = false;
     private boolean profilerAgentStarting = false;
     private boolean refreshServerInstance = false;
@@ -375,11 +378,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     public synchronized void addProgressListener(ProgressListener listener) {
         boolean notify = false;
 
-        if (listeners == null) {
-            listeners = new Vector();
-        }
-
-        listeners.addElement(listener);
+        listeners.add(listener);
 
         if ((stopAgentStatus != null) && !stopAgentStatus.isRunning()) {
             notify = true;
@@ -468,11 +467,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     }
 
     public synchronized void removeProgressListener(ProgressListener listener) {
-        if (listeners == null) {
-            return;
-        }
-
-        listeners.removeElement(listener);
+        listeners.remove(listener);
     }
 
     /**
@@ -693,19 +688,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         ProgressEvent evt = new ProgressEvent(this, null, status);
         stopAgentStatus = status;
 
-        Vector targets = null;
-
-        synchronized (this) {
-            if (listeners != null) {
-                targets = (Vector) listeners.clone();
-            }
-        }
-
-        if (targets != null) {
-            for (int i = 0; i < targets.size(); i++) {
-                ProgressListener target = (ProgressListener) targets.elementAt(i);
-                target.handleProgressEvent(evt);
-            }
+        for (ProgressListener target : listeners) {
+            target.handleProgressEvent(evt);
         }
     }
 

@@ -48,8 +48,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -169,9 +169,13 @@ public final class Util {
         }
         return null;
     }
-    
-    private static final Logger LOG = Logger.getLogger(Util.class.getName());
-    
+
+    public static boolean isParentOf(
+            @NonNull final File folder,
+            @NonNull final File file) {
+        return file.getAbsolutePath().startsWith(folder.getAbsolutePath());
+    }
+
     private Util() {
     }
 }

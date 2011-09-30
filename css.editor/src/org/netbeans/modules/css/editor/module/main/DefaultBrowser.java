@@ -47,7 +47,7 @@ import org.netbeans.modules.css.editor.module.spi.Browser;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class DefaultBrowser extends Browser {
 
@@ -79,7 +79,7 @@ public class DefaultBrowser extends Browser {
     @Override
     public URL getActiveIcon() {
         active.compareAndSet(null, DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"));
+                DEFAULT_ICONS_LOCATION + iconBase + ".png")); //NOI18N
 
         return active.get();
     }
@@ -87,7 +87,7 @@ public class DefaultBrowser extends Browser {
     @Override
     public URL getInactiveIcon() {
         inactive.compareAndSet(null, DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"));
+                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png")); //NOI18N
 
         return inactive.get();
     }

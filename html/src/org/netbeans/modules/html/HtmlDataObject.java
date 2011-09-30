@@ -65,6 +65,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -86,7 +88,9 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserCancelException;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
 /** Object that represents one html file.
@@ -104,6 +108,19 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     
     private HtmlEditorSupport htmlEditorSupport;
+    
+    @MultiViewElement.Registration(
+            displayName="#LBL_HTMLEditorTab",
+            iconBase="org/netbeans/modules/html/htmlObject.png",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="html.source",
+            mimeType=HtmlLoader.HTML_MIMETYPE,
+            position=1
+        )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     
     /** New instance.
      * @param pf primary file object for this data object
@@ -136,11 +153,9 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         
     }
 
-
-
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
     
     @Override

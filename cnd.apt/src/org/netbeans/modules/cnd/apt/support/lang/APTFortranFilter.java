@@ -67,7 +67,7 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
 
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream));
+        return new APTFortranFilterEx().getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
     }
 
     private void initialize() {
@@ -224,21 +224,21 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
 
         filter("BIND", APTTokenTypes.T_BIND); // NOI18N
 
-
-
         filter(APTTokenTypes.STAR, APTTokenTypes.T_ASTERISK);
         filter(APTTokenTypes.COMMA, APTTokenTypes.T_COMMA);
         filter(APTTokenTypes.CHAR_LITERAL, APTTokenTypes.T_CHAR_CONSTANT);
         filter(APTTokenTypes.EQUAL, APTTokenTypes.T_EQUIVALENCE);
         filter(APTTokenTypes.ASSIGNEQUAL, APTTokenTypes.T_EQUALS);
+        filter(APTTokenTypes.SCOPE, APTTokenTypes.T_COLON_COLON);
+        filter(APTTokenTypes.LESSTHAN, APTTokenTypes.T_LESSTHAN);
+        filter(APTTokenTypes.PLUS, APTTokenTypes.T_PLUS);
 
-        filter(APTTokenTypes.OCTALINT, APTTokenTypes.OCTAL_CONSTANT);
+        filter(APTTokenTypes.OCTALINT, APTTokenTypes.T_DIGIT_STRING);
         filter(APTTokenTypes.DECIMALINT, APTTokenTypes.T_DIGIT_STRING);
         filter(APTTokenTypes.NUMBER, APTTokenTypes.T_DIGIT_STRING);
 
         filter(APTTokenTypes.LPAREN, APTTokenTypes.T_LPAREN);
         filter(APTTokenTypes.RPAREN, APTTokenTypes.T_RPAREN);
-
     }
 
     protected void filter(int ttype1, int ttype2) {

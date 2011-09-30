@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.editor.hints.common.Utilities;
@@ -77,7 +78,8 @@ public class RemoveAnnotation implements Fix {
             public void cancel() {}
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                Utilities.removeAnnotation(workingCopy, element, annMirror);
+                Utilities.removeAnnotation(workingCopy, ElementHandle.create(element), 
+                        annMirror);
             }
         };
         

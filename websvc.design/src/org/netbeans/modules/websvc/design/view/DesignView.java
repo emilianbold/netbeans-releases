@@ -53,6 +53,9 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseWheelListener;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +78,9 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
+import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
@@ -228,7 +234,16 @@ public class DesignView extends JPanel  {
 
             @Override
             protected ServiceModel doInBackground() throws Exception {
-                return ServiceModel.getServiceModel(implementationClass);
+                ServiceModel model = ServiceModel.getServiceModel(implementationClass);
+                configurations = new LinkedList<WSConfiguration>();
+                for(WSConfigurationProvider provider : getConfigProviders()){
+                    WSConfiguration config = provider.getWSConfiguration(
+                            service, implementationClass);
+                    if ( config != null ){
+                        configurations.add( config );
+                    }
+                }
+                return model;
             }
             
             /* (non-Javadoc)
@@ -238,7 +253,7 @@ public class DesignView extends JPanel  {
             protected void done() {
                 try {
                     serviceModel = get();
-                    initUI();
+                    initUI( configurations );
                 }
                 catch(ExecutionException e ){
                     Logger.getLogger( DesignView.class.getName()).log( 
@@ -250,11 +265,17 @@ public class DesignView extends JPanel  {
                             
                 }
             }
+            
+            private Set<WSConfigurationProvider> getConfigProviders(){
+                return WSConfigurationProviderRegistry.getDefault().getWSConfigurationProviders();
+            }
+            
+            private Collection<WSConfiguration> configurations;
         };
         worker.execute();
     }
     
-    private void initUI() {
+    private void initUI(Collection<WSConfiguration> wsConfigurations) {
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
             public void propertyChanged(String propertyName, 
                     String oldValue, String newValue) 
@@ -279,7 +300,8 @@ public class DesignView extends JPanel  {
         operationsWidget = new OperationsWidget(scene, service, serviceModel);
         contentWidget.addChild(operationsWidget);
         //add wsit widget
-        WsitWidget wsitWidget = new WsitWidget(scene, service, implementationClass);
+        WsitWidget wsitWidget = new WsitWidget(scene, service, 
+                implementationClass, wsConfigurations );
         contentWidget.addChild(wsitWidget);
         
         headerWidget.setLabel( getServiceName());

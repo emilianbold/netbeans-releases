@@ -547,6 +547,29 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+
+    public void test202336() throws Exception { // [71cat] ArrayIndexOutOfBoundsException: -1
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(int x, String y) {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2, \"ddd\");\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[0];
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+    }
     
     public void test202156() throws Exception { // [Change Method Parameters] Re-order parameters and change to varargs creates wrong method call
         writeFilesAndWaitForScan(src,

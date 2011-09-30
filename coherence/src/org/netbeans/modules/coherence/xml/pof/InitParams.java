@@ -41,55 +41,21 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
 
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "initParam"
-})
-@XmlRootElement(name = "init-params")
-public class InitParams {
+public interface InitParams extends PofConfigComponent {
 
-    @XmlElement(name = "init-param")
-    protected List<InitParam> initParam;
+    static String XML_TAG_NAME = "init-params";
+    
+    public List<InitParam> getInitParams();
 
-    /**
-     * Gets the value of the initParam property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the initParam property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getInitParam().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link InitParam }
-     * 
-     * 
-     */
-    public List<InitParam> getInitParam() {
-        if (initParam == null) {
-            initParam = new ArrayList<InitParam>();
-        }
-        return this.initParam;
-    }
+    void addInitParam(InitParam element);
 
+    void addInitParam(int index, InitParam element);
+
+    void removeInitParam(InitParam element);
 }

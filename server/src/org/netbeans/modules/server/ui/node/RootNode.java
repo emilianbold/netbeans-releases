@@ -126,7 +126,7 @@ public final class RootNode extends AbstractNode {
         shortDescription = "org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Short_Description",
         iconResource = "org/netbeans/modules/server/ui/resources/cloud.png",
         position = 444
-    )
+    )*/
     public static synchronized RootNode getCloudInstance() {
         if (cloudNode == null) {
             ChildFactory factory = new ChildFactory(ServerRegistry.getCloudInstance());
@@ -139,7 +139,7 @@ public final class RootNode extends AbstractNode {
                     ServerRegistry.getCloudInstance());
         }
         return cloudNode;
-    } */
+    }
 
     @Override
     public Action[] getActions(boolean context) {

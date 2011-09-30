@@ -54,6 +54,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -141,6 +142,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
     private WizardDescriptor wiz;
     private boolean addJaxWsLib;
     private int serviceType;
+    
+    private static final Logger LOG = Logger.getLogger( JaxWsServiceCreator.class.getCanonicalName());
 
     /**
      * Creates a new instance of WebServiceClientCreator
@@ -384,6 +387,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         DataObject dobj = dTemplate.createFromTemplate(df, Templates.getTargetName(wiz));
         FileObject createdFile = dobj.getPrimaryFile();
+        /*createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);     // NOI18N
+        try {
+            dobj.setValid(false);
+        }
+        catch( PropertyVetoException e ){
+            LOG.log(Level.WARNING, null , e);
+        }*/
+        dobj = DataObject.find(createdFile);
+        
            
         openFileInEditor(dobj);
 
@@ -552,6 +564,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataObject dTemplate = DataObject.find(template);
                 DataObject dobj = dTemplate.createFromTemplate(df, wsName);
                 FileObject createdFile = dobj.getPrimaryFile();
+                /*createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE); // NOI18N
+                try {
+                    dobj.setValid(false);
+                }
+                catch( PropertyVetoException e ){
+                    LOG.log(Level.WARNING, null , e);
+                }*/
+                dobj = DataObject.find(createdFile);
+                
 
                 ClassPath classPath = getClassPathForFile(project, createdFile);
                 if (classPath != null) {

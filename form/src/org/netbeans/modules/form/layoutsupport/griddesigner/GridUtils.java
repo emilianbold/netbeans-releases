@@ -160,6 +160,12 @@ public class GridUtils {
         }
         int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
         int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+        if(info.hasGaps()) {
+            int gappedColumns = info.getLastGapColumn() > 0 ? info.getLastGapColumn() + 1 : 1;
+            columnNo = columnNo > gappedColumns ? gappedColumns : columnNo;
+            int gappedRows = info.getLastGapRow() > 0 ? info.getLastGapRow() + 1 : 1;
+            rowNo = rowNo > gappedRows ? gappedRows : rowNo;
+        }
         boolean modified = true;
         while (modified) {
             // Addition of paddings can make other column/rows smaller

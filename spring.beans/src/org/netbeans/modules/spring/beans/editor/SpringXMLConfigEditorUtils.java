@@ -89,9 +89,9 @@ import org.w3c.dom.Node;
 
 /**
  * Utility methods for Spring XML configuration file editor
- * 
+ *
  * Inspired by BeansEditorUtils class from SpringIDE
- * 
+ *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public final class SpringXMLConfigEditorUtils {
@@ -101,31 +101,31 @@ public final class SpringXMLConfigEditorUtils {
 
     private SpringXMLConfigEditorUtils() {
     }
-    
+
     public static String getPNamespacePrefix(Document document, int offset) {
         DocumentContext context = DocumentContext.create(document, offset);
         if(context == null) {
             return null;
         }
-        
+
         return context.getNamespacePrefix(ContextUtilities.P_NAMESPACE);
     }
-    
+
     public static Map<String, String> getTagAttributes(Node node) {
         NamedNodeMap namedNodeMap = node.getAttributes();
         if(namedNodeMap == null || namedNodeMap.getLength() == 0) {
             return Collections.<String, String>emptyMap();
         }
-        
+
         Map<String, String> attribs = new HashMap<String, String>();
         for(int i = 0; i < namedNodeMap.getLength(); i++) {
             Node attribNode = namedNodeMap.item(i);
             attribs.put(attribNode.getNodeName(), attribNode.getNodeValue());
         }
-        
+
         return Collections.unmodifiableMap(attribs);
     }
-    
+
     public static String getBeanPropertySetterName(String property) {
         char[] buffer = property.toCharArray();
         buffer[0] = Character.toUpperCase(buffer[0]);
@@ -137,30 +137,31 @@ public final class SpringXMLConfigEditorUtils {
         Node bean = getBean(tag);
         if (bean != null) {
             NamedNodeMap attribs = bean.getAttributes();
-            if (attribs != null && attribs.getNamedItem(BeansAttributes.FACTORY_METHOD) != null) { 
-                return attribs.getNamedItem(BeansAttributes.FACTORY_METHOD).getNodeValue(); 
+            if (attribs != null && attribs.getNamedItem(BeansAttributes.FACTORY_METHOD) != null) {
+                return attribs.getNamedItem(BeansAttributes.FACTORY_METHOD).getNodeValue();
             }
         }
 
         return null;
     }
-    
+
     public static Node getBean(Node tag) {
         if (tag == null) {
             return null;
         }
 
-        if (tag.getNodeName().equals(BeansElements.BEAN)) { 
+        if (tag.getNodeName().equals(BeansElements.BEAN)) {
             return tag;
         }
 
-        if (tag.getNodeName().equals(BeansElements.LOOKUP_METHOD) 
-                || tag.getNodeName().equals(BeansElements.REPLACED_METHOD) 
-                || tag.getNodeName().equals(BeansElements.PROPERTY)) { 
+        if (tag.getNodeName().equals(BeansElements.LOOKUP_METHOD)
+                || tag.getNodeName().equals(BeansElements.REPLACED_METHOD)
+                || tag.getNodeName().equals(BeansElements.PROPERTY)) {
             Node parent = tag.getParentNode();
 
-            if (parent!=null && // to prevent NPE in case the node has just been created and not yet added to the tree
-                    parent.getNodeName().equals(BeansElements.BEAN)) { // NOI18N
+            if (parent != null // to prevent NPE in case the node has just been created and not yet added to the tree
+                    && parent.getNodeName() != null // in cases that parent node is without node name (see #202319)
+                    && parent.getNodeName().equals(BeansElements.BEAN)) { // NOI18N
                 return parent;
             } else {
                 return null;
@@ -215,10 +216,10 @@ public final class SpringXMLConfigEditorUtils {
         } catch (BadLocationException ex) {
             // No context support available in this case
         }
-        
+
         return retTag;
     }
-    
+
     public static final boolean hasAttribute(Node node, String attributeName) {
         return (node != null && node.getAttributes() != null && node.getAttributes().getNamedItem(attributeName) != null);
     }
@@ -229,7 +230,7 @@ public final class SpringXMLConfigEditorUtils {
         }
         return null;
     }
-    
+
     public static boolean openFile(File file, int offset) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
@@ -237,7 +238,7 @@ public final class SpringXMLConfigEditorUtils {
         }
         return false;
     }
-    
+
     public static boolean openFile(FileObject fo, int offset) {
         DataObject dataObject;
         boolean opened = false;
@@ -261,7 +262,7 @@ public final class SpringXMLConfigEditorUtils {
         }
         return false;
     }
-    
+
     private static boolean openFileAtOffset(DataObject dataObject, int offset) throws IOException {
         EditorCookie ec = dataObject.getCookie(EditorCookie.class);
         LineCookie lc = dataObject.getCookie(LineCookie.class);
@@ -282,20 +283,20 @@ public final class SpringXMLConfigEditorUtils {
         }
         return false;
     }
-    
+
     public static SpringBean getMergedBean(SpringBean origBean, FileObject fileObject) {
         if(origBean == null) {
             return null;
         }
-        
+
         if(origBean.getParent() == null) {
             return origBean;
         }
-        
+
         ModelBasedSpringBean logicalBean = new ModelBasedSpringBean(origBean, fileObject);
         return getMergedBean(logicalBean, fileObject);
     }
-    
+
     public static SpringBean getMergedBean(Map<String, String> beanAttribs, FileObject fileObject) {
 
         NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs);
@@ -305,7 +306,7 @@ public final class SpringXMLConfigEditorUtils {
 
         return getMergedBean(logicalBean, fileObject);
     }
-    
+
     private static SpringBean getMergedBean(MutableSpringBean startBean, FileObject fileObject) {
         final MutableSpringBean[] logicalBean = { startBean };
         SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
@@ -319,7 +320,7 @@ public final class SpringXMLConfigEditorUtils {
                 public void run(SpringBeans springBeans) {
                     String currParent = logicalBean[0].getParent();
                     Set<SpringBean> walkedBeans = new HashSet<SpringBean>();
-                    while (currParent != null && (logicalBean[0].getClassName() == null 
+                    while (currParent != null && (logicalBean[0].getClassName() == null
                             || logicalBean[0].getFactoryBean() == null || logicalBean[0].getFactoryMethod() == null)) {
                         SpringBean currBean = springBeans.findBean(currParent);
                         if (currBean == null || walkedBeans.contains(currBean)) {
@@ -347,16 +348,16 @@ public final class SpringXMLConfigEditorUtils {
             Exceptions.printStackTrace(ioe);
             logicalBean[0] = null;
         }
-        
+
         return logicalBean[0];
     }
-       
+
     private static interface MutableSpringBean extends SpringBean {
         void setClassName(String className);
         void setFactoryBean(String factoryBean);
         void setFactoryMethod(String factoryMethod);
     }
-    
+
     private static class ModelBasedSpringBean implements MutableSpringBean {
         private String className;
         private String factoryBean;
@@ -391,7 +392,7 @@ public final class SpringXMLConfigEditorUtils {
         public void setClassName(String className) {
             this.className = className;
         }
-        
+
         public String getParent() {
             return parent;
         }
@@ -403,7 +404,7 @@ public final class SpringXMLConfigEditorUtils {
         public void setFactoryBean(String factoryBean) {
             this.factoryBean = factoryBean;
         }
-        
+
         public String getFactoryMethod() {
             return factoryMethod;
         }
@@ -419,9 +420,9 @@ public final class SpringXMLConfigEditorUtils {
         public Set<SpringBeanProperty> getProperties() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
     }
-    
+
     private static class NodeBasedSpringBean implements MutableSpringBean {
 
         private String className;
@@ -432,18 +433,18 @@ public final class SpringXMLConfigEditorUtils {
         private List<String> names;
 
         public NodeBasedSpringBean(Map<String, String> beanAttribs) {
-            this.className = beanAttribs.get(BeansAttributes.CLASS); 
-            this.factoryBean = beanAttribs.get(BeansAttributes.FACTORY_BEAN); 
-            this.factoryMethod = beanAttribs.get(BeansAttributes.FACTORY_METHOD); 
-            this.parent = beanAttribs.get(BeansAttributes.PARENT); 
-            this.id = beanAttribs.get(BeansAttributes.ID); 
-            
+            this.className = beanAttribs.get(BeansAttributes.CLASS);
+            this.factoryBean = beanAttribs.get(BeansAttributes.FACTORY_BEAN);
+            this.factoryMethod = beanAttribs.get(BeansAttributes.FACTORY_METHOD);
+            this.parent = beanAttribs.get(BeansAttributes.PARENT);
+            this.id = beanAttribs.get(BeansAttributes.ID);
+
             if(beanAttribs.get(BeansAttributes.NAME) == null) { // NOI18N
                 this.names = Collections.<String>emptyList();
             }
             this.names = StringUtils.tokenize(beanAttribs.get(BeansAttributes.NAME), BEAN_NAME_DELIMITERS); // NOI18N
         }
-        
+
         public String getId() {
             return this.id;
         }
@@ -455,7 +456,7 @@ public final class SpringXMLConfigEditorUtils {
         public String getClassName() {
             return className;
         }
-        
+
         public void setClassName(String className) {
             this.className = className;
         }
@@ -471,7 +472,7 @@ public final class SpringXMLConfigEditorUtils {
         public void setFactoryBean(String factoryBean) {
             this.factoryBean = factoryBean;
         }
-        
+
         public String getFactoryMethod() {
             return this.factoryMethod;
         }
@@ -479,7 +480,7 @@ public final class SpringXMLConfigEditorUtils {
         public void setFactoryMethod(String factoryMethod) {
             this.factoryMethod = factoryMethod;
         }
-        
+
         public Location getLocation() {
             // Logical bean cannot have a location
             throw new UnsupportedOperationException();
@@ -488,6 +489,6 @@ public final class SpringXMLConfigEditorUtils {
         public Set<SpringBeanProperty> getProperties() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
     }
 }
