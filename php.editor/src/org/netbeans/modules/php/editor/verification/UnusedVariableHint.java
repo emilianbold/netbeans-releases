@@ -46,6 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Hint;
@@ -114,10 +116,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnusedVariableHint extends AbstractRule {
+public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPreferences {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
+    private static final String CHECK_UNUSED_FORMAL_PARAMETERS = "php.verification.check.unused.formal.parameters"; //NOI18N
     private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+    private Preferences preferences;
 
     static {
         UNCHECKED_VARIABLES.add("this"); //NOI18N
@@ -461,7 +465,13 @@ public class UnusedVariableHint extends AbstractRule {
 
         @Override
         public void visit(FormalParameter node) {
-            scan(node.getParameterName());
+            if (checkUnusedFormalParameters(preferences)) {
+                scan(node.getParameterName());
+            } else {
+                forceVariableAsUsed = true;
+                scan(node.getParameterName());
+                forceVariableAsUsed = false;
+            }
         }
 
         @Override
@@ -623,6 +633,24 @@ public class UnusedVariableHint extends AbstractRule {
     @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
+    }
+
+    @Override
+    public void setPreferences(Preferences preferences) {
+        this.preferences = preferences;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences preferences) {
+        return new UnusedVariableCustomizer(preferences, this);
+    }
+
+    public void setCheckUnusedFormalParameters(Preferences preferences, boolean isEnabled) {
+        preferences.putBoolean(CHECK_UNUSED_FORMAL_PARAMETERS, isEnabled);
+    }
+
+    public boolean checkUnusedFormalParameters(Preferences preferences) {
+        return preferences.getBoolean(CHECK_UNUSED_FORMAL_PARAMETERS, true);
     }
 
 }

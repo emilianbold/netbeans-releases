@@ -89,6 +89,10 @@ public class PHPHintsProvider implements HintsProvider {
             ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
+                    if (astRule instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) astRule;
+                        icm.setPreferences(mgr.getPreferences(astRule));
+                    }
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
                         try {
