@@ -64,6 +64,6 @@ made subject to such option by the copyright holder.
         </subant>
         <loadfile property="client.url" srcfile="${url.file}" failonerror="true"/>
         <delete file="${url.file}" failonerror="true"/>
-        <property name="tryme.args" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/analytics//upload.jsp"/>
+        <property name="tryme.arg.submiturl" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/analytics//upload.jsp"/>
     </target>
 </project>
