@@ -231,6 +231,7 @@ public class RemoteServices {
     private static void runOnBreakpoint(final JPDAThread awtThread, String bpClass, String bpMethod, final Runnable runnable, final CountDownLatch latch) {
         final MethodBreakpoint mb = MethodBreakpoint.create(bpClass, bpMethod);
         final JPDADebugger dbg = ((JPDAThreadImpl)awtThread).getDebugger();
+        final PropertyChangeListener[] listenerPtr = new PropertyChangeListener[] { null };
         
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
@@ -241,6 +242,12 @@ public class RemoteServices {
                 try {
                     if (dbg.equals(event.getDebugger())) {
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                        //System.err.println("BREAKPOINT "+mb+" REMOVED after reached."+" ID = "+System.identityHashCode(mb));
+                        PropertyChangeListener listener = listenerPtr[0];
+                        if (listener != null) {
+                            dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+                            listenerPtr[0] = null;
+                        }
                         try {
                             ((JPDAThreadImpl)awtThread).notifyMethodInvoking();
                             runnable.run();
@@ -255,7 +262,26 @@ public class RemoteServices {
                 }
             }
         });
-        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        PropertyChangeListener listener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (dbg.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                    //System.err.println("BREAKPOINT "+mb+" REMOVED after debugger finished."+" ID = "+System.identityHashCode(mb));
+                    dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                    listenerPtr[0] = null;
+                }
+            }
+        };
+        dbg.addPropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+        listenerPtr[0] = listener;
+        if (dbg.getState() != JPDADebugger.STATE_DISCONNECTED) {
+            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+            //System.err.println("ADD BP: "+mb+" ID = "+System.identityHashCode(mb));
+        } else {
+            dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+            //System.err.println("NOT ADDED BP: "+mb+" ID = "+System.identityHashCode(mb));
+        }
     }
     
     private static final Map<JPDAThread, RequestProcessor.Task> tasksByThreads = new WeakHashMap<JPDAThread, RequestProcessor.Task> ();
