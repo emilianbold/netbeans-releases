@@ -180,8 +180,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                 //Map<String, ListenerCategory> listenerCategories;
                 //customListenersMap = new TreeMap<String, ListenerCategory>();
                 //swingListenersMap = new TreeMap<String, ListenerCategory>();
-                customListenersList = new ArrayList<RemoteListener>(componentListeners.size());
-                swingListenersList = new ArrayList<RemoteListener>(componentListeners.size());
+                List<RemoteListener> cll = new ArrayList<RemoteListener>(componentListeners.size());
+                List<RemoteListener> sll = new ArrayList<RemoteListener>(componentListeners.size());
                 for (RemoteListener rl : componentListeners) {
                     ObjectReference listener = rl.getListener();
                     if (lls != null) {
@@ -199,11 +199,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                     String type = listener.referenceType().name();
                     if (JavaComponentInfo.isCustomType(type)) {
                         //listenerCategories = customListenersMap;
-                        customListenersList.add(rl);
+                        cll.add(rl);
                     } else {
-                        swingListenersList.add(rl);
+                        sll.add(rl);
                         //listenerCategories = swingListenersMap;
                     }
+                    customListenersList = cll;
+                    swingListenersList = sll;
                     /*
                     ListenerCategory lc = listenerCategories.get(type);
                     if (lc == null) {

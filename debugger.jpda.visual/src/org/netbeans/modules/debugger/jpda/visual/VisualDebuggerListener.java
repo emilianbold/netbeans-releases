@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -194,52 +195,59 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "initDebuggerRemoteService({0})", thread);
         }
-        ClassObjectReference cor = null;
-        try {
-            cor = RemoteServices.uploadBasicClasses((JPDAThreadImpl) thread, sType);
-        } catch (PropertyVetoException pvex) {
-            Exceptions.printStackTrace(pvex);
-        } catch (InvalidTypeException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotLoadedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IncompatibleThreadStateException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationException ex) {
-            final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, ((JPDAThreadImpl) thread).getDebugger());
-            iextr.setPreferredThread((JPDAThreadImpl) thread);
-            iextr.getMessage();
-            iextr.getLocalizedMessage();
-            iextr.getCause();
-            iextr.getStackTrace();
-            Exceptions.printStackTrace(iextr);
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Uploaded class = {0}", cor);
-        }
-        if (cor == null) {
-            return ;
-        }
         JPDAThreadImpl t = (JPDAThreadImpl) thread;
-        ThreadReference tr = t.getThreadReference();
-        VirtualMachine vm = tr.virtualMachine();
-        ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
-        
-        Method startMethod = serviceClass.concreteMethodByName("startAccessLoop", "()V");
+        Lock writeLock = t.accessLock.writeLock();
+        writeLock.lock();
         try {
-            t.notifyMethodInvoking();
-            serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            ClassObjectReference cor = null;
+            try {
+                cor = RemoteServices.uploadBasicClasses(t, sType);
+            } catch (PropertyVetoException pvex) {
+                Exceptions.printStackTrace(pvex);
+            } catch (InvalidTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotLoadedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IncompatibleThreadStateException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationException ex) {
+                final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
+                iextr.setPreferredThread(t);
+                iextr.getMessage();
+                iextr.getLocalizedMessage();
+                iextr.getCause();
+                iextr.getStackTrace();
+                Exceptions.printStackTrace(iextr);
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Uploaded class = {0}", cor);
+            }
+            if (cor == null) {
+                return ;
+            }
+            ThreadReference tr = t.getThreadReference();
+            ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+
+            Method startMethod = serviceClass.concreteMethodByName("startAccessLoop", "()V");
+            try {
+                t.notifyMethodInvoking();
+                serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                t.notifyMethodInvokeDone();
+                cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
+            }
         } finally {
-            t.notifyMethodInvokeDone();
-            cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
+            writeLock.unlock();
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+            logger.fine("The RemoteServiceClass is there: "+
+                            RemoteServices.getClass(t.getThreadReference().virtualMachine(),
+                        "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
         }
     }
     
