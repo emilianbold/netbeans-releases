@@ -110,8 +110,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     
     private JavaComponentInfo selectedCI = null;
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
-    private List<RemoteListener> customListenersList;
-    private List<RemoteListener> swingListenersList;
+    private volatile List<RemoteListener> customListenersList;
+    private volatile List<RemoteListener> swingListenersList;
     private JPDADebugger debugger;
     private final Map<ObjectReference, Set<LoggingEventListener>> loggingListeners =
             new HashMap<ObjectReference, Set<LoggingEventListener>>();
@@ -166,6 +166,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                 List<RemoteListener> componentListeners;
                 try {
                     componentListeners = RemoteServices.getAttachedListeners(ci);
+                    System.err.println("ALL Component Listeners = "+componentListeners);
                 } catch (PropertyVetoException pvex) {
                     Exceptions.printStackTrace(pvex);
                     return new Object[] {};
@@ -204,8 +205,6 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                         sll.add(rl);
                         //listenerCategories = swingListenersMap;
                     }
-                    customListenersList = cll;
-                    swingListenersList = sll;
                     /*
                     ListenerCategory lc = listenerCategories.get(type);
                     if (lc == null) {
@@ -214,6 +213,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                     }
                     lc.addListener(rl); */
                 }
+                customListenersList = cll;
+                swingListenersList = sll;
                 
                 return new Object[] { componentName, customListeners, swingListeners, eventsLog };
             } else {
