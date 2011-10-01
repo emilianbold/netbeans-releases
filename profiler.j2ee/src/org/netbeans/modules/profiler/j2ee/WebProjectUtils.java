@@ -190,7 +190,7 @@ public class WebProjectUtils {
         NodeList filtersList = getFilters(deploymentDescriptorDocument);
         NodeList filterMappingsList = getFilterMappings(deploymentDescriptorDocument);
 
-        Vector mappedFilterNames = new Vector();
+        Collection<String> mappedFilterNames = new HashSet<String>();
 
         for (int i = 0; i < filterMappingsList.getLength(); i++) {
             String mappedFilterName = getElementContent((Element) filterMappingsList.item(i), "filter-name"); // NOI18N
@@ -386,7 +386,7 @@ public class WebProjectUtils {
         NodeList servletsList = getServlets(deploymentDescriptorDocument);
         NodeList servletMappingsList = getServletMappings(deploymentDescriptorDocument);
 
-        Vector mappedServletNames = new Vector();
+        Collection<String> mappedServletNames = new HashSet<String>();
 
         for (int i = 0; i < servletMappingsList.getLength(); i++) {
             String mappedServletName = getElementContent((Element) servletMappingsList.item(i), "servlet-name"); // NOI18N

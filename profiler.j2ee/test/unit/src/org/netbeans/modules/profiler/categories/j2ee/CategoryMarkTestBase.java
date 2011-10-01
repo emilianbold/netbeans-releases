@@ -53,6 +53,7 @@ import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
 import org.netbeans.lib.profiler.marker.Mark;
+import org.netbeans.lib.profiler.results.RuntimeCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MarkedCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
@@ -508,10 +509,8 @@ public class CategoryMarkTestBase extends TestBase {
                 map.put(methodId, mark);
             }
         }
-        Children children = node.getChildren();
-        for ( int i = 0 ; i <children.size(); i++){
-            RuntimeCPUCCTNode child = children.getChildAt(i);
-                collectMethodMarks(child, map, stack);
+        for (RuntimeCCTNode child : node.getChildren()){
+            collectMethodMarks((RuntimeCPUCCTNode)child, map, stack);
         }
         if ( node instanceof MarkedCPUCCTNode && !stack.isEmpty() ){
             stack.pop();
