@@ -238,8 +238,8 @@ public final class JavaFXPlatformUtils {
             if (children == null) {
                 return null;
             }
+            files.addAll(Arrays.asList(children));
             for (File child : children) {
-                files.add(child); // check in neighbour folders: Win installation
                 files.addAll(Arrays.asList(child.listFiles()));
             }
             for (File file : files) {
