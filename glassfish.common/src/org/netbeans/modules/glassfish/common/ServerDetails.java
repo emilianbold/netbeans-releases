@@ -61,9 +61,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3(NbBundle.getMessage(ServerDetails.class,"STR_3_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-3.0-b74b"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.0-b74b"}, // NOI18N
         new String[0], // NOI18N
         300,
         "http://download.java.net/glassfish/v3/release/glassfish-v3.zip?nbretriever=fallback", // NOI18N
@@ -74,9 +72,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_0_1(NbBundle.getMessage(ServerDetails.class,"STR_301_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-3.0.1"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.0.1"}, // NOI18N
         new String[0], // NOI18N
         301,
         "http://download.java.net/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
@@ -87,9 +83,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1(NbBundle.getMessage(ServerDetails.class, "STR_31_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-3.1"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1"}, // NOI18N
         new String[0],
         310,
         "http://download.java.net/glassfish/3.1/release/glassfish-3.1-ml.zip?nbretriever=fallback", // NOI18N
@@ -100,9 +94,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_1(NbBundle.getMessage(ServerDetails.class, "STR_311_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-3.1.1",}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.1",}, // NOI18N
         new String[0],
         311,
         "http://download.java.net/glassfish/3.1.1/release/glassfish-3.1.1-ml.zip?nbretriever=fallback", // NOI18N
@@ -113,9 +105,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-3.1.2"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2"}, // NOI18N
         new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
@@ -126,9 +116,7 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_4_0(NbBundle.getMessage(ServerDetails.class, "STR_40_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib" + File.separator + "install" + File.separator + "applications" + 
-            File.separator + "__admingui" + File.separator + "WEB-INF" + File.separator + "lib" +
-            File.separator + "console-core-4.0"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"}, // NOI18N
         new String[0],
         400,
         "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
