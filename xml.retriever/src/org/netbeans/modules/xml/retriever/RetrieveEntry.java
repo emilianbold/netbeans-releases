@@ -63,12 +63,6 @@ public class RetrieveEntry{
     //final abs address from where the file was retrieved
     private String effectiveAddress = null;
     
-    public RetrieveEntry(String baseAddress, String currentAddress, File localBaseFile){
-        this.baseAddress = baseAddress;
-        this.currentAddress = currentAddress;
-        this.localBaseFile = localBaseFile;
-    }
-    
     public RetrieveEntry(String baseAddress, String currentAddress, File localBaseFile, File saveFile, DocumentTypesEnum docType, boolean recursive){
         this.baseAddress = baseAddress;
         this.currentAddress = currentAddress;
@@ -88,10 +82,6 @@ public class RetrieveEntry{
     
     public String getCurrentAddress() {
         return currentAddress;
-    }
-    
-    public void setCurrentAddress(String currentAddress) {
-        this.currentAddress = currentAddress;
     }
     
     public File getLocalBaseFile() {

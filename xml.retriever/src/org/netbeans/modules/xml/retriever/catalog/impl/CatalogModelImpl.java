@@ -63,6 +63,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -115,7 +116,14 @@ public class CatalogModelImpl implements CatalogModel {
     Catalog apacheCatalogResolverObj;
     private boolean doFetch = true;
     private boolean fetchSynchronous = false;
-
+    private boolean registerInCatalog = true;
+    
+    /**
+     * Map of failed URIs; will not be tried again until restat.
+     * FIXME - we need a better negative response cache.
+     */
+    private static Map<URI, CatalogModelException>   failedURIs = new HashMap<URI, CatalogModelException>();
+    
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);
@@ -154,31 +162,47 @@ public class CatalogModelImpl implements CatalogModel {
            queryString.indexOf("sync=") != -1) { //NOI18N
             int index = queryString.indexOf("fetch="); //NOI18N
             String temp = queryString.substring(index);
-            String queries[] = temp.split("&&"); //NOI18N
+            String queries[] = temp.split("&"); //NOI18N
             doFetch = Boolean.valueOf(queries[0].split("=")[1]); //NOI18N
             fetchSynchronous = Boolean.valueOf(queries[1].split("=")[1]); //NOI18N
             realURI = new URI(locationURI.toString().substring(
                     0, locationURI.toString().lastIndexOf("fetch=")-1)); //NOI18N
+            // hack for code completion, so it does not create catalog.xml in VCS
+            registerInCatalog = false;
         }
         return realURI;
     }
 
+    // FIXME - unnecessary synchronous; prevens > 1 source download at a time
     @Override
     public synchronized ModelSource getModelSource(URI locationURI,
         ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         ModelSource ms = null;
         try {
+            checkFailedURI(locationURI);
             ms = doGetModelSource(extractRealURI(locationURI), modelSourceOfSourceDocument);
         } catch (URISyntaxException ex) {
-            throw new CatalogModelException(ex);
+            CatalogModelException e = new CatalogModelException(ex);
+            addFailedURI(locationURI, e);
+            throw e;
         } catch (CatalogModelException ex) {
+            addFailedURI(locationURI, ex);
             throw ex;
         } finally {
             //reset flags
-            doFetch = true;
-            fetchSynchronous = false;
+            resetFlags();
         }
         return ms;
+    }
+    
+    private static void addFailedURI(URI locationURI, CatalogModelException t) {
+        failedURIs.put(locationURI, t);
+    }
+    
+    private void resetFlags() {
+        doFetch = true;
+        fetchSynchronous = false;
+        registerInCatalog = true;
     }
         
     private synchronized ModelSource doGetModelSource(URI locationURI,
@@ -415,6 +439,13 @@ public class CatalogModelImpl implements CatalogModel {
         return false;
     }
     
+    private void checkFailedURI(URI locationURI) throws CatalogModelException {
+        CatalogModelException t = failedURIs.get(locationURI);
+        if (t != null) {
+            throw t;
+        }
+    }
+    
     protected File resolveUsingCatalog(URI locationURI, FileObject sourceFileObject
             ) throws CatalogModelException, IOException {
         logger.entering("CatalogModelImpl", "resolveUsingCatalog", locationURI);
@@ -424,6 +455,11 @@ public class CatalogModelImpl implements CatalogModel {
         result = resolveUsingPublicCatalog(locationURI);
         if(result != null)
             return result;
+        // next, try to resolve using project-private catalog
+        result = resolveUsingPrivateCatalog(locationURI, sourceFileObject);
+        if (result != null) {
+            return result;
+        }
         if(sourceFileObject != null){
             result = resolveRelativeURI(locationURI,  sourceFileObject);
         }
@@ -450,7 +486,9 @@ public class CatalogModelImpl implements CatalogModel {
             //do not attempt this for a test environment.
             boolean res = false;
             try{
-                res = Util.retrieveAndCache(locationURI, sourceFileObject,!fetchSynchronous);
+                 res = Util.retrieveAndCache(locationURI, 
+                        sourceFileObject,!fetchSynchronous, 
+                        registerInCatalog);
             }catch (Exception e){//ignore all exceptions
             }
             if(res){
@@ -461,6 +499,61 @@ public class CatalogModelImpl implements CatalogModel {
             }
         }
         return result;
+    }
+    
+    /**
+     * Tries to resolve the resource using private catalogs in the project and platform. First 
+     * it tries project-private catalog; if it does not exist, or cannot resolve the resource,
+     * platform catalog is tried.
+     * 
+     * @param locationURI URI of the resource
+     * @param sourceFileObject source file that references the resource, to get project ownership
+     * @return java.io.File of the resource or null, if the resource cannot be resolved.
+     * @throws IOException
+     * @throws CatalogModelException 
+     */
+    private File resolveUsingPrivateCatalog(URI locationURI, FileObject sourceFileObject)  throws IOException, CatalogModelException{
+        FileObject catalogFile = Util.findCacheCatalog(sourceFileObject);
+        File resource = null;
+        if (catalogFile != null) {
+            resource = resolveUsingCatalog(catalogFile, locationURI);
+        }
+        if (resource == null) {
+            catalogFile = Util.findSystemCatalog();
+            if (catalogFile != null) {
+                resource = resolveUsingCatalog(catalogFile, locationURI);
+            }
+        }
+        return resource;
+    }
+    
+    private File resolveUsingCatalog(FileObject catalogFile, URI locationURI)  throws IOException, CatalogModelException{
+        File result = null;
+        File publicCatalogFile = FileUtil.toFile(catalogFile);
+        if(publicCatalogFile.isFile()){
+            //return if the file content is empty or just start and end tags
+            if(publicCatalogFile.length() < 20)
+                return null;
+            URI strRes = resolveUsingApacheCatalog(publicCatalogFile, locationURI.toString());
+            if(strRes != null){
+                if(strRes.isAbsolute()){
+                    if(strRes.getScheme().equalsIgnoreCase("file")){
+                        result = new File(strRes);
+                        if(result.isFile()){
+                            logger.exiting("CatalogModelImpl", "resolveUsingCatalog",result);
+                            return result;
+                        } else
+                            throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
+                    }else{
+                        File res = resolveProjectProtocol(strRes);
+                        if(res != null)
+                            return res;
+                        throw new CatalogModelException("Catalog contains non-file URI. Catalog Maps URI to a local file only.");
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     protected File resolveUsingPublicCatalog(URI locationURI) throws IOException, CatalogModelException{
