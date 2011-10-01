@@ -208,6 +208,9 @@ public final class JavaFXPlatformUtils {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
             for (File child : children) {
                 File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
                 if (toolsJar.exists()) {
@@ -232,6 +235,9 @@ public final class JavaFXPlatformUtils {
             List<File> files = new ArrayList<File>();
             files.add(location); // check root location
             File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
             for (File child : children) {
                 files.add(child); // check in neighbour folders: Win installation
                 files.addAll(Arrays.asList(child.listFiles()));
@@ -258,6 +264,9 @@ public final class JavaFXPlatformUtils {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
             for (File child : children) {
                 File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
                 if (docs.exists()) {
