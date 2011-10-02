@@ -121,6 +121,9 @@ public class RefactoringTestBase extends NbTestCase {
         for (File f : files) {
             String fileContent = content.remove(f.filename);
 
+            assertNotNull(f);
+            assertNotNull(f.content);
+            assertNotNull("Cannot find " + f.filename + " in map " + content, fileContent);
             assertEquals(getName() ,f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
         }
 
