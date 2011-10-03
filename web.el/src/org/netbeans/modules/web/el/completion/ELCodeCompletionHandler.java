@@ -142,7 +142,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     Element resolved =
                             ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
                     
-                    if (ELTypeUtilities.isRawObject(ccontext, nodeToResolve)) {
+                    if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
                         proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);            
                     } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope

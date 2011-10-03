@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.*;
-
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.openide.actions.CopyAction;
 import org.openide.actions.SaveAction;
 import org.openide.util.ImageUtilities;
@@ -1007,6 +1007,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             r.close();
         }
         kit.install(jEditorPane1);
+        jEditorPane1.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, false); //NOI18N
         jEditorPane1.setDocument(doc);
         //jEditorPane1.setPage(url);
         jEditorPane1.setEditable(false);
@@ -1034,6 +1035,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             r.close();
         }
         kit.install(jEditorPane2);
+        jEditorPane2.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, false); //NOI18N
         jEditorPane2.setDocument(doc);
         //jEditorPane2.setPage(url);
         jEditorPane2.setEditable(false);
@@ -1063,6 +1065,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             r.close();
         }
         kit.install(jEditorPane3);
+        jEditorPane3.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, false); //NOI18N
         jEditorPane3.setDocument(doc);
         //jEditorPane2.setPage(url);
         jEditorPane3.setEditable(false);

@@ -2167,10 +2167,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         watchUpdater().treeChanged();     // causes a pull
     }
 
+    @Override
     public void postDeleteAllWatches() {
         // no-op
     }
 
+    @Override
     public void postDeleteWatch(final WatchVariable variable,
 				final boolean spreading) {
 
@@ -2195,7 +2197,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    deleteWatch(variable, spreading);
 		}
 	    };
-	    gdb.sendCommand(cmd);
+	    sendCommandInt(cmd);
 	}
     }
 
@@ -3409,11 +3411,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface BreakpointProvider
+    @Override
     public HandlerExpert handlerExpert() {
         return handlerExpert;
     }
 
     // interface BreakpointProvider
+    @Override
     public void postRestoreHandler(final int rt, HandlerCommand hc) {
 
         final MICommand cmd = new MIRestoreBreakCommand(rt, hc.toString());
@@ -3436,17 +3440,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// trickiness of ensuring that the following commands are also
 	// chained that makes me favor the pre-injection solution ... for now.
 
-	if (Log.Bpt.fix6810534) {
-	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-		    gdb.sendCommand(cmd);
-		    gdb.tap().inject("1\n");	// TMP // NOI18N
-		}
-	    });
-	} else {
-	    gdb.sendCommand(cmd);
-	    gdb.tap().inject("1\n");	// TMP // NOI18N
-	}
+        sendCommandInt(cmd);
+        
+        // modern gdb does not ask user when in MI mode
+        //gdb.tap().inject("1\n");	// TMP // NOI18N
     }
 
     private final class DisModel extends DisModelSupport {
@@ -4203,6 +4200,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void postEnableAllHandlersImpl(final boolean enable) {
         final Handler[] handlers = bm().getHandlers();
         
@@ -4224,7 +4222,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(0, command.toString()) {
-
+            @Override
             protected void onDone(MIRecord record) {
 		for (Handler h : handlers) {
                     h.setEnabled(enable);
@@ -4232,9 +4230,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postDeleteAllHandlersImpl() {
         final Handler[] handlers = bm().getHandlers();
         
@@ -4261,7 +4260,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(0, command.toString()) {
-
+            @Override
             protected void onDone(MIRecord record) {
 		for (Handler h : handlers) {
                     bm().deleteHandlerById(0, h.getId());
@@ -4269,44 +4268,44 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postDeleteHandlerImpl(final int rt, final int hid) {
-        pause(true);
 	MICommand cmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
-
+            @Override
 	    protected void onDone(MIRecord record) {
 		bm().deleteHandlerById(rt, hid);
 		finish();
 	    }
 	};
-	gdb.sendCommand(cmd);
+	sendCommandInt(cmd);
     }
 
+    @Override
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
 	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
-        pause(true);
-	gdb.sendCommand(cmd);
-	// We'll continue in newHandler() or ?error?
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
         final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
-        pause(true);
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
         final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
-        pause(true);
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
-
+    
     public void setHandlerCountLimit(int hid, long countLimit) {
         notImplemented("setHandlerCountLimit()");	// NOI18N
     }
 
+    @Override
     public void postEnableHandler(int rt, final int hid, final boolean enable) {
         String cmdString;
         if (enable) {
@@ -4316,7 +4315,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(rt, cmdString + hid) {
-
+            @Override
             protected void onDone(MIRecord record) {
                 // SHOULD factor with code in Dbx.java
                 Handler handler = bm().findHandler(hid);
@@ -4326,7 +4325,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
     // interface NativeDebugger
@@ -4554,6 +4553,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private void sendResumptive(String commandStr) {
         MICommand cmd = new MIResumptiveCommand(commandStr);
+        gdb.sendCommand(cmd);
+    }
+    
+    private void sendCommandInt(MICommand cmd) {
+        pause(true);
         gdb.sendCommand(cmd);
     }
 
