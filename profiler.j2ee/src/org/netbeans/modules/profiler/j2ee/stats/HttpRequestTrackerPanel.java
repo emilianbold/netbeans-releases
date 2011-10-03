@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee.stats;
 
-import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTVisitorAdapter;
-import org.netbeans.lib.profiler.results.cpu.cct.CompositeCPUCCTWalker;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.ServletRequestCPUCCTNode;
@@ -61,6 +59,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.lib.profiler.results.RuntimeCCTNodeProcessor;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.openide.util.Lookup;
 
@@ -73,7 +72,7 @@ import org.openide.util.Lookup;
 public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private class HttpRequestTrackerModel extends CPUCCTVisitorAdapter {
+    private class HttpRequestTrackerModel extends RuntimeCCTNodeProcessor.PluginAdapter {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private final Set<String> EMPTY_SET = new HashSet<String>();
@@ -105,21 +104,21 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
 
         @Override
-        public void afterWalk() {
+        public void onStop() {
             servletStack.clear();
             lock.writeLock().unlock();
             refreshData();
         }
 
         @Override
-        public void beforeWalk() {
+        public void onStart() {
             lock.writeLock().lock();
             servletStack.clear();
             paths.clear();
         }
 
         @Override
-        public void visit(MethodCPUCCTNode node) {
+        public void onNode(MethodCPUCCTNode node) {
             boolean first = false;
 
             if (usedRequest == null) {
@@ -145,14 +144,15 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
             outCalls += node.getNCalls();
             lastCalls = node.getNCalls();
         }
-
+        
         @Override
-        public void visit(ServletRequestCPUCCTNode node) {
+        public void onNode(ServletRequestCPUCCTNode node) {
             servletStack.push(node);
         }
 
+
         @Override
-        public void visitPost(ServletRequestCPUCCTNode node) {
+        public void onBackout(ServletRequestCPUCCTNode node) {
             servletStack.pop();
 
             if ((usedRequest != null) && usedRequest.equals(node)) {
@@ -187,7 +187,6 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private CompositeCPUCCTWalker treeWalker;
     private HttpRequestTrackerModel model;
     private JLabel noData = new JLabel(NO_DATA_STRING);
     private JLabel noMethods = new JLabel(NO_METHOD_STRING);
@@ -199,8 +198,6 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     public HttpRequestTrackerPanel() {
         initComponents();
         model = new HttpRequestTrackerModel();
-        treeWalker = new CompositeCPUCCTWalker();
-        treeWalker.add(0, model);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -223,7 +220,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
 
         if (model != null) {
-            appNode.accept(treeWalker);
+            RuntimeCCTNodeProcessor.process(appNode, model);
             lastAppNode = appNode;
         }
     }
