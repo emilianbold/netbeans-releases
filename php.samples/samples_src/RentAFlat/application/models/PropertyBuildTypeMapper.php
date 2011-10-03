@@ -75,7 +75,7 @@ class Application_Model_PropertyBuildTypeMapper {
     public function save(Application_Model_PropertyBuildType $property) {
 
         $data = array(
-            'text_en' => $property->getText_en()
+            'text' => $property->getText()
         );
 
 
@@ -103,7 +103,7 @@ class Application_Model_PropertyBuildTypeMapper {
         $row = $result->current();
 
         $property->setId($row->id)
-                ->setText_en($row->text_en);
+                ->setText($row->text);
     }
 
     public function fetch($id) {
@@ -115,7 +115,7 @@ class Application_Model_PropertyBuildTypeMapper {
         foreach ($result as $r) {
             return $r;
         }
-            
+
     }
 
     public function fetchAll($query = null) {
@@ -135,7 +135,7 @@ class Application_Model_PropertyBuildTypeMapper {
             $entry = new Application_Model_PropertyBuildType();
 
             $entry->setId($row->id);
-            $entry->setText_en($row->text_en);
+            $entry->setText($row->text);
 
             $entries[] = $entry;
         }
@@ -149,4 +149,3 @@ class Application_Model_PropertyBuildTypeMapper {
 
 }
 
-?>

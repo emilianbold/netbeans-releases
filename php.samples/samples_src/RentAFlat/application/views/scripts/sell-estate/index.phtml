@@ -49,30 +49,30 @@
         <h1><?php echo $this->mainTitle ?></h1>
         <br />
         <br />
-        <div id ="list"> <?php echo $this->noResultMessage ?>
-            <?php foreach ($this->properties as $property): ?>
+        <div id ="list"> <?php echo $this->noResultMessage; ?>
+            <?php
+                $even = false;
+                foreach ($this->properties as $property): ?>
                 <div class="result">
                     <div class="text">
-                        <h2><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', $property->getTitle_en()) ?> , <?php echo $property->getDisposition() ?> , <?php echo $property->getAreaFormatted() ?> m&sup2; </h2>
-                        <p><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', General::getPerex($property->getText_en())) ?></p>
-                        <p class="price"><?php echo $property->getFormattedPrice() ?> EUR </p>
+                        <h2><?php echo $property->getTitle(); ?>, <?php echo $property->getDisposition(); ?>, <?php echo $property->getAreaFormatted(); ?>&nbsp;m&sup2;</h2>
+                        <p><?php echo str_ireplace('m2', 'm&sup2;', General::getPerex($property->getText())); ?></p>
+                        <p class="price"><?php echo $property->getFormattedPrice(); ?> EUR</p>
                         <br />
                     </div>
                     <p><a href="<?php echo $this->url(array("controller" => "property", "action" => "detail", "property" => $property->getId()), null, true); ?>">More</a></p>
                         <?php if (!General::isInFavorites($property->getId())): ?>
-                            <a id="p<?php echo $property->getId() ?>" class="fav" href="#" onClick="addToFavorites(<?= $property->getId() ?>)" title="Add to favorites">Add to favorites</a>
+                            <a id="p<?php echo $property->getId(); ?>" class="fav" href="#" onclick="addToFavorites(<?php echo $property->getId(); ?>)" title="Add to favorites">Add to favorites</a>
                         <?php else: ?>
-                            <a id="p<?php echo $property->getId() ?>" class="fav-del" href="#" onclick="removeFromFavorites(<?= $property->getId() ?>)" title="Remove from favorites">Remove from favorites</a>
+                            <a id="p<?php echo $property->getId(); ?>" class="fav-del" href="#" onclick="removeFromFavorites(<?php echo $property->getId(); ?>)" title="Remove from favorites">Remove from favorites</a>
                         <?php endif; ?>
                     <br />
                 </div>
                 <?php
-                if ($res == 1) {
+                if ($even) {
                     echo '<div class="cleaner hr"></div>';
-                    $res = 0;
-                } else {
-                    $res++;
                 }
+                $even = !$even;
                 ?>
             <?php endforeach; ?>
         </div><div class="cleaner">&nbsp;</div>
