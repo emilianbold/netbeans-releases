@@ -67,6 +67,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * TODO: getRawObjectProperties() handling is a bit hacky - currently just the actual node
+ * image is passed to the method which may represent either the raw object itself or
+ * one of its properties. Ideally the actual Node should be passed - API change.
  *
  */
 @ServiceProvider(service = org.netbeans.modules.web.el.spi.ELVariableResolver.class)
@@ -126,7 +129,9 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot) {
         //composite component object's properties handling
-        if ("cc".equals(objectName)) { //NOI18N
+        if("cc".equals(objectName)) { //NOI18N
+            return Collections.singletonList(VariableInfo.createResolvedVariable("attrs", "java.lang.Object")); //NOI18N
+        } else if ("attrs".equals(objectName)) { //NOI18N
             final JsfPageModelFactory modelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
             assert modelFactory != null;
             final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<CompositeComponentModel>();
