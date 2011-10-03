@@ -974,6 +974,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (type == null) {
                 return getName();
             }
+            CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
+            boolean appendSpace = true;
+            String name = null;
             switch(type) {
                 case SIMPLE:
                     return null;
@@ -982,9 +985,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(" ${cursor}"); //NOI18N
                     break;
                 case CURSOR_INSIDE_BRACKETS:
-                    CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
-                    boolean appendSpace = true;
-                    String name = getName();
+                    name = getName();
                     builder.append(name);
                     if (name.equals("foreach") || name.equals("for")) { //NOI18N
                         appendSpace = codeStyle.spaceBeforeForParen();
@@ -1005,8 +1006,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append("(${cursor})"); //NOI18N
                     break;
                 case ENDS_WITH_CURLY_BRACKETS:
-                    builder.append(getName());
-                    builder.append(" {${cursor}"); //NOI18N
+                    name = getName();
+                    builder.append(name);
+                    if (name.equals("try")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeTryLeftBrace();
+                    } else if (name.equals("do")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeDoLeftBrace();
+                    } else if (name.equals("else")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeElseLeftBrace();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("{${cursor}}"); //NOI18N
+                    break;
+                case ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS:
+                    name = getName();
+                    builder.append(name);
+                    if (name.equals("elseif")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfParen();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("(${cursor})"); //NOI18N
+                    if (name.equals("elseif")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfLeftBrace();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("{}"); //NOI18N
                     break;
                 case ENDS_WITH_SEMICOLON:
                     builder.append(getName());
