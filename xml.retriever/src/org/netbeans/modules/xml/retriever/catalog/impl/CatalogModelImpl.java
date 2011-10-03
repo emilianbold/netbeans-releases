@@ -513,10 +513,14 @@ public class CatalogModelImpl implements CatalogModel {
      * @throws CatalogModelException 
      */
     private File resolveUsingPrivateCatalog(URI locationURI, FileObject sourceFileObject)  throws IOException, CatalogModelException{
-        FileObject catalogFile = Util.findCacheCatalog(sourceFileObject);
+        FileObject catalogFile = null;
         File resource = null;
-        if (catalogFile != null) {
-            resource = resolveUsingCatalog(catalogFile, locationURI);
+        
+        if (sourceFileObject != null) {
+            catalogFile = Util.findCacheCatalog(sourceFileObject);
+            if (catalogFile != null) {
+                resource = resolveUsingCatalog(catalogFile, locationURI);
+            }
         }
         if (resource == null) {
             catalogFile = Util.findSystemCatalog();
