@@ -98,7 +98,14 @@ public class CodeCompletionUtils {
         tokenSequence.move(offset);
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             Object tokenID = tokenSequence.token().id();
-            if (tokenID == TplTopTokenId.T_HTML || tokenID == TplTopTokenId.T_PHP || tokenID == TplTopTokenId.T_COMMENT) {
+
+            if (tokenID == TplTopTokenId.T_HTML && isDefaultOpenDelimOnMinusOnePosition(doc, offset)) {
+                return true;
+            }
+
+            if (tokenID == TplTopTokenId.T_HTML
+                    || tokenID == TplTopTokenId.T_PHP
+                    || tokenID == TplTopTokenId.T_COMMENT) {
                 return false;
             }
         }
@@ -112,15 +119,31 @@ public class CodeCompletionUtils {
         tokenSequence.move(caretOffset);
         tokenSequence.movePrevious(); tokenSequence.moveNext();
         while (!tokenSequence.isEmpty()) {
-            if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+            if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER
+                    || tokenSequence.token().id() == TplTopTokenId.T_HTML
+                    && isDefaultOpenDelimOnMinusOnePosition(doc, caretOffset)) {
                 return false;
             } else if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY) {
-                if (tokenSequence.token().text().toString().contains("|"))
+                if (tokenSequence.token().text().toString().contains("|")) {
                     return true;
+                }
             }
             tokenSequence.movePrevious();
         }
         return false;
+    }
+
+    private static boolean isDefaultOpenDelimOnMinusOnePosition(Document doc, int possition) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if (possition == 0) {
+            return false;
+        }
+        
+        tokenSequence.move(possition - 1);
+        tokenSequence.movePrevious(); tokenSequence.moveNext();
+        
+        return tokenSequence.token().toString().equals(SmartyFramework.OPEN_DELIMITER);
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {

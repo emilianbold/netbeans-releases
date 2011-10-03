@@ -150,7 +150,6 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         INIT,
         OUTER,
         AFTER_DELIMITER, // after any custom or default Smarty delimiter
-        AFTER_CURLY_DELIMITER,  // after "{"
         OPEN_DELIMITER,
         CLOSE_DELIMITER,
         IN_COMMENT,
@@ -217,14 +216,22 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     }
                     state = State.AFTER_DELIMITER;
                     if (subState == subState.NO_SUB_STATE) {
-                        if (isSmartyOpenDelimiter("{")) { //NOI18N
-                            if (input.read() == LexerInput.EOF) {
+                        if (isSmartyOpenDelimiter(SmartyFramework.OPEN_DELIMITER)) {
+                            c = input.read();
+                            if (c == LexerInput.EOF) {
                                 input.backup(1);
                                 return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
                             } else {
-                                input.backup(1);
-                                state = State.AFTER_CURLY_DELIMITER;
-                                break;
+                                if (LexerUtils.isWS(c)
+                                        && c != LexerInput.EOF
+                                        && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
+                                    state = State.OUTER;
+                                    input.backup(1);
+                                    return TplTopTokenId.T_HTML;
+                                } else {
+                                    input.backup(1);
+                                    return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                                }
                             }
                         } else {
                             return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
@@ -239,16 +246,6 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         }
                         break;
                     }
-
-                case AFTER_CURLY_DELIMITER:
-                    // in cases of SMARTY3 and "{ "
-                    if (LexerUtils.isWS(c) && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
-                        state = State.OUTER;
-                        break;
-                    }
-                    state = State.AFTER_DELIMITER;
-                    input.backup(1);
-                    return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
 
                 case AFTER_DELIMITER:
                     if (LexerUtils.isWS(c)) {
