@@ -464,6 +464,7 @@ public class DetectPanel extends javax.swing.JPanel {
         Map<String,String> m = primaryPlatform.getSystemProperties();
         // if the name is empty, fill something in:
         if ("".equals(jdkName.getText())) {
+            jdkName.setEditable(true);
             jdkName.setText(getInitialName (m));
             this.jdkName.selectAll();
         }
