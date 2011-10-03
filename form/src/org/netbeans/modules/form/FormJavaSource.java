@@ -57,6 +57,7 @@ import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.netbeans.modules.java.source.queries.api.Updates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
 
 /**
  * Provides information about the forms java source file.
@@ -64,7 +65,8 @@ import org.openide.filesystems.FileStateInvalidException;
  * @author Tomas Stupka, Tomas Pavek
  */
 public final class FormJavaSource {
-    private final FileObject javaFile;
+    private DataObject formDataObject;
+    private FileObject javaFile;
     private String className;
     private String filePath;
     private final Object javaContext;
@@ -74,15 +76,16 @@ public final class FormJavaSource {
 								    "is"}; // NOI18N
     private static final String JAVA_QUERIES_CONTEXT_KEY = "JavaQueriesContext_key"; // NOI18N
 
-    FormJavaSource(FileObject fo, Object javaContext) {
-        this.javaFile = fo;
+    FormJavaSource(DataObject dob, Object javaContext) {
+        this.formDataObject = dob;
+        this.javaFile = dob.getPrimaryFile();
         this.javaContext = javaContext;
     }
 
     public <T> T query(Function<Queries,T> queryFnc) {
         try {
             setTransientContext(true);
-            return Queries.query(javaFile.getURL(), queryFnc);
+            return Queries.query(getJavaFile().getURL(), queryFnc);
         } catch(QueryException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         } catch (FileStateInvalidException ex) {
@@ -96,7 +99,7 @@ public final class FormJavaSource {
     public Boolean update(Function<Updates,Boolean> updateFnc) {
         try {
             setTransientContext(true);
-            return Updates.update(javaFile.getURL(), updateFnc);
+            return Updates.update(getJavaFile().getURL(), updateFnc);
         } catch(QueryException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         } catch (FileStateInvalidException ex) {
@@ -113,15 +116,16 @@ public final class FormJavaSource {
      */
     private void setTransientContext(boolean set) {
         if (javaContext != null) {
+            FileObject file = getJavaFile();
             if (set) {
                 ThreadLocal tl;
-                synchronized (javaFile) {
-                    Object o = javaFile.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
+                synchronized (file) {
+                    Object o = file.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
                     tl = o instanceof ThreadLocal ? (ThreadLocal) o : null;
                     if (tl == null) {
                         tl = new ThreadLocal();
                         try {
-                            javaFile.setAttribute(JAVA_QUERIES_CONTEXT_KEY, tl);
+                            file.setAttribute(JAVA_QUERIES_CONTEXT_KEY, tl);
                         } catch (IOException ex) {
                             Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
                         }
@@ -129,7 +133,7 @@ public final class FormJavaSource {
                 }
                 tl.set(javaContext);
             } else {
-                Object o = javaFile.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
+                Object o = file.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
                 if (o instanceof ThreadLocal) {
                     ((ThreadLocal)o).remove();
                 }
@@ -138,7 +142,8 @@ public final class FormJavaSource {
     }
 
     public String getFormClassName() {
-        if (className != null && javaFile.getPath().equals(filePath)) {
+        FileObject file = getJavaFile();
+        if (className != null && file.getPath().equals(filePath)) {
             return className;
         }
         Collection<? extends String> names = query(new Function<Queries, Collection<? extends String>>() {
@@ -149,7 +154,7 @@ public final class FormJavaSource {
         });
         className = null;
         if (names != null) {
-            String fileName = javaFile.getName();
+            String fileName = file.getName();
             String dotFileName = "." + fileName; // NOI18N
             for (String s : names) {
                 if (s.equals(fileName) || s.endsWith(dotFileName)) {
@@ -159,10 +164,10 @@ public final class FormJavaSource {
             }
         }
         if (className == null) { // fallback
-            className = ClassPath.getClassPath(javaFile, ClassPath.SOURCE)
-                        .getResourceName(javaFile, '.', false);
+            className = ClassPath.getClassPath(file, ClassPath.SOURCE)
+                        .getResourceName(file, '.', false);
         }
-        filePath = javaFile.getPath();
+        filePath = file.getPath();
         return className;
     }
 
@@ -313,6 +318,13 @@ public final class FormJavaSource {
         ClassPath cp = ClassPath.getClassPath(fdo, ClassPath.SOURCE);
         String name = cp.getResourceName(fdo);
         return name.indexOf('/') < 0;
+    }
+
+    private synchronized FileObject getJavaFile() {
+        if (!javaFile.isValid()) {
+            javaFile = formDataObject.getPrimaryFile();
+        }
+        return javaFile;
     }
 
 }

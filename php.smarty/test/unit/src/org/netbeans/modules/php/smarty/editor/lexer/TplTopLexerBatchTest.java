@@ -155,7 +155,8 @@ public class TplTopLexerBatchTest extends TestCase {
 
         SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
         TokenSequence ts = createTokenSequence(text);
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{ var tmp = 1; }");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " var tmp = 1; }");
     }
 
     public void testSmarty2CurlyBracesFeature() {

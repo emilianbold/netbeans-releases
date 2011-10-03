@@ -9,6 +9,75 @@
 -->
 
 <entries>
+    <entry name="append">
+        <description>{append} is used for creating or appending template variable arrays during the execution of a template. </description>
+        <attributes>
+            <attribute name="var">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the variable being assigned</description>
+            </attribute>
+            <attribute name="value">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The value being assigned</description>
+            </attribute>
+            <attribute name="index">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The index for the new array element. If not specified the value is append to the end of the array.</description>
+            </attribute>
+            <attribute name="scope">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The scope of the assigned variable: 'parent','root' or 'global'</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.append.tpl</url>
+    </entry>
+
+    <entry name="block">
+        <description>{block} is used to define a named area of template source for template inheritance. For details see section of Template Interitance.  &lt;p&gt;The {block} template source area of a child template will replace the correponding areas in the parent template(s). &lt;/p&gt; &lt;p&gt;Optionally {block} areas of child and parent templates can be merged into each other. You can append or prepend the parent {block} content by using the append or prepend option flag with the childs {block} definition. With the {$smarty.block.parent} the {block} content of the parent template can be inserted at any location of the child {block} content. {$smarty.block.child} inserts the {block} content of the child template at any location of the parent {block}. &lt;/p&gt; &lt;p&gt;{blocks}'s can be nested. &lt;/p&gt;</description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the template source block</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.block.tpl</url>
+    </entry>
+
+    <entry name="call">
+        <description>{call} is used to call a template function defined by the {function} tag just like a plugin function. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the template function</description>
+            </attribute>
+            <attribute name="assign">
+                <type>string</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>The name of the variable that the output of called template function will be assigned to</description>
+            </attribute>
+            <attribute name="[var ...]">
+                <type>[var type]</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>variable to pass local to template function</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.call.tpl</url>
+    </entry>
+
     <entry name="capture">
         <description>{capture} is used to collect the output of the template between the tags into a variable instead of displaying it. Any content between {capture name='foo'} and {/capture}  is collected into the variable specified in the name  attribute. The captured content can be used in the template from the variable $smarty.capture.foo where "foo" is the value passed in the name attribute. If you do not supply the name attribute, then "default" will be used as the name ie $smarty.capture.default. </description>
         <attributes>
@@ -57,6 +126,32 @@
             </attribute>
         </attributes>
         <url>http://www.smarty.net/manual/en/language.function.config.load.php</url>
+    </entry>
+
+    <entry name="extends">
+        <description>{extends} tags are used in child templates in template inheritance for extending parent templates. For details see section of Template Interitance. &lt;ul&gt; &lt;li&gt;The {extends} tag must be on the first line of the template. &lt;/li&gt; &lt;li&gt;If a child template extends a parent template with the {extends} tag it may contain only {block} tags. Any other template content is ignored. &lt;/li&gt; &lt;li&gt;Use the syntax for template resources to extend files outside of the $template_dir directory. &lt;/li&gt; &lt;/ul&gt;</description>
+        <attributes>
+            <attribute name="file">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the template file which is extended</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.extends.tpl</url>
+    </entry>
+
+    <entry name="for">
+        <description>The {for}{forelse} tag is used to create simple loops. The following different formarts are supported: &lt;ul&gt; &lt;li&gt;{for $var=$start to $end} simple loop with step size of 1.&lt;/li&gt; &lt;li&gt;{for $var=$start to $end step $step} loop with individual step size. &lt;/li&gt; &lt;/ul&gt;&lt;p&gt;{forelse} is executed when the loop is not iterated. &lt;/p&gt;</description>
+        <attributes>
+            <attribute name="max">
+                <type>integer</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>Limit the number of iterations</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.for.tpl</url>
     </entry>
 
     <entry name="foreach">
@@ -119,6 +214,25 @@
             </attribute>
         </attributes>
         <url>http://www.smarty.net/manual/en/language.function.config.load.php</url>
+    </entry>
+
+    <entry name="function">
+        <description>{function} is used to create functions within a template and call them just like a plugin function. Instead of writing a plugin that generates presentational content, keeping it in the template is often a more manageable choice. It also simplifies data traversal, such as deeply nested menus. </description>
+        <attributes>
+            <attribute name="name">
+                <type>string</type>
+                <required>yes</required>
+                <default>n/a</default>
+                <description>The name of the template function</description>
+            </attribute>
+            <attribute name="[var ...]">
+                <type>[var type]</type>
+                <required>no</required>
+                <default>n/a</default>
+                <description>default variable value to pass local to the template function</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.function.function.tpl</url>
     </entry>
 
     <entry name="if">
@@ -220,6 +334,11 @@
         <url>http://www.smarty.net/manual/en/language.function.literal.php</url>
     </entry>
 
+    <entry name="nocache">
+        <description>{nocache} is used to disable caching of a template section. Every {nocache} must be paired with a matching {/nocache}.</description>
+        <url>http://www.smarty.net/docs/en/language.function.nocache.tpl</url>
+    </entry>
+
     <entry name="php">
         <description>The {php} tags allow PHP code to be embedded directly into the template. They will not be escaped, regardless of the $php_handling setting. This is for advanced users only, not normally needed and not recommended. </description>
         <url>http://www.smarty.net/manual/en/language.function.php.php</url>
@@ -311,8 +430,18 @@
         <url>http://www.smarty.net/manual/en/language.function.section.php</url>
     </entry>
 
+    <entry name="setfilter">
+        <description>The {setfilter}...{/setfilter} block tag allows the definition of template instance's variable filters. &lt;p&gt;SYNTAX: {setfilter filter1|filter2|filter3....}...{/setfilter}&lt;/p&gt;&lt;p&gt;The filter can be: A variable filter plugin specified by it's name, a modidier specified by it's name and optional additional parameter. &lt;/p&gt;&lt;p&gt;{setfilter}...{/setfilter} blocks can be nested. The filter definition of inner blocks does replace the definition of the outer block. &lt;/p&gt;&lt;p&gt;Template instance filters run in addition to other modifiers and filters. They run in the following order: modifier, default_modifier, $escape_html, registered variable filters, autoloaded variable filters, template instance's variable filters. Everything after default_modifier can be disabled with the nofilter flag. &lt;/p&gt;</description>
+        <url>http://www.smarty.net/docs/en/language.function.setfilter.tpl</url>
+    </entry>
+
     <entry name="strip">
         <description> Many times web designers run into the issue where white space and carriage returns affect the output of the rendered HTML (browser "features"), so you must run all your tags together in the template to get the desired results. This usually ends up in unreadable or unmanageable templates. Anything within {strip}{/strip} tags are stripped of the extra spaces or carriage returns at the beginnings and ends of the lines before they are displayed. This way you can keep your templates readable, and not worry about extra white space causing problems. Note: {strip}{/strip} does not affect the contents of template variables, see the strip modifier instead.  </description>
         <url>http://www.smarty.net/manual/en/language.function.strip.php</url>
+    </entry>
+
+    <entry name="while">
+        <description>{while} loops in Smarty have much the same flexibility as PHP while statements, with a few added features for the template engine. Every {while} must be paired with a matching {/while}. All PHP conditionals and functions are recognized, such as ||, or, &amp;&amp;, and, is_array(), etc. </description>
+        <url>http://www.smarty.net/docs/en/language.function.while.tpl</url>
     </entry>
 </entries>
