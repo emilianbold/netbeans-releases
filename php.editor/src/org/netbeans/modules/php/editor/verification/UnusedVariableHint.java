@@ -142,12 +142,12 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        NewVisitor checkVisitor = new NewVisitor(fileObject);
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
 
-    private class NewVisitor extends DefaultVisitor {
+    private class CheckVisitor extends DefaultVisitor {
 
         private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
         private final Map<ASTNode, List<Variable>> unusedVariables = new HashMap<ASTNode, List<Variable>>();
@@ -156,7 +156,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         private boolean forceVariableAsUsed;
         private boolean forceVariableAsUnused;
 
-        public NewVisitor(FileObject fileObject) {
+        public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
         }
 
