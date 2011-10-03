@@ -47,6 +47,7 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
@@ -54,6 +55,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -129,34 +131,37 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return new JspMultiViewEditorElement(context);
     }
 
-     public static class JspMultiViewEditorElement extends MultiViewEditorElement {
+    public static class JspMultiViewEditorElement extends MultiViewEditorElement {
         
         private static final long serialVersionUID = 5287628924558107957L;
-         
-        private transient BaseJspEditorSupport editorSupport;
-        private transient TagLibParseSupport taglibParseSupport;
-         
+        
         public JspMultiViewEditorElement(Lookup lookup) {
             super(lookup);
-            editorSupport = lookup.lookup(BaseJspEditorSupport.class);
-            JspDataObject jspDo = lookup.lookup(JspDataObject.class);
-            taglibParseSupport = jspDo.getCookie(TagLibParseSupport.class);
+        }
+        
+        private BaseJspEditorSupport getEditorSupport() {
+            return getLookup().lookup(BaseJspEditorSupport.class);
         }
 
+        private TagLibParseSupport getTaglibParseSupport() {
+            JspDataObject jspDo = getLookup().lookup(JspDataObject.class);
+            return jspDo.getCookie(TagLibParseSupport.class);
+        }
+        
         @Override
         public void componentActivated() {
             super.componentActivated();
-            editorSupport.restartParserTask();
-            taglibParseSupport.setEditorOpened(true);
+            getEditorSupport().restartParserTask();
+            getTaglibParseSupport().setEditorOpened(true);
         }
 
         @Override
         public void componentDeactivated() {
             super.componentDeactivated();
-            taglibParseSupport.setEditorOpened(false);            
+            getTaglibParseSupport().setEditorOpened(false);            
         }
         
-    }
+     }
     
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);

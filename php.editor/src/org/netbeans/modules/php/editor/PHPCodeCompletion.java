@@ -176,7 +176,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("declare", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("do", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
         PHP_KEYWORDS.put("else", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
-        PHP_KEYWORDS.put("elseif", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
+        PHP_KEYWORDS.put("elseif", KeywordCompletionType.ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS);
         PHP_KEYWORDS.put("enddeclare", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE);
