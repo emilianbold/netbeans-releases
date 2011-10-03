@@ -60,7 +60,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
@@ -440,6 +439,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         @Override
         public void visit(ClassInstanceCreation node) {
             forceVariableAsUsed = true;
+            scan(node.getClassName());
             scan(node.ctorParams());
             forceVariableAsUsed = false;
         }
@@ -558,11 +558,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
 
         @Override
         public void visit(ConstantDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(ClassName node) {
             // intentionally
         }
 
