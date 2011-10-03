@@ -93,7 +93,7 @@ public final class SmartyOptions {
     }
 
     public String getDefaultOpenDelimiter() {
-        return getPreferences().get(OPEN_DELIMITER, "{"); // NOI18N
+        return getPreferences().get(OPEN_DELIMITER, SmartyFramework.OPEN_DELIMITER);
     }
 
     public void setDefaultOpenDelimiter(String delimiter) {
@@ -102,7 +102,7 @@ public final class SmartyOptions {
     }
 
     public String getDefaultCloseDelimiter() {
-        return getPreferences().get(CLOSE_DELIMITER, "}"); // NOI18N
+        return getPreferences().get(CLOSE_DELIMITER, SmartyFramework.CLOSE_DELIMITER);
     }
 
     public void setDefaultCloseDelimiter(String delimiter) {
