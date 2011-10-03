@@ -107,6 +107,8 @@ public class RefactoringTestBase extends NbTestCase {
         todo.add(sourceRoot);
 
         Map<String, String> content = new HashMap<String, String>();
+        
+        FileUtil.refreshFor(FileUtil.toFile(sourceRoot));
 
         while (!todo.isEmpty()) {
             FileObject file = todo.remove(0);
