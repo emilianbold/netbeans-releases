@@ -20,7 +20,6 @@ org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider$Basic
 org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl$OnExpandAction
 org.netbeans.modules.ant.grammar.AntHighlightsLayerFactory
 org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider
-org.netbeans.modules.gsf.codecoverage.CoverageHighlightsLayerFactory
 org.netbeans.modules.html.editor.indexing.HtmlIndexer$Factory
 org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory
 org.netbeans.modules.java.freeform.AnnotationProcessingQueryImpl$R
