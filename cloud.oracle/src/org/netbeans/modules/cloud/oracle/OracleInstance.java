@@ -381,7 +381,13 @@ public class OracleInstance {
                 JobStatus jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
-                    url[0] = instanceURL+(instanceURL.endsWith("/") ? (ctx.length() > 1 ? ctx.substring(1) : "") : ctx);
+                    Application app2 = am.describeApplication(serviceGroup, serviceName, appId);
+                    List<String> urls = app2.getApplicationUrls();
+                    if (urls != null && !urls.isEmpty()) {
+                        url[0] = app2.getApplicationUrls().get(0);
+                    } else {
+                        url[0] = instanceURL+(instanceURL.endsWith("/") ? (ctx.length() > 1 ? ctx.substring(1) : "") : ctx);
+                    }
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
