@@ -930,14 +930,14 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
         if (project == null) {
             // TODO: processing for Attach - External Application
-        } else if (stopwatchRadio.isSelected()) {
+        } else if (sampleAppRadio.isSelected() || stopwatchRadio.isSelected()) {
             if (lastProfilingPointsState) {
                 return;
             }
 
             profilingPointsStateCache = profilingPointsCheckbox.isSelected();
             profilingPointsCheckbox.setEnabled(false);
-            profilingPointsCheckbox.setSelected(true);
+            profilingPointsCheckbox.setSelected(false);
             filterLabel.setEnabled(false);
             filterCombo.setEnabled(false);
             showFilterLink.setEnabled(false);
