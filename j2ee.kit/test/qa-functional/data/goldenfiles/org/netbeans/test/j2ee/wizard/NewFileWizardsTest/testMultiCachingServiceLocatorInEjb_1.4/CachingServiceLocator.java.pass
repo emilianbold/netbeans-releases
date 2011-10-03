@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in
+ * the editor.
  */
 package multi.locator.cache;
 
@@ -56,8 +56,8 @@ public class CachingServiceLocator {
     }
 
     /**
-     * Returns the ejb Local home factory. If this ejb home factory has already been
-     * clients need to cast to the type of EJBHome they desire
+     * Returns the ejb Local home factory. If this ejb home factory has already
+     * been clients need to cast to the type of EJBHome they desire
      *
      * @return the EJB Home corresponding to the homeName
      */
@@ -66,8 +66,8 @@ public class CachingServiceLocator {
     }
 
     /**
-     * Returns the ejb Remote home factory. If this ejb home factory has already been
-     * clients need to cast to the type of EJBHome they desire
+     * Returns the ejb Remote home factory. If this ejb home factory has already
+     * been clients need to cast to the type of EJBHome they desire
      *
      * @return the EJB Home corresponding to the homeName
      */
@@ -78,6 +78,7 @@ public class CachingServiceLocator {
 
     /**
      * This method helps in obtaining the topic factory
+     *
      * @return the factory for the factory to get topic connections from
      */
     public ConnectionFactory getConnectionFactory(String connFactoryName) throws NamingException {
@@ -86,6 +87,7 @@ public class CachingServiceLocator {
 
     /**
      * This method obtains the topc itself for a caller
+     *
      * @return the Topic Destination to send messages to
      */
     public Destination getDestination(String destName) throws NamingException {
@@ -93,7 +95,8 @@ public class CachingServiceLocator {
     }
 
     /**
-     * This method obtains the datasource 
+     * This method obtains the datasource
+     *
      * @return the DataSource corresponding to the name parameter
      */
     public DataSource getDataSource(String dataSourceName) throws NamingException {
@@ -101,7 +104,8 @@ public class CachingServiceLocator {
     }
 
     /**
-     * This method obtains the mail session 
+     * This method obtains the mail session
+     *
      * @return the Session corresponding to the name parameter
      */
     public Session getSession(String sessionName) throws NamingException {
@@ -110,6 +114,7 @@ public class CachingServiceLocator {
 
     /**
      * This method obtains the URL
+     *
      * @return the URL value corresponding to the env entry name.
      */
     public URL getUrl(String envName) throws NamingException {
@@ -118,8 +123,9 @@ public class CachingServiceLocator {
 
     /**
      * This method obtains the boolean
-     * @return the boolean value corresponding
-     * to the env entry such as SEND_CONFIRMATION_MAIL property.
+     *
+     * @return the boolean value corresponding to the env entry such as
+     * SEND_CONFIRMATION_MAIL property.
      */
     public boolean getBoolean(String envName) throws NamingException {
         Boolean bool = (Boolean) lookup(envName);
@@ -128,6 +134,7 @@ public class CachingServiceLocator {
 
     /**
      * This method obtains the String
+     *
      * @return the String value corresponding to the env entry name.
      */
     public String getString(String envName) throws NamingException {
