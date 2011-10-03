@@ -198,7 +198,7 @@ public class FormEditor {
 
     private FormJavaSource getFormJavaSource(boolean create) {
         if (formJavaSource == null && create) {
-            formJavaSource = new FormJavaSource(formDataObject.getPrimaryFile(), editorSupport.getJavaContext());
+            formJavaSource = new FormJavaSource(formDataObject, editorSupport.getJavaContext());
         }
         return formJavaSource;
     }
