@@ -55,6 +55,14 @@ public class SmartyFramework extends PhpProgram {
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
+     * Smarty framework defined open delimiter.
+     */
+    public static final String OPEN_DELIMITER = "{"; //NOI18N
+    /**
+     * Smarty framework defined close delimiter.
+     */
+    public static final String CLOSE_DELIMITER = "}"; //NOI18N
+    /**
      * Open delimiter in SMARTY templates.
      */
     private static String delimiterDefaultOpen = SmartyOptions.getInstance().getDefaultOpenDelimiter();
