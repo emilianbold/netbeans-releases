@@ -44,11 +44,17 @@
 
 package org.netbeans.modules.javahelp;
 
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import javax.help.HelpSet;
+import javax.help.HelpUtilities;
+import javax.help.NavigatorView;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.javahelp.Help;
@@ -93,9 +99,104 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             }
             Installer.log.fine("listing helpsets: " + l);
         }
-        return c;
+        return selectSafeHelpSets(c);
     }
-    
+
+    /** Filter out damaged help sets.
+     * 
+     * If assertions are disabled, return original collections.
+     *
+     * Added because problems with incorrectly indexed help sets are reported
+     * sometimes. See #127368.
+     * When these errors are fixed, this method (and related methods)
+     * can be probably removed.
+     */
+    private static Collection<? extends HelpSet> selectSafeHelpSets(
+            Collection<? extends HelpSet> sets) {
+
+        boolean asserts = false;
+        assert asserts = true;
+
+        if (asserts) {
+            Collection<HelpSet> safeSets = new ArrayList<HelpSet>(sets.size());
+            for (HelpSet hs : sets) {
+                if (isSafe(hs)) {
+                    safeSets.add(hs);
+                }
+            }
+            return safeSets;
+        } else {
+            return sets;
+        }
+    }
+
+    /** Return true if a help set is safe to be added to list of help sets.
+     * This can be used to filter out damaged help sets.
+     */
+    private static boolean isSafe(HelpSet hs) {
+        for (NavigatorView nv : hs.getNavigatorViews()) {
+            if ("Search".equals(nv.getName())) {                        //NOI18N
+                String engine;
+                engine = (String) nv.getParameters().get("engine");     //NOI18N
+                if (engine == null) {
+                    engine = HelpUtilities.getDefaultQueryEngine();
+                }
+                assert engine != null;
+                try {
+                    checkSearchEngineCanBeCreated(engine, hs, nv);
+                } catch (Exception e) {
+                    Installer.log.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Ensure that search engine for a help set can be created.
+     * If not, an exception is thrown.
+     */
+    private static void checkSearchEngineCanBeCreated(String engine,
+            HelpSet hs, NavigatorView nv) throws Exception {
+
+        URL base = hs.getHelpSetURL();
+        ClassLoader loader = hs.getLoader();
+        Class klass;
+
+        try {
+            if (loader == null) {
+                klass = Class.forName(engine);
+            } else {
+                klass = loader.loadClass(engine);
+            }
+        } catch (Throwable t) {
+            String p = "Could not load engine named {0} "               //NOI18N
+                    + "for Help Set {1} with url {2}";                  //NOI18N
+            String msg = MessageFormat.format(p, engine, hs.getTitle(), base);
+            throw new Exception(msg, t);
+        }
+        Constructor konstructor = null;
+        try {
+            @SuppressWarnings("UseOfObsoleteCollectionType")
+            Class types[] = {URL.class, Hashtable.class};
+            konstructor = klass.getConstructor(types);
+        } catch (Throwable t) {
+            String p = "Could not find constructor for {0} "            //NOI18N
+                    + "for Help Set {1} with url {2}";                  //NOI18N
+            String msg = MessageFormat.format(p, engine, hs.getTitle(), base);
+            throw new Exception(msg, t);
+        }
+        try {
+            Object args[] = {base, nv.getParameters()};
+            konstructor.newInstance(args);
+        } catch (Throwable t) {
+            String p = "Exception while creating engine {0} "           //NOI18N
+                    + "for Help Set {1} with url {2}";                  //NOI18N
+            String msg = MessageFormat.format(p, engine, hs.getTitle(), base);
+            throw new Exception(msg, t);
+        }
+    }
+
     /** Are the help sets ready?
      * @return true if they have been loaded
      */
