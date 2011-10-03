@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -75,6 +76,15 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.web.el.spi.ELVariableResolver.class)
 public final class JsfELVariableResolver implements ELVariableResolver {
 
+    private static final String OBJECT_NAME__CC = "cc"; //NOI18N
+    private static final String ATTR_NAME__ATTRS = "attrs"; //NOI18N
+    private static final String ATTR_NAME__ID = "id"; //NOI18N
+    private static final String ATTR_NAME__RENDERED = "rendered"; //NOI18N
+    
+    private static final VariableInfo VARIABLE_INFO__ATTRS = VariableInfo.createResolvedVariable(ATTR_NAME__ATTRS, Object.class.getName());
+    private static final VariableInfo VARIABLE_INFO__ID = VariableInfo.createResolvedVariable(ATTR_NAME__ID, Object.class.getName());
+    private static final VariableInfo VARIABLE_INFO__RENDERED = VariableInfo.createResolvedVariable(ATTR_NAME__RENDERED, Object.class.getName());
+    
     @Override
     public String getBeanClass(String beanName, FileObject context) {
         for (FacesManagedBean bean : getJsfManagedBeans(context)) {
@@ -128,10 +138,16 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot) {
+        List<VariableInfo> variables = new ArrayList<VariableInfo> (3);
+        
         //composite component object's properties handling
-        if("cc".equals(objectName)) { //NOI18N
-            return Collections.singletonList(VariableInfo.createResolvedVariable("attrs", "java.lang.Object")); //NOI18N
-        } else if ("attrs".equals(objectName)) { //NOI18N
+        if(OBJECT_NAME__CC.equals(objectName)) { //NOI18N
+            variables.add(VARIABLE_INFO__ID);
+            variables.add(VARIABLE_INFO__RENDERED);
+            variables.add(VARIABLE_INFO__ATTRS);
+        } else if (ATTR_NAME__ATTRS.equals(objectName)) { //NOI18N
+            variables.add(VARIABLE_INFO__ID);
+            variables.add(VARIABLE_INFO__RENDERED);
             final JsfPageModelFactory modelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
             assert modelFactory != null;
             final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<CompositeComponentModel>();
@@ -152,25 +168,20 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                 if(ccmodel != null) {
                     //the page represents a composite component
                     Collection<Map<String, String>> allCCInterfaceAttrs = ccmodel.getExistingInterfaceAttributes();
-                    List<VariableInfo> vis = new ArrayList<VariableInfo>();
                     for (Map<String, String> attrsMap : allCCInterfaceAttrs) {
                         String name = attrsMap.get("name"); //NOI18N
                         if (name == null) {
                             continue;
                         }
-                        vis.add(VariableInfo.createResolvedVariable(name, "java.lang.Object"));//NOI18N
+                        variables.add(VariableInfo.createResolvedVariable(name, Object.class.getName()));//NOI18N
                     }
-
-                    return vis;
                 }
-
             } catch (ParseException e) {
                 Exceptions.printStackTrace(e);
             }
-
         }
 
-        return Collections.emptyList();
+        return variables;
     }
 
 
