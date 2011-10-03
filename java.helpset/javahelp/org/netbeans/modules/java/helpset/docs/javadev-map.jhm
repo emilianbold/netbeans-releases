@@ -135,11 +135,6 @@
 <mapID target="gui.components.aligning" url="gui/gui_component_align.html" />
 <mapID target="gui.components.sizing" url="gui/gui_component_size.html" />
 
-<mapID target="gui.saf.about" url="gui/saf/gui_saf_about.html" />
-<mapID target="gui.saf.working" url="gui/saf/gui_saf_working.html" />
-<mapID target="gui.saf.creating" url="gui/saf/gui_saf_creating.html" />
-<mapID target="gui.saf.resources" url="gui/saf/gui_saf_resources.html" />
-<mapID target="gui.saf.actions" url="gui/saf/gui_saf_actions.html" />
 
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
@@ -305,15 +300,6 @@
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.OutputWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
-
-<!-- J2SE Desktop App name and location:-->
-<mapID target="org.netbeans.modules.swingapp.templates.ConfigureProjectPanel" url="project/csh/proj_j2se-desktopapp_wiz.html" />
-
-<!-- J2SE Desktop App master table:-->
-<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="project/csh/proj_j2se-desktopapp_wiz1.html" />
-
-<!-- J2SE Desktop App detail options:-->
-<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="project/csh/proj_j2se-desktopapp_wiz2.html" />
 
 
 <!-- Standard J2SE Project Properties dialog:-->
