@@ -384,6 +384,8 @@
 <mapID target="org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI" url="refactor/csh/inspect-transform.html" />
 <!--Introduce Parameter window: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI" url="refactor/csh/intro-param.html" />
+<!--Inline Refactoring window: -->
+<mapID target="org.netbeans.modules.refactoring.java.ui.InlineRefactoringUI" url="refactor/csh/inline-refactoring.html" />
 
 
 <!--CSH for GUI Builder:-->
