@@ -1040,7 +1040,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     break;
                 case ENDS_WITH_SEMICOLON:
                     builder.append(getName());
-                    if (';' != request.info.getSnapshot().getText().charAt(request.anchor + request.prefix.length())) {
+                    CharSequence text = request.info.getSnapshot().getText();
+                    int index = request.anchor + request.prefix.length();
+                    if (index == text.length() || ';' != text.charAt(index)) { //NOI18N
                         builder.append(";"); //NOI18N
                     }
                     break;
