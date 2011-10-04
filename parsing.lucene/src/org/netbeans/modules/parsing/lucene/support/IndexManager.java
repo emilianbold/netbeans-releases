@@ -46,13 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.lucene.analysis.Analyzer;
@@ -65,7 +61,6 @@ import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
 
 /**
  * The {@link IndexManager} controls access to {@link Index} instances and acts

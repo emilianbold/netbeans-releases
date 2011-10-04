@@ -240,7 +240,10 @@ public final class JavaFXPlatformUtils {
             }
             files.addAll(Arrays.asList(children));
             for (File child : children) {
-                files.addAll(Arrays.asList(child.listFiles()));
+                File[] f = child.listFiles();
+                if (f != null) {
+                    files.addAll(Arrays.asList(f));
+                }
             }
             for (File file : files) {
                 File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N

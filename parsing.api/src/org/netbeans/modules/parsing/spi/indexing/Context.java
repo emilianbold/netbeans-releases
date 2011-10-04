@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  * Represents a context of indexing given root.
@@ -66,15 +67,15 @@ public final class Context {
 
     private final URL rootURL;
     private final FileObject indexBaseFolder;
-    private final FileObject indexFolder;
     private final String indexerName;
     private final int indexerVersion;
     private final boolean followUpJob;
     private final boolean checkForEditorModifications;
-    private boolean allFilesJob;
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
-    
+    private FileObject indexFolder;
+    private boolean allFilesJob;
+
     private FileObject root;
     private IndexingSupport indexingSupport;
 
@@ -96,8 +97,6 @@ public final class Context {
         this.indexerVersion = indexerVersion;
         this.factory = factory != null ? factory : new LuceneIndexFactory();
         this.followUpJob = followUpJob;
-        final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
-        this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
         this.checkForEditorModifications = checkForEditorModifications;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
@@ -112,7 +111,15 @@ public final class Context {
      * For each root and indexer there exist a separate cache folder.
      * @return The cache folder
      */
-    public FileObject getIndexFolder () {        
+    public FileObject getIndexFolder () {
+        if (this.indexFolder == null) {
+            try {
+                final String path = getIndexerPath(indexerName, indexerVersion);
+                this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
         return this.indexFolder;
     }
 
