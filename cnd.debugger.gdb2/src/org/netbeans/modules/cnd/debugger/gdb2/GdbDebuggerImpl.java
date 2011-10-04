@@ -2079,50 +2079,59 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             return;
         }
         
-        if (Disassembly.isInDisasm()) {
+        final boolean dis = Disassembly.isInDisasm();
+        if (dis) {
             // probably a register - append $ at the beginning
             if (Character.isLetter(expr.charAt(0))) {
                 expr = '$' + expr;
             }
         }
 
-        dataMIEval(expr);
+        dataMIEval(expr, dis);
     }
 
+    @Override
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
 
-    private void dataMIEval(final String expr) {
+    private void dataMIEval(final String expr, final boolean dis) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
-
-            @Override
-                    protected void onDone(MIRecord record) {
-                        interpEvalResult(expr, record);
-                        finish();
+                @Override
+                protected void onDone(MIRecord record) {
+                    MITList value = record.results();
+                    if (Log.Variable.mi_vars) {
+                        System.out.println("value " + value.toString()); // NOI18N
                     }
+                    String value_string = value.valueOf("value").asConst().value(); // NOI18N
+                    if (dis) {
+                        // see #199557 we need to convert dis annotations to hex
+                        if (!value_string.startsWith("0x")) { //NOI18N
+                            try {
+                                value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
+                            } catch (Exception e) {
+                                // do nothing
+                            }
+                        }
+                    } else {
+                        value_string = ValuePresenter.getValue(value_string);
+                    }
+                    EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
+                    finish();
+                }
 
-            @Override
-		    protected void onError(MIRecord record) {
-			// Be silent on balloon eval failures
-			// genericFailure(record);
-			finish();
-		    }
-                };
+                @Override
+                protected void onError(MIRecord record) {
+                    // Be silent on balloon eval failures
+                    // genericFailure(record);
+                    finish();
+                }
+            };
         gdb.sendCommand(cmd);
     }
 
-    private void interpEvalResult(String expr, MIRecord record) {
-        MITList value = record.results();
-        if (Log.Variable.mi_vars) {
-            System.out.println("value " + value.toString()); // NOI18N
-        }
-        String value_string = value.valueOf("value").asConst().value(); // NOI18N
-        value_string = ValuePresenter.getValue(value_string);
-        EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
-    }
     /* 
      * watch stuff 
      */
