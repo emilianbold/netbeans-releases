@@ -753,6 +753,8 @@ public final class DLightSession implements
                  *
                  */
 
+                toolCollector.init(serviceInfoDataStorage);
+
                 if (currentStorages != null && !currentStorages.isEmpty()) {
                     if (storages == null) {
                         storages = new ArrayList<DataStorage>();
@@ -775,7 +777,6 @@ public final class DLightSession implements
                     log.log(Level.SEVERE, "Cannot find storage for collector {0}", toolCollector); // NOI18N
                 }
 
-                toolCollector.init(serviceInfoDataStorage);
                 addDataFilterListener(toolCollector);
                 
                 target.addTargetListener(toolCollector);
