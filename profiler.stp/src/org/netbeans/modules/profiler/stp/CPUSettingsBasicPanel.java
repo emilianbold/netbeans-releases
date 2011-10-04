@@ -938,10 +938,12 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             profilingPointsStateCache = profilingPointsCheckbox.isSelected();
             profilingPointsCheckbox.setEnabled(false);
             profilingPointsCheckbox.setSelected(false);
-            filterLabel.setEnabled(false);
-            filterCombo.setEnabled(false);
-            showFilterLink.setEnabled(false);
-            editFilterSetsLink.setEnabled(false);
+            if (stopwatchRadio.isSelected()) {
+                filterLabel.setEnabled(false);
+                filterCombo.setEnabled(false);
+                showFilterLink.setEnabled(false);
+                editFilterSetsLink.setEnabled(false);
+            }
             lastProfilingPointsState = true;
         } else {
             if (!lastProfilingPointsState) {
