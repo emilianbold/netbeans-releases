@@ -124,7 +124,7 @@ public class TableGenerator implements CodeGenerator {
 
     private String findConnVariableInScope() {
         final List<String> connVariables = new ArrayList<String>();
-        
+
         try {
             ParserManager.parse(Collections.singleton(Source.create(component.getDocument())), new UserTask() {
 
