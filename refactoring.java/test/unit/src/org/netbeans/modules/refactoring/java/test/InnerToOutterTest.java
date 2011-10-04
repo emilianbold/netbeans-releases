@@ -67,14 +67,14 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/A.java", "package t; public class A { class B { } }"));
     }
 
-//    public void test178451() throws Exception {
-//        writeFilesAndWaitForScan(src,
-//                                 new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; public static class F { } }"));
-//        performInnerToOuterTest(false);
-//        verifyContent(src,
-//                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */\n\npublic class F { }\n"),//TODO: why outer reference?
-//                      new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
-//    }
+    public void test178451() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; public static class F { } }"));
+        performInnerToOuterTest(false);
+        verifyContent(src,
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */\n\npublic class F { }\n"),//TODO: why outer reference?
+                      new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
+    }
 
     public void test138204a() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -415,7 +415,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     
     private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
-        
+
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController parameter) throws Exception {
