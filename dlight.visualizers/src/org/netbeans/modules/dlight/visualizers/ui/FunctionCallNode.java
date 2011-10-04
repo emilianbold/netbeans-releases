@@ -200,8 +200,9 @@ public final class FunctionCallNode extends AbstractNode {
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 String fname = new File(sourceInfo.getFileName()).getName();
                 int line = sourceInfo.getLine();
+                long offset = sourceInfo.getOffset();
 
-                if (line > 0) {
+                if (line > 0 || offset >= 0) {
                     result.append("<font color='#000000'>").append(dispName).append("</font>"); // NOI18N
                 } else {
                     result.append("<font color='#808080'>").append(dispName).append("</font>"); // NOI18N
