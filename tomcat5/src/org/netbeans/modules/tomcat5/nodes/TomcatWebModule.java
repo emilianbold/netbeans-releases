@@ -221,40 +221,39 @@ public class TomcatWebModule implements TomcatWebModuleCookie {
             updateState();
         }
 
-        public synchronized void updateState() {
-            if (finished) {
-                return;
-            }
-
+        public void updateState() {
             DeploymentStatus deployStatus = progressObject.getDeploymentStatus();
-            if (deployStatus == null) {
-                return;
-            }
+            
+            synchronized (this) {
+                if (finished || deployStatus == null) {
+                    return;
+                }
 
-            if (deployStatus.isCompleted() || deployStatus.isFailed()) {
-                finished = true;
-            }
+                if (deployStatus.isCompleted() || deployStatus.isFailed()) {
+                    finished = true;
+                }
 
-            if (deployStatus.getState() == StateType.COMPLETED) {
-                CommandType command = deployStatus.getCommand();
+                if (deployStatus.getState() == StateType.COMPLETED) {
+                    CommandType command = deployStatus.getCommand();
 
-                if (command == CommandType.START || command == CommandType.STOP) {
+                    if (command == CommandType.START || command == CommandType.STOP) {
+                            StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
+                            if (command == CommandType.START) {
+                                isRunning = true;
+                            } else {
+                                isRunning = false;
+                            }
+                            node.setDisplayName(constructDisplayName());
+                    } else if (command == CommandType.UNDEPLOY) {
                         StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
-                        if (command == CommandType.START) {
-                            isRunning = true;
-                        } else {
-                            isRunning = false;
-                        }
-                        node.setDisplayName(constructDisplayName());
-                } else if (command == CommandType.UNDEPLOY) {
+                    }
+                } else if (deployStatus.getState() == StateType.FAILED) {
+                    NotifyDescriptor notDesc = new NotifyDescriptor.Message(
+                            deployStatus.getMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(notDesc);
                     StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
                 }
-            } else if (deployStatus.getState() == StateType.FAILED) {
-                NotifyDescriptor notDesc = new NotifyDescriptor.Message(
-                        deployStatus.getMessage(),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(notDesc);
-                StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
             }
         }
     }
