@@ -17,7 +17,6 @@ org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider
 org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider$Basic
 
 #200051 - bunch of classes
-org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl$OnExpandAction
 org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider
 org.netbeans.modules.html.editor.indexing.HtmlIndexer$Factory
 org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory
