@@ -415,7 +415,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     
     private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
-        
+
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController parameter) throws Exception {

@@ -98,7 +98,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        SourceUtils.waitScanFinished();
+        RepositoryUpdater.getDefault().refreshAll(true, true, false);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -107,6 +107,8 @@ public class RefactoringTestBase extends NbTestCase {
         todo.add(sourceRoot);
 
         Map<String, String> content = new HashMap<String, String>();
+        
+        FileUtil.refreshFor(FileUtil.toFile(sourceRoot));
 
         while (!todo.isEmpty()) {
             FileObject file = todo.remove(0);

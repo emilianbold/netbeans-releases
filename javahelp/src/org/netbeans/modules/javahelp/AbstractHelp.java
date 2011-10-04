@@ -99,35 +99,28 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             }
             Installer.log.fine("listing helpsets: " + l);
         }
-        return selectSafeHelpSets(c);
+        assert (c = selectSafeHelpSets(c)) != null;
+        return c;
     }
 
     /** Filter out damaged help sets.
-     * 
-     * If assertions are disabled, return original collections.
      *
      * Added because problems with incorrectly indexed help sets are reported
      * sometimes. See #127368.
      * When these errors are fixed, this method (and related methods)
      * can be probably removed.
+     *
+     * This method is called only if assertations are enabled.
      */
     private static Collection<? extends HelpSet> selectSafeHelpSets(
             Collection<? extends HelpSet> sets) {
-
-        boolean asserts = false;
-        assert asserts = true;
-
-        if (asserts) {
-            Collection<HelpSet> safeSets = new ArrayList<HelpSet>(sets.size());
-            for (HelpSet hs : sets) {
-                if (isSafe(hs)) {
-                    safeSets.add(hs);
-                }
+        Collection<HelpSet> safeSets = new ArrayList<HelpSet>(sets.size());
+        for (HelpSet hs : sets) {
+            if (isSafe(hs)) {
+                safeSets.add(hs);
             }
-            return safeSets;
-        } else {
-            return sets;
         }
+        return safeSets;
     }
 
     /** Return true if a help set is safe to be added to list of help sets.
