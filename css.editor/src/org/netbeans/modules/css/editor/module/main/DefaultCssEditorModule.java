@@ -210,7 +210,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             //selectors the . an # prefix are virtual code and is not
                             //a part of the source document, try to highlight just
                             //the class or id name
-                            dso = snapshot.getOriginalOffset(node.to() + 1);
+                            dso = snapshot.getOriginalOffset(node.from() + 1);
                         }
                         int deo = snapshot.getOriginalOffset(node.to());
                         //filter out generated and inlined style definitions - they have just virtual selector which
