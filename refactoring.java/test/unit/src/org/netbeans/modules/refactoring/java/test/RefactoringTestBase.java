@@ -98,7 +98,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        SourceUtils.waitScanFinished();
+        RepositoryUpdater.getDefault().refreshAll(true, true, false);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
