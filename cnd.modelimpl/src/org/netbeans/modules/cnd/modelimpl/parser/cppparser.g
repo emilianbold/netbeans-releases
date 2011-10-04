@@ -1627,65 +1627,60 @@ linkage_specification
 	;
 
 declaration_specifiers [boolean allowTypedef, boolean noTypeId]
-	{
-	    // Global flags to allow for nested declarations
-	    _td = false;	// For typedef
-	    _fd = false;	// For friend
-	    _sc = scInvalid;	// For StorageClass
-	    _tq = tqInvalid;	// For TypeQualifier
-	    _ts = tsInvalid;	// For TypeSpecifier
-	    _ds = dsInvalid;	// For DeclSpecifier
+{
+    // Global flags to allow for nested declarations
+    _td = false;        // For typedef
+    _fd = false;        // For friend
+    _sc = scInvalid;    // For StorageClass
+    _tq = tqInvalid;    // For TypeQualifier
+    _ts = tsInvalid;    // For TypeSpecifier
+    _ds = dsInvalid;    // For DeclSpecifier
 
 
-	     // Locals
-	    boolean td = false;	// For typedef
-	    boolean fd = false;	// For friend
-	    StorageClass sc = scInvalid;	// auto,register,static,extern,mutable
-	    TypeQualifier tq = tqInvalid;	// const,const_cast,volatile,cdecl
-	    /*TypeSpecifier*/int ts = tsInvalid;	// char,int,double, etc., class,struct,union
-	    DeclSpecifier ds = dsInvalid;	// inline,virtual,explicit
-	}
-	:
-	(	
-                (options {warnWhenFollowAmbig = false;}
-		:	sc = storage_class_specifier
-		|	tq = cv_qualifier 
-		|	literal_inline                  {ds = dsINLINE;}
-		|	LITERAL_virtual			{ds = dsVIRTUAL;}
-		|	LITERAL_explicit			{ds = dsEXPLICIT;}
-                |       LITERAL_enum
-		|	
-                        {if (statementTrace>=1) 
-                                printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());
-                        }                        
+    // Locals
+    boolean td = false; // For typedef
+    boolean fd = false; // For friend
+    StorageClass sc = scInvalid;        // auto,register,static,extern,mutable
+    TypeQualifier tq = tqInvalid;       // const,const_cast,volatile,cdecl
+    /*TypeSpecifier*/int ts = tsInvalid;// char,int,double, etc., class,struct,union
+    DeclSpecifier ds = dsInvalid;       // inline,virtual,explicit
+}
+:
+(
+    (   (LITERAL_auto declarator[declOther, 0]) => 
+    |
+        (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
+        |   tq = cv_qualifier 
+        |   literal_inline {ds = dsINLINE;}
+        |   LITERAL_virtual {ds = dsVIRTUAL;}
+        |   LITERAL_explicit {ds = dsEXPLICIT;}
+        |   LITERAL_enum
+        |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
             {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
-		|	LITERAL_typename
-		|	LITERAL_friend	{fd=true;}
-		|	literal_stdcall
-                |       (options {greedy=true;} : attribute_specification!)
-		)*
-		(
-                        (options {greedy=true;} :type_attribute_specification)?
-                        ts = type_specifier[ds, noTypeId]
-                        // support for "A const*";
-                        // need to catch postfix_cv_qualifier
-                        (postfix_cv_qualifier)? 
-
-                        (
-                            (literal_inline   {ds = dsINLINE;})
-                        |
-                            (sc = storage_class_specifier)
-                        )*
-
-
-                        (options {greedy=true;} :type_attribute_specification)?
-//		|	LITERAL_typename	{td=true;}	direct_declarator 
-                |       literal_typeof LPAREN typeof_param RPAREN
-                                 
-		)                
-	)
-	{declarationSpecifier(td, fd, sc, tq, ts, ds);}
-	;
+        |   LITERAL_typename
+        |   LITERAL_friend {fd=true;}
+        |   literal_stdcall
+        |       (options {greedy=true;} : attribute_specification!)
+        )*
+    ) 
+    (
+        (options {greedy=true;} :type_attribute_specification)?
+        ts = type_specifier[ds, noTypeId]
+        // support for "A const*";
+        // need to catch postfix_cv_qualifier
+        (postfix_cv_qualifier)? 
+        (
+            (literal_inline {ds = dsINLINE;})
+        |
+            (sc = storage_class_specifier)
+        )*
+        (options {greedy=true;} :type_attribute_specification)?
+//  |   LITERAL_typename	{td=true;}	direct_declarator 
+    |   literal_typeof LPAREN typeof_param RPAREN
+    )                
+)
+{declarationSpecifier(td, fd, sc, tq, ts, ds);}
+;
 
 protected
 typeof_param :
@@ -1715,10 +1710,12 @@ cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifie
 	;
 
 type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
-	:	ts = simple_type_specifier[noTypeId]
-	|	ts = class_specifier[ds]
-	|	enum_specifier	{ts=tsENUM;}
-	;
+:   ts = simple_type_specifier[noTypeId]
+|   ts = class_specifier[ds]
+|   enum_specifier {ts=tsENUM;}
+|   LITERAL_auto
+    { #type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #type_specifier); }
+;
 
 simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
 	:	(	{!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
