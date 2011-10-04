@@ -33,6 +33,7 @@
 <!-- debug IDs :-->
 
 <mapID target="debug.about" url="debug/debug_about.html" />
+<mapID target="debug.gui" url="debug/debug_gui.html" />
 <mapID target="debug.process" url="debug/debug_process.html" />
 <mapID target="debug.quickref" url="debug/debug_quickref.html" />
 <mapID target="debug.local" url="debug/debug_local.html" />

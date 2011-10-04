@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Debugging Java GUIs</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    <meta name="keywords" content="debug, debugging" />
+</head>
+<body>
+
+<h2>Debugging Java GUIs</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>When debugging a Java GUI form, 
+    you can use the Visual Debugger to help
+    you locate the form elements in your source code.</p>
+<p>To use the Visual Debugger, you run the application in the 
+    debugger and take a snapshot of the UI that you want to debug.
+    You can then select items in the snapshot and locate the
+    corresponding line is the source code.
+    After you locate the lines in the source code for the elements 
+    that you want to debug, you can add breakpoints.</p>
+
+<p><b>To use the Visual Debugger to locate GUI-related source code:</b></p>
+<ol>
+    <li>Run the application in the Debugger.</li>
+    <li>Choose Debug &gt; Take GUI Snapshot in the main menu.
+        <p>The GUI snapshot will open in a tab in the main window.</p></li>
+    <li>Right-click an element in the GUI snapshot and choose a command from
+    the popup menu.</li>
+</ol>
+    
+    <!--
+    it can sometimes be
+    difficult to locate the GUI code for the layout and 
+    event handling of the form.
+
+    Users often need access to GUI-related code during debugging. 
+    If a bug is easy to see in application GUI, it may be difficult 
+    to locate the actual GUI code (layout, event handling) to put a breakpoint in it and trace it. 
+    Understanding events is also difficult as they may be triggered in other than expected order, 
+    which is complicated to observe using traditional debugger. 
+    UI Debugger should help understand and resolve bugs in GUI applications written in JavaFX or Swing.</p>
+
+
+<p>When you start a debugging session the Debugging window opens in the left 
+pane of the IDE. Additional debugger windows also appear
+automatically at the bottom of your screen.</p>
+
+<p>You can also debug applications that are running on a remote machine 
+by attaching the debugger to the application process.</p>
+-->
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+      <dd><a href="debug_process.html">Working with Debugging</a></dd>
+      <dd><a href="debug_quickref.html">Debugging Tasks: Quick Reference</a></dd>
+      <dd><a href="debug_local.html">Starting a Local Debugging Session</a></dd>
+      <dd><a href="debug_remote.html">Starting a Remote Debugging Session</a> </dd>
+      <dd><a href="debug_source.html">Attaching Source Code to a JAR File</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
