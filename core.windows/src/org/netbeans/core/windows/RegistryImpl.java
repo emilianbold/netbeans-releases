@@ -180,7 +180,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     
     
     /** Called when a TopComponent is opened. */
-    synchronized void topComponentOpened(TopComponent tc) {
+    public synchronized void topComponentOpened(TopComponent tc) {
         if (openSet.contains(tc)) {
             return;
         }
@@ -191,7 +191,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     }
     
     /** Called when a TopComponent is closed. */
-    synchronized void topComponentClosed(TopComponent tc) {
+    public synchronized void topComponentClosed(TopComponent tc) {
         if (!openSet.contains(tc)) {
             return;
         }
