@@ -1990,6 +1990,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Simulate the index download error - indexer should be started
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
         FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
         fo.delete();
         IndexDownloaderImpl.expect(rootURL, new File(workDir,"non_existent_index.zip").toURI().toURL());
@@ -2006,6 +2007,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Test DownloadedIndexPatcher - votes false -> IndexDownloader should be called and then Indexers should be called
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
         fo = CacheFolder.getDataFolder(root.toURI().toURL());
         fo.delete();
         IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
@@ -2024,6 +2026,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Test DownloadedIndexPatcher - votes true -> IndexDownloader should be called and NO Indexers should be called
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
         fo = CacheFolder.getDataFolder(root.toURI().toURL());
         fo.delete();
         IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
