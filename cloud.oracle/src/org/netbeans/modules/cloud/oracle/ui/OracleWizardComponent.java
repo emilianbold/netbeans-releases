@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private ChangeListener l;
-    private static final String ADMIN_URL = "https://wlsservices.cloud.oracle.com"; // NOI18N
+    private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
     
     static final boolean SHOW_CLOUD_URLS = true; // XXXXXX  //Boolean.getBoolean("oracle.cloud.dev");
     
@@ -78,7 +78,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         // just hardcode this; URL is life internally now
         cloudLabel.setVisible(false);
         cloudURLTextField.setVisible(false);
-        cloudURLTextField.setText("http://cloud.oracle.com");
+        cloudURLTextField.setText("http://cloud.oracle.com"); // NOI18N
         
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
@@ -324,7 +324,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         if (ADMIN_URL.equals(adminURLTextField.getText()) && 
                 (e.getDocument() == serviceInstanceTextField.getDocument() ||
                  e.getDocument() == serviceGroupTextField.getDocument())) {
-            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.wls.cloud.oracle.com", getServiceInstance(), getServiceGroup()));
+            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getServiceInstance(), getServiceGroup())); // NOI18N
         }
     }
 }

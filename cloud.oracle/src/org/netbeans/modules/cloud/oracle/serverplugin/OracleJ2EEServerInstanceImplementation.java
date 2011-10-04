@@ -65,7 +65,7 @@ public class OracleJ2EEServerInstanceImplementation implements ServerInstanceImp
 
     @Override
     public String getServerDisplayName() {
-        return "Oracle Weblogic Java Service"; // NOI18N
+        return "Oracle Java Service"; // NOI18N
     }
 
     @Override
