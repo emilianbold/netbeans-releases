@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.codegen.ASTNodeUtilities.VariableAcceptor;
+import org.netbeans.modules.php.editor.codegen.InvocationContextResolver.InvocationContext;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel.TableAndColumns;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -204,8 +205,13 @@ public class TableGenerator implements CodeGenerator {
     public static final class Factory implements CodeGenerator.Factory {
 
         public List<? extends CodeGenerator> create(Lookup context) {
+            List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);
-            return Collections.singletonList(new TableGenerator(component));
+            InvocationContextResolver invocationContextResolver = InvocationContextResolver.create(component);
+            if (!invocationContextResolver.isExactlyIn(InvocationContext.CLASS)) {
+                retval = Collections.singletonList(new TableGenerator(component));
+            }
+            return retval;
         }
     }
 }
