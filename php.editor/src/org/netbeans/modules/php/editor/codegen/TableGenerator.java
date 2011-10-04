@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,11 +56,10 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.codegen.ASTNodeUtilities.VariableAcceptor;
+import org.netbeans.modules.php.editor.codegen.InvocationContextResolver.InvocationContext;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel.TableAndColumns;
-import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -102,10 +100,12 @@ public class TableGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(TableGenerator.class, "LBL_DatabaseTable");
     }
 
+    @Override
     public void invoke() {
         String connVariable = findConnVariableInScope();
         if (connVariable == null) {
@@ -124,7 +124,7 @@ public class TableGenerator implements CodeGenerator {
 
     private String findConnVariableInScope() {
         final List<String> connVariables = new ArrayList<String>();
-        
+
         try {
             ParserManager.parse(Collections.singleton(Source.create(component.getDocument())), new UserTask() {
 
@@ -133,6 +133,7 @@ public class TableGenerator implements CodeGenerator {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
                     ASTNodeUtilities.getVariablesInScope(info, component.getCaretPosition(), new VariableAcceptor() {
 
+                        @Override
                         public boolean acceptVariable(String variableName) {
                             if (variableName.contains("conn")) { // NOI18N
                                 connVariables.add(variableName);
@@ -203,9 +204,15 @@ public class TableGenerator implements CodeGenerator {
 
     public static final class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
+            List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);
-            return Collections.singletonList(new TableGenerator(component));
+            InvocationContextResolver invocationContextResolver = InvocationContextResolver.create(component);
+            if (!invocationContextResolver.isExactlyIn(InvocationContext.CLASS)) {
+                retval = Collections.singletonList(new TableGenerator(component));
+            }
+            return retval;
         }
     }
 }
