@@ -160,10 +160,10 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
             }
 
             instantiableClassOrMethod(toRegister, apiTE);
-            layer(toRegister).instanceFile("Editors" + mimeType + folder, null, null).position(position).write();
+            layer(toRegister).instanceFile("Editors" + mimeType + folder, null, null).position(position).stringvalue("instanceOf", processingEnv.getElementUtils().getBinaryName(apiTE).toString()).write();    //NOI18N
         }
     }
-    
+
     private void instantiableClassOrMethod(Element anntated, TypeElement apiClass) throws IllegalArgumentException, LayerGenerationException {
         TypeMirror typeMirror = processingEnv.getTypeUtils().getDeclaredType(apiClass);
         

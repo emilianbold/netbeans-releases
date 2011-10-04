@@ -20,10 +20,8 @@ org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider$Basic
 org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider
 org.netbeans.modules.html.editor.indexing.HtmlIndexer$Factory
 org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory
-org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch$HighlightsFactoryImpl
 org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch$JavaFactoryImpl
 org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$OpenManagersWeakListener
-org.netbeans.modules.javadoc.highlighting.Factory
 org.netbeans.modules.javawebstart.JWSLookupProvider
 org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties
 org.netbeans.modules.merge.builtin.visualizer.MergeHighlightsLayerFactory
