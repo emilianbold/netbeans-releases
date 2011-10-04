@@ -2242,10 +2242,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	for (WatchVariable wv : watches) {
 	    GdbWatch w = (GdbWatch) wv;
-/* ambiguous in scope, might as well create new one everytime
-	    if (w.getMIName() != null)
+            
+            // due to the fix of #197053 it looks safe not to create new vars
+	    if (w.getMIName() != null) {
 		continue;		// we already have a var for this one
-*/
+            }
+            
 	    createMIVar(w, true);
 	}
     }
