@@ -103,6 +103,7 @@
             <tocitem text="Working with Debugging" target="debug.process"/>
             <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
             <tocitem text="Debugger Windows" target="debug.window"/>
+            <tocitem text="Debugging Java GUIs" target="debug.gui"/>
             <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
             <tocitem text="Attaching Source Code to a JAR File" target="debug.source"></tocitem>
             <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />

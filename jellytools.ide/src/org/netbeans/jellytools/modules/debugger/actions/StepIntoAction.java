@@ -45,6 +45,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.Operator;
 
 /**
  * Used to call "Debug|Step Into" main menu item or F7 shortcut.
@@ -66,6 +67,8 @@ public class StepIntoAction extends Action {
      */
     public StepIntoAction() {
         super(mainMenuPath, null, keystroke);
+        // set exact comparator to not clash with "Step Into Next Method" item
+        setComparator(new Operator.DefaultStringComparator(true, true));
     }
 
     /** Performs action through main menu. */
