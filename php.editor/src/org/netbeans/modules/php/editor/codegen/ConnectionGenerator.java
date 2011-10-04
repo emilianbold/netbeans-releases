@@ -76,10 +76,12 @@ public class ConnectionGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConnectionGenerator.class, "LBL_ConnectionToDatabase");
     }
 
+    @Override
     public void invoke() {
         DatabaseConnection dbconn = DatabaseConnectionSupport.selectDatabaseConnection(true, true);
         if (dbconn != null && dbconn.getPassword() == null) {
@@ -127,6 +129,7 @@ public class ConnectionGenerator implements CodeGenerator {
 
     public static final class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);

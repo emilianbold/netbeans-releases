@@ -100,10 +100,12 @@ public class TableGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(TableGenerator.class, "LBL_DatabaseTable");
     }
 
+    @Override
     public void invoke() {
         String connVariable = findConnVariableInScope();
         if (connVariable == null) {
@@ -131,6 +133,7 @@ public class TableGenerator implements CodeGenerator {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
                     ASTNodeUtilities.getVariablesInScope(info, component.getCaretPosition(), new VariableAcceptor() {
 
+                        @Override
                         public boolean acceptVariable(String variableName) {
                             if (variableName.contains("conn")) { // NOI18N
                                 connVariables.add(variableName);
@@ -201,6 +204,7 @@ public class TableGenerator implements CodeGenerator {
 
     public static final class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);
