@@ -92,6 +92,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private final boolean urlFixed;
     private final ConnectionSettingsType[] settingTypes;
     private ConnectionSettingsType activeSettingsType;
+    private boolean enabled = true;
 
     private enum Scheme {
         FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
@@ -174,7 +175,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public void setEnabled (boolean enabled) {
-        activeSettingsType.setEnabled(enabled);
+        this.enabled = enabled;
+        for (ConnectionSettingsType type : settingTypes) {
+            type.setEnabled(enabled);
+        }
     }
     
     public void removeChangeListener(ChangeListener listener) {
@@ -381,7 +385,12 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     });
                 } finally {
                     if (!urlFixed) {
-                        panel.urlComboBox.setEnabled(true);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                panel.urlComboBox.setEnabled(enabled);
+                            }
+                        });
                     }
                 }
             }

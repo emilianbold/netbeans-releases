@@ -86,7 +86,12 @@ public class SelectorsModule extends CssEditorModule {
 
         "root", "nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type",
         "first-child", "last-child", "first-of-type", "last-of-type", "only-child",
-        "only-of-type", "empty" //structural
+        "only-of-type", "empty", //structural
+        
+        //following pseudo elements needs to be supported also in the pseudo class form (:: prefix)
+        //to be compatible with CSS2. See http://www.w3.org/TR/selectors/#pseudo-elements
+        "first-line", "first-letter", "before", "after"
+        
     }); //NOI18N
     
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{

@@ -224,7 +224,7 @@ public class LogSupport {
         public void outputLineAction(OutputEvent ev) {
             FileObject sourceFile = GlobalPathRegistry.getDefault().findResource(path);
             if (sourceFile == null) {
-                sourceFile = FileUtil.toFileObject(new File(path));
+                sourceFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
             }
             DataObject dataObject = null;
             if (sourceFile != null) {
