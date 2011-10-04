@@ -49,6 +49,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.php.editor.codegen.DatabaseURL.Server;
+import org.netbeans.modules.php.editor.codegen.InvocationContextResolver.InvocationContext;
 import org.netbeans.modules.php.editor.sql.DatabaseConnectionSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Lookup;
@@ -75,10 +76,12 @@ public class ConnectionGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConnectionGenerator.class, "LBL_ConnectionToDatabase");
     }
 
+    @Override
     public void invoke() {
         DatabaseConnection dbconn = DatabaseConnectionSupport.selectDatabaseConnection(true, true);
         if (dbconn != null && dbconn.getPassword() == null) {
@@ -126,9 +129,15 @@ public class ConnectionGenerator implements CodeGenerator {
 
     public static final class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
+            List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);
-            return Collections.singletonList(new ConnectionGenerator(component));
+            InvocationContextResolver invocationContextResolver = InvocationContextResolver.create(component);
+            if (!invocationContextResolver.isExactlyIn(InvocationContext.CLASS)) {
+                retval = Collections.singletonList(new ConnectionGenerator(component));
+            }
+            return retval;
         }
     }
 }

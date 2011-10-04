@@ -3838,8 +3838,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Map<ExecutableElement, boolean[]> ctors2generate = new LinkedHashMap<ExecutableElement, boolean[]>();
                 GeneratorUtils.scanForFieldsAndConstructors(controller, clsPath, initializedFields, uninitializedFields, constructors);
                 if (cls.getKind() != Tree.Kind.ENUM) {
-                    for (ExecutableElement ctor : ElementFilter.constructorsIn(((DeclaredType)te.getSuperclass()).asElement().getEnclosedElements())) {
-                        if (!ctor.getModifiers().contains(Modifier.PRIVATE)) {
+                    DeclaredType superType = (DeclaredType)te.getSuperclass();
+                    Scope scope = env.getScope();
+                    for (ExecutableElement ctor : ElementFilter.constructorsIn(superType.asElement().getEnclosedElements())) {
+                        if (trees.isAccessible(scope, ctor, superType)) {
                             ctors2generate.put(ctor, new boolean[] {true, !uninitializedFields.isEmpty()});
                         }
                     }

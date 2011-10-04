@@ -194,6 +194,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 setValid(false, message);
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
+                if (message == null && isCanceled()) {
+                    message = new Message(NbBundle.getMessage(RepositoryStep.class, "MSG_RepositoryStep.validationCanceled"), true); //NOI18N
+                    setValid(false, message);
+                }
             }
         }
 

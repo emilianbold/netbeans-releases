@@ -166,6 +166,10 @@ public enum HTMLTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
         Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            if(token.isRemoved()) {
+                //strange, but sometimes the embedding is requested on removed token which has null image
+                return null;
+            }
             String mimeType = null;
             switch(token.id()) {
                 // BEGIN TOR MODIFICATIONS
@@ -208,8 +212,10 @@ public enum HTMLTokenId implements TokenId {
                             return null; //no language found
                         } else {
                             PartType ptype = token.partType();
-                            int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
-                            int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                            char firstChar = token.text().charAt(0);
+                            boolean quoted = firstChar == '\'' || firstChar == '"';
+                            int startSkipLength = quoted && (ptype == PartType.COMPLETE || ptype == PartType.START) ? 1 : 0;
+                            int endSkipLength = quoted && (ptype == PartType.COMPLETE || ptype == PartType.END) ? 1 : 0;
 
                             //do not join css code sections in attribute value between each other,
                             //only token parts inside one value
