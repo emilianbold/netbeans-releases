@@ -30,16 +30,21 @@
                   <Component id="singleClassImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" pref="279" max="32767" attributes="1"/>
+                          <Component id="jScrollPane2" pref="0" max="32767" attributes="1"/>
                           <Component id="separateStaticImportsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane1" alignment="0" pref="258" max="32767" attributes="1"/>
-                                  <Component id="starImportPackagesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="starImportTresholdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="starStaticImportTrasholdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="importInnerClassesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jScrollPane1" alignment="0" pref="0" max="32767" attributes="1"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="starImportTresholdCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="starImportPackagesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="importInnerClassesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="starStaticImportTresholdCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -63,7 +68,7 @@
                   <Component id="packageImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="fqnRadioButton" alignment="0" min="-2" max="-2" attributes="1"/>
                   <Component id="separateGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator1" alignment="0" pref="393" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -77,13 +82,13 @@
               <Component id="importInnerClassesCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="starImportTresholdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="starImportTresholdSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="starImportTresholdCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="starStaticImportTrasholdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="startStaticImportTresholdSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="starStaticImportTresholdCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="starImportPackagesLabel" min="-2" max="-2" attributes="0"/>
@@ -144,15 +149,15 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="starImportTresholdLabel">
+    <Component class="javax.swing.JCheckBox" name="starImportTresholdCheckBox">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="starImportTresholdSpinner"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_imp_importTreshold" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="starImportTresholdCheckBoxActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JSpinner" name="starImportTresholdSpinner">
       <Properties>
@@ -161,15 +166,15 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="starStaticImportTrasholdLabel">
+    <Component class="javax.swing.JCheckBox" name="starStaticImportTresholdCheckBox">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="startStaticImportTresholdSpinner"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_imp_staticImportTreshold" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="starStaticImportTresholdCheckBoxActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JSpinner" name="startStaticImportTresholdSpinner">
       <Properties>
@@ -196,6 +201,9 @@
           <Properties>
             <Property name="selectionModel" type="javax.swing.ListSelectionModel" editor="org.netbeans.modules.form.editors2.JTableSelectionModelEditor">
               <JTableSelectionModel selectionMode="0"/>
+            </Property>
+            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+              <TableHeader reorderingAllowed="false" resizingAllowed="false"/>
             </Property>
           </Properties>
         </Component>
@@ -265,6 +273,11 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTable" name="importLayoutTable">
+          <Properties>
+            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+              <TableHeader reorderingAllowed="false" resizingAllowed="false"/>
+            </Property>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
