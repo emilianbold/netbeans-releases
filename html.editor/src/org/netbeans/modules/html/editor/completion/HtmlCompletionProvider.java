@@ -52,6 +52,7 @@ import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
@@ -83,8 +84,8 @@ import org.openide.util.NbBundle;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
-    private final AtomicBoolean AUTO_QUERY = new AtomicBoolean(); 
-    
+    private final AtomicBoolean AUTO_QUERY = new AtomicBoolean();
+
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         AUTO_QUERY.set(true);
@@ -98,28 +99,28 @@ public class HtmlCompletionProvider implements CompletionProvider {
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         AsyncCompletionTask task = null;
-        
+
         boolean triggeredByAutocompletion = AUTO_QUERY.getAndSet(false);
-        
+
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             task = new AsyncCompletionTask(new Query(triggeredByAutocompletion), component);
         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
             task = new AsyncCompletionTask(new DocQuery(null, triggeredByAutocompletion), component);
         }
-        
+
         return task;
     }
 
     private static class Query extends AbstractQuery {
 
         private int anchor;
-        private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
+        private volatile Collection<? extends CompletionItem> items = Collections.<CompletionItem>emptyList();
         private JTextComponent component;
 
         public Query(boolean triggeredByAutocompletion) {
             super(triggeredByAutocompletion);
         }
-        
+
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
@@ -129,7 +130,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, triggeredByAutocompletion).query();
-                if(result != null) {
+                if (result != null) {
                     items = result.getItems();
                     anchor = result.getAnchor();
                 } else {
@@ -149,16 +150,16 @@ public class HtmlCompletionProvider implements CompletionProvider {
             try {
                 Document doc = component.getDocument();
                 int offset = component.getCaretPosition();
-                if(offset < anchor) {
+                if (offset < anchor) {
                     return false;
                 }
 
                 String prefix = doc.getText(anchor, offset - anchor);
 
                 //check the items
-                for(CompletionItem item : items) {
-                    if(item instanceof HtmlCompletionItem) {
-                        if(startsWithIgnoreCase( ((HtmlCompletionItem)item).getItemText(), prefix)) {
+                for (CompletionItem item : items) {
+                    if (item instanceof HtmlCompletionItem) {
+                        if (startsWithIgnoreCase(((HtmlCompletionItem) item).getItemText(), prefix)) {
                             return true; //at least one item will remain
                         }
                     }
@@ -181,9 +182,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 String prefix = doc.getText(anchor, offset - anchor);
 
                 //check the items
-                for(CompletionItem item : items) {
-                    if(item instanceof HtmlCompletionItem) {
-                        if(startsWithIgnoreCase(((HtmlCompletionItem)item).getItemText(), prefix)) {
+                for (CompletionItem item : items) {
+                    if (item instanceof HtmlCompletionItem) {
+                        if (startsWithIgnoreCase(((HtmlCompletionItem) item).getItemText(), prefix)) {
                             resultSet.addItem(item);
                         }
                     }
@@ -201,7 +202,6 @@ public class HtmlCompletionProvider implements CompletionProvider {
         private static boolean startsWithIgnoreCase(String text, String prefix) {
             return text.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
         }
-
     }
 
     public static class DocQuery extends AbstractQuery {
@@ -236,7 +236,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
     }
 
     private static abstract class AbstractQuery extends AsyncCompletionQuery {
-        
+
         protected final boolean triggeredByAutocompletion;
 
         public AbstractQuery(boolean triggeredByAutocompletion) {
@@ -302,30 +302,51 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 }
                 break;
             case ' ':
-                doc.readLock();
-                try {
-                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
-                    if (ts == null) {
-                        //no suitable token sequence found
-                        return false;
-                    }
+                final AtomicBoolean value = new AtomicBoolean();
+                doc.render(new Runnable() {
 
-                    int diff = ts.move(dotPos);
-                    if (ts.moveNext() &&
-                            ts.token().id() == HTMLTokenId.WS && //if current token is whitespace
-                            diff == 1 && //and the caret is just after one char of the token
-                            ts.movePrevious() && //then go back and check if the token before is one of following types
-                            (ts.token().id() == HTMLTokenId.TAG_OPEN ||
-                            ts.token().id() == HTMLTokenId.VALUE ||
-                            ts.token().id() == HTMLTokenId.VALUE_CSS ||
-                            ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT)) {
-                        return true;
+                    @Override
+                    public void run() {
+                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
+                        if (ts == null) {
+                            //no suitable token sequence found
+                            value.set(true);
+                            return;
+                        }
+
+                        int diff = ts.move(dotPos);
+                        if (diff == 0) {
+                            //just after a token
+                            if (ts.movePrevious()) {
+                                if(ts.token().id() == HTMLTokenId.WS) {
+                                    //just after a whitespace
+                                    if(ts.movePrevious()) {
+                                        //test what precedes the WS -- are we inside a tag?
+                                        value.set(ts.token().id() == HTMLTokenId.TAG_OPEN
+                                                || ts.token().id() == HTMLTokenId.VALUE
+                                                || ts.token().id() == HTMLTokenId.VALUE_CSS
+                                                || ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT);
+                                        return;
+                                    }
+                                }
+                            }
+                        } else if (diff > 0) {
+                            //after first char of the token
+                            if (ts.moveNext()) {
+                                if (ts.token().id() == HTMLTokenId.WS) {
+                                    if (ts.movePrevious()) {
+                                        value.set(ts.token().id() == HTMLTokenId.TAG_OPEN
+                                                || ts.token().id() == HTMLTokenId.VALUE
+                                                || ts.token().id() == HTMLTokenId.VALUE_CSS
+                                                || ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
                     }
-                    
-                } finally {
-                    doc.readUnlock();
-                }
-                break;
+                });
+                return value.get();
             case '<':
             case '&':
                 return true;
@@ -397,6 +418,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             return null;
         }
     }
+
     private static class LinkDocItem implements CompletionDocumentation {
 
         private URL url;
@@ -458,16 +480,14 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
     private static CompletionDocumentation createCompletionDocumentation(HtmlCompletionItem item) {
         //fork for the new and old help approach, legacy html4 not migrated yet
-        HelpItem helpItem  = item.getHelpItem();
-        if(helpItem != null) {
+        HelpItem helpItem = item.getHelpItem();
+        if (helpItem != null) {
             return new HtmlTagDocumetationItem(item);
         }
 
         //else legacy approach
         return new DocItem(item);
     }
-
-
 
     private static class HtmlTagDocumetationItem implements CompletionDocumentation {
 
@@ -493,7 +513,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             //the header before the URL content
             StringBuilder sb = new StringBuilder();
             String header = getHelpItem().getHelpHeader();
-            if(header != null) {
+            if (header != null) {
                 sb.append(header);
             }
 
@@ -514,9 +534,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
         @Override
         public CompletionDocumentation resolveLink(String link) {
             URL itemUrl = getHelpItem().getHelpResolver().resolveLink(getURL(), link);
-            return itemUrl != null ?
-                new LinkDocItem(getHelpItem().getHelpResolver(), itemUrl) :
-                new NoDocItem();
+            return itemUrl != null
+                    ? new LinkDocItem(getHelpItem().getHelpResolver(), itemUrl)
+                    : new NoDocItem();
         }
 
         @Override
@@ -524,7 +544,6 @@ public class HtmlCompletionProvider implements CompletionProvider {
             return null;
         }
     }
-
 
     private static class DocItem implements CompletionDocumentation {
 
@@ -547,9 +566,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
         @Override
         public CompletionDocumentation resolveLink(String link) {
             URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
-            return itemUrl != null ?
-                new LegacyLinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
-                new NoDocItem();
+            return itemUrl != null
+                    ? new LegacyLinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link))
+                    : new NoDocItem();
         }
 
         @Override
