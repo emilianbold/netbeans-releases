@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,9 +59,7 @@ import org.netbeans.modules.php.editor.codegen.ASTNodeUtilities.VariableAcceptor
 import org.netbeans.modules.php.editor.codegen.InvocationContextResolver.InvocationContext;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.TableGeneratorPanel.TableAndColumns;
-import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
