@@ -272,8 +272,8 @@ public class LayoutUtils implements LayoutConstants {
         }
         
         // Find sources and targets inside srcInt and targetInt
-        List sources = edgeSubComponents(srcInt, TRAILING, false);
-        List targets = edgeSubComponents(targetInt, LEADING, false);
+        List sources = getSideComponents(srcInt, TRAILING, true, false);
+        List targets = getSideComponents(targetInt, LEADING, true, false);
 
         // Calculate size of gap from sources and targets and their positions
         return getSizesOfDefaultGap(sources, targets, interval.getPaddingType(),
@@ -423,29 +423,54 @@ public class LayoutUtils implements LayoutConstants {
     }
 
     /**
-     * Lists components under given interval that lie at given side of the
-     * interval.
-     * edge.in the <code>root</code>
-     * layout interval - the list contains only components whose layout
-     * intervals lie at the specified edge (<code>LEADING</code>
-     * or <code>TRAILING</code>) of the <code>root</code> layout interval.
-     *
-     * @param root layout interval that will be scanned.
-     * @param edge the requested edge the components shoul be next to.
-     * @return <code>List</code> of <code>LayoutInterval</code>s that
-     * represent <code>LayoutComponent</code>s.
+     * Lists all components that lie at given side of the group (i.e. there is
+     * no gap next to them in the direction to the group edge, they're at the
+     * border).
+     * @param root layout interval to be be examined
+     * @param edge the requested edge where the components should be looked for,
+     *        LEADING or TRAILING
+     * @param aligned if true, the components also must be aligned at the root's
+     *        edge, otherwise it's enough there's no gap interval next to them
+     * @return List of intervals that represent components that fulfill the condition
      */
     static List<LayoutInterval> edgeSubComponents(LayoutInterval root, int edge, boolean aligned) {
-        assert edge == LEADING || edge == TRAILING;
-        List<LayoutInterval> components = null;
-        List<LayoutInterval> candidates = new LinkedList<LayoutInterval>();
-        if (root != null) {
-            components = new LinkedList<LayoutInterval>();
-            candidates.add(root);
+        return getSideSubIntervals(root, edge, true, false, true, aligned, false);
+    }
+
+    /**
+     * Recursivelly collects single subintervals (i.e. gaps or components)
+     * located closest to given side of an interval.
+     * @param interval The interval to inspect (e.g. a group).
+     * @param edge At what edge (LEADING or TRAILING).
+     * @param components Looking for components?
+     * @param gaps Looking for gaps?
+     * @param mustBeLast If true, the side interval must be the last one in a
+     *        parallel branch. If false, it must be just last of its kind.
+     * @param aligned If true, the side interval must have effective alignment
+     *        towards the given edge of the 'interval' parent.
+     * @return List of side intervals that meet the criteria.
+     */
+    static List<LayoutInterval> getSideSubIntervals(LayoutInterval interval, int edge,
+                                  boolean components, boolean gaps,
+                                  boolean mustBeLast, boolean aligned) {
+        return getSideSubIntervals(interval, edge, components, gaps, mustBeLast, aligned, false);
+    }
+
+    private static List<LayoutInterval> getSideSubIntervals(LayoutInterval interval, int edge,
+                                  boolean components, boolean gaps,
+                                  boolean mustBeLast, boolean aligned,
+                                  boolean justFirst) {
+        if (edge != LEADING && edge != TRAILING) {
+            throw new IllegalArgumentException();
         }
-        while (!candidates.isEmpty()) {
-            LayoutInterval candidate = candidates.get(0);
-            candidates.remove(candidate);
+        List<LayoutInterval> intervals = null;
+        List<LayoutInterval> candidates = new LinkedList<LayoutInterval>();
+        if (interval != null) {
+            intervals = new LinkedList<LayoutInterval>();
+            candidates.add(interval);
+        }
+        while (!candidates.isEmpty() && (!justFirst || intervals.isEmpty())) {
+            LayoutInterval candidate = candidates.remove(0);
             if (candidate.isGroup()) {
                 if (candidate.isSequential()) {
                     int index = (edge == LEADING) ? 0 : candidate.getSubIntervalCount()-1;
@@ -459,11 +484,38 @@ public class LayoutUtils implements LayoutConstants {
                         }
                     }
                 }
-            } else if (candidate.isComponent()) {
-                components.add(candidate);
+            } else if ((components && candidate.isComponent())
+                       || (gaps && candidate.isEmptySpace())) {
+                intervals.add(candidate);
+            } else if (!mustBeLast) {
+                LayoutInterval neighbor = LayoutInterval.getNeighbor(candidate, edge^1, false, true, false);
+                if (neighbor != null
+                        && ((components && neighbor.isComponent()) || gaps && neighbor.isEmptySpace())
+                        && interval.isParentOf(neighbor)
+                        && !intervals.contains(neighbor)) {
+                    intervals.add(neighbor);
+                }
             }
         }
-        return components;
+        return intervals;
+    }
+
+    static List<LayoutInterval> getSideComponents(LayoutInterval interval, int edge,
+                                                  boolean mustBeLast, boolean aligned) {
+        return getSideSubIntervals(interval, edge, true, false, mustBeLast, aligned, false);
+    }
+
+    static boolean hasSideComponents(LayoutInterval interval, int edge,
+                                     boolean mustBeLast, boolean aligned) {
+        return !getSideSubIntervals(interval, edge, true, false, mustBeLast, aligned, true).isEmpty();
+    }
+
+    static List<LayoutInterval> getSideGaps(LayoutInterval interval, int edge, boolean aligned) {
+        return getSideSubIntervals(interval, edge, false, true, true, aligned, false);
+    }
+
+    static boolean hasSideGaps(LayoutInterval interval, int edge, boolean aligned) {
+        return !getSideSubIntervals(interval, edge, false, true, true, aligned, true).isEmpty();
     }
 
     static boolean alignedIntervals(LayoutInterval interval1, LayoutInterval interval2, int alignment) {
