@@ -275,7 +275,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = fo.getPath();
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
-                    newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
+                    newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), newPath);
                 }
                 newPath = CndPathUtilitities.normalizeSlashes(newPath);
                 renameTo(newPath);
@@ -633,7 +633,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
-                String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), p);
+                String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                 result.add(new FSPath(projectFS, absPath));
             }
             List<String> vec3 = new ArrayList<String>();
