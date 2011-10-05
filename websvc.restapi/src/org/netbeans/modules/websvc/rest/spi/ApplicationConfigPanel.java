@@ -48,10 +48,9 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
@@ -126,6 +125,24 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         if ( jComboBox1.isVisible() ){
             jCheckBox1.addActionListener(listener);
         }
+        
+        // Fix for BZ#202054 - Bad size of "REST Resources Configuration" dialog
+        addHierarchyListener( new HierarchyListener() {
+
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                Point location = jTextField1.getLocation();
+                double bottomY = location.getY()+jTextField1.getHeight();
+                location = jLabel2.getLocation();
+                double topY = location.getY();
+                bottomY = bottomY +topY ;
+                Dimension dim = getPreferredSize();
+                int newHeight = (int)bottomY;
+                if ( dim.height < newHeight ) {
+                    setPreferredSize( new Dimension( dim.width, newHeight ));
+                }
+            }
+        });
     }
     
     private ComboBoxModel getSourceModel(){

@@ -36,4 +36,6 @@
 	<mapID target="org.netbeans.modules.git.ui.revert.RevertCommit" url="csh/git-revert-com.html"/>
 	<mapID target="org.netbeans.modules.git.ui.tag.CreateTag" url="csh/git-create-tag.html"/>
 	<mapID target="org.netbeans.modules.git.ui.tag.ManageTags" url="csh/git-manage-tags.html"/>
+	<mapID target="org.netbeans.modules.git.ui.merge.MergeRevision" url="csh/git-merge-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.status.GitVersioningTopComponent" url="csh/git-versioning-view.html"/>
 </map>

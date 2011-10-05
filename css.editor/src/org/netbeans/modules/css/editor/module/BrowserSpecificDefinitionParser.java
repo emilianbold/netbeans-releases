@@ -166,7 +166,13 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
         @Override
         public String getValueGrammar() {
+            //try to get the normal property first
             Property p = CssModuleSupport.getProperty(delegateToPropertyName);
+            if(p == null) {
+                //the browser specific definition may address an invisible property
+                p = CssModuleSupport.getProperty(delegateToPropertyName, true);
+            }
+            
             if (p == null) {
                 Logger.getAnonymousLogger().warning(String.format("Cannot fine property %s referred in %s", delegateToPropertyName, resourcePath)); //NOI18N
                 return ""; //return empty grammar definition

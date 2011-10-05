@@ -107,12 +107,13 @@ public class TplCompletionProvider implements CompletionProvider {
                         items.addAll(result.getVariableModifiers());
                         inSmarty = true;
                     }
-                    if (!(commands = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset)).isEmpty()) {
+                    commands = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset);
+                    if (!commands.isEmpty()) {
                         items.addAll(result.getParamsForCommand(commands));
                         inSmarty = true;
                     }
                     if (!inSmarty) {
-                        if (result != null){
+                        if (result != null) {
                             items.addAll(result.getFunctions());
                         }
                     }

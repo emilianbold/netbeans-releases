@@ -256,6 +256,10 @@ public class CssModuleSupport {
     }
 
     public static Property getProperty(String propertyName) {
+        return getProperty(propertyName, false);
+    }
+    
+    public static Property getProperty(String propertyName, boolean allowToGetInvisibleProperties) {
         PROPERTIES.compareAndSet(null, loadProperties());
 
         //try to resolve the refered element name with the at-sign prefix so
@@ -268,7 +272,7 @@ public class CssModuleSupport {
         StringBuilder sb = new StringBuilder().append(GrammarParser.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
         Property invisibleProperty = PROPERTIES.get().get(sb.toString());
         
-        return invisibleProperty != null ? invisibleProperty : PROPERTIES.get().get(propertyName);
+        return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES.get().get(propertyName);
     }
 
     public static PropertyModel getPropertyModel(String name) {
