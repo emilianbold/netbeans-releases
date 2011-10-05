@@ -58,7 +58,6 @@ import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
@@ -68,7 +67,7 @@ import org.openide.util.Exceptions;
 
 /**
  * End-to-end scenario test based on
- * http://qa.netbeans.org/modules/webapps/promo-f/frameworks/struts-user-scenario.html.
+ * http://wiki.netbeans.org/TS_71_StrutsSupport
  *
  * @author Jiri Skrivanek
  */
@@ -148,19 +147,6 @@ public class EndToEndTest extends J2eeTestCase {
         frameworkStep.btFinish().pushNoBlock();
         frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         frameworkStep.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = org.netbeans.jellytools.Bundle.getString(
-                "org.netbeans.modules.project.ui.Bundle",
-                "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 60 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
-        waitScanFinished();
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
         Node welcomeNode = new Node(webPages, "welcomeStruts.jsp");
@@ -174,6 +160,7 @@ public class EndToEndTest extends J2eeTestCase {
         assertTrue("ActionServlet should be created in web.xml.", webXMLEditor.getText().indexOf(expected) > -1);
         webXMLEditor.replace("index.jsp", "login.jsp");
         webXMLEditor.save();
+        waitScanFinished();
     }
 
     /**
@@ -195,8 +182,8 @@ public class EndToEndTest extends J2eeTestCase {
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("login");
         // wait for text to be displayed
-        loginEditorOper.txtEditorPane().waitText("JSP Page", -1);
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.txtEditorPane().waitText("JSP Page");
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
     }
 
@@ -217,7 +204,7 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("LoginForm");
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<form-bean name=\"LoginForm\" type=\"com.mycompany.eshop.struts.forms.LoginForm\"/>";
@@ -250,7 +237,7 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("LoginVerifyAction");
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<action input=\"/login.jsp\" name=\"LoginForm\" path=\"/Login/Verify\" scope=\"request\" type=\"com.mycompany.eshop.struts.actions.LoginVerifyAction\"/>";
@@ -276,7 +263,7 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("SecurityManager");
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
@@ -330,7 +317,7 @@ public class EndToEndTest extends J2eeTestCase {
         String sourceCode = properties.getProperty("shop");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
@@ -354,7 +341,7 @@ public class EndToEndTest extends J2eeTestCase {
         String sourceCode = properties.getProperty("logout");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
@@ -507,9 +494,7 @@ public class EndToEndTest extends J2eeTestCase {
         propertiesDialogOper.ok();
 
         try {
-            // "Run Project"
-            String runProjectItem = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
-            new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
+            new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
             waitText(PROJECT_NAME, 360000, "Login");
         } finally {
             // log messages from output
@@ -519,7 +504,7 @@ public class EndToEndTest extends J2eeTestCase {
     }
 
     /**
-     * Opens URL connection and waits for given text. It thows
+     * Opens URL connection and waits for given text. It throws
      * TimeoutExpiredException if timeout expires.
      *
      * @param urlSuffix suffix added to server URL

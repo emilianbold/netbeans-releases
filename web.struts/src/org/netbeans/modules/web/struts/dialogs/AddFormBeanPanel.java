@@ -77,7 +77,6 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         if (getFormName().length()==0)
             return NbBundle.getMessage(AddFormBeanPanel.class,"MSG_EmptyFormName");
         if (beanNames == null){
-            System.out.println("vytvarim cashe of jmen");
             beanNames = new Hashtable();
             try {
                 FormBean[] beans = config.getStrutsConfig().getFormBeans().getFormBean();
