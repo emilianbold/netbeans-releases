@@ -4032,7 +4032,8 @@ class LayoutFeeder implements LayoutConstants {
         if (solveOverlap || !LayoutUtils.isOverlapPreventedInOtherDimension(addingInterval, interval, dimension)) {
             ortOverlap = LayoutUtils.contentOverlap(addingSpace, interval, dimension^1);
             if (ortOverlap
-                && dragger.isResizing(dimension) && !dragger.isResizing(dimension^1)
+                && dragger.isResizing()
+                && (!dragger.isResizing(dimension^1) || LayoutRegion.overlap(addingSpace, interval.getCurrentSpace(), dimension, 0))
                 && originalPosition != null) {
                 // In case of resizing only in one dimension don't consider
                 // overlap that was not cared of already before the resizing
@@ -4304,7 +4305,8 @@ class LayoutFeeder implements LayoutConstants {
         // Check if something is moved within a closed group (typically moved
         // vertically within a column).
         IncludeDesc origDesc = originalPosition.desc1;
-        if (origDesc != null && origDesc != newDesc && originalPosition.closedSpace != null) {
+        if (origDesc != null && origDesc != newDesc && originalPosition.closedSpace != null
+                && layoutModel.getChangeMark().equals(undoCheckMark)) {
             LayoutInterval origParent = origDesc.parent;
             if (origParent.isSequential() && !origDesc.newSubGroup) {
                 origParent = origParent.getParent();
