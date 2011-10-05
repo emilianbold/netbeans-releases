@@ -220,6 +220,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList(new String[] {"abstract","const","function", "private", "final",
             "protected", "public", "static", "var"});//NOI18N
 
+    private static final List<String> INTERFACE_CONTEXT_KEYWORD_PROPOSAL =
+            Arrays.asList(new String[] {"const","function", "public", "static"});//NOI18N
+
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
 
@@ -386,6 +389,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
                     autoCompleteInClassContext(info, caretOffset, completionResult, request);
+                    break;
+                case INTERFACE_CONTEXT_KEYWORDS:
+                    autoCompleteInInterfaceContext(completionResult, request);
                     break;
                 case METHOD_NAME:
                     autoCompleteMethodName(info, caretOffset, completionResult, request);
@@ -679,6 +685,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         for (NamespaceElement namespace : namespaces) {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
+    }
+
+    private void autoCompleteInInterfaceContext(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request) {
+        autoCompleteKeywords(completionResult, request, INTERFACE_CONTEXT_KEYWORD_PROPOSAL);
     }
 
     private void autoCompleteInClassContext(ParserResult info, int caretOffset, final PHPCompletionResult completionResult,

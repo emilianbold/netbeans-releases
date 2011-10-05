@@ -231,7 +231,8 @@ class CompletionContextFinder {
     public static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
-        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH, CLASS_MEMBER_IN_STRING};
+        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH, CLASS_MEMBER_IN_STRING,
+        INTERFACE_CONTEXT_KEYWORDS};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON, ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS};
@@ -295,7 +296,9 @@ class CompletionContextFinder {
             return CompletionContext.THROW_CATCH;
        } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)){
            return CompletionContext.TYPE_NAME;
-        } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
+        } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
+            return CompletionContext.INTERFACE_CONTEXT_KEYWORDS;
+        } else if (isInsideClassDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
             } else {
@@ -769,7 +772,55 @@ class CompletionContextFinder {
         return tokens;
     }
 
-    private synchronized static boolean isInsideClassIfaceDeclarationBlock(ParserResult info,
+    private synchronized static boolean isInsideInterfaceDeclarationBlock(final ParserResult info, final int caretOffset, final TokenSequence tokenSequence) {
+        boolean retval = false;
+        List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
+        ASTNode lastNode = nodePath.get(nodePath.size() - 1);
+        if (lastNode instanceof Block) {
+            lastNode = nodePath.get(nodePath.size() - 2);
+            if (lastNode instanceof InterfaceDeclaration) {
+                retval = true;
+            } else {
+                retval = isUnderInterfaceTokenId(tokenSequence);
+            }
+        } else {
+            retval = isUnderInterfaceTokenId(tokenSequence);
+        }
+        return retval;
+    }
+
+    private synchronized static boolean isUnderInterfaceTokenId(final TokenSequence tokenSequence) {
+        boolean retval = false;
+        int curlyBalance = -1;
+        int orgOffset = tokenSequence.offset();
+        try {
+            while (tokenSequence.movePrevious()) {
+                Token token = tokenSequence.token();
+                TokenId id = token.id();
+                if (id.equals(PHPTokenId.PHP_INTERFACE) && curlyBalance == 0) {
+                    retval = true;
+                    break;
+                } else if (id.equals(PHPTokenId.PHP_CURLY_OPEN)) {
+                    curlyBalance++;
+                } else if (id.equals(PHPTokenId.PHP_CURLY_CLOSE)) {
+                    curlyBalance--;
+                } else if (id.equals(PHPTokenId.PHP_CLASS) || id.equals(PHPTokenId.PHP_WHILE) ||
+                        id.equals(PHPTokenId.PHP_IF) || id.equals(PHPTokenId.PHP_FOR) ||
+                        id.equals(PHPTokenId.PHP_FOREACH) || id.equals(PHPTokenId.PHP_TRY) ||
+                        id.equals(PHPTokenId.PHP_CATCH) || id.equals(PHPTokenId.PHP_FUNCTION)) {
+                    // here could be more tokens which can interrupt interface scope, but theese are good enough
+                    retval = false;
+                    break;
+                }
+            }
+        } finally {
+            tokenSequence.move(orgOffset);
+            tokenSequence.moveNext();
+        }
+        return retval;
+    }
+
+    private synchronized static boolean isInsideClassDeclarationBlock(ParserResult info,
             int caretOffset, TokenSequence tokenSequence){
         List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
         boolean methDecl = false;
@@ -786,8 +837,6 @@ class CompletionContextFinder {
             } else if (aSTNode instanceof ClassDeclaration) {
                 clsDecl = true;
                 if (funcDecl) isClassInsideFunc = true;
-            } else if (aSTNode instanceof InterfaceDeclaration) {
-                clsDecl = true;
             }
         }
         if (funcDecl && !methDecl && !clsDecl) {
@@ -826,7 +875,7 @@ class CompletionContextFinder {
                         id.equals(PHPTokenId.PHP_CATCH))
                         && (curly_open > curly_close)) {
                     return false;
-                } else if (id.equals(PHPTokenId.PHP_CLASS) || id.equals(PHPTokenId.PHP_INTERFACE)) {
+                } else if (id.equals(PHPTokenId.PHP_CLASS)) {
                     boolean isClassScope = curly_open > 0 && (curly_open > curly_close);
                     return isClassScope;
                 }
