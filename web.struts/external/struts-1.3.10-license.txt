@@ -1,7 +1,7 @@
 Name: Apache Struts
-Version: 1.3.8
+Version: 1.3.10
 License: Apache-2.0
-Files: struts-1.3.8-lib.zip struts-1.3.8-javadoc.zip
+Files: struts-1.3.10-lib.zip struts-1.3.10-javadoc.zip
 OSR: 2970
 Description: Framework for creating Java web applications
 Origin: http://struts.apache.org/
