@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module: org.netbeans.modules.cloud.oracle/0
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Provides: org.netbeans.modules.serverplugins.javaee
+OpenIDE-Module-Layer: org/netbeans/modules/cloud/oracle/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cloud/oracle/Bundle.properties
+OpenIDE-Module-Requires: org.openide.windows.WindowManager
+

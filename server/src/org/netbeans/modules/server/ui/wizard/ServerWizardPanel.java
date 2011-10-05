@@ -63,7 +63,7 @@ class ServerWizardPanel implements WizardDescriptor.Panel, ChangeListener {
 
     private ServerWizardVisual component;
     private ServerRegistry registry;
-
+    
     public ServerWizardPanel(ServerRegistry registry) {
         super();
         assert registry != null;

@@ -474,7 +474,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
         lookup = base;
-            return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
     }
     
     public ClassPathProviderImpl getClassPathProvider () {

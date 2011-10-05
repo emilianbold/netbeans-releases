@@ -121,7 +121,7 @@ public final class WLPluginProperties {
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
     public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
     public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
-    
+
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
     public static final String MEM_OPTS = "mem_opts";               // NOI18N
