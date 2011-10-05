@@ -51,6 +51,7 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -74,8 +75,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -111,6 +112,8 @@ import org.openide.util.RequestProcessor;
 
 
 public final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
+    
+    private static final String DELETE = "delete";
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
 
@@ -226,6 +229,9 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             }
         });
         
+        errorTree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), DELETE);
+        errorTree.getActionMap().put(DELETE, new RemoveHint(null, null));
+
         toProblemCheckBox.setVisible(false);
         
         errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().allHints.keySet()):Utilities.getBatchSupportedHints(), allHints);
@@ -253,6 +259,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         exportButton.setVisible(false);
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
+        
+        toProblemCheckBox.setVisible(allHints);
+        severityComboBox.setVisible(allHints);
+        severityLabel.setVisible(allHints);
+        validate();
     }
     
     
@@ -320,7 +331,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         detailsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         detailsPanel.setOpaque(false);
-        detailsPanel.setLayout(new java.awt.GridBagLayout());
 
         optionsPanel.setOpaque(false);
         optionsPanel.setLayout(new java.awt.GridBagLayout());
@@ -363,16 +373,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         optionsPanel.add(customizerPanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        detailsPanel.add(optionsPanel, gridBagConstraints);
 
         descriptionPanel.setOpaque(false);
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
@@ -460,13 +460,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.weighty = 1.0;
         descriptionPanel.add(scriptScrollPane, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.7;
-        detailsPanel.add(descriptionPanel, gridBagConstraints);
+        javax.swing.GroupLayout detailsPanelLayout = new javax.swing.GroupLayout(detailsPanel);
+        detailsPanel.setLayout(detailsPanelLayout);
+        detailsPanelLayout.setHorizontalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+        );
+        detailsPanelLayout.setVerticalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detailsPanelLayout.createSequentialGroup()
+                .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
+        );
 
         jSplitPane1.setRightComponent(detailsPanel);
 
@@ -1002,11 +1009,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                getDataObject(hint).delete();
-                RulesManager.getInstance().allHints.remove(hint);
-                //errorTreeModel.removeNodeFromParent(node);
-                errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
-                errorTree.setModel(errorTreeModel);
+                if (hint==null) {
+                    hint = getSelectedHint();
+                }
+                if (JOptionPane.YES_OPTION == 
+                        JOptionPane.showConfirmDialog(errorTree,
+                        NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmMessage",  hint.displayName ),
+                        NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmTitle"),
+                        JOptionPane.YES_NO_OPTION)) {
+                    getDataObject(hint).delete();
+                    RulesManager.getInstance().allHints.remove(hint);
+                    //errorTreeModel.removeNodeFromParent(node);
+                    errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                    errorTree.setModel(errorTreeModel);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
