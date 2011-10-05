@@ -51,6 +51,7 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -74,8 +75,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -111,6 +112,8 @@ import org.openide.util.RequestProcessor;
 
 
 public final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
+    
+    private static final String DELETE = "delete";
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
 
@@ -226,6 +229,9 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             }
         });
         
+        errorTree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), DELETE);
+        errorTree.getActionMap().put(DELETE, new RemoveHint(null, null));
+
         toProblemCheckBox.setVisible(false);
         
         errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().allHints.keySet()):Utilities.getBatchSupportedHints(), allHints);
@@ -1002,11 +1008,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                getDataObject(hint).delete();
-                RulesManager.getInstance().allHints.remove(hint);
-                //errorTreeModel.removeNodeFromParent(node);
-                errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
-                errorTree.setModel(errorTreeModel);
+                if (hint==null) {
+                    hint = getSelectedHint();
+                }
+                if (JOptionPane.YES_OPTION == 
+                        JOptionPane.showConfirmDialog(errorTree,
+                        NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmMessage",  hint.displayName ),
+                        NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmTitle"),
+                        JOptionPane.YES_NO_OPTION)) {
+                    getDataObject(hint).delete();
+                    RulesManager.getInstance().allHints.remove(hint);
+                    //errorTreeModel.removeNodeFromParent(node);
+                    errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                    errorTree.setModel(errorTreeModel);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
