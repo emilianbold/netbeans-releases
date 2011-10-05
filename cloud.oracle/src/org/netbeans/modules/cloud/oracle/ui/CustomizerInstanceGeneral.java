@@ -49,13 +49,18 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport.WLDomain;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,29 +68,49 @@ import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
  */
 public class CustomizerInstanceGeneral extends javax.swing.JPanel {
 
+    public static final String FAKE_EE5_INSTANCE_ID = "javaee-api-5.0";
+
     /** Creates new form CustomizerInstanceGeneral */
     public CustomizerInstanceGeneral(final OracleJ2EEInstance aij) {
         initComponents();
         
         Collection<DomainSupport.WLDomain> domains = DomainSupport.getUsableDomainInstances(null);
-        DomainSupport.WLDomain selected = null;
-        for (DomainSupport.WLDomain domain : domains) {
-            if (domain.getUrl().equals(aij.getOracleInstance().getOnPremiseServerInstanceId())) {
-                selected = domain;
-                break;
+
+        List<ComboItem> items = new ArrayList<ComboItem>(domains.size() + 1);
+        ComboItem selected = null;
+        for (WLDomain d : domains) {
+            ComboItem item = new ComboItem(null, d);
+            items.add(item);
+            if (d.getUrl().equals(aij.getOracleInstance().getOnPremiseServerInstanceId())) {
+                selected = item;
             }
         }
-        List<DomainSupport.WLDomain> weblogics = new ArrayList<DomainSupport.WLDomain>(DomainSupport.getUsableDomainInstances(null));
-        boolean noServers = weblogics.isEmpty();
+
+        ComboItem fallback = null;
+        Library l = LibraryManager.getDefault().getLibrary("javaee-api-5.0"); // NOI18N
+        if (l != null) {
+            fallback = new ComboItem(NbBundle.getMessage(CustomizerInstanceGeneral.class,
+                    "CustomizerInstanceGeneral.javaee5"), null);
+            items.add(fallback);
+        }
+
+        if (selected == null && FAKE_EE5_INSTANCE_ID.equals(
+                aij.getOracleInstance().getOnPremiseServerInstanceId())) {
+            selected = fallback;
+        }
+
+        boolean noServers = domains.isEmpty();
         if (selected == null) {
             if (aij.getOracleInstance().getOnPremiseServerInstanceId() != null) {
-                aij.getOracleInstance().setOnPremiseServerInstanceId(null);
+                aij.getOracleInstance().setOnPremiseServerInstanceId(FAKE_EE5_INSTANCE_ID);
                 OracleInstanceManager.getDefault().update(aij.getOracleInstance());
             }
-            weblogics.add(0, null);
+            if (fallback == null) {
+                items.add(0, null);
+            }
         }
         
-        classpathComboBox.setModel(new DefaultComboBoxModel(weblogics.toArray()));
+        classpathComboBox.setModel(new DefaultComboBoxModel(items.toArray()));
         if (selected != null) {
             classpathComboBox.setSelectedItem(selected);
         }
@@ -102,10 +127,14 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
 
             @Override
             public void contentsChanged(ListDataEvent e) {
-                final DomainSupport.WLDomain domain = (DomainSupport.WLDomain)classpathComboBox.getSelectedItem();
+                ComboItem item = (ComboItem) classpathComboBox.getSelectedItem();
                 String url = null;
-                if (domain != null) {
-                    url = domain.getUrl();
+                if (item != null) {
+                    if (item.getDomain() != null) {
+                        url = item.getDomain().getUrl();
+                    } else {
+                        url = FAKE_EE5_INSTANCE_ID;
+                    }
                 }
                 aij.getOracleInstance().setOnPremiseServerInstanceId(url);
                 OracleInstanceManager.getDefault().update(aij.getOracleInstance());
@@ -116,6 +145,30 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
         warningLabel.setVisible(noServers);
     }
 
+    private static class ComboItem {
+        
+        private final String name;
+        
+        private final DomainSupport.WLDomain domain;
+
+        public ComboItem(String name, WLDomain domain) {
+            this.name = name;
+            this.domain = domain;
+        }
+
+        public WLDomain getDomain() {
+            return domain;
+        }
+
+        public String toString() {
+            if (name == null) {
+                return domain.toString();
+            }
+            return name;
+        }
+
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

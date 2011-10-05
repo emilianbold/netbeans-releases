@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
@@ -55,16 +57,19 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.swing.event.ChangeListener;
 import oracle.cloud.paas.api.ApplicationManager;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.TargetImpl;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,27 +77,51 @@ import org.openide.util.NbBundle;
  */
 public class OracleDeploymentManager implements DeploymentManager2 {
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private final String instanceUrl;
+    
+    private final InstanceProperties props;
+    
     private ApplicationManager pm;
     private String serviceGroup;
     private String serviceInstance;
-    private String instanceUrl;
     private String cloudInstanceName;
-    private  String onPremiseServiceInstanceId;
 
+    // FIXME should we query IP for other props as well rather than fetching
+    // them before construction
     public OracleDeploymentManager(String instanceUrl, ApplicationManager pm, String serviceGroup, 
-          String serviceInstance, String cloudInstanceName, String onPremiseServiceInstanceId) {
+          String serviceInstance, String cloudInstanceName, InstanceProperties props) {
         this.pm = pm;
         this.serviceGroup = serviceGroup;
         this.serviceInstance = serviceInstance;
         this.instanceUrl = instanceUrl;
         this.cloudInstanceName = cloudInstanceName;
-        this.onPremiseServiceInstanceId = onPremiseServiceInstanceId;
+        
+        this.props = props;
+        props.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID.equals(evt.getPropertyName())) {
+                    changeSupport.fireChange();
+                }
+            }
+        });
     }
 
     public String getOnPremiseServiceInstanceId() {
-        return onPremiseServiceInstanceId;
+        return props.getProperty(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID);
     }
     
+    public void addOnPremiseServerInstanceIdListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeOnPremiseServerInstanceIdListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
     @Override
     public ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
@@ -108,7 +137,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
             po.updateDepoymentResult(DeploymentStatus.FAILED, null);
             return po;
         }
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, serviceGroup, serviceInstance, po, cloudInstanceName, onPremiseServiceInstanceId);
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, serviceGroup, serviceInstance, po, cloudInstanceName, getOnPremiseServiceInstanceId());
         return po;
     }
 

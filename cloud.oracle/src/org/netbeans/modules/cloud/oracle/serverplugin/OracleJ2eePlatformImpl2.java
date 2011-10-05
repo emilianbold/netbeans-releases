@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.Library;
@@ -67,12 +69,13 @@ import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  */
-public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
+public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements ChangeListener {
 
     private OracleDeploymentManager dm;
     private final Set<Type> moduleTypes = new HashSet<Type>();
@@ -87,6 +90,12 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
         // as part of EAR
         moduleTypes.add(Type.EJB);
         moduleTypes.add(Type.EAR);
+        this.dm.addOnPremiseServerInstanceIdListener(this);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        firePropertyChange(PROP_LIBRARIES, null, getLibraries());
     }
     
     @Override
@@ -153,7 +162,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
         
         return new LibraryImplementation[]{library};
     }
-
+    
     @Override
     public Set<Type> getSupportedTypes() {
         return moduleTypes;
@@ -171,7 +180,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     
     @Override
     public String getDisplayName() {
-        return "Oracle Public Cloud";
+        return NbBundle.getMessage(OracleJ2eePlatformImpl2.class, "OracleJ2eePlatformImpl2.displayName");
     }
 
     @Override
@@ -181,17 +190,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public File[] getPlatformRoots() {
-//        Library l = LibraryManager.getDefault().getLibrary("javaee-api-6.0");
-//        assert l != null;
-//        List<File> res = new ArrayList<File>();
-//        for (URL url : l.getContent("classpath")) {
-//            FileObject fo = URLMapper.findFileObject(url);
-//            fo = FileUtil.getArchiveFile(fo);
-//            assert fo != null;
-//            res.add(FileUtil.toFile(fo));
-//        }
-//        return res.toArray(new File[res.size()]);
-        return null;
+        return new File[0];
     }
 
     @Override

@@ -78,7 +78,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
-                props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
+                props);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
-                props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
+                props);
     }
 
     @Override
