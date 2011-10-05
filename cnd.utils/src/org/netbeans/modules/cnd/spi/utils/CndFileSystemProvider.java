@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.spi.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -53,6 +55,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -303,7 +306,13 @@ public abstract class CndFileSystemProvider {
                     return fo;
                 }
             }
-            File file = new File(FileUtil.normalizePath(url.toString()));
+            String path = url.toString();
+            try {
+                URL u = new URL(path);
+                path = u.getFile();
+            } catch (MalformedURLException ex) {
+            }        
+            File file = new File(FileUtil.normalizePath(path));
             return FileUtil.toFileObject(file);
         }
 
