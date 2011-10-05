@@ -23,7 +23,6 @@ org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory
 org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch$JavaFactoryImpl
 org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$OpenManagersWeakListener
 org.netbeans.modules.javawebstart.JWSProjectOpenHook
-org.netbeans.modules.mobility.editor.ConfigurationHighlightsLayerFactory
 org.netbeans.modules.profiler.AbstractProjectTypeProfiler
 org.netbeans.modules.profiler.j2se.J2SEProjectTypeProfiler
 org.netbeans.modules.profiler.utils.ProjectUtilities
