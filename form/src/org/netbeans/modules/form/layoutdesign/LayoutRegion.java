@@ -374,10 +374,15 @@ class LayoutRegion implements LayoutConstants {
     {
         int[] pos1 = r1.positions[dimension];
         int[] pos2 = r2.positions[dimension];
+        int p2L = pos2[LEADING];
+        int p2T = pos2[TRAILING];
         assert pos1[LEADING] != UNKNOWN && pos1[TRAILING] != UNKNOWN
-               && pos2[LEADING] != UNKNOWN && pos2[TRAILING] != UNKNOWN;
-        return pos1[TRAILING] + margin > pos2[LEADING]
-               && pos1[LEADING] - margin < pos2[TRAILING];
+               && p2L != UNKNOWN && p2T != UNKNOWN;
+        int p1L = pos1[LEADING] - margin;
+        int p1T = pos1[TRAILING] + margin;
+        return (p1T > p2L && p1L < p2T)
+                || (p1L == p1T && (p1L == p2L || p1T == p2T))
+                || (p2L == p2T && (p2L == p1L || p2T == p1T));
     }
 
     /**
