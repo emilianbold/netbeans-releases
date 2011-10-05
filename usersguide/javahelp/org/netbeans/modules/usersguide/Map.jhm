@@ -160,6 +160,10 @@ Other names may be trademarks of their respective owners.
 <!-- Files window :-->
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
+<!-- Services window -->
+<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="files/files_runtime.html" />
+<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="files/AddWebServiceDlg.html" />
+
 <!-- Favorites window :-->
 <mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
 <!-- Favorites window menu item:-->
@@ -482,8 +486,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.tasklist.ui.TaskListAction" url="pending.html" />
 <!--Properties window menu item-->
 <mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" />
-<!--Services window menu item-->
-<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="pending.html" />
+
 
 
 <!-- Collaborative Development -->
