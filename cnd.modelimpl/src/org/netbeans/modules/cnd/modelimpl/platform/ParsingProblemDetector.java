@@ -140,7 +140,7 @@ public class ParsingProblemDetector {
             measures.add(new Measure(lineCount, (int)delta, usedMemory));
         }
         if (maxMemory - usedMemory < threshold) {
-            msg = NbBundle.getMessage(ModelSupport.class, "MSG_LowMemory", "" + usedMemory, "" + maxMemory); // NOI18N
+            msg = NbBundle.getMessage(ModelSupport.class, "MSG_LowMemory"); // NOI18N
         }
         showWarning();
         return msg;
