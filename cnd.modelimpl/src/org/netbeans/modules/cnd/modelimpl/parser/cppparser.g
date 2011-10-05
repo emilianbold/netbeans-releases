@@ -903,7 +903,7 @@ typedef_enum
                 (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
         ;
 
-external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq;}
+external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq; int ts = 0;}
 	:  
 	(
                 {isCPlusPlus()}?
@@ -958,7 +958,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (ID)? (LCURLY)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
         ) =>
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1273,7 +1273,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;}
 	:
 	(
 		// Class definition
@@ -1296,7 +1296,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
@@ -1840,20 +1840,24 @@ fix_fake_class_members
     ;
 
 enum_specifier
-	:	LITERAL_enum
-		(	LCURLY enumerator_list 
-                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                        | RCURLY )
-		|	id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
-				  // elaborated_type_specifier
-			{beginEnumDefinition(id.getText());}
-			(LCURLY enumerator_list 
-                            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                            | RCURLY )
-                        )
-			{endEnumDefinition();}
-		)
-	;
+{int ts = 0;}
+:   LITERAL_enum
+    (LITERAL_class! | LITERAL_struct!)?    
+    (   (COLON ts = builtin_cv_type_specifier[ts])?
+        LCURLY enumerator_list 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | RCURLY )
+    |   id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
+                  // elaborated_type_specifier        
+        {beginEnumDefinition(id.getText());}
+        (   (COLON ts = builtin_cv_type_specifier[ts])?
+            LCURLY enumerator_list 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | RCURLY )
+        )
+        {endEnumDefinition();}
+    )
+;
 
 enumerator_list
     :           
@@ -2874,7 +2878,7 @@ single_statement
     ;
 
 statement
-	{StorageClass sc = scInvalid;}
+	{StorageClass sc = scInvalid; int ts = 0;}
 	:
 	(	
                 // Issue 83496   C++ parser does not allow class definition inside function
@@ -2902,7 +2906,7 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",

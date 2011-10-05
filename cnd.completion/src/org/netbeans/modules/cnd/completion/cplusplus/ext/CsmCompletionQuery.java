@@ -560,51 +560,54 @@ abstract public class CsmCompletionQuery {
         // Find inner classes
         List ret = new ArrayList<CsmObject>();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier, finder.getCsmFile());
-        if (!CsmKindUtilities.isClass(classifier)) {
-            return ret;
-        }
-        CsmClass cls = (CsmClass) classifier;
-        CsmFunction contextFunction = CsmBaseUtilities.getContextFunction(context);
-        CsmClass contextClass = CsmBaseUtilities.getContextClass(context);
-//        if (staticOnly) {
-////            CsmNamespace pkg = finder.getExactNamespace(getNamespaceName(cls));
-//            CsmNamespace ns = cls.getContainingNamespace();
-//            if (ns != null) {
-//                ret = finder.findClasses(ns, cls.getName() + '.' + name, false);
-//            }
-//        }
-        if (CsmInheritanceUtilities.isAssignableFrom(contextClass, cls)) {
-            staticOnly = false;
-        }
-        // Add fields
-        List<?> res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
-        if (res != null) {
-            ret.addAll(res);
-        }
-        // add enumerators
-        res = finder.findEnumerators(context, cls, name, exactMatch, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
-        if (res != null) {
-            ret.addAll(res);
-        }
-
-        // in global context add all methods, but only direct ones
-        if (contextFunction == null && contextClass == null) {
-            staticOnly = false;
-            context = cls;
-        }
-        // Add methods
-        res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
-        if (res != null) {
-            if (!skipConstructors) {
+        if (CsmKindUtilities.isClass(classifier)) {
+            CsmClass cls = (CsmClass) classifier;
+            CsmFunction contextFunction = CsmBaseUtilities.getContextFunction(context);
+            CsmClass contextClass = CsmBaseUtilities.getContextClass(context);
+    //        if (staticOnly) {
+    ////            CsmNamespace pkg = finder.getExactNamespace(getNamespaceName(cls));
+    //            CsmNamespace ns = cls.getContainingNamespace();
+    //            if (ns != null) {
+    //                ret = finder.findClasses(ns, cls.getName() + '.' + name, false);
+    //            }
+    //        }
+            if (CsmInheritanceUtilities.isAssignableFrom(contextClass, cls)) {
+                staticOnly = false;
+            }
+            // Add fields
+            List<?> res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
+            if (res != null) {
                 ret.addAll(res);
-            } else {
-                // add all but skip constructors
-                for (Object mtd : res) {
-                    if (!CsmKindUtilities.isConstructor(((CsmObject) mtd))) {
-                        ret.add(mtd);
+            }
+            // add enumerators
+            res = finder.findEnumerators(context, cls, name, exactMatch, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
+            if (res != null) {
+                ret.addAll(res);
+            }
+
+            // in global context add all methods, but only direct ones
+            if (contextFunction == null && contextClass == null) {
+                staticOnly = false;
+                context = cls;
+            }
+            // Add methods
+            res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
+            if (res != null) {
+                if (!skipConstructors) {
+                    ret.addAll(res);
+                } else {
+                    // add all but skip constructors
+                    for (Object mtd : res) {
+                        if (!CsmKindUtilities.isConstructor(((CsmObject) mtd))) {
+                            ret.add(mtd);
+                        }
                     }
                 }
             }
+            return ret;
+        } else if(CsmKindUtilities.isEnum(classifier)) {
+            ret.addAll(((CsmEnum)classifier).getEnumerators());
+            return ret;
         }
         return ret;
     }
