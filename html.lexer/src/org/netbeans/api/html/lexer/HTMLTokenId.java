@@ -46,6 +46,8 @@ package org.netbeans.api.html.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -103,12 +105,9 @@ public enum HTMLTokenId implements TokenId {
     TAG_OPEN_SYMBOL("tag"),
     /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
     TAG_CLOSE_SYMBOL("tag");
-
     private final String primaryCategory;
-
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
-
     /**
      * Property key of css value tokens determining the token type in more detail.
      * The value may either be null for common embedded
@@ -138,19 +137,21 @@ public enum HTMLTokenId implements TokenId {
      * this token as a class selector.
      */
     public static final String VALUE_CSS_TOKEN_TYPE_CLASS = "class"; //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(HtmlLexer.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
-
     private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
+
         @Override
         protected Collection<HTMLTokenId> createTokenIds() {
             return EnumSet.allOf(HTMLTokenId.class);
         }
 
         @Override
-        protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
+        protected Map<String, Collection<HTMLTokenId>> createTokenCategories() {
             //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
             // Additional literals being a lexical error
             //cats.put("error", EnumSet.of());
@@ -165,19 +166,21 @@ public enum HTMLTokenId implements TokenId {
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
-        Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            if(token.isRemoved()) {
-                //strange, but sometimes the embedding is requested on removed token which has null image
-                return null;
+                Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            if (LOG) {
+                LOGGER.log(Level.FINE,
+                        String.format("HTMLTokenId$Language<HTMLTokenId>.embedding(...) called on removed token with %s token id. LanguagePath: %s", token.id(), languagePath),
+                        new IllegalStateException()); //NOI18N
             }
+
             String mimeType = null;
-            switch(token.id()) {
+            switch (token.id()) {
                 // BEGIN TOR MODIFICATIONS
                 case VALUE_JAVASCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
-                    if(mimeType != null) {
+                    if (mimeType != null) {
                         Language lang = Language.find(mimeType);
-                        if(lang == null) {
+                        if (lang == null) {
                             return null; //no language found
                         } else {
                             // TODO:
@@ -206,12 +209,16 @@ public enum HTMLTokenId implements TokenId {
                 // END TOR MODIFICATIONS
                 case VALUE_CSS:
                     mimeType = STYLE_MIMETYPE;
-                    if(mimeType != null) {
+                    if (mimeType != null) {
                         Language lang = Language.find(mimeType);
-                        if(lang == null) {
+                        if (lang == null) {
                             return null; //no language found
                         } else {
                             PartType ptype = token.partType();
+                            if (token.isRemoved()) {
+                                //strange, but sometimes the embedding is requested on removed token which has null image
+                                return null;
+                            }
                             char firstChar = token.text().charAt(0);
                             boolean quoted = firstChar == '\'' || firstChar == '"';
                             int startSkipLength = quoted && (ptype == PartType.COMPLETE || ptype == PartType.START) ? 1 : 0;
@@ -234,15 +241,15 @@ public enum HTMLTokenId implements TokenId {
                     mimeType = STYLE_MIMETYPE;
                     break;
             }
-            if(mimeType != null) {
+            if (mimeType != null) {
                 Language lang = Language.find(mimeType);
-                if(lang == null) {
+                if (lang == null) {
                     return null; //no language found
                 } else {
                     return LanguageEmbedding.create(lang, 0, 0, true);
                 }
             }
-            return  null;
+            return null;
         }
 
         @Override
@@ -271,5 +278,4 @@ public enum HTMLTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
-
 }
