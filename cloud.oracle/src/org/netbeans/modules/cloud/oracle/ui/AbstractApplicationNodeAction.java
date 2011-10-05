@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
+import oracle.cloud.paas.exception.ResourceBusyException;
 import oracle.cloud.paas.exception.UnknownResourceException;
 import oracle.cloud.paas.model.Application;
 import oracle.cloud.paas.model.ApplicationState;
@@ -63,7 +64,8 @@ public abstract class AbstractApplicationNodeAction extends NodeAction {
     private static final RequestProcessor RP = new RequestProcessor("cloud application node action", 1);
     
     @NbBundle.Messages({"MSG_WrongState=Application is not in state to perform this action.",
-        "MSG_WasRemoved=Application does not exist anymore."})
+        "MSG_WasRemoved=Application does not exist anymore.",
+        "MSG_Busy=Action cannot be performed at this moment. Try few minutes later."})
     @Override
     protected void performAction(Node[] activatedNodes) {
         final OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
@@ -83,7 +85,14 @@ public abstract class AbstractApplicationNodeAction extends NodeAction {
             appNode.setApp(app);
             return;
         }
-        final Job job = performActionImpl(inst, app);
+        final Job job;
+        try {
+            job = performActionImpl(inst, app);
+        } catch (ResourceBusyException ex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_Busy()));
+            appNode.setApp(app);
+            return;
+        }
         app = inst.getOracleInstance().refreshApplication(app);
         appNode.setApp(app);
         final Application app2 = app;
