@@ -358,7 +358,7 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         // FIXME - method should receive the JavaProfilerSource as the parameter
         JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
         if (src != null) {
-            String profiledClass = src.getTopLevelClass().getVMName();
+            String profiledClass = src.getTopLevelClass().getQualifiedName();
             props.setProperty("profile.class", profiledClass); //NOI18N
             // include it in javac.includes so that the compile-single picks it up
             final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(

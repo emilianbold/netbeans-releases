@@ -220,7 +220,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
 
                     props.setProperty("applet.url", url.toString()); // NOI18N
                 } else {
-                    final String profiledClass = src.getTopLevelClass().getVMName();
+                    final String profiledClass = src.getTopLevelClass().getQualifiedName();
                     props.setProperty("profile.class", profiledClass); //NOI18N
                 }
 
