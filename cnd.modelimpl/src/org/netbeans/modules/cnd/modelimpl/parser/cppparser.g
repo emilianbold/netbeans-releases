@@ -3136,31 +3136,44 @@ do_while_statement
 
 protected
 for_statement
-	:
-		LITERAL_for LPAREN!
-		for_init_statement
-		(
-		(condition)? 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON ) //{end_of_stmt();}
-		(expression)?
-		)?
-		RPAREN! single_statement
-		{#for_statement = #(#[CSM_FOR_STATEMENT, "CSM_FOR_STATEMENT"], #for_statement);}
-	;
+:
+    LITERAL_for LPAREN!
+    (
+        (for_range_init_statement COLON) =>
+        for_range_init_statement COLON expression
+    |
+        for_init_statement
+        (
+            (condition)? 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON )
+            (expression)?
+        )?
+    )
+    RPAREN! single_statement
+
+    {#for_statement = #(#[CSM_FOR_STATEMENT, "CSM_FOR_STATEMENT"], #for_statement);}
+;
 
 protected
 for_init_statement
-	:
-		(	(declaration[declStatement])=> declaration[declStatement]
-		|	expression 
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | SEMICOLON ) //{end_of_stmt();}
-		|	( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | SEMICOLON) //{end_of_stmt();}
-		)
-		{#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
-	;
+:
+    (   (declaration[declStatement])=> declaration[declStatement]
+    |   expression 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}
+    |   ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON) //{end_of_stmt();}
+    )
+    {#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
+;
+
+protected
+for_range_init_statement
+:
+    declaration_specifiers[true, false] init_declarator[declStatement]
+    {#for_range_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_range_init_statement);}
+;
 
 jump_statement
 	:	
