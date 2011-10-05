@@ -57,13 +57,15 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     }
 
     public void testAuto() throws Exception {
-        // Some calculations on templates
         performTest("auto.cpp", 14, 14, "auto.cpp", 2, 5);
     }
 
     public void testStronglyTypedEnumerations() throws Exception {
-        // Some calculations on templates
         performTest("enum.cpp", 8, 34, "enum.cpp", 2, 5);
+    }
+
+    public void testRangeBasedForLoop() throws Exception {
+        performTest("rangefor.cpp", 4, 9, "rangefor.cpp", 3, 9);
     }
     
 }
