@@ -53,8 +53,8 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/antlr-2.7.2.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/bsf-2.3.0.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-beanutils-1.7.0.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-chain-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-beanutils-1.8.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-chain-1.2.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-digester-1.8.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-fileupload-1.1.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-io-1.1.jar!/</resource>
@@ -62,30 +62,30 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-validator-1.3.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/jstl-1.0.2.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/oro-2.0.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/standard-1.0.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-core-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-el-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-extras-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-faces-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-mailreader-dao-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-scripting-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-taglib-1.3.8.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-tiles-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/standard-1.0.6.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-core-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-el-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-extras-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-faces-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-mailreader-dao-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-scripting-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-taglib-1.3.10.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-tiles-1.3.10.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/docs/struts-1.3.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/docs/struts-1.3.10-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-core/1.3.8/struts-core-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-el/1.3.8/struts-el-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-extras/1.3.8/struts-extras-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-faces/1.3.8/struts-faces-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-mailreader-dao/1.3.8/struts-mailreader-dao-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-scripting/1.3.8/struts-scripting-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-taglib/1.3.8/struts-taglib-1.3.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-tiles/1.3.8/struts-tiles-1.3.8.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-core/1.3.10/struts-core-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-el/1.3.10/struts-el-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-extras/1.3.10/struts-extras-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-faces/1.3.10/struts-faces-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-mailreader-dao/1.3.10/struts-mailreader-dao-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-scripting/1.3.10/struts-scripting-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-taglib/1.3.10/struts-taglib-1.3.10.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/apache/struts/struts-tiles/1.3.10/struts-tiles-1.3.10.pom</resource>
     </volume>
 </library>
