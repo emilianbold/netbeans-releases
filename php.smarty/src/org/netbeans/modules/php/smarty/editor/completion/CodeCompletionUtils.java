@@ -147,9 +147,12 @@ public class CodeCompletionUtils {
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {
-        int readLength = (SCANNING_MAX_FILTER_LENGHT > offset) ? offset : SCANNING_MAX_FILTER_LENGHT;
+        // search for command one position back - waits at least for space after command
+        int updatedOffset = (offset == 0) ? 0 : offset - 1;
+        int readLength = (SCANNING_MAX_FILTER_LENGHT > updatedOffset) ? updatedOffset : SCANNING_MAX_FILTER_LENGHT;
         try {
-            return getLastKeywords(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
+            return getLastKeywords(doc.getText(updatedOffset - readLength, readLength),
+                    SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
