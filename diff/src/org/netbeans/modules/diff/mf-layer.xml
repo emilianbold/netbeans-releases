@@ -82,7 +82,9 @@ made subject to such option by the copyright holder.
     
     <folder name="Editors">
         <file name="org-netbeans-modules-diff-builtin-visualizer-editable-DiffHighlightsLayerFactory.instance"/>
-        <file name="org-netbeans-modules-merge-builtin-visualizer-MergeHighlightsLayerFactory.instance"/>
+        <file name="org-netbeans-modules-merge-builtin-visualizer-MergeHighlightsLayerFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+        </file>
         <folder name="TabActions">
               <file name="org-netbeans-modules-diff-DiffAction.shadow">
                   <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-DiffAction.instance"/>
