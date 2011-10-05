@@ -45,6 +45,8 @@ package org.netbeans.modules.remote.support;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -222,6 +224,9 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         if (absoluteURL.length() == 0) {
             return true;
         }
+        if (absoluteURL.startsWith("file:/")) { // NOI18N
+            return true;
+        }
         if (isWindows) {
             return (absoluteURL.length() > 1) && absoluteURL.charAt(1) == ':';
         } else {
@@ -241,8 +246,14 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
-        File file = new File(absoluteURL);
-        return FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        String path = absoluteURL;
+        try {
+            URL u = new URL(path);
+            path = u.getFile();
+        } catch (MalformedURLException ex) {
+        }        
+        File file = new File(FileUtil.normalizePath(path));
+        return FileUtil.toFileObject(file);
     }
 
     @Override
