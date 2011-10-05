@@ -234,7 +234,12 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
 
     public AbstractToken<T> getFlyweightToken(T id, String text) {
-        assert (text.length() <= readLength());
+        if (text.length() > readLength()) {
+            throw new IllegalArgumentException("getFlyweightToken(): Creating token " + // NOI18N
+                    " for unread characters: text=\"" + // NOI18N
+                    CharSequenceUtilities.debugText(text) + "\"; text.length()=" + // NOI18N
+                    text.length() + " > readLength()=" + readLength()); // NOI18N
+        }
         // Compare each recognized char with the corresponding char in text
         if (LOG.isLoggable(Level.FINE)) {
             for (int i = 0; i < text.length(); i++) {
