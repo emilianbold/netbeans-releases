@@ -781,6 +781,11 @@ public class Css3ParserTest extends CslTestBase {
 //        TestUtil.dumpResult(result);
         assertResult(result, 0);
     }
+    
+    public void testPropertyValueAsFunction() throws BadLocationException, ParseException {
+        String code = "div { animation: cubic-bezier(1,2,3,4); } ";
+        assertResultOK(TestUtil.parse(code));
+    }
 
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
