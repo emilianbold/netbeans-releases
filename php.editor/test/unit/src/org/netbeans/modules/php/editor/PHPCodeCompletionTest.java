@@ -542,7 +542,48 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testClsDeclaration_13() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "extends ^AnClass", false);
     }
-
+    public void testInsideInterface() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "MyIface {\n    cons^", false);
+    }
+    public void testInsideInterface_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "MySecondIface extends MyIface {\n    cons^", false);
+    }
+    public void testInsideInterface_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "pub^lic static function functionName()", false);
+    }
+    public void testInsideInterface_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public sta^tic function functionName()", false);
+    }
+    public void testInsideInterface_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public static funct^ion functionName()", false);
+    }
+    public void testInsideInterface_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "pub^lic static function anotherStatic()", false);
+    }
+    public void testInsideInterface_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public sta^tic function anotherStatic()", false);
+    }
+    public void testInsideInterface_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public static func^tion anotherStatic()", false);
+    }
+    public void testInsideInterface_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "pub^lic function doSomething()", false);
+    }
+    public void testInsideInterface_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public func^tion doSomething()", false);
+    }
+    public void testInsideInterface_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "pub^lic function doAnything()", false);
+    }
+    public void testInsideInterface_12() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "public func^tion doAnything()", false);
+    }
+    public void testInsideInterface_13() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "interface MyIface {^", false);
+    }
+    public void testInsideInterface_14() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideInterface.php", "extends MyIface {^", false);
+    }
     public void testInsideClass() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "cons^", false);
     }

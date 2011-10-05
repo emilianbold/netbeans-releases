@@ -3655,7 +3655,6 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
     }
 
     private void setDefaultSize(LayoutComponent component) {
-        preferredSizeChanged = true;
         if (component.isLayoutContainer()) {
             for (LayoutComponent comp : component.getSubcomponents()) {
                 if (comp.isLayoutContainer()) {
@@ -3677,8 +3676,10 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     if (prefSize == null) {
                         prefSize = visualMapper.getComponentPreferredSize(component.getId());
                     }
-                    if (prefSize != null && (dim==HORIZONTAL ? prefSize.width : prefSize.height) < currSize) {
+                    if (prefSize != null && (dim==HORIZONTAL ? prefSize.width : prefSize.height) < currSize
+                            && LayoutInterval.canResize(li)) {
                         enableShrinking(li);
+                        preferredSizeChanged = true;
                     }
                 }
                 operations.resizeInterval(li, NOT_EXPLICITLY_DEFINED);

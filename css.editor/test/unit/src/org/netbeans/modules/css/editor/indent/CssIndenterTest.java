@@ -151,8 +151,7 @@ public class CssIndenterTest extends TestBase {
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {
-        //fails - investigate why???
-//        reformatFileContents("testfiles/format1.html", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/format1.html", new IndentPrefs(4,4));
     }
 
     public void testNativeEmbeddingFormattingCase2() throws Exception {
