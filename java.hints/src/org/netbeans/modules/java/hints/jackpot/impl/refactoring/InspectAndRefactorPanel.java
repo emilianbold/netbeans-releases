@@ -183,8 +183,10 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         customScopeLab = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
         if (fileObject!=null) {
             if (!fileObject.isFolder())
-                currentFile = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentFile", fileObject.getNameExt()), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
-            currentPackage = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentPackage", getPackageName(fileObject)), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
+                currentFile = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentFile", fileObject.getNameExt()), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)), SwingConstants.LEFT);
+            String packageName = getPackageName(fileObject);
+            if (packageName!=null)
+                currentPackage = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentPackage", packageName), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
             currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
         } else {
             project = context.lookup(Project.class);
@@ -586,7 +588,10 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private String getPackageName(FileObject file) {
-        return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file.isFolder()?file:file.getParent(), '.', false);
+        ClassPath classPath = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        if (classPath == null)
+            return null;
+        return classPath.getResourceName(file.isFolder()?file:file.getParent(), '.', false);
     }
 
     private Popup popup = null;
