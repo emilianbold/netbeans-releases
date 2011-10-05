@@ -41,25 +41,29 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import oracle.cloud.paas.exception.UnknownResourceException;
 import oracle.cloud.paas.model.Application;
 import oracle.cloud.paas.model.ApplicationState;
+import oracle.cloud.paas.model.Job;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class ViewApplicationAction extends NodeAction {
+public abstract class AbstractApplicationNodeAction extends NodeAction {
 
+    private static final RequestProcessor RP = new RequestProcessor("cloud application node action", 1);
+    
+    @NbBundle.Messages({"MSG_WrongState=Application is not in state to perform this action.",
+        "MSG_WasRemoved=Application does not exist anymore."})
     @Override
     protected void performAction(Node[] activatedNodes) {
         final OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
@@ -79,13 +83,26 @@ public class ViewApplicationAction extends NodeAction {
             appNode.setApp(app);
             return;
         }
-        String url = app.getApplicationUrls().get(0);
-        try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        final Job job = performActionImpl(inst, app);
+        app = inst.getOracleInstance().refreshApplication(app);
+        appNode.setApp(app);
+        final Application app2 = app;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                OracleInstance.waitForJobToFinish(inst.getOracleInstance().getApplicationManager(), job);
+                try {
+                    Application app3 = inst.getOracleInstance().refreshApplication(app2);
+                    appNode.setApp(app3);
+                } catch (UnknownResourceException ex) {
+                    appNode.refreshChildren();
+                    return;
+                }
+            }
+        });
     }
+    
+    abstract protected Job performActionImpl(OracleJ2EEInstance inst, Application app);
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
@@ -101,19 +118,17 @@ public class ViewApplicationAction extends NodeAction {
         }
         return isAppInRightState(appNode.getApp());
     }
-
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_ACTIVE == app.getState() && app.getApplicationUrls() != null && app.getApplicationUrls().size() > 0;
-    }
     
-    @Override
-    public String getName() {
-        return "View";
-    }
+    abstract protected boolean isAppInRightState(Application app);
 
     @Override
     public HelpCtx getHelpCtx() {
         return null;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return true;
     }
     
 }

@@ -41,37 +41,45 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import oracle.cloud.paas.model.Application;
-import oracle.cloud.paas.model.ApplicationState;
-import oracle.cloud.paas.model.Job;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
+public class RefreshOracleJ2EEInstanceNodeAction extends NodeAction {
 
     @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
+    protected void performAction(Node[] activatedNodes) {
+        OracleJ2EEInstanceNode parent = activatedNodes[0].getLookup().lookup(OracleJ2EEInstanceNode.class);
+        parent.refresh();
     }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstanceNode.class) != null;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
     
     @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
+    public String getName() {
+        return "Refresh";
     }
 
     @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
+    public HelpCtx getHelpCtx() {
+        return null;
     }
-
+    
 }

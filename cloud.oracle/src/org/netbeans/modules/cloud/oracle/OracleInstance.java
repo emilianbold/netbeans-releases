@@ -425,6 +425,29 @@ public class OracleInstance {
             }
         }
     }
+
+    public static boolean waitForJobToFinish(ApplicationManager am, Job job) {
+        while (true) {
+            try {
+                // let's wait
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+            Job latestJob = am.describeJob(job.getJobId());
+            JobStatus jobStatus = latestJob.getStatus();
+            if (JobStatus.COMPLETE.equals(jobStatus)) {
+                return true;
+            } else if (JobStatus.SUBMITTED.equals(jobStatus)) {
+                // let's wait longer
+            } else if (JobStatus.RUNNING.equals(jobStatus)) {
+                // let's wait longer
+            } else if (JobStatus.FAILED.equals(jobStatus)) {
+                return false;
+            }
+        }
+    }
     
     private static int dumpLog(ApplicationManager am, OutputWriter ow, OutputWriter owe, Job latestJob, int numberOfJobsToIgnore) {
         int i = 0;
@@ -466,19 +489,24 @@ public class OracleInstance {
         return getApplicationManager().listApplications(getServiceGroup(), getServiceInstance());
     }
 
-    public void undeploy(Application app) {
+    public Job undeploy(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().undeployApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().undeployApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
     }
     
-    public void start(Application app) {
+    public Job start(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().startApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().startApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
     }
     
-    public void stop(Application app) {
+    public Application refreshApplication(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().stopApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().describeApplication(app.getGroupName(), app.getInstanceName(), app.getApplicationName());
+    }
+    
+    public Job stop(Application app) {
+        assert !SwingUtilities.isEventDispatchThread();
+        return getApplicationManager().stopApplication(getServiceGroup(), getServiceInstance(), app.getApplicationName());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {

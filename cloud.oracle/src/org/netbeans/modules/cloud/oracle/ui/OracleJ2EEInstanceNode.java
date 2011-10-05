@@ -57,7 +57,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -70,14 +71,29 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     
     private boolean basicNode;
     
+    private final OracleJ2EEInstanceChildren children;
+    
     public OracleJ2EEInstanceNode(OracleJ2EEInstance aij, boolean basicNode) {
-        super(new OracleJ2EEInstanceChildren(aij, basicNode), Lookups.fixed(aij, aij.getOracleInstance()));
+        this(aij, basicNode, new InstanceContent(), new OracleJ2EEInstanceChildren(aij, basicNode));
+        
+    }
+    
+    private OracleJ2EEInstanceNode(OracleJ2EEInstance aij, boolean basicNode, InstanceContent ic, OracleJ2EEInstanceChildren children) {
+        super(children, new AbstractLookup(ic));
         this.basicNode = basicNode;
         this.aij = aij;
+        this.children = children;
+        ic.add(aij);
+        ic.add(aij.getOracleInstance());
+        ic.add(this);
         setName(""); // NOI18N
         setDisplayName(aij.getDisplayName());
         setIconBaseWithExtension(WEBLOGIC_ICON);
         
+    }
+    
+    void refresh() {
+        children.readKeys();
     }
     
     @Override
@@ -123,12 +139,12 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(RefreshOracleInstanceNodeAction.class),
+            SystemAction.get(RefreshOracleJ2EEInstanceNodeAction.class),
             SystemAction.get(RemoteServerPropertiesAction.class)
         };
     }
     
-    private static class OracleJ2EEInstanceChildren extends Children.Keys<Application> {
+    static class OracleJ2EEInstanceChildren extends Children.Keys<Application> {
 
         private OracleJ2EEInstance aij;
         private boolean basicNode;
@@ -187,13 +203,33 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     public static class ApplicationNode extends AbstractNode {
 
         private Application app;
+        
         public ApplicationNode(OracleJ2EEInstance aij, Application app) {
-            super(Children.LEAF, Lookups.fixed(aij, app));
+            this(aij, app, new InstanceContent());
+        }
+        
+        private ApplicationNode(OracleJ2EEInstance aij, Application app, InstanceContent ic) {
+            super(Children.LEAF, new AbstractLookup(ic));
+            ic.add(aij);
+            ic.add(this);
             this.app = app;
             setName(""); // NOI18N
             setDisplayName(app.getApplicationName());
         }
 
+        public Application getApp() {
+            return app;
+        }
+
+        void setApp(Application app) {
+            this.app = app;
+            fireIconChange();
+        }
+        
+        void refreshChildren() {
+            ((OracleJ2EEInstanceNode)getParentNode()).refresh();
+        }
+        
         @Override
         public Image getIcon(int type) {
             return badgeIcon(UISupport.getIcon(app.getType() == ApplicationType.WAR  || app.getType() == null ?

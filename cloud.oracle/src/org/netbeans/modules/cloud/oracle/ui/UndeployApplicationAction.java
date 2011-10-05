@@ -43,36 +43,22 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import oracle.cloud.paas.model.Application;
 import oracle.cloud.paas.model.ApplicationState;
+import oracle.cloud.paas.model.Job;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class UndeployApplicationAction extends NodeAction {
+public class UndeployApplicationAction extends AbstractApplicationNodeAction {
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        Application app = activatedNodes[0].getLookup().lookup(Application.class);
-        inst.getOracleInstance().undeploy(app);
+    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
+        return inst.getOracleInstance().undeploy(app);
     }
-
+    
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        if (activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) == null) {
-            return false;
-        }
-        Application app = activatedNodes[0].getLookup().lookup(Application.class);
-        if (app == null) {
-            return false;
-        }
+    protected boolean isAppInRightState(Application app) {
         return ApplicationState.STATE_RETIRED != app.getState();
     }
 
@@ -80,10 +66,4 @@ public class UndeployApplicationAction extends NodeAction {
     public String getName() {
         return NbBundle.getMessage(UndeployApplicationAction.class, "UndeployApplicationAction.name");
     }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
 }
