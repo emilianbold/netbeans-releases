@@ -44,19 +44,15 @@ Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
             <p>In the Revert Modifications dialog box, select any of the following options:</p>    
             <ul>
 			<li><b>Revert All Uncommitted Changes in Working Tree and Index.</b>
-			Choose to delete all uncommitted changes and return to the  
-			  state of 
-			  files 
-			  in Working Tree and Index during the preceding commit.
+			Choose to delete all uncommitted changes and return to the state of files in HEAD.
 			  <ul>
-			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folder that have been created after the preceding commit.</li>
+			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folders that have not been committed to HEAD.</li>
 			  </ul></li>
-			<li><b>Revert Uncommitted Changes in Working Tree to the State in Index.</b> Choose to delete uncommitted changes in Working Tree and return to the state of files
-			in Index during the preceding commit.
+			<li><b>Revert Uncommitted Changes in Working Tree to the State in Index.</b> Choose to delete uncommitted changes in Working Tree and return to the current state of files in Index.
 			  <ul>
-			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folder that have been created in Working Tree but have not been committed yet.</li>
+			<li><b>Remove also New Files and Folders.</b> Select to delete new files and folder that have been created in Working Tree but have not been added to  Index.</li>
 			</ul> </li>
-			<li><b>Revert only Uncommitted Changes in Index to Head.</b> Choose to delete uncommitted changes in Index and return to the state of files in Head. </li>
+			<li><b>Revert only Uncommitted Changes in Index to HEAD.</b> Choose to delete uncommitted changes in Index and return to the state of files in HEAD. </li>
 			</ul>   
 <p>After you click Revert, the IDE replaces the selected files with those you specified in the selected option.</p>
 

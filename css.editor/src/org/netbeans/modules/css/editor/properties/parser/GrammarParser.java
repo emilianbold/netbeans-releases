@@ -141,7 +141,7 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    Property p = CssModuleSupport.getProperty(referredElementName);
+                    Property p = CssModuleSupport.getProperty(referredElementName, true);
                     if (p == null) {
                         throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
                                 + " Read input: " + input.readText()); //NOI18N

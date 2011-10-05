@@ -1945,8 +1945,12 @@ XHR.prototype = {
             xmlHttpReq.send(content);
             if (this.isResponseReady(method, xmlHttpReq, content, monitor)) {
               var rtext = xmlHttpReq.responseText;
+              if ( (rtext== undefined || rtext == '' ) && (method=='POST' || method=='PUT' )){
+                  return 'MSG_TEST_RESBEANS_NoContent';
+              }
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = method+' MSG_TEST_RESBEANS_RequestFailed RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n<br/>'+
+                  var err = method+' MSG_TEST_RESBEANS_RequestFailed RequestFailed --> MSG_TEST_RESBEANS_Status: (' 
+                  	   + xmlHttpReq.status+')\n<br/>'+
                       'MSG_TEST_RESBEANS_Response: {<br/>' + xmlHttpReq.responseText + "<br/>}";
                   ts.debug('Failed XHR('+method+', '+url+'): '+err);
                   return err;

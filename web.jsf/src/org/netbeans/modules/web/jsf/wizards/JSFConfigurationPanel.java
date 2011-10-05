@@ -316,6 +316,9 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     protected void setEnableFacelets(boolean enableFacelets) {
         // If there is a new change in the Preferred language check box
         if (this.enableFacelets != enableFacelets) {
+            if (enableFacelets != false) {
+                this.enableFacelets = enableFacelets;
+            }
             PreferredLanguage preferredLanguage = component.getPreferredLanguage();
             if (preferences != null && preferredLanguage != null) {
                 preferences.put(PREFERRED_LANGUAGE, preferredLanguage.getName());
