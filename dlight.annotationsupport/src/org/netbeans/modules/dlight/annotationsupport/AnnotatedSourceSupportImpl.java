@@ -43,7 +43,6 @@ package org.netbeans.modules.dlight.annotationsupport;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,10 +59,9 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricFormatte
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.SourceSupportProvider.FileObjectsToSourceMap;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
@@ -92,6 +90,24 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
         return instance;
     }
+    
+    private String getCacheKey(final FileObject fileObject) {
+        if (fileObject == null) {
+            return null;
+        }
+        
+        CharSequence url = FileSystemProvider.fileObjectToUrl(fileObject);
+        return url == null ? null : url.toString();
+    }
+    
+    private String getCacheKey(final String filePath) {
+        FileObject fo = FileSystemProvider.urlToFileObject(filePath);
+        String result = getCacheKey(fo);
+        if (result != null) {
+            return result;
+        }
+        return filePath.toString();
+    }
 
     private synchronized void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
         if (list == null || list.size() == 0) {
@@ -102,16 +118,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
                     String filePath = sourceFileInfo.getFileName();
-                    if (new File(filePath).exists()) {
-                        filePath = FileUtil.normalizePath(filePath);
-                    }
-                    FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
+                    String key = getCacheKey(filePath);
+                    FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(key);
                     if (fileAnnotationInfo == null) {
                         fileAnnotationInfo = new FileAnnotationInfo();
                         fileAnnotationInfo.setFilePath(filePath);
                         fileAnnotationInfo.setColumnNames(new String[metrics.size()]);
                         fileAnnotationInfo.setMaxColumnWidth(new int[metrics.size()]);
-                        activeAnnotations.put(filePath, fileAnnotationInfo);
+                        activeAnnotations.put(key, fileAnnotationInfo);
                     }
                     LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo(fileAnnotationInfo);
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
@@ -154,7 +168,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     public synchronized FileAnnotationInfo getFileAnnotationInfo(String filePath) {
-        return activeAnnotations.get(filePath);
+        return activeAnnotations.get(getCacheKey(filePath));
     }
 
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
@@ -187,29 +201,21 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    private String fileFromEditorPane(JTextComponent jEditorPane) {
-        String ret = null;
-
+    private FileObject getFileObjectFromEditorPane(JTextComponent jEditorPane) {
         if (jEditorPane != null) {
-            Object source = jEditorPane.getDocument().getProperty(Document.StreamDescriptionProperty);
-            if (source instanceof DataObject) {
-                FileObject fo = ((DataObject) source).getPrimaryFile();
-                ret = FileObjectsToSourceMap.getInstance().get(fo);
-                if (ret == null) {
-                    ret = (String)fo.getAttribute("URI"); // NOI18N
-                }
-                if (ret == null && FileUtil.toFile(fo) != null) {
-                    ret = FileUtil.toFile(fo).getPath();
-                }
-                if (ret != null) {
-                    ret = FileUtil.normalizePath(ret);
+            Document doc = jEditorPane.getDocument();
+            if (doc != null) {
+                Object source = doc.getProperty(Document.StreamDescriptionProperty);
+
+                if (source instanceof DataObject) {
+                    FileObject fo = ((DataObject) source).getPrimaryFile();
+                    return fo;
                 }
             }
         }
-
-        return ret;
+        return null;
     }
-
+    
     private synchronized void annotateCurrentFocusedFiles() {
         // FIXUP: could there be more than one file in view?
         if (activeAnnotations.size() == 0) {
@@ -220,9 +226,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             jEditorPane = EditorRegistry.lastFocusedComponent();
         }
         if (jEditorPane != null) {
-            String fileURI = fileFromEditorPane(jEditorPane);
-            if (fileURI != null) {
-                final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(fileURI);
+            FileObject fileObject = getFileObjectFromEditorPane(jEditorPane);
+            String key = getCacheKey(fileObject);
+            if (key != null) {
+                FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(key);
+
                 if (fileAnnotationInfo != null) {
 //                    if (!fileAnnotationInfo.isAnnotated()) {
                     fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
