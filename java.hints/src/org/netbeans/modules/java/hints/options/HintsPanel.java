@@ -259,6 +259,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         exportButton.setVisible(false);
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
+        
+        toProblemCheckBox.setVisible(allHints);
+        severityComboBox.setVisible(allHints);
+        severityLabel.setVisible(allHints);
+        validate();
     }
     
     
@@ -326,7 +331,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         detailsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         detailsPanel.setOpaque(false);
-        detailsPanel.setLayout(new java.awt.GridBagLayout());
 
         optionsPanel.setOpaque(false);
         optionsPanel.setLayout(new java.awt.GridBagLayout());
@@ -369,16 +373,6 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         optionsPanel.add(customizerPanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        detailsPanel.add(optionsPanel, gridBagConstraints);
 
         descriptionPanel.setOpaque(false);
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
@@ -466,13 +460,20 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints.weighty = 1.0;
         descriptionPanel.add(scriptScrollPane, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.7;
-        detailsPanel.add(descriptionPanel, gridBagConstraints);
+        javax.swing.GroupLayout detailsPanelLayout = new javax.swing.GroupLayout(detailsPanel);
+        detailsPanel.setLayout(detailsPanelLayout);
+        detailsPanelLayout.setHorizontalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+        );
+        detailsPanelLayout.setVerticalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detailsPanelLayout.createSequentialGroup()
+                .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
+        );
 
         jSplitPane1.setRightComponent(detailsPanel);
 
