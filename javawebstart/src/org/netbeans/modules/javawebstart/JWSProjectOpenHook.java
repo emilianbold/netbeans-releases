@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javawebstart;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties;
-import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tomas Zezula
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
-public class JWSLookupProvider implements LookupProvider {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
+public class JWSProjectOpenHook extends ProjectOpenedHook {
+
+    private final Project prj;
+    private final J2SEPropertyEvaluator eval;
+
+    public JWSProjectOpenHook(final Lookup lkp) {
+        Parameters.notNull("lkp", lkp); //NOI18N
+        this.prj = lkp.lookup(Project.class);
+        Parameters.notNull("prj", prj); //NOI18N
+        this.eval = lkp.lookup(J2SEPropertyEvaluator.class);
+        Parameters.notNull("eval", eval);   //NOI18N
+    }
 
     @Override
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        if (hasJWS(baseContext)) {
-            final Project prj = baseContext.lookup(Project.class);
-            final J2SEPropertyEvaluator j2sepe = baseContext.lookup(J2SEPropertyEvaluator.class);
-            return Lookups.singleton (new JWSProjectOpenHook(prj, j2sepe.evaluator()));
-        }
-        return Lookup.EMPTY;        
-    }
-
-    private boolean hasJWS(final Lookup lkp) {
-        final J2SEPropertyEvaluator j2sePropEval = lkp.lookup(J2SEPropertyEvaluator.class);
-        return JWSProjectProperties.isTrue(j2sePropEval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED));
-    }
-
-    
-    private static class JWSProjectOpenHook extends ProjectOpenedHook {
-        
-        private final Project project;
-        private final PropertyEvaluator eval;
-
-        private JWSProjectOpenHook(final Project project, final PropertyEvaluator eval) {
-            Parameters.notNull("project", project);     //NOI18N
-            Parameters.notNull("eval", eval);           //NOI18N
-            this.project = project;
-            this.eval = eval;
-        }
-
-        @Override
-        protected void projectOpened() {
-            try {
-                JWSProjectProperties.updateWebStartJars(project, eval);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+    protected void projectOpened() {
+        try {
+            if (isTrue(eval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED))) {  //JNLP_ENABLED - inlined by compiler
+                JWSProjectProperties.updateWebStartJars(prj, eval.evaluator());
             }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
-        @Override
-        protected void projectClosed() {
-        }
+    }
+
+    @Override
+    protected void projectClosed() {
+    }
+
+    //Don't use JWSProjectProperties.isTrue - causes loading of big JWSProjectProperties
+    private static boolean isTrue(final String value) {
+        return value != null &&
+        (value.equalsIgnoreCase("true") ||  //NOI18N
+         value.equalsIgnoreCase("yes") ||   //NOI18N
+         value.equalsIgnoreCase("on"));     //NOI18N
     }
 }
