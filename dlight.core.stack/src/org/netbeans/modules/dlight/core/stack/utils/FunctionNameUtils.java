@@ -144,7 +144,7 @@ public final class FunctionNameUtils {
                     templateLevel++;
                     break;
                 case '>':
-                    templateLevel++;
+                    templateLevel--;
                     break;
                 case 'o':
                     if (functionSignature.substring(i).startsWith("operator") && // NOI18N
@@ -184,10 +184,18 @@ public final class FunctionNameUtils {
                     }
                     break;
                 case '[':
-                    start = i + 1;
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
                     break;
                 case '(':
+                    return functionSignature.substring(start, i);
                 case ']':
+                    if (isOperator && i > 1 && functionSignature.charAt(i-1) == '[') {
+                        return functionSignature.substring(start, i+1);
+                    }
                     return functionSignature.substring(start, i);
             }
         }
