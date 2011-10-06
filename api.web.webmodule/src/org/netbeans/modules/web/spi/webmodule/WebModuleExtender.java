@@ -33,6 +33,7 @@ package org.netbeans.modules.web.spi.webmodule;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -97,8 +98,27 @@ public abstract class WebModuleExtender {
      * Called to extend the given web module with the web framework
      * corresponding to this extender.
      *
-     * @param  webModule the web module to be extender; never null.
+     * @param  webModule the web module to be extended; never null.
      * @return the set of newly created files in the web module.
      */
     public abstract Set<FileObject> extend(WebModule webModule);
+
+    /**
+     * Interface that represents ability to save {@code WebModuleExtender}
+     * properties for a {@link WebModule}.
+     *
+     * @since 1.26
+     */
+    public interface Savable {
+
+        /**
+         * Called to save extender configuration for given web module in cases that
+         * the web module was already extended by the {@code WebModuleExtender}.
+         *
+         * @param webModule the web module to store extender settings; never null.
+         */
+        void save(@NonNull WebModule webModule);
+
+    }
+
 }
