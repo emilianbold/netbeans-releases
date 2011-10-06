@@ -142,6 +142,19 @@ public class ELSanitizerTest {
         sanitized = ELSanitizer.sanitize("#{");
         assertEquals("#{x}", sanitized);
     }
+    
+    @Test
+    public void testSanitizeUnclosedExpressionInHTML() {
+        String sanitized = ELSanitizer.sanitize("#{<body><div>hello", 2);
+        assertEquals("#{x}", sanitized);
+        
+        sanitized = ELSanitizer.sanitize("#{   <body><div>hello", 2);
+        assertEquals("#{x}", sanitized);
+        
+        sanitized = ELSanitizer.sanitize("#{   <body>\n<div>\nhello", 2);
+        assertEquals("#{x}", sanitized);
+
+    }
 
     @Test
     public void testFindLastNonWhiteSpace() {
