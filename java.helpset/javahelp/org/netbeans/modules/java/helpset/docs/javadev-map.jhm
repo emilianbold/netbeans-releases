@@ -302,6 +302,10 @@
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.OutputWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
+<!-- New JavaFX Project wizards -->
+<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_APPLICATION" url="javafx/csh/new_application.html" />
+<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" url="javafx/csh/new_application.html" />
+<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_PRELOADER" url="javafx/csh/new_preloader.html" />
 
 <!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
