@@ -122,6 +122,7 @@ public class Annotator {
 
     public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
                                                         ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
+    private static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -472,6 +473,7 @@ public class Annotator {
                 actions.add(SystemAction.get(VersioningInfoAction.class));
                 actions.add(SystemAction.get(SvnPropertiesAction.class));
             }
+            Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
             Lookup context = ctx.getElements();

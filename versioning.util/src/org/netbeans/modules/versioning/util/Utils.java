@@ -92,6 +92,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.ErrorManager;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
@@ -1477,4 +1478,23 @@ public final class Utils {
         }
         return set.toArray(new File[set.size()]);
     }    
+    
+    public static void setAcceleratorBindings(String pathPrefix, Action... actions) {
+        for (Action a : actions) {
+            if(a == null) continue;
+            Action foAction;
+            if(a instanceof SystemActionBridge) {
+                foAction = ((SystemActionBridge) a).getDelegate();
+            } else {
+                foAction = a;
+            }
+            if(!pathPrefix.endsWith("/")) {                                     // NOI18N
+                pathPrefix += "/";                                              // NOI18N
+            }
+            FileObject fo = FileUtil.getConfigFile(pathPrefix + foAction.getClass().getName().replaceAll("\\.", "-") + ".instance"); // NOI18N
+            if(fo != null) {   
+                AcceleratorBinding.setAccelerator(a, fo);
+            }
+        }
+    }
 }
