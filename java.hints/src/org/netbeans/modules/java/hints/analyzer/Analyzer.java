@@ -104,73 +104,76 @@ public class Analyzer implements Runnable {
 
     public void run() {
         handle.start();
-        
-        List<FileObject> toProcess = new LinkedList<FileObject>();
-        Queue<FileObject> q = new LinkedList<FileObject>();
-        
-        q.addAll(toAnalyze(context));
-        
-        while (!q.isEmpty()) {
-            FileObject f = q.poll();
-            
-            if (f.isData() && JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f))) {
-                toProcess.add(f);
-            }
-            
-            if (f.isFolder()) {
-                q.addAll(Arrays.asList(f.getChildren()));
-            }
-        }
-        
-        final List<ErrorDescription> eds = new LinkedList<ErrorDescription>();
-        
-        if (!toProcess.isEmpty()) {
-            handle.switchToDeterminate(toProcess.size());
-            
-            ClasspathInfo cpInfo = ClasspathInfo.create(toProcess.get(0));
-            JavaSource js = JavaSource.create(cpInfo, toProcess);
-            final AtomicInteger f = new AtomicInteger();
-            
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController cc) throws Exception {
-                        if (cancel.get())
-                            return;
-                        HintsSettings.setPreferencesOverride(preferencesOverlay);
-                        
-                        DataObject d = DataObject.find(cc.getFileObject());
-                        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
-                        Document doc;
-                        
-                        try {
-                            doc = ec.openDocument();
-                        } catch (UserQuestionException uqe) {
-                            uqe.confirmed();
-                            doc = ec.openDocument();
-                        }
-                        
-                        try {
-                            handle.progress(FileUtil.getFileDisplayName(cc.getFileObject()));
 
-                            if (cc.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
+        try {
+            List<FileObject> toProcess = new LinkedList<FileObject>();
+            Queue<FileObject> q = new LinkedList<FileObject>();
+
+            q.addAll(toAnalyze(context));
+
+            while (!q.isEmpty()) {
+                FileObject f = q.poll();
+
+                if (f.isData() && JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f))) {
+                    toProcess.add(f);
+                }
+
+                if (f.isFolder()) {
+                    q.addAll(Arrays.asList(f.getChildren()));
+                }
+            }
+
+            final List<ErrorDescription> eds = new LinkedList<ErrorDescription>();
+
+            if (!toProcess.isEmpty()) {
+                handle.switchToDeterminate(toProcess.size());
+
+                ClasspathInfo cpInfo = ClasspathInfo.create(toProcess.get(0));
+                JavaSource js = JavaSource.create(cpInfo, toProcess);
+                final AtomicInteger f = new AtomicInteger();
+
+                try {
+                    js.runUserActionTask(new Task<CompilationController>() {
+
+                        public void run(CompilationController cc) throws Exception {
+                            if (cancel.get()) {
                                 return;
                             }
+                            HintsSettings.setPreferencesOverride(preferencesOverlay);
 
-                            handle.progress(f.incrementAndGet());
+                            DataObject d = DataObject.find(cc.getFileObject());
+                            EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+                            Document doc;
 
-                            eds.addAll(new HintsInvoker(cc, new AtomicBoolean()).computeHints(cc));
-                        } finally {
-                            HintsSettings.setPreferencesOverride(null);
+                            try {
+                                doc = ec.openDocument();
+                            } catch (UserQuestionException uqe) {
+                                uqe.confirmed();
+                                doc = ec.openDocument();
+                            }
+
+                            try {
+                                handle.progress(FileUtil.getFileDisplayName(cc.getFileObject()));
+
+                                if (cc.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                                    return;
+                                }
+
+                                handle.progress(f.incrementAndGet());
+
+                                eds.addAll(new HintsInvoker(cc, new AtomicBoolean()).computeHints(cc));
+                            } finally {
+                                HintsSettings.setPreferencesOverride(null);
+                            }
                         }
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+        } finally {
+            handle.finish();
         }
-        
-        handle.finish();
-        
         if (!cancel.get()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
