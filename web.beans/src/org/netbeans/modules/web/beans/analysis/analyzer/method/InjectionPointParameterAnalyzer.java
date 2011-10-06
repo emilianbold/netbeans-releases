@@ -52,8 +52,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
@@ -95,14 +97,24 @@ public class InjectionPointParameterAnalyzer
                 if (model.isInjectionPoint(var)) {
                     boolean isDelegate = false;
                     result.requireCdiEnabled(element, model);
+                    if ( cancel.get() ){
+                        return;
+                    }
                     if (!model.isDynamicInjectionPoint(var)) {
-                        DependencyInjectionResult res = model.lookupInjectables(
-                            var, (DeclaredType) parent.asType());
-                        checkResult(res, element, var, model, result );
-                        if ( AnnotationUtil.isDelegate(var, parent, model)){
-                            analyzeDecoratedBeans(res, var, element, parent,
-                                    model, result );
-                            isDelegate =true;
+                        isDelegate =AnnotationUtil.isDelegate(var, parent, model);
+                        if (!checkBuiltInBeans(var,
+                                getParameterType(var, element, parent,
+                                        model.getCompilationController()),
+                                model, cancel))
+                        {
+                            DependencyInjectionResult res = model
+                                    .lookupInjectables(var,
+                                            (DeclaredType) parent.asType());
+                            checkResult(res, element, var, model, result);
+                            if (isDelegate) {
+                                analyzeDecoratedBeans(res, var, element,
+                                        parent, model, result);
+                            }
                         }
                     }
                     if ( cancel.get()){
@@ -166,6 +178,18 @@ public class InjectionPointParameterAnalyzer
                         "ERR_FinalMethodDecoratedBean", // NOI18N
                         decoratedBean.getQualifiedName().toString(),
                         decoratedMethod.getSimpleName().toString()));
+    }
+    
+    private TypeMirror getParameterType( VariableElement var,
+            ExecutableElement element, TypeElement parent , 
+            CompilationController controller )
+    {
+        ExecutableType method = (ExecutableType)controller.getTypes().asMemberOf(
+                (DeclaredType)parent.asType(), element);
+        List<? extends TypeMirror> parameterTypes = method.getParameterTypes();
+        List<? extends VariableElement> parameters = element.getParameters();
+        int paramIndex = parameters.indexOf(var);
+        return parameterTypes.get(paramIndex);
     }
     
     private void checkInjectionPointMetadata( VariableElement var,

@@ -95,13 +95,16 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                     return;
                 }
                 if ( !model.isDynamicInjectionPoint(element)) {
-                    DependencyInjectionResult res = 
-                        model.lookupInjectables(element,null);
-                    checkResult(res, element, model, result );
-                    if ( AnnotationUtil.isDelegate(element, parent, model)){
-                        analyzeDecoratedBeans(res, element, null, parent,  
-                                model, result );
-                        isDelegate = true;
+                    isDelegate = AnnotationUtil.isDelegate(element, parent, model);
+                    if (!checkBuiltInBeans(element, elementType, model, cancel))
+                    {
+                        DependencyInjectionResult res = model
+                                .lookupInjectables(element, null);
+                        checkResult(res, element, model, result);
+                        if (isDelegate) {
+                            analyzeDecoratedBeans(res, element, null, parent,
+                                    model, result);
+                        }
                     }
                 }
                 boolean isEvent = model.isEventInjectionPoint(element);
@@ -182,7 +185,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
         if ( cancel.get()){
             return;
         }
-        List<AnnotationMirror> qualifiers = model.getQualifiers(varElement, true);
+        List<AnnotationMirror> qualifiers = model.getQualifiers(element, true);
         AnnotationHelper helper = new AnnotationHelper(model.getCompilationController());
         Map<String, ? extends AnnotationMirror> qualifiersFqns = helper.
             getAnnotationsByType(qualifiers);
