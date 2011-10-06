@@ -89,6 +89,16 @@ public final class FreeFormAntProjectSupportProvider extends AbstractAntProjectS
                 FreeFormProjectsSupport.saveProfilerConfig(project, profileTarget, profileSingleTarget);
 
                 return profileSingleTarget;
+            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE:
+                profileSingleTarget = FreeFormProjectsSupport.selectProfilingTarget(project, buildScript, type, profileSingleTarget);
+
+                if (profileSingleTarget == null) {
+                    return null; // cancelled by the user
+                }
+
+                FreeFormProjectsSupport.saveProfilerConfig(project, profileTarget, profileSingleTarget);
+
+                return profileSingleTarget;
             default:
                 return null;
         }
