@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -323,23 +324,35 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     private static class WhiteListLookup extends ProxyLookup {
 
         private Project p;
-        //@GuardedBy("this")
-        private boolean initialized = false;
+        private final AtomicBoolean initialized = new AtomicBoolean();
 
         public WhiteListLookup(Project p) {
             this.p = p;
         }
-        
+
         @Override
-        protected synchronized void beforeLookup(Template<?> template) {
-            if (!initialized && WhiteListQueryImplementation.class.isAssignableFrom(template.getType())) {
-                initialized = true;
-                updateLookup();
+        protected void beforeLookup(Template<?> template) {
+            if (WhiteListQueryImplementation.class.isAssignableFrom(template.getType())) {
+                if (!initialized.get()) {
+                    //Threading: Weak consistency - may be performed several times
+                    //by more threads in parallel but should be idempotent only several
+                    //events will be fired
+                    final UserSelectable[] queries = createQueries();
+                    if (!initialized.get()) {
+                        setLookups(Lookups.fixed((Object[])queries));
+                        initialized.set(true);
+                    }
+                }
             }
             super.beforeLookup(template);
         }
-        
+
         private void updateLookup() {
+            setLookups(Lookups.fixed((Object[])createQueries()));
+        }
+
+        @NonNull
+        private UserSelectable[] createQueries() {
             final List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
             for (WhiteListQueryImplementation.UserSelectable w :
                     Lookups.forPath(WHITELISTS_PATH).lookupAll(WhiteListQueryImplementation.UserSelectable.class)) {
@@ -347,7 +360,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
                     impls.add(w);
                 }
             }
-            setLookups(Lookups.fixed((UserSelectable[])impls.toArray(new UserSelectable[impls.size()])));
+            return impls.toArray(new UserSelectable[impls.size()]);
         }
     }
 }
