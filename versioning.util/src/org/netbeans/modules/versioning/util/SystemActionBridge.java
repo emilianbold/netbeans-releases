@@ -70,23 +70,34 @@ public class SystemActionBridge extends AbstractAction {
     private Action action;
     private Action delegateAction;
 
-    public static SystemActionBridge createAction(Action action, String name, Lookup context) {
+    public static SystemActionBridge createAction(Action action, String name, Lookup context, String actionPathPrefix) {
         Action delegateAction = action;
         if (context != null && action instanceof ContextAwareAction) {
             action = ((ContextAwareAction) action).createContextAwareInstance(context);
         }
-        return new SystemActionBridge(action, delegateAction, name);
+        return new SystemActionBridge(action, delegateAction, name, actionPathPrefix);
+    }
+    
+    public static SystemActionBridge createAction(Action action, String name, Lookup context) {
+        return createAction(action, name, context, null);
     }
 
-    private SystemActionBridge(Action action, Action delegateAction, String name) {
+    private SystemActionBridge(Action action, Action delegateAction, String name, String actionPathPrefix) {
         super(name, null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         this.action = action;
         this.delegateAction = delegateAction;
+        if(actionPathPrefix != null) {
+            Utils.setAcceleratorBindings(actionPathPrefix, this);
+        }
     }
 
+    public SystemActionBridge(Action action, String name, String actionPathPrefix) {
+        this(action, action, name, actionPathPrefix);
+    }
+    
     public SystemActionBridge(Action action, String name) {
-        this(action, action, name);
+        this(action, action, name, null);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -98,6 +109,10 @@ public class SystemActionBridge extends AbstractAction {
         return action.isEnabled();
     }
 
+    Action getDelegate() {
+        return action;
+    }
+    
     private void log() throws MissingResourceException {
         LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_BUTTON_PRESS"); // NOI18N
         rec.setParameters(new Object[]{"", "", delegateAction, delegateAction.getClass().getName(), action.getValue(Action.NAME)});

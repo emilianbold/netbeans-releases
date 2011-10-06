@@ -51,6 +51,8 @@ import org.openide.awt.DynamicMenuContent;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.Annotator;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Container menu for branch actions.
@@ -81,9 +83,18 @@ public class BranchesMenu extends AbstractAction implements DynamicMenuContent {
 
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        menu.add(new Actions.MenuItem(SystemAction.get(BranchAction.class), true));
-        menu.add(new Actions.MenuItem(SystemAction.get(SwitchBranchAction.class), true));
-        menu.add(new Actions.MenuItem(SystemAction.get(MergeBranchAction.class), true));
+        Action action = SystemAction.get(BranchAction.class);
+        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+        menu.add(new Actions.MenuItem(action, true));
+        
+        action = SystemAction.get(SwitchBranchAction.class);
+        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+        menu.add(new Actions.MenuItem(action, true));
+        
+        action = SystemAction.get(MergeBranchAction.class);
+        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+        menu.add(new Actions.MenuItem(action, true));
+        
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
         return menu;
     }

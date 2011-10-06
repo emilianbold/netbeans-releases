@@ -47,10 +47,12 @@ package org.netbeans.modules.git.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,10 +79,15 @@ public final class CheckoutMenu extends DynamicMenu {
         JMenuItem item;
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(CheckoutRevisionAction.class), false);
+            Action action = (Action) SystemAction.get(CheckoutRevisionAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
+            
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(CheckoutPathsAction.class), false);
+            action = (Action) SystemAction.get(CheckoutPathsAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
