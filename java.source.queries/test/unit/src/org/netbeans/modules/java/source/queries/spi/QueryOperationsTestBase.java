@@ -40,10 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.source.queries.spi;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,7 +57,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
 /**
@@ -159,8 +155,7 @@ public abstract class QueryOperationsTestBase extends TestCase {
         "    }\n"+
         "    public java.util.Map<String,String> call(final java.util.List<String> l){\n"+
         "        final java.util.Map<String,String> res = new java.util.HashMap<String,String>(m1);\n"+
-        "        final java.util.Iterator<java.util.Map.Entry<String,String>> it = res.entrySet().iterator();\n"+
-        "        final java.util.Map.Entry<String,String> e = it.next();\n"+
+        "        final javax.swing.ComboBoxModel cbm = new javax.swing.DefaultComboBoxModel(java.util.Arrays.copyOf(l.toArray(), l.size()));\n"+
         "        return res;\n"+
         "    }\n"+
         "}"
@@ -169,11 +164,12 @@ public abstract class QueryOperationsTestBase extends TestCase {
     private static final String GOLDEN_7 =
         "package org.me.test;\n"+
         "\n"+
+        "import java.util.Arrays;\n"+
         "import java.util.HashMap;\n"+
-        "import java.util.Iterator;\n"+
         "import java.util.List;\n"+
         "import java.util.Map;\n"+
-        "import java.util.Map.Entry;\n"+
+        "import javax.swing.ComboBoxModel;\n"+
+        "import javax.swing.DefaultComboBoxModel;\n"+
         "\n"+
         "public class Test7{\n"+
         "    Map<String, String> m1 = new HashMap<String, String>();\n"+
@@ -183,8 +179,7 @@ public abstract class QueryOperationsTestBase extends TestCase {
         "    }\n"+
         "    public Map<String,String> call(final List<String> l){\n"+
         "        final Map<String,String> res = new HashMap<String, String>(m1);\n"+
-        "        final Iterator<Entry<String, String>> it = res.entrySet().iterator();\n"+
-        "        final Entry<String, String> e = it.next();\n"+
+        "        final ComboBoxModel cbm = new DefaultComboBoxModel(Arrays.copyOf(l.toArray(), l.size()));\n"+
         "        return res;\n"+
         "    }\n"+
         "}";
@@ -620,7 +615,7 @@ public abstract class QueryOperationsTestBase extends TestCase {
     }
 
     public void testFixImports() throws Exception {
-        doTestFixImports(TEST_7,new int[][]{{45,236},{336,717}},GOLDEN_7);
+        doTestFixImports(TEST_7,new int[][]{{45,236},{358,684}},GOLDEN_7);
     }
 
     private void doTestFixImports(
@@ -643,7 +638,7 @@ public abstract class QueryOperationsTestBase extends TestCase {
             });
         assertEquals(
             removeWhiteSpaces(expected),
-            removeWhiteSpaces(URLMapper.findFileObject(file).asText()));
+            removeWhiteSpaces(readFile(file)));
     }
 
     protected final <T> void assertContentEquals(
@@ -735,6 +730,21 @@ public abstract class QueryOperationsTestBase extends TestCase {
             }
         }
         file.delete();
+    }
+
+    private String readFile(URL url) throws IOException {
+        FileReader fr = null;
+        try {
+            File f = new File(url.getFile());
+            fr = new FileReader(f);
+            char[] buf = new char[(int)f.length()];
+            fr.read(buf);
+            return new String(buf);
+        } finally {
+            if (fr != null) {
+                fr.close();
+            }
+        }
     }
 
     protected abstract File getWorkDir() throws IOException;
