@@ -6,30 +6,21 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Inline Refactoring Window</title>
+        <title>Inline Refactoring</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Inline Refactoring Window </h2>
+        <h2>Inline Refactoring </h2>
         <p><small> <a href="#seealso">See Also</a> </small></p>
-		<p>The Inline Refactoring window provides a compact view of a source code compared to the proposed refactoring and simplifies navigation between different parts of code.</p>
+		<p> Inline refactoring  allows you to replace references to a variable,  method, or constant with the values assigned to the variable, the implementation of the method, or the constant, respectively.</p>
             
-        <p>You can open the Inline Refactoring window by selecting a local variable (temp), method, or constant and choosing Refactor &gt; Inline from either the main IDE's or  popup menu. By default, the Inline Refactoring window opens in the lower right corner of the IDE.</p>
+        <p>To enable inline refactoring,   select a local variable (temp), method, or constant and choose Refactor &gt; Inline from either the main IDE's or  popup menu. After you initiate inline refactoring, the <a href="previewWindow.html">Refactoring Window</a> opens in the lower right corner of the IDE.</p>
 
         <p>The IDE provides the following inline refactorings:</p>
         <ul>
-            <li><b>Inline Temp.</b> Replaces all references to a local variable with its initial value.</li>
-            <li><b>Inline Method.</b> Replaces the current method calls with the method's body.</li>
-			<li><b>Inline Constant.</b> Replaces a constant reference with its defined value, removing the constant declaration if there are no other references to it.</li>
-        </ul>
-
-      
-        
-        <ul class="note">
-            <li>You should always perform a clean build after completing
-                any refactoring commands. You can do a clean build by right-clicking the project's 
-                node in the Projects window and choosing Clean and Build Project.
-            </li>
+            <li><b>Inline Temp.</b> Replaces all references to a local variable with its initial value and removes the declaration.</li>
+            <li><b>Inline Method.</b> Replaces all method calls with the method's body and removes the declaration.</li>
+			<li><b>Inline Constant.</b> Replaces all constant references  with its defined value and removes the declaration.</li>
         </ul>
 
         <dl>
@@ -37,6 +28,7 @@
             <dd><a href="../aboutRefactoring.html">About Refactoring</a></dd>
             <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a></dd>
             <dd><a href="../undo.html">Undoing Refactoring Changes</a></dd>
+			<dd><a href="previewWindow.html">Refactoring Window</a></dd>
         </dl>
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>
