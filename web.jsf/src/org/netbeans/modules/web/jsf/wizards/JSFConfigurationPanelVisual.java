@@ -811,11 +811,13 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
 }//GEN-LAST:event_jtFolderKeyPressed
 
 private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPreferredLangActionPerformed
-    PreferredLanguage selectedLanguage = preferredLanguages.get(cbPreferredLang.getSelectedIndex());
-    if (PreferredLanguage.Facelets == selectedLanguage) {
-        panel.setEnableFacelets(true);
-    } else {
-        panel.setEnableFacelets(false);
+    if (!customizer) {
+        PreferredLanguage selectedLanguage = getPreferredLanguage();
+        if (PreferredLanguage.Facelets == selectedLanguage) {
+            panel.updateEnableFacelets(true, true);
+        } else {
+            panel.updateEnableFacelets(false, true);
+        }
     }
 }//GEN-LAST:event_cbPreferredLangActionPerformed
 
@@ -1185,7 +1187,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     @CheckForNull
     protected PreferredLanguage getPreferredLanguage() {
         Object selectedItem = cbPreferredLang.getSelectedItem();
-        
+
         if (selectedItem instanceof PreferredLanguage) {
             return (PreferredLanguage) selectedItem;
         }

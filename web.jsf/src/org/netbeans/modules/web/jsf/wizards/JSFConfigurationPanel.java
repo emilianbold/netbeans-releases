@@ -314,10 +314,15 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         return enableFacelets;
     }
 
-    protected void setEnableFacelets(boolean enableFacelets) {
+    /**
+     * Almost setter for enableFacelets variable. If force set to {@code true} then
+     * the change has to be done, otherwise it's switched just in cases the enableFacelets
+     * param equals {@code true}.
+     */
+    protected void updateEnableFacelets(boolean enableFacelets, boolean force) {
         // If there is a new change in the Preferred language check box
         if (this.enableFacelets != enableFacelets) {
-            if (enableFacelets != false) {
+            if (enableFacelets != false || force) {
                 this.enableFacelets = enableFacelets;
             }
             PreferredLanguage preferredLanguage = component.getPreferredLanguage();
@@ -325,6 +330,10 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
                 preferences.put(PREFERRED_LANGUAGE, preferredLanguage.getName());
             }
         }
+    }
+
+    protected void setEnableFacelets(boolean enableFacelets) {
+        updateEnableFacelets(enableFacelets, false);
     }
 
     public LibraryType getLibraryType(){
@@ -363,9 +372,20 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
 
     @Override
     public void save(WebModule webModule) {
-        List<? extends JsfComponentImplementation> activedImplementations = getComponent().getActivedJsfDescriptors();
+        JSFConfigurationPanelVisual panel = getComponent();
+
+        // handle preferred page language
+        PreferredLanguage selectedLanguage = panel.getPreferredLanguage();
+        if (PreferredLanguage.Facelets == selectedLanguage) {
+            setEnableFacelets(true);
+        } else {
+            setEnableFacelets(false);
+        }
+
+        // handle JSF suites
+        List<? extends JsfComponentImplementation> activedImplementations = panel.getActivedJsfDescriptors();
         List<JsfComponentImplementation> usedImplementations = new ArrayList<JsfComponentImplementation>();
-        for (JsfComponentImplementation jsfImplementation : getComponent().getAllJsfDescriptors()) {
+        for (JsfComponentImplementation jsfImplementation : panel.getAllJsfDescriptors()) {
             if (jsfImplementation.isInWebModule(webModule)) {
                 usedImplementations.add(jsfImplementation);
             }

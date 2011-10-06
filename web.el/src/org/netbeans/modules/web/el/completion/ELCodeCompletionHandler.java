@@ -192,9 +192,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         ELElement result = elParserResult.getElementAt(offset);
         if (result == null || result.isValid()) {
             return result;
-        }
+        } 
         // try to sanitize
-        ELSanitizer sanitizer = new ELSanitizer(result);
+        ELSanitizer sanitizer = new ELSanitizer(result, offset - result.getOriginalOffset().getStart());
         return sanitizer.sanitized();
     }
 
