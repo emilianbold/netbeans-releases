@@ -3611,6 +3611,32 @@ public class FormatingTest extends NbTestCase {
                 + "\n"
                 + "/**\n"
                 + " * This is a test JavaDoc for the class.\n"
+                + " * <p/>\n"
+                + " * Some additional detail.\n"
+                + " * <p/>\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * This is a test JavaDoc for the class.\n"
+                + " * <p/>\n"
+                + " * Some additional detail.\n"
+                + " * <p/>\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+        
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * This is a test JavaDoc for the class.\n"
                 + " *\n"
                 + " * @author XYZ\n"
                 + " */\n"

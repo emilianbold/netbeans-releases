@@ -473,15 +473,18 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                     }
                 };
                 phContainer.addHighlightsChangeListener(hChangeListener);
-                HighlightsReader reader = new HighlightsReader(phContainer, startOffset, endOffset);
-                reader.readUntil(endOffset);
-                paintHighlights = reader.highlightsList();
-                if (!phStale[0]) {
-                    break;
-                } else {
-                    phStale[0] = false;
+                try {
+                    HighlightsReader reader = new HighlightsReader(phContainer, startOffset, endOffset);
+                    reader.readUntil(endOffset);
+                    paintHighlights = reader.highlightsList();
+                    if (!phStale[0]) {
+                        break;
+                    } else {
+                        phStale[0] = false;
+                    }
+                } finally {
+                    phContainer.removeHighlightsChangeListener(hChangeListener);
                 }
-                phContainer.removeHighlightsChangeListener(hChangeListener);
             } while (--maxPHReads >= 0);
 
             // Assert that paint highlight items cover the whole area being painted.
