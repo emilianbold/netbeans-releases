@@ -68,6 +68,8 @@ final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
             "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString"); // NOI18N
     private static final String SELECT_FILE_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
             "FreeFormProjectTypeProfiler_SelectFileTaskLabelString"); // NOI18N
+    private static final String SELECT_TEST_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
+            "FreeFormProjectTypeProfiler_SelectTestTaskLabelString"); // NOI18N
     private static final String CREATE_NEW_TARGET_MSG = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
             "FreeFormProjectTypeProfiler_CreateNewTargetMsg"); // NOI18N
     private static final String TARGET_BOX_ACCESS_NAME = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
@@ -85,10 +87,22 @@ final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
 
     AntTaskSelectPanel(final List list, final int type, final JButton okButton) {
         list.add(0, SELECT_TARGET_ITEM_STRING);
-        if (type == AntProjectSupport.TARGET_PROFILE) {
-            label = new JLabel(SELECT_PROJECT_TASK_LABEL_STRING);
-        } else {
-            label = new JLabel(SELECT_FILE_TASK_LABEL_STRING);
+        switch (type) {
+            case AntProjectSupport.TARGET_PROFILE: {
+                label = new JLabel(SELECT_PROJECT_TASK_LABEL_STRING);
+                break;
+            }
+            case AntProjectSupport.TARGET_PROFILE_SINGLE: {
+                label = new JLabel(SELECT_FILE_TASK_LABEL_STRING);
+                break;
+            }
+            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE: {
+                label = new JLabel(SELECT_TEST_TASK_LABEL_STRING);
+                break;
+            }
+            default: {
+                label = null; // should not be reached
+            }
         }
         descriptionLabel = new NBHTMLLabel(CREATE_NEW_TARGET_MSG);
         targetBox = new JComboBox(list.toArray(new Object[list.size()]));

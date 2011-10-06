@@ -106,6 +106,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding_WebModuleExtender_Savable">
+            <api name="WebModuleAPI"/>
+            <summary>Adding <code>WebModuleExtender.Savable</code> interface</summary>
+            <version major="1" minor="26"/>
+            <date day="26" month="9" year="2011"/>
+            <author login="marfous@netbeans.org"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added interface <code>WebModuleExtender.Savable</code> for ability to 
+                    save framework settings of already included extender after confirming
+                    project customizer.
+                </p>
+            </description>
+        </change>
         <change id="ListenableWebModuleImplementation2">
             <api name="WebModuleAPI"/>
             <summary>Adding ability to listen on WebModuleImplementation2 changes</summary>

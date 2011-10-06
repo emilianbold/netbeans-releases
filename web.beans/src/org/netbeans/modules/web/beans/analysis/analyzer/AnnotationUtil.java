@@ -61,6 +61,8 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModel;
  */
 public final class AnnotationUtil {
     
+    public static final String ANY = "javax.enterprise.inject.Any";                 // NOI18N
+    
     public static final String VALUE = "value";                                     // NOI18N
     
     public static final String INJECT = "Inject";                                   // NOI18N
@@ -141,6 +143,10 @@ public final class AnnotationUtil {
     public static final String POST_ACTIVATE = "javax.ejb.PostActivate";            // NOI18N
     
     public static final String PRE_PASSIVATE = "javax.ejb.PrePassivate";            // NOI18N
+    
+    public static final String CONTEXT = "javax.enterprise.context.spi.Context";    // NOI18N
+    
+    public static final String CONVERSATION = "javax.enterprise.context.Conversation";// NOI18N
     
     private AnnotationUtil(){
     }

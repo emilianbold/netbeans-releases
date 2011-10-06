@@ -127,11 +127,13 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N
         
         jListFrameworks.setModel(new DefaultListModel());
+        List<WebModuleExtender> usedExtenders = new LinkedList<WebModuleExtender>();
         for (WebFrameworkProvider framework : uiProperties.getCurrentFrameworks()) {
                 usedFrameworks.add(framework);
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
                 WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
                 extenders.put(framework, extender);
+                usedExtenders.add(extender);
                 extender.addChangeListener(new ExtenderListener(extender));
         }
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -141,6 +143,8 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         
         if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())
             jButtonAdd.setEnabled(false);
+
+        uiProperties.setExistingExtenders(usedExtenders);
     }
     
     /** This method is called from within the constructor to

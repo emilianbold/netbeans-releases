@@ -92,7 +92,7 @@ public final class FreeFormProjectProfilingSupportProvider extends JavaProjectPr
             //FIXME 
             JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
             if (src != null) {
-                final String profiledClass = src.getTopLevelClass().getVMName();
+                final String profiledClass = src.getTopLevelClass().getQualifiedName();
                 props.setProperty("profile.class", profiledClass); //NOI18N
 
                 // 2. include it in javac.includes so that the compile-single picks it up
