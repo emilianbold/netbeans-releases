@@ -115,12 +115,12 @@ public final class ContextualPatch {
                 ph.switchToDeterminate(patches.size());
             }
             for (int i = 0; i < patches.size(); i++) {
-                SinglePatch patch = patches.get(i + 1);
-                if(ph != null) {
-                    ph.progress(patch.targetPath, i);
-                }
+                SinglePatch patch = patches.get(i);
                 try {
                     applyPatch(patch, dryRun);
+                    if(ph != null) {
+                        ph.progress(patch.targetPath, i + 1);
+                    }
                     report.add(new PatchReport(patch.targetFile, computeBackup(patch.targetFile), patch.binary, PatchStatus.Patched, null));
                 } catch (Exception e) {
                     report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));
