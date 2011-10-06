@@ -419,6 +419,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         }});
                 } finally {
                     if (inputState == currentState) {
+                        result = null;
                         setVisibleLater(false);
                     }
                     return;
