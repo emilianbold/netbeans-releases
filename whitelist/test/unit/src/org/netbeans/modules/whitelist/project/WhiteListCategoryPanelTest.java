@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
@@ -61,7 +62,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -109,6 +113,43 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
         items = lkp.lookupAll(WhiteListQueryImplementation.UserSelectable.class);
         assertEquals(1,items.size());
         assertEquals(Query1.class,items.iterator().next().getClass());
+    }
+
+    public void testDeadlock203187() throws Exception {
+        createWhiteListsFolder(Query1.class, Query2.class);
+        final FileObject home = FileUtil.toFileObject(getWorkDir());
+        final Project p = new MockProject(home);
+        final Lookup lkp = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
+        assertNotNull(lkp);
+        final Object lck = new Object();
+        final CountDownLatch l1 = new CountDownLatch(1);
+        final CountDownLatch l2 = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Lookup.Result<? extends WhiteListQueryImplementation> res = lkp.lookupResult(WhiteListQueryImplementation.class);
+                res.addLookupListener(new LookupListener() {
+                    @Override
+                    public void resultChanged(LookupEvent ev) {
+                        l1.countDown();
+                        try {
+                            l2.await();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        synchronized(lck) {
+                            lkp.getClass();
+                        }
+                    }
+                });
+                res.allInstances();
+            }
+        }).start();
+        synchronized (lck) {
+            l1.await();
+            l2.countDown();
+            lkp.lookup(WhiteListQueryImplementation.class);
+        }
     }
 
     private static void createWhiteListsFolder(Class<? extends WhiteListQueryImplementation.UserSelectable>... queries) throws IOException {
