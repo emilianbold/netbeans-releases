@@ -598,15 +598,17 @@ public final class GeneratorUtilities {
                 Integer cnt = isStatic ? typeCounts.get((TypeElement)el) : pkgCounts.get((PackageElement)el);
                 if (cnt == null)
                     cnt = 0;
-                if (el == e) {
-                    cnt = -1;
-                } else if (cnt >= 0) {
-                    cnt++;
-                    if (isStatic) {
-                        if (cnt >= staticTreshold)
-                            cnt = -1;
-                    } else if (cnt >= treshold || checkPackagesForStarImport(((PackageElement)el).getQualifiedName().toString(), cs)) {
+                if (cnt >= 0) {
+                    if (el == e) {
                         cnt = -1;
+                    } else {
+                        cnt++;
+                        if (isStatic) {
+                            if (cnt >= staticTreshold)
+                                cnt = -1;
+                        } else if (cnt >= treshold || checkPackagesForStarImport(((PackageElement)el).getQualifiedName().toString(), cs)) {
+                            cnt = -1;
+                        }
                     }
                 }
                 if (isStatic) {
