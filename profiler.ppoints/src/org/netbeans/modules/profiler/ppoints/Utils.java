@@ -92,6 +92,7 @@ import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -680,25 +681,33 @@ public class Utils {
         return true;
     }
     
-    public static void checkLocation(CodeProfilingPoint.Single ppoint) {
-        if (!isValidLocation(ppoint.getLocation()))
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                    new Object[] { ppoint.getName() }),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+    public static void checkLocation(final CodeProfilingPoint.Single ppoint) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (!isValidLocation(ppoint.getLocation()))
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                            new Object[] { ppoint.getName() }),
+                                            NotifyDescriptor.WARNING_MESSAGE));
+            }
+        });
     }
     
-    public static void checkLocation(CodeProfilingPoint.Paired ppoint) {
-        if (!isValidLocation(ppoint.getStartLocation()))
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                    new Object[] { ppoint.getName() }),
-                                    NotifyDescriptor.WARNING_MESSAGE));
-        else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation()))
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                    new Object[] { ppoint.getName() }),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+    public static void checkLocation(final CodeProfilingPoint.Paired ppoint) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (!isValidLocation(ppoint.getStartLocation()))
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                            new Object[] { ppoint.getName() }),
+                                            NotifyDescriptor.WARNING_MESSAGE));
+                else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation()))
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                            new Object[] { ppoint.getName() }),
+                                            NotifyDescriptor.WARNING_MESSAGE));
+            }
+        });
     }
 
     public static Lookup.Provider getMostActiveJavaProject() {
