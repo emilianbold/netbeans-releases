@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <jdbc-resource object-type="user" enabled="true" pool-name="pointbaseConnectionPool" jndi-name="jdbc/pointbase">
-    <description/>
-  </jdbc-resource>
-</resources>
