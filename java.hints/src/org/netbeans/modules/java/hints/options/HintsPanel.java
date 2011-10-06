@@ -126,7 +126,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private HintMetadata toSelect = null;
     
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
-
+    private boolean hasNewHints;
+    
     @Messages("LBL_Loading=Loading...")
     HintsPanel(@NullAllowed final OptionsFilter filter) {
         WORKER.post(new Runnable() {
@@ -159,6 +160,10 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     public HintsPanel(HintMetadata preselected) {
         init(null, false);
         select(preselected);
+    }
+    
+    public boolean hasNewHints() {
+        return hasNewHints;
     }
     
 
@@ -635,6 +640,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             errorTree.setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
             select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
+            hasNewHints = true;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
