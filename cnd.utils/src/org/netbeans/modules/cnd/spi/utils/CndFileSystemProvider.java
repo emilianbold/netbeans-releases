@@ -55,7 +55,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -221,6 +220,7 @@ public abstract class CndFileSystemProvider {
     protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
     
     private static class DefaultProvider extends CndFileSystemProvider {
+        private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
         private CndFileSystemProvider[] cache;
 
@@ -307,11 +307,13 @@ public abstract class CndFileSystemProvider {
                 }
             }
             String path = url.toString();
-            try {
-                URL u = new URL(path);
-                path = u.getFile();
-            } catch (MalformedURLException ex) {
-            }        
+            if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
+                try {
+                    URL u = new URL(path);
+                    path = u.getFile();
+                } catch (MalformedURLException ex) {
+                }        
+            }
             File file = new File(FileUtil.normalizePath(path));
             return FileUtil.toFileObject(file);
         }
