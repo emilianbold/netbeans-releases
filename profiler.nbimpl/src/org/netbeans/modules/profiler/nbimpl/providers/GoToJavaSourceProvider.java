@@ -57,10 +57,12 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.ProfilerLogger;
+import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
+import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -160,10 +162,15 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                     if (methodName.equals(offsetMethodName)) {
                         LineCookie lc = od.getCookie(LineCookie.class);
                         if (lc != null) {
-                            Line l = lc.getLineSet().getCurrent(line - 1);
+                            final Line l = lc.getLineSet().getCurrent(line - 1);
 
                             if (l != null) {
-                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                CommonUtils.runInEventDispatchThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                    }
+                                });
                                 return true;
                             }
                         }

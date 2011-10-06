@@ -74,7 +74,7 @@ public class SamplesOutputStream {
     static final String FILE_EXT = ".npss"; // NOI18N
     static final int RESET_THRESHOLD = 5000;
     static final int STEPS = 1000;
-    static byte version = 1; //2;
+    static byte version = 2;
     private static Method toCompositeDataMethod;
 
     static {
@@ -213,8 +213,8 @@ public class SamplesOutputStream {
         GZIPOutputStream stream = new GZIPOutputStream(outStream, 64 * 1024);
         ObjectOutputStream out = new ObjectOutputStream(stream);
         int size = samples.size();
-//        out.writeInt(size);
-//        out.writeLong(getSample(size-1).getTime());
+        out.writeInt(size);
+        out.writeLong(getSample(size-1).getTime());
         openProgress();
         for (int i=0; i<size;i++) {
             Sample s = getSample(i);
