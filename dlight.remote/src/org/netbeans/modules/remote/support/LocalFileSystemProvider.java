@@ -74,6 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=100)
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
+    private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
     private FileSystem rootFileSystem = null;
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
@@ -224,7 +225,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         if (absoluteURL.length() == 0) {
             return true;
         }
-        if (absoluteURL.startsWith("file:/")) { // NOI18N
+        if (absoluteURL.startsWith(FILE_PROTOCOL_PREFIX)) {
             return true;
         }
         if (isWindows) {
@@ -247,11 +248,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
         String path = absoluteURL;
-        try {
-            URL u = new URL(path);
-            path = u.getFile();
-        } catch (MalformedURLException ex) {
-        }        
+        if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
+            try {
+                URL u = new URL(path);
+                path = u.getFile();
+            } catch (MalformedURLException ex) {
+            }        
+        }
         File file = new File(FileUtil.normalizePath(path));
         return FileUtil.toFileObject(file);
     }
