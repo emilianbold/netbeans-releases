@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -76,6 +75,7 @@ import org.netbeans.modules.dlight.spi.SunStudioLocator.SunStudioDescription;
 import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.THAFilter;
@@ -636,8 +636,9 @@ public class SunStudioDataCollector
                 // Try to remove _collector_directory_lock as well...
                 // To make things simple - just do not look at the result of
                 // this operation (it will fail if lock file doesn't exist)
-                File lockFile = new File(new File(experimentDirectory).getParentFile(), "_collector_directory_lock"); // NOI18N
-                rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
+                String dirName = PathUtilities.getDirName(experimentDirectory);
+                String lockFile = dirName + "/_collector_directory_lock"; // NOI18N
+                rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile, null);
                 rmResult = rmFuture.get();
             }
         } catch (Throwable th) {
@@ -645,7 +646,7 @@ public class SunStudioDataCollector
         }
 
         if (!result) {
-            log.severe("Unable to prepare an experiment directory!"); // NOI18N
+            log.log(Level.SEVERE, "Unable to prepare an experiment directory!{0} at {1}", new Object[]{experimentDirectory, execEnv.toString()}); // NOI18N
         }
 
         return result;
