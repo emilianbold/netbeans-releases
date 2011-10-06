@@ -135,6 +135,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     private PerfanDataStorage storage;
     private SSSourceFileInfoSupport sourceFileInfoSupport = null;
     private PathMapper pathMapper = null;
+    private String fullRemotePrefix = "";
     private Map<String, String> serviceInfo = null;
     private volatile HotSpotFunctionsFilter filter;
     private volatile TimeIntervalDataFilter timeIntervalDataFilter;
@@ -150,8 +151,14 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 ? ExecutionEnvironmentFactory.getLocal()
                 : ExecutionEnvironmentFactory.fromUniqueID(envID);
 
-        PathMapperProvider pathMapperProvider = Lookup.getDefault().lookup(PathMapperProvider.class);
-        pathMapper = pathMapperProvider == null ? null : pathMapperProvider.getPathMapper(execEnv);
+        String fullRemoteValue = serviceInfoStorage.getValue(ServiceInfoDataStorage.FULL_REMOTE_KEY);
+        if (Boolean.valueOf(fullRemoteValue)) {
+            assert envID != null && !execEnv.isLocal() : "unexpected envID " + envID + " and env " + execEnv;
+            fullRemotePrefix = "rfs:" + envID; // NOI18N
+        } else {
+            PathMapperProvider pathMapperProvider = Lookup.getDefault().lookup(PathMapperProvider.class);
+            pathMapper = pathMapperProvider == null ? null : pathMapperProvider.getPathMapper(execEnv);
+        }
         serviceInfo = Collections.unmodifiableMap(serviceInfoStorage.getInfo());
         nonSSSourceInfoCache.clear();
     }
@@ -341,7 +348,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         final FunctionCallImpl fci = (FunctionCallImpl) functionCall;
         final Long refID = fci.getFunctionRefID();
 
-        SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci, pathMapper);
+        SourceFileInfo result = sourceFileInfoSupport.getSourceFileInfo(fci, pathMapper, fullRemotePrefix);
 
         if (result == null || !result.isSourceKnown()) {
             synchronized (nonSSSourceInfoCache) {
