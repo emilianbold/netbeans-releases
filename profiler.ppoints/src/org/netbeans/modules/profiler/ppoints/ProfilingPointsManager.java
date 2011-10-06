@@ -545,6 +545,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
 
     @Override
     public void init(Object project) {
+        reset();
+        
         ProfilingSettings ps = Profiler.getDefault().getLastProfilingSettings();
         TargetAppRunner tar = Profiler.getDefault().getTargetAppRunner();
         
@@ -597,7 +599,6 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
                             break;
                         case Profiler.PROFILING_STARTED:
                         case Profiler.PROFILING_IN_TRANSITION:
-                            reset();
                             profilingInProgress = false;
                             profilingSessionInProgress = true;
 

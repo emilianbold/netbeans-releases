@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +69,7 @@ import org.openide.util.HelpCtx;
  *
  * @author petr, alexeybutenko
  */
-public class JSFConfigurationPanel extends WebModuleExtender {
+public class JSFConfigurationPanel extends WebModuleExtender implements WebModuleExtender.Savable {
 
     private final JSFFrameworkProvider framework;
     private final ExtenderController controller;
@@ -359,4 +360,32 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public List<? extends JsfComponentImplementation> getEnabledJsfDescriptors() {
         return component.getActivedJsfDescriptors();
     }
+
+    @Override
+    public void save(WebModule webModule) {
+        List<? extends JsfComponentImplementation> activedImplementations = getComponent().getActivedJsfDescriptors();
+        List<JsfComponentImplementation> usedImplementations = new ArrayList<JsfComponentImplementation>();
+        for (JsfComponentImplementation jsfImplementation : getComponent().getAllJsfDescriptors()) {
+            if (jsfImplementation.isInWebModule(webModule)) {
+                usedImplementations.add(jsfImplementation);
+            }
+        }
+
+        // get list of newly added JSF suite implementations
+        List<? extends JsfComponentImplementation> addedImplementations =
+                new ArrayList<JsfComponentImplementation>(activedImplementations);
+        addedImplementations.removeAll(usedImplementations);
+        for (JsfComponentImplementation jsfComponentImplementation : addedImplementations) {
+            jsfComponentImplementation.extend(webModule, jsfComponentImplementation.createJsfComponentCustomizer(null));
+        }
+
+        // get list of removed JSF suite implementations
+        List<? extends JsfComponentImplementation> removedImplementations =
+                new ArrayList<JsfComponentImplementation>(usedImplementations);
+        removedImplementations.removeAll(activedImplementations);
+        for (JsfComponentImplementation jsfComponentImplementation : removedImplementations) {
+            jsfComponentImplementation.remove(webModule);
+        }
+    }
+
 }

@@ -44,12 +44,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
@@ -66,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -222,6 +218,19 @@ class EjbJarActionProvider extends BaseActionProvider {
                     new String[]{"j2ee.platform.classpath", "j2ee.platform.embeddableejb.classpath"}));
             cp = ClassPathSupport.createProxyClassPath(cp, cp2);
             execProperties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
+            Collection<String> coll = (Collection<String>)execProperties.get(JavaRunner.PROP_RUN_JVMARGS);
+            if (coll == null) {
+                coll = new LinkedList<String>();
+                execProperties.put(JavaRunner.PROP_RUN_JVMARGS, coll);
+            }
+            String s = getEvaluator().getProperty(EjbJarProjectProperties.RUNMAIN_JVM_ARGS);
+            if (s != null && s.trim().length() > 0) {
+                coll.add(s);
+            }
+            s = getEvaluator().getProperty(ProjectProperties.ENDORSED_CLASSPATH);
+            if (s != null && s.trim().length() > 0) {
+                coll.add("-Xbootclasspath/p:"+s);
+            }
         }
     }
 

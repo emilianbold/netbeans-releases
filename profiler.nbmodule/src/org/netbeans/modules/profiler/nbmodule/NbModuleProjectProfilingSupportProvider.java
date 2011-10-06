@@ -177,7 +177,7 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
         // FIXME
         JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
         if (src != null) {
-            final String profiledClass = src.getTopLevelClass().getVMName();
+            final String profiledClass = src.getTopLevelClass().getQualifiedName();
             props.setProperty("profile.class", profiledClass); //NOI18N
             // Set for all cases (incl. Profile Project, Profile File) but should only
             // be taken into account when profiling single test

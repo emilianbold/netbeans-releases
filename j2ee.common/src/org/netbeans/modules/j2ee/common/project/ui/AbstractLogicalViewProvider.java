@@ -283,6 +283,12 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         if (result != null) {
             return result;
         }
+        
+        // trying to find node in setup/server files
+        result = findNodeInServerFiles(root, fo);
+        if (result != null) {
+            return result;
+        }
 //
 // leave this out for subclasses to handle:
 //        // trying to find node in docbase
@@ -357,6 +363,14 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             return null;
         }
         return NodeOp.findChild(configFiles, nodeName);
+    }
+    
+    private Node findNodeInServerFiles(Node root, FileObject fo) {
+        Node configFiles = root.getChildren().findChild("setup"); // NOI18N
+        if (configFiles == null) {
+            return null;
+        }
+        return NodeOp.findChild(configFiles, fo.getName());
     }
     
     public void addChangeListener (ChangeListener l) {

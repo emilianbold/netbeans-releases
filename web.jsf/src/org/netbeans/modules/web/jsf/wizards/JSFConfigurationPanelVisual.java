@@ -885,10 +885,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             return false;
         }
 
-        if (customizer) {
-             return true;
-        }
-
         if (controller.getProperties().getProperty("NoDocBase") != null) {  //NOI18N
             controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_MissingDocBase"));
             return false;
@@ -947,16 +943,32 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         // check all enabled JSF component libraries
         for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null &&
-                    !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
-                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                        NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); // NOI18N
+            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null
+                    && !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
+                String error = NbBundle.getMessage(JSFConfigurationPanelVisual.class,
+                        "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName()); //NOI18N
+                setErrorMessage(error);
                 return false;
             }
         }
 
         controller.setErrorMessage(null);
         return true;
+    }
+
+    /**
+     * Sets the error message independently if it's called for the new project
+     * wizard or the project properties.
+     *
+     * @param message error message which should be shown
+     */
+    private void setErrorMessage(String message) {
+        ExtenderController controller = panel.getController();
+        if (customizer) {
+            controller.setErrorMessage(message);
+        } else {
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+        }
     }
 
     private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
@@ -1156,6 +1168,14 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 activatedDescriptors.add(jsfComponentsTableModel.getItem(i).getJsfComponent());
         }
         return activatedDescriptors;
+    }
+
+    public List<? extends JsfComponentImplementation> getAllJsfDescriptors() {
+        List<JsfComponentImplementation> allDescriptors =  new ArrayList<JsfComponentImplementation>();
+        for (int i = 0; i < jsfComponentsTableModel.getRowCount(); i++) {
+            allDescriptors.add(jsfComponentsTableModel.getItem(i).getJsfComponent());
+        }
+        return allDescriptors;
     }
 
     public boolean packageJars(){
@@ -1426,9 +1446,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         table.getColumnModel().getColumn(0).setMaxWidth(30);
         table.getColumnModel().getColumn(2).setMaxWidth(100);
 
-        if (customizer) {
-            table.setEnabled(false);
-        }
     }
 
     private void addFrameworkToModel(JsfComponentImplementation component) {
@@ -1559,9 +1576,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     if (item.isClickable()) {
                         JButton button = new JButton(
                                 NbBundle.getMessage(JSFConfigurationWizardPanelVisual.class, "LBL_MoreButton")); //NOI18N
-                        if (!inCustomizer) {
-                            button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
-                        }
+                        button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
                         return button;
                     } else {
                         return null;
