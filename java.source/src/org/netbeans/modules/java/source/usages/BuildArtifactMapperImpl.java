@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -503,6 +504,8 @@ public class BuildArtifactMapperImpl {
     }
 
     private static void copyRecursively(FileObject source, File target, Set<String> javaMimeTypes, String[] javaMimeTypesArr) throws IOException {
+        if (!VisibilityQuery.getDefault().isVisible(source)) return ;
+        
         if (source.isFolder()) {
             if (!target.exists()) {
                 if (!target.mkdirs()) {
