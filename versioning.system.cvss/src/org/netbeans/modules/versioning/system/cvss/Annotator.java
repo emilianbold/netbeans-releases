@@ -108,6 +108,7 @@ public class Annotator {
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
+    public final static String ACTIONS_PATH_PREFIX = "Actions/Repository/"; // NOI18N 
     
     private final FileStatusCache cache;
     
@@ -343,6 +344,7 @@ public class Annotator {
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
             actions.add(new ExcludeFromCommitAction(ctx));
+            org.netbeans.modules.versioning.util.Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             Lookup context = ctx.getElements();
             File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);

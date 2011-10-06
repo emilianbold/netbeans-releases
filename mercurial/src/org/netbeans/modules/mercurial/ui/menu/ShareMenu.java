@@ -82,16 +82,16 @@ public class ShareMenu extends DynamicMenu implements Presenter.Menu {
         if (lookup == null) {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu")); // NOI18N
 
-            JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), SystemAction.get(PushAction.class).getName()));
+            JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), SystemAction.get(PushAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-            item = menu.add(new SystemActionBridge(SystemAction.get(PushOtherAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushOther"))); //NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(PushOtherAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushOther"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-            item = menu.add(new SystemActionBridge(SystemAction.get(PullAction.class), SystemAction.get(PullAction.class).getName()));
+            item = menu.add(new SystemActionBridge(SystemAction.get(PullAction.class), SystemAction.get(PullAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-            item = menu.add(new SystemActionBridge(SystemAction.get(PullOtherAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullOther"))); //NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(PullOtherAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullOther"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         } else {
             JMenuItem item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Push"), lookup));
