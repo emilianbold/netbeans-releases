@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <jms-resource enabled="true" jndi-name="jms/SimpleMessageDestinationFactory" res-type="javax.jms.QueueConnectionFactory">
-    <description/>
-  </jms-resource>
-</resources>

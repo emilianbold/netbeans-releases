@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config">
-    <wsdl name="HelloWebService"
-          location="http://localhost:8080/helloservice/Hello?wsdl"
-          packageName="staticstub">
-        <typeMappingRegistry />
-    </wsdl>
-</configuration>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <jdbc-connection-pool steady-pool-size="8" max-pool-size="32" max-wait-time-in-millis="60000" pool-resize-quantity="2" idle-timeout-in-seconds="300" is-isolation-level-guaranteed="true" is-connection-validation-required="false" connection-validation-method="auto-commit" fail-all-connections="false" datasource-classname="com.pointbase.jdbc.jdbcDataSource" res-type="javax.sql.DataSource" name="pointbaseConnectionPool">
-    <property value="jdbc:pointbase://localhost:9092/sun-appserv-samples" name="databaseName"/>
-    <property value="pbpublic" name="User"/>
-    <property value="pbpublic" name="Password"/>
-  </jdbc-connection-pool>
-</resources>
