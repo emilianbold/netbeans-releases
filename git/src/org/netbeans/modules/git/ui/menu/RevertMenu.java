@@ -47,10 +47,12 @@ package org.netbeans.modules.git.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,10 +79,15 @@ public final class RevertMenu extends DynamicMenu {
         JMenuItem item;
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(RevertChangesAction.class), false);
+            Action action = (Action) SystemAction.get(RevertChangesAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
+
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(RevertCommitAction.class), false);
+            action = (Action) SystemAction.get(RevertCommitAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
