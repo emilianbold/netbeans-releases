@@ -50,13 +50,7 @@ package org.netbeans.modules.cloud.oracle.ui;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,7 +126,12 @@ public class LogsComponent extends TopComponent {
                     jobsTable.setModel(new JobsModel(jobs));
                     return null;
                 }
-                Collections.reverse(jobs_);
+                Collections.sort(jobs_, new Comparator<Job>() {
+                    @Override
+                    public int compare(Job o1, Job o2) {
+                        return o2.getStartTime().compareTo(o1.getStartTime());
+                    }
+                });
                 final List<Job> jobs = new ArrayList<Job>();
                 int i = 0;
                 for (Job jt: jobs_) {
