@@ -44,9 +44,13 @@ package org.netbeans.modules.web.beans.analysis.analyzer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -55,6 +59,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
@@ -147,6 +152,50 @@ public abstract class AbstractDecoratorAnalyzer<T> {
                 }
             }
         }
+    }
+    
+    protected boolean checkBuiltInBeans( VariableElement element,
+            TypeMirror elementType, WebBeansModel model, AtomicBoolean cancel )
+    {
+        TypeElement context = model.getCompilationController().getElements().
+            getTypeElement(AnnotationUtil.CONTEXT);
+        if ( context != null && context.equals(model.getCompilationController().
+                getTypes().asElement(elementType)))
+        {
+            /* This is built-in javax.enterprise.context.spi.Context bean 
+             * provided by container for each scope
+             */
+            return true;
+        }
+        if ( cancel.get()){
+            return true;
+        }
+        
+        Element varElement = model.getCompilationController().getTypes().
+            asElement(elementType);
+        if ( varElement instanceof TypeElement ){
+            if ( !((TypeElement)varElement).getQualifiedName().contentEquals( 
+                    AnnotationUtil.CONVERSATION))
+            {
+                return false;
+            }
+        }
+        
+        if ( model.hasImplicitDefaultQualifier( element ) ){
+            return true;
+        }
+        List<AnnotationMirror> qualifiers = model.getQualifiers(element, true);
+        AnnotationHelper helper = new AnnotationHelper(model.getCompilationController());
+        Map<String, ? extends AnnotationMirror> qualifiersFqns = helper.
+            getAnnotationsByType(qualifiers);
+        boolean hasOnlyDefault = false;
+        if ( qualifiersFqns.keySet().contains(AnnotationUtil.DEFAULT_FQN)){
+            HashSet<String> fqns = new HashSet<String>(qualifiersFqns.keySet());
+            fqns.remove( AnnotationUtil.NAMED );
+            fqns.remove( AnnotationUtil.ANY );
+            hasOnlyDefault = fqns.size() == 1;
+        }
+        return hasOnlyDefault;
     }
     
     protected abstract void addMethodError( VariableElement element, T t,
