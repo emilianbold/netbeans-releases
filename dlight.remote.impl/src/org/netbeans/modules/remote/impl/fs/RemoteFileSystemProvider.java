@@ -225,7 +225,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
                         }
                         continue;
                     } else {
-                        if (firstSlashes != 0 || firstSlashes != 2) {
+                        if (firstSlashes != 0 && firstSlashes != 2) {
                             // error
                             throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
                         }
