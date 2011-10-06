@@ -51,6 +51,8 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.lib.profiler.ProfilerClient;
+import org.netbeans.lib.profiler.ProfilerEngineSettings;
+import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
@@ -160,6 +162,8 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
         if (dd != null) {
             dd.refresh(); // TODO race condition by cleaning the dd variable!
         }
+        if (TargetAppRunner.getDefault().getProfilerClient().getCurrentInstrType() ==
+                ProfilerEngineSettings.INSTR_NONE_SAMPLING) hideDrillDown();
     }
 
     @Override
@@ -170,6 +174,8 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     }
 
     private void showDrillDown() {
+        if (TargetAppRunner.getDefault().getProfilerClient().getCurrentInstrType() ==
+                ProfilerEngineSettings.INSTR_NONE_SAMPLING) return;
         CommonUtils.runInEventDispatchThread(new Runnable() {
 
             public void run() {
