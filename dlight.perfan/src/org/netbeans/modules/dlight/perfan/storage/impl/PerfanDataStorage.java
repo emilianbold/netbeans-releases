@@ -102,16 +102,20 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public void setFilter(String filter) {
-        er_print.setFilter(filter);
+        if (er_print != null) {
+            er_print.setFilter(filter);
+        }
     }
 
     public boolean hasOMPCollected() {
         //TODO: re-write, should ask one time per experiment only
         try {
             isOMPExperiment = false;
-            Metrics metrics = er_print.getMetrics(true);
-            if (metrics.mspec.indexOf("omp") != -1) {//NOI18N
-                isOMPExperiment = true;
+            if (er_print != null) {
+                Metrics metrics = er_print.getMetrics(true);
+                if (metrics.mspec.indexOf("omp") != -1) {//NOI18N
+                    isOMPExperiment = true;
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -121,6 +125,13 @@ public final class PerfanDataStorage implements PersistentDataStorage {
 
     public void init(ExecutionEnvironment execEnv, String sproHome,
             String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
+        // NOTE:
+        // 1) init can be not called at all when experiment directory was not prepared 
+        // through SunStudioDataCollector.prepareExperimentDirectory
+        // => er_print is null and null checks were added in all get* method
+        // 
+        // 2) but if storage is really re-used => er_print can be from previous init =>
+        // all data will be from previous session. And we do not address this issue now
         synchronized (this) {
             if (er_print != null) {
                 er_print.close();
@@ -146,32 +157,37 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     public String[] getTopFunctions(Metrics metrics, int limit) {
         String[] result = null;
 
-        try {
-            result = er_print.getHotFunctions(metrics, limit, 0, true);
-        } catch (InterruptedIOException ex) {
-            // it was terminated while getting functions list...
-        } catch (IOException ex) {
-            log.log(Level.FINEST, "getTopFunctions: " + ex.toString()); // NOI18N
+        if (er_print != null) {
+            try {
+                result = er_print.getHotFunctions(metrics, limit, 0, true);
+            } catch (InterruptedIOException ex) {
+                // it was terminated while getting functions list...
+            } catch (IOException ex) {
+                log.log(Level.FINEST, "getTopFunctions: " + ex.toString()); // NOI18N
+            }
         }
-
         return result == null ? new String[0] : result;
     }
 
     public Metrics getCollectedMetrics() {
-        try {
-            return er_print.getMetrics(true);
-        } catch (InterruptedIOException ex) {
-            // it was terminated while getting metrics...
-        } catch (IOException ex) {
-            log.log(Level.FINEST, "getMetrics: " + ex.toString()); // NOI18N
+        if (er_print != null) {
+            try {
+                return er_print.getMetrics(true);
+            } catch (InterruptedIOException ex) {
+                // it was terminated while getting metrics...
+            } catch (IOException ex) {
+                log.log(Level.FINEST, "getMetrics: " + ex.toString()); // NOI18N
+            }
         }
-
         return Metrics.constructFrom(
                 Arrays.asList(SunStudioDCConfiguration.c_name),
                 Arrays.asList(SunStudioDCConfiguration.c_name));
     }
 
     public String[] getTopFunctions(ErprintCommand command, Metrics metrics, int limit) throws InterruptedException {
+        if (er_print == null) {
+            return null;
+        }
         String[] result = null;
 
         try {
@@ -187,6 +203,9 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public FunctionStatistic getFunctionStatistic(String function) {
+        if (er_print == null) {
+            return null;
+        }
         FunctionStatistic result = null;
 
         try {
@@ -201,6 +220,9 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public FunctionStatistic getFunctionStatistic(FunctionCallImpl functionCall) {
+        if (er_print == null) {
+            return null;
+        }
         FunctionStatistic result = null;
 
         try {
@@ -215,6 +237,9 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public List<? extends Datarace> getDataraces() {
+        if (er_print == null) {
+            return Collections.<DataraceImpl>emptyList();
+        }
         List<DataraceImpl> result = null;
 
         try {
@@ -229,6 +254,9 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public List<? extends Deadlock> getDeadlocks() {
+        if (er_print == null) {
+            return Collections.<DeadlockImpl>emptyList();
+        }
         List<DeadlockImpl> result = null;
 
         try {
@@ -243,6 +271,9 @@ public final class PerfanDataStorage implements PersistentDataStorage {
     }
 
     public ExperimentStatistics fetchSummaryData() {
+        if (er_print == null) {
+            return null;
+        }
         ExperimentStatistics result = null;
 
         try {
