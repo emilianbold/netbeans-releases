@@ -1929,7 +1929,9 @@ class LayoutOperations implements LayoutConstants {
         boolean processEdge[] = new boolean[2];
         for (int e = LEADING; e <= TRAILING; e++) {
             if (outGaps[e] != null) {
-                if (edgeNotDefined[e]) {
+                if (LayoutInterval.wantResize(outGaps[e]) && !LayoutInterval.canResize(group)) {
+                    processEdge[e] = false;
+                } else if (edgeNotDefined[e]) {
                     processEdge[e] = alignedGap[e].count() > 0 || unalignedGap[e].count() > 0;
                 } else if (unalignedGap[e].count() > 0
                         && (edgeNotDefined[e^1] || unalignedGap[e^1].count() == 0 || independentEdges)
@@ -2535,6 +2537,30 @@ class LayoutOperations implements LayoutConstants {
                 }
             }
         } // not needed in parallel group
+    }
+
+    boolean eliminateUnwantedZeroGap(LayoutInterval gap) {
+        if (gap.isEmptySpace() && gap.getPreferredSize() == 0
+                && !LayoutInterval.canResize(gap) && gap.getParent() != null) {
+            boolean eliminate = false;
+            if (gap.getParent().isParallel()) {
+                eliminate = true;
+            } else {
+                for (int e=LEADING; e <= TRAILING; e++) {
+                    LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, e, false, true, true);
+                    if (neighbor != null
+                            && !LayoutUtils.hasSideComponents(neighbor, e^1, true, true)) {
+                        eliminate = true;
+                        break;
+                    }
+                }
+            }
+            if (eliminate) {
+                layoutModel.removeInterval(gap);
+                return true;
+            }
+        }
+        return false;
     }
 
 }
