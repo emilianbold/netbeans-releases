@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -816,16 +818,10 @@ public class Html5ParserTest extends NbTestCase {
 
     }
     
+    //Bug 203282 - Tags with empty content are not paired 
     public void testTagsWithEmptyContent() throws ParseException {
-        String code = "<!doctype html>"
-                + "<html>"
-                + "<head>"
-                + "<title></title>"
-                + "</head>"
-                + "<body>"
-                + "<form><input name=my type=text></input></form>"
-                + "</body>"
-                + "</html>";
+//        AstNodeTreeBuilder.setLoggerLevel(Level.FINEST);
+        String code =  "<form><input></input></form>";
 
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
@@ -835,8 +831,7 @@ public class Html5ParserTest extends NbTestCase {
         AstNode input = AstNodeUtils.query(root, "html/body/form/input");
         assertNotNull(input);
         
-        //fails - Bug 203282 - Tags with empty content are not paired 
-//        assertNotNull(input.getMatchingTag());
+        assertNotNull(input.getMatchingTag());
     }
 
     //fails
