@@ -479,17 +479,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private boolean isVisible(
         @NonNull FileObject file,
         @NullAllowed final FileObject root) {
-        if (root == null) {
-            return true;
-        }
         final VisibilityQuery vq = VisibilityQuery.getDefault();
-        while (!root.equals(file)) {
+        while (root != null && !root.equals(file)) {
             if (!vq.isVisible(file)) {
                 return false;
             }
             file = file.getParent();
         }
-        return true;
+        return vq.isVisible(file);
     }
 
     private void fileFolderCreatedImpl(FileEvent fe, Boolean source) {
