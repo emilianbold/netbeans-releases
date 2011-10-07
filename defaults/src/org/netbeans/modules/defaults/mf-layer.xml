@@ -708,9 +708,6 @@ made subject to such option by the copyright holder.
             <file name="D-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
-            <file name="DS-N.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
-            </file>
             <file name="D-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
             </file>
@@ -723,9 +720,6 @@ made subject to such option by the copyright holder.
             <!-- #109224: give us Ctrl+~ back on KDE -->
             <file name="D-BACK_QUOTE.shadow">
                 <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
-            </file>
-            <file name="D-N.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
             <file name="S-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
