@@ -752,6 +752,8 @@ public class EjbJarProject implements Project, FileChangeListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            evaluator().addPropertyChangeListener(EjbJarProject.this.ejbModule);
+
             EjbJarLogicalViewProvider logicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
             if (logicalViewProvider != null) {
                 logicalViewProvider.initialize();
@@ -979,7 +981,8 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
         
         protected void projectClosed() {
-            
+            evaluator().removePropertyChangeListener(EjbJarProject.this.ejbModule);
+
             // unregister j2ee platform classpath change listener
             /*EjbJarProjectProperties wpp = getEjbJarProjectProperties();
             String servInstID = (String)wpp.get(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);*/

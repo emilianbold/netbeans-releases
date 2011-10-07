@@ -559,6 +559,8 @@ public final class AppClientProject implements Project, FileChangeListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            evaluator().addPropertyChangeListener(AppClientProject.this.appClient);
+
             AppClientLogicalViewProvider logicalViewProvider =  AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
             if (logicalViewProvider != null) {
                 logicalViewProvider.initialize();
@@ -771,7 +773,8 @@ public final class AppClientProject implements Project, FileChangeListener {
         }
         
         protected void projectClosed() {
-            
+            evaluator().removePropertyChangeListener(AppClientProject.this.appClient);
+
             // unregister j2ee platform classpath change listener
             String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_INSTANCE);
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);

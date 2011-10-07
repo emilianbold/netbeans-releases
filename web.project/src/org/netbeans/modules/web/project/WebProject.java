@@ -851,6 +851,8 @@ public final class WebProject implements Project {
         ProjectOpenedHookImpl() {}
 
         protected void projectOpened() {
+            evaluator().addPropertyChangeListener(WebProject.this.webModule);
+
             WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
             if (logicalViewProvider != null) {
                 logicalViewProvider.initialize();
@@ -1195,6 +1197,8 @@ public final class WebProject implements Project {
         }
         
         protected void projectClosed() {
+            evaluator().removePropertyChangeListener(WebProject.this.webModule);
+
             webPagesFileWatch.reset();
             webInfFileWatch.reset();
 

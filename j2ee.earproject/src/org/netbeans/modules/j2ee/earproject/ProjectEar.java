@@ -138,7 +138,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
         AntProjectHelper helper = project.getAntProjectHelper();
-        helper.getStandardPropertyEvaluator().addPropertyChangeListener(this);
+        //helper.getStandardPropertyEvaluator().addPropertyChangeListener(this);
     }
     
     /**

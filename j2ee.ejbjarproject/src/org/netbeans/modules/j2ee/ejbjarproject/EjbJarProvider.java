@@ -115,7 +115,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         this.project = project;
         this.helper = helper;
         this.cpProvider = cpProvider;
-        project.evaluator().addPropertyChangeListener (this);
+        //project.evaluator().addPropertyChangeListener(this);
     }
     
     public FileObject getDeploymentDescriptor() {
