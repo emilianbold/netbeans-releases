@@ -383,10 +383,46 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         }
 
         for (int e=LEADING; e <= TRAILING; e++) {
-            if (!groupSpace.isSet(dimension, e) && space.isSet(dimension, e) && (def[e] || !undef[e])) {
+            if (groupSpace.isSet(dimension, e)) {
+                continue;
+            }
+            int d = (e==LEADING ? -1 : 1);
+            if (space.isSet(dimension, e) && (def[e] || !undef[e])) {
+                // There is some aligned sub-interval knowing its position, or
+                // no sub-interval that would not know its position.
                 groupSpace.setPos(dimension, e, space.positions[dimension][e]);
                 if (endGapSize[e] >= 0) {
-                    groupSpace.reshape(dimension, e, endGapSize[e] * (e==LEADING ? -1:1));
+                    groupSpace.reshape(dimension, e, endGapSize[e] * d);
+                }
+            } else if (group.isParallel()) {
+                // No sub-intervals knowing its real edge position. We should be able
+                // to compute the position at least if they all end with a resizing gap.
+                int outPos = LayoutRegion.UNKNOWN;
+                for (LayoutInterval comp : LayoutUtils.getSideComponents(group, e, false, false)) {
+                    int pos = group.getSubInterval(LayoutInterval.getIndexInParent(comp, group))
+                              .getCurrentSpace().positions[dimension][e];
+                    if (pos == LayoutRegion.UNKNOWN) {
+                        pos = comp.getCurrentSpace().positions[dimension][e];
+                        LayoutInterval borderGap = LayoutInterval.getNeighbor(comp, e, false, true, false);
+                        if (borderGap != null && borderGap.isEmptySpace() && group.isParentOf(borderGap)) {
+                            int gapSize = borderGap.getPreferredSize();
+                            if (gapSize == NOT_EXPLICITLY_DEFINED) {
+                                gapSize = LayoutUtils.getSizeOfDefaultGap(borderGap, visualMapper);
+                            }
+                            if (gapSize >= 0) {
+                                pos += gapSize * d;
+                            } else { // this can be whatever, bad luck
+                                outPos = LayoutRegion.UNKNOWN;
+                                break;
+                            }
+                        }
+                    }
+                    if (outPos == LayoutRegion.UNKNOWN || pos*d > outPos*d) {
+                        outPos = pos;
+                    }
+                }
+                if (outPos != LayoutRegion.UNKNOWN) {
+                    groupSpace.setPos(dimension, e, outPos);
                 }
             }
         }
@@ -418,7 +454,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             subSpace.setPos(dimension, e, nSpace.positions[dimension][e^1]);
                         }
                     } else if (groupSpace.isSet(dimension, e)) { // set according to parallel parent
-                        assert LayoutInterval.isAlignedAtBorder(sub, group, e);
+                        assert LayoutInterval.isAlignedAtBorder(sub, group, e)
+                                || group.getSubIntervalCount() == 1;
                         subSpace.setPos(dimension, e, groupSpace.positions[dimension][e]);
                     }
                     if (subSpace.isSet(dimension, e)) {
@@ -2736,8 +2773,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             operations.setIntervalResizing(li, false);
                             if (expCurrentSize > 0) {
                                 operations.resizeInterval(li, expCurrentSize);
-                            } else if (li.getPreferredSize() == 0) {
-                                layoutModel.removeInterval(li);
+                            } else if (operations.eliminateUnwantedZeroGap(li)) {
                                 i--;
                             }
                             seqChanged = true;
@@ -3055,9 +3091,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 LayoutInterval leadingGap = null;
                 LayoutInterval trailingGap = null;
                 boolean afterDefining = false;
-                Iterator iter = par.getSubIntervals();
-                while (iter.hasNext()) {
-                    LayoutInterval candidate = (LayoutInterval)iter.next();
+                for (int i=0; i < par.getSubIntervalCount(); i++) {
+                    LayoutInterval candidate = par.getSubInterval(i);
                     if (candidate == interval) {
                         afterDefining = true;
                     }
@@ -3070,6 +3105,9 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                                 layoutModel.setIntervalSize(candidate, candidate.getMinimumSize(),
                                     currSize, candidate.getMaximumSize());
                                 delta += currSize - prefSize;
+                            }
+                            if (operations.eliminateUnwantedZeroGap(candidate)) {
+                                i--;
                             }
                         } else if (parentSeq) {
 //                            boolean wasFill = candidate.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL);
@@ -3102,10 +3140,10 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     }
                 }
                 if (resizableList.size() > 0) {
-                    iter = resizableList.iterator();
+                    Iterator<LayoutInterval> iter = resizableList.iterator();
                     delta = (LayoutInterval.getCurrentSize(par, dimension) - prefSizeOfInterval(par) + delta)/resizableList.size();
                     while (iter.hasNext()) {
-                        LayoutInterval candidate = (LayoutInterval)iter.next();
+                        LayoutInterval candidate = iter.next();
                         if (candidate.isGroup()) {
                             // PENDING currSize could change - we can't modify prefSize of group directly
                         } else {
@@ -3129,17 +3167,16 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         if ((alignment == TRAILING) && (leadingGap != null)) {
                             gap = leadingGap;
                             operations.setIntervalResizing(leadingGap, !resizing);
-//                            layoutModel.changeIntervalAttribute(leadingGap, LayoutInterval.ATTRIBUTE_FILL, true);
                         }
                         if ((alignment == LEADING) && (trailingGap != null)) {
                             gap = trailingGap;
                             operations.setIntervalResizing(trailingGap, !resizing);
-//                            layoutModel.changeIntervalAttribute(trailingGap, LayoutInterval.ATTRIBUTE_FILL, true);
                         }
                         if ((gap != null) && (delta != 0) && (gap.getPreferredSize() != NOT_EXPLICITLY_DEFINED)) {
                             layoutModel.setIntervalSize(gap, gap.getMinimumSize(), 
                                 Math.max(0, gap.getPreferredSize() - delta), gap.getMaximumSize());
                         }
+                        operations.eliminateUnwantedZeroGap(gap);
                     }
                     parent = par.getParent(); // use parallel parent for group resizing check
                 }
