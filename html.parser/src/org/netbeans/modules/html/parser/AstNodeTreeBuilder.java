@@ -59,7 +59,6 @@ import static nu.validator.htmlparser.impl.Tokenizer.*;
 import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.xml.sax.SAXException;
 
 /**
@@ -97,8 +96,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private ElementName startTag;
     //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
-    private AstNode pushedNodeWithEmptyContentModel;
-    
 
     private AstNode currentTag;
 
@@ -224,20 +221,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         AstNode head;
         while ((head = physicalEndTagsQueue.poll()) != null) {
             stack.peek().addChild(head);
-        }
-        
-        ElementDescriptor elementDescriptor = ElementDescriptor.forName(name);
-        if(elementDescriptor != null) {
-            if(elementDescriptor.isEmpty()) {
-                //empty content model
-                //=> the parser will pop the node immediatelly after pushing, 
-                //but the end tag may still follow so we need to keep it and 
-                //then properly match 
-                pushedNodeWithEmptyContentModel = t;
-                if(LOG) {
-                    LOGGER.fine("pushed node with empty content model");
-                }
-            }
         }
 
         super.elementPushed(namespace, name, t);
@@ -383,21 +366,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (LOG) {
             LOGGER.fine(String.format("close tag %s at %s", en.name, tag_lt_offset));//NOI18N
         }
-        
-        currentTag = factory.createEndTag(en.name, tag_lt_offset, -1);
-        
-        if(pushedNodeWithEmptyContentModel != null) {
-            if(currentTag.name().equals(pushedNodeWithEmptyContentModel.name())) {
-                //this end tag belongs to an open tag node which has been already
-                //popped - set matching nodes
-                currentTag.setMatchingNode(pushedNodeWithEmptyContentModel);
-                pushedNodeWithEmptyContentModel.setMatchingNode(currentTag);
-            }
-            
-            pushedNodeWithEmptyContentModel = null;
-        }
 
-        physicalEndTagsQueue.add(currentTag);
+        physicalEndTagsQueue.add(currentTag = factory.createEndTag(en.name, tag_lt_offset, -1));
 
         if (LOG) {
             LOGGER.fine(String.format("end tags: %s", dumpEndTags()));//NOI18N

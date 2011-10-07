@@ -817,23 +817,6 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(attr.isValueQuoted());
 
     }
-    
-    //Bug 203282 - Tags with empty content are not paired 
-    public void testTagsWithEmptyContent() throws ParseException {
-//        AstNodeTreeBuilder.setLoggerLevel(Level.FINEST);
-        String code =  "<form><input></input></form>";
-
-        HtmlParseResult result = parse(code);
-        AstNode root = result.root();
-        
-//        AstNodeUtils.dumpTree(root);
-        
-        AstNode input = AstNodeUtils.query(root, "html/body/form/input");
-        assertNotNull(input);
-        
-        assertNotNull(input.getMatchingTag());
-    }
-
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
