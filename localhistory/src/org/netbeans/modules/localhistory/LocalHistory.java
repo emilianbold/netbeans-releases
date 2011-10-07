@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -69,7 +68,8 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -445,19 +445,19 @@ public class LocalHistory {
             if (obj instanceof TopComponent) {
                 List<File> ret = new ArrayList<File>();
                 TopComponent tc = (TopComponent) obj;
-                LOG.log(Level.FINER, " getting nodes from tc ", new Object[]{tc});
-                Node[] nodes = tc.getActivatedNodes();
-                if (nodes != null) {
-                    for (Node node : nodes) {
-                        LOG.log(Level.FINER, " getting files from node ", new Object[]{node});
-                        Collection<? extends FileObject> fos = node.getLookup().lookupAll(FileObject.class);
-                        if(fos != null) {
-                            for (FileObject fo : fos) {
-                                File f = FileUtil.toFile(fo);
-                                if (f != null) {
-                                    ret.add(f);
-                                }
-                            }
+                LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
+                DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
+                if(tcDataObject == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                LOG.log(Level.FINER, "  looking up files in dataobject {0} ", new Object[]{tcDataObject});
+                Set<FileObject> fos = tcDataObject.files();
+                if(fos != null) {
+                    for (FileObject fo : fos) {
+                        LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) {
+                            ret.add(f);
                         }
                     }
                 }
