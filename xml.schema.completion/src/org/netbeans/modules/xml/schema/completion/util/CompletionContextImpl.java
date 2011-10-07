@@ -772,8 +772,7 @@ public class CompletionContextImpl extends CompletionContext {
         }
         
         //last resort: try special completion
-        if(nsModelMap.size() == 0 && noNSModels.size() == 0)
-            specialCompletion();
+        specialCompletion();
         
         return !(nsModelMap.size() == 0 && noNSModels.size() == 0);
     }
