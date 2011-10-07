@@ -361,6 +361,8 @@ public final class EarProject implements Project, AntProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            helper.getStandardPropertyEvaluator().addPropertyChangeListener(EarProject.this.appModule);
+
             J2eeArchiveLogicalViewProvider logicalViewProvider = (J2eeArchiveLogicalViewProvider) EarProject.this.getLookup().lookup (J2eeArchiveLogicalViewProvider.class);
             if (logicalViewProvider != null) {
                 logicalViewProvider.initialize();
@@ -511,6 +513,8 @@ public final class EarProject implements Project, AntProjectListener {
         }
         
         protected void projectClosed() {
+            helper.getStandardPropertyEvaluator().removePropertyChangeListener(EarProject.this.appModule);
+
             // listen to j2ee platform classpath changes
             EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
             String servInstID = privateProperties.getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
