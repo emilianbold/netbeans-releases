@@ -476,6 +476,22 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     
     final FileEventLog eventQueue = new FileEventLog();
 
+    private boolean isVisible(
+        @NonNull FileObject file,
+        @NullAllowed final FileObject root) {
+        if (root == null) {
+            return true;
+        }
+        final VisibilityQuery vq = VisibilityQuery.getDefault();
+        while (!root.equals(file)) {
+            if (!vq.isVisible(file)) {
+                return false;
+            }
+            file = file.getParent();
+        }
+        return true;
+    }
+
     private void fileFolderCreatedImpl(FileEvent fe, Boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
@@ -492,10 +508,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         boolean processed = false;
         Pair<URL, FileObject> root = null;
         
-        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
-                if (root != null) {
+                if (root != null && isVisible(fo, root.second)) {
                     assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second);
@@ -528,7 +544,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null) {
+                if (root != null && isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(root.first);
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
@@ -555,10 +571,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         boolean processed = false;
         Pair<URL, FileObject> root = null;
 
-        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null) {
+                if (root != null && isVisible(fo,root.second)) {
                     assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
@@ -572,7 +588,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null) {
+                if (root != null && isVisible(fo,root.second)) {
                     final Work wrk = new BinaryWork(root.first);
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
@@ -581,8 +597,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File modified (" + (processed ? "processed" : "ignored") + "): " //NOI18N
-                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
+            LOGGER.log(
+                    Level.FINE,
+                    "File modified ({0}): {1} Owner: {2}",      //NOI18N
+                    new Object[]{
+                        processed ? "processed" : "ignored",    //NOI18N
+                        FileUtil.getFileDisplayName(fo),
+                        root
+                    });
         }
     }
 
@@ -599,45 +621,48 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         boolean processed = false;
         Pair<URL, FileObject> root = null;
 
-        if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null) {
-                    if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-                        String relativePath = null;
-                        try {
-                        //Root may be deleted -> no root.second available
-                            if (root.second != null) {
-                                relativePath = FileUtil.getRelativePath(root.second, fo);
-                            } else {
-                                relativePath = root.first.toURI().relativize(fo.getURL().toURI()).getPath();
-                            }                        
-                            assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-                            final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
-                            eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
-                            processed = true;
-                        } catch (FileStateInvalidException fse) {
-                            Exceptions.printStackTrace(fse);
-                        } catch (URISyntaxException use) {
-                            Exceptions.printStackTrace(use);
+                if (root != null && fo.isData() && isVisible(fo, root.second)) {
+                    String relativePath = null;
+                    try {
+                    //Root may be deleted -> no root.second available
+                        if (root.second != null) {
+                            relativePath = FileUtil.getRelativePath(root.second, fo);
+                        } else {
+                            relativePath = root.first.toURI().relativize(fo.getURL().toURI()).getPath();
                         }
+                        assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+                        final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
+                        processed = true;
+                    } catch (FileStateInvalidException fse) {
+                        Exceptions.printStackTrace(fse);
+                    } catch (URISyntaxException use) {
+                        Exceptions.printStackTrace(use);
                     }
                 }
             }
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null) {
+                if (root != null && isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(root.first);
                     eventQueue.record(FileEventLog.FileOp.DELETE, root.first, null, fe, wrk);
                     processed = true;
                 }
             }
         }
-        
+
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File deleted (" + (processed ? "processed" : "ignored") + "): " //NOI18N
-                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
+            LOGGER.log(
+                Level.FINE,
+                "File deleted ({0}): {1} Owner: {2}",   //NOI18N
+                new Object[]{
+                    processed ? "processed" : "ignored",    //NOI18N
+                    FileUtil.getFileDisplayName(fo), root
+                });
         }
     }
 
@@ -676,7 +701,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                     }
 
-                    if (VisibilityQuery.getDefault().isVisible(newFile)) {                    
+                    if (isVisible(newFile,root.second)) {
                         final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                         ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         if (entry == null || entry.includes(newFile)) {
@@ -708,9 +733,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File renamed (" + (processed ? "processed" : "ignored") + "): " //NOI18N
-                    + FileUtil.getFileDisplayName(newFile) + " Owner: " + root
-                    + " Original Name: " + oldNameExt); //NOI18N
+            LOGGER.log(
+                Level.FINE,
+                "File renamed ({0}): {1} Owner: {2} Original Name: {3}",    //NOI18N
+                new Object[]{
+                    processed ? "processed" : "ignored",    //NOI18N
+                    FileUtil.getFileDisplayName(newFile),
+                    root,
+                    oldNameExt
+                });
         }
     }
 
