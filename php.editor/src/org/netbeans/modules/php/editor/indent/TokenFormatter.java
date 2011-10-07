@@ -749,6 +749,9 @@ public class TokenFormatter {
                                     case WHITESPACE_AROUND_CONCAT_OP:
                                         countSpaces = docOptions.spaceAroundStringConcatOp ? 1 : 0;
                                         break;
+                                    case WHITESPACE_AFTER_KEYWORD:
+                                        countSpaces = 1;
+                                        break;
                                     case WHITESPACE_AROUND_UNARY_OP:
                                         countSpaces = docOptions.spaceAroundUnaryOps ? 1 : countSpaces;
                                         break;

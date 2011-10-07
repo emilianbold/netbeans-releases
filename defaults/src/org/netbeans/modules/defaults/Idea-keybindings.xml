@@ -149,7 +149,8 @@ made subject to such option by the copyright holder.
 
     <!-- java -->
     <bind actionName="complete-line" key="CS-ENTER"/>
-    <bind actionName="fast-import" key="OS-I"/>
+    <!-- closest to IDEA complete classname & add import -->
+    <bind actionName="fast-import" key="DO-SPACE"/>
     <bind actionName="fix-imports" key="CA-O"/>
     <bind actionName="goto-source" key="CS-B"/>
     <bind actionName="goto-source" key="F4"/>
@@ -158,4 +159,7 @@ made subject to such option by the copyright holder.
     <bind actionName="introduce-field" key="CA-F"/>
     <bind actionName="introduce-method" key="CA-M"/>
     <bind actionName="introduce-variable" key="CA-V"/>
+    
+    <!-- Disable features not present in NB -->
+    <bind key="CS-J" remove="true"/>
 </bindings>

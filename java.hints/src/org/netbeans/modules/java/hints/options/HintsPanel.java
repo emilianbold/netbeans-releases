@@ -1024,7 +1024,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
                         NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmTitle"),
                         JOptionPane.YES_NO_OPTION)) {
                     getDataObject(hint).delete();
-                    RulesManager.getInstance().allHints.remove(hint);
+                    RulesManager.getInstance().allHints.clear();
+                    RulesManager.getInstance().reload();
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
                     errorTree.setModel(errorTreeModel);
