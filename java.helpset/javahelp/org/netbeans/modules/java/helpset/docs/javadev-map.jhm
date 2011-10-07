@@ -307,6 +307,9 @@
 <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" url="javafx/csh/new_application.html" />
 <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_PRELOADER" url="javafx/csh/new_preloader.html" />
 
+<!-- JavaFX Project Properties dialogs -->
+<mapID target="org.netbeans.modules.javafx2.project.ui.JFXRunPanel" url="javafx/csh/proj_props_run.html" />
+
 <!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_props_libraries.html" />
