@@ -84,6 +84,7 @@ CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
 CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
+CLASS      InvocationComment               [PUBLIC]   issue160444.php
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php

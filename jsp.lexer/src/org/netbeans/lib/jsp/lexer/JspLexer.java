@@ -163,6 +163,12 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISA_EL_DELIM_DOLLAR        = 38; //after $ or # in content language
     private static final int ISA_EL_DELIM_HASH        = 42; //after $ or # in content language
     private static final int ISI_EL              = 39; //expression language in content (after ${ or #{ )
+    
+    private static final int ISI_EL_SINGLE_QUOTE = 50; //inside single quoted string
+    private static final int ISA_EL_SINGLE_QUOTE_ESCAPE = 51; //inside single quoted string after backslash
+    private static final int ISI_EL_DOUBLE_QUOTE = 52; //inside double quoted string
+    private static final int ISA_EL_DOUBLE_QUOTE_ESCAPE = 53; //inside double quoted string after backslash
+    
     private static final int ISA_BS              = 40; //after backslash in text - needed to disable EL by scaping # or $
     private static final int ISP_GT_SCRIPTLET    = 41; //before closing < symbol in jsp:expression/s/d tag
 
@@ -393,13 +399,51 @@ public class JspLexer implements Lexer<JspTokenId> {
                     break;
                     
                 case ISI_EL:
-                    if(actChar == '}') {
-                        //return EL token
-                        lexerState = lexerStateBeforeEL;
-                        lexerStateBeforeEL = INIT;
-                        return token(JspTokenId.EL);
+                    switch (actChar) {
+                        case '\'':
+                            lexerState = ISI_EL_SINGLE_QUOTE;
+                            break;
+                        case '"':
+                            lexerState = ISI_EL_DOUBLE_QUOTE;
+                            break;
+                        case '}':
+                            //return EL token
+                            lexerState = lexerStateBeforeEL;
+                            lexerStateBeforeEL = INIT;
+                            return token(JspTokenId.EL);
                     }
-                    //stay in EL
+                    break;
+
+                case ISI_EL_SINGLE_QUOTE:
+                    switch (actChar) {
+                        case '\\':
+                            lexerState = ISA_EL_SINGLE_QUOTE_ESCAPE;
+                            break;
+                        case '\'':
+                            lexerState = ISI_EL;
+                            break;
+                    }
+                    break;
+
+                case ISI_EL_DOUBLE_QUOTE:
+                    switch (actChar) {
+                        case '\\':
+                            lexerState = ISA_EL_DOUBLE_QUOTE_ESCAPE;
+                            break;
+                        case '"':
+                            lexerState = ISI_EL;
+                            break;
+                    }
+                    break;
+
+                case ISA_EL_DOUBLE_QUOTE_ESCAPE:
+                    //just skip back qouted string
+                    lexerState = ISI_EL_DOUBLE_QUOTE;
+                    break;
+
+                case ISA_EL_SINGLE_QUOTE_ESCAPE:
+                    //just skip back qouted string
+                    lexerState = ISI_EL_SINGLE_QUOTE;
                     break;
                     
                 case ISA_LT:
@@ -1220,6 +1264,10 @@ public class JspLexer implements Lexer<JspTokenId> {
                 lexerState = INIT;
                 return token(JspTokenId.TEXT);
             case ISI_EL:
+            case ISI_EL_DOUBLE_QUOTE:
+            case ISI_EL_SINGLE_QUOTE:
+            case ISA_EL_DOUBLE_QUOTE_ESCAPE:
+            case ISA_EL_SINGLE_QUOTE_ESCAPE:                
                 lexerState = INIT;
                 return token(JspTokenId.EL);
             case ISI_SCRIPTLET:

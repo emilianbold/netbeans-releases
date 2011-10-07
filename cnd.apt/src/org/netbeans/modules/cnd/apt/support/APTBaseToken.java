@@ -124,7 +124,7 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public int getEndOffset() {
-        return getOffset() + getTextID().length();
+        return getOffset() + (getTextID() != null ? getTextID().length() : 0);
     }
 
     @Override
@@ -144,7 +144,11 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public final String getText() {
-        return text.toString();
+        if(this.text != null) {
+            return text.toString();
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -185,7 +189,7 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public int getEndColumn() {
-        return getColumn() + getTextID().length();
+        return getColumn() + (getTextID() != null ? getTextID().length() : 0);
     }
 
     @Override
@@ -218,6 +222,9 @@ public class APTBaseToken implements APTToken {
         if (this.getOffset() != other.getOffset()) {
             return false;
         }
+        if (this.text == null) {
+            return other.text == null;
+        }
         if (!this.text.equals(other.text)) {
             return false;
         }
@@ -229,7 +236,7 @@ public class APTBaseToken implements APTToken {
         int hash = 5;
         hash = 23 * hash + this.getType();
         hash = 23 * hash + this.offset;
-        hash = 23 * hash + this.text.hashCode();
+        hash = 23 * hash + (this.text != null ? this.text.hashCode() : 0);
         return hash;
     }
 }

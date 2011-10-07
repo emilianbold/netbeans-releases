@@ -587,11 +587,8 @@ public class CompletionUtil {
                 }
                 if(t.id() == XMLTokenId.VALUE && lastNS != null) {
                     String value = t.text().toString();
-                    if(value.length() >= 2 && (value.startsWith("'") || value.startsWith("\"")))
+                    if(value.length() >= 2 && (value.startsWith("'") || value.startsWith("\""))) {
                         value = value.substring(1, value.length()-1);
-                    if(XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(value)) {
-                        lastNS = null;
-                        continue;
                     }
                     map.put(value, CompletionUtil.getPrefixFromXMLNS(lastNS));
                     lastNS = null;
@@ -765,10 +762,6 @@ public class CompletionUtil {
         
         //for .xml documents        
         if("xml".equals(file.getExt())) { //NOI18N
-            //if DTD based, no completion
-            if(CompletionUtil.isDTDBasedDocument(doc)) {
-                return false;
-            }
             //if docroot doesn't declare ns, no completion
             DocRoot root = CompletionUtil.getDocRoot(doc);
             if(root != null && !root.declaresNamespace()) {
