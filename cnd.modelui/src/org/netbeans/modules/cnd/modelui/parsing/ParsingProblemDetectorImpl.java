@@ -39,15 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.platform;
+
+package org.netbeans.modules.cnd.modelui.parsing;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,31 +61,40 @@ import org.openide.util.NbBundle;
  * 
  * @author Alexander Simon
  */
-public class ParsingProblemDetector {
+public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
 
+    private static final Logger LOG = Logger.getLogger("cnd.parsing.problem.detector"); // NOI18N
+    public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
     private static final int Mb = 1024 * 1024;
+    private static final int timeThreshold = 1000*60;
     private final Runtime runtime;
-    private final int maxMemory;
+    public final int maxMemory;
     private final int startMemory;
     private int lineCount;
     private long startTime;
     private final List<Measure> measures;
-    private final int threshold;
+    private final int memoryThreshold;
+    private final CsmProject project;
+    private long remainingTime = 0;
+    private static boolean isDialogShown = false;
 
     /**
      * Constructs progress information for project
      */
-    public ParsingProblemDetector(CsmProject project) {
+    public ParsingProblemDetectorImpl(CsmProject project) {
         runtime = Runtime.getRuntime();
         maxMemory = (int) (runtime.maxMemory() / Mb);
-        threshold = Math.max(maxMemory/10, 10);
+        memoryThreshold = Math.max(maxMemory/10, 10);
         startMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
         measures = new ArrayList<Measure>();
+        this.project = project;
     }
 
+    @Override
     public void start() {
     }
 
+    @Override
     public void finish() {
         if (measures.size() > 1) {
             int lines = measures.get(measures.size()-1).lines;
@@ -91,10 +105,13 @@ public class ParsingProblemDetector {
                     for(Measure m : measures) {
                         parsingMemory = Math.max(parsingMemory, m.memory);
                     }
-                    System.out.println("Parsed " + lines/1000 + " KLines, Time " +parsingTime/1000 + " seconds, Speed "+lines/parsingTime+" KLines/second, Max Memory "+parsingMemory+" Mb"); // NOI18N
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("Parsing statistic of ").append(project.getDisplayName()).append(":\n");// NOI18N
+                    buf.append("Parsed ").append(lines/1000).append(" KLines, Time ").append(parsingTime/1000).append(" seconds, Speed ").append(lines/parsingTime).append(" KLines/second, Max Memory ").append(parsingMemory).append(" Mb\n"); // NOI18N
                     int currentPercent = 1;
                     int curentTime = 0;
                     int curentLines = 0;
+                    buf.append("Work, %\t\tSpeed, KLines/second\tMemory, Mb\n"); // NOI18N
                     for(Measure m : measures) {
                         int p = m.lines*100/lines;
                         if (p - currentPercent*5 >= 0) {
@@ -104,26 +121,55 @@ public class ParsingProblemDetector {
                             curentTime = m.time;
                             currentPercent++;
                             if (t != 0) {
-                                System.out.println("Parsing speed. Work " + p + "%, " +( l / t) + " KLines/second, Memory "+m.memory+" Mb"); // NOI18N
+                                buf.append("\t").append(p).append("\t\t").append(l / t).append("\t\t").append(m.memory).append("\n"); // NOI18N
                             }
                         }
                     }
+                    LOG.log(Level.INFO, buf.toString());
                 }
             }
         }
     }
 
+    public List<Measure> getData() {
+        List<Measure> res = new ArrayList<Measure>();
+        synchronized(measures) {
+            res.addAll(measures);
+        }
+        return res;
+    }
+    
     private void showWarning() {
-        // TODO implement it.
+        if (isDialogShown) {
+            return;
+        }
+        if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+            return;
+        }
+        if (remainingTime < timeThreshold) {
+            return;
+        }
+        int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
+        if (maxMemory - usedMemory < memoryThreshold) {
+            isDialogShown = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ParsingProblemResolver.showParsingProblemResolver(ParsingProblemDetectorImpl.this);
+                }
+            });
+        }
     }
     
     /**
      * inform about starting handling next file item
      */
+    @Override
     public String nextCsmFile(CsmFile file, int current, int allWork) {
         String msg = "";
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
-        if (TraceFlags.TIMING) {
+        long delta = System.currentTimeMillis() - startTime;
+        if (TIMING) {
             int lines = 0;
             if (file instanceof FileImpl) {
                 int[] lineColumnByOffset = null;
@@ -136,24 +182,52 @@ public class ParsingProblemDetector {
                 }
             }
             lineCount += lines;
-            long delta = System.currentTimeMillis() - startTime;
-            measures.add(new Measure(lineCount, (int)delta, usedMemory));
+            synchronized(measures) {
+                measures.add(new Measure(lineCount, (int)delta, usedMemory));
+            }
         }
-        if (maxMemory - usedMemory < threshold) {
-            msg = NbBundle.getMessage(ModelSupport.class, "MSG_LowMemory"); // NOI18N
+        if (current < 10) {
+            remainingTime = 0;
+        } else {
+            remainingTime = delta*(allWork-current)/current;
+         }
+        if (maxMemory - usedMemory < memoryThreshold) {
+            msg = NbBundle.getMessage(ParsingProblemDetectorImpl.class, "MSG_LowMemory"); // NOI18N
         }
         showWarning();
         return msg;
     }
 
+    @Override
+    public String getRemainingTime() {
+        if (remainingTime == 0) {
+            return ""; // NOI18N
+        }
+        String esimation;
+        if (remainingTime < 1000) {
+            esimation = ""; // NOI18N
+        } else if (remainingTime < 1000*60) {
+            int s = (int) (remainingTime/1000);
+            esimation = NbBundle.getMessage(ParsingProblemDetectorImpl.class, "Remaining_seconds", ""+s); // NOI18N
+        } else if (remainingTime < 1000*60*60) {
+            int s = (int) (remainingTime/1000/60);
+            esimation = NbBundle.getMessage(ParsingProblemDetectorImpl.class, "Remaining_minutes", ""+s); // NOI18N
+        } else {
+            int s = (int) (remainingTime/1000/60/60);
+            esimation = NbBundle.getMessage(ParsingProblemDetectorImpl.class, "Remaining_hours", ""+s); // NOI18N
+        }
+        return esimation;
+    }
+
+    @Override
     public void switchToDeterminate(int maxWorkUnits) {
         startTime = System.currentTimeMillis();
     }
     
-    private static final class Measure {
-        private final int lines;
-        private final int time;
-        private final int memory;
+    public static final class Measure {
+        public final int lines;
+        public final int time;
+        public final int memory;
         Measure(int lines, int time, int memory) {
             this.lines = lines;
             this.time = time;
