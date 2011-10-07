@@ -171,19 +171,19 @@ public class Analyzer implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            if (!cancel.get()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        AnalyzerTopComponent win = AnalyzerTopComponent.findInstance();
+                        win.open();
+                        win.requestActive();
+                        win.setData(context, preferencesOverlay, eds);
+
+                    }
+                });
+            }
         } finally {
             handle.finish();
-        }
-        if (!cancel.get()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    AnalyzerTopComponent win = AnalyzerTopComponent.findInstance();
-                    win.open();
-                    win.requestActive();
-                    win.setData(context, preferencesOverlay, eds);
-
-                }
-            });
         }
     }
     
