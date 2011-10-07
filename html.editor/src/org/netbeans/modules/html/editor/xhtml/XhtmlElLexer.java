@@ -44,7 +44,6 @@
 package org.netbeans.modules.html.editor.xhtml;
 
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -62,6 +61,7 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
     private final InputAttributes inputAttributes;
     private final TokenFactory<XhtmlElTokenId> tokenFactory;
 
+    @Override
     public Object state() {
         return lexerState;
     }
@@ -73,7 +73,11 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
     private static final int INIT = 0;  // initial lexer state = content language
     private static final int ISA_EL_DELIM = 1; //after $ or # in content language
     private static final int ISI_EL = 2; //expression language in content (after ${ or #{ )
-
+    private static final int ISI_EL_SINGLE_QUOTE = 3; //inside single quoted string
+    private static final int ISA_EL_SINGLE_QUOTE_ESCAPE = 4; //inside single quoted string after backslash
+    private static final int ISI_EL_DOUBLE_QUOTE = 5; //inside double quoted string
+    private static final int ISA_EL_DOUBLE_QUOTE_ESCAPE = 6; //inside double quoted string after backslash
+    
     public XhtmlElLexer(LexerRestartInfo<XhtmlElTokenId> info) {
         this.input = info.input();
         this.inputAttributes = info.inputAttributes();
@@ -91,6 +95,7 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
 //        }
     }
 
+    @Override
     public Token<XhtmlElTokenId> nextToken() {
         int actChar;
         while (true) {
@@ -152,14 +157,52 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
                     break;
 
                 case ISI_EL:
-                    if (actChar == '}') {
-                        //return EL token
-                        lexerState = INIT;
-                        return token(XhtmlElTokenId.EL);
+                    switch(actChar) {
+                        case '\'':
+                            lexerState = ISI_EL_SINGLE_QUOTE;
+                            break;
+                        case '"':
+                            lexerState = ISI_EL_DOUBLE_QUOTE;
+                            break;
+                        case '}':
+                            //return EL token
+                            lexerState = INIT;
+                            return token(XhtmlElTokenId.EL);
                     }
-                    //stay in EL
                     break;
-
+                    
+                case ISI_EL_SINGLE_QUOTE:
+                    switch(actChar) {
+                        case '\\':
+                            lexerState = ISA_EL_SINGLE_QUOTE_ESCAPE;
+                            break;
+                        case '\'':
+                            lexerState = ISI_EL;
+                            break;
+                    }
+                    break;
+                    
+                case ISI_EL_DOUBLE_QUOTE:
+                    switch(actChar) {
+                        case '\\':
+                            lexerState = ISA_EL_DOUBLE_QUOTE_ESCAPE;
+                            break;
+                        case '"':
+                            lexerState = ISI_EL;
+                            break;
+                    }
+                    break;
+                    
+                case ISA_EL_DOUBLE_QUOTE_ESCAPE:
+                    //just skip back qouted string
+                    lexerState = ISI_EL_DOUBLE_QUOTE;
+                    break;
+                    
+                case ISA_EL_SINGLE_QUOTE_ESCAPE:
+                    //just skip back qouted string
+                    lexerState = ISI_EL_SINGLE_QUOTE;
+                    break;
+                    
             }
 
         }
@@ -178,6 +221,10 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
             case ISA_EL_DELIM:
                 return token(XhtmlElTokenId.HTML);
             case ISI_EL:
+            case ISI_EL_DOUBLE_QUOTE:
+            case ISI_EL_SINGLE_QUOTE:
+            case ISA_EL_DOUBLE_QUOTE_ESCAPE:
+            case ISA_EL_SINGLE_QUOTE_ESCAPE:
                 return token(XhtmlElTokenId.EL);
             default:
                 break;
@@ -191,7 +238,9 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
         return tokenFactory.createToken(tokenId);
     }
 
+    @Override
     public void release() {
+        //no-op
     }
 }
 

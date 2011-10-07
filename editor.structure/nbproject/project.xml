@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javafx.fxd</friend>
+                <friend>org.netbeans.modules.javafx2.editor</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.xml.text</friend>

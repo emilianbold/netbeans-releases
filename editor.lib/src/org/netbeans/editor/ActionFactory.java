@@ -1099,7 +1099,7 @@ public class ActionFactory {
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
-                        caret.setDot(endPos);
+                        target.select(startPos, endPos);
                     } else { // no selection - change current char
                         int dotPos = caret.getDot();
                         Utilities.changeCase(doc, dotPos, 1, changeCaseMode);

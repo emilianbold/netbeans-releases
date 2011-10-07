@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
@@ -76,6 +78,8 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
 public class LayersBridge extends KeymapManager {
+    
+    private static final Logger LOG = Logger.getLogger(LayersBridge.class.getName());
     
     static final String         KEYMAPS_FOLDER = "Keymaps";
     private static final String SHORTCUTS_FOLDER = "Shortcuts";
@@ -224,10 +228,55 @@ public class LayersBridge extends KeymapManager {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
             Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
-            m.putAll (readKeymap (root));
+            overrideWithKeyMap(m, readKeymap(root), profile);
             keymaps.put (profile, m);
         }
         return Collections.unmodifiableMap (keymaps.get (profile));
+    }
+    
+    /**
+     * Overrides the base shortcut map with contents of the Keymap. If keymap specifies
+     * a shortcut which is already used in the 'base', the shortcut mapping is removed from the base
+     * and only the keymap mapping will prevail.
+     * 
+     * @param base base keymap
+     * @param keyMap override keymap, from the profile
+     * @return 
+     */
+    private Map<ShortcutAction, Set<String>> overrideWithKeyMap(Map<ShortcutAction, Set<String>> base,
+            Map<ShortcutAction, Set<String>> keyMap, String profile) {
+        Set<String> overrideKeyStrokes = new HashSet<String>();
+        Map<String, ShortcutAction> shortcuts = null;
+        
+        for (ShortcutAction a : keyMap.keySet()) {
+            overrideKeyStrokes.addAll(keyMap.get(a));
+        }
+        for (Iterator<Map.Entry<ShortcutAction,Set<String>>> it = base.entrySet().iterator();
+                it.hasNext();) {
+            Map.Entry<ShortcutAction,Set<String>> en = it.next();
+            Set<String> keys = en.getValue();
+
+            if (LOG.isLoggable(Level.FINER)) {
+                for (String s : keys) {
+                    if (overrideKeyStrokes.contains(s)) {
+                        if (shortcuts == null) {
+                            shortcuts = shortcutToAction(keyMap);
+                        }
+                        ShortcutAction sa = shortcuts.get(s);
+                        if (!sa.getId().equals(en.getKey().getId())) {
+                            LOG.finer("[" + profile + "] change keybinding " + s + " from " + en.getKey().getId() + " to " + sa.getId());
+                        }
+                    }
+                }
+            }
+            
+            keys.removeAll(overrideKeyStrokes);
+            if (keys.isEmpty()) {
+                it.remove();
+            }
+        }
+        base.putAll(keyMap);
+        return base;
     }
     
     /** Map (String (profile) > Map (GlobalAction > Set (String (shortcut)))). */
@@ -306,6 +355,8 @@ public class LayersBridge extends KeymapManager {
         }
         saveKeymap (folder, actionToShortcuts, true);
         
+        // FIXME: this rewrites the shared Shortcuts (default) folder; should be
+        // done only after switching the profile
         folder = getRootFolder (SHORTCUTS_FOLDER, null);
         saveKeymap (folder, actionToShortcuts, false);
     }

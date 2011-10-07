@@ -614,11 +614,19 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         });
                     if (!rui.hasParameters()) {
                         RefactoringSession session = putResult(RefactoringSession.create(rui.getName()));
-                        try {
-                            rui.getRefactoring().prepare(session);
-                        } finally {
-                            setVisibleLater(false);
-                        }
+                            Problem problem = null;
+                            try {
+                                problem = rui.getRefactoring().prepare(session);
+                            } catch (Throwable t) {
+                                setVisibleLater(false);
+                            }
+                            if (problem!=null) {
+                                placeErrorPanel(problem);
+                                validate();
+                                back.setEnabled(false);
+                            } else {
+                                setVisibleLater(false);
+                            }
                     } 
                     
                 }

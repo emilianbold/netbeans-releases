@@ -48,12 +48,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -69,6 +72,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -117,18 +121,18 @@ public class OrganizeImports {
 
 
     private static void doOrganizeImports(WorkingCopy copy) throws IllegalStateException {
-        Trees trees = copy.getTrees();
         CompilationUnitTree cu = copy.getCompilationUnit();
         if (!cu.getImports().isEmpty()) {
             final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
             Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
-            Set<Element> toImport = getUsedElements(cu, trees, starImports, staticStarImports);
+            Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
             if (!toImport.isEmpty()) {
                 List<ImportTree> imps;
                 TreeMaker maker = copy.getTreeMaker();
                 if (starImports != null || staticStarImports != null) {
                     imps = new LinkedList<ImportTree>();                    
+                    Trees trees = copy.getTrees();
                     for (ImportTree importTree : cu.getImports()) {
                         Tree qualIdent = importTree.getQualifiedIdentifier();
                         if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
@@ -166,13 +170,45 @@ public class OrganizeImports {
         }
     }
 
-    private static Set<Element> getUsedElements(final CompilationUnitTree cut, final Trees trees, final Set<Element> starImports, final Set<Element> staticStarImports) {
+    private static Set<Element> getUsedElements(final CompilationInfo info, final CompilationUnitTree cut, final Set<Element> starImports, final Set<Element> staticStarImports) {
         final Set<Element> ret = new HashSet<Element>();
+        final Trees trees = info.getTrees();
         new TreePathScanner<Void, Void>() {
 
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
-                Element element = trees.getElement(getCurrentPath());
+                addElement(trees.getElement(getCurrentPath()));
+                return null;
+            }
+
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitClass(node, p);
+            }
+
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitMethod(node, p);
+            }
+
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitVariable(node, p);
+            }
+
+            @Override
+            public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+                scan(node.getPackageAnnotations(), p);
+                return scan(node.getTypeDecls(), p);
+            }
+            
+            private void addElement(Element element) {
                 if (element != null) {
                     switch (element.getKind()) {
                         case ENUM_CONSTANT:
@@ -193,15 +229,8 @@ public class OrganizeImports {
                                 ret.add(glob);
                     }
                 }
-                return null;
             }
 
-            @Override
-            public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
-                scan(node.getPackageAnnotations(), p);
-                return scan(node.getTypeDecls(), p);
-            }
-            
             private Element global(Element element, Set<Element> stars) {
                 for (Scope.Entry e = ((JCCompilationUnit)cut).namedImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
                     if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
@@ -223,7 +252,6 @@ public class OrganizeImports {
         }.scan(cut, null);
         return ret;
     }
-
 
     private static final class OrganizeImportsFix extends JavaFix {
 
