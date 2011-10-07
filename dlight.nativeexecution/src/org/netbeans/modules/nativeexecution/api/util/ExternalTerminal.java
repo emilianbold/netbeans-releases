@@ -139,8 +139,8 @@ public final class ExternalTerminal {
 
     private static class ExternalTerminalAccessorImpl
             extends ExternalTerminalAccessor {
-        private static final String ARG_TITLE = "$title";
-        private static final String ARG_WORKDIR = "$workdir";
+        private static final String ARG_TITLE = "$title"; //NOI18N
+        private static final String ARG_WORKDIR = "$workdir"; //NOI18N
 
         @Override
         public TerminalProfile getTerminalProfile(ExternalTerminal terminal) {

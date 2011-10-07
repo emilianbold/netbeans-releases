@@ -1107,8 +1107,11 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
             case CPPTokenTypes.LITERAL_union:
-                createForwardClassDeclaration(ast, container, file, currentNamespace);
-                return true;
+                AST next = child.getNextSibling();
+                if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    createForwardClassDeclaration(ast, container, file, currentNamespace);
+                    return true;
+                }
         }
 
         return false;

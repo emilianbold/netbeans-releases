@@ -140,8 +140,8 @@ java/modules/ext/eclipselink/javax.persistence-2.0.jar       EPL-v10 (see also a
 java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.0.jar EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                   LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox.jar                        Apache-2.0
-java/modules/ext/maven/indexer-artifact-4.1.1.jar            Apache-2.0
-java/modules/ext/maven/indexer-core-4.1.1.jar                Apache-2.0
+java/modules/ext/maven/indexer-artifact-4.1.2.jar            Apache-2.0
+java/modules/ext/maven/indexer-core-4.1.2.jar                Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                          Apache-JDOM
 java/modules/ext/maven/maven-dependency-tree-1.2.jar         Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.0.2.RELEASE.jar     Apache-2.0
