@@ -71,7 +71,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -90,7 +90,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Union2;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -335,139 +337,159 @@ public final class Actions implements ActionProvider {
     /**
      * Run a project action as described by subelements <script> and <target>.
      */
-    private static void runConfiguredAction(String command, FreeformProject project, Element actionEl, Lookup context) {
-        String script;
-        Element scriptEl = XMLUtil.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (scriptEl != null) {
-            script = XMLUtil.findText(scriptEl);
-        } else {
-            script = "build.xml"; // NOI18N
-        }
-        String scriptLocation = project.evaluator().evaluate(script);
-        FileObject scriptFile = null;
-        if (scriptLocation != null)  {
-            scriptFile = project.helper().resolveFileObject(scriptLocation);
-        }
-        if (scriptFile == null) {
-            //#57011: if the script does not exist, show a warning:
-            NotifyDescriptor nd = new NotifyDescriptor.Message(MessageFormat.format(NbBundle.getMessage(Actions.class, "LBL_ScriptFileNotFoundError"), new Object[] {scriptLocation}), NotifyDescriptor.ERROR_MESSAGE);
-            
-            DialogDisplayer.getDefault().notify(nd);
-            return;
-        }
-        List<Element> targets = XMLUtil.findSubElements(actionEl);
-        List<String> targetNames = new ArrayList<String>(targets.size());
-        for (Element targetEl : targets) {
-            if (!targetEl.getLocalName().equals("target")) { // NOI18N
-                continue;
-            }
-            targetNames.add(XMLUtil.findText(targetEl));
-        }
-        String[] targetNameArray;
-        if (!targetNames.isEmpty()) {
-            targetNameArray = targetNames.toArray(new String[targetNames.size()]);
-        } else {
-            // Run default target.
-            targetNameArray = null;
-        }
-        Properties props = new Properties();
-        Element contextEl = XMLUtil.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (contextEl != null) {
-            AtomicReference<String> methodName = SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) ?
-                new AtomicReference<String>() : null;
-            Map<String,FileObject> selection = findSelection(contextEl, context, project, methodName);
-            if (selection.isEmpty()) {
-                return;
-            }
-            if (methodName != null && methodName.get() != null) {
-                props.setProperty("method", methodName.get());
-            }
-            String separator = null;
-            if (selection.size() > 1) {
-                // Find the right separator.
-                Element arityEl = XMLUtil.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
-                assert arityEl != null : "No <arity> in <context> for " + actionEl.getAttribute("name");
-                Element sepFilesEl = XMLUtil.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
-                if (sepFilesEl == null) {
-                    // Only handles single files -> skip it.
-                    return;
-                }
-                separator = XMLUtil.findText(sepFilesEl);
-            }
-            Element formatEl = XMLUtil.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
-            assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");
-            String format = XMLUtil.findText(formatEl);
-            StringBuffer buf = new StringBuffer();
-            Iterator<Map.Entry<String,FileObject>> it = selection.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,FileObject> entry = it.next();
-                if (format.equals("absolute-path")) { // NOI18N
-                    File f = FileUtil.toFile(entry.getValue());
-                    if (f == null) {
-                        // Not a disk file??
-                        return;
-                    }
-                    buf.append(f.getAbsolutePath());
-                } else if (format.equals("relative-path")) { // NOI18N
-                    buf.append(entry.getKey());
-                } else if (format.equals("absolute-path-noext")) { // NOI18N
-                    File f = FileUtil.toFile(entry.getValue());
-                    if (f == null) {
-                        // Not a disk file??
-                        return;
-                    }
-                    String path = f.getAbsolutePath();
-                    int dot = path.lastIndexOf('.');
-                    if (dot > path.lastIndexOf('/')) {
-                        path = path.substring(0, dot);
-                    }
-                    buf.append(path);
-                } else if (format.equals("relative-path-noext")) { // NOI18N
-                    String path = entry.getKey();
-                    int dot = path.lastIndexOf('.');
-                    if (dot > path.lastIndexOf('/')) {
-                        path = path.substring(0, dot);
-                    }
-                    buf.append(path);
+    private static void runConfiguredAction(
+            final String command,
+            final FreeformProject project,
+            final Element actionEl,
+            final Lookup context) {
+
+        final List<String> targetNames = new ArrayList<String>();
+        final Properties props = new Properties();
+        final Union2<FileObject,String> scriptFile = ProjectManager.mutex().readAccess(new Mutex.Action<Union2<FileObject,String>>() {
+            @Override
+            public Union2<FileObject,String> run() {
+                Union2<FileObject,String> result;
+                String script;
+                Element scriptEl = XMLUtil.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (scriptEl != null) {
+                    script = XMLUtil.findText(scriptEl);
                 } else {
-                    assert format.equals("java-name") : format;
-                    String path = entry.getKey();
-                    int dot = path.lastIndexOf('.');
-                    String dotless;
-                    if (dot == -1 || dot < path.lastIndexOf('/')) {
-                        dotless = path;
-                    } else {
-                        dotless = path.substring(0, dot);
+                    script = "build.xml"; // NOI18N
+                }
+                String scriptLocation = project.evaluator().evaluate(script);
+                final FileObject sf = scriptLocation == null ? null : project.helper().resolveFileObject(scriptLocation);
+                if (sf != null) {
+                    result = Union2.<FileObject,String>createFirst(sf);
+                } else {
+                    return Union2.<FileObject,String>createSecond(scriptLocation);
+                }
+                List<Element> targets = XMLUtil.findSubElements(actionEl);
+                for (Element targetEl : targets) {
+                    if (!targetEl.getLocalName().equals("target")) { // NOI18N
+                        continue;
                     }
-                    String javaname = dotless.replace('/', '.');
-                    buf.append(javaname);
+                    targetNames.add(XMLUtil.findText(targetEl));
                 }
-                if (it.hasNext()) {
-                    assert separator != null;
-                    buf.append(separator);
+                Element contextEl = XMLUtil.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (contextEl != null) {
+                    AtomicReference<String> methodName = SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) ?
+                        new AtomicReference<String>() : null;
+                    Map<String,FileObject> selection = findSelection(contextEl, context, project, methodName);
+                    if (selection.isEmpty()) {
+                        return null;
+                    }
+                    if (methodName != null && methodName.get() != null) {
+                        props.setProperty("method", methodName.get());
+                    }
+                    String separator = null;
+                    if (selection.size() > 1) {
+                        // Find the right separator.
+                        Element arityEl = XMLUtil.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
+                        assert arityEl != null : "No <arity> in <context> for " + actionEl.getAttribute("name");
+                        Element sepFilesEl = XMLUtil.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
+                        if (sepFilesEl == null) {
+                            // Only handles single files -> skip it.
+                            return null;
+                        }
+                        separator = XMLUtil.findText(sepFilesEl);
+                    }
+                    Element formatEl = XMLUtil.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
+                    assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");
+                    String format = XMLUtil.findText(formatEl);
+                    StringBuilder buf = new StringBuilder();
+                    Iterator<Map.Entry<String,FileObject>> it = selection.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<String,FileObject> entry = it.next();
+                        if (format.equals("absolute-path")) { // NOI18N
+                            File f = FileUtil.toFile(entry.getValue());
+                            if (f == null) {
+                                // Not a disk file??
+                                return null;
+                            }
+                            buf.append(f.getAbsolutePath());
+                        } else if (format.equals("relative-path")) { // NOI18N
+                            buf.append(entry.getKey());
+                        } else if (format.equals("absolute-path-noext")) { // NOI18N
+                            File f = FileUtil.toFile(entry.getValue());
+                            if (f == null) {
+                                // Not a disk file??
+                                return null;
+                            }
+                            String path = f.getAbsolutePath();
+                            int dot = path.lastIndexOf('.');
+                            if (dot > path.lastIndexOf('/')) {
+                                path = path.substring(0, dot);
+                            }
+                            buf.append(path);
+                        } else if (format.equals("relative-path-noext")) { // NOI18N
+                            String path = entry.getKey();
+                            int dot = path.lastIndexOf('.');
+                            if (dot > path.lastIndexOf('/')) {
+                                path = path.substring(0, dot);
+                            }
+                            buf.append(path);
+                        } else {
+                            assert format.equals("java-name") : format;
+                            String path = entry.getKey();
+                            int dot = path.lastIndexOf('.');
+                            String dotless;
+                            if (dot == -1 || dot < path.lastIndexOf('/')) {
+                                dotless = path;
+                            } else {
+                                dotless = path.substring(0, dot);
+                            }
+                            String javaname = dotless.replace('/', '.');
+                            buf.append(javaname);
+                        }
+                        if (it.hasNext()) {
+                            assert separator != null;
+                            buf.append(separator);
+                        }
+                    }
+                    Element propEl = XMLUtil.findElement(contextEl, "property", FreeformProjectType.NS_GENERAL); // NOI18N
+                    assert propEl != null : "No <property> in <context> for " + actionEl.getAttribute("name");
+                    String prop = XMLUtil.findText(propEl);
+                    assert prop != null : "Must have text contents in <property>";
+                    props.setProperty(prop, buf.toString());
                 }
+                for (Element propEl : targets) {
+                    if (!propEl.getLocalName().equals("property")) { // NOI18N
+                        continue;
+                    }
+                    String rawtext = XMLUtil.findText(propEl);
+                    if (rawtext == null) {
+                        // Legal to have e.g. <property name="intentionally-left-blank"/>
+                        rawtext = ""; // NOI18N
+                    }
+                    String evaltext = project.evaluator().evaluate(rawtext); // might be null
+                    if (evaltext != null) {
+                        props.setProperty(propEl.getAttribute("name"), evaltext); // NOI18N
+                    }
+                }
+                return result;
             }
-            Element propEl = XMLUtil.findElement(contextEl, "property", FreeformProjectType.NS_GENERAL); // NOI18N
-            assert propEl != null : "No <property> in <context> for " + actionEl.getAttribute("name");
-            String prop = XMLUtil.findText(propEl);
-            assert prop != null : "Must have text contents in <property>";
-            props.setProperty(prop, buf.toString());
+        });
+        if (scriptFile == null) {
+            return;
+        } else if (scriptFile.hasFirst()) {
+            final String[] targetNameArray;
+            if (!targetNames.isEmpty()) {
+                targetNameArray = targetNames.toArray(new String[targetNames.size()]);
+            } else {
+                // Run default target.
+                targetNameArray = null;
+            }
+            TARGET_RUNNER.runTarget(scriptFile.first(), targetNameArray, props);
+        } else {
+            assert scriptFile.hasSecond();
+            //#57011: if the script does not exist, show a warning:
+            final NotifyDescriptor nd = new NotifyDescriptor.Message(
+                MessageFormat.format(
+                    NbBundle.getMessage(Actions.class, "LBL_ScriptFileNotFoundError"),
+                    new Object[] {scriptFile.second()}),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
         }
-        for (Element propEl : targets) {
-            if (!propEl.getLocalName().equals("property")) { // NOI18N
-                continue;
-            }
-            String rawtext = XMLUtil.findText(propEl);
-            if (rawtext == null) {
-                // Legal to have e.g. <property name="intentionally-left-blank"/>
-                rawtext = ""; // NOI18N
-            }
-            String evaltext = project.evaluator().evaluate(rawtext); // might be null
-            if (evaltext != null) {
-                props.setProperty(propEl.getAttribute("name"), evaltext); // NOI18N
-            }
-        }
-        TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
 
     @ActionID(id = "org.netbeans.modules.ant.freeform.Actions$Custom", category = "Project")

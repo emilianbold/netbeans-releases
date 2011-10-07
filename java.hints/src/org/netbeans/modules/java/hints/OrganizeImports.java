@@ -38,18 +38,21 @@
 package org.netbeans.modules.java.hints;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -57,12 +60,14 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Name;
-import org.netbeans.api.java.source.CompilationInfo;
 
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
@@ -115,9 +120,45 @@ public class OrganizeImports {
         Trees trees = copy.getTrees();
         CompilationUnitTree cu = copy.getCompilationUnit();
         if (!cu.getImports().isEmpty()) {
-            Set<Element> toImport = getUsedElements(cu, trees);
+            final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
+            Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
+            Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
+            Set<Element> toImport = getUsedElements(cu, trees, starImports, staticStarImports);
             if (!toImport.isEmpty()) {
-                CompilationUnitTree cut = copy.getTreeMaker().CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), Collections.<ImportTree>emptyList(), cu.getTypeDecls(), cu.getSourceFile());
+                List<ImportTree> imps;
+                TreeMaker maker = copy.getTreeMaker();
+                if (starImports != null || staticStarImports != null) {
+                    imps = new LinkedList<ImportTree>();                    
+                    for (ImportTree importTree : cu.getImports()) {
+                        Tree qualIdent = importTree.getQualifiedIdentifier();
+                        if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
+                            if (importTree.isStatic()) {
+                                if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                                    imps.add(maker.Import(qualIdent, true));
+                            } else {
+                                if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                                    imps.add(maker.Import(qualIdent, false));
+                            }
+                        }
+                    }
+                    Collections.sort(imps, new Comparator<ImportTree>() {
+                        
+                        private CodeStyle.ImportGroups groups = cs.getImportGroups();
+                        
+                        @Override
+                        public int compare(ImportTree o1, ImportTree o2) {
+                            if (o1 == o2)
+                                return 0;
+                            String s1 = o1.getQualifiedIdentifier().toString();
+                            String s2 = o2.getQualifiedIdentifier().toString();
+                            int bal = groups.getGroupId(s1, o1.isStatic()) - groups.getGroupId(s2, o2.isStatic());
+                            return bal == 0 ? s1.compareTo(s2) : bal;
+                        }
+                    });
+                } else {
+                    imps = Collections.emptyList();
+                }
+                CompilationUnitTree cut = maker.CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), imps, cu.getTypeDecls(), cu.getSourceFile());
                 ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
                 CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
                 copy.rewrite(cu, ncu);
@@ -125,7 +166,7 @@ public class OrganizeImports {
         }
     }
 
-    private static Set<Element> getUsedElements(final CompilationUnitTree cut, final Trees trees) {
+    private static Set<Element> getUsedElements(final CompilationUnitTree cut, final Trees trees, final Set<Element> starImports, final Set<Element> staticStarImports) {
         final Set<Element> ret = new HashSet<Element>();
         new TreePathScanner<Void, Void>() {
 
@@ -137,13 +178,17 @@ public class OrganizeImports {
                         case ENUM_CONSTANT:
                         case FIELD:
                         case METHOD:
-                            if (!element.getModifiers().contains(Modifier.STATIC))
-                                break;
+                            if (element.getModifiers().contains(Modifier.STATIC)) {
+                                Element glob = global(element, staticStarImports);
+                                if (glob != null)
+                                    ret.add(glob);
+                            }
+                            break;
                         case ANNOTATION_TYPE:
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
-                            Element glob = global(element);
+                            Element glob = global(element, starImports);
                             if (glob != null)
                                 ret.add(glob);
                     }
@@ -157,7 +202,7 @@ public class OrganizeImports {
                 return scan(node.getTypeDecls(), p);
             }
             
-            private Element global(Element element) {
+            private Element global(Element element, Set<Element> stars) {
                 for (Scope.Entry e = ((JCCompilationUnit)cut).namedImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
                     if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
                         return e.sym;
@@ -167,8 +212,11 @@ public class OrganizeImports {
                         return e.sym;
                 }
                 for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
+                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind()) {
+                        if (stars != null)
+                            stars.add(e.sym.owner);
                         return e.sym;
+                    }
                 }
                 return null;
             }

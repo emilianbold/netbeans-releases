@@ -541,6 +541,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         }
         HintMetadata selectedHint = panel.getSelectedHint();
         if (selectedHint!=null) {
+            if (panel.hasNewHints()) {
+                singleRefactoringCombo.setModel(new InspectionComboModel(Utilities.getBatchSupportedHints()));
+            }
             singleRefactoringCombo.setSelectedItem(selectedHint);
         }
     }

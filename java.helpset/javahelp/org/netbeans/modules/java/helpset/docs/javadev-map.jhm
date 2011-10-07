@@ -61,8 +61,10 @@
 <mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
 <!-- Options window Java Debugger tab -->
 <mapID target="JavaDebuggerOptions" url="debug/CSH/debug_options.html" /> 
-<!-- Topic for Debugger Instances view - need help id -->
-<!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
+<!-- Topic for Debugger Instances view -->
+<mapID target="NetbeansDebuggerInstancesNode" url="debug/CSH/instances_view.html" />
+<!-- Topic for Debugger Events view -->
+<mapID target="NetbeansDebuggerEventNode" url="debug/CSH/events_view.html" />
 
 <!-- CSH help id for Attach Debugger window mapped to remote debugging topic -->
 <mapID target="debug.jpda.attach" url="debug/debug_remote.html" />

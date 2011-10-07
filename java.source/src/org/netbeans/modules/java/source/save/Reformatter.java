@@ -3333,10 +3333,10 @@ public class Reformatter implements ReformatTask {
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             }
-                            if (currWSOffset >= 0) {
-                                marks.add(Pair.of(currWSOffset, afterText && (state == 0 && cs.blankLineAfterJavadocDescription()
+                            if (currWSOffset >= 0 && afterText) {
+                                marks.add(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()
                                         || state == 2 && newState != 1 && cs.blankLineAfterJavadocParameterDescriptions()
-                                        || state == 3 && cs.blankLineAfterJavadocReturnTag()) ? 0 : 1));
+                                        || state == 3 && cs.blankLineAfterJavadocReturnTag() ? 0 : 1));
                             }
                             state = newState;
                             if (state == 3 && cs.alignJavadocReturnDescription()) {
@@ -3415,6 +3415,7 @@ public class Reformatter implements ReformatTask {
                                 if (currWSOffset >= 0) {
                                     marks.add(Pair.of(currWSOffset, 1));
                                 }
+                                marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
                                 afterText = false;
                             } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                     || CODE_TAG.equalsIgnoreCase(tokenText)) {

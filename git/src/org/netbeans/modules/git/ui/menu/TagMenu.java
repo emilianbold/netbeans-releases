@@ -47,10 +47,12 @@ package org.netbeans.modules.git.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -77,10 +79,15 @@ public final class TagMenu extends DynamicMenu {
         JMenuItem item;
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(CreateTagAction.class), false);
+            Action action = (Action) SystemAction.get(CreateTagAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
+            
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(ManageTagsAction.class), false);
+            action = (Action) SystemAction.get(ManageTagsAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N

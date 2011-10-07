@@ -16,14 +16,13 @@
 <h2>Debugging Java GUI Applications</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>When debugging a Java GUI form, 
-    you can use the Visual Debugger to help
+<p>When debugging a GUI form, you can use the Visual Debugger to help
     you locate the form elements in your source code, set breakpoints and explore component listeners.</p>
 
-<p>To use the Visual Debugger, you run take a GUI snapshot of the application UI.
+<p>To use the Visual Debugger, you run the debugger and then take a GUI snapshot of the application UI.
     When you select a component in the GUI snapshot,
     the IDE will display the location of the component 
-    in the hierarchy tree of the form in the Navigator window.
+    in the hierarchy tree of components in the Navigator window.
     The IDE will also display the properties of the selected component in the Properties window.
 </p>
 
@@ -32,10 +31,10 @@ commands in the popup menu.</p>
     
 <ul>
     <li><b>Go to Component Declaration.</b> Select this to open the source file at the line
-    containing the declaration of the component.</li>
+    where the component is declared.</li>
     <li><b>Go to Component Source.</b>Select this to open the source file at the line
-    where the component properties are set.</li>
-    <li><b>Go to Hierarchy Addition.</b>
+    where the component is defined.</li>
+    <li><b>Go to Hierarchy Addition.</b> Select this to open the source file where the component was added to the parent container. 
         <p>You need to enable this command in the Java Debugging tab in the Miscellaneous category in the Options window.</p></li>
     <li><b>Show Listeners.</b> Select this to open the Events window and view
     the order of events and the listeners associated with the selected component. </li>
@@ -59,6 +58,8 @@ commands in the popup menu.</p>
       <dd><a href="debug_quickref.html">Debugging Tasks: Quick Reference</a></dd>
       <dd><a href="debug_local.html">Starting a Local Debugging Session</a></dd>
       <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+      <dd><a href="../gui/gui_about.html">About the GUI Builder</a></dd>
+      <dd><a href="CSH/events_view.html">Debugging: Events Window</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

@@ -1118,9 +1118,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     public Vector<File> buildList(String text, File[] children, int max) {
         Vector<File> files = new Vector<File>(children.length);
+        Arrays.sort(children, DirectoryNode.FILE_NAME_COMPARATOR);
         
-        for(int i = children.length - 1; i >= 0; i--) {
-            File completion = children[i];
+        for (File completion : children) {
             String path = completion.getAbsolutePath();
             if (path.regionMatches(true, 0, text, 0, text.length())) {
                 files.add(completion);
@@ -1130,7 +1130,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
-        Collections.sort(files, DirectoryNode.FILE_NAME_COMPARATOR);
         return files;
     }
     

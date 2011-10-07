@@ -250,7 +250,9 @@ public final class MainWindow {
             }
         });
         //#38810 end
-        frame.setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
+        String title = NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")); //NOI18N
+        if( !title.isEmpty() )
+            frame.setTitle(title);
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             //Show a "save dot" in the close button if a modified file is
             //being edited
