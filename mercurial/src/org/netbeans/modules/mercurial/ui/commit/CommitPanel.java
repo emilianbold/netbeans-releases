@@ -178,7 +178,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
-            String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage();
+            String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage(CommitAction.KEY_CANCELED_MESSAGE);
             if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences()).isAutoFill()) {
                 List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
                 if (messages.size() > 0) {
