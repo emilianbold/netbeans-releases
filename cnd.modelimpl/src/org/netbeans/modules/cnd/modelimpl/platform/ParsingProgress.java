@@ -44,12 +44,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import java.util.MissingResourceException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver;
+import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
 import org.openide.util.NbBundle;
 
 
@@ -68,7 +69,6 @@ final class ParsingProgress {
     private boolean started = false;
     private boolean determinate = false;
     private final ParsingProblemDetector problemDetector;
-    private long startTime;
     
     /**  
      * Delay amount of milliseconds
@@ -94,7 +94,8 @@ final class ParsingProgress {
     public ParsingProgress(CsmProject project) {
         String msg=NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgress", project.getName());
         handle = ProgressHandleFactory.createHandle(msg);
-        problemDetector = new ParsingProblemDetector(project);
+        CodeModelProblemResolver.getParsingProblemDetector(project);
+        problemDetector = CodeModelProblemResolver.getParsingProblemDetector(project);
     }
     
     /**
@@ -106,7 +107,9 @@ final class ParsingProgress {
             if(!started) {
                 started = true;
                 handle.setInitialDelay(INITIAL_DELAY);
-                problemDetector.start();
+                if (problemDetector != null) {
+                    problemDetector.start();
+                }
                 handle.start();
             }
         }
@@ -118,7 +121,9 @@ final class ParsingProgress {
     public void finish() {
         synchronized (handle) {
             if( started ) {
-                problemDetector.finish();
+                if (problemDetector != null) {
+                    problemDetector.finish();
+                }
                 handle.finish();
                 started = false;
             }
@@ -152,8 +157,12 @@ final class ParsingProgress {
                 }
             } 
             try {
-                String elapsedTime = getElapsedTime();
-                String problem = problemDetector.nextCsmFile(file, curWorkedUnits, maxWorkUnits + addedAfterStartParsing);
+                String problem = ""; // NOI18N
+                String elapsedTime = ""; // NOI18N
+                if (problemDetector != null) {
+                    problem = problemDetector.nextCsmFile(file, curWorkedUnits, maxWorkUnits + addedAfterStartParsing);
+                    elapsedTime = problemDetector.getRemainingTime();
+                }
                 String msg = NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgressFull", ""+curWorkedUnits, ""+(maxWorkUnits + addedAfterStartParsing), file.getName().toString(), elapsedTime, problem); // NOI18N
                 handle.progress(msg, allWork);
                 //assert(curWorkedUnits <= maxWorkUnits);
@@ -162,27 +171,6 @@ final class ParsingProgress {
                 DiagnosticExceptoins.register(ex);
             }
         }
-    }
-
-    private String getElapsedTime() throws MissingResourceException {
-        if (curWorkedUnits < 10) {
-            return ""; // NOI18N
-        }
-        long delta = (System.currentTimeMillis() - startTime)*(maxWorkUnits + addedAfterStartParsing - curWorkedUnits)/(curWorkedUnits);
-        String elapsedTime;
-        if (delta < 1000) {
-            elapsedTime = ""; // NOI18N
-        } else if (delta < 1000*60) {
-            int s = (int) (delta/1000);
-            elapsedTime = NbBundle.getMessage(ModelSupport.class, "Elapsed_seconds", ""+s); // NOI18N
-        } else if (delta < 1000*60*60) {
-            int s = (int) (delta/1000/60);
-            elapsedTime = NbBundle.getMessage(ModelSupport.class, "Elapsed_minutes", ""+s); // NOI18N
-        } else {
-            int s = (int) (delta/1000/60/60);
-            elapsedTime = NbBundle.getMessage(ModelSupport.class, "Elapsed_hours", ""+s); // NOI18N
-        }
-        return elapsedTime;
     }
 
     /**
@@ -196,10 +184,11 @@ final class ParsingProgress {
                 return;
             }
             if (!determinate) {
-                this.startTime = System.currentTimeMillis();
                 this.maxWorkUnits = maxWorkUnits;
                 addedAfterStartParsing = 0;
-                problemDetector.switchToDeterminate(maxWorkUnits);
+                if (problemDetector != null) {
+                    problemDetector.switchToDeterminate(maxWorkUnits);
+                }
                 handle.switchToDeterminate(ALL_WORK_INT);
                 determinate = true;
             }
