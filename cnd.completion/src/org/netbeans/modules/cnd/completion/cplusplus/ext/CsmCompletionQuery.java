@@ -2166,7 +2166,7 @@ abstract public class CsmCompletionQuery {
                                             break;
                                         }
                                     }
-                                    if (findType && mtdList.isEmpty()) {
+                                    if ((findType || (!last && !first)) && mtdList.isEmpty()) {
                                         return lastType != null || lastNamespace != null;
                                     }
                                 }
