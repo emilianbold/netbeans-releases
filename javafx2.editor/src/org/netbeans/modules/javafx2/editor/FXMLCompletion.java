@@ -47,8 +47,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
@@ -153,9 +155,25 @@ public class FXMLCompletion implements CompletionProvider {
                                     } catch (ExecutionException ex) {
                                         Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
                                     }
+                                    return;
+                                }
+                                if ( (path.size() > 2) && (!path.get(1).getName().equals("children")) )  { // NOI18N
+                                    try {
+                                        String className = path.get(1).getName();
+                                        List<String> properties = getAvailableProperties(document, prefix, className,resultSet);
+                                        for (String prop : properties) {
+                                            resultSet.addItem(new FXMLCompletionItem(ts.offset(), "<" + prop)); // NOI18N
+                                        }
+                                    } catch (ParseException ex) {
+                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
+                                    } catch (InterruptedException ex) {
+                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
+                                    } catch (ExecutionException ex) {
+                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
+                                    }
+                                    return;
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -190,6 +208,18 @@ public class FXMLCompletion implements CompletionProvider {
         }
         return result;
     }
+
+    private static List<String> getAvailableProperties(Document doc, String prefix, String className, CompletionResultSet resultSet) throws ParseException, InterruptedException, ExecutionException {
+        List<String> result = new ArrayList<String>();
+        Future<Void> f = ParserManager.parseWhenScanFinished(MIME_TYPE, getAllPropertiesTask(doc, prefix, className, result));
+        if (!f.isDone()) {
+//                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
+                resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            f.get();
+        }
+        return result;
+    }
+
     
     private static List<String> getAvailableClasses(Document doc, String prefix, CompletionResultSet resultSet) throws ParseException, InterruptedException, ExecutionException {
         List<String> result = new ArrayList<String>();
@@ -200,6 +230,58 @@ public class FXMLCompletion implements CompletionProvider {
             f.get();
         }
         return result;
+    }
+    private static UserTask getAllPropertiesTask(final Document doc, final String prefix, final String className, final List<String> res) {
+        final ClasspathInfo cpInfo = ClasspathInfo.create(doc);
+        class AllPropertiesTask extends UserTask implements ClasspathInfoProvider {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result result = resultIterator.getParserResult();
+                ClassIndex index = cpInfo.getClassIndex();
+                CompilationInfo info = CompilationInfo.get(result);
+                Elements elems = info.getElements();
+                Types types = info.getTypes();
+                List<TypeElement> myTypes =new LinkedList<TypeElement>();
+                for(ElementHandle<TypeElement> handle : index.getDeclaredTypes(className, 
+                            ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                    myTypes.add(handle.resolve(info));
+                }
+                List<TypeElement> superTypes = new LinkedList<TypeElement>();
+                for (TypeElement myType : myTypes) {
+                    while (myType != null) {
+                        TypeMirror tm = myType.getSuperclass();
+                        if (tm != null) {
+                            TypeElement superType = (TypeElement)types.asElement(tm);
+                            if (superType != null) {
+                                superTypes.add(superType);
+                            }
+                            myType = superType;
+                        } else {
+                            myType = null;
+                        }
+                    }
+                }
+                myTypes.addAll(superTypes);
+                for (TypeElement myType : myTypes) {
+                    List<? extends Element> children = myType.getEnclosedElements();
+                    for (Element e : children) {
+                        String name = e.getSimpleName().toString();
+                        if (name.startsWith("set") && name.length() > 3) { // NOI18N
+                            name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+                            if (name.startsWith(prefix)) {                   
+                                res.add(name);
+                            }
+                        }
+                    }
+                }
+            }
+                
+            @Override
+            public ClasspathInfo getClasspathInfo() {
+                return cpInfo;
+            }
+        }
+        return new AllPropertiesTask();
     }
 
     private static UserTask getAllClassesTask(final Document doc, final String prefix, final List<String> res) {
