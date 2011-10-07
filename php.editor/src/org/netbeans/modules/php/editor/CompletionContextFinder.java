@@ -927,16 +927,21 @@ class CompletionContextFinder {
     private synchronized static boolean isInsideInterfaceDeclarationBlock(final ParserResult info, final int caretOffset, final TokenSequence tokenSequence) {
         boolean retval = false;
         List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
-        ASTNode lastNode = nodePath.get(nodePath.size() - 1);
-        if (lastNode instanceof Block) {
-            lastNode = nodePath.get(nodePath.size() - 2);
-            if (lastNode instanceof InterfaceDeclaration) {
-                retval = true;
+        int nodesCount = nodePath.size();
+        if (nodesCount > 0) {
+            ASTNode lastNode = nodePath.get(nodesCount - 1);
+            if (lastNode instanceof Block) {
+                if (nodesCount > 1) {
+                    lastNode = nodePath.get(nodesCount - 2);
+                    if (lastNode instanceof InterfaceDeclaration) {
+                        retval = true;
+                    } else {
+                        retval = isUnderInterfaceTokenId(tokenSequence);
+                    }
+                }
             } else {
                 retval = isUnderInterfaceTokenId(tokenSequence);
             }
-        } else {
-            retval = isUnderInterfaceTokenId(tokenSequence);
         }
         return retval;
     }
