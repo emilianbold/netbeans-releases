@@ -299,6 +299,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         try {
             int startPos = baseTextUI.getPosFromY(clip.y);
             int endPos = baseTextUI.viewToModel(component, Short.MAX_VALUE / 2, clip.y + clip.height);
+            
+            if (startPos < 0 || endPos < 0) {
+                // editor window is not properly sized yet; return no infos
+                return Collections.<PaintInfo>emptyList();
+            }
 
             startPos = Utilities.getRowStart(bdoc, startPos);
             endPos = Utilities.getRowEnd(bdoc, endPos);
