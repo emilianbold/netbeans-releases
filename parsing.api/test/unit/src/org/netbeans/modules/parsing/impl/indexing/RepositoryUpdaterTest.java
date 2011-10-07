@@ -2044,6 +2044,116 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getIndexCount());
     }
 
+    public void testVisibilityQueryInFileChangeListener() throws Exception {
+        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        final FileObject root = FileUtil.createFolder(workDir,"visibilitySrc"); //NOI18N
+        final FileObject folder1 = FileUtil.createFolder(root,"folder");               //NOI18N
+        final FileObject a = FileUtil.createData(folder1,"a.foo");                    //NOI18N
+        final FileObject folder2 = FileUtil.createFolder(folder1,"invisible");          //NOI18N
+        final FileObject b = FileUtil.createData(folder2,"b.foo");                    //NOI18N
+        final Visibility vis = Lookup.getDefault().lookup(Visibility.class);
+        assertNotNull(vis);
+        vis.registerInvisibles(Collections.<FileObject>singleton(folder2));
+        final ClassPath cp = ClassPathSupport.createClassPath(root.getURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{a.getURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Modify a.foo - should trigger indexer
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{a.getURL()},
+            new URL[0],
+            new URL[0]);
+        touch(a.getURL());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Modify b.foo - should NOT trigger indexer
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{b.getURL()},
+            new URL[0],
+            new URL[0]);
+        touch(b.getURL());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        //Rename a.foo - should trigger indexer
+        File af = FileUtil.toFile(a);
+        File anf = new File (af.getParentFile(),"an.foo");  //NOI18N
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{anf.toURI().toURL()},
+            new URL[]{af.toURI().toURL()},
+            new URL[0]);
+        FileLock l = a.lock();
+        try {
+            a.rename(l, "an", a.getExt());  //NOI18N
+        } finally {
+            l.releaseLock();
+        }
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Rename b.foo - should trigger indexer
+        File bf = FileUtil.toFile(b);
+        File bnf = new File (bf.getParentFile(),"bn.foo");  //NOI18N
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{bnf.toURI().toURL()},
+            new URL[]{bf.toURI().toURL()},
+            new URL[0]);
+        l = b.lock();
+        try {
+            b.rename(l, "bn", b.getExt());  //NOI18N
+        } finally {
+            l.releaseLock();
+        }
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        //Delete a.foo - should trigger indexed
+        indexerFactory.indexer.setExpectedFile(
+            new URL[0],
+            new URL[]{a.getURL()},
+            new URL[0]);
+        a.delete();
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+
+        //Delete b.foo - should NOT trigger indexed
+        indexerFactory.indexer.setExpectedFile(
+            new URL[0],
+            new URL[]{b.getURL()},
+            new URL[0]);
+        b.delete();
+        assertFalse(indexerFactory.indexer.awaitDeleted());
+    }
+
+//    public void testVisibilityQueryPerformance() throws Exception {
+//        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//        final FileObject root = FileUtil.createFolder(workDir,"visibilitySrc"); //NOI18N
+//        FileObject folder = root;
+//        for (int i=0; i<10; i++) {
+//            folder = FileUtil.createFolder(folder,"folder");    //folder
+//        }
+//        final FileObject a = FileUtil.createData(folder,"a.foo"); //NOI18N
+//        final ClassPath cp = ClassPathSupport.createClassPath(root.getURL());
+//        indexerFactory.indexer.setExpectedFile(
+//                new URL[]{a.getURL()},
+//                new URL[0],
+//                new URL[0]);
+//        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+//        assertTrue(indexerFactory.indexer.awaitIndex());
+//        assertEquals(1, indexerFactory.indexer.getIndexCount());
+//
+//        long st = System.currentTimeMillis();
+//        for (int i=0; i< 10000; i++) {
+//            FileUtil.createData(folder, String.format("b%d.foo",i));    //NOI18N
+//        }
+//        long et = System.currentTimeMillis();
+//    }
 
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
