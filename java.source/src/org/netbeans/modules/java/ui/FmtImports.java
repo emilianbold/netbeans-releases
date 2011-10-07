@@ -65,6 +65,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
@@ -398,6 +399,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void removeStarImportPackageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeStarImportPackageButtonActionPerformed
         int row = starImportPackagesTable.getSelectedRow();
         if (row >= 0) {
+            TableCellEditor cellEditor = starImportPackagesTable.getCellEditor();
+            if (cellEditor != null)
+                cellEditor.cancelCellEditing();
             ((DefaultTableModel)starImportPackagesTable.getModel()).removeRow(row);
         }
     }//GEN-LAST:event_removeStarImportPackageButtonActionPerformed
@@ -433,6 +437,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int row = importLayoutTable.getSelectedRow();
         if (row >= 0) {
+            TableCellEditor cellEditor = importLayoutTable.getCellEditor();
+            if (cellEditor != null)
+                cellEditor.cancelCellEditing();
             ((DefaultTableModel)importLayoutTable.getModel()).removeRow(row);
         }
     }//GEN-LAST:event_removeButtonActionPerformed

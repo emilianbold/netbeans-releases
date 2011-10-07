@@ -280,6 +280,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 .addGap(4, 4, 4)
                 .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        buttonsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {back, cancel, help, next, previewButton});
+
         buttonsPanelLayout.setVerticalGroup(
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(back)
