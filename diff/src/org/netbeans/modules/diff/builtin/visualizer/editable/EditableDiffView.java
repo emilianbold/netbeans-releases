@@ -473,7 +473,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             
             int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 2 + 1;
             View rootView = org.netbeans.editor.Utilities.getDocumentView(jEditorPane1.getEditorPane());
-            Rectangle rec = jEditorPane1.getEditorPane().modelToView(rootView.getView(line).getEndOffset() - 1);
+            View lineView = rootView.getView(line);
+            Rectangle rec = lineView != null ? jEditorPane1.getEditorPane().modelToView(lineView.getEndOffset() - 1) : null;
             int lineOffset;
             if (rec == null) {
                 int lineHeight = editorUI.getLineHeight();
