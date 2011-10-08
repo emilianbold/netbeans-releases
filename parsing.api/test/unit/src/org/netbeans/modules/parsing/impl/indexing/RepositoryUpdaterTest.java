@@ -1926,15 +1926,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final PerfLoghandler h = new PerfLoghandler();
         final Logger perfLogger = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf");    //NOI18N
         perfLogger.addHandler(h);
-        perfLogger.setLevel(Level.FINE);
-        h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
-        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        final PerfLoghandler.R r = h.await(5000);
-        assertNotNull(r);
-        assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
-        final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
-        assertEquals(1,istat.get("emb")[0]);    //NOI18N
-        assertEquals(1,istat.get("foo")[0]);    //NOI18N
+        try {
+            perfLogger.setLevel(Level.FINE);
+            h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
+            globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+            final PerfLoghandler.R r = h.await(5000);
+            assertNotNull(r);
+            assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
+            final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
+            assertEquals(1,istat.get("emb")[0]);    //NOI18N
+            assertEquals(1,istat.get("foo")[0]);    //NOI18N
+        } finally {
+            perfLogger.removeHandler(h);
+        }
     }
 
     public void testIndexDownloader() throws Exception {
@@ -2147,12 +2151,33 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
 //        assertTrue(indexerFactory.indexer.awaitIndex());
 //        assertEquals(1, indexerFactory.indexer.getIndexCount());
-//
-//        long st = System.currentTimeMillis();
-//        for (int i=0; i< 10000; i++) {
-//            FileUtil.createData(folder, String.format("b%d.foo",i));    //NOI18N
+//        class H extends Handler {
+//            long time = 0L;
+//            @Override
+//            public void publish(LogRecord record) {
+//                if (record.getMessage() != null && record.getMessage().startsWith("reportVisibilityOverhead:")) {   //NOI18N
+//                    time+=(Long)record.getParameters()[0];
+//                }
+//            }
+//            @Override
+//            public void flush() {
+//            }
+//            @Override
+//            public void close() throws SecurityException {
+//            }
 //        }
-//        long et = System.currentTimeMillis();
+//        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf");  //NOI18N
+//        final H h = new H();
+//        logger.setLevel(Level.FINE);
+//        logger.addHandler(h);
+//        try {
+//            for (int i=0; i< 10000; i++) {
+//                FileUtil.createData(folder, String.format("b%d.foo",i));    //NOI18N
+//            }
+//        } finally {
+//            logger.removeHandler(h);
+//        }
+//        System.out.println("Time: " + h.time);
 //    }
 
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
