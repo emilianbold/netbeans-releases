@@ -90,7 +90,7 @@ public class RADProperty extends FormProperty {
         } // assuming a bean property is at least readable or writeable
     }
 
-    private void ensureDefaultValueInitialization() {
+    void ensureDefaultValueInitialization() {
         if (defaultValue == NOT_INITIALIZED) {
             defaultValue = BeanSupport.NO_VALUE;
             if (canReadFromTarget()) {

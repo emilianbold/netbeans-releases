@@ -2024,6 +2024,12 @@ public class RADComponent {
     protected boolean isValid() {
         return valid;
     }
+
+    void ensureDefaultPropertyValuesInitialization() {
+        for (RADProperty prop : getAllBeanProperties()) {
+            prop.ensureDefaultValueInitialization();
+        }
+    }
     
     private class FakeBeanInfo extends SimpleBeanInfo {
         
