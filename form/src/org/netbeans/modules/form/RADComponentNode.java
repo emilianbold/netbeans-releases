@@ -486,6 +486,10 @@ public class RADComponentNode extends FormNode
         if (customizerObject instanceof NodeCustomizer)
             ((NodeCustomizer)customizerObject)
                     .attach(component.getNodeReference());
+
+        // Issue 203352 - default values of properties must be initialized
+        // before the customizer is shown/used
+        component.ensureDefaultPropertyValuesInitialization();
         
         Customizer customizer = (Customizer) customizerObject;
         
