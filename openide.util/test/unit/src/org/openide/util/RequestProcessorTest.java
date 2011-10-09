@@ -723,7 +723,7 @@ class R extends Object implements Runnable {
         final RequestProcessor.Task task = rp.create (x);
         task.schedule(20000);
         assertTrue("Sure, that one can be cancelled", task.cancel());
-        assertFalse("But not finished", task.isFinished());
+        assertTrue("After cancle we are finished", task.isFinished());
         assertFalse("Can be cancelled only once", task.cancel());
     }
     
@@ -765,8 +765,8 @@ class R extends Object implements Runnable {
         final RequestProcessor.Task task = RequestProcessor.getDefault().create (x);
         task.schedule (500);
         if (task.cancel ()) {
-            // waiting for it to finish is nonsense
-            assertFalse("Not marked as finished", task.isFinished());
+            assertTrue("Marked as finished after cancel", task.isFinished());
+            task.waitFinished();
         }
 
         // does a task that is scheduled means that it is not finished?
@@ -875,7 +875,7 @@ class R extends Object implements Runnable {
 
         boolean canceled = task.cancel();
         assertTrue("Task is canceled now", canceled);
-        assertFalse("Cancelling does not mean finished", finished[0]);
+        assertTrue("Cancelling actually means finished", finished[0]);
         Thread.sleep(1500); // wait longer than task delay
         assertFalse("Task should not be performed", x.performed);
     }
