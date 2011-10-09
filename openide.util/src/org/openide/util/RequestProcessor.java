@@ -1531,12 +1531,10 @@ outer:  do {
                         p.interruptTask(this, RequestProcessor.this);
                         item = null;
                     }
+                    if (success) {
+                        item = null;
+                    }
                 }
-
-                if (success) {
-                    notifyFinished(); // mark it as finished
-                }
-
                 return success;
             }
         }

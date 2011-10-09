@@ -45,6 +45,7 @@
 package org.openide.util;
 
 import java.lang.ref.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -62,7 +63,7 @@ public class RequestProcessorTest extends NbTestCase {
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
     }
-
+    
     @Override
     protected int timeOut() {
         return 30000;
@@ -670,6 +671,62 @@ class R extends Object implements Runnable {
         x.assertCnt ("The task has been executed", 1);
     }
     
+    public void testTheCancelOfNonStartedTask() {
+        Counter x = new Counter ();
+        RequestProcessor rp = new RequestProcessor ("testTheCancelOfNonStartedTask");
+        final RequestProcessor.Task task = rp.create (x);
+        assertFalse("Not started tasks cannot be cancelled", task.cancel());
+        assertFalse("But not finished", task.isFinished());
+        assertFalse("Can be cancelled only once", task.cancel());
+    }
+
+    public void testTheCancelOfFinishedTask() {
+        Counter x = new Counter ();
+        RequestProcessor rp = new RequestProcessor ("testTheCancelOfFinishedTask");
+        final RequestProcessor.Task task = rp.post(x);
+        task.waitFinished();
+        assertTrue("Finished", task.isFinished());
+        assertFalse("Too late to cancel", task.cancel());
+    }
+
+    public void testTheCancelOfRunningTask() throws InterruptedException {
+        final CountDownLatch started = new CountDownLatch(1);
+        final CountDownLatch allowedToFinish = new CountDownLatch(1);
+        Counter x = new Counter () {
+            @Override
+            public void run() {
+                started.countDown();
+                super.run();
+                for (;;) try {
+                    allowedToFinish.await();
+                    break;
+                } catch (InterruptedException ex) {
+                    continue;
+                }
+            }
+        };
+        RequestProcessor rp = new RequestProcessor ("testTheCancelOfRunningTask");
+        final RequestProcessor.Task task = rp.post(x);
+        started.await();
+        assertFalse("Finished", task.isFinished());
+        assertFalse("Too late to cancel", task.cancel());
+        allowedToFinish.countDown();
+        assertFalse("nothing to cancel", task.cancel());
+        task.waitFinished();
+        assertTrue("Now it is finished", task.isFinished());
+        assertFalse("Still nothing to cancel", task.cancel());
+    }
+
+    public void testTheCancelOfFutureTask() {
+        Counter x = new Counter ();
+        RequestProcessor rp = new RequestProcessor ("testTheCancelOfFutureTask");
+        final RequestProcessor.Task task = rp.create (x);
+        task.schedule(20000);
+        assertTrue("Sure, that one can be cancelled", task.cancel());
+        assertFalse("But not finished", task.isFinished());
+        assertFalse("Can be cancelled only once", task.cancel());
+    }
+    
     /** Test to check the waiting in request processor.
     */
     public void testWaitFinishedOnNotStartedTaskFromRPThread () throws Exception {
@@ -708,8 +765,8 @@ class R extends Object implements Runnable {
         final RequestProcessor.Task task = RequestProcessor.getDefault().create (x);
         task.schedule (500);
         if (task.cancel ()) {
-            // ok, task is canceled
-            task.waitFinished ();
+            // waiting for it to finish is nonsense
+            assertFalse("Not marked as finished", task.isFinished());
         }
 
         // does a task that is scheduled means that it is not finished?
@@ -810,16 +867,17 @@ class R extends Object implements Runnable {
         // post task with some delay
         RequestProcessor.Task task = RequestProcessor.postRequest(x, 1000);
         task.addTaskListener(new TaskListener() {
+            @Override
             public void taskFinished(Task t) {
                 finished[0] = true;
             }
         });
 
         boolean canceled = task.cancel();
-        assertTrue("Task was not canceled", canceled);
-        assertTrue("The taskFinished was not called for canceled task", finished[0]);
+        assertTrue("Task is canceled now", canceled);
+        assertFalse("Cancelling does not mean finished", finished[0]);
         Thread.sleep(1500); // wait longer than task delay
-        assertTrue("Task was performed even if it is canceled", !x.performed);
+        assertFalse("Task should not be performed", x.performed);
     }
     
     public void testWaitWithTimeOutCanFinishEvenTheTaskHasNotRun () throws Exception {
@@ -1173,12 +1231,15 @@ class R extends Object implements Runnable {
             public RequestProcessor.Task wait;
             public Object lock;
             public Exception ex;
+
+            public volatile boolean executed;
+            public volatile boolean checkBefore;
+            public volatile boolean checkAfter;
             
-            public boolean checkBefore;
-            public boolean checkAfter;
-            
+            @Override
             public void run () {
                 synchronized (this) {
+                    executed = true;
                     checkBefore = Thread.interrupted();
                     log("checkBefore: " + checkBefore);
                     notifyAll();
@@ -1240,6 +1301,9 @@ class R extends Object implements Runnable {
 
         biggerTask.waitFinished();
         log.info("waitFinished over");
+        
+        assertTrue("Bigger executed", bigger.executed);
+        assertTrue("Smaller executed", smaller.executed);
         
         assertFalse("bigger not interrupted at begining", bigger.checkBefore);
         assertFalse("smaller not interrupted at all", smaller.checkBefore);
