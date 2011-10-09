@@ -732,7 +732,7 @@ class R extends Object implements Runnable {
     public void testWaitFinishedOnNotStartedTaskFromRPThread () throws Exception {
         Counter x = new Counter ();
         RequestProcessor rp = new RequestProcessor ("testWaitFinishedOnNotStartedTaskFromRPThread");
-        final RequestProcessor.Task task = rp.create (x);
+        final RequestProcessor.Task task = rp.post(x, Integer.MAX_VALUE);
         
         //
         // Following code tests whether the RP.create().waitFinished really blocks

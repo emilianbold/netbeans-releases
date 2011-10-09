@@ -461,6 +461,9 @@ public final class RequestProcessor implements ScheduledExecutorService {
     * setting its delay by schedule method. By default the initial state of 
     * the task is <code>!isFinished()</code> so doing waitFinished() will
     * block on and wait until the task is scheduled.
+    * <p>
+    * Consider calling {@link #post(java.lang.Runnable, int) post(run, Integer.MAX_VALUE)}
+    * to achieve almost same effect and treat the task as scheduled.
     *
     * @param run action to run in the process
     * @return the task to control execution of given action
@@ -1641,7 +1644,7 @@ outer:  do {
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
-                    runAtAll = !isFinished();
+                    runAtAll = cancel();
                     toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
                         em.log(Level.FINE, "    ## finished: {0}", isFinished()); // NOI18N
