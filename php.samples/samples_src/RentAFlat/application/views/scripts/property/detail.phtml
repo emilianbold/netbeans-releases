@@ -50,25 +50,24 @@
         <div id="detailbox">
             <div class="detail">
                 <?php foreach ($this->property as $property): ?>
-
-
-                    <h2><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', $property->getTitle_en()); ?><?php foreach ($property->getLocation() as $location): ?><?php //echo $location->getNazcobce();   ?><?php endforeach; ?>, <?php echo $property->getDisposition(); ?>, <?php echo $property->getAreaFormatted() ?> m&sup2;</h2>
+                    <h2><?php echo $property->getTitle(); ?>, <?php echo $property->getDisposition(); ?>, <?php echo $property->getAreaFormatted() ?>&nbsp;m&sup2;</h2>
                     <div class="info">
                         <dl>
                             <dd>Ref. No:</dd>
                             <dt><?php echo $property->getReference_no(); ?></dt>
+
                             <dd>Disposition:</dd>
                             <dt><?php echo $property->getDisposition(); ?></dt>
+
                             <dd>Area:</dd>
                             <dt><?php echo $property->getAreaFormatted(); ?> m&sup2;</dt>
 
                             <dd>Floor:</dd>
                             <dt><?php echo $property->getFloor(); ?></dt>
 
-                            
-                                <dd>Lift:</dd>
-                                <dt><?php echo ($property->getLift())?"Yes":"No"; ?></dt>
-                            
+                            <dd>Lift:</dd>
+                            <dt><?php echo ($property->getLift())?"Yes":"No"; ?></dt>
+
                             <?php if ($property->getCellar() > 0) { ?>
                                 <dd>Cellar:</dd>
                                 <dt><?php echo $property->getCellar(); ?> m&sup2;</dt>
@@ -93,40 +92,33 @@
                                 <dd>Garage:</dd>
                                 <dt><?php echo $property->getGarage(); ?> m&sup2;</dt>
                             <?php } ?>
-                            
-                                <dd>Parking place:</dd>
-                                <dt><?php echo ($property->getParking_place())?"Yes":"No";?></dt>
-                            
+
+                            <dd>Parking place:</dd>
+                            <dt><?php echo ($property->getParking_place())?"Yes":"No"; ?></dt>
 
                             <dd>Building type:</dd>
-                            <dt>
-                            <?php $t = $property->getProperty_build_type(); echo $t->getText_en();?>
-                            </dt>
+                            <dt><?php echo $property->getProperty_build_type()->getText(); ?></dt>
 
                             <dd>Location:</dd>
                             <dt><?php $l = $property->getTextLocation(); echo $l->getCity() . ", " .$l->getCityPart(); ?></dt>
+
                             <dd><span>Price:</span></dd>
-                            <dt><span class="price"><?php echo $property->getFormattedPrice(); ?></span>
-                            <span class="kc">
-                                EUR
-                            </span>
-                            </dt>
+                            <dt><span class="price"><?php echo $property->getFormattedPrice(); ?> EUR</span></dt>
 
                             <?php if (!General::isInFavorites($property->getId())): ?>
-                                <dt id="p<?= $property->getId() ?>"> <a class="ic3 fav" href="#" onclick="addToFavoritesDetail(<?= $property->getId() ?>)" title="Add to favorites">Add to favorites</a>
+                                <dt id="p<?php echo $property->getId() ?>"> <a class="ic3 fav" href="#" onclick="addToFavoritesDetail(<?php echo $property->getId() ?>)" title="Add to favorites">Add to favorites</a>
                             <?php else: ?>
-                                <dt id="p<?= $property->getId() ?>"> <a class="ic33" href="#" onclick="removeFromFavoritesDetail(<?= $property->getId() ?>)" title="Remove from favorites">Remove from favorites</a>
+                                <dt id="p<?php echo $property->getId() ?>"> <a class="ic33" href="#" onclick="removeFromFavoritesDetail(<?php echo $property->getId() ?>)" title="Remove from favorites">Remove from favorites</a>
                             <?php endif; ?>
                             </dt>
                         </dl>
-
 
                         </p>
                     </div>
                 </div>
                 <div class="cleaner"></div>
                 <h3 class="popis">Description</h3>
-                <p class="popis"><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', nl2br($property->getText_en())); ?></p>
+                <p class="popis"><?php echo str_ireplace('m2', 'm&sup2;', nl2br($property->getText())); ?></p>
             </div>
             <div class="hr"></div>
         <?php endforeach; ?>
