@@ -1941,7 +1941,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails
     public void testIndexDownloader() throws Exception {
         final File workDir = getWorkDir();
         final File root = new File (workDir,"testIndexDownloader"); //NOI18N
@@ -1977,6 +1976,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getIndexCount());
 
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
         touchFile(a);
 
         //Seen root - index should NOT be donwloaded and indexer should be called on modified file
