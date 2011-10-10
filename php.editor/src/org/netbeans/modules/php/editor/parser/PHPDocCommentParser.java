@@ -259,7 +259,7 @@ public class PHPDocCommentParser {
         int index = description.indexOf('(');
         if (index > 0 ) {
             name = description.substring(0, index);
-            index = name.lastIndexOf(' ');
+            index = name.trim().lastIndexOf(' ');
             if (index > 0) {
                 name = name.substring(index + 1);
             }
