@@ -241,6 +241,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("ppExpressionAndEmptyBodyMacro.cc"); //NOI18N
     }
     
+    public void testPPDirectiveExtraTokens() throws Exception {
+        //#201806  -  extra tokens at end of #endif directive breaks code model 
+        performTest("iz201806.cc");
+    }
+    
     public void testExprAfterIf() throws Exception {
         performTest("lparenAfterPPKwds.cc"); // NOI18N
     }
