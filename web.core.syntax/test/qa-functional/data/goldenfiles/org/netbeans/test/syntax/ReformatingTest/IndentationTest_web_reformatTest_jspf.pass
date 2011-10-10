@@ -16,8 +16,7 @@
         <td>TEXT</td>
     </tr>
 </table>
-<%
-}else{
+<%} else {
 %>
 <ul style="list-style-type: disc;">
     <li>            1
