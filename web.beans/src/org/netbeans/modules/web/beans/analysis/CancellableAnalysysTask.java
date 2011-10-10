@@ -57,9 +57,12 @@ import org.openide.filesystems.FileObject;
  */
 abstract class CancellableAnalysysTask implements CancellableTask<CompilationInfo>{
     
-    CancellableAnalysysTask(FileObject javaFile){
+    CancellableAnalysysTask(FileObject javaFile,  
+            CdiEditorAwareJavaSourceTaskFactory factory ) 
+    {
         myFileObject = javaFile;
         myTask = new AtomicReference<AbstractAnalysisTask>();
+        myFactory = factory;
     }
     
     /* (non-Javadoc)
@@ -94,7 +97,12 @@ abstract class CancellableAnalysysTask implements CancellableTask<CompilationInf
     protected FileObject getFileObject(){
         return myFileObject;
     }
+    
+    protected CdiEditorAwareJavaSourceTaskFactory getFactory(){
+        return myFactory;
+    }
 
     private FileObject myFileObject;
     private AtomicReference<AbstractAnalysisTask> myTask;
+    private CdiEditorAwareJavaSourceTaskFactory myFactory;
 }

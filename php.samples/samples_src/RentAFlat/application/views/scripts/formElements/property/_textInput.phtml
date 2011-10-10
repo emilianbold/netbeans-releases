@@ -43,12 +43,16 @@
  * made subject to such option by the copyright holder.
  */
 ?>
-<div class="clearfix">
-    <div class="lab">
+<div class="formrow">
+    <div class="label">
     	<label><?php echo $this->element->getLabel() ?>:</label>
     </div>
-    <?php if($this->element->hasErrors())
-            echo $this->formErrors($this->element->getMessages()); ?>
-		<?php
-        echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs()) ?>
-	</div>
+    <div class="field">
+        <?php echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs()); ?>
+        <?php if ($this->element->hasErrors()): ?>
+            <div class="error">
+                <?php echo $this->formErrors($this->element->getMessages()); ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
