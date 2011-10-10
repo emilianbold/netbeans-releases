@@ -1941,6 +1941,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testIndexDownloader() throws Exception {
         final File workDir = getWorkDir();
         final File root = new File (workDir,"testIndexDownloader"); //NOI18N
