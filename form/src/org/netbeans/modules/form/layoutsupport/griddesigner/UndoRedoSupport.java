@@ -70,10 +70,11 @@ public class UndoRedoSupport {
     RedoAction redoAction;
     int undoableEdits;
     int redoableEdits;
+    FormModel.UndoRedoManager manager;
     private ArrayList<UndoRedoPerformedListener> listeners;
     
     private UndoRedoSupport(FormModel model) {
-        final FormModel.UndoRedoManager manager = (FormModel.UndoRedoManager)model.getUndoRedoManager();
+        manager = (FormModel.UndoRedoManager)model.getUndoRedoManager();
         manager.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -159,7 +160,7 @@ public class UndoRedoSupport {
         }
         
         final void updateEnabled() {
-            setEnabled(undoableEdits>0);
+            setEnabled(undoableEdits>0 && manager.canUndo());
         }
         
     }
@@ -181,7 +182,7 @@ public class UndoRedoSupport {
         }
         
         final void updateEnabled() {
-            setEnabled(redoableEdits>0);
+            setEnabled(redoableEdits>0 && manager.canRedo());
         }
         
     }
