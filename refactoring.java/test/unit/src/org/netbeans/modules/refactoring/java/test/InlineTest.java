@@ -71,6 +71,58 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
 
+    public void test203371() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/IndexBean.java", "package t;\n"
+                + "import java.io.File;\n"
+                + "import javax.annotation.PostConstruct;\n"
+                + "import javax.faces.bean.ManagedBean;\n"
+                + "import javax.faces.bean.RequestScoped;\n"
+                + "\n"
+                + "@ManagedBean(name=\"IndexBean\")\n"
+                + "@RequestScoped\n"
+                + "public class IndexBean {\n"
+                + "    private File[] roots = File.listRoots();\n"
+                + "    public File[] getRoots() {\n"
+                + "        return roots;\n"
+                + "    }\n"
+                + "    /** Creates a new instance of IndexBean */\n"
+                + "    public IndexBean() {\n"
+                + "    }\n"
+                + "    @PostConstruct\n"
+                + "    public void init() {\n"
+                + "        doSome();\n"
+                + "    }\n"
+                + "    private void doSome() {\n"
+                + "        System.out.println(\"hh\");\n"
+                + "    }\n"
+                + "}"));
+                InlineRefactoring[] r = new InlineRefactoring[1];
+                createInlineMethodRefactoring(src.getFileObject("t/IndexBean.java"), 4, r);
+                performRefactoring(r);
+                verifyContent(src, new File("t/IndexBean.java", "package t;\n"
+                + "import java.io.File;\n"
+                + "import javax.annotation.PostConstruct;\n"
+                + "import javax.faces.bean.ManagedBean;\n"
+                + "import javax.faces.bean.RequestScoped;\n"
+                + "\n"
+                + "@ManagedBean(name=\"IndexBean\")\n"
+                + "@RequestScoped\n"
+                + "public class IndexBean {\n"
+                + "    private File[] roots = File.listRoots();\n"
+                + "    public File[] getRoots() {\n"
+                + "        return roots;\n"
+                + "    }\n"
+                + "    /** Creates a new instance of IndexBean */\n"
+                + "    public IndexBean() {\n"
+                + "    }\n"
+                + "    @PostConstruct\n"
+                + "    public void init() {\n"
+                + "        System.out.println(\"hh\");\n"
+                + "    }\n"
+                + "}"));
+    }
+
     public void testInlineTemp() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
