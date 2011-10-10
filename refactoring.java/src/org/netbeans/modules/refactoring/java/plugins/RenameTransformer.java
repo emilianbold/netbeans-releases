@@ -228,10 +228,10 @@ public class RenameTransformer extends RefactoringVisitor {
             if (elementToFind!=null && elementToFind.getKind().isField() || elementToFind.getKind().equals(ElementKind.METHOD)) {
                 Scope scope = workingCopy.getTrees().getScope(elementPath);
                 TypeElement enclosingTypeElement = scope.getEnclosingClass();
-                TypeMirror superclass = enclosingTypeElement.getSuperclass();
+                TypeMirror superclass = enclosingTypeElement==null ? null:enclosingTypeElement.getSuperclass();
                 Types types = workingCopy.getTypes();
                 
-                if(!types.isSameType(types.getNoType(TypeKind.NONE), superclass) &&
+                if(superclass!=null && !types.isSameType(types.getNoType(TypeKind.NONE), superclass) &&
                     types.isSubtype(elementToFind.getEnclosingElement().asType(), superclass)) {
                     if(elementToFind.getKind().isField()) {
                         for (Element ele : enclosingTypeElement.getEnclosedElements()) {
