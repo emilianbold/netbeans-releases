@@ -43,19 +43,16 @@
     <DimensionLayout dim="vertical">
       <Group type="parallel" groupAlignment="leading" attributes="2048">
           <Group type="sequential" attributes="0">
-              <Group type="parallel" groupAlignment="leading" attributes="0">
-                  <Group type="sequential" attributes="0">
-                      <EmptySpace max="$pref" attributes="0"/>
-                      <Component id="jCheckBox1" min="$pref" max="$pref" attributes="0"/>
-                  </Group>
-                  <Group type="sequential" alignment="leading" attributes="0">
-                      <EmptySpace min="$pref" pref="27" max="$pref" attributes="0"/>
-                      <Component id="jLabel1" min="$pref" max="$pref" attributes="0"/>
-                  </Group>
-              </Group>
-              <EmptySpace pref="188" max="Short.MAX_VALUE" attributes="1028"/>
+              <EmptySpace max="$pref" attributes="0"/>
+              <Component id="jCheckBox1" min="$pref" max="$pref" attributes="0"/>
+              <EmptySpace max="Short.MAX_VALUE" attributes="1540"/>
               <Component id="jLabel2" min="$pref" max="$pref" attributes="0"/>
               <EmptySpace min="$pref" pref="25" max="$pref" attributes="1024"/>
+          </Group>
+          <Group type="sequential" alignment="leading" attributes="0">
+              <EmptySpace min="$pref" pref="27" max="$pref" attributes="0"/>
+              <Component id="jLabel1" min="$pref" max="$pref" attributes="0"/>
+              <EmptySpace min="0" pref="227" max="Short.MAX_VALUE" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

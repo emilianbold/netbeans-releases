@@ -46,6 +46,8 @@ package org.netbeans.modules.refactoring.java.plugins;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -116,7 +118,15 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
             }
             TypeElement e  = (TypeElement) elm;
-            if (RetoucheUtils.getSuperTypes(e, cc, true).isEmpty()) {
+            Collection<TypeElement> superTypes = RetoucheUtils.getSuperTypes(e, cc, true);
+            List<MemberInfo> minfo = new LinkedList<MemberInfo>();
+            for (TypeElement el: superTypes) {
+                MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(el, cc);
+                if(memberInfo.getElementHandle().resolve(cc) != null) { // #200200 - Error in pulling up to a interface with cyclic inheritance error
+                    minfo.add(memberInfo);
+                }
+            }
+            if (minfo.isEmpty()) {
                 return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoSuperTypes")); // NOI18N
             }
             // increase progress (step 2)

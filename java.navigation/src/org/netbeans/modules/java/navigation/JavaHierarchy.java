@@ -57,11 +57,18 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JDialog;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.progress.ProgressUtils;
 import org.openide.awt.StatusDisplayer;
 
 import org.openide.filesystems.FileObject;
@@ -84,51 +91,85 @@ public final class JavaHierarchy {
      */
     public static void show(final FileObject fileObject) {
         if (fileObject != null) {
-            JavaSource javaSource = JavaSource.forFileObject(fileObject);
-
+            final JavaSource javaSource = JavaSource.forFileObject(fileObject);
             if (javaSource != null) {
-                try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                        @Override
-                            public void run(
-                                CompilationController compilationController)
-                                throws Exception {
-                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                                final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
-                                final Element[] elements = topLevels.toArray(new Element[topLevels.size()]);
-                                show(fileObject, elements, compilationController);
+                final AtomicReference<ElementHandle[]> handles = new AtomicReference<ElementHandle[]>();
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(
+                        new Runnable() {
+                            public void run() {
+                                try {
+                                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                                        @Override
+                                        public void run(
+                                            CompilationController compilationController)
+                                            throws Exception {
+                                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                            final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
+                                            final Element[] elements = topLevels.toArray(new Element[topLevels.size()]);
+                                            handles.set(getHandles(elements));
+                                        }
+                                    }, true);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
                             }
-                        }, true);
-
-                    return;
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                        },
+                        NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", fileObject.getName()),
+                        cancel,
+                        false);
+                if (!cancel.get() && handles.get() != null) {
+                    show(fileObject, handles.get());
                 }
             }
         }
     }
 
-    public static void show(FileObject fileObject, Element[] elements,
-        CompilationController compilationController) {
+    public static void show(
+            final FileObject fileObject,
+            final ElementHandle[] elements) {
         LOG.log(Level.FINE, "Showing hierarchy for: {0}", fileObject == null ? null : FileUtil.getFileDisplayName(fileObject));   //NOI18N
         if (fileObject != null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchy.class, "LBL_WaitNode"));
             JDialog dialog = ResizablePopup.getDialog(fileObject);
-            String membersOf = "";
+            final StringBuilder membersOf = new StringBuilder();
             if (elements != null && elements.length > 0) {
-                List<? extends Element> elementsList = Arrays.<Element>asList(elements);
+                final int start;
                 if (elements[0].getKind() == ElementKind.PACKAGE && elements.length > 1) {
-                    membersOf = elementsList.subList(1, elementsList.size()).toString();
+                    start = 1;
                 } else {
-                    membersOf = elementsList.toString();
+                    start = 0;
+                }
+                boolean first = true;
+                for (int i=start; i< elements.length; i++) {
+                    if (!first) {
+                        membersOf.append(", "); //NOI18N
+                    } else {
+                        first = false;
+                    }
+                    membersOf.append(SourceUtils.getJVMSignature(elements[i])[0]);
                 }
             }
-            String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);            
+            String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHierarchy.class, "ACSD_JavaHierarchyDialog", membersOf));
             dialog.setTitle(title); // NOI18N
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements));
             dialog.setVisible(true);
             LOG.log(Level.FINE, "Opened hierarchy for: {0}", FileUtil.getFileDisplayName(fileObject));  //NOI18N
         }
-    }    
+    }
+
+
+
+    @CheckForNull
+    public static final ElementHandle[] getHandles(@NullAllowed final Element[] elements) {
+        if (elements == null) {
+            return null;
+        }
+        final ElementHandle[] res = new ElementHandle[elements.length];
+        for (int i = 0; i< elements.length; i++) {
+            res[i] = ElementHandle.create(elements[i]);
+        }
+        return res;
+    }
 }

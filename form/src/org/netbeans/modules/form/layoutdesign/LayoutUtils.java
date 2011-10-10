@@ -469,12 +469,20 @@ public class LayoutUtils implements LayoutConstants {
             intervals = new LinkedList<LayoutInterval>();
             candidates.add(interval);
         }
+        int d = edge == LEADING ? -1 : 1;
         while (!candidates.isEmpty() && (!justFirst || intervals.isEmpty())) {
             LayoutInterval candidate = candidates.remove(0);
             if (candidate.isGroup()) {
                 if (candidate.isSequential()) {
-                    int index = (edge == LEADING) ? 0 : candidate.getSubIntervalCount()-1;
-                    candidates.add(candidate.getSubInterval(index));
+                    int index = edge == LEADING ? 0 : candidate.getSubIntervalCount()-1;
+                    LayoutInterval sub = candidate.getSubInterval(index);
+                    candidates.add(sub);
+                    if (!mustBeLast && sub.isSingle()) {
+                        index -= d;
+                        if (index >= 0 && index < candidate.getSubIntervalCount()) {
+                            candidates.add(candidate.getSubInterval(index));
+                        }
+                    }
                 } else {
                     Iterator<LayoutInterval> subs = candidate.getSubIntervals();
                     while (subs.hasNext()) {
@@ -487,14 +495,6 @@ public class LayoutUtils implements LayoutConstants {
             } else if ((components && candidate.isComponent())
                        || (gaps && candidate.isEmptySpace())) {
                 intervals.add(candidate);
-            } else if (!mustBeLast) {
-                LayoutInterval neighbor = LayoutInterval.getNeighbor(candidate, edge^1, false, true, false);
-                if (neighbor != null
-                        && ((components && neighbor.isComponent()) || gaps && neighbor.isEmptySpace())
-                        && interval.isParentOf(neighbor)
-                        && !intervals.contains(neighbor)) {
-                    intervals.add(neighbor);
-                }
             }
         }
         return intervals;

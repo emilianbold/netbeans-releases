@@ -81,6 +81,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.RequestProcessor;
 
@@ -164,14 +165,12 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                     getFileObject(document);
                                 if (elementFileObject != null) {
                                     if (element instanceof TypeElement) {
-                                        final Element _element = element;
+                                        final ElementHandle[] handles = JavaHierarchy.getHandles(new Element[] {element});
                                         SwingUtilities.invokeLater (new Runnable () {
                                             public void run () {
                                                 JavaHierarchy.show (
                                                     elementFileObject,
-                                                    new Element[] {_element},
-                                                    compilationController
-                                                );
+                                                    handles);
                                             }
                                         });
                                     } else if (element instanceof VariableElement) {
@@ -181,14 +180,12 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                             element = ((DeclaredType) typeMirror).asElement();
 
                                             if (element != null) {
-                                                final Element _element = element;
+                                                final ElementHandle[] handles = JavaHierarchy.getHandles(new Element[] {element});
                                                 SwingUtilities.invokeLater (new Runnable () {
                                                     public void run () {
                                                         JavaHierarchy.show (
                                                             elementFileObject,
-                                                            new Element[] {_element},
-                                                            compilationController
-                                                        );
+                                                            handles);
                                                     }
                                                 });
                                             }
@@ -203,14 +200,12 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                 element = ((DeclaredType) typeMirror).asElement();
 
                                                 if (element != null) {
-                                                    final Element _element = element;
+                                                    final ElementHandle[] handles = JavaHierarchy.getHandles(new Element[] {element});
                                                     SwingUtilities.invokeLater (new Runnable () {
                                                         public void run () {
                                                             JavaHierarchy.show (
                                                                 elementFileObject,
-                                                                new Element[] {_element},
-                                                                compilationController
-                                                            );
+                                                                handles);
                                                         }
                                                     });
                                                 }
@@ -219,13 +214,12 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                             element = element.getEnclosingElement();
 
                                             if (element != null) {
-                                                final Element _element = element;
+                                                final ElementHandle[] handles = JavaHierarchy.getHandles(new Element[] {element});
                                                 SwingUtilities.invokeLater (new Runnable () {
                                                     public void run () {
                                                         JavaHierarchy.show (
                                                             elementFileObject,
-                                                            new Element[] {_element},
-                                                            compilationController
+                                                            handles
                                                         );
                                                     }
                                                 });
@@ -242,14 +236,12 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                             }
                                         }
                                         if (preferredElement != null) {
-                                            final Element _element = preferredElement;
+                                            final ElementHandle[] handles = JavaHierarchy.getHandles(new Element[] {preferredElement});
                                                 SwingUtilities.invokeLater (new Runnable () {
                                                     public void run () {
                                                         JavaHierarchy.show (
                                                             elementFileObject,
-                                                            new Element[] {_element},
-                                                            compilationController
-                                                        );
+                                                            handles);
                                                     }
                                                 });
                                         }

@@ -806,10 +806,14 @@ public class CompletionContextImpl extends CompletionContext {
         if(primaryFile == null)
             return;
         
-        specialCompletion = true;
+//        specialCompletion = true;
         specialNamespaceMap = CompletionUtil.getNamespacesFromStartTags(document);
         for(String temp : specialNamespaceMap.keySet()) {
             try {
+                if (nsModelMap.containsKey(temp)) {
+                    // ignore, was added from specific location
+                    continue;
+                }
                 DefaultModelProvider provider = new DefaultModelProvider(this);
                 CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), true);
                 if (cm != null) {
@@ -817,7 +821,7 @@ public class CompletionContextImpl extends CompletionContext {
                     continue;
                 }
             } catch (Exception ex) {
-                _logger.log(Level.INFO, null, ex);
+                _logger.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }
@@ -829,11 +833,11 @@ public class CompletionContextImpl extends CompletionContext {
     String suggestPrefix(String tns) {
         if(tns == null)
             return null;
-        
-        if(isSpecialCompletion()) {
+
+        if (specialNamespaceMap.containsKey(tns)) {
             return specialNamespaceMap.get(tns);
         }
-        
+
         //if the tns is already present in declared namespaces,
         //return the prefix
         for(String key : getDeclaredNamespaces().keySet()) {

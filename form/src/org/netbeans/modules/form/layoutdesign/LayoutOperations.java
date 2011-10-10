@@ -652,7 +652,8 @@ class LayoutOperations implements LayoutConstants {
                                 || (align == DEFAULT && alignmentInParent != parent.getGroupAlignment())) {
                             layoutModel.setIntervalAlignment(li, group.getRawAlignment());
                         }
-                        if (!LayoutInterval.canResize(group) && LayoutInterval.wantResize(li)) {
+                        if ((!LayoutInterval.canResize(group) || align == BASELINE)
+                                && LayoutInterval.wantResize(li)) {
                             // resizing interval in fixed group - make it fixed
                             if (li.isGroup()) {
                                 suppressGroupResizing(li);
@@ -1840,6 +1841,17 @@ class LayoutOperations implements LayoutConstants {
                         // aligned default gap that is not touching its neighbor is suspicious
                         return false;
                     }
+                }
+            }
+        } else if (gap.getPreferredSize() == 0) {
+            if (!LayoutInterval.canResize(gap)) {
+                return false;
+            }
+            for (int i=0; i < seq.getSubIntervalCount(); i++) {
+                LayoutInterval sub = seq.getSubInterval(i);
+                if (sub != gap && LayoutInterval.wantResize(sub)) {
+                    return false; // resizing zero gap in resizing sequence does not make sense
+                                  // (see bug 202636, attachment 111677)
                 }
             }
         }

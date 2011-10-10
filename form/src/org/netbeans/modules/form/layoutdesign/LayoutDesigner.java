@@ -4320,8 +4320,17 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         unresized = operations.eliminateRedundantSuppressedResizing(superParent, dimension);
                         if ((unresized == null || unresized.isEmpty())
                             && operations.completeGroupResizing(superParent, dimension)) {
-                            // resizing gap added, may need optimization (e.g. ALT_Resizing04Test.doChanges2)
-                            operations.optimizeGaps(superParent, dimension);
+                            // resizing gap added, may need gap optimization (e.g. ALT_Resizing04Test.doChanges2)
+                            // which may also need to propagate whole way up (e.g. bug 203129)
+                            LayoutInterval p = superParent;
+                            while (p.getParent() != null) {
+                                if (operations.optimizeGaps(p, dimension) < 0) {
+                                    break;
+                                } else {
+                                    operations.optimizeGaps2(p, dimension);
+                                    p = LayoutInterval.getFirstParent(p, PARALLEL);
+                                }
+                            }
                         }
                     }
 

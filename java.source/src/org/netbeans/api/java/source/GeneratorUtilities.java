@@ -732,7 +732,7 @@ public final class GeneratorUtilities {
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
                     if (currentToImportElement == impElement || isStar && currentToImportElement == el) {
                         imports.remove(currentExisting);                        
-                    } else if (comparator.compare(currentToImportElement, impElement) > 0) {
+                    } else if (comparator.compare(currentToImportElement, imp) > 0) {
                         break;
                     }
                     currentExisting--;
@@ -1056,7 +1056,7 @@ public final class GeneratorUtilities {
     
     private static ClassMemberComparator CLASS_MEMBER_COMPARATOR = new ClassMemberComparator();
 
-    private static class ImportsComparator implements Comparator<Element> {
+    private static class ImportsComparator implements Comparator<Object> {
 
         private CodeStyle.ImportGroups groups;
         
@@ -1065,35 +1065,47 @@ public final class GeneratorUtilities {
         }
 
         @Override
-        public int compare(Element e1, Element e2) {
-            if (e1 == e2)
+        public int compare(Object o1, Object o2) {
+            if (o1 == o2)
                 return 0;
             
             boolean isStatic1 = false;
             StringBuilder sb1 = new StringBuilder();
-            if (e1.getKind().isField() || e1.getKind() == ElementKind.METHOD) {
-                sb1.append('.').append(e1.getSimpleName());
-                e1 = e1.getEnclosingElement();
-                isStatic1 = true;
-            }
-            if (e1.getKind().isClass() || e1.getKind().isInterface()) {
-                sb1.insert(0, ((TypeElement)e1).getQualifiedName());
-            } else if (e1.getKind() == ElementKind.PACKAGE) {
-                sb1.insert(0, ((PackageElement)e1).getQualifiedName());
+            if (o1 instanceof ImportTree) {
+                isStatic1 = ((ImportTree)o1).isStatic();
+                sb1.append(((ImportTree)o1).getQualifiedIdentifier().toString());
+            } else if (o1 instanceof Element) {
+                Element e1 = (Element)o1;
+                if (e1.getKind().isField() || e1.getKind() == ElementKind.METHOD) {
+                    sb1.append('.').append(e1.getSimpleName());
+                    e1 = e1.getEnclosingElement();
+                    isStatic1 = true;
+                }
+                if (e1.getKind().isClass() || e1.getKind().isInterface()) {
+                    sb1.insert(0, ((TypeElement)e1).getQualifiedName());
+                } else if (e1.getKind() == ElementKind.PACKAGE) {
+                    sb1.insert(0, ((PackageElement)e1).getQualifiedName());
+                }
             }
             String s1 = sb1.toString();
                 
             boolean isStatic2 = false;
             StringBuilder sb2 = new StringBuilder();
-            if (e2.getKind().isField() || e2.getKind() == ElementKind.METHOD) {
-                sb2.append('.').append(e2.getSimpleName());
-                e2 = e2.getEnclosingElement();
-                isStatic2 = true;
-            }
-            if (e2.getKind().isClass() || e2.getKind().isInterface()) {
-                sb2.insert(0, ((TypeElement)e2).getQualifiedName());
-            } else if (e2.getKind() == ElementKind.PACKAGE) {
-                sb2.insert(0, ((PackageElement)e2).getQualifiedName());
+            if (o2 instanceof ImportTree) {
+                isStatic2 = ((ImportTree)o2).isStatic();
+                sb2.append(((ImportTree)o2).getQualifiedIdentifier().toString());
+            } else if (o2 instanceof Element) {
+                Element e2 = (Element)o2;
+                if (e2.getKind().isField() || e2.getKind() == ElementKind.METHOD) {
+                    sb2.append('.').append(e2.getSimpleName());
+                    e2 = e2.getEnclosingElement();
+                    isStatic2 = true;
+                }
+                if (e2.getKind().isClass() || e2.getKind().isInterface()) {
+                    sb2.insert(0, ((TypeElement)e2).getQualifiedName());
+                } else if (e2.getKind() == ElementKind.PACKAGE) {
+                    sb2.insert(0, ((PackageElement)e2).getQualifiedName());
+                }
             }
             String s2 = sb2.toString();
 
