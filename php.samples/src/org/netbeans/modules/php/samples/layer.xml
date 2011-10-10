@@ -51,13 +51,6 @@ made subject to such option by the copyright holder.
                 <folder name="PHP">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                     <attr name="position" intvalue="550"/>
-                    <file name="AirAlliance" url="AirAlliance.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/AirAlliance.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/AirAlliance.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file>
                     <file name="Jobeet" url="Jobeet.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Jobeet.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
