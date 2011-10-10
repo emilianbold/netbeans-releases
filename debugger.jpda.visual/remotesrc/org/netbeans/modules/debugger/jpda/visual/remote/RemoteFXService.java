@@ -92,36 +92,10 @@ public class RemoteFXService {
     }, "FX Access Thread (Visual Debugger)"); // NOI18N
     
     public static void startAccessLoop() {
-//        preloadFxClasses();
-        setDebugMode();
         accessThread.setDaemon(true);
         accessThread.setPriority(Thread.MIN_PRIORITY);
         accessThread.start();
     }
-
-    /**
-     * JavaFX runtime is boobietrapped with various checks for {@linkplain com.sun.javafx.runtime.SystemProperties#isDebug() }
-     * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
-     */
-    private static void setDebugMode() {
-        try {
-            Class spClz = Class.forName("com.sun.javafx.runtime.SystemProperties", true, RemoteFXService.class.getClassLoader());
-            Field dbgFld = spClz.getDeclaredField("isDebug");
-            dbgFld.setAccessible(true);
-            dbgFld.set(null, Boolean.TRUE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-//    private static void preloadFxClasses() {
-//        LOGGER.info("initializing classes");
-//        try {
-//            Class.forName("javafx.scene.image.Image", true, Thread.currentThread().getContextClassLoader());
-//        } catch (Exception e) {
-//            LOGGER.log(Level.SEVERE, null, e);
-//        }
-//    }
     
     private static void access() {};
 }
