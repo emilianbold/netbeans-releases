@@ -42,42 +42,26 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-public class CdiAnalysisTestTask extends CdiAnalysisTask {
+public abstract class CdiEditorAwareJavaSourceTaskFactory extends
+        EditorAwareJavaSourceTaskFactory
+{
 
+    protected CdiEditorAwareJavaSourceTaskFactory( Priority priority ) {
+        super(Phase.RESOLVED,  priority, "text/x-java");    // NOI18N
+    }
     
-    public CdiAnalysisTestTask( ) {
-        super(null);
+    void restart( FileObject fileObject ){
+        reschedule( fileObject );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
-     */
-    @Override
-    protected void run( CompilationInfo compInfo ) {
-        super.run(compInfo);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#getResult()
-     */
-    @Override
-    protected CdiAnalysisTestResult getResult() {
-        return (CdiAnalysisTestResult)super.getResult();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#createResult(org.netbeans.api.java.source.CompilationInfo)
-     */
-    @Override
-    protected CdiAnalysisResult createResult( CompilationInfo info ) {
-        return new CdiAnalysisTestResult(info);
-    }
-    
 }
