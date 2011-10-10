@@ -70,21 +70,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
                 ->setPostfix("<div class=\"cleaner\"></div></div></div>");
     }
 
-    
-
-    public function toText($array) {
-        foreach ($array as $object) {
-            if ($object->getText_cz() == 1) {
-                return "Ano";
-            } else
-                return "Ne";
-        }
-    }
-
 }
 
 class General {
-    
+
     public static function getPerex($text) {
         if (strlen($text) > 200) {
             $firstPor = substr($text, 0, 200);
@@ -94,19 +83,11 @@ class General {
         } return $text;
     }
 
-    public static function toText($value) {
-
-        if ($value == 1) {
-            return "Ano";
-        } else
-            return "Ne";
-    }
-
     public static function addToCookie($id) {
         $session = new Zend_Session_Namespace('favorites');
         $session->setExpirationSeconds(2592000);
         if (is_numeric($id)) {
-            //check if id is not in already 
+            //check if id is not in already
             for ($i = 0; $i < count($session->favorites); $i++) {
                 if ($session->favorites[$i] == $id) {
                     return;

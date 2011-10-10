@@ -42,7 +42,7 @@
  */
 
 /**
- * 
+ *
  *
  * @author Filip Zamboj (fzamboj@netbeans.org)
  */
@@ -57,7 +57,7 @@ class Application_Model_PropertyMapper {
     /**
      *
      * @param type $dbTable
-     * @return Application_Model_PropertyMapper 
+     * @return Application_Model_PropertyMapper
      */
     public function setDbTable($dbTable) {
 
@@ -93,14 +93,14 @@ class Application_Model_PropertyMapper {
     /**
      *
      * @param Application_Model_Property $property
-     * @return type 
+     * @return type
      */
     public function save(Application_Model_Property $property) {
 
         $data = array(
             'reference_no' => $property->getReference_no(),
-            'title_en' => $property->getTitle_en(),
-            'text_en' => $property->getText_en(),
+            'title' => $property->getTitle(),
+            'text' => $property->getText(),
             'disposition_id' => $property->getDisposition_id(),
             'area' => $property->getArea(),
             'floor' => $property->getFloor(),
@@ -137,7 +137,7 @@ class Application_Model_PropertyMapper {
      *
      * @param type $id
      * @param Application_Model_Property $property
-     * @return type 
+     * @return type
      */
     public function find($id, Application_Model_Property $property) {
 
@@ -151,9 +151,9 @@ class Application_Model_PropertyMapper {
         $row = $result->current();
 
         $property->setId($row->id)
-                ->setTitle_en($row->title_en)
-                ->setText_en($row->text_en)
-           
+                ->setTitle($row->title)
+                ->setText($row->text)
+
                 ->setDisposition_id($row->diposition_id)
                 ->setArea($row->area)
                 ->setFloor($row->floor)
@@ -171,7 +171,7 @@ class Application_Model_PropertyMapper {
     /**
      *
      * @param type $resultSet
-     * @return Application_Model_Property 
+     * @return Application_Model_Property
      */
     private function processResultSet($resultSet) {
         $entries = array();
@@ -181,8 +181,8 @@ class Application_Model_PropertyMapper {
 
             $entry->setId($row->id);
             $entry->setReference_no($row->reference_no);
-            $entry->setTitle_en($row->title_en);
-            $entry->setText_en($row->text_en);
+            $entry->setTitle($row->title);
+            $entry->setText($row->text);
             $entry->setDisposition_id($row->disposition_id);
             $entry->setArea($row->area);
             $entry->setFloor($row->floor);
@@ -208,12 +208,12 @@ class Application_Model_PropertyMapper {
 
     /**
      *
-     * @return type 
+     * @return type
      */
     public function fetchAll($query = NULL) {
         if ($query === NULL) {
             $resultSet = $this->getDbTable()->fetchAll();
-            
+
         } else {
             $table = $this->getDbTable();
             $select = $table->select();
@@ -227,4 +227,3 @@ class Application_Model_PropertyMapper {
 
 }
 
-?>

@@ -44,7 +44,7 @@
 class Application_Model_Disposition {
 
     protected $id;
-    protected $text_en;
+    protected $text;
 
     public function __construct(array $options = null) {
         if (is_array($options)) {
@@ -96,14 +96,14 @@ class Application_Model_Disposition {
         $this->id = $id;
     }
 
-   
 
-    public function getText_en() {
-        return $this->text_en;
+
+    public function getText() {
+        return $this->text;
     }
 
-    public function setText_en($text_en) {
-        $this->text_en = $text_en;
+    public function setText($text) {
+        $this->text = $text;
     }
 
 }

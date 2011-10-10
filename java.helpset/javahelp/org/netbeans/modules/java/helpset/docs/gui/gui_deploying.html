@@ -15,28 +15,19 @@
         <p>In order for the applications that you create to work 
         outside of the IDE, you might have to include some extra JAR files 
         when you deploy the application. </p>
-        <p>The following JAR files might be needed by your deployed applications:</p>
-        <ul>
-        <li><tt>swing-layout-1.0.3.jar</tt>. This library contains the various layout-related  
+        <p>The <tt>swing-layout-1.0.3.jar</tt> file might be needed by your deployed applications. This library contains the various layout-related  
         extensions, such as the GroupLayout layout manager. This library is included in 
     version 6 of the Java Platform, so you do not need to package it with your application 
-if you are deploying it to environments that have version 6 of the JRE.</li> 
-<li><tt>appframework-1.0.3.jar</tt> and <tt>swing-worker-1.1.jar</tt>. 
-    These libraries represent the Swing Application Framework. 
-    They are needed if you use the 
-    Java Desktop Application template in creating your application. As of 
-JDK 6, the Swing Application Framework is not part of the Java Platform.</li>
-    application is created with the Database shell of the Java Desktop Application 
-    template or you have used the Bind dialog box in creating your application, 
-    your application needs this library. As of 
-JDK 6, the Beans Binding library is not part of the Java Platform.</li>
-        </ul>
+if you are deploying it to environments that have version 6 of the JRE.</p>
+        <p>As of JDK 6, the Beans Binding library is not part of the Java Platform.</p>
         <ul class="note"> 
             <li>You can find these JAR files in the
             following folders on your system: 
             <blockquote>
-                <tt><i>NetBeans_installation_folder</i>/java/modules/ext/ (for the Beans Binding and Swing Application Framework libraries)</tt>
-                <tt><i>NetBeans_installation_folder</i>/platform/modules/ext/ (for the Swing Layout Extensions library)</tt>
+                <ul>
+				<li><tt><i>NetBeans_installation_folder</i>/java/modules/ext/ (for the Beans Binding library)</tt></li>
+                <li><tt><i>NetBeans_installation_folder</i>/platform/modules/ext/ (for the Swing Layout Extensions library)</tt></li>
+				</ul>
             </blockquote>
             </li>
         </ul>  
