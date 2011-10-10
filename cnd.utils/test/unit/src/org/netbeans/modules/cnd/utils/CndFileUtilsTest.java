@@ -44,6 +44,7 @@ import org.junit.Test;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -54,6 +55,8 @@ public class CndFileUtilsTest {
     public void testLocalUrlToFileObject() throws IOException {
         File temp = File.createTempFile("urlToFileObject", ".txt");
         Assert.assertNotNull(temp);
+        // on windows it has ~ to have short names
+        temp = FileUtil.normalizeFile(temp);
         temp.deleteOnExit();
         String fileExternalForm = temp.toURI().toURL().toExternalForm();
         String absPath = temp.getAbsolutePath();
@@ -65,9 +68,15 @@ public class CndFileUtilsTest {
         Assert.assertEquals(fo, CndFileUtils.urlToFileObject(fileExternalForm));
         Assert.assertEquals(fo, CndFileUtils.urlToFileObject(foExternalForm));
         Assert.assertEquals(fo, CndFileUtils.urlToFileObject(absPath));
-        Assert.assertEquals(fo, CndFileUtils.urlToFileObject("file:" + absPath));
-        Assert.assertNull(CndFileUtils.urlToFileObject("file:/" + absPath));
-        Assert.assertEquals(fo, CndFileUtils.urlToFileObject("file://" + absPath));
+        // we can not concatenate abs path and protocol as is, because
+        // if abs path contains space => it's invalid URI symbol
+        String escapedPath = absPath.replaceAll(" ", "%20");
+        if (!escapedPath.startsWith("/")) {
+            escapedPath = "/" + escapedPath;
+        }
+        Assert.assertEquals(fo, CndFileUtils.urlToFileObject("file:" + escapedPath));
+        Assert.assertNull(CndFileUtils.urlToFileObject("file:/" + escapedPath));
+        Assert.assertEquals(fo, CndFileUtils.urlToFileObject("file://" + escapedPath));
         temp.delete();
     }
 }
