@@ -614,37 +614,42 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         };
 
         public TemplateNode (Node n) { 
-            this (n, new DataFolderFilterChildren (n), new InstanceContent ());
+            this (n, new DataFolderFilterChildren (n), new LazyLookup ());
         }
         
         private TemplateNode (Node n, org.openide.nodes.Children ch) { 
-            this (n, ch, new InstanceContent ());
+            this (n, ch, new LazyLookup ());
         }
         
-        private TemplateNode (Node originalNode, org.openide.nodes.Children ch, InstanceContent content) {
+        private TemplateNode (final Node originalNode, org.openide.nodes.Children ch, LazyLookup contentLookup) {
             super (originalNode, ch,
-                   new ProxyLookup (new Lookup [] { new AbstractLookup (content), originalNode.getLookup () } )
+                   new ProxyLookup (new Lookup [] { contentLookup, originalNode.getLookup () } )
                    );
 
-            DataObject dobj = getDOFromNode (originalNode);
-            
-            // #69623: IllegalArgumentException when call getFolder() on an unvalid DataObject
-            if (dobj.isValid ()) {
-                DataFolder folder = null;
-                if (dobj instanceof DataFolder) {
-                    folder = (DataFolder) dobj;
-                } else {
-                    // check parent
-                    if (dobj.getPrimaryFile ().getParent () != null && dobj.getPrimaryFile ().getParent ().isValid ()) {
-                        folder = dobj.getFolder ();
+            contentLookup.setInstanceGetter(Index.class, new LazyLookup.InstanceGetter<Index>() {
+
+                @Override
+                public Index getInstance() {
+                    DataObject dobj = getDOFromNode (originalNode);
+
+                    // #69623: IllegalArgumentException when call getFolder() on an unvalid DataObject
+                    if (dobj.isValid ()) {
+                        DataFolder folder = null;
+                        if (dobj instanceof DataFolder) {
+                            folder = (DataFolder) dobj;
+                        } else {
+                            // check parent
+                            if (dobj.getPrimaryFile ().getParent () != null && dobj.getPrimaryFile ().getParent ().isValid ()) {
+                                folder = dobj.getFolder ();
+                            }
+                        }
+                        if (folder != null) {
+                            return new DataFolder.Index (folder, TemplateNode.this);
+                        }
                     }
+                    return null;
                 }
-                if (folder != null) {
-                    content.add (new DataFolder.Index (folder, this));
-                }
-            }
-            
-            content.add (this);
+            });
         }
         @Override
         public Action [] getActions (boolean context) {
@@ -850,14 +855,29 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             Node [] orig = super.createNodes (key);
             Node [] filtered = new Node [orig.length];
             for (int i = 0; i < orig.length; i++) {
-                DataObject dobj = getDOFromNode (orig [i]);
-                if (dobj.isTemplate ()) {
+                FileObject fo = orig[i].getLookup ().lookup(FileObject.class);
+                boolean isTemplate;
+                if (fo != null) {
+                    isTemplate = isTemplate(fo);
+                } else {
+                    DataObject dobj = getDOFromNode (orig [i]);
+                    isTemplate = dobj.isTemplate();
+                }
+                if (isTemplate) {
                     filtered [i] = new TemplateNode (orig [i], Children.LEAF);
                 } else {
                     filtered [i] = new TemplateNode (orig [i]);
                 }
             }
             return filtered;
+        }
+        
+        private boolean isTemplate(FileObject obj) {
+            Object o = obj.getAttribute(DataObject.PROP_TEMPLATE);
+            boolean ret = false;
+            if (o instanceof Boolean)
+                ret = ((Boolean) o).booleanValue();
+            return ret;
         }
 
         @Override
@@ -1280,6 +1300,133 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         protected boolean asynchronous () {
             return true;
         }
+    }
+    
+    /**
+     * A lookup that loads the instance from {@link InstanceGetter} when needed.
+     * @param <T> the instance type.
+     */
+    private static final class LazyLookup<T> extends AbstractLookup {
+        
+        private Class<T> clazz;
+        private InstanceGetter<T> instanceGetter;
+        private boolean initialized = false;
+        
+        public LazyLookup() {
+        }
+        
+        public void setInstanceGetter(Class<T> clazz, InstanceGetter<T> instanceGetter) {
+            this.clazz = clazz;
+            this.instanceGetter = instanceGetter;
+        }
+
+        @Override
+        protected void beforeLookup(Template<?> template) {
+            super.beforeLookup(template);
+            
+            if (clazz.equals(template.getType())) {
+                synchronized (this) {
+                    if (!initialized) {
+                        T instance = instanceGetter.getInstance();
+                        if (instance != null) {
+                            addPair(new SimpleItem<T>(instance));
+                        }
+                        initialized = true;
+                    }
+                }
+            }
+        }
+        
+        /** Copy from AbstractLookup.SimpleItem */
+        private final static class SimpleItem<T> extends Pair<T> {
+            private T obj;
+
+            /** Create an item.
+             * @obj object to register
+             */
+            public SimpleItem(T obj) {
+                if (obj == null) {
+                    throw new NullPointerException();
+                }
+                this.obj = obj;
+            }
+
+            /** Tests whether this item can produce object
+             * of class c.
+             */
+            @Override
+            public boolean instanceOf(Class<?> c) {
+                return c.isInstance(obj);
+            }
+
+            /** Get instance of registered object. If convertor is specified then
+             *  method InstanceLookup.Convertor.convertor is used and weak reference
+             * to converted object is saved.
+             * @return the instance of the object.
+             */
+            @Override
+            public T getInstance() {
+                return obj;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o instanceof SimpleItem) {
+                    return obj.equals(((SimpleItem) o).obj);
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public int hashCode() {
+                return obj.hashCode();
+            }
+
+            /** An identity of the item.
+             * @return string representing the item, that can be used for
+             *   persistance purposes to locate the same item next time
+             */
+            @Override
+            public String getId() {
+                return "IL[" + obj.toString(); // NOI18N
+            }
+
+            /** Getter for display name of the item.
+             */
+            @Override
+            public String getDisplayName() {
+                return obj.toString();
+            }
+
+            /** Method that can test whether an instance of a class has been created
+             * by this item.
+             *
+             * @param obj the instance
+             * @return if the item has already create an instance and it is the same
+             *  as obj.
+             */
+            @Override
+            protected boolean creatorOf(Object obj) {
+                return obj == this.obj;
+            }
+
+            /** The class of this item.
+             * @return the correct class
+             */
+            @SuppressWarnings("unchecked")
+            @Override
+            public Class<? extends T> getType() {
+                return (Class<? extends T>)obj.getClass();
+            }
+        }
+        
+        private static interface InstanceGetter<T> {
+            
+            T getInstance();
+            
+        }
+        
     }
     
 }
