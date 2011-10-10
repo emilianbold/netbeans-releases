@@ -46,8 +46,10 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * #undef directive implementation
@@ -71,6 +73,14 @@ public final class APTUndefineNode extends APTMacroBaseNode
         super(token);
     }
     
+    @Override
+    public boolean accept(APTFile curFile, APTToken token) {
+        int ttype = token.getType();
+        super.accept(curFile, token);
+        return !APTUtils.isEndDirectiveToken(ttype);
+    }
+    
+    @Override
     public final int getType() {
         return APT.Type.UNDEF;
     }    
