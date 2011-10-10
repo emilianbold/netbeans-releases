@@ -107,9 +107,6 @@ public final class MainWindow {
 
     private static MainWindow theInstance;
 
-    private final static boolean showCustomBackground = UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
-    
-
     /** Constructs main window. */
     private MainWindow(JFrame frame) {
         this.frame = frame;
@@ -160,7 +157,7 @@ public final class MainWindow {
             }
 
         };
-        if( showCustomBackground )
+        if( isShowCustomBackground() )
             contentPane.setOpaque( false );
         frame.setContentPane(contentPane);
 
@@ -195,7 +192,7 @@ public final class MainWindow {
                 status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
-                if( showCustomBackground )
+                if( isShowCustomBackground() )
                     statusLinePanel.setOpaque( false);
                 int magicConstant = 0;
                 if (Utilities.isMac()) {
@@ -305,7 +302,7 @@ public final class MainWindow {
         if (innerIconsPanel != null) {
             panel.add (innerIconsPanel, BorderLayout.EAST);
         }
-        if( showCustomBackground )
+        if( isShowCustomBackground() )
             panel.setOpaque( false );
     }
     
@@ -325,7 +322,7 @@ public final class MainWindow {
         }
         Iterator<? extends StatusLineElementProvider> it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
-        if( showCustomBackground )
+        if( isShowCustomBackground() )
             icons.setOpaque( false );
         icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
         boolean some = false;
@@ -449,7 +446,7 @@ public final class MainWindow {
         JMenuBar menu = getCustomMenuBar();
         if (menu == null) {
              menu = new MenuBar (null);
-             if( showCustomBackground )
+             if( isShowCustomBackground() )
                 menu.setOpaque( false);
         }
         menu.setBorderPainted(false);
@@ -610,7 +607,7 @@ public final class MainWindow {
             desktopPanel = new JPanel();
             desktopPanel.setBorder(getDesktopBorder());
             desktopPanel.setLayout(new BorderLayout());
-            if( showCustomBackground )
+            if( isShowCustomBackground() )
                 desktopPanel.setOpaque( false );
         }
         return desktopPanel;
@@ -751,6 +748,10 @@ public final class MainWindow {
         public HeavyWeightPopup(Component owner, Component contents, int x, int y) {
             super( owner, contents, x, y);
         }
+    }
+    
+    private static boolean isShowCustomBackground() {
+        return UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
     }
 }
 
