@@ -64,15 +64,15 @@ public class ChangeMethodParametersTest extends HintsTestBase {
     public void testAddParameter() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.AddParameter",
                     180,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i) to method(int i, java.lang.String hello_World)"
+                "Change Method Signature from method(int i) to method(int i, String hello_World)"
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.AddParameter",
                     215,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i) to method(java.lang.String hello_World, int i)"
+                "Change Method Signature from method(int i) to method(String hello_World, int i)"
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.AddParameter",
                     250,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i) to method(java.lang.String hello_World, int i, java.lang.String string)"
+                "Change Method Signature from method(int i) to method(String hello_World, int i, String string)"
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.AddParameter",
                     290,  new HashSet<String>(Arrays.asList(
@@ -83,40 +83,40 @@ public class ChangeMethodParametersTest extends HintsTestBase {
     public void test201360() throws Exception { // NullPointerException at org.netbeans.modules.java.hints.errors.ChangeMethodParameters.analyze
         performTestAnalysisTest("org.netbeans.test.java.hints.Test201360",
                     205,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from getColor(int number) to getColor()", "Change Method Signature from getColor(int number, java.awt.Color failedColor) to getColor()"
+                "Change Method Signature from getColor(int number) to getColor()", "Change Method Signature from getColor(int number, Color failedColor) to getColor()"
         )));
     }
     
     public void testReorderParameter() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.ReorderParameter",
                     312,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i, java.lang.String a, java.lang.Object o, boolean b) to "
-                + "method(boolean b, java.lang.String a, java.lang.Object o, int i)"
+                "Change Method Signature from method(int i, String a, Object o, boolean b) to "
+                + "method(boolean b, String a, Object o, int i)"
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.ReorderParameter",
                     345,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i, java.lang.String a, java.lang.Object o, boolean b) to "
-                + "method(java.lang.String a, java.lang.Object o, boolean b, int i)"
+                "Change Method Signature from method(int i, String a, Object o, boolean b) to "
+                + "method(String a, Object o, boolean b, int i)"
         )));
     }
     
     public void testRemoveParameter() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.RemoveParameter",
                     312,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i, java.lang.String a, java.lang.Object o, boolean b) to "
-                + "method(int i, java.lang.String a, java.lang.Object o)"
+                "Change Method Signature from method(int i, String a, Object o, boolean b) to "
+                + "method(int i, String a, Object o)"
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.RemoveParameter",
                     340,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i, java.lang.String a, java.lang.Object o, boolean b) to "
-                + "method(java.lang.String a)"
+                "Change Method Signature from method(int i, String a, Object o, boolean b) to "
+                + "method(String a)"
         )));
     }
     
     public void test200235() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.AbstractMethod",
                     195,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from method(int i) to method(int i, java.lang.String hello_World)"
+                "Change Method Signature from method(int i) to method(int i, String hello_World)"
         )));
     }
 
