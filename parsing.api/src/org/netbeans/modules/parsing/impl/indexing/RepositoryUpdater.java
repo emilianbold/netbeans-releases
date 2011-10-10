@@ -59,25 +59,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -465,6 +447,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
     @Override
     public void stateChanged (@NonNull final ChangeEvent event) {
+        visibilityCache.clear();
         if (Crawler.listenOnVisibility()) {
             visibilityChanged.schedule(VISIBILITY_CHANGE_WINDOW);
         }
@@ -474,7 +457,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     // FileChangeListener implementation
     // -----------------------------------------------------------------------
     
-    final FileEventLog eventQueue = new FileEventLog();
+    private final FileEventLog eventQueue = new FileEventLog();
+    //@GuardedBy("visibilityCache")
+    private final Map<FileObject,Boolean> visibilityCache = Collections.synchronizedMap(new WeakHashMap<FileObject, Boolean>());
 
     private boolean isVisible(
         @NonNull FileObject file,
@@ -485,13 +470,36 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         try {
             final VisibilityQuery vq = VisibilityQuery.getDefault();
+            final Deque<FileObject> fta = new ArrayDeque<FileObject>();
+            Boolean vote = null;
+            boolean folder = false;
             while (root != null && !root.equals(file)) {
+                vote = visibilityCache.get(file);
+                if (vote != null) {
+                    break;
+                }
+                if (folder || file.isFolder()) {
+                    fta.offer(file);
+                }
                 if (!vq.isVisible(file)) {
-                    return false;
+                    vote = Boolean.FALSE;
+                    break;
                 }
                 file = file.getParent();
+                folder = true;
             }
-            return vq.isVisible(file);
+            if (vote == null) {
+                vote = vq.isVisible(file);
+                fta.offer(file);
+            }
+            if (!fta.isEmpty()) {
+                synchronized(visibilityCache) {
+                    for (FileObject nf : fta) {
+                        visibilityCache.put(nf, vote);
+                    }
+                }
+            }
+            return vote;
         } finally {
             if (PERF_LOGGER.isLoggable(Level.FINE)) {
                 PERF_LOGGER.log(
