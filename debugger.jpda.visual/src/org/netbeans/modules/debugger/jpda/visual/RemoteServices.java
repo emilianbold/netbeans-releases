@@ -69,6 +69,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -383,7 +384,8 @@ public class RemoteServices {
         }
     }
     
-    public static List<RemoteListener> getAttachedListeners(final JavaComponentInfo ci) throws PropertyVetoException {
+    public static List<RemoteListener> getAttachedListeners(final JavaComponentInfo ci,
+                                                            final boolean combineAllTypes) throws PropertyVetoException {
         final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
         final JPDAThreadImpl thread = ci.getThread();
         final ObjectReference component = ci.getComponent();
@@ -391,7 +393,7 @@ public class RemoteServices {
             @Override
             public void run() {
                 if (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) {
-                    retrieveAttachedListeners(thread, component, rlisteners);
+                    retrieveAttachedListeners(thread, component, rlisteners, combineAllTypes);
                 } else {
                     retrieveAttachedFXListeners(thread, component, rlisteners);
                 }
@@ -400,10 +402,17 @@ public class RemoteServices {
         return rlisteners;
     }
         
-    private static void retrieveAttachedListeners(JPDAThreadImpl thread, ObjectReference component, List<RemoteListener> rlisteners) {
+    private static void retrieveAttachedListeners(JPDAThreadImpl thread,
+                                                  ObjectReference component,
+                                                  List<RemoteListener> rlisteners,
+                                                  boolean combineAllTypes) {
         ThreadReference t = thread.getThreadReference();
         ReferenceType clazz = component.referenceType();
         List<Method> visibleMethods = clazz.visibleMethods();
+        Map<ObjectReference, RemoteListener> listenersByInstance = null;
+        if (combineAllTypes) {
+            listenersByInstance = new HashMap<ObjectReference, RemoteListener>();
+        }
         for (Method m : visibleMethods) {
             String name = m.name();
             if (!name.startsWith("get") || !name.endsWith("Listeners")) {
@@ -435,7 +444,17 @@ public class RemoteServices {
             ArrayReference array = (ArrayReference) result;
             List<Value> listeners = array.getValues();
             for (Value v : listeners) {
+                if (combineAllTypes) {
+                    RemoteListener rl = listenersByInstance.get((ObjectReference) v);
+                    if (rl != null) {
+                        rl.addType(listenerType);
+                        continue;
+                    }
+                }
                 RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
+                if (combineAllTypes) {
+                    listenersByInstance.put((ObjectReference) v, rl);
+                }
                 rlisteners.add(rl);
             }
         }
@@ -754,6 +773,8 @@ public class RemoteServices {
     public static class RemoteListener {
         
         private String type;
+        private List<String> allTypesList;
+        private String[] allTypes;
         //private String classType;
         private ObjectReference l;
         
@@ -766,6 +787,29 @@ public class RemoteServices {
             return type;
         }
         
+        public void setAllTypes(String[] allTypes) {
+            this.allTypes = allTypes;
+        }
+        
+        private void addType(String listenerType) {
+            if (allTypesList == null) {
+                allTypesList = new ArrayList<String>();
+                allTypesList.add(type);
+            }
+            allTypesList.add(listenerType);
+        }
+        
+        public String[] getTypes() {
+            if (allTypes == null) {
+                if (allTypesList != null) {
+                    allTypes = allTypesList.toArray(new String[] {});
+                } else {
+                    allTypes = new String[] { type };
+                }
+            }
+            return allTypes;
+        }
+        
         //public String getClassType() {
         //    return classType;
         //}
@@ -773,6 +817,12 @@ public class RemoteServices {
         public ObjectReference getListener() {
             return l;
         }
+
+        @Override
+        public String toString() {
+            return "RemoteListener("+type+")["+l+"]";
+        }
+
     }
     
     public static interface LoggingListenerCallBack {

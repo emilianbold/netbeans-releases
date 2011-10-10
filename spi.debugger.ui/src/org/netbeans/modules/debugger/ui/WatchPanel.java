@@ -94,6 +94,10 @@ public class WatchPanel {
         FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
         String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
+        if (!mimeType.startsWith("text/")) { // NOI18N
+            // If the current file happens to be of unknown or not text MIME type, use the ordinary text one.
+            mimeType = "text/plain"; // NOI18N
+        }
 
         //Add JEditorPane and context
         JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
