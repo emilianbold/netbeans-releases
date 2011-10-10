@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +75,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -87,7 +87,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
@@ -114,7 +113,7 @@ public class ClipboardHandler {
     }
 
     private static final Logger LOG = Logger.getLogger(ClipboardHandler.class.getName());
-    private static final RequestProcessor WORKER = new RequestProcessor(ClipboardHandler.class.getName(), 1, false, false);
+    private static final RequestProcessor WORKER = new RequestProcessor(ClipboardHandler.class.getName(), 3, false, false);
     
     private static void doImport(JavaSource js, final Document doc, final int caret, final Map<String, String> simple2ImportFQN, final List<Position[]> inSpans, AtomicBoolean cancel) {
         final Map<Position[], String> putFQNs = new HashMap<Position[], String>();
@@ -222,57 +221,82 @@ public class ClipboardHandler {
     private static Collection<? extends String> needsImports(JavaSource js, final int caret, final Map<String, String> simple2FQNs) {
         final List<String> unavailable = new ArrayList<String>();
 
-        try {
-            final Future<Void> wait = js.runWhenScanFinished(new Task<CompilationController>() {
-                @Override
-                public void run(final CompilationController cc) throws Exception {
-                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        boolean finished = runQuickly(js, new Task<CompilationController>() {
+            @Override
+            public void run(final CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
-                    final TreePath tp = cc.getTreeUtilities().pathFor(caret);
-                    final Scope context = cc.getTrees().getScope(tp);
-                    
-                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                        public boolean accept(Element e, TypeMirror type) {
-                            return (e.getKind().isClass() || e.getKind().isInterface()) && cc.getTrees().isAccessible(context, (TypeElement)e);
-                        }
-                    };
+                final TreePath tp = cc.getTreeUtilities().pathFor(caret);
+                final Scope context = cc.getTrees().getScope(tp);
 
-                    SourcePositions[] sps = new SourcePositions[1];
+                SourcePositions[] sps = new SourcePositions[1];
 
-                    OUTER: for (Entry<String, String> e : simple2FQNs.entrySet()) {
-                        TypeElement type = cc.getElements().getTypeElement(e.getValue());
+                OUTER: for (Entry<String, String> e : simple2FQNs.entrySet()) {
+                    TypeElement type = cc.getElements().getTypeElement(e.getValue());
 
-                        if (type != null) {
-                            ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
+                    if (type != null) {
+                        ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
 
-                            cc.getTreeUtilities().attributeTree(simpleName, context);
+                        cc.getTreeUtilities().attributeTree(simpleName, context);
 
-                            Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
+                        Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
 
-                            if (type.equals(el)) continue OUTER;
-                        } else {
-                            continue;
-                        }
-
-                        unavailable.add(e.getValue());
+                        if (type.equals(el)) continue OUTER;
+                    } else {
+                        continue;
                     }
-                }
-            }, true);
 
-            wait.get(100, TimeUnit.MILLISECONDS);
+                    unavailable.add(e.getValue());
+                }
+            }
+        });
+
+        if (finished) {
+            return unavailable;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean runQuickly(final JavaSource js, final Task<CompilationController> task) {
+        final CountDownLatch started = new CountDownLatch(1);
+        final AtomicBoolean cancel = new AtomicBoolean();
+        
+        RequestProcessor.Task t = WORKER.post(new Runnable() {
+            @Override public void run() {
+                try {
+                    js.runUserActionTask(new Task<CompilationController>() {
+                        @Override public void run(CompilationController parameter) throws Exception {
+                            started.countDown();
+                            if (cancel.get()) return ;
+
+                            task.run(parameter);
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        t.schedule(0);
+
+        boolean finished;
+
+        try {
+            finished = started.await(100, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (TimeoutException ex) {
-            //ok
-            LOG.log(Level.FINE, null, ex);
-            return null;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            finished = false;
         }
 
-        return unavailable;
+        if (finished) {
+            t.waitFinished();
+        } else {
+            cancel.set(true);
+        }
+
+        return finished;
     }
 
     private static final class ImportingTransferHandler extends TransferHandler {
@@ -341,61 +365,48 @@ public class ClipboardHandler {
                 final JTextComponent tc = (JTextComponent) comp;
                 final int start = tc.getSelectionStart();
                 final int end = tc.getSelectionEnd();
+                final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
+                final List<int[]> spans = new ArrayList<int[]>();
 
-                try {
-                    final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
-                    final List<int[]> spans = new ArrayList<int[]>();
+                boolean finished = runQuickly(js, new Task<CompilationController>() {
+                    @Override public void run(final CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.RESOLVED);
 
-                    Future<Void> fut = js.runWhenScanFinished(new Task<CompilationController>() {
-                        @Override public void run(final CompilationController parameter) throws Exception {
-                            parameter.toPhase(JavaSource.Phase.RESOLVED);
+                        new TreePathScanner<Void, Void>() {
+                            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                                int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), node);
+                                int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
+                                javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                            new TreePathScanner<Void, Void>() {
-                                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                                    int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), node);
-                                    int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
-                                    javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
-
-                                    if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                        simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
-                                        spans.add(new int[] {s - start, e - start});
-                                    }
-                                    return super.visitIdentifier(node, p);
+                                if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                                    simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                    spans.add(new int[] {s - start, e - start});
                                 }
-                                private Tree lastType;
-                                @Override
-                                public Void visitVariable(VariableTree node, Void p) {
-                                    if (lastType == node.getType()) {
-                                        scan(node.getInitializer(), null);
-                                        return null;
-                                    } else {
-                                        lastType = node.getType();
-                                        return super.visitVariable(node, p);
-                                    }
+                                return super.visitIdentifier(node, p);
+                            }
+                            private Tree lastType;
+                            @Override
+                            public Void visitVariable(VariableTree node, Void p) {
+                                if (lastType == node.getType()) {
+                                    scan(node.getInitializer(), null);
+                                    return null;
+                                } else {
+                                    lastType = node.getType();
+                                    return super.visitVariable(node, p);
                                 }
-                                @Override public Void scan(Tree tree, Void p) {
-                                    if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
-                                    return super.scan(tree, p);
-                                }
-                            }.scan(parameter.getCompilationUnit(), null);
-                        }
-                    }, true);
-
-                    try {
-                        fut.get(100, TimeUnit.MILLISECONDS);
-                        delegate.exportToClipboard(comp, clip, action);
-                        clip.setContents(new WrappedTransferable(clip.getContents(null), new ImportsWrapper(NbEditorUtilities.getFileObject(tc.getDocument()), simple2ImportFQN, spans)), null);
-                        return;
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (TimeoutException ex) {
-                        //ok.
-                        LOG.log(Level.FINE, null, ex);
+                            }
+                            @Override public Void scan(Tree tree, Void p) {
+                                if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                                return super.scan(tree, p);
+                            }
+                        }.scan(parameter.getCompilationUnit(), null);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                });
+
+                if (finished) {
+                    delegate.exportToClipboard(comp, clip, action);
+                    clip.setContents(new WrappedTransferable(clip.getContents(null), new ImportsWrapper(NbEditorUtilities.getFileObject(tc.getDocument()), simple2ImportFQN, spans)), null);
+                    return;
                 }
             }
             
