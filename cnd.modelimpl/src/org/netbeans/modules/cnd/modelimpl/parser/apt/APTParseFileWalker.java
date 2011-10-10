@@ -237,6 +237,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             body = ""; //file.getText( start.getOffset(), last.getEndOffset());
         }
         int endOffset = (last != null && !APTUtils.isEOF(last)) ? last.getEndOffset() : startOffset;
+        if (!define.isValid()) {
+            return null;
+        }
         return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), startOffset, endOffset, CsmMacro.Kind.DEFINED);
     }
 
