@@ -52,6 +52,7 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
@@ -229,6 +230,11 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 return ;
             }
             ThreadReference tr = t.getThreadReference();
+            
+            if (sType == RemoteServices.ServiceType.FX) {
+                setFxDebug(tr.virtualMachine(), tr);
+            }
+            
             ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
             Method startMethod = serviceClass.concreteMethodByName("startAccessLoop", "()V");
@@ -331,4 +337,58 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         }
     }
     
+    /**
+     * JavaFX runtime is boobietrapped with various checks for {@linkplain com.sun.javafx.runtime.SystemProperties#isDebug() }
+     * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
+     */
+    private static void setFxDebug(VirtualMachine vm, ThreadReference tr) {
+        ClassType sysPropClass = getClass(vm, tr, "com.sun.javafx.runtime.SystemProperties");
+        Field debugFld = sysPropClass.fieldByName("isDebug"); // NOI18N
+        try {
+            sysPropClass.setValue(debugFld, vm.mirrorOf(true));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private static ClassType getClass(VirtualMachine vm, ThreadReference tr, String name) {
+        ReferenceType t = getType(vm, tr, name);
+        if (t instanceof ClassType) {
+            return (ClassType)t;
+        }
+        logger.log(Level.WARNING, "{0} is not a class but {1}", new Object[]{name, t}); // NOI18N
+        return null;
+    }
+    
+    private static ReferenceType getType(VirtualMachine vm, ThreadReference tr, String name) {
+        List<ReferenceType> classList = vm.classesByName(name);
+        if (!classList.isEmpty()) {
+            return classList.iterator().next();
+        }
+        List<ReferenceType> classClassList = vm.classesByName("java.lang.Class"); // NOI18N
+        if (classClassList.isEmpty()) {
+            throw new IllegalStateException("Cannot load class Class"); // NOI18N
+        }
+
+        ClassType cls = (ClassType) classClassList.iterator().next();
+        Method m = cls.concreteMethodByName("forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
+        StringReference mirrorOfName = vm.mirrorOf(name);
+        try {
+            cls.invokeMethod(tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
+            List<ReferenceType> classList2 = vm.classesByName(name);
+            if (!classList2.isEmpty()) {
+                return classList2.iterator().next();
+            }
+        } catch (InvalidTypeException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (ClassNotLoadedException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (IncompatibleThreadStateException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        } catch (InvocationException ex) {
+            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+        }
+        
+        return null;
+    }
 }
