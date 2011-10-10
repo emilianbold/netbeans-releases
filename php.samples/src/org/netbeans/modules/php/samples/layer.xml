@@ -51,12 +51,21 @@ made subject to such option by the copyright holder.
                 <folder name="PHP">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                     <attr name="position" intvalue="550"/>
+                    <file name="TodoList" url="TodoList.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/TodoList.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="Jobeet" url="Jobeet.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Jobeet.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Jobeet.html"/>
                         <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
                     <file name="RentAFlat" url="RentAFlat.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
@@ -64,6 +73,7 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Rent-a-Flat.html"/>
                         <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>
             </folder>
