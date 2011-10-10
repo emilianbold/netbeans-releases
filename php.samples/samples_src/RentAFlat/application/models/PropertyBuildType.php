@@ -45,7 +45,7 @@ class Application_Model_PropertyBuildType
 {
 
     protected $id;
-    protected $text_en; 
+    protected $text;
 
     public function __construct(array $options = null) {
         if (is_array($options)) {
@@ -68,7 +68,7 @@ class Application_Model_PropertyBuildType
         }
         return $this;
     }
-    
+
     public function __set($name, $value) {
         $method = 'set' . $name;
         if (('mapper' == $name) || !method_exists($this, $method)) {
@@ -88,7 +88,7 @@ class Application_Model_PropertyBuildType
 
         return $this->$method();
     }
-    
+
     public function getId() {
         return $this->id;
     }
@@ -97,12 +97,12 @@ class Application_Model_PropertyBuildType
         $this->id = $id;
     }
 
-    public function getText_en() {
-        return $this->text_en;
+    public function getText() {
+        return $this->text;
     }
 
-    public function setText_en($text_en) {
-        $this->text_en = $text_en;
+    public function setText($text) {
+        $this->text = $text;
     }
 
 }

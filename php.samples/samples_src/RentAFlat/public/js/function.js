@@ -1,69 +1,67 @@
-        
 function addToFavorites(id) {
-    jQuery.ajax({ 
+    jQuery.ajax({
         type: "GET",
-        url: "http://localhost/favorites/add", 
+        url: BASE_URL + "/favorites/add",
         data: "id="+id,
         success: function(message){
-            
+
             document.getElementById('p'+id).innerHTML = message;
-            
-    
+
+
         }
 
     });
 }
 
 function removeFromFavorites(id) {
-    jQuery.ajax({ 
+    jQuery.ajax({
         type: "GET",
-        url: "http://localhost/favorites/remove", 
+        url: BASE_URL + "/favorites/remove",
         data: "id="+id,
         success: function(message){
             document.getElementById('p'+id).innerHTML = message;
-    
+
         }
 
     });
 }
 
 function addToFavoritesDetail(id) {
-    jQuery.ajax({ 
+    jQuery.ajax({
         type: "GET",
-        url: "http://localhost/favorites/add-detail", 
+        url: BASE_URL + "/favorites/add-detail",
         data: "id="+id,
         success: function(message){
             document.getElementById('p'+id).innerHTML = message;
-    
+
         }
 
     });
 }
 
 function removeFromFavoritesDetail(id) {
-    jQuery.ajax({ 
+    jQuery.ajax({
         type: "GET",
-        url: "http://localhost/favorites/remove-detail", 
+        url: BASE_URL + "/favorites/remove-detail",
         data: "id="+id,
         success: function(message){
             document.getElementById('p'+id).innerHTML = message;
-    
+
         }
 
     });
 }
 
 function removeFromFavoritesInFavorites(id) {
-    jQuery.ajax({ 
+    jQuery.ajax({
         type: "GET",
-        url: "http://localhost/favorites/remove-detail", 
+        url: BASE_URL + "/favorites/remove-detail",
         data: "id="+id,
         success: function(message){
             //                alert(id);
             var elid = document.getElementById('p'+id);
             //                alert(elid);
             elid.setAttribute("style", "display:none");
-            
         }
 
     });
