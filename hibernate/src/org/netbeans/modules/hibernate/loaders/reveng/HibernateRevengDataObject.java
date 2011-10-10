@@ -85,6 +85,7 @@ public class HibernateRevengDataObject extends MultiDataObject {
         cookies.add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         cookies.add(validateCookie);
+        registerEditor(HibernateRevengDataLoader.REQUIRED_MIME, true);
     }
     
     @MultiViewElement.Registration(

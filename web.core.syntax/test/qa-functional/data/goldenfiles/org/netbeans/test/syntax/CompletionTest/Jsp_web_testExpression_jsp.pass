@@ -1,114 +1,247 @@
 [${|, Integer integer, ${integer, 856]
-ConversationImpl javax.enterpr
-Model model
-Calendar calendar
-Date date
-Integer integer
 applicationScope[]
-cc
+Calendar calendar
 cookie[]
-facesContext
-headerValues[]
+Date date
+javax.faces.context.FacesConte
 header[]
+headerValues[]
 initParam[]
-pageContext
+Integer integer
+javax.servlet.jsp.PageContext 
 pageScope[]
-paramValues[]
 param[]
+paramValues[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 866
 [${|, Date date, ${date, 890]
-ConversationImpl javax.enterpr
-Model model
-Calendar calendar
-Date date
-Integer integer
 applicationScope[]
-cc
+Calendar calendar
 cookie[]
-facesContext
-headerValues[]
+Date date
+javax.faces.context.FacesConte
 header[]
+headerValues[]
 initParam[]
-pageContext
+Integer integer
+javax.servlet.jsp.PageContext 
 pageScope[]
-paramValues[]
 param[]
+paramValues[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 897
 [${i|, initParam[], ${initParam[], 934]
-Integer integer
 initParam[]
+Integer integer
+instanceof
 End cursor position = 947
 [${p|, pageContext, ${pageContext, 978]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
-paramValues[]
 param[]
+paramValues[]
 End cursor position = 992
 [${pageContext.|, request, ${pageContext.request, 1037]
-class
-eLContext
-errorData
-exception
-expressionEvaluator
-out
-page
-request
-response
-servletConfig
-servletContext
-session
-variableResolver
+ELContext ELContext
+void attribute(String name,Obj
+void attribute(String name,Obj
+Object attribute(String name)
+Object attribute(String name,i
+Enumeration attributeNamesInSc
+int attributesScope(String nam
+ErrorData errorData
+Exception exception
+ExpressionEvaluator expression
+Object findAttribute(String na
+void forward(String relativeUr
+void handlePageException(Excep
+void handlePageException(Throw
+void include(String relativeUr
+void include(String relativeUr
+void initialize(Servlet servle
+JspWriter out
+Object page
+JspWriter popBody()
+BodyContent pushBody()
+JspWriter pushBody(Writer writ
+void release()
+void removeAttribute(String na
+void removeAttribute(String na
+ServletRequest request
+ServletResponse response
+ServletConfig servletConfig
+ServletContext servletContext
+HttpSession session
+VariableResolver variableResol
 End cursor position = 1059
 [#{|, sessionScope[], #{sessionScope[], 1086]
-ConversationImpl javax.enterpr
-Model model
-Calendar calendar
-Date date
-Integer integer
 applicationScope[]
-cc
+Calendar calendar
 cookie[]
-facesContext
-headerValues[]
+javax.faces.context.FacesConte
 header[]
+headerValues[]
 initParam[]
-pageContext
+Integer integer
+javax.servlet.jsp.PageContext 
 pageScope[]
 paramValues[]
 param[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 1102
 [#{c|, Calendar calendar, #{calendar, 1132]
 Calendar calendar
-cc
 cookie[]
 End cursor position = 1143
 [#{calendar.|, timeInMillis, #{calendar.timeInMillis, 1194]
-availableLocales
-class
-firstDayOfWeek
-instance
-lenient
-minimalDaysInFirstWeek
-time
-timeInMillis
-timeZone
-String toString
+int actualMaximum(int field)
+int actualMinimum(int field)
+void add(int field,int amount)
+boolean after(Object when)
+Locale[] availableLocales
+boolean before(Object when)
+void clear()
+void clear(int field)
+Object clone()
+int compareTo(Calendar another
+String displayName(int field,i
+Map displayNames(int field,int
+boolean equals(Object obj)
+void firstDayOfWeek(int value)
+int firstDayOfWeek
+int get(int field)
+int greatestMinimum(int field)
+int hashCode()
+Calendar instance
+Calendar instance(TimeZone zon
+Calendar instance(Locale aLoca
+Calendar instance(TimeZone zon
+int leastMaximum(int field)
+void lenient(boolean lenient)
+boolean lenient
+int maximum(int field)
+void minimalDaysInFirstWeek(in
+int minimalDaysInFirstWeek
+int minimum(int field)
+void roll(int field,boolean up
+void roll(int field,int amount
+void set(int field,int value)
+void set(int year,int month,in
+void set(int year,int month,in
+void set(int year,int month,in
+boolean set(int field)
+Date time
+void time(Date date)
+long timeInMillis
+void timeInMillis(long millis)
+void timeZone(TimeZone value)
+TimeZone timeZone
+String toString()
+void weekDate(int weekYear,int
+boolean weekDateSupported
+int weekYear
+int weeksInWeekYear
 End cursor position = 1218
 [#{calendar.|, toString, #{calendar.toString, 1248]
-availableLocales
-class
-firstDayOfWeek
-instance
-lenient
-minimalDaysInFirstWeek
-time
-timeInMillis
-timeZone
-String toString
+int actualMaximum(int field)
+int actualMinimum(int field)
+void add(int field,int amount)
+boolean after(Object when)
+Locale[] availableLocales
+boolean before(Object when)
+void clear()
+void clear(int field)
+Object clone()
+int compareTo(Calendar another
+String displayName(int field,i
+Map displayNames(int field,int
+boolean equals(Object obj)
+void firstDayOfWeek(int value)
+int firstDayOfWeek
+int get(int field)
+int greatestMinimum(int field)
+int hashCode()
+Calendar instance
+Calendar instance(TimeZone zon
+Calendar instance(Locale aLoca
+Calendar instance(TimeZone zon
+int leastMaximum(int field)
+void lenient(boolean lenient)
+boolean lenient
+int maximum(int field)
+void minimalDaysInFirstWeek(in
+int minimalDaysInFirstWeek
+int minimum(int field)
+void roll(int field,boolean up
+void roll(int field,int amount
+void set(int field,int value)
+void set(int year,int month,in
+void set(int year,int month,in
+void set(int year,int month,in
+boolean set(int field)
+Date time
+void time(Date date)
+long timeInMillis
+void timeInMillis(long millis)
+void timeZone(TimeZone value)
+TimeZone timeZone
+String toString()
+void weekDate(int weekYear,int
+boolean weekDateSupported
+int weekYear
+int weeksInWeekYear
 End cursor position = 1268

@@ -154,7 +154,6 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                                 for (GuardedSection guard : manager.getGuardedSections()) {
                                     if (guard.contains(doc.createPosition(startOffset), true)) {
                                         startOffset = guard.getEndPosition().getOffset() + 1;
-                                    } else {
                                         break;
                                     }
                                 }

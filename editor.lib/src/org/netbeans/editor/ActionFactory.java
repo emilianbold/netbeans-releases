@@ -1095,13 +1095,14 @@ public class ActionFactory {
                 try {
                     Caret caret = target.getCaret();
                     BaseDocument doc = (BaseDocument)target.getDocument();
+                    int dotPos = caret.getDot();
                     if (Utilities.isSelectionShowing(caret)) { // valid selection
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
-                        target.select(startPos, endPos);
+                        caret.setDot(dotPos == startPos ? endPos : startPos);
+                        caret.moveDot(dotPos == startPos ? startPos : endPos);
                     } else { // no selection - change current char
-                        int dotPos = caret.getDot();
                         Utilities.changeCase(doc, dotPos, 1, changeCaseMode);
                         caret.setDot(dotPos + 1);
                     }

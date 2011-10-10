@@ -49,6 +49,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
@@ -152,7 +153,8 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                     ChangeParametersRefactoring.ParameterInfo[] parameterInfo = new ChangeParametersRefactoring.ParameterInfo[parameters.size()];
                     for (int i = 0; i < parameters.size(); i++) {
                         VariableElement param = parameters.get(i);
-                        parameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.toString(), param.asType().toString(), null);
+                        VariableTree parTree = (VariableTree) info.getTrees().getTree(param);
+                        parameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.toString(), parTree.getType().toString(), null);
                     }
                     ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[invocation.getArguments().size()];
 
@@ -177,15 +179,25 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                         newParameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(-1, name, type, argument.toString());
                         i++;
                     }
+
+                    TypeElement typeElement = (TypeElement) info.getTrees().getElement(typePath);
                     
                     // Find old parameters with the same type and copy the information
                     for (i = 0; i < newParameterInfo.length; i++) {
                         if(cancel) return Collections.<Fix>emptyList();
                         ParameterInfo param = newParameterInfo[i];
-                        ParameterInfo next = findNextByType(info, parameterInfo, param.getType());
+                        ParameterInfo next = findNextByType(info, parameterInfo, param.getType(), typeElement);
                         if (next != null) {
                             newParameterInfo[i] = new ParameterInfo(next.getOriginalIndex(), next.getName(), next.getType(), param.getDefaultValue());
                         }
+                    }
+                    // Reaplace parameter types with simple type names
+                    for (i = 0; i < newParameterInfo.length; i++) {
+                        if(cancel) return Collections.<Fix>emptyList();
+                        ParameterInfo param = newParameterInfo[i];
+                        TypeMirror type = info.getTreeUtilities().parseType(param.getType(), typeElement);
+                        String typeString = org.netbeans.modules.editor.java.Utilities.getTypeName(info, type, false).toString();
+                        newParameterInfo[i] = new ParameterInfo(param.getOriginalIndex(), param.getName(), typeString, param.getDefaultValue());
                     }
                     
                     TreePathHandle tph = TreePathHandle.create(path, info);
@@ -266,10 +278,10 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         return null;
     }
 
-    private ParameterInfo findNextByType(CompilationInfo info, ParameterInfo[] parameterInfo, String type) {
+    private ParameterInfo findNextByType(CompilationInfo info, ParameterInfo[] parameterInfo, String type, TypeElement scopeType) {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo param = parameterInfo[i];
-            if(param.getOriginalIndex() > -1 && isSameType(info, type, param.getType())) {
+            if(param.getOriginalIndex() > -1 && isSameType(info, type, param.getType(), scopeType)) {
                 parameterInfo[i] = new ParameterInfo(-1, param.getName(), param.getType(), null); // NOI18N
                 return param;
             }
@@ -277,12 +289,12 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         return null;
     }
 
-    private boolean isSameType(CompilationInfo info, String from, String to) {
+    private boolean isSameType(CompilationInfo info, String from, String to, TypeElement scopeType) {
         if(from.equals(to)) {
             return true;
         } else {
-            TypeElement fromType = info.getElements().getTypeElement(from);
-            TypeElement toType = info.getElements().getTypeElement(to);
+            TypeElement fromType = (TypeElement) info.getTypes().asElement(info.getTreeUtilities().parseType(from, scopeType));
+            TypeElement toType = (TypeElement) info.getTypes().asElement(info.getTreeUtilities().parseType(to, scopeType));
             if (fromType != null && toType != null) {
                 return info.getTypes().isSubtype(fromType.asType(), toType.asType());
             } else {

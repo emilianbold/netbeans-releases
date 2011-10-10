@@ -873,14 +873,14 @@ FIRST_MOD options { constText=true; } :
             }
             (options{greedy = true;}:Space)*
             (  // lexer has no token labels
-              ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
-            | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
+              ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
+            | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
             | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); setPPDefinedAllowed(false);}
             | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
             | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
-            | ("if" PostIfChar) =>  "if"   { $setType(IF); }
+            | ("if" PostPPKwdChar) =>  "if"   { $setType(IF); }
             | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF); setPPDefinedAllowed(false); }
-            | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
+            | ("elif" PostPPKwdChar) => "elif"  { $setType(ELIF);  }
             | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
             | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
             | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
@@ -1040,14 +1040,14 @@ PREPROC_DIRECTIVE :
                     }
                     (options{greedy = true;}:Space)*
                     (  // lexer has no token labels
-                      ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
-                    | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
+                      ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
+                    | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
                     | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); setPPDefinedAllowed(false);}
                     | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
                     | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
-                    | ("if" PostIfChar) =>  "if"   { $setType(IF); }
+                    | ("if" PostPPKwdChar) =>  "if"   { $setType(IF); }
                     | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF); setPPDefinedAllowed(false); }
-                    | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
+                    | ("elif" PostPPKwdChar) => "elif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
                     | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
@@ -1284,7 +1284,7 @@ Identifier
         ;
 
 protected
-PostPPKwdChar: Space | '/' | '\\' | EndOfLine | { LA(1) == EOF_CHAR}? ;
+PostPPKwdChar: { !Character.isJavaIdentifierPart(LA(1)) }? | EndOfLine | { LA(1) == EOF_CHAR}? ;
 
 protected
 PostInclChar: PostPPKwdChar | '\"' | '<' ;

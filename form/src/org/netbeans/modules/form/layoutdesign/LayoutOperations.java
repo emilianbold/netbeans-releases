@@ -210,10 +210,12 @@ class LayoutOperations implements LayoutConstants {
                     layoutModel.setIntervalSize(
                             li, NOT_EXPLICITLY_DEFINED, li.getPreferredSize(), Short.MAX_VALUE);
                 }
-                if (i == 1 && li.isEmptySpace()) // first gap
+                if (li.isEmptySpace()
+                        && ((i == 1 && position == LEADING) || (i == n-1 && position == TRAILING))) {
                     insertGapIntoSequence(li, seq, index, dimension);
-                else
+                } else {
                     layoutModel.addInterval(li, seq, index);
+                }
             }
             return null;
         }
@@ -652,7 +654,8 @@ class LayoutOperations implements LayoutConstants {
                                 || (align == DEFAULT && alignmentInParent != parent.getGroupAlignment())) {
                             layoutModel.setIntervalAlignment(li, group.getRawAlignment());
                         }
-                        if (!LayoutInterval.canResize(group) && LayoutInterval.wantResize(li)) {
+                        if ((!LayoutInterval.canResize(group) || align == BASELINE)
+                                && LayoutInterval.wantResize(li)) {
                             // resizing interval in fixed group - make it fixed
                             if (li.isGroup()) {
                                 suppressGroupResizing(li);
@@ -1018,7 +1021,8 @@ class LayoutOperations implements LayoutConstants {
         if (parent.getSubIntervalCount() == 1) {
             addContent(layoutModel.removeInterval(parent, 0),
                        parent.getParent(),
-                       layoutModel.removeInterval(parent));
+                       layoutModel.removeInterval(parent),
+                       dimension);
         }
         else if (parent.getSubIntervalCount() == 0) {
             layoutModel.removeInterval(parent);
@@ -1842,6 +1846,17 @@ class LayoutOperations implements LayoutConstants {
                     }
                 }
             }
+        } else if (gap.getPreferredSize() == 0) {
+            if (!LayoutInterval.canResize(gap)) {
+                return false;
+            }
+            for (int i=0; i < seq.getSubIntervalCount(); i++) {
+                LayoutInterval sub = seq.getSubInterval(i);
+                if (sub != gap && LayoutInterval.wantResize(sub)) {
+                    return false; // resizing zero gap in resizing sequence does not make sense
+                                  // (see bug 202636, attachment 111677)
+                }
+            }
         }
         return true;
     }
@@ -1892,7 +1907,7 @@ class LayoutOperations implements LayoutConstants {
         }
     }
 
-    private void eliminateEndingGaps(LayoutInterval group, LayoutInterval[] outGaps, int dimension) {
+    void eliminateEndingGaps(LayoutInterval group, LayoutInterval[] outGaps, int dimension) {
         IntervalSet[] alignedGap = new IntervalSet[2];
         IntervalSet[] alignedNoGap = new IntervalSet[2];
         IntervalSet[] unalignedGap = new IntervalSet[2];

@@ -696,7 +696,6 @@
         <echo message="Executing ${jfx.deployment.html} in debug mode using ${javafx.run.inbrowser.path}"/>
         <exec executable="${javafx.run.inbrowser.path}">
             <env key="_JPI_VM_OPTIONS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
-            <arg value="-wait"/>
             <arg file="${jfx.deployment.html}"/>
         </exec>
     </target>

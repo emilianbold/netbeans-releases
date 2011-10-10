@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -133,14 +133,14 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized Collection<FileObject> getVisibleEditorsFiles() {
-        List<FileObject> result = new LinkedList<FileObject>();
+        Set<FileObject> result = new LinkedHashSet<FileObject>();
         
         for (DataObject file : visibleEditors2Files.values()) {
             if (file != null) {
                 result.add(file.getPrimaryFile());
             }
         }
-        
+
         return Collections.unmodifiableCollection(result);
     }
 

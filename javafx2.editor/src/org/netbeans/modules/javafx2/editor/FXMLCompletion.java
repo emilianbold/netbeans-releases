@@ -128,53 +128,54 @@ public class FXMLCompletion implements CompletionProvider {
                     if (ts == null) {
                         return;
                     }
-
-                    ts.move(caretOffset);
-                    if (ts.moveNext()) {
-                        Token<?> t = ts.token();
-//                        System.out.println("TOKEN ID= " + t.id() + " TEXT: " + t.text()); // TODO: remove me
-                        if (t.id() == XMLTokenId.TAG) {
-                            if (t.text().toString().startsWith("<")) { // NOI18N
-                                List<DocumentElement> path = getPathToRoot(bdoc, caretOffset);
-                                String prefix = "";
+                    try {
+                        ts.move(caretOffset);
+                        if (ts.moveNext()) {
+                            Token<?> t = ts.token();
+                            List<DocumentElement> path = getPathToRoot(bdoc, caretOffset);
+                            String prefix = "";
+  //                        System.out.println("TOKEN ID= " + t.id() + " TEXT: " + t.text()); // TODO: remove me
+                            if (t.id() == XMLTokenId.TAG) {
                                 if (ts.offset() < caretOffset) {
-                                    prefix = t.text().toString().substring(1, caretOffset - ts.offset());
+                                   prefix = t.text().toString().substring(1, caretOffset - ts.offset());
                                 }
-                                if ( (path.size() == 2) || 
-                                     ( (path.size() > 2) && (path.get(1).getName().equals("children")) ) // NOI18N
-                                   ) {
-                                    try {
+                                if (t.text().toString().startsWith("<")) { // NOI18N
+                                    if ( (path.size() == 2) || 
+                                         ( (path.size() > 2) && (path.get(1).getName().equals("children")) ) // NOI18N
+                                       ) {
                                         List<String> classes = getAvailableClasses(document, prefix, resultSet);
                                         for (String cls : classes) {
                                             resultSet.addItem(new FXMLCompletionItem(ts.offset(), "<" + cls)); // NOI18N
                                         }
-                                    } catch (ParseException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
-                                    } catch (InterruptedException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
-                                    } catch (ExecutionException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
                                     }
-                                    return;
-                                }
-                                if ( (path.size() > 2) && (!path.get(1).getName().equals("children")) )  { // NOI18N
-                                    try {
+                                    if ( (path.size() > 2) && (!path.get(1).getName().equals("children")) )  { // NOI18N
                                         String className = path.get(1).getName();
                                         List<String> properties = getAvailableProperties(document, prefix, className,resultSet);
                                         for (String prop : properties) {
                                             resultSet.addItem(new FXMLCompletionItem(ts.offset(), "<" + prop)); // NOI18N
                                         }
-                                    } catch (ParseException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
-                                    } catch (InterruptedException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
-                                    } catch (ExecutionException ex) {
-                                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
                                     }
-                                    return;
+                                }
+                            }
+                            if (t.id() == XMLTokenId.ARGUMENT) {
+                                if (ts.offset() < caretOffset) {
+                                   prefix = t.text().toString().substring(0, caretOffset - ts.offset());
+                                }
+                                if (path.size() > 0) {
+                                    String className = path.get(0).getName();
+                                    List<String> props = getAvailableProperties(document, prefix, className, resultSet);
+                                    for (String prop : props) {
+                                        resultSet.addItem(new FXMLCompletionItem(ts.offset(), prop)); // NOI18N
+                                    }
                                 }
                             }
                         }
+                    } catch (ParseException e) {
+                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, e);
+                    } catch (InterruptedException e) {
+                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, e);
+                    } catch (ExecutionException e) {
+                        Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, e);
                     }
                 }
             });
@@ -204,7 +205,7 @@ public class FXMLCompletion implements CompletionProvider {
                 result.add(root);
             }
         } catch (DocumentModelException ex) {
-            Logger.getLogger(FXMLCompletion.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FXMLCompletion.class.getName()).log(Level.FINE, null, ex);
         }
         return result;
     }
@@ -213,8 +214,7 @@ public class FXMLCompletion implements CompletionProvider {
         List<String> result = new ArrayList<String>();
         Future<Void> f = ParserManager.parseWhenScanFinished(MIME_TYPE, getAllPropertiesTask(doc, prefix, className, result));
         if (!f.isDone()) {
-//                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
             f.get();
         }
         return result;
@@ -225,8 +225,7 @@ public class FXMLCompletion implements CompletionProvider {
         List<String> result = new ArrayList<String>();
         Future<Void> f = ParserManager.parseWhenScanFinished(MIME_TYPE, getAllClassesTask(doc, prefix, result));
         if (!f.isDone()) {
-//                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
             f.get();
         }
         return result;
