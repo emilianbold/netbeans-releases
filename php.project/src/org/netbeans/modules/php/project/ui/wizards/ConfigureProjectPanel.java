@@ -510,6 +510,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             if (!sources.isDirectory()) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
+            // #196811
+            if (sources.listFiles() == null) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesCannotBeRead");
+            }
         }
 
         if (!configureProjectPanelVisual.isProjectFolderUsed()) {
