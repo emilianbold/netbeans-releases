@@ -652,7 +652,8 @@ class LayoutOperations implements LayoutConstants {
                                 || (align == DEFAULT && alignmentInParent != parent.getGroupAlignment())) {
                             layoutModel.setIntervalAlignment(li, group.getRawAlignment());
                         }
-                        if (!LayoutInterval.canResize(group) && LayoutInterval.wantResize(li)) {
+                        if ((!LayoutInterval.canResize(group) || align == BASELINE)
+                                && LayoutInterval.wantResize(li)) {
                             // resizing interval in fixed group - make it fixed
                             if (li.isGroup()) {
                                 suppressGroupResizing(li);
