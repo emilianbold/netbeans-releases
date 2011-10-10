@@ -52,6 +52,10 @@ import org.netbeans.api.java.source.CompilationInfo;
 public class CdiAnalysisTestTask extends CdiAnalysisTask {
 
     
+    public CdiAnalysisTestTask( ) {
+        super(null);
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
      */

@@ -1,0 +1,30 @@
+#main {
+    width: 1000px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#header {
+    height: 245px;
+    background: url(../img/header-bg.jpg) no-repeat left top;
+}
+#header, #content, #footer {
+    font-size: 0.75em;
+}
+
+.col-1, .col-2, .col-3 {
+    float: left;
+}
+
+#page #content .col-1 {
+    width: 250px;
+    margin-right: 20px;
+}
+#page #content .col-2 {
+    width: 650px;
+    min-height: 500px;
+}
+
+#footer {
+    height: 89px;
+}

@@ -46,6 +46,7 @@ include_once 'BaseController.php';
 class SellEstateController extends BaseController {
 
     public function init() {
+        parent::init();
 
         if ($this->getRequest()->getParam("removeFromFavorites") != null) {
             General::removeFromCookie($this->getRequest()->getParam("removeFromFavorites"));
@@ -61,16 +62,9 @@ class SellEstateController extends BaseController {
     }
 
     public function indexAction() {
-
         $properties = new Application_Model_PropertyMapper();
-
-        $this->view->controller = "sell-estate";
-        $this->view->action = "index";  
         $this->view->properties = $properties->fetchAll();
-
-        $this->renderScript("/sell-estate/index.phtml");
     }
 
 }
 
-?>

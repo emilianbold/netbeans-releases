@@ -93,6 +93,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
@@ -372,6 +373,13 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         }
 
         @Override
+        public void visit(ReflectionVariable node) {
+            forceVariableAsUsed = true;
+            scan(node.getName());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
         public void visit(CloneExpression node) {
             forceVariableAsUsed = true;
             scan(node.getExpression());
@@ -496,6 +504,9 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            forceVariableAsUsed = true;
+            scan(node.getClassName());
+            forceVariableAsUsed = false;
             scan(node.getMethod());
         }
 

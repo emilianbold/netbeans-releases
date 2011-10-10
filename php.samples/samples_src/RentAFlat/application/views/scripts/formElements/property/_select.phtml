@@ -41,18 +41,16 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 ?>
-<div class="clearfix">
-    <div class="lab">
-    	<label><?php echo $this->element->getLabel() ?>:</label>
+<div class="formrow">
+    <div class="label">
+    	<label><?php echo $this->element->getLabel(); ?>:</label>
     </div>
-    <?php if ($this->element->hasErrors()): ?>
-        <div class="error-message">
-            <?= $this->formErrors($this->element->getMessages()) ?>
-        </div>
-    <?php endif; ?>
-    <div class="con">
-    	<?php echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs(), $this->element->getMultiOptions()) ?>
-        
+    <div class="field">
+    	<?php echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs(), $this->element->getMultiOptions()); ?>
+        <?php if ($this->element->hasErrors()): ?>
+            <div class="error">
+                <?php echo $this->formErrors($this->element->getMessages()); ?>
+            </div>
+        <?php endif; ?>
 	</div>
-	
 </div>
