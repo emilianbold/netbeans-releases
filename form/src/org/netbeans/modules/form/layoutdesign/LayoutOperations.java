@@ -1843,6 +1843,17 @@ class LayoutOperations implements LayoutConstants {
                     }
                 }
             }
+        } else if (gap.getPreferredSize() == 0) {
+            if (!LayoutInterval.canResize(gap)) {
+                return false;
+            }
+            for (int i=0; i < seq.getSubIntervalCount(); i++) {
+                LayoutInterval sub = seq.getSubInterval(i);
+                if (sub != gap && LayoutInterval.wantResize(sub)) {
+                    return false; // resizing zero gap in resizing sequence does not make sense
+                                  // (see bug 202636, attachment 111677)
+                }
+            }
         }
         return true;
     }
