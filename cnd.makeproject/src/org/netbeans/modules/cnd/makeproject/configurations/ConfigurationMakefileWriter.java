@@ -55,7 +55,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -130,7 +132,7 @@ public class ConfigurationMakefileWriter {
                 writeMakefileConf(conf);
                 writePackagingScript(conf);
             }
-            writeMakefileVariables(projectDescriptor);
+            writeMakefileVariables(projectDescriptor, okConfs);
         }
     }
 
@@ -1490,17 +1492,18 @@ public class ConfigurationMakefileWriter {
         return testTargets.toString();
     }
 
-    private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
+    private void writeMakefileVariables(MakeConfigurationDescriptor conf, Collection<MakeConfiguration> okConfs) {
         FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
         if (nbprojectFileObject == null) {
             return;
         }
         OutputStream os = null;
         try {
+            Map<String, String> old = getOldVariables(nbprojectFileObject);
             FileObject vars = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
             os = SmartOutputStream.getSmartOutputStream(vars);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-            writeMakefileFixedVariablesBody(bw);
+            writeMakefileFixedVariablesBody(bw, okConfs, old);
             writeMakefileVariablesRedirector(bw);
             bw.flush();
             bw.close();
@@ -1520,10 +1523,11 @@ public class ConfigurationMakefileWriter {
         }
         try {
             os = null;
+            Map<String, String> old = getOldVariables(nbPrivateProjectFileObject);
             FileObject vars = FileUtil.createData(nbPrivateProjectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
             os = SmartOutputStream.getSmartOutputStream(vars);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-            writeMakefilePrivateVariablesBody(bw);
+            writeMakefilePrivateVariablesBody(bw, okConfs, old);
             bw.flush();
             bw.close();
         } catch (IOException ex) {
@@ -1535,6 +1539,52 @@ public class ConfigurationMakefileWriter {
             }
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    private Map<String, String> getOldVariables(FileObject nbprojectFileObject) {
+        Map<String, String> old = new HashMap<String, String>();
+        FileObject oldVars = nbprojectFileObject.getFileObject(MakeConfiguration.MAKEFILE_VARIABLES);
+        BufferedReader reader = null;
+        try {
+            if (oldVars != null && oldVars.isValid()) {
+                reader = new BufferedReader(new InputStreamReader(oldVars.getInputStream()));
+                String current = null;
+                StringBuilder currentBuf = null;
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    line = line.trim();
+                    if (line.startsWith("#")) { // NOI18N
+                        if (current != null) {
+                            old.put(current, currentBuf.toString());
+                        }
+                        current = null;
+                        currentBuf = null;
+                    }
+                    // # Win_Debug configuration
+                    if (line.startsWith("# ")&& line.endsWith(" configuration")) { // NOI18N
+                        current = line.substring(2, line.length() - 14);
+                        currentBuf = new StringBuilder();
+                    }
+                    if (current != null) {
+                        currentBuf.append(line);
+                        currentBuf.append('\n'); // NOI18N
+                    }
+                }
+                if (current != null) {
+                    old.put(current, currentBuf.toString());
+                }
+                reader.close();
+            }
+        } catch (IOException ex) {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex1) {
+                }
+            }
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return old;
     }
 
     private void writeMakefileVariablesRedirector(BufferedWriter bw) throws IOException {
@@ -1553,7 +1603,7 @@ public class ConfigurationMakefileWriter {
         bw.write("include nbproject/private/Makefile-variables.mk\n"); // NOI18N
     }
 
-    private void writeMakefileFixedVariablesBody(BufferedWriter bw) throws IOException {
+    private void writeMakefileFixedVariablesBody(BufferedWriter bw, Collection<MakeConfiguration> okConfs, Map<String, String> old) throws IOException {
         bw.write("#\n"); // NOI18N
         bw.write("# Generated - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
@@ -1566,46 +1616,52 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
-            bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
-            bw.write("CND_PLATFORM_" + makeConf.getName() + "=" + makeConf.getVariant()); // NOI18N
-            bw.write("\n"); // NOI18N // NOI18N
-            // output artifact
-            String outputPath = makeConf.expandMacros(makeConf.getOutputValue());
-            String outputDir = CndPathUtilitities.getDirName(outputPath);
-            if (outputDir == null) {
-                outputDir = ""; // NOI18N
-            }
-            String outputName = CndPathUtilitities.getBaseName(outputPath);
-            bw.write("CND_ARTIFACT_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
-            bw.write("\n"); // NOI18N
-            bw.write("CND_ARTIFACT_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
-            bw.write("\n"); // NOI18N
-            bw.write("CND_ARTIFACT_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
-            bw.write("\n"); // NOI18N
-            // packaging artifact
-            PackagerDescriptor packager = PackagerManager.getDefault().getPackager(makeConf.getPackagingConfiguration().getType().getValue());
-            outputPath = makeConf.expandMacros(makeConf.getPackagingConfiguration().getOutputValue());
-            if (!packager.isOutputAFolder()) {
-                outputDir = CndPathUtilitities.getDirName(outputPath);
+            if (okConfs.contains(makeConf)) {
+                bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
+                bw.write("CND_PLATFORM_" + makeConf.getName() + "=" + makeConf.getVariant()); // NOI18N
+                bw.write("\n"); // NOI18N // NOI18N
+                // output artifact
+                String outputPath = makeConf.expandMacros(makeConf.getOutputValue());
+                String outputDir = CndPathUtilitities.getDirName(outputPath);
                 if (outputDir == null) {
                     outputDir = ""; // NOI18N
                 }
-                outputName = CndPathUtilitities.getBaseName(outputPath);
+                String outputName = CndPathUtilitities.getBaseName(outputPath);
+                bw.write("CND_ARTIFACT_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
+                bw.write("\n"); // NOI18N
+                bw.write("CND_ARTIFACT_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
+                bw.write("\n"); // NOI18N
+                bw.write("CND_ARTIFACT_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
+                bw.write("\n"); // NOI18N
+                // packaging artifact
+                PackagerDescriptor packager = PackagerManager.getDefault().getPackager(makeConf.getPackagingConfiguration().getType().getValue());
+                outputPath = makeConf.expandMacros(makeConf.getPackagingConfiguration().getOutputValue());
+                if (!packager.isOutputAFolder()) {
+                    outputDir = CndPathUtilitities.getDirName(outputPath);
+                    if (outputDir == null) {
+                        outputDir = ""; // NOI18N
+                    }
+                    outputName = CndPathUtilitities.getBaseName(outputPath);
+                } else {
+                    outputDir = outputPath;
+                    outputPath = ""; // NOI18N
+                    outputName = ""; // NOI18N
+                }
+                bw.write("CND_PACKAGE_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
+                bw.write("\n"); // NOI18N
+                bw.write("CND_PACKAGE_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
+                bw.write("\n"); // NOI18N
+                bw.write("CND_PACKAGE_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
+                bw.write("\n"); // NOI18N
             } else {
-                outputDir = outputPath;
-                outputPath = ""; // NOI18N
-                outputName = ""; // NOI18N
+                if (old.containsKey(makeConf.getName())) {
+                    bw.write(old.get(makeConf.getName()));
+                }
             }
-            bw.write("CND_PACKAGE_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
-            bw.write("\n"); // NOI18N
-            bw.write("CND_PACKAGE_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
-            bw.write("\n"); // NOI18N
-            bw.write("CND_PACKAGE_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
-            bw.write("\n"); // NOI18N
         }
     }
 
-    private void writeMakefilePrivateVariablesBody(BufferedWriter bw) throws IOException {
+    private void writeMakefilePrivateVariablesBody(BufferedWriter bw, Collection<MakeConfiguration> okConfs, Map<String, String> old) throws IOException {
         bw.write("#\n"); // NOI18N
         bw.write("# Generated - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
@@ -1615,11 +1671,17 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
-            bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
-            // Sys includes
-            DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
-            if(provider != null) {
-                provider.writePrivateVariables(makeConf, bw);
+            if (okConfs.contains(makeConf)) {
+                bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
+                // Sys includes
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    provider.writePrivateVariables(makeConf, bw);
+                }
+            } else {
+                if (old.containsKey(makeConf.getName())) {
+                    bw.write(old.get(makeConf.getName()));
+                }
             }
         }
     }
