@@ -145,11 +145,7 @@ final class Index {
     }
 
     private function getScript($page) {
-        $script = self::PAGE_DIR . $page . '.php';
-        if (!is_file($script)) {
-            return null;
-        }
-        return $script;
+        return self::PAGE_DIR . $page . '.php';
     }
 
     private function getTemplate($page) {
