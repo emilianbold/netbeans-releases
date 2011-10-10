@@ -571,6 +571,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (Arrays.asList(fsRoots).contains(projectDirectory)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderIsRoot");
         }
+        // #196811
+        if (projectDirectory.isDirectory() && projectDirectory.listFiles() == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderCannotBeRead");
+        }
         return null;
     }
 
